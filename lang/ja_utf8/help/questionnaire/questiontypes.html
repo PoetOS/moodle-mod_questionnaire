@@ -1,0 +1,205 @@
+<h2 class="main">
+質問タイプ
+</h2>
+<p>
+質問のタイプをプルダウンリストから選び，「選択したタイプの質問を追加」のボタンをクリックしてください。以下にアンケートで各タイプがどのように見えるかを示します。各質問タイプの編集画面で，さらに詳細なヘルプを見ることができます。
+</p>
+
+
+<hr />
+<p><strong>
+年月日入力
+</strong><br />
+  <input type="text" />
+  「年/月/日」という書式(半角)で記入してください。例えば1945年3月14日であれば「<strong>1945/3/14</strong>」<br />年の入力は1902～2037の範囲でのみ可能です。
+  </p>
+<p>
+一定の形式で記述された日付で回答させたい場合は，この質問タイプを使ってください。記述形式はアンケート回答者が現在使用している言語に応じて変わります。例えば， 2007/4/21（日本）; 4/21/2007 (アメリカ); 21/4/2007 (イギリス); 21-4-2007 (フランス)などとなります。アンケートには例が表示されます。もし，存在しない日付か形式に違反する日付が入力されると，（可能であれば）書き直されるか，正しい形式に変換されます。あるいは，回答者にエラーメッセージが表示されます。エクセルのようなスプレッドシートに日付が正確にエクスポートされるには，回答者が<strong> 1902 年から 2037 年の範囲の日付</strong>を入力しなければなりません。この範囲外の日付が回答者から寄せられそうであれば，<strong>「自由記述(1行)」</strong>のタイプの質問を代わりに使ってください。「年月日入力」は，月と年で成立している日付（例：2008年12月に対して2008/12）あるいは年のみ（例：2008）も受けつけます。しかしながら，スプレッドシートとの互換性のため，このような不完全な日付は自動的に完全な年／月／日という日付（例： 2008/12 → 2008/12<strong>/01</strong>， 2008 → 2008<strong>/01/01</strong>）に変換されます。このことをアンケートの回答者にあらかじめ説明しなければならないかもしれません。
+  </p>
+
+
+<hr />
+<p><strong>
+数値入力
+</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>
+一定の形式で記述された数字で回答させたい場合は，この質問タイプを使って下さい。<strong>最大文字数 </strong>と<strong>小数点以下桁数 </strong>の設定を使うことにより，入力できる数字の文字数と小数点以下の桁数を指定できます。
+</p>
+
+
+<hr />
+<p><strong>
+段階評価(1～5など)
+</strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td align="center" style="background-color:#eeeeee">1</td>
+    <td align="center" style="background-color:#dddddd">2</td>
+    <td align="center" style="background-color:#eeeeee">3</td>
+    <td align="center" style="background-color:#dddddd">4</td>
+    <td align="center" style="background-color:#eeeeee">5</td>
+    <td align="center" style="background-color:#dddddd">該当なし</td>
+  </tr>
+  <tr>
+    <td>選択肢１&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>選択肢２&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>選択肢３&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+</table>
+<p>この質問タイプに関連するヘルプは，質問作成画面上の<strong>評価の段階数</strong>， <strong>評価のタイプ</strong> や<strong>選択項目</strong>にもあります。
+</p>
+
+
+<hr />
+<p><strong>
+自由記述(複数行)
+</strong><br />
+  <textarea cols="40" rows="4"></textarea>
+</p>
+<p>
+HTMLエディタを利用するかしないかの設定と，文字入力領域の高さと幅を変更をするための設定をすることができます。
+</p>
+
+
+<hr />
+<p><strong>
+自由記述(1行)
+</strong> <br />
+  <input name="text" type="text" size="30" />
+  <br />
+<p>
+自由記述欄の<strong>記入領域の幅</strong>と入力される文字列の <strong>最大文字数</strong>を設定できます。
+</p>
+
+
+<hr />
+<p><strong>
+選択(Yes/No)
+</strong><br />
+  <input type="radio" />
+Yes
+<input type="radio" />
+No
+</p>
+
+
+<hr />
+<p><strong>
+選択(リスト)
+</strong><br />
+  <select name="select">
+    <option></option>
+    <option>
+    選択肢1
+    </option>
+    <option>
+    選択肢2
+    </option>
+  </select>
+</p>
+<p>
+選択肢リストが長い場合には，<strong>選択(リスト)</strong>を使う方が，<strong>選択(単一回答)</strong>を使うよりも画面のスペースを節約できますが，それ以外の現実的な利点はありません。
+</p>
+
+
+<hr />
+<p><strong>
+選択(単一回答)
+</strong></p>
+<table style="width:100%; height:80px;" border="1" cellpadding="2" cellspacing="2">
+  <tr>
+    <td style="width:308px"><strong>
+縦に並べる
+    </strong></td>
+    <td style="width:221px"><strong>
+横に並べる
+    </strong></td>
+  </tr>
+  <tr>
+    <td><input type="radio" name="radio" />
+選択肢１<br />
+<input type="radio" />
+選択肢２<br />
+<input type="radio" />
+選択肢３
+<br />
+<input type="radio" />
+選択肢４
+<input type="text" size="20" />
+(追加オプション)</td>
+    <td><input type="radio" />
+選択肢１
+<input type="radio" />
+選択肢２
+<input type="radio" />
+選択肢３
+</td>
+  </tr>
+</table>
+
+
+<hr />
+<p><strong>
+選択(複数回答)
+</strong><br />
+  <input type="checkbox" />
+選択肢１<br />
+<input name="checkbox" type="checkbox" />
+選択肢２<br />
+<input name="checkbox2" type="checkbox" />
+その他
+<input name="text2" type="text" size="20" />
+(追加オプション)</p>
+<p>
+<strong>注</strong> - <strong>選択(単一回答)</strong>と<strong>選択(複数回答)</strong> では，追加のオプションとして，自由記述欄がついた<strong>「その他」</strong>という選択肢を付けることができます。
+</p>
+
+
+<hr />
+<p><strong>
+- ラベル -
+<br /></strong>
+これは質問ではなく，一連の質問を説明するために表示される（短い）文です。
+</p>
+
+
+<hr />
+<p><strong>
+--- ページ区切り ---
+</strong></p>
+<p>
+長めのアンケートを，複数のページに区切って回答をさせたいときには，これを使ってください。あるページが条件つきの回答（必須，選択できる数，入力の形式など）をともなう質問を含んでいる場合，それらの条件を満たす回答が与えられないと，次のページに進むことができない点に注意してください。
+</p>
+
+
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on 
+  <!-- #BeginDate format:Fr1 -->14/06/08<!-- #EndDate -->
+<br />翻訳：高橋，黒澤，福田，小島，
+<!-- #BeginDate format:En2 -->29-Jun-2011<!-- #EndDate -->
+</p>

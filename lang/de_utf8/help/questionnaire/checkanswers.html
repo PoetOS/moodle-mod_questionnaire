@@ -1,0 +1,56 @@
+<h2 class="main">
+Mögliche Antworten für Checkboxen
+</h2>
+  <table style="width:100%" border="1" cellpadding="5">
+  <tr>
+    <th style="width:33%" scope="col">
+    Bearbeitungsmodus
+    </th>
+    <th style="width:67%" scope="col">
+    Befragungsansicht
+    </th>
+  </tr>
+  <tr>
+    <td><table style="width:300" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" valign="top">mögliche Antworten.*</td>
+      </tr>
+      <tr>
+        <td style="border:#666666 thin solid">
+		  <p>Fernsehen gucken<br />
+		    Tanzen
+		      <br />
+		      am Computer sitzen<br />
+	      !other=anderes Hobby:</p>
+		  </td>
+      </tr>
+    </table></td><td><strong>
+    Was sind Ihre Lieblingshobbys?
+    </strong><br />
+      <input name="checkbox" type="checkbox" />
+Fernsehen gucken
+<br /><input name="checkbox" type="checkbox" />
+Tanzen
+<br /><input name="checkbox2" type="checkbox" />
+am Computer sitzen
+<br /><input type="checkbox" />
+anderes Hobby:
+<input type="text" size="25" /></td>
+  </tr>
+</table>
+<p>Sie müssen <tt>&#8220;!other&#8221;</tt> eintragen um ein <em><strong>optionales</strong></em> <em>Textfeld</em> zu erzeugen. Ein <tt>!other</tt> Eintrag erzeugt standardmäßig die Eingabeaufforderung <em>Other: </em> (oder die entsprechende Übersetzung für <em>Other</em> in der Sprache die aktuell genutzt wird). Sie können diese Eingabeaufforderung ändern, indem Sie das Format: <tt>&#8220;!other=<em>prompt text&#8221;</em></tt> nutzen, wie es oben im Beispiel &nbsp;* gezeigt wird.</p>
+<h3>
+Hinweis
+</h3>
+<ol>
+  <li>Der Fragetyp &quot;Checkbox&quot; ermöglicht es der befragten Person mehrere Antworten auf eine Frage zu geben. </li>
+  <li>Zur Zeit ist die Länge des <em>Textfeldes</em> auf 25 Zeichen festgelegt und kann nicht durch eine Online-Schnittstelle angepasst werden. </li>
+  <li>Sie können mehr als eine <tt>!other</tt> Option für eine &quot;Checkbox&quot; Frage eintragen. Es kann sein, dass dies zu Problemen führt, daher ist es <em>nicht zu empfehlen</em>. </li>
+  <li>Wenn eine befragte Person eine <strong>&quot;Checkbox&quot; Frage</strong> beantwortet, die als <strong>erforderlich</strong> (Pflichtfeld) eingestellt wurde und die Parameter <strong>Min. erforderlichen Antworten </strong>und<strong> Max. erforderlichen Antworten</strong> wurden genutzt, dann wird eine Warnung ausgegeben, wenn der/die Befragte nicht die erforderliche Anzahl von &quot;Checkboxen&quot; anklickt. Hinweis: Wenn die <tt>!other</tt>-Option erstellt wurde, dann zählt sie zum Gesamtergebnis der max/min. erforderlichen Anzahl von Checkboxen hinzu, sofern die dazugehörige Checkbox angeklickt wurde.</li>
+  <li>Wenn eine befragte Person die <tt>!other</tt>-Checkbox anklickt aber das Textfeld leer lässt, dann wird das Häkchen der Checkbox entfernt (wenn zur nächsten Seite navigiert wird oder die Befragung abgeschickt wird).</li>
+  <li>Wenn eine befragte Person eine <tt>!other</tt> Checkbox auswählt und das Textfeld ausfüllt und später ihre/seine Meinung ändert und die Checkbox wieder wegklickt, wird das <em>optionale Textfeld</em> automatisch geleert (cool was?).</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->5/10/08<!-- #EndDate -->
+</p>

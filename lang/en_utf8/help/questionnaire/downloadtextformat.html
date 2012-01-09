@@ -1,0 +1,77 @@
+<h2 class="main">Download in text format</h2>
+<h3>The radio buttons/single answer question type </h3>
+<p>On the <strong>Download in text format</strong> page you have a set of 2 options which only concern the output of the radio buttons/single answer question type. Here is how these options work.</p>
+<p>Question text: What is your favorite color? Choice: blue, green, red.</p>
+<table border="1">
+  <tr>
+    <td><label for="auto-cb0001">selected color </label></td>
+    <td>blue</td>
+    <td>green</td>
+    <td>red</td>
+  </tr>
+  <tr>
+    <td>Include choice codes</td>
+    <td>1</td>
+    <td>2</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Include choice text</td>
+    <td>blue</td>
+    <td>green</td>
+    <td>red</td>
+  </tr>
+  <tr>
+    <td>Include choice codes + Include choice text </td>
+    <td>1&nbsp;:&nbsp;blue </td>
+    <td>2&nbsp;:&nbsp;green </td>
+    <td>3&nbsp;:&nbsp;red </td>
+  </tr>
+  <tr>
+    <td>No Include box ticked = same as include choice text box ticked </td>
+    <td>blue</td>
+    <td>green</td>
+    <td>red</td>
+  </tr>
+</table>
+<p>Note that these output options are over-ridden in case you used the &quot;hidden&quot; option when you created your radio button questions, i.e.  the named values will be exported as data. See <a href="help.php?module=questionnaire&amp;file=radioanswers.html#4">this Help file</a></p>
+<table border="1" cellpadding="5">
+  <tr>
+    <td valign="top"><em> 4.Possible answers: </em>
+        <p> Red=the color of blood <br />
+          Blue=the color of the sky <br />
+    Black=opposite of white </p></td>
+    <td valign="top"><strong> What is your favorite color? </strong><br />
+        <input type="radio" />
+      the color of blood<br />
+      <input type="radio" />
+      the color of the sky<br />
+      <input type="radio" />
+    opposite of white </td>
+    <td valign="top"><p><em>Irrespective of the Include choice codes/text options selected on the Download in text format page, this will output the values <strong>Red</strong>, <strong>Blue</strong> or <strong>Black</strong> to the CSV file.</em> </p></td>
+  </tr>
+</table>
+<h3>The CSV file </h3>
+<p>If you need to study the data of the questionnaire responses outside of Moodle in a software such as <em>Excel</em>, <em>Open Office Calc</em> or a statistical software package, you can export the data in text format. The text format available here is of the so-called CSV (comma separated values) type. However, for more universal use, the <strong>tab</strong> (tabulation) separator is used, rather than the comma or semi-colon. </p>
+<p>When you click on the <strong>Download in text format</strong> button, a window opens, asking you whether you'd like to save the data file or open it. Select <em>save</em>. The data file is named after the name of the current quiz, however you can save it under a different name. The proposed data file extension is *.txt, but you <em>can</em> rename it. Note that you <em>must</em> rename it with a *.csv extension for import into <em>Open Office Calc</em>.</p>
+<p>Then go to your external software, and open the file into it. The following operations depend on the software you are using and on a number of other parameters. If you are using a non-ascii language interface in Moodle or you are using the English language but some of your questionnaire questions (or responses) have non-ascii characters in them, then <em>Excel</em> (or <em>Open Office Calc</em>) might be able to <em>automatically detect</em> that your file is UTF-8 encoded, and decode it accordingly. Please note that if most of your data file is using standard ascii characters and only a very small number of non-ascii characters are present, the automatic detection will not work, and you will have to select the UTF-8 encoding in the list provided by your software by hand.</p>
+<p>At the top of the &quot;table&quot; imported into e.g. <em>Excel</em>, the first line contains the names of all the question fields. This is followed by one line per response. The first 7 fields are as follows (in the English version): </p>
+<table border="1" cellpadding="3" cellspacing="1">
+  <tr>
+    <td>Response</td>
+    <td>Submitted on:</td>
+    <td>Institution</td>
+    <td>Department</td>
+    <td>Course</td>
+    <td>Group</td>
+    <td>ID</td>
+    <td>Full name</td>
+    <td>Username</td>
+  </tr>
+</table>
+<p>The submitted_date field  contains the date (and time, i.e. hour minutes seconds) when the response was submitted by respondent. For example: 15/09/2007 15:57. Normally you should be able to use Excel cell formatting to display such dates at will, in your own language formatting conventions, including the seconds, and if you wish full day or months names, while retaining the sorting facility.</p>
+<p>If the questionnaire was set as &quot;anonymous responses&quot;, the ID and Username will be empty and the Full name field will display &quot;Anonymous&quot;. </p>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+</p>

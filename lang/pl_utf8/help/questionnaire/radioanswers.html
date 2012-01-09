@@ -1,0 +1,180 @@
+<h2 class="main">
+Możliwe odpowiedzi dla pytania typu: <br/> Przyciski radiowe
+</h2>
+  <p>
+  Pytanie typu <strong>Przyciski radiowe</strong> wymaga wypełnienia pola <strong>Możliwe odpowiedzi</strong>, znajdującego się w dolnej części strony <strong>Wprowadzanie/Edycja pytania</strong>. W osobnych wierszach musisz wpisać tam kolejne odpowiedzi (każda, związana z własnym przyciskiem radiowym). <br/>Przykłady:
+  </p>
+  <table border="1" cellpadding="5">
+  <tr>
+    <th style="width:250" valign="top" scope="col">
+    Tryb edycji
+    </th>
+    <th style="width:243" valign="top" scope="col">
+    Widok kwestionariusza
+    </th>
+    <th style="width:434" valign="top" scope="col">
+    (opcjonalny układ poziomy)
+    </th>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+    1.Możliwe odpowiedzi
+    </em>:
+      <p>
+    Czerwony<br />
+    Niebieski<br />
+    Czarny
+    </p></td>
+    <td valign="top"><strong>
+    Jaki kolor lubisz najbardziej?
+    </strong><br />
+      <input type="radio" />
+	Czerwony<br />
+<input type="radio" name="radio" />
+	Niebieski<br />
+<input type="radio" name="radio" />
+	Czarny
+	</td>
+    <td valign="top"><strong>
+    Jaki kolor lubisz najbardziej?
+    </strong><br />
+      <input type="radio" />
+Czerwony
+	<input type="radio" />
+Niebieski
+	<input type="radio" />
+Czarny
+	</td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+2.Możliwe odpowiedzi
+    </em>:
+      <p>
+Czerwony<br />
+Niebieski<br />
+Czarny<br />
+!other
+      </p></td>
+    <td valign="top"><strong>
+Jaki kolor lubisz najbardziej?
+    </strong><br />
+      <input type="radio" />
+Czerwony<br />
+	<input type="radio" />
+Niebieski<br />
+	<input type="radio" />
+Czarny<br />
+	<input type="radio" />
+Inne:
+<input type="text" size="15" /></td>
+    <td valign="top"><strong>
+Jaki kolor lubisz najbardziej?
+	</strong><br />
+        <input type="radio" />
+Czerwony
+      <input type="radio" />
+Niebieski
+      <input type="radio" />
+Czarny
+      <br />
+      <input type="radio" />
+Inne:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+3.Możliwe odpowiedzi:</em>
+      <p>
+Czerwony<br />
+Niebieski<br />
+Czarny<br />
+!other=Inny kolor:
+</p></td>
+    <td valign="top"><strong>
+Jaki kolor lubisz najbardziej?
+</strong><br />
+        <input type="radio" />
+Czerwony<br />
+      <input type="radio" />
+Niebieski<br />
+      <input type="radio" />
+Czarny<br />
+      <input type="radio" />
+Inny kolor:
+      <input type="text" size="15" /></td>
+    <td valign="top"><strong>
+Jaki kolor lubisz najbardziej?
+</strong><br />
+        <input type="radio" />
+Czerwony
+      <input type="radio" />
+Niebieski
+      <input type="radio" />
+Czarny 
+<br />
+<input type="radio" />
+Inny kolor:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <th valign="top"><strong>Tryb edycji</strong></th>
+    <th valign="top">
+<strong>Widok kwestionariusza</strong>
+</th>
+    <th valign="top"><em><strong>
+Eksport danych do pliku tekstowego
+</strong></em></th>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+4.Możliwe odpowiedzi:
+	</em>
+      <p>
+Czerwony=kolor krwi <br />
+Niebieski=kolor nieba <br />
+Czarny=przeciwieństwo bieli
+	</p></td>
+    <td valign="top"><strong>
+Jaki kolor lubisz najbardziej?
+</strong><br />
+        <input type="radio" />
+kolor krwi<br />
+      <input type="radio" />
+kolor nieba<br />
+      <input type="radio" />
+przeciwieństwo bieli
+</td>
+    <td valign="top"><p><em>
+&quot;Wartości&quot;: Czerwony, Niebieski i Czarny zastąpią przy eksporcie do pliku CSV standardowo wpisywane do kolumny danych liczby 1, 2 lub 3.<br />
+Więcej informacji o eksporcie danych do pliku CSV znajdziesz w pliku pomocy <a href="help.php?module=questionnaire&amp;file=downloadtextformat.html">&quot;Ściągnij w formacie tekstowym&quot;</a>.
+</em></p></td>
+  </tr>
+</table>
+<p>
+W jednym z wierszy możesz wpisać słowo kluczowe <tt>&#8220;!other&#8221;</tt>. Uruchomisz wtedy wyświetlanie <em><strong>opcjonalnego</strong></em> tekstowego <em>pola do wypełnienia</em> przez respondenta. Wpisanie samego klucza<tt>!other</tt> powoduje wyświetlenie standardowego tekstu odpowiedzi <em>Inne: </em> (lub tłumaczenia słowa <em>Inne</em> na język, którego aktualnie używasz). Możesz zmienić tekst odpowiedzi za pomocą składni: <tt>&#8220;!other=<em>tekst Twojej odpowiedzi</em>&#8221;</tt>. Mechanizm ten ilustruje powyższy Przykład&nbsp;nr 3.
+</p>
+<h2 class="main">
+Uwagi
+</h2>
+<ol>
+  <li>
+W obecnej wersji programu długość <em>pola do wypełnienia</em> jest ograniczona do 25 znaków i nie może zostać zmieniona poprzez interfejs użytkownika. 
+</li>
+<li>
+Wpisanie więcej niż jednego wiersza realizującego opcję <tt>!other</tt> <em>pole do wypełnienia</em> jest bezsensowne dla pytań typu &quot;Przyciski radiowe&quot;.
+</li>
+<li>
+Jeżeli respondent wciśnie <strong>przycisk radiowy</strong> związany z <em>polem do wypełnienia</em>, pozostawiając jednak to ostatnie pole puste, to spowoduje to <em>wyświetlenie ostrzeżenia</em> (przy przejściu do następnej strony lub po wciśnięciu przycisku &quot;Prześlij kwestionariusz&quot;.
+</li>
+<li>
+Jeżeli respondent wciśnie <strong>przycisk radiowy</strong> związany z <em>polem do wypełnienia</em> i wpisze w to ostatnie stosowny tekst, po czym zmieni zdanie i wybierze inny przycisk, to <em>pole do wypełnienia</em> zostanie automatyczne wyczyszczone.
+</li>
+<li>
+Przykład nr 4 ilustruje &quot;ukrytą przed użytkownikiem&quot; możliwość eksportu danych do pliku tekstowego: wskazane wyrażenia, a nie - standardowo używane - liczby, zostaną wpisane jako dane. Jeżeli nie zamierzasz eksportować danych kwestionariusza (by, np. poddać je analizie za pomocą zewnętrznego programu), możesz zapomnieć o tej opcji. Więcej informacji o eksporcie danych do pliku tekstowego znajdziesz w pliku pomocy <a href="help.php?module=questionnaire&amp;file=downloadtextformat.html">&quot;Ściągnij do pliku tekstowego&quot;</a>.
+</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Uaktualnione przez JR w dniu
+  <!-- #BeginDate format:Fr1 -->14/06/08<!-- #EndDate -->
+</p>

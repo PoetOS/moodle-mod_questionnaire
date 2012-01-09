@@ -1,0 +1,260 @@
+<!--Joseph Rézeau 11 MAY 2007-->
+<h3>Modificando o editando las preguntas </h3>
+  <h3>Posibles Respuestas</h3>
+<p>Si selecciona un tipo de pregunta que tiene <em>opciones de
+  respuesta</em> (<em>posibles selecciones</em>), debe poner cada una en una línea en la mitad inferior
+  de la ventana <strong>Editar Preguntas</strong>. Si necesita más líneas, pulse en <b>Añadir otra línea de respuestas</b>. Los tipos de preguntas
+  que permiten opciones en la respuesta son: <strong>botón de radio, selección múltiple, opción desplegable y la escala de Likert</strong>. Ejemplos: </p>
+<table width="100%" border="1" cellpadding="5">
+  <tr>
+    <th width="31%" scope="col">Modo Edición </th>
+    <th width="69%" scope="col">Vista del cuestionario </th>
+  </tr>
+  <tr>
+    <td><table cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="2" valign="top"> <strong>Ej. 1 Botones de Radio<br />
+</strong>Introduzca las respuestas posibles.        </td>
+      </tr>
+      <tr>
+        <td>1.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_1" value="Rojo" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_2" value="Azul" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>3.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_2" value="Amarillo" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>4.</td>
+        <td align="left" valign="middle">
+            <input size="40" name="choice_content_3" value="!other" type="text" />        </td>
+      </tr>
+    </table></td>
+    <td><strong>¿Cuál es tu color favorito? </strong><br />
+      <input type="radio" name="radio" />
+Rojo<br />
+<input type="radio" name="radio" />
+Azul<br />
+<input type="radio" name="radio" />
+Negro<br />
+<input type="radio" name="radio" />
+Otro:
+<input type="text" name="date2" size="25" /></td>
+  </tr>
+  <tr>
+    <td><table width="300" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" valign="top"> <strong>Ej. 2 Selección múltiple<br />
+</strong> Introduzca las respuestas posibles. </td>
+      </tr>
+      <tr>
+        <td width="12">1.</td>
+        <td width="286" align="left" valign="middle"><input size="40" name="choice_content_12" value="Ver TV" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_22" value="Bailar" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>3.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_22" value="Informática" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>4.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_32" value="!other=Otra afición:" type="text" />        </td>
+      </tr>
+    </table>    </td>
+    <td><strong>¿Cuáles son tus aficiones favoritas? </strong><br />
+      <input name="checkbox" type="checkbox" />
+Ver TV <br />
+<input name="checkbox" type="checkbox" />
+Bailar<br />
+<input name="checkbox2" type="checkbox" />
+Informática <br />
+<input type="checkbox" />
+Otra:
+<input type="text" size="25" /></td>
+  </tr>
+  <tr>
+    <td><table cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="2" valign="top"> <strong>Ej. 3 Lista desplegable<br />
+</strong>Introduzca las respuestas posibles.        </td>
+      </tr>
+      <tr>
+        <td width="12">1.</td>
+        <td width="292" align="left" valign="middle"><input size="40" name="choice_content_13" value="rojo" type="text" /></td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_23" value="azul" type="text" /></td>
+      </tr><tr>
+        <td>3.</td>
+        <td align="left" valign="middle"><input size="40" value="amarillo" type="text" /></td>
+      </tr>
+    </table>    </td>
+    <td>
+
+      <table cellpadding="10" cellspacing="1">
+        <tbody>
+          <tr>
+            <td><strong>¿Tu color favorito? </strong></td>
+          </tr>
+          <tr>
+            <td><select id="menuq17" name="q17">
+                <option value="0">Selecciona...</option>
+                <option value="19">rojo</option>
+                <option value="20">azul</option>
+                <option value="21">amarillo</option>
+            </select>              </td>
+          </tr>
+        </tbody>
+      </table>
+        <div></div></td></tr>
+  <tr>
+    <td><strong>Ej. 4 Rango (escala de Likert)</strong><br />
+      Introduzca las respuestas posibles.
+      <table cellspacing="0" cellpadding="0">
+        
+        <tr>
+          <td>1.</td>
+          <td align="left" valign="middle"><input size="40" value="Moodle" type="text" />          </td>
+        </tr>
+        <tr>
+          <td>2.</td>
+          <td align="left" valign="middle"><input size="40" value="WebCT" type="text" />          </td>
+        </tr>
+        <tr>
+          <td>3.</td>
+          <td align="left" valign="middle"><input size="40" value="Blackboard" type="text" />          </td>
+        </tr>
+      </table>
+      <strong>Parámetros: </strong><br />
+      <strong><em>Longitud</em></strong> = 4 (4 columnas numeradas 1...4)<br />
+      <em><strong>Precisión</strong></em> = 1 (para obtener una columna extra NS/NC)</td>
+    <td><strong>Califica estos entornos virtuales según su facilidad de uso en una escala de 1 (poco amigable) hasta un 4 (uso muy amigable). Selecciona NS/NC en aquellos que no hayas usado.</strong>
+      <table cellspacing="0" cellpadding="0">
+        <tr>
+          <td></td>
+            <td align="center" width="40">1</td>
+            <td align="center" width="40">2</td>
+            <td align="center" width="40">3</td>
+            <td align="center" width="40">4</td>
+            <td align="center" width="40">NS/NC</td>
+        </tr>
+        <tr>
+          <td align="right">Moodle </td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+        <tr>
+          <td align="right">WebCT </td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+        <tr>
+          <td align="right">Blackboard </td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+  </table></td></tr>
+  <tr>
+    <td><strong>Ex. 5 Escala <em>con expresiones que indican grado<a name="named_degrees" id="named_degrees"></a></em> </strong><br />
+Introduzca las posibles respuestas).
+  <table width="291" cellpadding="0" cellspacing="0">
+    <tr>
+      <td>1.</td>
+      <td align="left" valign="middle"><input name="text" type="text" value="1=Casi nunca" size="40" />      </td>
+    </tr>
+    <tr>
+      <td>2.</td>
+      <td align="left" valign="middle"><input name="text" type="text" value="2=Rara vez" size="40" />      </td>
+    </tr>
+    <tr>
+      <td>3.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="3=Algunas veces" size="40" /></td>
+    </tr><tr>
+      <td>4.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="4=A menudo" size="40" /></td>
+    </tr><tr>
+      <td>5.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="5=Casi siempre" size="40" /></td>
+    </tr><tr>
+      <td>6.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="mi aprendizaje se orienta de acuerdo a mis intereses." size="50" /></td>
+    </tr><tr>
+      <td>7.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="lo que aprendo es importante para mi práctica profesional." size="50" /></td>
+    </tr><tr>
+      <td>8.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="Aprendo cómo mejorar mi práctica profesional." size="50" /></td>
+    </tr>
+  </table>
+  <strong>Parámetros: </strong><br />
+  <strong><em>Longitud</em></strong> = 5 (5 columnas de 1...5 )<br />
+  <em><strong>Precisión</strong></em> = 0 (columna NS/NC)</td>
+    <td><h4>En esta unidad online... he encontrado... </h4>
+    <table border="1" cellpadding="0" cellspacing="0">
+        <tr>
+          <td></td>
+          <td align="center">Casi nunca</td>
+          <td align="center">Rara vez</td>
+          <td align="center">Algunas veces</td>
+          <td align="center">A menudo</td>
+          <td align="center">Casi siempre</td>
+        </tr>
+        <tr>
+          <td align="right">mi aprendizaje se orienta de acuerdo a mis intereses. </td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+        <tr>
+          <td align="right">lo que aprendo es importante para mi práctica profesional. </td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+        <tr>
+          <td align="right">Aprendo cómo mejorar mi práctica profesional. </td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+      </table>      <p>&nbsp;</p></td>
+  </tr>
+</table>
+<p>Para los botones de radio y las casillas de selección, puedes introducir <tt>&#8220;!other&#8221;</tt> en la última línea para crear la opción "Otro recuadro" acompañada de un cuadro de texto para rellenar. Por defecto, si sólo introduce <tt>!other</tt> en la última línea, el cuestionario incluirá la palabra <strong>Otro</strong> (para el idioma español). Si quiere que aparezca un texto personalizado, escriba <tt>!other</tt>= seguido del texto que desea poner (como en el ejemplo 2 de arriba).</p>
+<h3>Notas</h3>
+<ol type="a">
+  <li>En la versión actual, la longitud de la caja de texto seguido de un botón en el caso !other está fijada en 25 caracteres, siendo imposible cambiarlo a través de la interfaz web. </li>
+  <li>No tiene sentido ofrecer más de una opción <tt>!other</tt> para las preguntas de botón de radio.</li>
+  <li>Puede ofrecer más de una opción <tt>!other</tt> en las preguntas de casillas de selección, pero podría dar problemas, así que no lo recomendamos. </li>
+  <li>Cuando un alumno responde una pregunta<strong> Casillas de selección</strong> creada y configurada como <strong>Obligatoria</strong>, y los parámetros de <strong>Longitud</strong> y <strong>Anchura</strong> han sido utilizados para solicitar un mínimo o un máximo de opción para cumplimentar, se mostrará un mensaje de aviso si no se ha seleccionado el número de casillas requerido. </li>
+    <li>Observe que, si la opción <tt>!other</tt> acompañada de un cuadro de texto ha sido creada, y ha sido seleccionada por el alumno, computará en el número máximo/mínimo requerido. </li>
+  <li>Si un alumno selecciona la opción <strong>radio button</strong> acompañada de un recuadro de texto y deja este campo vacío, <em>se mostrará un mensaje de aviso</em> (normalmente al intentar ir a la página siguiente o al intentar enviar el cuestionario).</li>
+  <li>Si un alumno ha seleccionado la opción <strong>radio button</strong> acompañada de un recuadro de texto y ha rellenado este campo, si recapacita y selecciona un botón diferente de la misma pregunta, el texto previamente introducido será borrado automáticamente. </li>
+  <li>Si un alumno selecciona una opción <strong>casilla de selección</strong> acompañada de un recuadro de texto y deja el texto vacío, <em>esa casilla será deseleccionada</em> (normalmente al intentar ir a la página siguiente o al intentar enviar el cuestionario).</li>
+  <li>Si un alumno ha seleccionado una opción <strong>casilla de selección</strong> acompañada de un recuadro de texto y ha completado el texto, pero recapacita y deselecciona la casilla, el recuadro de texto será vaciado automáticamente.</li>
+  <li><strong><em>La escala Likert</em></strong>. Para este tipo de preguntas ha dos opciones de visualización. La opción por defecto muestra los grados de la escala Likert como números (1...5). Si prefiere que los grados tengan expresiones nominales, tendrá que introducir dichas expresiones en la lista <strong><em>Introducir las posibles respuestas</em></strong> (ver <strong><em>Ejemplo 5</em></strong> de arriba). En cada línea de posibles respuestas introduzca el número que indica el grado seguido del signo = y de la expresión nominal que desea dar a esa gradación. Tenga cuidado para que el número de expresiones de grado en la lista de respuestas es el mismo que el número determinado por el valor que introduzo en el campo Longitud. Si no es así, las opciones mostradas mostrarán incoherencias. Esta coherencia no está comprobada en la página de edición de preguntas. Si decide utilizar grados con expresiones nominales en su escala Likert, es recomendable (aunque no obligatorio) iniciar la lista de posibles respuestas con las expersiones nominales para luego introducir los <em>ítem</em> que serán escalados (ej. &quot;mi aprendizaje se centra...&quot;, &quot;lo que aprendo es importante&quot;, etc. en el Ejemplo 5 de arriba). </li>
+</ol>
+<p><a href="help.php?file=questionnaire/editquestions.html"><em><strong>Ayuda general</strong></em> Modificar las preguntas</a> </p>

@@ -1,0 +1,337 @@
+/* $Id: qu_orangechoc.css,v 1.2.6.3 2008/06/20 13:36:52 mchurch Exp $ */
+.mod-questionnaire form {
+}
+
+#mod-questionnaire-print .generalbox .generalboxcontent {
+  width:810px;
+}
+
+#mod-questionnaire-print,
+#mod-questionnaire-print h2,
+#mod-questionnaire-print h3,
+#mod-questionnaire-print .addInfo,
+#mod-questionnaire-print .qnInner,
+#mod-questionnaire-print .qnInnerTd,
+#mod-questionnaire-print .qnType,
+#mod-questionnaire-print span.selected {
+  background-color: #FFFFFF!important;
+}
+
+.response.radio span.selected,
+.generalboxcontent span.selected {
+  font-weight:bold;
+  background-color: #e3dfd3;
+  color:#990000;
+}
+
+#mod-questionnaire-print .response .generalbox .generalboxcontent {
+  border-style:hidden;
+}
+
+#mod-questionnaire-print .qnInnerTable .generalbox,
+#mod-questionnaire-print .qnInnerTable .generalboxcontent {
+  margin-top:0px;
+  margin-bottom:0px;
+}
+
+.qnInnerTd {
+  background-color:#FFFAE6;
+  border-right-color:#D5CEBC;
+  border-right-style:solid;
+  border-right-width:4px;
+  font-family:"Courier New", Courier, monospace;
+  font-size:1.4em;
+  font-weight:bold;
+  text-align:right;
+  width:10px;
+}
+
+td.qnType {
+  padding-top:5px!important;
+  padding-bottom:10px!important;
+}
+
+.qnInnerTable {
+  margin-bottom:10px!important;
+  padding-bottom:15px!important;
+}
+
+td.qnInner,
+td.qnType {
+  background-color:#FBFBF5;
+  border-bottom-style: solid;
+  border-bottom-color: #4D1700;
+  border-bottom-width:1px;
+  border-right-width: 2px;
+  border-right-style: solid;
+  border-right-color: #4D1700;
+  border-top-color: #FBFBF5;
+  border-top-style:solid;
+  border-top-width:1px;
+  padding:5px;
+}
+
+td.qnInner {
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  padding-bottom:8px!important;
+  padding-top:8px!important;
+  }
+
+td.qnType {
+  border-top-style:none;
+  border-bottom-width: 2px;
+}
+
+.response.text .generalbox .generalboxcontent,
+.response.date .generalbox .generalboxcontent,
+.response.numeric .generalbox .generalboxcontent {
+  width: auto!important;
+  border: none;
+  background-color: #FFFFFF!important;
+}
+
+.response.yesno,
+.response.readio  {
+}
+
+.response.yesno span.selected,
+.response.check span.selected,
+.response.rate span.selected,
+.response.radio span.selected,
+.response .generalbox span.selected,
+.response.drop span.selected {
+  background-color: #e3dfd4;
+  color:#990000;
+  font-weight:bold;
+}
+
+.response.text .generalbox,
+.response.date .generalbox,
+.response.numeric .generalbox {
+  background-color: #FFFFFF;
+  border-left: solid 2px black;
+  border-top: solid 2px black;
+  border-right: solid 1px gray;
+  border-bottom: solid 1px gray;
+}
+
+div.respdate {
+  font-size: 0.7em;
+  padding-bottom: 4px;
+}
+
+.message,
+.notifyproblem,
+.thankbody,
+.thankhead {
+  clear:both;
+  background-color:#FFFFFF;
+  border-color:#FF0000;
+  border-style: solid;
+  border-width: 2px;
+  margin-bottom:10px;
+  padding:5px;
+  text-align:left;
+  width:50%;
+}
+
+.message {
+  margin-left:45px;
+  margin-top:10px;
+}
+
+.reqQuestion,
+.reqQuestionMark {
+  color: #FF0000;
+}
+
+.reqQuestion {
+  background-color: #FFFFFF;
+  clear:both;
+  margin-bottom:5px;
+  padding:5px;
+  font-weight:bold;
+}
+
+.returnLink {
+  font-family:Verdana, Arial, Helvetica, sans-serif;
+  text-align:center;
+}
+.returnLink a {
+  background-color:#4D1700;
+  color:#FBFBF5!important;
+  border-bottom:1px solid black;
+  border-left:1px solid white;
+  border-right:1px solid black;
+  border-top-color: white;
+  border-top-style:solid;
+  border-top-width:1px;
+  padding-bottom:3px;
+  padding-left:10px;
+  padding-right:10px;
+  padding-top:0px;
+  text-decoration:none;
+}
+
+.returnLink a:hover {
+  color:#4D1700!important;
+  background-color:#FFCC00!important;
+  text-decoration: none;
+}
+
+.surveyTitle,
+.surveySubtitle,
+.addInfo {
+  clear:both;
+  background-color:#FBFBF5;
+  margin:0px;
+  margin-bottom:4px;
+  padding:10px;
+}
+
+.surveyPage {
+  background-color:#fffae6;
+  border-bottom-color:#000000;
+  border-bottom-style: solid;
+  border-bottom-width:2px;
+  clear:right;
+  padding:3px;
+  margin-bottom:5px;
+  margin-top:0px;
+}
+
+.c0,
+cell.c0 {
+  background-color:#FFFAE6;
+  border: #D5CEBC 1px  solid;
+  padding-left:5px;
+  padding-right:5px;
+}
+
+.c1,
+cell.c1 {
+  background-color:#D5CEBC;
+  border: #FFFFFF 1px  solid;
+  padding-left:5px;
+  padding-right:5px;
+  padding-bottom:3px;
+}
+
+.r0 {
+  background-color:#FFFAE6;
+  border: #D5CEBC 1px  solid;
+  padding-left:5px;
+  padding-right:5px;
+}
+
+.r1 {
+  background-color:#D5CEBC;
+  border: #FFFFFF 1px  solid;
+  padding-left:5px;
+  padding-right:5px;
+}
+
+#content input[type="submit"], 
+input[type="button"] {
+  background-color:#4D1700;
+  border-bottom:1px solid black;
+  border-left:1px solid white;
+  border-right:1px solid black;
+  border-top:1px solid white;
+  color:#FBFBF5;
+  font-family:Verdana, Arial, Helvetica, sans-serif;
+  padding-bottom:2px;
+  padding-left:5px;
+  margin-right:2px;
+  margin-top:2px;
+  font-size:1em;
+  width:auto;
+}
+
+#content input[type="submit"]:hover, 
+input[type="button"]:hover,
+#content input[type="submit"]:focus, 
+input[type="button"]:focus {
+  color:#4D1700;
+  background-color:#FFCC00;
+  text-decoration: none;
+}
+/*validated CSS 31 DEC 2007*/
+#content input[disabled=disabled] {
+  background-color:#D5CEBC;
+  color: #000000;
+  font-weight: normal;
+}
+#content input[disabled=disabled]:hover {
+  background-color:#D5CEBC;
+  color:#4D1700;
+  cursor:text;
+  font-weight: normal;
+}
+table.active {
+  background-color:#FBFBF5;
+  border-style:none;
+  margin:auto;
+  padding-top:14px;
+  margin-top:10px;
+  width:90%;
+}
+
+.active .generaltable {
+  width:95%;
+}
+
+.monospace {
+  font-family:"Courier New", Courier, monospace;
+}
+
+/* special to qu_orangechoc.css */
+
+#mod-questionnaire-view.mod-questionnaire #page #content,
+#mod-questionnaire-view.mod-questionnaire #page #content table{
+  background-color:#D5CEBC;
+  padding:0px;
+  padding-left:5px;
+  padding-right:5px;
+}
+#mod-questionnaire-report form {
+  padding-bottom:5px;
+}
+
+.mod-questionnaire form {
+  background-color:#D5CEBC;
+  padding-bottom:2px;
+}
+
+#mod-questionnaire-print .generalbox .generalboxcontent {
+  background-color:#D5CEBC;
+  margin: auto;
+  width:810px;
+}
+#mod-questionnaire-manage_survey #page #content #phpesp {
+  background-color:#00FF00!important;
+}
+.mod-questionnaire #page #content .qnInnerTable td {
+  margin-bottom:0px;
+  margin-left:5px;
+  margin-top:0px;
+  padding-top:0px;
+  padding-bottom:0px;
+}
+.response .generalbox span.selected {
+  background-color:inherit;
+}
+
+h2 {
+  padding-top:0.2em;
+  padding-bottom:0.2em;
+}
+/* overrides any hidden hr tag in current course theme*/
+#page hr {
+  display: block;
+}
+.notice .buttons div,
+.notice .buttons form {
+  display:inline;
+}

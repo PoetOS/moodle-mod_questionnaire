@@ -1,0 +1,146 @@
+<h2 class="main">Domande</h2>
+<p>Si selezioni il tipo di domanda dal menu a tendina e si prema il bottone <strong>Aggiungi una domanda del tipo selezionato</strong> per aggiungere al proprio questionario una nuova domanda.<br />
+Qui si seguito è esemplificata la modalità con la quale ciascun tipo di domanda verrà mostrata nel questionario. Un ulteriore aiuto è disponibile nella schermata di definizione di ogni singolo tipo di domanda.</p>
+
+
+<!--Botton radio-->
+<p><strong>Bottoni radio</strong></p>
+<table width="100%" border="1" cellpadding="5">
+	<tr>
+		<td style="width:50%;">
+			<strong>Disposizione verticale</strong>
+		</td>
+		<td style="width:50%;">
+			<strong>Disposizione orizzontale</strong>
+		</td>
+	</tr>
+	<tr>
+		<td style="width:50%;">
+			<input type="radio" name="radio" /> Opzione 1
+			<br />
+			<input type="radio" name="radio" /> Opzione 2 
+			<br />
+			<input type="radio" name="radio" /> Opzione 3 
+			<br />
+			<input type="radio" name="radio" /> Opzione 4 <input name="text22" type="text" size="20" /> (opzionale)
+		</td>
+		<td style="width:50%;">
+			<input type="radio" name="radio" /> Opzione 1 <input type="radio" name="radio" /> Opzione 2 <input type="radio" name="radio" /> Opzione 3 <input type="radio" name="radio" />Opzione 4 <input name="text22" type="text" size="20" />
+		</td>
+	</tr>
+</table>
+
+
+<!--Caselle di spunta-->
+<p><strong>Caselle di spunta</strong></p>
+<p>  <input name="checkbox" type="checkbox" />
+  Opzione 1<br />
+  <input name="checkbox" type="checkbox" />
+Opzione 2
+<br />
+<input name="checkbox2" type="checkbox" />
+Altro 
+<input name="text2" type="text" size="20" /> 
+(opzionale)</p>
+
+<p><strong>Nota</strong><br />I "Bottoni radio" e le "Caselle di spunta" "possono" (ma non necessariamente "devono") prevedere un campo "altro".<br />Per ulteriori dettagli si veda la pagina di aiuto disponibile nella schermata di definizione delle domande di tipo "Bottoni radio" e le "Caselle di spunta"</p>
+
+
+<!--Data-->
+<p><strong>Data</strong><br />
+    <input type="text" name="date" size="10" />
+    Si usi il formato gg/mm/aaaa, es: 14 Marzo, 1945 <strong>14/3/1945</strong>
+</p>
+<p>Si usi questo tipo di domanda se si desidera che la risposta sia formattata correttamente come data. La formattazione dipenderà dalla lingua usata dall'utente che risponde. Per esempio 4/21/2007 (US); 21/4/2007 (GB); 21-4-2007 (Francia); ecc. Un esempio di data sarà mostrato nel questionario. Se viene usato un formato impossibile o scorretto esso sarà riscritto o riformattato correttamente (se possibile) e/o un messaggio di errore sarà mostrato all'utente.</p>
+
+
+<!--Etichetta-->
+<p><strong>Etichetta</strong><br />
+Questa non è una domanda bensì una testo (breve) che sarà mostrato all'interno del questionario.</p>
+
+
+<!--Interruzione di pagina-->
+<p><strong>Interruzione di pagina</strong><br />
+Questa non è una domanda bensì lo strumento per realizzare interruzioni di pagina nei questionari. Si usi questo strumento per suddividere in pagine i questionari particolarmente lunghi.<br />
+<strong>Nota</strong><br />Si tenga presente che qualora si visualizzi una pagina contenente domande obbligatorie non sarà possibile accedere alle altre pagine del questionario fin quando non si risponderà alle domande bloccanti.</p>
+
+
+<!--Menu a tendina-->
+<p><strong>Menu a tendina</strong><br />
+  <select name="select">
+    <option>Opzione 1</option>
+    <option>Opzione 2</option>
+  </select>
+</p>
+<p>Non c'è nessun reale vantaggio nell'usare un Menu a Tendina piuttosto che i Bottoni radio se non una maggiore compattezza della risposta.</p>
+
+
+<!--Numerico-->
+<p><strong>Numerico</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>Si usi questo tipo di domanda se si desidera che la risposta sia in formato numerico. Usando i parametri <a href="help.php?module=questionnaire&amp;file=maxdigitsallowed.html"><em><strong>Numero massimo di cifre consentite</strong></em> e <em><strong>Numero di cifre decimali</strong></em></a> è possibile specificare la lunghezza e il numero di cifre decimali desiderati.</p>
+
+
+<!--Sì/No-->
+<p><strong>Sì/No</strong><br />
+    <input type="radio" name="bool" />Sì
+    <input type="radio" name="bool" />No</p>
+
+
+<!--Scala (1..5)-->
+<p><strong>Scala (1..5)</strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td style="text-align:center; background-color: #eeeeee">1</td>
+    <td style="text-align:center; background-color: #dddddd">2</td>
+    <td style="text-align:center; background-color: #eeeeee">3</td>
+    <td style="text-align:center; background-color: #dddddd">4</td>
+    <td style="text-align:center; background-color: #eeeeee">5</td>
+    <td style="text-align:center; background-color: #dddddd">N/D</td>
+  </tr>
+  <tr>
+    <td>Opzione 1</td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_124" value="1" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_124" value="2" /></td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_124" value="3" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_124" value="4" /></td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_124" value="5" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_124" value="N/D" /></td>
+  </tr>
+  <tr>
+    <td>Opzione 2</td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_125" value="1" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_125" value="2" /></td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_125" value="3" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_125" value="4" /></td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_125" value="5" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_125" value="N/D" /></td>
+  </tr>
+  <tr>
+    <td>Opzione 3</td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_126" value="1" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_126" value="2" /></td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_126" value="3" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_126" value="4" /></td>
+    <td style="text-align:center; background-color: #eeeeee"><input type="radio" name="118_126" value="5" /></td>
+    <td style="text-align:center; background-color: #dddddd"><input type="radio" name="118_126" value="N/D" /></td>
+  </tr>
+</table>
+<p>Vedi i <strong>Parametri della domanda Scala</strong> e <strong>Risposte per una domanda di tipo Scala graduata</strong> per maggiori informazioni su questo tipo di domanda.</p>
+
+
+<!--Campo di Testo-->
+<p><strong>Campo di Testo</strong> <br />
+    <input name="text" type="text" size="30" />
+    <br />
+Si può definire l'ampiezza in caratteri del "Campo" visualizzato nel questionario e la massima lunghezza del testo da immettere.</p>
+
+
+<!--Testo lungo-->
+<p>
+  <strong>Testo lungo</strong><br />
+  <textarea name="textarea" cols="40" rows="4"></textarea>
+</p>
+<p>E' possibile abilitare o disabilitare l'editor HTML e definire l'altezza e l'ampiezza dell'area di testo (la textarea).</p>

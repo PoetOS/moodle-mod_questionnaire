@@ -1,0 +1,65 @@
+<h2 class="main">Risposte per le Caselle di spunta</h2> 
+<table width="100%" border="1" cellpadding="5">
+	<tr>
+		<th style="width: 33%">
+			Durante la creazione 
+		</th>
+		<th style="width: 67%">
+			Come appare all'utente remoto 
+		</th>
+	</tr>
+	<tr>
+		<td>
+			<table width="100%" cellpadding="0" cellspacing="0">
+				<tr>
+					<td>
+						Risposte 
+					</td>
+				</tr>
+				<tr>
+					<td>
+<textarea name="textarea" cols="24" rows="4">Guardare la TV
+Ballare
+Usare il computer
+!other=Altro hobby:</textarea> 
+					</td>
+				</tr>
+			</table>
+		</td>
+		<td>
+			<strong>Quale è il tuo passatempo preferito? </strong>
+			<br />
+			<input name="checkbox" type="checkbox" /> Guardare la TV 
+			<br />
+			<input name="checkbox" type="checkbox" /> Ballare
+			<br />
+			<input name="checkbox2" type="checkbox" /> Usare il computer 
+			<br />
+			<input type="checkbox" /> Altro hobby: <input type="text" size="25" />
+		</td>
+	</tr>
+</table>
+<p>
+	È possibile digitare <tt>&#8220;!other&#8221;</tt> su una riga per creare un <em><strong>opzionale</strong></em> <em>campo "altro"</em>. Il campo <tt>!other</tt> di default mostra l'etichetta <em>Altro: </em>, (o la traduzione equivalente di <em>Altro</em> nella lingua usata). È possibile modificare questo default usando il formato: <tt>&#8220;!other=<em>etichetta&#8221;</em></tt> come mostrato nel precedente esempio.
+</p>
+<p><strong>Note</strong></p>
+<ol style="type: a">
+	<li>
+		Il tipo di domanda a Caselle di spunta consente a chi risponde di fornire più di una risposta ad una stessa domanda. 
+	</li>
+	<li>
+		Attualmente la lunghezza del <em>campo "altro"</em> in cui registrare la risposta è di 25 caratteri e non è modificabile tramite l'interfaccia web. 
+	</li>
+	<li>
+		Si può forzare più di un <em>campo</em> <tt>!other</tt> in una domanda a Caselle di spunta, ma questa forzatura può creare problemi ed è, quindi, <em>sconsigliata</em>. 
+	</li>
+	<li>
+		Quando l'utente risponde ad una domanda a<strong> Caselle di spunta</strong> che è stata creata come <strong>Obbligatoria</strong>, e sono stati usati i parametri <strong>numero minimo di scelte</strong> e <strong>numero massimo di scelte</strong>, viene mostrato un messaggio di allarme se l'utente non seleziona il numero richiesto di caselle. 
+	</li>
+	<li>
+		Se l'utente ha spuntato l'alternativa <em>campo "altro"</em> e lascia vuoto il campo di testo, al momento di tenti di passare alla pagina successiva o di inviare il questionario viene mostrato il messaggio <em>Questa selezione prevede che si debba immettere del testo nel campo corrispondente</em>.
+	</li>
+	<li>
+		Se l'utente ha spuntato l'alternativa <em>campo "altro"</em> e riempie il campo di testo ma successivamente cambia idea e cancella la spunta, il <em>campo "altro"</em> di testo viene automaticamente vuotato.
+	</li>
+</ol>

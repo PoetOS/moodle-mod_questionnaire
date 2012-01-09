@@ -1,0 +1,85 @@
+<h2 class="main">
+Respostes possibles per a caselles de selecció
+</h2>
+  <table style="width:100%" border="1" cellpadding="5">
+  <tr>
+    <th style="width:33%" scope="col">
+    Mode d'edició
+    </th>
+    <th style="width:67%" scope="col">
+    Visualització a l'enquesta
+    </th>
+  </tr>
+  <tr>
+    <td><table style="width:300" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" valign="top">
+        Possibles respostes
+        </td>
+      </tr>
+      <tr>
+        <td style="width:12">1.</td>
+        <td style="width:286" align="left" valign="middle">
+        <input value="
+		Veure la televisió
+		" /></td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle">
+        <input value="
+		Ballar
+        " /></td>
+      </tr>
+      <tr>
+        <td>3.</td>
+        <td align="left" valign="middle">
+        <input value="
+		Ordinadors
+		" /></td>
+      </tr>
+      <tr>
+        <td>4.</td>
+        <td align="left" valign="middle">
+        <input value="
+		!other=Una altra afició:
+		" /></td>
+      </tr>
+    </table></td><td><strong>
+    Quines són les teves aficions preferides?
+    </strong><br />
+      <input name="checkbox" type="checkbox" />
+Veure la televisió
+<br /><input name="checkbox" type="checkbox" />
+Ballar
+<br /><input name="checkbox2" type="checkbox" />
+Ordinadors
+<br /><input type="checkbox" />
+Una altra afició:
+<input type="text" size="25" /></td>
+  </tr>
+</table>
+
+<p>Podeu introduir <tt>&#8220;!other&#8221;</tt> a una línia per crear una opció <em><strong>opcional</strong></em> del tipus <em>omplir l'espai en blanc</em>. Una casella 
+        <tt>!other</tt> utilitza per defecte el text <em>Altres: </em> (o la traducció equivalent per a <em>Other</em> en el llenguatge utilitzat en cada moment). Podeu canviar aquest text per defecte
+        utilitzant el següent format: <tt>&#8220;!other=<em>nou text&#8221;</em></tt> tal com es mostra a l'Exemple&nbsp;#1 més a dalt.</p>
+
+<h3>
+Notes
+</h3>
+
+<ol>
+  <li>El tipus de pregunta Caselles de selecció permet que la persona que respon introdueixi múltiples respostes a una pregunta.</li>
+  <li>Actualment, la longitud de la casella de text per a omplir està fixada a 25 caracters i no es pot modificar a travès de la interfície en línia.</li>
+  <li>Podríeu proporcionar més d'una opció <tt>!other</tt> per a una pregunta de caselles de selecció, però això
+podria causar problemes i no es recomana.</li>
+  <li>Quan qualcú respon una pregunta de <strong>caselles de selecció</strong> que ha estat creada com a <strong>Requerida</strong>, i els paràmetres <strong>Nombre mínim de respostes</strong> i <strong>Nombre màxim de respostes</strong> han estat emprats per a obligar a que es seleccioni un número mínim o màxim de caselles, un missatge d'advertència es mostrarà si no es selecciona el número de caselles requerit. Noteu que, si l'opció <tt>!other</tt> <em>per a omplir un espai en blanc</em> ha estat definida, i és marcada, comptarà dins el total de caselles mínimes/màximes requerides.</li>
+  <li>Si qui respon l'enquesta marca una casella d'opció del tipus <em>omplir espai en blanc</em> i deixa el camp de text buit, <em>aquesta casella serà desmarcada</em> (quan es navegui a la següent pàgina o quan s'envïi l'enquesta).</li>
+  <li>Si qui respon l'enquesta ha marcat una casella de selecció del tipus <em>omplir espai en blanc</em> i ha introduit dades al camp de text, i després canvia d'opinió i desmarca la casella, el camp de text serà buidat automàticament.</li>
+</ol>
+
+
+<hr />
+<p style="font-size:smaller; text-align:center">Darrera modificació:
+  <!-- #BeginDate format:Fr1 -->12/07/08<!-- #EndDate -->
+</p>

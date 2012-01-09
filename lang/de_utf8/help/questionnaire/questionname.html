@@ -1,0 +1,77 @@
+<h2 class="main">
+Frage bearbeiten - Name der Frage
+</h2>
+<p>Sie können <em>optional</em> einen <strong>Namen der Frage</strong> für jede Frage angeben.</p>
+<p>Der <strong>Name der Frage</strong> wird nur benötigt, wenn Sie Antworten in das CSV/Excel Format exportieren. Wenn Sie niemals in das CSV-Format exportieren, dann brauchen Sie sich nicht um einen Namen für eine Frage zu kümmern. Wenn Sie planen, Ihre Daten regelmäßig in das CSV-Format zu exportieren, dann haben Sie die Wahl zwischen zwei Möglichkeiten für die Namensgebung. </p>
+<h4>
+Option 1: aussagekräftige Namen
+</h4>
+<p>Im Feld <strong>Name der Frage</strong>, geben Sie <em>aussagekräftige</em>, <em>kurze</em> und <strong><em>verschiedene</em></strong> Namen für alle Fragen einer Befragung ein. In der CVS-Exportdatei wird allen Namen eine Zahl vorangestellt. Diese Zahl ist die Postion der Frage in der aktuellen Befragung. Beispiele:</p>
+<table border="1">
+  <tr>
+    <th scope="col">Nummer der Frage (Position) in der Befragung </th>
+    <th scope="col">Name der Frage, die von dem/der Lehrer/in eingetragen wurde </th>
+    <th scope="col">Spaltenüberschrift bei CVS-Export </th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td>Lieblingsfarben</td>
+    <td>Q05_Lieblingsfarben</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td>Warum Moodle nutzen</td>
+    <td>Q06_Warum_Moodle_nutzen</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td><p>
+    Anwenderfreundlichkeit
+    </p>
+    <p><em>
+    (Bewerten Sie bei dieser Frage 3 verschiedene Systeme: Moodle, WebCT and Blackboard)
+    </em></p></td>
+    <td><p>
+    Q07_Anwenderfreundlichkeit-&gt;Moodle<br />
+    Q07_Anwenderfreundlichkeit-&gt;WebCT<br />
+    Q07_Anwenderfreundlichkeit-&gt;Blackboard
+    </p></td>
+  </tr>
+</table>
+<h4>
+Option 2: Das Feld für den Namen der Frage leer lassen
+</h4>
+<p>
+Für jede Frage ohne Namen wird beim CVS-Export automatisch ein Name generiert. Dies ist für die Spaltenüberschriften beim CVS-Export erforderlich und anschließend ebenfalls für Excel-Tabellen oder andere Statistikprogramme, die Sie nutzen. Die Namen der Fragen basieren auf den Nummern der Fragen in der aktuellen Befragung (Pseudo-Fragen wie <em>Textabsätze</em> werden natürlich ausgeklammert) z.Bsp.:. Q01, Q02, ... Q99. Für Fragen mit mehreren Antwortmöglichkeiten, wie der Bewertungs- oder &quot;Likert&quot;-Typ, werden Nummern für Unter-Fragen generiert (Q02_1, Q02_2, Q02_3, etc.). Diese Form der &quot;Kürzel&quot; als Namensgebung ist zweckmäßig um Ihre Daten in Statistiksoftware zu exportieren. Selbstverständlich ist es an Ihnen, ein System zu entwickeln, um sich zu erinnern welches Namens-Kürzel zu welcher Frage in Ihrer Befragung gehört!
+</p>
+<table width="70%" border="1">
+  <tr>
+    <th style="width:16%" scope="col">Nummerierung der Frage (Position) in der Befragung </th>
+    <th style="width:30%" scope="col">Name der Frage die von dem/der Lehrer/inn eingegeben wurde </th>
+    <th style="width:54%" scope="col">Spaltenüberschrift beim CVS-Export </th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>
+Es ist möglich (aber vielleicht nicht ratsam) die beiden Systeme zu mischen und in einer Befragung benannte und unbenante Fragen zu haben.
+</p>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+</p>

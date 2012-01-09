@@ -1,0 +1,56 @@
+<h2 class="main">
+Możliwe odpowiedzi na pytanie typu <br />&quot;Pola do zaznaczenia&quot;
+</h2>
+  <table style="width:100%" border="1" cellpadding="5">
+  <tr>
+    <th style="width:33%" scope="col">
+    Tryb edycji
+    </th>
+    <th style="width:67%" scope="col">
+    Widok kwestionariusza
+    </th>
+  </tr>
+  <tr>
+    <td><table style="width:300" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" valign="top">Możliwe odpowiedzi*</td>
+      </tr>
+      <tr>
+        <td style="border:#666666 thin solid">
+		  <p>Telewizja<br />
+		    Taniec
+		      <br />
+		      Komputer<br />
+	      !other=Inne hobby:</p>
+		  </td>
+      </tr>
+    </table></td><td><strong>
+    Twoje ulubione hobby to:
+    </strong><br />
+      <input name="checkbox" type="checkbox" />
+Telewizja
+<br /><input name="checkbox" type="checkbox" />
+Taniec
+<br /><input name="checkbox2" type="checkbox" />
+Komputer
+<br /><input type="checkbox" />
+Inne hobby:
+<input type="text" size="25" /></td>
+  </tr>
+</table>
+<p> W jednym z wierszy możesz wpisać słowo kluczowe <tt>&#8220;!other&#8221;</tt>. Uruchomisz wtedy wyświetlanie <em><strong>opcjonalnego</strong></em> tekstowego <em>pola do wypełnienia</em> przez respondenta. Wpisanie samego klucza<tt>!other</tt> powoduje wyświetlenie standardowego tekstu odpowiedzi <em>Inne: </em> (lub tłumaczenia słowa <em>Inne</em> na język, którego aktualnie używasz). Możesz zmienić tekst odpowiedzi za pomocą składni: <tt>&#8220;!other=<em>tekst Twojej odpowiedzi</em>&#8221;</tt>. Mechanizm ten ilustruje powyższy Przykład&nbsp;nr 1.</p>
+<h3>
+Uwaga
+</h3>
+<ol>
+  <li>Pytanie typu &quot;Pola do zaznaczenia&quot; pozwala respondentowi wybrać wybrać więcej niż jedną odpowiedź. </li>
+  <li>W obecnej wersji programu długość <em>pola do wypełnienia</em> jest ograniczona do 25 znaków i nie może zostać zmieniona poprzez interfejs użytkownika. </li>
+  <li>W zasadzie, można wprowadzić więcej niż jeden wiersz realizujący opcję <tt>!other</tt> <em>pole do wypełnienia</em>. Może to jednak prowadzić do pojawienia się problemów i z tego względu <em>nie jest zalecane</em>. </li>
+  <li>Jeżeli respondent odpowiada na pytanie typu<strong> Pola do zaznaczenia</strong>, które zostało zdefiniowane jako <strong>Wymagające odpowiedzi</strong> i dla którego określono parametry  <strong>Min. liczba wymuszonych odpowiedzi </strong>oraz<strong> Maks. liczba wymuszonych odpowiedzi</strong>, to nie zaznaczenie wymaganej liczby pól spowoduje wyświetlenie ostrzeżenia. <br />Prosimy pamiętać, że jeśli użyto opcję <tt>!other</tt> <em>pole do wypełnienia</em> i jeśli odpowiadająca jej odpowiedź została wybrana przez respondenta, to będzie się ona wliczała do wymaganej liczby odpowiedzi. </li>
+  <li>Jeżeli respondent zaznaczy <strong>pole wyboru</strong> związane z <em>polem do wypełnienia</em>, pozostawiając jednak to ostatnie pole puste, to <em>takie zaznaczenie zostanie usunięte</em> (przy przejściu do następnej strony lub po wciśnięciu przycisku &quot;Prześlij kwestionariusz&quot;.</li>
+  <li>Jeżeli respondent zaznaczy <strong>pole wyboru</strong> związane z <em>polem do wypełnienia</em> i wpisze w to ostatnie stosowny tekst, po czym zmieni zdanie i usunie zaznaczenie z pola wyboru, to <em>pole do wypełnienia</em> zostanie automatyczne wyczyszczone (sprytne, prawda?).</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Uaktualnione przez JR w dniu
+  <!-- #BeginDate format:Fr1 -->5/10/08<!-- #EndDate -->
+</p>

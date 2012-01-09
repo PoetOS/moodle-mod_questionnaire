@@ -1,0 +1,184 @@
+<h2 class="main">
+選択(単一回答)の選択項目
+</h2>
+  <p>
+<strong>選択(単一回答)</strong> タイプの質問では， <strong>質問の追加</strong> のウィンドウの下半分の枠内に，一行につきひとつの選択肢を記入する必要があります。
+<br />
+  </p>
+例： 
+  <table border="1" cellpadding="5">
+  <tr>
+    <th width="28%" valign="top" scope="col">
+    編集内容
+    </th>
+    <th width="36%" valign="top" scope="col">
+    アンケートでの見え方
+    </th>
+    <th width="36%" valign="top" scope="col">
+    (「横に並べる」にした場合の表示)
+    </th>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+    例1. 選択項目：
+    </em>
+      <p>
+    赤<br />
+    青<br />
+    黒
+    </p></td>
+    <td valign="top"><strong>
+    あなたの好きな色は何ですか？
+    </strong><br />
+      <input type="radio" />
+	赤<br />
+<input type="radio" name="radio" />
+	青<br />
+<input type="radio" name="radio" />
+	黒
+	</td>
+    <td valign="top"><strong>
+    あなたの好きな色は何ですか？
+    </strong><br />
+      <input type="radio" />
+赤
+	<input type="radio" />
+青
+	<input type="radio" />
+黒
+	</td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+例2. 選択項目
+    </em>:
+      <p>
+赤<br />
+青<br />
+黒<br />
+!other
+      </p></td>
+    <td valign="top"><strong>
+あなたの好きな色は何ですか？
+    </strong><br />
+      <input type="radio" />
+赤<br />
+	<input type="radio" />
+青<br />
+	<input type="radio" />
+黒<br />
+	<input type="radio" />
+その他：
+<input type="text" size="15" /></td>
+    <td valign="top"><strong>
+あなたの好きな色は何ですか？
+	</strong><br />
+        <input type="radio" />
+赤
+      <input type="radio" />
+青
+      <input type="radio" />
+黒
+      <br />
+      <input type="radio" />
+その他：
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+例3. 選択項目</em>
+      <p>
+赤<br />
+青<br />
+黒<br />
+!other=別の色：
+</p></td>
+    <td valign="top"><strong>
+あなたの好きな色は何ですか？
+</strong><br />
+        <input type="radio" />
+赤<br />
+      <input type="radio" />
+青<br />
+      <input type="radio" />
+黒<br />
+      <input type="radio" />
+別の色：
+      <input type="text" size="15" /></td>
+    <td valign="top"><strong>
+あなたの好きな色は何ですか？
+</strong><br />
+        <input type="radio" />
+赤
+      <input type="radio" />
+青
+      <input type="radio" />
+黒
+<br />
+<input type="radio" />
+別の色：
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">
+アンケートの見え方
+</td>
+    <td valign="top"><em><strong>
+テキストデータのエクスポート
+</strong></em></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+例4<a name="4" id="4"></a>.選択項目
+	</em>
+      <p>
+赤 = 血の色<br />
+青 = 空の色<br />
+黒 = 白の反対
+	</p></td>
+    <td valign="top"><strong>
+あなたの好きな色は何ですか？
+</strong><br />
+        <input type="radio" />
+血の色<br />
+      <input type="radio" />
+空の色<br />
+      <input type="radio" />
+白の反対
+</td>
+    <td valign="top"><p><strong>
+CSVファイルには，標準の 1 ，2 ，3 という数字の代わりに，「赤」，「青」，「黒」という<strong>値</strong>が記録されます。詳細は「テキストフォーマットでのダウンロード」のヘルプを参照してください。
+</strong></p></td>
+  </tr>
+</table>
+<p>
+選択肢のひとつとして「<tt>!other</tt>」と半角文字で記述すれば<strong>自由記述欄</strong>を作ることもできます。「<tt>!other</tt>」とだけ記述したときには「その他」（あるいは現在使用中の言語でそれに相当する訳語）が表示されます。上の例３のように，この自由記述欄の先頭に表示される文字列は「<tt>!other=文字列</tt>」という書式を使って別の文字列に変更できます。
+</p>
+<h2 class="main">
+注
+</h2>
+<ol>
+  <li>
+現在，自由記述欄の入力文字数は25文字に設定されていて，一般利用者はこれを変更することはできません。
+</li>
+<li>
+「選択（単一回答）」で「<tt>!other</tt>」による<strong>自由記述欄</strong>を複数作成することは無意味です。
+</li>
+<li>
+もし回答者が<strong>自由記述欄</strong>の選択肢のラジオボタンにチェックをして，欄内を未記入のままにすると，<strong>警告メッセージ</strong>が（次のページへの移動時かアンケート送信時に）表示されます。
+</li>
+<li>
+もし回答者が<strong>自由記述欄</strong>のラジオボタンをチェックし，欄内に文字を記入した後に気が変わって別のラジオボタンを選択すると，<strong>自由記述欄</strong>が空になります。
+</li>
+<li>
+例４は，回答結果をテキストデータへエクスポートする際に使える「隠された選択肢」の例です。回答としてテキストデータ内に標準の数字を記録する代わりに，ここで指定した名称が記録されます。
+表計算・統計アプリケーションで回答結果を処理するためにデータをエクスポートすることがないのであれば，このような選択肢の書き方をする必要はありません。
+</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+<br />翻訳：高橋，黒澤，福田，小島，
+<!-- #BeginDate format:En2 -->29-Jun-2011<!-- #EndDate -->
+</p>

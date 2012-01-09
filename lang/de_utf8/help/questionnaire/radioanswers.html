@@ -1,0 +1,179 @@
+<h2 class="main">
+Mögliche Antworten für den Fragetyp Radiobutton</h2>
+  <p>
+  Wenn Sie den Fragetyp <strong>Radio Buttons</strong> wählen, müssen Sie eine Antwort per Zeile in das untenstehende Fenster einfügen. Beispiel:
+  </p>
+  <table border="1" cellpadding="5">
+  <tr>
+    <th style="width:250" valign="top" scope="col">
+    Bearbeitungsmodus
+    </th>
+    <th style="width:243" valign="top" scope="col">
+    Befragungsansicht
+    </th>
+    <th style="width:434" valign="top" scope="col">
+    (optionale horizontale Ansicht)
+    </th>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+    1.mögliche Antwort
+    </em>:
+      <p>
+    Rot<br />
+    Blau<br />
+    Schwarz
+    </p></td>
+    <td valign="top"><strong>
+    Welches ist Ihre Lieblingsfarbe?
+    </strong><br />
+      <input type="radio" />
+	Rot<br />
+<input type="radio" name="radio" />
+	Blau<br />
+<input type="radio" name="radio" />
+	Schwarz
+	</td>
+    <td valign="top"><strong>
+    Welches ist Ihre Lieblingsfarbe?
+    </strong><br />
+      <input type="radio" />
+Rot
+	<input type="radio" />
+Blau
+	<input type="radio" />
+Schwarz
+	</td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+2.mögliche Antwort
+    </em>:
+      <p>
+Rot<br />
+Blau<br />
+Schwarz<br />
+!other
+      </p></td>
+    <td valign="top"><strong>
+Welches ist Ihre Lieblingsfarbe?
+    </strong><br />
+      <input type="radio" />
+Rot<br />
+	<input type="radio" />
+Blau<br />
+	<input type="radio" />
+Schwarz<br />
+	<input type="radio" />
+andere:
+<input type="text" size="15" /></td>
+    <td valign="top"><strong>
+Welches ist Ihre Lieblingsfarbe?
+	</strong><br />
+        <input type="radio" />
+Rot
+      <input type="radio" />
+Blau
+      <input type="radio" />
+Schwarz
+      <br />
+      <input type="radio" />
+andere:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+3.mögliche Antwort:</em>
+      <p>
+Rot<br />
+Blau<br />
+Schwarz<br />
+!other=eine andere Farbe:
+</p></td>
+    <td valign="top"><strong>
+Welches ist Ihre Lieblingsfarbe?
+</strong><br />
+        <input type="radio" />
+Rot<br />
+      <input type="radio" />
+Blau<br />
+      <input type="radio" />
+Schwarz<br />
+      <input type="radio" />
+Eine andere Farbe:
+      <input type="text" size="15" /></td>
+    <td valign="top"><strong>
+Welches ist Ihre Lieblingsfarbe?
+</strong><br />
+        <input type="radio" />
+Rot
+      <input type="radio" />
+Blau
+      <input type="radio" />
+Schwarz 
+<br />
+<input type="radio" />
+eine andere Farbe:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">
+<strong>Befragungsansicht</strong>
+</td>
+    <td valign="top"><em><strong>
+Textdaten Export
+</strong></em></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+4<a name="4" id="4"></a>.mögliche Antworten:
+	</em>
+      <p>
+Rot=Die Farbe des Blutes <br />
+Blau=Die Farbe des Himmels <br />
+Schwarz=Gegenteil von Weiß
+	</p></td>
+    <td valign="top"><strong>
+Welches ist Ihre Lieblingsfarbe?
+</strong><br />
+        <input type="radio" />
+Die Farbe des Blutes<br />
+      <input type="radio" />
+Die Farbe des Himmels<br />
+      <input type="radio" />
+Das Gegenteil von Weiß
+</td>
+    <td valign="top"><p><em>
+Die &quot;Werte&quot; Rot, Blau und Schwarz werden exportiert statt der Standardnummerierung 1, 2, 3.<br />
+Sehen Sie sich die Hilfe an für den Download im Textformat.
+</em></p></td>
+  </tr>
+</table>
+<p>
+Sie können <tt>&#8220;!other&#8221;</tt> in eine Zeile eingeben um ein <em><strong>optionales</strong></em> <em>Textfeld</em> als Eingabemöglichkeit zu erzeugen. Ein <tt>!other</tt>-Textfeld erzeugt in der Voreinstellung <em>Other:</em> als Eingabeaufforderung (oder die äquivalente Übersetzung für <em>Other</em> in der aktuell benutzten Sprache). Sie können diese Voreinstellung ändern, indem Sie folgendes Format benutzen: <tt>&#8220;!other=<em>Eingabeaufforderung&#8221;</em></tt> wie im Beispiel&nbsp;#3 oben.
+</p>
+<h2 class="main">
+Notiz
+</h2>
+<ol>
+  <li>
+Zur Zeit ist die Länge des <tt>other!</tt> Eingabefeldes auf 25 Zeichen beschränkt und nicht durch die Online-Schnittstelle änderbar.
+</li>
+<li>
+Es macht keinen Sinn mehr als eine <tt>!other</tt>-Option für eine Radiobutton Frage zur Verfügung zu stellen.
+</li>
+<li>
+Wenn die befragte Person den <tt>!other</tt>-Radiobutton</strong> anklickt und das Textfeld leer läßt, <em>wird eine Warnmeldung angezeigt</em> (wenn man auf die nächste Seite wechseln oder die Befragung abschicken will).
+</li>
+<li>
+Wenn die befragte Person den <tt>!other</tt>-Radiobutton</strong> anklickt, das Eingabefeld ausfüllt und später Ihre Meinung ändert und einen anderen Radiobutton bei der gleichen Frage anklickt, dann wird das zuvor im <tt>!other</tt>-Textfeld eingegebene automatisch gelöscht.
+</li>
+<li>
+Beispiel #4 zeigt eine mögliche &quot;versteckte&quot; Option für den Export - bei den Antworten - benannte Werte statt der Standardnummerierung. Wenn Sie Ihre Daten nie exportieren um Sie in Statistiksoftware zu evaluieren werden Sie diese Option nicht brauchen.
+</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+</p>

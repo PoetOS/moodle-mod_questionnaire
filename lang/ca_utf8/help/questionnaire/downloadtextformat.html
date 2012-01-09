@@ -1,0 +1,48 @@
+<h2 class="main"><strong>Descarrega en format de text</h2>
+<p>
+Si necessiteu estudiar les dades de les responses de l'enquesta fora de Moodle emprant programari com <em>Excel</em>,
+<em>OpenOffice Calc</em> o un paquet estadístic, podeu exportar les dades en format de text. El format de text
+disponible aquí és l'anomenat CSV (<em>comma separated values</em>, valors separats per comes). No obstant,
+per a un ús més universal, s'utilitza el separador <strong>tab</strong> (tabulació), en lloc de la coma o el 
+punt i coma.</p>
+<p>
+Quan es fa clic al botó <strong>Descarrega en format de text</strong>, una finestra s'obre, demanant si ens agradaria
+desar el fitxer de dades o obrir-lo. Seleccioneu <em>desa</em>. El fitxer de dades és anomenat seguint el nom de
+l'enquesta actual. No obstant, es pot desar amb un nom diferent. L'extensió proposada per al fitxer de dades és
+*.txt, però es <em>pot</em> canviar el nom. Noteu que <em>és necessari</em> canviar l'extensió a *.csv per a 
+importar-lo dins <em>OpenOffice Calc</em>.</p>
+em>.</p>
+<p>
+A continuació, es pot anar al nostre programari extern, i obrir el fitxer amb ell. Les següents operacions depenen
+del programari que estiguem emprant i d'altres paràmetres. Si estam emprant una interfície de llenguatge no ASCII
+en Moodle, o estam emprant el llenguatge anglès però algunes de les preguntes o respostes de l'enquesta tenen
+caracters no ASCII, llavors <em>Excel</em> (o <em>OpenOffice Calc</em>) podrien detectar automàticament que el 
+fitxer està codificat amb UTF-8 i decodificar-lo adequadament. Noteu que si la majoria del fitxer de dades està
+emprant caracters ASCII estàndard i només hi ha un petit número de caracters no ASCII, la detecció automàtica
+no funcionarà i haureu de seleccionar la codificació UTF-8 a mà a la llista proporcionada pel vostre programari.</p>
+<p>
+A la part superior de la &quot;taula&quot; importada dins, per exemple, <em>Excel</em>, la primera línia conté
+els noms de tots els camps de la pregunta. Això és seguit d'una línia per resposta. Els primers 7 camps són els
+següents (a la versió anglesa):</p>
+<table border="1" cellpadding="3" cellspacing="1">
+  <tr>
+    <td height="17">Response</td>
+    <td>Submitted on:</td>
+    <td>Course</td>
+    <td>Group</td>
+    <td>ID</td>
+    <td>Full name</td>
+    <td>Username</td>
+  </tr>
+</table>
+<p>
+El camp <em>submitted_date</em> conté la data (i l'hora, és a dir, hores, minuts i segons) a la que la resposta
+va ser enviada. Per exemple, 15/09/2007 15:57. Normalment, hauríeu de poder emprar el format de cel·la d'Excel per
+a mostrar aquestes dates a voluntat, seguint les convencions de format del vostre llenguatge, incloent els segons,
+i si voleu mostrar els noms complets dels dies o dels mesos, mantenint la possibilitat d'ordenar.</p>
+<p>Si l'enquesta es va configurar amb &quot;respostes anònimes&quot;, l'ID i Username estaran buits i el camp Full name mostrarà &quot;Anonymous&quot;.</p>
+
+<hr />
+<p style="font-size:smaller; text-align:center">Darrera modificació:
+  <!-- #BeginDate format:Fr1 -->12/07/08<!-- #EndDate -->
+</p>

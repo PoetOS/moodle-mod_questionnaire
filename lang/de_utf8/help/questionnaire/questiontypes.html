@@ -1,0 +1,167 @@
+<h2 class="main">
+Fragentypen
+</h2>
+<p>
+Wählen Sie den Fragetyp aus der <strong>Dropdown-Liste</strong> aus und klicken Sie auf den Button <em>ausgewählten Fragetyp hinzufügen</em>. Weitere Hilfe zu den unterschiedlichen Typen finden Sie bei jeder Frage im Bearbeitungsmodus. 
+</p>
+<p><strong>
+---Seitenumbruch---
+</strong></p>
+<p>
+Nutzen Sie dies um bei sehr langen Befragungen Seitenumbrüche einzufügen. Beachten Sie: Wenn eine Seite Fragen mit erforderlichen Antworten enthält, kann die befragte Person nicht zur nächsten Seite navigieren, bevor Sie nicht die erforderlichen Antworten gegeben hat.
+</p>
+<p><strong>
+Checkboxen
+</strong><br />
+  <input type="checkbox" />
+Option 1<br />
+<input name="checkbox" type="checkbox" />
+Option 2 <br />
+<input name="checkbox2" type="checkbox" />
+Weitere
+<input name="text2" type="text" size="20" />
+(optional)</p>
+<p>
+<strong>Hinweis</strong>- <strong>Radiobuttons</strong> und <strong>Checkboxen</strong> können um einen optionalen <tt>!other</tt>-Button mit einem frei auszufüllenden Textfeld ergänzt werden.
+</p>
+<p><strong>
+Datum
+</strong><br />
+  <input type="text" />
+  <em>Nutzen Sie das Tag/Monat/Jahr Format z.Bsp.:. für März 14er, 1945:  <strong>14/3/1945</strong></em>
+  </p>
+<p>
+Nutzen Sie diesen Fragetyp wenn Sie erwarten, dass die Antwort ein korrekt formatiertes Datum ist. Das Format hängt von der Sprache ab, die die befragte Person eingestellt hat. Zum Beispiel: 4/21/2007 (US); 21/4/2007 (UK); 21-4-2007 (France); usw. Ein Beispiel wird in der Befragung angezeigt. Wenn ein &quot;unmögliches&quot; oder falsch formatiertes Datum eingegeben wird, wird es entweder umgeschrieben oder (wenn möglich) umformatiert oder es wird eine Fehlermeldung angezeigt. Um ein Datum korrekt in ein Arbeitsblatt von z.Bsp.: Excel exportieren zu können, muß die befragte Person ein Datum zwischen <em>1902 und 2037</em> eingeben. Wenn ein Datum außerhalb dieser Zeitspanne erwartet wird, dann nutzen Sie bitte den Textbox-Fragentyp. Der Fragentyp Datum akzeptiert Eingaben von einem Monat und einem Jahr (z.Bsp.: 12/2008 für Dezember 2008) oder auch nur ein Jahr (z.Bsp.: 2008). Allerdings werden solche unvollständige Daten automatisch in vollständige (dd/mm/yy) umgewandelt, da Sie sonst nicht kompatibel für Arbeitsblätter sind: z.Bsp.: 12/2008 -&gt; <strong>01/</strong>12/2008 und 2008 -&gt; <strong>01/01/</strong>2008. Sie müssen diese typische Verhaltensweise Ihren Nutzer/innen eventuell vorher in der Befragung erklären.
+</p>
+<p><strong>
+Dropdown Box
+</strong><br />
+  <select name="select">
+    <option></option>
+    <option>
+    Option 1
+    </option>
+    <option>
+    Option 2
+    </option>
+  </select>
+</p>
+<p>
+Der einzige Grund warum eine <strong>Dropdown-Box</strong> in manchen Fällen eventuell <strong>Radiobuttons</strong> vorzuziehen wäre, ist die Länge der Liste der Optionen. Mit einer <strong>Dropdown-Box</strong> kann Platz auf dem Bildschirm gespart werden.
+</p>
+<p><strong>
+Essay Box
+</strong><br />
+  <textarea cols="40" rows="4"></textarea>
+</p>
+<p>
+Es gibt Einstellungen um den Html-Editor ein- oder auszuschalten und um die Breite und Höhe des Textbereichs zu definieren.
+<p><strong>
+Label
+<br /></strong>
+Dies ist ein (kurzer) Text, der angezeigt wird, um einen Abschnitt mit Fragen einzuleiten.
+</p>
+<p><strong>
+Numerisch
+</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>
+Nutzen Sie diesen Fragetyp, wenn die Antwort eine korrekt formatierte Zahl ist. Indem Sie die Optionen <strong>Max. erlaubte Ziffern</strong> und <strong>Anzahl der Dezimalstellen </strong> nutzen, können Sie die Länge und Dezimalstellen der Zahlen definieren, die eingetragen werden sollen.
+</p>
+<p><strong>
+Radiobuttons
+</strong></p>
+<table style="width:100%; height:80px;" border="1" cellpadding="2" cellspacing="2">
+  <tr>
+    <td style="width:308px"><strong>
+vertikale Anzeige
+    </strong></td>
+    <td style="width:221px"><strong>
+horizontale Anzeige
+    </strong></td>
+  </tr>
+  <tr>
+    <td><input type="radio" name="radio" />
+Option 1<br />
+<input type="radio" />
+Option 2 <br />
+<input type="radio" />
+Option 3
+<br />
+<input type="radio" />
+Option 4 
+<input type="text" size="20" />
+(optional)</td>
+    <td><input type="radio" />
+Option 1
+<input type="radio" />
+Option 2 
+<input type="radio" />
+Option 3
+</td>
+  </tr>
+</table>
+<p><strong>
+Bewertung (Skala 1..5)
+</strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td align="center" style="background-color:#eeeeee">1</td>
+    <td align="center" style="background-color:#dddddd">2</td>
+    <td align="center" style="background-color:#eeeeee">3</td>
+    <td align="center" style="background-color:#dddddd">4</td>
+    <td align="center" style="background-color:#eeeeee">5</td>
+    <td align="center" style="background-color:#dddddd">N/A</td>
+  </tr>
+  <tr>
+    <td>Option 1&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Option 2&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Option 3&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+</table>
+<p>
+Schauen Sie sich die Hilfe zu den Parametern von <strong>Anzahl der Skaleneinträge</strong>&amp; <strong>Typ der Bewertungsskalen</strong> an für mehr Optionen zu diesem Fragetyp. Sehen Sie auch in die Hilfe zu <strong>mögliche Antworten</strong>.
+</p>
+<p><strong>
+Textbox
+</strong> <br />
+  <input name="text" type="text" size="30" />
+  <br />
+Sie können die <em>Länge des Eingabefeldes</em> der Textbox einstellen und die <em>max. Länge</em> des einzugebenden Textes.
+</p>
+<p><strong>
+Ja/Nein
+</strong><br />
+  <input type="radio" />
+Ja
+<input type="radio" />
+Nein
+</p>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on 
+  <!-- #BeginDate format:Fr1 -->14/06/08<!-- #EndDate -->
+</p>

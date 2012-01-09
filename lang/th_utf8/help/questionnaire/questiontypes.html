@@ -1,0 +1,168 @@
+<h2 class="main">
+ประเภทคำถาม
+</h2>
+<p>
+เลือกประเภทคำถามจากรายการ แล้วกดปุ่ม "เพิ่มประเภทคำถามที่เลือก" โดยความหมายของแต่ละประเภทจะมีดังนี้
+</p>
+<p><strong>
+---ตัวแบ่งหน้า---
+</strong></p>
+<p>
+ใช้สำหรับแบ่งหน้าเมื่อแบบสอบถามมีความยาวมาก ๆ แต่ถ้าคำถามในหน้านั้นบังคับให้ตอบ ผู้ตอบจะต้องตอบคำถามให้เรียบร้อยก่อนเลื่อนไปตอบคำถามหน้าถัดไป
+</p>
+<p><strong>
+เลือกกากบาทหลายค่า
+</strong><br />
+  <input type="checkbox" />
+ตัวเลือกที่ 1<br />
+<input name="checkbox" type="checkbox" />
+ตัวเลือกที่ 2 <br />
+<input name="checkbox2" type="checkbox" />
+อื่น ๆ
+<input name="text2" type="text" size="20" />
+(กรุณาระบุ)</p>
+<p>
+<strong>หมายเหตุ</strong>: <strong>เลือกค่าเดียว</strong> และ <strong>เลือกกากบาทหลายค่า</strong> จะมีตัวเลือก <em>"อื่น ๆ"</em> ให้ด้วย เพื่อใส่ตัวเลือกอื่นที่ไม่อยู่ในรายการ
+</p>
+<p><strong>
+วันที่
+</strong><br />
+  <input type="text" />
+  <em>ใช้รูปแบบ วัน/เดือน/ปี เช่น วันที่ 14 มีนาคม 2008 จะได้  <strong>14/3/2008</strong></em>
+  </p>
+<p>
+ใช้คำถามประเภทนี้เมื่อต้องการคำตอบในรูปแบบวันที่ ๆ กำหนด ซึ่งรูปแบบจะขึ้นอยู่กับภาษาที่ผู้ตอบแบบสอบถามใช้ 
+เช่น 4/21/2007 (สหรัฐ) หรือ 21/4/2007 (อังกฤษ) หรือ 21-4-2007 (ฝรั่งเศส) 
+ถ้าผู้ตอบใส่รูปแบบไม่ถูกต้องหรือป้อนวันผิด (เช่น วันที่ 32 เดือน 13) ผลลัพธ์ที่ได้อาจแสดงผลถูกต้อง หรืออาจมีข้อความแสดงความผิดพลาดปรากฎให้ผู้ตอบ
+หากต้องการให้วันที่ถูกต้องในกระดาษคำนวณ เช่น Excel ผู้ตอบจะต้องป้อนปีระหว่าง <em>1902-2037</em> ถ้าวันที่ไม่ได้อยู่ในช่วงนี้ ให้ใช้คำถามประเภท <strong>"กรอกข้อความบรรทัดเดียว"</strong> คำถามประเภทวันที่สามารถรองรับการตอบเฉพาะเดือนและปีได้ (เช่น 12/2008) หรือเฉพาะปี (เช่น 2008)
+โปรแกรมกระดาษคำนวณจะแปลงให้อยู่ในรูป วัน/เดือน/ปี โดยอัตโนมัติ เช่น 12/2008 จะเป็น <strong>01/</strong>12/2008 และ 2008 จะเป็น <strong>01/01/</strong>2008 คุณจะต้องอธิบายให้กับผู้เกี่ยวข้องเข้าใจด้วย
+</p>
+<p><strong>
+เลือกค่าเดียว (dropdown)
+</strong><br />
+  <select name="select">
+    <option></option>
+    <option>
+    ตัวเลือกที่ 1
+    </option>
+    <option>
+    ตัวเลือกที่ 2
+    </option>
+  </select>
+</p>
+<p>
+คำถามประเภท <strong>เลือกค่าเดียว (dropdown)</strong> จะได้ผลลัพธ์เหมือนกับการใช้คำถามประเภท <strong>เลือกค่าเดียว</strong> แต่จะช่วยประหยัดหน้าจอได้ หากตัวเลือกมีจำนวนมาก
+</p>
+<p><strong>
+กรอกข้อความหลายบรรทัด
+</strong><br />
+  <textarea cols="40" rows="4"></textarea>
+</p>
+<p>
+สามารถกำหนดขนาดความกว้างและความสูง ตลอดจนการใช้เป็นรูปแบบ HTML หรือไม่ใช้ก็ได้
+</p>
+<p><strong>
+ข้อความ
+<br /></strong>
+ข้อความไม่ใช่คำถาม แต่เป็นข้อความสั้น ๆ ที่ใช้สำหรับอธิบายคำถามที่จะตามมา
+</p>
+<p><strong>
+ตัวเลข
+</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>
+คำถามประเภทนี้ใช้สำหรับคำตอบแบบตัวเลข โดยกำหนด <strong>จำนวนตัวเลข</strong> และ  <strong>จำนวนตัวเลขหลังจุดทศนิยม</strong> 
+</p>
+<p><strong>
+เลือกค่าเดียว
+</strong></p>
+<table style="width:100%; height:80px;" border="1" cellpadding="2" cellspacing="2">
+  <tr>
+    <td style="width:308px"><strong>
+แสดงแนวตั้ง
+    </strong></td>
+    <td style="width:221px"><strong>
+แสดงแนวนอน
+    </strong></td>
+  </tr>
+  <tr>
+    <td><input type="radio" name="radio" />
+ตัวเลือกที่ 1<br />
+<input type="radio" />
+ตัวเลือกที่ 2 <br />
+<input type="radio" />
+ตัวเลือกที่ 3
+<br />
+<input type="radio" />
+ตัวเลือกที่ 4 
+<input type="text" size="20" />
+(กรุณาระบุ)</td>
+    <td><input type="radio" />
+ตัวเลือกที่ 1
+<input type="radio" />
+ตัวเลือกที่ 2 
+<input type="radio" />
+ตัวเลือกที่ 3
+</td>
+  </tr>
+</table>
+<p><strong>
+คะแนน (1..5)
+</strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td align="center" style="background-color:#eeeeee">1</td>
+    <td align="center" style="background-color:#dddddd">2</td>
+    <td align="center" style="background-color:#eeeeee">3</td>
+    <td align="center" style="background-color:#dddddd">4</td>
+    <td align="center" style="background-color:#eeeeee">5</td>
+    <td align="center" style="background-color:#dddddd">N/A</td>
+  </tr>
+  <tr>
+    <td>ตัวเลือกที่ 1&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>ตัวเลือกที่ 2&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>ตัวเลือกที่ 3&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+</table>
+<p>
+ดูเพิ่มเติม <strong>จำนวนตัวเลือก</strong> และ <strong>ค่าของตัวเลือก</strong> เพื่อกำหนดตัวเลือกของคำถาม
+</p>
+<p><strong>
+กรอกข้อความบรรทัดเดียว
+</strong> <br />
+  <input name="text" type="text" size="30" />
+  <br />
+กำหนด <em>ขนาดกล่องข้อความ</em> และ <em>จำนวนตัวอักษร</em> ของข้อความได้
+</p>
+<p><strong>
+ใช่/ไม่ใช่
+</strong><br />
+  <input type="radio" />
+ใช่
+<input type="radio" />
+ไม่ใช่
+</p>

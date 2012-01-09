@@ -1,0 +1,77 @@
+<h2 class="main">
+Edit question - Question Name
+</h2>
+<p>You can <em>optionally</em> enter a <strong>Question Name</strong> for each question.</p>
+<p>The <strong>Question Name</strong> is only used when you export responses to CSV/Excel format. If you never export to CSV, then you needn't worry about  Question names at all. If you plan to regularly export your questionnaire data to CSV, then you have a choice of two options for question naming. </p>
+<h4>
+Option 1: significant names
+</h4>
+<p>In the <strong>Question Name </strong> box, enter <em>meaningful</em>, <em>short</em> and <strong><em>different</em></strong> question names for all of the questions within one questionnaire. In the CSV export file, all those question names will be prefixed with the question's actual number (= position) in the quiz. Examples:</p>
+<table border="1">
+  <tr>
+    <th scope="col">question number (position) in the questionnaire </th>
+    <th scope="col">question name entered by teacher </th>
+    <th scope="col">field header in csv export </th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td>favorite colors</td>
+    <td>Q05_favorite colors</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td>why_use_Moodle</td>
+    <td>Q06_why_use_moodle</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td><p>
+    user-friendliness
+    </p>
+    <p><em>
+    (rate question with 3 possible answers: Moodle, WebCT and Blackboard)
+    </em></p></td>
+    <td><p>
+    Q07_user-friendliness-&gt;Moodle<br />
+    Q07_user-friendliness-&gt;WebCT<br />
+    Q07_user-friendliness-&gt;Blackboard
+    </p></td>
+  </tr>
+</table>
+<h4>
+Option 2: leave the Question Name boxes blank
+</h4>
+<p>
+For each un-named question, CSV export will automatically generate a question name. This is required for table header fields in the CSV and subsequent Excel tables or any statistics package you might be using. The question name generated will be based on the question number in the actual Quiz (excluding <em>Section Text</em> pseudo-questions, of course) e.g. Q01, Q02, ... Q99. For questions with multiple answers, such as rate-type or Likert type questions, a sub-question number will be generated (Q02_1, Q02_2, Q02_3, etc.). This type of &quot;short-name&quot; naming scheme is advisable for exporting your data to a statistics software. Of course, it's up to you to have your own system for remembering which abbreviated question name corresponds to which question in your questionnaire!
+</p>
+<table width="70%" border="1">
+  <tr>
+    <th style="width:16%" scope="col">question number (position) in the questionnaire </th>
+    <th style="width:30%" scope="col">question name entered by teacher </th>
+    <th style="width:54%" scope="col">field header in csv export </th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>
+It is quite possible (but maybe not advisable) to mix the two systems, and have within one questionnaire both named and un-named questions.
+</p>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+</p>

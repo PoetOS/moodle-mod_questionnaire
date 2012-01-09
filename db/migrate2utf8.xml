@@ -1,0 +1,143 @@
+<DBMIGRATION type="mod/questionnaire" VERSION="2006031702">
+  <TABLES>
+    <TABLE name="questionnaire">
+      <FIELDS>
+        <FIELD name="name" method="PHP_FUNCTION" type="varchar" length="255">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_name(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="summary" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_summary(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="respondenttype" method="NO_CONV" type="enum('fullname','anonymous')" length="0" default="fullname" />
+        <FIELD name="resp_eligible" method="NO_CONV" type="enum('all','students','teachers')" length="0" default="all" />
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_attempts" />
+    <TABLE name="questionnaire_survey">
+      <FIELDS>
+        <FIELD name="name" method="PHP_FUNCTION" type="char" length="64">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_survey_name(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="owner" method="NO_CONV" type="char" length="16" />
+        <FIELD name="realm" method="NO_CONV" type="char" length="16" />
+        <FIELD name="public" method="NO_CONV" type="enum('Y','N')" length="0" default="Y" />
+        <FIELD name="title" method="PHP_FUNCTION" type="char" length="255">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_survey_title(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="email" method="PHP_FUNCTION" type="char" length="64">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_survey_email(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="subtitle" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_survey_subtitle(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="info" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_survey_info(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="theme" method="NO_CONV" type="char" length="64" />
+        <FIELD name="thanks_page" method="PHP_FUNCTION" type="char" length="255">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_survey_thanks_page(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="thanks_head" method="PHP_FUNCTION" type="char" length="255">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_survey_thanks_head(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="thanks_body" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_survey_thanks_body(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_question_type">
+      <FIELDS>
+        <FIELD name="type" method="NO_CONV" type="CHAR" length="32" />
+        <FIELD name="has_choices" method="NO_CONV" type="enum('Y','N')" length="0" />
+        <FIELD name="response_table" method="NO_CONV" type="CHAR" length="32" />
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_question">
+      <FIELDS>
+        <FIELD name="name" method="PHP_FUNCTION" type="char" length="30">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_question_name(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="content" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_question_content(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="required" method="NO_CONV" type="enum('Y','N')" length="0" default="N" />
+        <FIELD name="deleted" method="NO_CONV" type="enum('Y','N')" length="0" default="N" />
+        <FIELD name="public" method="NO_CONV" type="enum('Y','N')" length="0" default="Y" />
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_question_type">
+      <FIELDS>
+        <FIELD name="type" method="NO_CONV" type="CHAR" length="32" />
+        <FIELD name="has_choices" method="NO_CONV" type="enum('Y','N')" length="0" />
+        <FIELD name="response_table" method="NO_CONV" type="CHAR" length="32" />
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_question_choice">
+      <FIELDS>
+        <FIELD name="content" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_question_choice_content(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+        <FIELD name="value" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_question_choice_value(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_response">
+      <FIELDS>
+        <FIELD name="complete" method="NO_CONV" type="enum('Y','N')" length="0" default="N" />
+        <FIELD name="username" method="NO_CONV" type="CHAR" length="64" />
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_response_bool" />
+    <TABLE name="questionnaire_response_single" />
+    <TABLE name="questionnaire_response_multiple" />
+    <TABLE name="questionnaire_response_rank" />
+    <TABLE name="questionnaire_response_text">
+      <FIELDS>
+        <FIELD name="response" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_response_text_response(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_response_other">
+      <FIELDS>
+        <FIELD name="response" method="PHP_FUNCTION" type="text" length="0">
+          <PHP_FUNCTION>
+            migrate2utf8_questionnaire_response_other_response(RECORDID)
+          </PHP_FUNCTION>
+        </FIELD>
+      </FIELDS>
+    </TABLE>
+    <TABLE name="questionnaire_response_date" />
+  </TABLES>
+</DBMIGRATION>

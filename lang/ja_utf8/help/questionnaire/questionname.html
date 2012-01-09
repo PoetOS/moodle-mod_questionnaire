@@ -1,0 +1,81 @@
+<h2 class="main">
+質問の編集 - 質問名
+</h2>
+<p>各質問に対して，<strong>質問名</strong>を設定することができます。<strong>質問名</strong>は回答をCSV/Excelフォーマットにエクスポートする時にのみ使われます。CSVへのエクスポートをしないのであれば，質問名に配慮する必要はありません。定期的にアンケートデータをCSVにエクスポートする場合は，質問名の付け方に関して二つの方法があります。
+<h4>
+方法１：意味のある名称を付ける
+</h4>
+<p>
+一つのアンケート内のすべての質問に対して，<strong>質問名</strong>のボックスに，<strong>有意味</strong>で, <strong>短く</strong>，かつ，<strong>異なる</strong> 質問名を入力してください。CSVのエクスポートファイルでは，これらの全ての質問名の前に実際の質問番号（＝位置）を表す記号が付きます。<br />
+例：
+</p>
+<table border="1">
+  <tr>
+    <th scope="col" width="15%">アンケート内での質問番号（位置）</th>
+    <th scope="col">教員が入力した質問名</th>
+    <th scope="col" width="50%">CSVエクスポートでのフィールドヘッダ</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td>好きな色</td>
+    <td>Q05_好きな色</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td>ムードルを使う理由</td>
+    <td>Q06_ムードを使う理由</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td><p>
+    使い勝手
+    </p>
+    <p><strong>
+    （段階評価タイプで選択項目が次の３つのとき：ムードル，WebCT，ブラックボード） 
+    </strong></p></td>
+    <td><p>
+    Q07_使い勝手-&gt;ムードル<br />
+    Q07_使い勝手-&gt;WebCT<br />
+    Q07_使い勝手-&gt;ブラックボード
+    </p></td>
+  </tr>
+</table>
+<h4>
+方法２：質問名を空欄のままにする</h4>
+<p>
+質問名が空欄の質問に対しては，CSVエクスポート機能が自動的に質問名を生成します。これは，CSVの表のヘッダフィールドと，そこから作られるエクセルの表，またはあなたが使用している可能性のある，あらゆる統計・表計算アプリケーションで要求されています。生成される質問名は（もちろん，<em>ラベル</em>などの実際の質問ではないものを除いた）アンケート内の質問番号に基づくでしょう。例としては， Q01, Q02, ... Q99となります。段階評価タイプの質問など，複数の回答のある質問では，サブ質問番号が生成されます(Q02_1, Q02_2, Q02_3, など)。このタイプの &quot;短縮名&quot;の枠組みはデータを統計ソフトウェアにエクスポートする際にお薦めです。もちろん，どの短縮された質問名がアンケートのどの質問に対応するかを記憶するために独自のシステムを準備するのは，あなた次第です。
+</p>
+<table width="70%" border="1">
+  <tr>
+    <th style="width:16%" scope="col">アンケート内での質問番号（位置）</th>
+    <th style="width:30%" scope="col">教員が入力した質問名</th>
+    <th style="width:54%" scope="col">CSVエクスポートでのフィールドヘッダ</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>
+二つの方法を混ぜること，つまりひとつのアンケート内に質問名を付けた質問と付けていない質問の両方を入れることも可能です（が，お薦めはしません）。
+</p>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+<br />翻訳：高橋，黒澤，福田，小島，
+<!-- #BeginDate format:En2 -->29-Jun-2011<!-- #EndDate -->
+
+</p>

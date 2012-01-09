@@ -1,0 +1,130 @@
+<h3 align="center"><b>Quest&atilde;o: Par&acirc;metros Tamanho e Precis&atilde;o</b></h3>
+
+<p>A tabela seguinte descreve o efeito destes dois par&acirc;metros <em>em cada 
+  tipo de quest&atilde;o</em>. </p>
+<table width="100%" border="1" align="center" cellpadding="5" cellspacing="5" bordercolor="#333333">
+  <tr>
+    <th width="82" align="left">Tipo</th>
+    <th width="70" align="left">Tamanho</th>
+    <th width="106" align="left">Precis&atilde;o</th>
+    <th width="897" align="left">&nbsp;</th>
+  </tr>
+  <tr>
+    <td><strong>Sim/N&atilde;o</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Caixa de Texto</strong></td>
+    <td><strong>x&nbsp;</strong>caracteres de comprimento</td>
+    <td><strong>y</strong> caracteres no m&aacute;ximo</td>
+    <td>Exibe uma caixa de texto, com <strong>x</strong> caracteres de comprimento 
+      na qual o utilizador n&atilde;o pode introduzir um texto com mais de <strong>y&nbsp;</strong>caracteres. 
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Caixa de Texto Multilinhas</strong></td>
+    <td><strong>x&nbsp;</strong>colunas</td>
+    <td><strong>y</strong> linhas</td>
+    <td>Exibe uma caixa de texto com <strong>x</strong> caracteres de comprimento 
+      e <strong>y</strong> linhas de altura (numero de linhas de texto).<br />
+      Se n&atilde;o modificar o valor padr&atilde;o <strong>0</strong> em x e 
+      y (ou se introduzir o valor <strong>0</strong>), ent&atilde;o o editor HTML 
+      ser&aacute; utilizado para editar o texto. Neste caso, as dimens&otilde;es 
+      do editor ser&atilde;o as dimens&otilde;es padr&atilde;o no contexto da 
+      disciplina/utilizador.</td>
+  </tr>
+  <tr>
+    <td><strong>Bot&otilde;es R&aacute;dio</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td height="188"><strong>Caixas de Verifica&ccedil;&atilde;o</strong></td>
+    <td><strong>x</strong>&nbsp;caixas no m&iacute;nimo</td>
+    <td><strong>y&nbsp;</strong>caixas no m&aacute;ximo</td>
+    <td>Use estes par&acirc;metros para obrigar o utilizador a activar um m&iacute;nimo 
+      de <strong>x</strong> e m&aacute;ximo de <strong>y</strong> caixas de verifica&ccedil;&atilde;o. 
+      Para obrigar a activar um n&uacute;mero fixo de caixas de verifica&ccedil;&atilde;o, 
+      introduza o mesmo valor em <strong>x</strong> e<strong> y</strong>. Se apenas 
+      deseja um m&iacute;nimo ou m&aacute;ximo, deixe o outro valor com o valor 
+      padr&atilde;o <strong>0</strong>. Se introduzir valores diferentes de <strong>0</strong> 
+      em <strong> x</strong> ou <strong>y</strong>, uma mensagem de aviso ser&aacute; 
+      exibida se o utilizador n&atilde;o cumprir os requisitos definidos. Neste 
+      caso, deve tornar estes requisitos claros para o utilizador explicando os 
+      mesmos nas instru&ccedil;&otilde;es gerais do question&aacute;rio ou no 
+      texto da quest&atilde;o. </td>
+  </tr>
+  <tr>
+    <td><strong>Caixa de Combina&ccedil;&atilde;o</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Classifica&ccedil;&atilde;o</strong></td>
+    <td><strong>x</strong> itens </td>
+    <td><strong>y </strong></td>
+    <td><ul>
+        <li><strong>x</strong> &eacute; o <em>n&uacute;mero de itens</em> a usar 
+          na sua escala de classifica&ccedil;&atilde;o (Likert). Em geral &eacute; 
+          usado um valor entre 3 e 5). Se n&atilde;o alterar o valor padr&atilde;o 
+          <strong>0</strong>, ent&atilde;o ser&aacute; assumido um valor de <strong>5</strong>.</li>
+        <li> Se<strong> y</strong> for<strong> 1</strong> ser&aacute; adicionada 
+          a coluna <strong>NS/NR</strong> ap&oacute;s as colunas com a escala 
+          de classifica&ccedil;&atilde;o.</li>
+        <li>Se <strong>y</strong> for <strong>2</strong> ser&atilde;o <em>impedidas 
+          respostas duplicadas em cada coluna</em>. 
+          <ul>
+            <li>Isto pode ser &uacute;til se pretende que o utilizador classifique 
+              um n&uacute;mero de itens numa escala 1 a n sendo cada classifica&ccedil;&atilde;o 
+              &uacute;nica. Exemplo: Ordenar os itens A, B e C por ordem de prefer&ecirc;ncia 
+              aceitar&aacute;: A1, B3 e C2 ou A3, B2 e C1, mas <em>n&atilde;o 
+              ser&aacute; poss&iacute;vel </em> seleccionar: A1, B1, C2 ou A1, 
+              B2, C2, etc.</li>
+            <li>Usado em conjunto com a <a href="help.php?module=questionnaire&amp;file=possibleanswers.html#named_degrees">op&ccedil;&atilde;o 
+              escala personalizada</a>, a op&ccedil;&atilde;o <strong>2</strong> 
+              pode tamb&eacute;m ser &uacute;til se pretende que o utilizador 
+              estabele&ccedil;a uma correspond&ecirc;ncia entre diversos itens, 
+              como por exemplo, as cores vermelho, azul, amarelo com o conjunto 
+              de estados mentais: entusiasmo, tranquilidade, concentra&ccedil;&atilde;o, 
+              onde cada cor apenas pode corresponder a um estado mental.</li>
+          </ul>
+        </li>
+        <li>Se <strong>y</strong> for <strong>3</strong> ser&aacute; criada uma 
+          quest&atilde;o do tipo <a href="http://en.wikipedia.org/wiki/Semantic_differential" target="_blank"><strong>Diferencial 
+          sem&acirc;ntico de Osgood</strong></a>. Este par&acirc;metro deve ser 
+          usado em conjunto com a <a href="help.php?module=questionnaire&amp;file=possibleanswers.html#named_degrees">op&ccedil;&atilde;o 
+          escala personalizada</a>.</li>
+      </ul></td>
+  </tr>
+  <tr>
+    <td><strong>Data</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Num&eacute;rica</strong></td>
+    <td><strong>x</strong> tamanho</td>
+    <td><strong>y</strong>&nbsp;precis&atilde;o</td>
+    <td><p>Use <strong>x</strong> para limitar o n&uacute;mero de caracteres que 
+        podem ser introduzidos. Use <strong>y</strong> para formatar a resposta 
+        com <strong>y</strong> casas decimais. O n&uacute;mero m&aacute;ximo de 
+        caracteres que o utilizador poder&aacute; introduzir ser&aacute; de <strong>x+y+1</strong>.</p>
+      <ul>
+        <li>Exemplo 1: x=5; y=2. Resposta: 12 ser&aacute; automaticamente convertida 
+          para 12.00 </li>
+        <li>Exemplo 2. x=5; y=2. Resposta: 12.569 er&aacute; automaticamente convertida 
+          para 12.57 (e uma mensagem de aviso ser&aacute; exibida ao utilizador 
+          informando da convers&atilde;o) </li>
+        <li>Exemplo 3. x=5; y=2. Utilizador n&atilde;o poder&aacute; introduzir 
+          um mais longo que, por exemplo, 12.57898 (tamanho m&aacute;ximo = 5 
+          (x) + 1 (separador decimal) + 2 (y precis&atilde;o)= 8. </li>
+      </ul></td>
+  </tr>
+</table>
+<p><a href="help.php?module=questionnaire&file=editquestions.html">Ajuda geral 
+  sobre <strong>Editar Quest&otilde;es</strong></a> </p>

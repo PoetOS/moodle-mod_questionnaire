@@ -1,0 +1,78 @@
+<h2 class="main">
+Edycja pytania - Nazwa pytania
+</h2>
+<p>Możesz <em>opcjonalnie</em> zdefiniować <strong>Nazwę pytania</strong>, które edytujesz.</p>
+<p><strong>Nazwa pytania</strong> jest użyteczna tylko wtedy, jeżeli zamierzasz wyeksportować odpowiedzi na kwestionariusz w formacie CSV (np. w celu ich dalszej obróbki za pomocą Excela). Jeżeli nie będziesz eksportować plików CSV, możesz spokojnie zapomnieć o tej opcji. Jeśli jednak masz w planie regularnie eksportować dane kwestionariusza do plików CSV, pomyśl o zastosowaniu jednej z dwóch możliwości nazywania pytań.</p>
+<h4>
+Opcja 1: nazwy opisowe
+</h4>
+<p>W polu <strong>Nazwa pytania </strong> wprowadź niosącą znaczenie <em>nazwę opisową</em>, <em>krótką</em>, ale <strong><em>inną</em></strong> dla każdego pytania w obrębie jednego kwestionariusza. W eksportowanym pliku CSV, kolumny z odpowiedziami na dane pytanie będą identyfikowane nagłówkami, w których określona przez Ciebie nazwa pytania zostanie poprzedzona literą Q (od angielskiego - &quot;question&quot;) oraz kolejnym numerem pytania w kwestionariuszu.</p> <p>Przykłady:</p>
+<table border="1">
+  <tr>
+    <th scope="col">numer (pozycja) pytania w kwestionariuszu </th>
+    <th scope="col">nazwa pytania wprowadzona przez jego autora </th>
+    <th scope="col">nagłówek kolumny w pliku CSV </th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td>ulubione kolory</td>
+    <td>Q05_ulubione kolory</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td>dlaczego_Moodle</td>
+    <td>Q06_dlaczego_Moodle</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td><p>
+    łatwość_użycia
+    </p>
+    <p><em>
+    (pytanie typu &quot;Ocena w skali&quot; z trzema pozycjami: Moodle, WebCT oraz Blackboard)
+    </em></p></td>
+    <td><p>
+    Q07_łatwość_użycia-&gt;Moodle<br />
+    Q07_łatwość_użycia-&gt;WebCT<br />
+    Q07_łatwość_użycia-&gt;Blackboard
+    </p></td>
+  </tr>
+</table>
+<h4>
+Opcja 2: pozostaw pole <em>Nazwa pytania</em> puste
+</h4>
+<p>
+Dla każdego pytania bez nazwy, procedura eksportu do pliku CSV automatycznie wygeneruje nazwę, która wystąpi w nagłówku kolumny pliku CSV, a także - w utworzonej z niego tabeli Excela, czy też w pliku jakiejkolwiek innej aplikacji, którą użyjesz do analizy statystycznej. Nazwa pytania zostanie utworzona na podstawie numeru (położenia) pytania w kwestionariuszu (oczywiście, z pominięciem pseudo-pytań typu <em>Opis</em>) wg znanej Ci już konwencji: Q01, Q02, ... Q99. Dla pytań typu &quot;Ocena w skali&quot; z więcej niż jedną pozycją odpowiedzi (będących faktycznie pytaniami wielokrotnymi), utworzone zostaną nazwy dla każdego z pytań składowych(Q02_1, Q02_2, Q02_3, etc.). Taki rodzaj &quot;skróconego&quot; nazewnictwa jest zalecany przy pracy z oprogramowaniem do analizy statystycznej. Oczywiście, możesz mieć własny system ułatwiający pamiętanie, która nazwa pytania odnosi się do którego pytania w kwestionariuszu!</p> 
+<p>Przykłady (typy pytań, jak dla Opcji 1):</p>
+
+<table width="70%" border="1">
+  <tr>
+    <th style="width:16%" scope="col">numer (pozycja) pytania w kwestionariuszu </th>
+    <th style="width:30%" scope="col">nazwa pytania wprowadzona przez jego autora </th>
+    <th style="width:54%" scope="col">nagłówek kolumny w pliku CSV </th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>
+W zasadzie, możesz używać w jednym kwestionariuszu obydwu konwencji i pracować z pytaniami zarówno nazwanymi, jak i nienazwanymi. Nie jest to jednak zalecana praktyka.
+</p>
+<hr />
+<p style="font-size:smaller; text-align:center">Uaktualnione przez JR w dniu
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+</p>

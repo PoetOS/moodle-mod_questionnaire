@@ -1,0 +1,86 @@
+﻿<h3 align="center"><b>Pitanja: Veličina i Podešavanja parametri</h3>
+
+<p>Ova tabela pokazuje svrhu dva naznačena parametra <em>s obzirom na vrstu pitanja na koje se primenjuju</em>. </p>
+<table width="100%" border="1" align="center" cellpadding="5" cellspacing="5" bordercolor="#333333">
+  <tr>
+    <th width="76" align="left">Tip</th>
+    <th width="71" align="left">Veličina</th>
+    <th width="81" align="left">Podešavanja</th>
+    <th width="719" align="left">&nbsp;</th>
+  </tr>
+  <tr>
+    <td><strong>Da/Ne</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Tekstualno polje </strong></td>
+    <td><strong>x&nbsp;</strong>veličina</td>
+    <td><strong>y</strong> max veličina</td>
+    <td>Prikazuje običan tekst u jednoj liniji dužine <strong>x</strong> karaktera pri čemu je maksimalan dozvoljen broj karaktera ograničen vrednošću parametra <strong>y&nbsp;</strong>.</td>
+  </tr>
+  <tr>
+    <td><strong>Esej</strong></td>
+    <td><strong>x&nbsp;</strong>kolona</td>
+    <td><strong>y</strong> redova</td>
+    <td>Prikazuje običan tekst u polju dimenzija <strong>x</strong> kolona (broj karaktera u jednoj liniji) i <strong>y</strong> redova (broj linija teksta).<br />
+      U slučaju da ostavite nepopunjenim oba ova polja, odnosno ukoliko budu podešna na vrednost <strong>0</strong> HTML editor će prikazati tekstualno polje standardne širine i visine.</td>
+  </tr>
+  <tr>
+    <td><strong>Kružići (Radio)</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Kadratći (Checkboxes)</strong></td>
+    <td><strong>x</strong>&nbsp;kvadratića&nbsp;min </td>
+    <td><strong>y&nbsp;</strong>kvadratića&nbsp;max</td>
+    <td>Koristite ovo da primorate ispitanike da označe najmanje <strong>x</strong> i najviše <strong>y</strong> kvadratića. Da biste primorali ispitanike da označe tačan broj kvadratića podesite i <strong>x</strong> i <strong>y</strong> na istu vrednost. Ukoliko želite da samo postoji ograničenje za minimalan broj označenih opcija vrednost y ostavite na <strong>0</strong>. Ukoliko podesite vrednosti <strong> x</strong> ili <strong>y</strong> na neki drugi broj različit od <strong>0</strong> ispitanik će dobiti poruku upozorenja ukoliko ne ispuni postavljeni zahtev, te je stoga potrebno da u uputstvu ili u okviru samog pitanja jasno naznačite sa koliko opcija je ispitniku dozvoljeno da odgovara.</td>
+  </tr>
+  <tr>
+    <td><strong>Padajuća lista</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Stepena skala</strong></td>
+    <td><strong>x</strong> podeoka</td>
+    <td><strong>y</strong></td>
+    <td><ul>
+      <li><strong>x</strong> broj podeoka koji se koristi u stepenoj (Likertovoj) skali. Obično taj broj iznosi 3-5. Ukoliko ostavite vrednost <strong>0</strong> podrazumevaće se verzija od <strong>5</strong> podeoka.</li>
+      <li> Podesite <strong>y</strong> na <strong>1</strong> ako želite da na desnom kraju skale dodate kolonu sa opcijom <strong>Bez odgovora</strong></li>
+      <li>Podesite <strong>y</strong> na <strong>2</strong> ako želite da  <em>sprečite da se isti podeok označi više puta <strong>u okviru jedne kolone</strong></em>.
+        <ul>
+          <li>Ovo je korisno ako želite da ispitanici rangiraju stavke od 1 do n dodeljujući pri tom svakoj pojedinačnoj stavki jedinstven podeok (rang) na skali. Primer: ako je zadatak da se A, B i C poređaju po nekom kriterijumu onda će A1, B3 i C2 ili A3, B2 i C1 biti ispravno, ali ispitaniku <em>neće biti dozvoljeno da </em>unese: A1, B1, C2 ili A1, B2, C2, itd.</li>
+          <li>U kombinaciji sa <a href="help.php?module=questionnaire&amp;file=possibleanswers.html#named_degrees">opcijom za dodeljivanje naziva podeocima skale</a>, opcija <strong>2</strong> takođe može biti korisna u slučaju da želite da ispitanici povežu stavke sa imenima kolona, npr. boje crvena, plava, žuta sa setom fizioloških reakcija: uzbuđenje, smirenost, koncentracija gde jedna boja može biti povezana samo sa jednom fiziološkom reakcijom.</li>
+       </ul>
+      <li>Podesite <strong>y</strong> na <strong>3</strong> ako želite da kreirate <a href="http://en.wikipedia.org/wiki/Semantic_differential" target="_blank">Ozgudov <strong>Semantički diferencijal</strong></a>. Ovaj parametar morate da koristite u kombinaciji sa <a href="help.php?module=questionnaire&file=possibleanswers.html#named_degrees">opcijom za dodeljivanje naziva podeocima skale</a> kako biste skalu pravilno uobličili.</li>
+</ul></td>
+  </tr>
+  <tr>
+    <td><strong>Datum</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Numeričko</strong></td>
+    <td><strong>x</strong> dužina</td>
+    <td><strong>y</strong>&nbsp;decimale</td>
+    <td><p>Koristite x da ograničite ukupan broj karaktera za ovaj tip pitanja ne računajući decimalnu tačku i mesta definisana sa y. Koristite y da primorate ispitanike da zaokruže broj na određenu decimalu.</p>
+      <ul>
+        <li>Primer 1: x=5; y=2. Uneti odgovor: 12 biće automatski preinačen u 12.00 </li>
+        <li>Primer 2.  x=5; y=2. Uneti odgovor: 12.569 biće automatski preinačen u 12.57 (a ispitanik će dobiti poruku u kojoj se izveštava o izvršenoj akciji) </li>
+        <li>Primer 3.  x=5; y=2. Ispitanik ne može da ukuca broj duži od npr.12.57898 (maksimalna dužina (x) = 5 + decimalna tačka + (y decimale) 2 = 8. </li>
+    </ul></td>
+  </tr>
+</table>
+<p><strong>Napomena</strong></p>
+<ol type="a">
+  <li>These Length and Precision parameter fields are not very friendly. In a further version of Questionnaire it is hoped to automatically display more meaningful names, according to the currently selected question type.</li>
+  <li>The words Length and Precision have been kept for the sake of Moodle users who have already created questions. Obviously theses words will have to be changed when a) above is achieved. JR. </li>
+</ol>
+<p><a href="help.php?module=questionnaire&amp;file=editquestions.html"><em><strong>Uređivanje pitanja</strong></em> osnovni dokument sa uputstvima.</a> </p>

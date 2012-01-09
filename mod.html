@@ -1,0 +1,372 @@
+<!-- This page defines the form to create or edit an instance of this module -->
+<!-- It is used from /course/mod.php.  The whole instance is available as $form. -->
+<?php
+    require("$CFG->dirroot/mod/questionnaire/lib.php");
+
+    $lf = "\n";
+/// The survey management form saves the questionnaire data in $mod, before redirecting
+/// here. If its set, store the data in $form so it will be used.
+/// *** Are there any other security issues here? ***
+
+/// If this came from the survey manager, treat is as an update screen.
+    $from = optional_param('from', '', PARAM_CLEAN);
+    if ($from == 'survey') {
+        $survey_done = true;
+        if (!empty($mod)) {
+            $form = $mod;
+            $form->name = stripslashes_safe($form->name);
+            $form->summary = stripslashes_safe($form->summary);
+        }
+        /// If there was a new survey created, the SID will be in the _GET parameters.
+        $sid = optional_param('sid', 0, PARAM_INT);
+        if ($sid) {
+            $form->sid = $sid;
+        }
+    } else {
+        $survey_done = false;
+    }
+
+    if (!isset($form->name)) {
+        $form->name = "";
+    }
+    if (!isset($form->summary)) {
+        $form->summary = "";
+    }
+    if (!isset($form->useopendate)) {
+        $form->useopendate = "";
+    }
+    if (!isset($form->opendate)) {
+        $form->opendate = "";
+    }
+    if (!isset($form->openday)) {
+        $form->openday = "";
+    }
+    if (!isset($form->openmonth)) {
+        $form->openmonth = "";
+    }
+    if (!isset($form->openyear)) {
+        $form->openyear = "";
+    }
+    if (!isset($form->openhour)) {
+        $form->openhour = "";
+    }
+    if (!isset($form->openminute)) {
+        $form->openminute = "";
+    }
+    if (!isset($form->useclosedate)) {
+        $form->useclosedate = "";
+    }
+    if (!isset($form->closedate)) {
+        $form->closedate = "";
+    }
+    if (!isset($form->closeday)) {
+        $form->closeday = "";
+    }
+    if (!isset($form->closemonth)) {
+        $form->closemonth = "";
+    }
+    if (!isset($form->closeyear)) {
+        $form->closeyear = "";
+    }
+    if (!isset($form->closehour)) {
+        $form->closehour = "";
+    }
+    if (!isset($form->closeminute)) {
+        $form->closeminute = "";
+    }
+    if (!isset($form->qtype)) {
+        $form->qtype = "";
+    }
+    if (!isset($form->respondenttype)) {
+        $form->respondenttype = "";
+    }
+    if (!isset($form->resp_eligible)) {
+        $form->resp_eligible = "";
+    }
+    if (!isset($form->resp_view)) {
+        $form->resp_view = $QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER;
+    }
+    if (!isset($form->realm)) {
+        $form->realm = "";
+    }
+    if (!isset($form->resume)) {
+        $form->resume = "";
+    }
+    if (!isset($form->sid)) {
+        $form->sid = "";
+    }
+
+    /// Variable used to return from the phpESP Manager.
+    unset($_SESSION['qpage']);
+
+    /// If this questionnaire has a survey, get the survey and owner.
+    if ($survey = get_record('questionnaire_survey', 'id', $form->sid)) {
+        $owner = (trim($survey->owner) == trim($form->course));
+        $form->realm = $survey->realm;
+    } else {
+        $survey = false;
+        $owner = true;
+    }
+?>
+
+
+<?php
+    if ($survey_done || !$owner) {
+?>
+<form method="post" action="mod.php" >
+<?php
+    } else {
+        /// Clear session variables that may still be set from a previous edit.
+        /// *** Do we really need to use these? ***
+        unset ($SESSION->modform);
+        unset ($SESSION->questionnaire_survey_id);
+        unset ($SESSION->questionnaire_tab);
+        unset ($SESSION->questionnaire_new_survey);
+?>
+<form method="post" action="../mod/questionnaire/manage_survey.php">
+<?php
+    }
+?>
+<table style="margin:auto; ">
+<tr valign="top">
+    <td align="right"><b><?php  print_string("name") ?>:</b></td>
+    <td>
+        <input type="text" name="name" size="30" value="<?php  p($form->name) ?>" />
+    </td>
+</tr>
+<!-- More rows go in here... -->
+<tr valign="top">
+    <td align="right"><b><?php print_string("summary") ?>:</b>
+     <?php
+        helpbutton("summary", get_string("summary"), "resource", true, true);
+        echo "<br />";
+        helpbutton("writing", get_string("helpwriting"), "moodle", true, true);
+        echo "<br />";
+        helpbutton("text", get_string("helptext"), "moodle", true, true);
+        echo '<br />';
+     ?>
+    </td>
+    <td>
+        <?php 
+           print_textarea($usehtmleditor, 10, 50, 680, 400, "summary", $form->summary);
+        ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right"><b>
+    <?php print_string('opendate', 'questionnaire');
+    ?>:</b></td>
+    <td>
+        <input type="checkbox" name="useopendate" value="1" <?php echo $form->opendate?"CHECKED":""; ?> />
+    <?php
+        if (!$form->opendate and $course->format == 'weeks') {
+            $form->opendate  = $course->startdate + (($form->section - 1) * 608400);
+        }
+        print_date_selector('openday', 'openmonth', 'openyear', $form->opendate);
+        print_time_selector('openhour', 'openminute', $form->opendate);
+        helpbutton('opendate', get_string('opendate','questionnaire'), 'questionnaire');
+     ?>
+    </td>
+</tr>
+<tr valign="top">
+    <td align="right"><b>
+    <?php print_string('closedate', 'questionnaire');
+    ?>:</b></td>
+    <td>
+        <input type="checkbox" name="useclosedate" value="1" <?php echo $form->closedate?"CHECKED":""; ?> />
+    <?php
+        if (!$form->closedate and $course->format == 'weeks') {
+            $form->closedate  = $course->startdate + (($form->section) * 608400);
+        }
+        print_date_selector('closeday', 'closemonth', 'closeyear', $form->closedate);
+        print_time_selector('closehour', 'closeminute', $form->closedate);
+        helpbutton('closedate', get_string('closedate','questionnaire'), 'questionnaire');
+     ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right">
+        <b><?php  print_string('qtype', 'questionnaire') ?>:</b>
+    </td>
+    <td>
+    <?php
+        choose_from_menu($QUESTIONNAIRE_TYPES, "qtype", "$form->qtype", "");
+        helpbutton('qtype', get_string('qtype', 'questionnaire'), 'questionnaire');
+    ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right">
+        <b><?php  print_string('respondenttype', 'questionnaire') ?>:</b>
+    </td>
+    <td>
+    <?php
+        choose_from_menu($QUESTIONNAIRE_RESPONDENTS, "respondenttype", "$form->respondenttype", "");
+        helpbutton('respondenttype', get_string('respondenttype', 'questionnaire'), 'questionnaire');
+    ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right">
+        <b><?php  print_string('respondenteligible', 'questionnaire') ?>:</b>
+    </td>
+    <td>
+    <?php
+        choose_from_menu($QUESTIONNAIRE_ELIGIBLES, "resp_eligible", "$form->resp_eligible", "");
+        helpbutton('respondenteligible', get_string('respondenteligible', 'questionnaire'), 'questionnaire');
+    ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right">
+        <b><?php  print_string('responseview', 'questionnaire') ?>:</b>
+    </td>
+    <td>
+    <?php
+        choose_from_menu($QUESTIONNAIRE_RESPONSEVIEWERS, "resp_view", "$form->resp_view", "");
+        helpbutton('responseview', get_string('responseview', 'questionnaire'), 'questionnaire');
+    ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right">
+        <b><?php print_string('realm', 'questionnaire') ?>:</b>
+    </td>
+    <td>
+    <?php
+    /// Can only change the realm if you own it, or are creating it.
+        if (!$survey || $owner) {
+            choose_from_menu($QUESTIONNAIRE_REALMS, 'realm', $form->realm, "");
+        } else {
+            echo '<b>'.s(get_string($form->realm, 'questionnaire')).'</b>';
+        }
+        helpbutton('realm', get_string('realm', 'questionnaire'), 'questionnaire');
+    ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right">
+        <b><?php print_string('resume', 'questionnaire') ?>:</b>
+    </td>
+    <td>
+    <?php
+        choose_from_menu(array('0'=>get_string('no'),'1'=>get_string('yes')), 'resume', $form->resume, "");
+        helpbutton('resume', get_string('resume', 'questionnaire'), 'questionnaire');
+    ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td colspan="2"><hr /></td>
+</tr>
+
+<tr valign="top">
+    <td align="right">
+    </td>
+    <td>
+        <?php
+            if ($survey !== false) {
+                $strpreview = get_string('preview_label','questionnaire');
+                $view = button_to_popup_window('/mod/questionnaire/manage_survey.php?qact=preview&amp;instance='.
+                        $form->instance.'&amp;course='.$course->id.'&amp;sid='.$survey->id, $strpreview,
+                        $strpreview, '', '', $strpreview, '', true);
+                echo($view);
+            }
+        ?>
+    </td>
+</tr>
+
+<?php
+/// New Content Section:
+if ($survey === false) {
+?>
+<tr valign="top">
+    <td align="right">
+        <b><?php  print_string('createcontent', 'questionnaire') ?>:</b>
+    </td>
+    <td>
+        <?php
+            echo '<b>'.get_string('createnew', 'questionnaire').':</b> '.
+                 '<input type="radio" name="create" value="new-0" checked="checked" />'.$lf;
+            helpbutton('createcontent', get_string('createcontent', 'questionnaire'), 'questionnaire');
+        ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td></td>
+    <td>
+    <?php
+        echo '<b>'.get_string('or', 'questionnaire').'</b>'.$lf;
+        echo '<b>'.get_string('usetemplate', 'questionnaire').':</b><br />'.$lf;
+        if (!questionnaire_print_survey_select($form->instance, $form->course, $form->sid, 'create',
+                                               false, 'template')) {
+            echo get_string('notemplatesurveys', 'questionnaire');
+        }
+    ?>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td></td>
+    <td>
+    <?php
+        echo '<b>'.get_string('or', 'questionnaire').'</b>'.$lf;
+        echo '<b>'.get_string('usepublic', 'questionnaire').':</b>'.$lf;
+        if (!questionnaire_print_survey_select($form->instance, $form->course, $form->sid, 'create',
+                                               false, 'public')) {
+            echo get_string('nopublicsurveys', 'questionnaire');
+        }
+    ?>
+    </td>
+</tr>
+
+<?php
+/// Existing Content Section:
+} else {
+?>
+<tr valign="top">
+    <td colspan="2">
+        <input type="hidden" name="qact" value="edit" />
+        <input type="hidden" name="sid" value="<?php p($form->sid); ?>" />
+    </td>
+</tr>
+<?php
+}
+?>
+
+<tr>
+    <td></td>
+    <td>
+        <!-- These hidden variables are always the same -->
+        <input type="hidden" name="course"        value="<?php  p($form->course) ?>" />
+        <input type="hidden" name="coursemodule"  value="<?php  p($form->coursemodule) ?>" />
+        <input type="hidden" name="section"       value="<?php  p($form->section) ?>" />
+        <input type="hidden" name="module"        value="<?php  p($form->module) ?>" />
+        <input type="hidden" name="modulename"    value="<?php  p($form->modulename) ?>" />
+        <input type="hidden" name="instance"      value="<?php  p($form->instance) ?>" />
+        <input type="hidden" name="mode"          value="<?php  p($form->mode) ?>" />
+        <input type="hidden" name="cid"        value="<?php  p($form->course) ?>" />
+        <input type="hidden" name="sesskey"    value="<?php  p($form->sesskey) ?>" />
+<?php
+    if ($survey_done || !$owner) {
+?>
+        <input type="submit" value="<?php print_string("savechanges") ?>" />
+<?php
+    } else {
+?>
+        <input type="submit" value="<?php print_string("continue") ?>" name="qaction" />
+<?php
+    }
+?>
+    </td>
+</tr>
+</table>
+</form>

@@ -1,0 +1,176 @@
+<h2 class="main">
+Tipus de preguntes
+</h2>
+
+<p>Seleccioneu el tipus de pregunta a partir de la llista del menú d'opcions <strong>Tipus</strong> sobre el botó "Afegir pregunta del tipus seleccionat". Cada tipus es mostrarà a la vostra enquesta de la següent forma:</p>
+<p><strong>
+---Salt de pàgina---
+</strong></p>
+<p>
+Utilitzeu aquest per inserir salts de pàgina dins enquestes llargues. Noteu que si una pàgina conté preguntes amb respostes obligatòries, la persona que respon no podrà passar a la següent pàgina si aquestes respostes obligatòries no s'han contestat.
+</p>
+
+<p><strong>
+Caselles de selecció
+</strong><br />
+  <input type="checkbox" />
+Opció 1<br />
+<input name="checkbox" type="checkbox" />
+Opció 2 <br />
+<input name="checkbox2" type="checkbox" />
+Altres
+<input name="text2" type="text" size="20" />
+(opcional)</p>
+<p>
+<strong>Nota</strong>.- Els <strong>botons d'opció</strong> i les <strong>caselles de selecció</strong> poden incloure un botó/casella opcional <em>Altres</em> amb un camp de text del tipus omplir-els-blancs.
+</p>
+
+<p><strong>
+Data
+</strong><br />
+<input type="text" />
+<em>Utilitzeu el format dia/mes/any (p. ex. <strong>14/3/1945</strong>, per al 14 de març de 1945)</em></p>
+<p>Utilitzeu aquest tipus de pregunta si voleu que la resposta sigui una data correctament formatejada. El format dependrà del llenguatge utilitzat per la persona que respon l'enquesta. Per exemple, 4/21/2007 (EEUU); 21/4/2007 (UK); 21-4-2007 (França); etc. Un exemple ilustrat amb la data del dia actual es mostrarà a l'enquesta. Per poder exportar correctament les dates a fulls de càlcul com Excel, la persona que respon ha d'introduir una data <em>entre 1902 i 2037</em>. Si s'espera que les persones que responen introdueixin una data fora d'aquest rang, és millor utilitzar el tipus de pregunta <strong>Casella de text</strong>. El tipus de pregunta data acceptarà dates que consisteixin només en un mes i un any (per exemple, 12/2008 per desembre de 2008) o només un any (p. ex. 2008). No obstant, per motius de compatibilitat amb els fulls de càlcul, aquestes dates incompletes es convertiran automàticament en dates completes del tipus dd/mm/yyyy, per exemple, 12/2008 -&gt; <strong>01/</strong>12/2008 i 2008 -&gt; <strong>01/01/</strong>2008. És convenient explicar aquesta peculiaritat als usuaris de l'enquesta amb anterioritat.
+</p>
+
+<p><strong>
+Menú d'opcions
+</strong><br />
+  <select name="select">
+    <option></option>
+    <option>Opció 1</option>
+    <option>Opció 2</option>
+  </select>
+</p>
+<p>No hi ha cap avantatge real entre emprar el menú d'opcions respecte als botons d'opció, excepte per a llistes llargues d'opcions, per poder estalviar espai a la pantalla.</p>
+
+<p><strong>
+Casella de text lliure
+</strong><br />
+  <textarea cols="40" rows="4"></textarea>
+</p>
+<p><strong> </strong>Podeu emprar opcions de configuració per a habilitar o deshabilitar l'editor HTML i per modificar l'amplada i la llargària de l'àrea de text.</p>
+
+<p><strong>
+Etiqueta<br /></strong>
+Això no és una pregunta sino un text (curt) que es mostrarà per introduir una sèrie de preguntes.
+</p>
+
+<p><strong>
+Numeric
+</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>
+Use this question type if you expect the response to be a correctly formatted number. By using the <strong>Max. digits allowed </strong>and <strong>Nb of decimal digits </strong>parameters you can specify the length and number of decimal places required.
+</p>
+
+<p><strong>
+Numèric
+</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>Utilitzeu aquest tipus de pregunta si voleu que la resposta sigui un número formatejat correctament. Amb els paràmetres <strong>Màxim de dígits permesos</strong> i <strong>Nombre de dígits decimals</strong> podeu especificar la llargària i el nombre de llocs decimals requerits.
+</p>
+
+<p><strong>
+Botons d'opció
+</strong><br />
+
+<table style="width:100%; height:80px;" border="1" cellpadding="2" cellspacing="2">
+  <tr>
+    <td style="width:308px"><strong>
+visualització vertical
+    </strong></td>
+    <td style="width:221px"><strong>
+visualització horitzontal
+    </strong></td>
+  </tr>
+  <tr>
+    <td><input type="radio" name="radio" />
+Opció 1<br />
+<input type="radio" />
+Opció 2 <br />
+<input type="radio" />
+Opció 3
+<br />
+<input type="radio" />
+Opció 4 
+<input type="text" size="20" />
+(opcional)</td>
+    <td><input type="radio" />
+Opció 1
+<input type="radio" />
+Opció 2 
+<input type="radio" />
+Opció 3
+</td>
+  </tr>
+</table>
+
+
+<p><strong>
+Qualificació (escala 1..5)
+</strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td align="center" style="background-color:#eeeeee">1</td>
+    <td align="center" style="background-color:#dddddd">2</td>
+    <td align="center" style="background-color:#eeeeee">3</td>
+    <td align="center" style="background-color:#dddddd">4</td>
+    <td align="center" style="background-color:#eeeeee">5</td>
+    <td align="center" style="background-color:#dddddd">Ns/Nc</td>
+  </tr>
+  <tr>
+    <td>Opció 1&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Opció 2&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Opció 3&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+</table>
+<p>
+Vegeu l'ajuda per als paràmetres <strong>Nombre d'elements de l'escala</strong> i <strong>Tipus d'escala de qualificació</strong> per a més opcions per a aquest tipus de pregunta. Vegeu també l'ajuda per a <strong>possibles respostes</strong>.
+</p>
+
+<p><strong>
+Casella de text
+</strong> <br />
+    <input name="text" type="text" size="30" />
+    <br />
+Podeu marcar la <em>longitud de la casella de text</em> de la casella de text i la <em>longitud màxima</em> de text introduit.
+</p>
+
+<p><strong>
+Sí/No
+</strong><br />
+  <input type="radio" />
+  Sí<br />
+    <input type="radio" />
+  No </p>
+
+<hr />
+<p style="font-size:smaller; text-align:center">Darrera modificació:
+  <!-- #BeginDate format:Fr1 -->12/07/08<!-- #EndDate -->
+</p>

@@ -1,0 +1,27 @@
+# $Id: README,v 1.2 2007/06/12 17:15:57 mchurch Exp $
+
+// Written by James Flemer
+// For eGrad2000.com
+// <jflemer@alum.rpi.edu>
+
+phpESP/images/:
+  Images used by the package.
+
+  images used for tabs on admin pages: (a=active, d=deactive)
+    finish_a.gif
+    finish_d.gif
+    general_a.gif
+    general_d.gif
+    order_a.gif
+    order_d.gif
+    preview_a.gif
+    preview_d.gif
+    questions_a.gif
+    questions_d.gif
+
+  images used for percentage bars:
+    hbar.gif	middle image (should be stretchable left-right)
+    hbar_l.gif	left end image
+    hbar_r.gif	right end image
+
+  knobs.gif		used on the "order" tab

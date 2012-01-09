@@ -1,0 +1,75 @@
+<h2 class="main">
+คำถาม
+</h2>
+<p>คุณสามารถ <em>เลือก</em> ใส่ <strong>คำถาม</strong> ของแต่ละคำถามได้</p>
+<p><strong>คำถาม</strong> ใช้เมื่อต้องการนำข้อมูลออกจากระบบในรูปแบบ CSV/Excel ถ้าไม่สนใจเรื่องการนำข้อมูลออกจากระบบในรูปแบบ CSV ก็ไม่ต้องสนใจเรื่องคำถาม แต่ถ้าวางแผนจะนำข้อมูลออกจากระบบ ก็มี 2 ทางเลือกในการตั้งชื่อคำถาม</p>
+<h4>
+ทางเลือกที่ 1: ระบุชื่อ
+</h4>
+<p><strong>คำถาม</strong> ควร <em>มีความหมาย</em>, <em>รัดกุม</em> และ <strong><em>มีความแตกต่าง</em></strong> กันทุกคำถาม ในไฟล์แบบ CSV คำถามจะแสดงหน้าตัวเลขคำถาม (ลำดับของคำถาม) เช่น</p>
+<table border="1">
+  <tr>
+    <th scope="col">ลำดับคำถามในแบบสอบถาม</th>
+    <th scope="col">คำถามที่ผู้สอนระบุ</th>
+    <th scope="col">รูปแบบในไฟล์ CSV</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td>favorite colors</td>
+    <td>Q05_favorite colors</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td>why_use_Moodle</td>
+    <td>Q06_why_use_moodle</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td><p>
+    user-friendliness
+    </p>
+    <p><em>
+    (จัดอันดับ 3 อย่าง เช่น  Moodle, WebCT และ Blackboard)
+    </em></p></td>
+    <td><p>
+    Q07_user-friendliness-&gt;Moodle<br />
+    Q07_user-friendliness-&gt;WebCT<br />
+    Q07_user-friendliness-&gt;Blackboard
+    </p></td>
+  </tr>
+</table>
+<h4>
+ทางเลือกที่ 2: เว้นว่าง
+</h4>
+<p>
+สำหรับคำถามที่ไม่ระบุชื่อ ระบบจะสร้างชื่อคำถามขึ้นเอง เพราะจะใช้ในส่วนหัวของข้อมูลหรือโปรแกรมสถิติต่าง ๆ ก็ต้องใช้
+ชื่อคำถามจะได้จากลำดับของคำถามในแบบสอบถาม (ไม่รวม <em>ส่วนที่ไม่ใช่คำถาม</em>) เช่น Q01, Q02,...Q99 ส่วนคำถามที่ให้คะแนนได้หลากหลาย จะใช้ชื่อเป็น Q02_1, Q02_2, Q02_3 เป็นต้น ชื่อเหล่านี้จะสามารถนำไปใช้ในโปรแกรมทางสถิติได้ คุณจะต้องบันทึกว่าคำถามนี้หมายถึงคำถามใดในแบบสอบถามของคุณ
+
+</p>
+<table width="70%" border="1">
+  <tr>
+    <th style="width:16%" scope="col">เลขคำถาม (ลำดับ) ในแบบทดสอบ</th>
+    <th style="width:30%" scope="col">คำถามที่ผู้สอนกำหนด</th>
+    <th style="width:54%" scope="col">รูปแบบในไฟล์ CSV</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>
+หรือจะนำทั้ง 2 แบบมารวมกันก็ได้ บางคำถามอาจมีชื่อและบางคำถามไม่มีชื่อ
+</p>

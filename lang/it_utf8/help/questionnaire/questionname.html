@@ -1,0 +1,60 @@
+<h2 class="main">Nome</h2>
+<p>Il <strong>nome</strong> di una domanda è un identificativo mnemonico utile per il docente che gestisce il questionario</p>
+
+<p>Ciò nonostante, assegnare un <strong>nome</strong> ad una domanda non è assolutamente necessario. Quest'ultimo, infatti, viene usato soltanto come intestazione delle colonne dei documenti di esportazione delle risposte ai questionari nel formato CSV ed Excel. Se non si intendono esportare tali dati non c'è alcuna necessità di assegnare dei nomi alle domande. Se, per contro, si prevede di esportare sistematicamente le risposte acquisite nei questionari, si hanno due possibilità d'uso del nome della domanda.</p>
+<h4>Alternativa 1: Nomi significativi</h4>
+<p>Nel campo <strong>Nome</strong> della domanda si registrino nomi brevi, espressivi ed univocamente identificativi della domanda alla quale si riferiscono (all'interno del questionario). Nei file di esportazione tutti questi nomi saranno contrassegnati da un prefisso contenente il numero della posizione della domanda nel questionario.</p>
+<p>Esempio:</p>
+<table width="100%" border="1" cellpadding="5">
+  <tr>
+    <th style="width:16%;">Numero della domanda nel questionario</th>
+    <th style="width:45%;">Nome assegnato alla domanda dal docente</th>
+    <th style="width:39%;">Intestazione del campo riportata nel file esportato in CSV</th>
+  </tr>
+  <tr>
+    <td style="width:16%;">5</td>
+    <td style="width:45%;">colori_preferiti</td>
+    <td style="width:39%;">Q05_colori_preferiti</td>
+  </tr>
+  <tr>
+    <td style="width:16%;">6</td>
+    <td style="width:45%;">perché_usare_Moodle</td>
+    <td style="width:39%;">Q06_perché_usare_Moodle</td>
+  </tr>
+  <tr>
+    <td style="width:16%;">7</td>
+    <td style="width:45%;">facilità-d'uso<br /><blockquote><p>[scala con 3 risposte possibili:</p><ul><li>Moodle</li><li>WebCT</li> <li>Blackboard</li></ul><p>]</p></blockquote></td>
+    <td style="width:39%;"><p>Q07_facilità-d'uso-&gt;Moodle<br />
+    Q07_facilità-d'uso-&gt;WebCT<br />
+    Q07_facilità-d'uso-&gt;Blackboard</p>
+    </td>
+  </tr>
+</table>
+<h4>Alternativa 2: lasciare in bianco il <strong>Nome</strong> della domanda</h4>
+<p>Per ogni domanda alla quale non sia stato associato un nome, l'esportazione provvederà automaticamente ad un nome di default. Questo è necessario per l'intestazione delle tabelle del documento CSV o del foglio Excel. Il nome della domanda così generato sarà basato sul numero della domanda nel questionario (escludendo, ovviamente, le pseudo domande <strong>Etichetta</strong> e <strong>Interruzione di pagina</strong>) come Q01, Q02, …Q99. Per le domande con risposte multiple, quali un valore di misura o domande del tipo <strong>Scala 1..5</strong>, verrà generato un numero di sotto-domanda (Q01_1, Q01_2, Q01_3 ecc.). Questo genere di abbreviazione è consigliabile per esportare i dati in un programma statistico. Ovviamente, è consigliabile avere un proprio sistema per ricordare quale abbreviazione corrisponda a ciascuna domanda del questionario.</p>
+<p>Esempio:</p>
+<table width="100%" border="1" cellpadding="5">
+  <tr>
+    <th style="width:16%;">Numero della domanda nel questionario</th>
+    <th style="width:45%;">Nome della domanda registrato dal docente</th>
+    <th style="width:39%;">Intestazione del campo riportata nel file esportato in CSV</th>
+  </tr>
+  <tr>
+    <td style="width:16%;">5</td>
+    <td style="width:45%; background-color: #cccccc">&nbsp;</td>
+    <td style="width:39%;">Q05</td>
+  </tr>
+  <tr>
+    <td style="width:16%;">6</td>
+    <td style="width:45%; background-color: #cccccc">&nbsp;</td>
+    <td style="width:39%;">Q06</td>
+  </tr>
+  <tr>
+    <td style="width:16%;">7</td>
+    <td style="width:45%; background-color: #cccccc">&nbsp;</td>
+    <td style="width:39%;"><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>È anche possibile (ma non consigliabile) mescolare i due sistemi ed avere, nello stesso questionario, sia domande con nome sia domande senza.</p>

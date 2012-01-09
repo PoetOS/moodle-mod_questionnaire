@@ -1,0 +1,198 @@
+/* $Id: mystic.css,v 1.4.2.3 2008/06/20 13:36:52 mchurch Exp $ */
+/* Brian Crawford @ IT Lab (http://www.itlab.musc.edu/) */
+.headerGraphic {
+#	background-image: url(../../images/surveyimages/musc-banner.jpg);
+    background-repeat: no-repeat;
+    width: 100%;
+    border: none;
+}
+.image {
+    height:60;
+    width:100%;
+}
+/* title - extra large normal font */
+.surveyTitle {
+    font-family: "Times New Roman", Times New Roman, mono;
+    font-size: x-large;
+    font-style: normal;
+    font-weight: bold;
+#	font-variant: small-caps;
+    text-transform: none;
+    color: #000000;
+    text-decoration: none;
+    text-align: center;
+    vertical-align: default;
+}
+/* subtitle - bold normal font */
+.surveySubtitle {
+    font-family: "Times New Roman", Times New Roman, mono;
+    font-size: large;
+    font-style: normal;
+    font-weight: bold;
+#	font-variant: small-caps;
+    text-transform: none;
+    color: #000000;
+    text-decoration: none;
+    text-align: center;
+    vertical-align: default;
+}
+.surveyPage {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 600;
+#       font-variant: small-caps;
+        text-transform: none;
+        color: #000000;
+        text-decoration: none;
+        text-align: center;
+}
+/* information below subtitle - normal font */
+.addInfo {
+    font-family: "Times New Roman", Times New Roman, mono;
+    font-size: medium;
+    font-style: normal;
+    font-weight: normal;
+#	font-variant: small-caps;
+    text-transform: none;
+    color: #000000;
+    text-align: center;
+    vertical-align: default;
+}
+.message {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: medium;
+#	font-variant: small-caps;
+    font-weight: bold;
+    color: #000000;
+    text-align: center;
+}
+.reqQuestion {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+#	font-variant: small-caps;
+    text-transform: none;
+    color: #000000;
+    text-decoration: none;
+    text-align: center;
+}
+/* main table (bordering the question boxes) - dark blue */
+.mainTable {
+    background-color: #253D8E;
+    background-image: url((URL));
+    background-repeat: repeat-y;
+    cell-spacing: 0;
+    width: 100%;
+    border: 0;
+}
+body {
+    background-color: #CCCCCC;
+    margin: 0px;
+}
+/* bars between question boxes - dark blue */
+.questioncontainer {
+    width: 100%;
+    margin: 0px auto;
+    text-align: center;
+    padding: 8px 2px 2px 2px;
+    border: 1px none #000000;
+    background-color: #253D83;
+    vertical-align: text-top;
+}
+
+/* outer borders, surrounding each question and answer */
+.qnOuter {
+    width: 100%;
+    border: none;
+    background-color: #660000;
+    padding: 1px;
+    border-spacing: 1px;
+}
+
+/* inner borders - surrounding boxes inside question boxes - near black */
+.qnInnerTable {
+    width: 100%;
+    border: none;
+    background-color: #333333;
+    cell-spacing: 1;
+}
+/* number cell box - large bold number inside a dark grey box */
+.qnInnerTd {
+    background-color: #AAAAAA;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: bold;
+    font-variant: small-caps;
+    text-transform: none;
+    color: #000000;
+    text-decoration: none;
+    width: 1.5em;
+    vertical-align: text-top;
+}
+.qnInner {
+    background-color: #CCCCCC; # question box color
+    height: 27;
+    text-align: left;
+    vertical-align: middle;
+    color: #000000; # question text color
+    font-family: Times New Roman, Verdana, Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    font-style: normal;
+#	font-variant: small-caps;
+    text-transform: none;
+    text-decoration: none;
+}
+/* answer box  - white, normal black font */
+.qnType {
+    height: auto;
+    background-color: #FFFFFF;
+    text-align: left;
+    vertical-align: middle;
+    color: #000000;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+#	font-weight: bold;
+#	font-variant: small-caps;
+    text-transform: none;
+    text-decoration: none;
+    padding-left: 4em;
+    padding-right: 4em;
+}
+.thankHead {
+/* completion page font - large black */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: x-large;
+#	font-variant: small-caps;
+    color: #000000;
+}
+.thankBody {
+/* completion page body font - normal black */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: medium;
+#	font-variant: small-caps;
+    color: #000000;
+}
+.returnLink {
+/* completion page link font - small dark blue */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: small;
+#	font-variant: small-caps;
+    color: #253D8E;
+    text-decoration: underline;
+}
+/* textbox and radio button colors - black answers in white boxes */
+INPUT, TEXTAREA, SELECT, OPTION {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: normal;
+    color: #000000;
+    background-color: #FFFFFF;
+}
+.notice .buttons div,
+.notice .buttons form {
+  display:inline;
+}

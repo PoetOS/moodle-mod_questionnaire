@@ -1,0 +1,59 @@
+<h2 class="main"> Editar questão - Nome da questão</h2>
+
+<p>Você pode <em>opcionalmente</em> inserir um <strong>Nome de questão</strong> para cada questão.</p>
+
+<p>O <strong>Nome da questão</strong> é usado apenas ao exportar as respostas para o format CSV. Se você nunca exporta para CSV, não é necessário se precupar com nomes de questões. Se você planeja exportar os dados da enquete regularmente para CSV, então você pode escolher entre duas opções para a nomeação das questões.</p>
+
+<h4> Opção 1: nomes significativos </h4>
+
+<p>Na caixa <strong>Nome da questão</strong>, insira nomes <em>curtos</em>, <em>com sentido</em> e <strong><em>diferentes</em></strong> para cada questão da enquete. No arquivo exportado para CSV, todos aqueles nomes de questões serão prefixados com o número da questão (= posição) na enquete. Exemplos:</p>
+
+<table border="1">
+  <tr>
+    <th scope="col">número da questão (posição) no questionário</th>
+    <th scope="col">nome da questão, inserido pelo professor</th>
+    <th scope="col">cabeçalho do campo no arquivo CSV</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td>cores favoritas</td>
+    <td>Q05_cores favoritas</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td>por_que_usar_o_moodle</td>
+    <td>Q06_por_que_usar_o_moodle</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td><p>facilidade-de-uso</p><p><em>(questão de escala com 3 respostas possíveis: Moodle, WebCT e Blackboard)</em></p></td>
+    <td><p>Q07_facilidade-de-uso-&gt;Moodle<br /> Q07_facilidade-de-uso-&gt;WebCT<br /> Q07_facilidade-de-uso-&gt;Blackboard</p></td>
+  </tr>
+</table>
+
+<h4>Opção 2: deixar vazia a caixa de nomes de questões</h4>
+
+<p>Para cada questão sem nome, a exportação para CSV irá gerar automaticamente um nome de questão. Isto é obrigatório para os campos de cabeçalho no CSV e nas tabelas do EXCEL ou qualquer outro pacote estatístico que você esteja usando. O nome de questão gerado será baseado no número da questão na enquete atual (com exceção daspseudo-questões do tipo <em>Rótulo</em>, é claro) por exemplo, Q01, Q02, ..., Q99. Para questões com múltiplas escolhas, como as questões de escala ou Likert, um número de sub-questão será gerado (Q02_1, Q02_2, Q02_3, etc). Este tipo de nomeação com "nomes curtos" é o recomendado para exportação para o seu software estatístico. É claro, depende de você ter seu próprio sistema para lembrar qual nome abreviado corresponde a cada questão na sua enquete!</p>
+<table width="70%" border="1">
+  <tr>
+    <th style="width:16%" scope="col">número da questão (posição) no questionário</th>
+    <th style="width:30%" scope="col">nome da questão, inserido pelo professor</th>
+    <th style="width:54%" scope="col">cabeçalho do campo no arquivo CSV</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td><p>Q07_1<br /> Q07_2<br /> Q07_3</p></td>
+  </tr>
+</table>
+<p>É também possível (porém não recomendável) misturar os dois sistemas e ter, em uma mesma enquete, tanto perguntas com nome quanto sem nome.</p>

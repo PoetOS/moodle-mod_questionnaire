@@ -1,0 +1,17 @@
+<h3 align="center"><strong>Preuzmi u tekstualnom formatu</strong></h3>
+<p>Ukoliko Vam je potrebno da obradite podatke prikupljene ovim upitnikom u nekom od eksternih programskih paketa kao što su <em>Excel</em>, <em>Open Office Calc</em> ili <em>SPSS</em>, možete da ih izvezete u tekstualnom formatu. Tekstualni format koji Vam je na raspolaganju jeste se CSV (vrednosti su odvojene zarezima) modifikovan za naše potrebe na taj način što se umesto standardnih  separatora (zareza ili tačka-zareza) koriste <strong>tab</strong> (tabulatori). </p>
+<p>Pošto budete pritisnuli dugme <strong>Preuzmi u tekstualnom formatu</strong> otvoriće se novi prozor sa pitanjem da li želite da sačuvate fajl ili da ga otvorite. Odaberite opciju <em>save</em> (sačuvaj). Naziv fajla biće automatski generisan na osnovu imena upitnika, ali ga Vi možete sačuvati i pod nekim drugim imenom. Preporučujemo da za tu priliku koristite ekstenziju *.txt, ali takođe <em>možete</em> i nju da pormenite. Imajte na umu da ovu ekstenziju <em>morate</em> preimenovati u *.csv ukoliko želite da uvezete fajl u <em>Open Office Calc</em>.</p>
+<p>Nakon toga otiđite u svoj eksterni program za statističku obradu i otvorite fajl u njemu. Koraci koje pri ovoj operaciji treba preuzeti veoma variraju od programa do programa, kao i od nekih dodatnih parametara. U slučaju da koristite ne-ascii jezički paket u Moodle-u ili ukoliko neko od vaših pitanja (odnosno ponuđenih odgovora) sadži u sebi ne-ascii karaktere, <em>Excel</em> (ili <em>Open Office Calc</em>) će biti u stanju da <em>automatski detektuju</em> da je Vaš fajl snimljen pod UTF-8 kodnim rasporedom and dekodira ga ispravno. Molimo imajte na umu da ukoliko najveći deo Vaših podataka čine standardni ascii karakteri i veoma mali broj ne-ascii karaktera, automatsko prepoznavanje neće funkcionisati i moraćete ručno da stavite programu do znanja da je fajl kodiran prema UTF-8 kodnom rasporedu.</p>
+<p>Na vrhu &quot;tabele&quot; uvezene u npr. <em>Excel</em>, prva linija će sadržati nazive svih pitanja. Svaki red koji bude sledio ispod nje prikazivaće podatke za jednog konkretnog ispitanika. Prvih sedam kolona su sledeće (u engleskoj verziji): </p>
+<table border="1" cellpadding="3" cellspacing="1">
+  <tr>
+    <td height="17">Unos</td>
+    <td>popunjeno na dan:</td>
+    <td>Kurs</td>
+    <td>Grupa</td>
+    <td>Identifikator</td>
+    <td>Puno ime i prezime ispitanika</td>
+    <td>Korisničko ime</td>
+  </tr>
+</table>
+<p>Polje submitted_date sadrži datum (i vreme, u satima minutima i sekundama ) na koji je ispitanik popunio upitnik. Na primer: 15/09/2007 15:57. U normalnim okolnostima trebalo bi da ste u mogućnosti da koristite format za prikaz vremena koji postoji definisan u Excel-u shodno načinu na koji se ono prikazuje u Vašoj zemlji uključujući i sekunde ili pune nazive dana u sedmici i meseci, sve dok se isti ne odražava na sortiranje podataka.</p>

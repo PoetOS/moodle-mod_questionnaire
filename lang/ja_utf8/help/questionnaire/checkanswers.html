@@ -1,0 +1,61 @@
+<h2 class="main">
+「選択(複数回答)」の選択項目
+</h2>
+  <table style="width:100%" border="1" cellpadding="5">
+  <tr>
+    <th style="width:33%" scope="col">
+編集内容
+    </th>
+    <th style="width:67%" scope="col">
+アンケートでの見え方
+    </th>
+  </tr>
+  <tr>
+    <td><table style="width:300" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" valign="top">選択項目</td>
+      </tr>
+      <tr>
+        <td style="border:#666666 thin solid">
+		  <p>テレビ<br />
+		    ダンス
+		      <br />
+		      コンピュータ<br />
+	      !other=その他の趣味</p>
+		  </td>
+      </tr>
+    </table></td><td><strong>
+あなたのお気に入りの趣味は何ですか？    
+    </strong><br />
+      <input name="checkbox" type="checkbox" />
+テレビ
+<br /><input name="checkbox" type="checkbox" />
+ダンス
+<br /><input name="checkbox2" type="checkbox" />
+コンピュータ
+<br /><input type="checkbox" />
+その他の趣味
+<input type="text" size="25" /></td>
+  </tr>
+</table>
+<p>ひとつの行にひとつの選択肢を記述します。選択肢のひとつとして「!other」と半角文字で記述すれば自由記述欄を作ることもできます。
+「!other」とだけ記述したときには「その他」（あるいは現在使用中の言語でそれに相当する訳語）が表示されます。上の例のように，この自由記述欄の先頭に表示される文字列は「!other=文字列」という書式を使って別の文字列に変更できます。</p>
+<h2 class="main">
+注
+</h2>
+<ol>
+  <li>「選択(複数回答)」の質問では，回答者がひとつの質問に対して複数の回答を入力できます。
+</li>
+  <li>現在，自由記述欄の入力文字数は25文字に設定されていて，一般利用者はこれを変更することはできません。</li>
+  <li>「選択(複数回答)」の質問では，複数の自由記述欄をつけたくなるかもしれませんが，不具合が発生するかもしれませんので，お薦めできません。</li>
+  <li>「選択(複数回答)」を「必須」の質問として作成し，「選択できる数（下限）」と「選択できる数（上限）」のパラメーターを使用した場合，回答者が要求された数のボックスにチェックを入れないと，警告メッセージが表示されます。自由記述の選択肢が作られている場合，それを回答者がチェックすれば，要求された「選択できる数（下限／上限）」に数えられる点に注意してください。</li>
+  <li>もし回答者が自由記述の選択肢のチェックボックスにチェックをして，欄内を未記入のままにすると，そのボックスは（次のページへの移動時かアンケート送信時に）チェックが外されます。</li>
+  <li>もし回答者が自由記述欄のチェックボックスをチェックし，欄内に文字を記入した後に気が変わってボックスのチェックを外した場合には，自由記述欄が自動的に空になります。</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->5/10/08<!-- #EndDate -->
+<br />翻訳：高橋，黒澤，福田，小島，
+<!-- #BeginDate format:En2 -->29-Jun-2011<!-- #EndDate -->
+
+</p>

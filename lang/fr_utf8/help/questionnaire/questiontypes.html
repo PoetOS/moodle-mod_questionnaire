@@ -1,0 +1,136 @@
+<h2 class="main">
+Types de question
+</h2>
+<p>
+Sélectionnez le type de question dans la liste déroulante puis cliquez sur le bouton <strong>Ajouter une question de ce type</strong>. Voici une description de chaque type.
+</p>
+<p><strong>
+---Saut de page---
+</strong></p>
+<p><strong> </strong>Pour insérer un saut de page dans les questionnaires comportant un nombre important de questions. Si une page comporte une ou plusieurs questions avec réponse obligatoire, l'étudiant ne pourra pas passer à la page suivante tant qu'il n'aura pas répondu à ces questions.</p>
+<p><strong>Boutons Radio </strong></p>
+<table style="width:100%; height:80px;" border="1" cellpadding="2" cellspacing="2">
+  <tr>
+    <td style="width:308px"><strong> affichage vertical </strong></td>
+    <td style="width:221px"><strong> affichage horizontal</strong></td>
+  </tr>
+  <tr>
+    <td><input type="radio" name="radio" />
+      Option 1<br />
+      <input type="radio" />
+      Option 2 <br />
+      <input type="radio" />
+      Option 3 <br />
+      <input type="radio" />
+      Option 4
+      <input name="text3" type="text" size="20" />
+      (optionnel)</td>
+    <td><input type="radio" />
+      Option 1
+      <input type="radio" />
+      Option 2
+      <input type="radio" />
+      Option 3 </td>
+  </tr>
+</table>
+<p><strong>
+Cases à cocher
+</strong><br />
+  <input type="checkbox" />
+Option 1<br />
+<input name="checkbox" type="checkbox" />
+Option 2 <br />
+<input name="checkbox2" type="checkbox" />
+Autre
+<input name="text2" type="text" size="20" />
+(optionnel)</p>
+<p>
+<strong>Note</strong>.- Les questions de type <strong>Boutons radio</strong> et <strong>Cases à cocher</strong> peuvent facultativement comporter un bouton "Autre" accompagné d'une boîte de texte à remplir. Voir le bouton d'aide <strong>Réponses possibles</strong> dans ce type de question.
+</p>
+<p><strong>
+Date
+</strong><br />
+  <input type="text" />
+  <em>Utilisez ce format, par exemple pour le 14 mars 1945 : 14-03-1945.</em>
+</p>
+<p>
+Utilisez ce type de question si vous attendez comme réponse une date formatée exactement selon l'exemple donné. Le format attendu dépend de la langue actuellement utilsée. Par exemple on s'attend à ce qu'une date "française" soit saisie au format jj-mm-aaaa. Un exemple montrant le format attendu est affiché. Si une date "impossible" ou d'un format non reconnu est entrée par l'étudiant, elle sera ré-écrite pour donner une date possible, et un message d'erreur sera affiché. Pour assurer la compabitibilité avec les formats automatiques de dates dans les tableurs comm Excel, seules des dates entre 1902 et 2037 sont acceptées. Si vous attendez comme réponse des dates en dehors de cette fourchette, utilisez la question de type Texte court à la place du type Date. Il est possible de saisir une année seule (2008) ou un mois suivi d'une année (12-2008 pour le mois de décembre 2008). Dans ce cas, la date sera automatiquement complétée (là encore par souci de compatibilité avec le formatage attendu dans Excel). Exemple: 2008 -> 01-12-2008 ou encore 12-2008 -> 01-12-2008. Vous devrez expliquer ce système à vos étudiants dans les consignes du questionnaire.</p>
+<p><strong> Description <br />
+</strong> Il ne s'agit pas d'une vraie question mais d'un texte (court) qui sera affiché pour introduire une série de questions (consigne spéciale, sous-titre, etc.). </p>
+<p><strong> </strong><strong>Echelle de Likert </strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td align="center" style="background-color:#eeeeee">1</td>
+    <td align="center" style="background-color:#dddddd">2</td>
+    <td align="center" style="background-color:#eeeeee">3</td>
+    <td align="center" style="background-color:#dddddd">4</td>
+    <td align="center" style="background-color:#eeeeee">5</td>
+    <td align="center" style="background-color:#dddddd">NSP</td>
+  </tr>
+  <tr>
+    <td>Option 1&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Option 2&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Option 3&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+</table>
+<p> Voir les paramètres Nb d'items sur l'échelle &amp; Type d'échelle dans l'aide en ligne pour plus de détails. </p>
+<p><strong>
+Liste déroulante
+</strong><br />
+  <select name="select">
+    <option></option>
+    <option>
+    Option 1
+    </option>
+    <option>
+    Option 2
+    </option>
+  </select>
+</p>
+<p>
+En principe il n'y a aucun avantage à utiliser la <strong>Liste déroulante</strong> plutôt que les boutons radio (sauf pour un nombre d'options élevé, par exemple liste de pays du monde).</p>
+<p><strong> Numérique </strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p> Utilisez ce type de question si vous attendez comme réponse un nombre entré sous forme de chiffres. Utilisez les paramètres Max. chiffres autorisés  Nb de chiffres après la virgule, voir l'aide en ligne dans ce type de question. </p>
+<p><strong> Oui/Non </strong><br />
+  <input type="radio" />
+Oui
+<input type="radio" />
+Non </p>
+<p><strong>Texte court
+</strong> <br />
+  <input name="text" type="text" size="30" />
+  <br />
+Utilisez le paramètre Longueur pour indiquer la longueur de la boîte Texte Court et le paramètre Précision pour indiquer la longueur maximale du texte saisi par l'étudiant.</p>
+<p><strong> Texte long </strong><br />
+  <textarea name="textarea" cols="40" rows="4"></textarea>
+</p>
+<p> Utilisez les paramètres Longueur et Précision pour activer ou désactiver l'éditeur HTML. Voir le bouton d'aide Longueur/Précision. </p>
+<hr />
+<p style="font-size:smaller; text-align:center">Mis à jour par JR le 
+  <!-- #BeginDate format:Sw1 -->15 juin, 2008<!-- #EndDate -->
+</p>

@@ -1,0 +1,192 @@
+<h2 class="main">
+Possíveis respostas para as questões de botões de rádio.
+</h2>
+  <p>
+  Se você escolher questões do tipo <strong>Botão de rádio</strong>, você deve preencher uma resposta por linha na metade inferior da janela <strong>Editar perguntas</strong>. Exemplos:
+  </p>
+  <table border="1" cellpadding="5">
+  <tr>
+
+    <th style="width:250" valign="top" scope="col">
+    Modo de edição
+    </th>
+    <th style="width:243" valign="top" scope="col">
+    Visão do questionário
+    </th>
+    <th style="width:434" valign="top" scope="col">
+    (Visão horizontal (opcional))
+    </th>
+  </tr>
+
+  <tr>
+    <td valign="top"><em>
+    1.Possíveis respostas
+    </em>:
+      <p>
+    Vermelho<br />
+    Azul<br />
+    Preto
+    </p></td>
+
+    <td valign="top"><strong>
+    Qual é sua cor favorita?
+    </strong><br />
+      <input type="radio" />
+	Vermelho<br />
+<input type="radio" name="radio" />
+	Azul<br />
+<input type="radio" name="radio" />
+	Preto
+	</td>
+
+    <td valign="top"><strong>
+    Qual é sua cor favorita?
+    </strong><br />
+      <input type="radio" />
+Vermelho
+	<input type="radio" />
+Azul
+	<input type="radio" />
+Preto
+	</td>
+  </tr>
+  <tr>
+
+    <td valign="top"><em>
+2.Possíveis respostas
+    </em>:
+      <p>
+Vermelho<br />
+Azul<br />
+Preto<br />
+!other
+      </p></td>
+    <td valign="top"><strong>
+Qual é sua cor favorita?
+    </strong><br />
+
+      <input type="radio" />
+Vermelho<br />
+	<input type="radio" />
+Azul<br />
+	<input type="radio" />
+Preto<br />
+	<input type="radio" />
+other:
+<input type="text" size="15" /></td>
+    <td valign="top"><strong>
+
+Qual é sua cor favorita?
+	</strong><br />
+        <input type="radio" />
+Vermelho
+      <input type="radio" />
+Azul
+      <input type="radio" />
+Preto
+      <br />
+      <input type="radio" />
+other:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+
+    <td valign="top"><em>
+3.Possíveis respostas:</em>
+      <p>
+Vermelho<br />
+Azul<br />
+Preto<br />
+!other=Outra cor:
+</p></td>
+    <td valign="top"><strong>
+Qual é sua cor favorita?
+
+</strong><br />
+        <input type="radio" />
+Vermelho<br />
+      <input type="radio" />
+Azul<br />
+      <input type="radio" />
+Preto<br />
+      <input type="radio" />
+Outra cor:
+      <input type="text" size="15" /></td>
+
+    <td valign="top"><strong>
+Qual é sua cor favorita?
+</strong><br />
+        <input type="radio" />
+Vermelho
+      <input type="radio" />
+Azul
+      <input type="radio" />
+Preto 
+<br />
+<input type="radio" />
+Outra cor:
+      <input type="text" size="15" /></td>
+  </tr>
+
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">
+Questionnaire View
+</td>
+    <td valign="top"><em><strong>
+Text data export
+</strong></em></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+
+4<a name="4" id="4"></a>.Possíveis respostas:
+	</em>
+      <p>
+Vermelho=a cor do sabgue <br />
+Azul=a cor do céu <br />
+Preto=contrário de branco
+	</p></td>
+    <td valign="top"><strong>
+Qual é sua cor favorita?
+</strong><br />
+        <input type="radio" />
+
+a cor do sangue<br />
+      <input type="radio" />
+a cor do céu<br />
+      <input type="radio" />
+contrário de branco
+</td>
+    <td valign="top"><p><em>
+Os &quot;valores&quot; Vermelho, Azul e Preto serão exportados para as colunas em vez dos números padrões 1, 2 e 3.<br />
+
+Veja o download como formato de arquivo de ajuda.
+</em></p></td>
+  </tr>
+</table>
+<p>
+Você pode entrar com <tt>&#8220;!other&#8221;</tt> na linha para criar um campo <em><strong>opcional</strong></em> em branco. Ao usar <tt>&#8220;!other&#8221;</tt> é utilizado o valor padrão <em>Outra:</em>, (ou o equivalente em outro idioma). Para mudar o valor padrão, use: <tt>&#8220;!Outra=<em>texto&#8221;</em></tt> . Veja o exemplo 3 acima.
+
+</p>
+<h2 class="main">
+Notes
+</h2>
+<ol>
+  <li>
+Neste momento, o comprimento do espaço em branco da caixa de entrada é definido para 25 caracteres e não é personalizável pela interace on-line.
+</li>
+<li>
+Não faz sentido fornecer mais que um <tt>!other</tt> para ser preenchido.
+</li>
+<li>
+Se uma pessoa selecionar o botão de rádio com uma caixa de texto em branco, e deixar o campo de texto vazio, uma mensagem de aviso será exibida (quando ele navegar para a próxima página ou mediante a apresentação do questionário).
+</li>
+<li>
+Se uma pessoa selecionar o botão de rádio que contém uma caixa de texto em branco, completar o campo de texto e depois mudar de idéia e selecionar outra opção da mesma questão, o campo de texto será automaticamente esvaziado.
+</li>
+<li>
+O exemplo #4 mostra possíveis opções ocultas para a exportação - em respostas - numeado como valores de dados em vez de numeros padrões. Se você nunca exportar seus dados para estudar as estatísticas, não terá esta opção
+</li>
+</ol>
+<hr />

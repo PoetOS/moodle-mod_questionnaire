@@ -1,0 +1,77 @@
+<h2 class="main">Im Textformat herunterladen</h2>
+<h3>Der Fragetyp Radiobutton - Einzelantwort</h3>
+<p>Auf der Seite <strong>im Textformat herunterladen</strong> gibt es 2 Auswahlmöglichkeiten, die nur die Ausgabe des Radiobutton - Einzelantwort-Fragetyps beeinflussen. Hier wird erklärt was diese beiden Möglichkeiten sind.</p>
+<p>Fragetext: Was ist deine Lieblingsfarbe? Auswahl:blau, grün, rot.</p>
+<table border="1">
+  <tr>
+    <td><label for="auto-cb0001">Farbwahl </label></td>
+    <td>blau</td>
+    <td>grün</td>
+    <td>rot</td>
+  </tr>
+  <tr>
+    <td>Auswahlcodes einbeziehen</td>
+    <td>1</td>
+    <td>2</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Auswahltext einbeziehen</td>
+    <td>blau</td>
+    <td>grün</td>
+    <td>rot</td>
+  </tr>
+  <tr>
+    <td>Auswahlcode und Auswahltext einbeziehen </td>
+    <td>1&nbsp;:&nbsp;blau </td>
+    <td>2&nbsp;:&nbsp;grün </td>
+    <td>3&nbsp;:&nbsp;rot </td>
+  </tr>
+  <tr>
+    <td>Wenn nichts zum einbeziehen ausgewählt wird, ist dies gleichbedeutend mit dem Anklicken von 'Auswahltext'</td>
+    <td>blau</td>
+    <td>grün</td>
+    <td>rot</td>
+  </tr>
+</table>
+<p>Hinweis: Diese Auswahlmöglichkeiten bei der Ausgabe werden überschrieben, wenn Sie die Option &quot;unsichtbar&quot; bei der Erstellung der Radiobutton-Frage gewählt haben, die benannten Werte werden als Daten exportiert. Siehe auch <a href="help.php?module=questionnaire&amp;file=radioanswers.html#4">dieser Hilfetext</a></p>
+<table border="1" cellpadding="5">
+  <tr>
+    <td valign="top"><em> 4. Mögliche Antworten: </em>
+        <p> Rot=Die Farbe des Blutes <br />
+          Blau=Die Farbe des Himmels <br />
+    Schwarz=Gegenteil von Weiss </p></td>
+    <td valign="top"><strong> Was ist deine Lieblingsfarbe? </strong><br />
+        <input type="radio" />
+      Die Farbe des Blutes<br />
+      <input type="radio" />
+      Die Farbe des Himmels<br />
+      <input type="radio" />
+    Gegenteil von Weiss </td>
+    <td valign="top"><p><em>Unabhängig davon ob die Auswahlmöglichkeiten für Codec bzw. Text auf der Seite zum Downloadformat gewählt wurden, werden die Werte <strong>Rot</strong>, <strong>Blau</strong> oder <strong>Schwarz</strong> im der CSV-Datei ausgegeben.</em> </p></td>
+  </tr>
+</table>
+<h3>Die CSV-Datei</h3>
+<p>Wenn Sie Daten der Befragung ausserhalb von Moodle in einer Software wie <em>Excel</em>, <em>Open Office Calc</em> oder einer Statistiksoftware auswerten wollen, können Sie die Daten im Textformat exportieren. Das Textformat, welches hier zur Verfügung steht, ist das sogenannte CSV (comma seperated values) Format. Für den allgemeinen Gebrauch wird hier der <strong>Tab</strong> (tabulation) Separator genutzt, anstelle von Komma oder Semikolon. </p>
+<p>Wenn Sie auf den Button <strong>Download im Textformat</strong> klicken, öffnet sich ein Fenster, in dem Sie gefragt werden, ob Sie die Datei speichern oder öffnen wollen. Wählen Sie <em> speichern</em>. Die Datei wird nach dem aktuellen Quiz benannt. Sie können die Datei aber auch unter einem anderen Namen speichern. Die vorgeschlagene Dateiendung ist *.txt aber Sie <em>können</em> sie auch umbenennen. Hinweis: Sie <em>müssen</em> die Endung in *.csv ändern, wenn Sie die Datei in <em>Open Office Calc</em> importieren wollen.</p>
+<p>Nun öffnen Sie die Datei mit ihrer externen Software. Die folgenden Schritte hängen von der Software ab, die Sie nutzen und einer Anzahl anderer Parameter. Wenn Sie eine Schnittstelle mit einer nicht-ascii Sprache in Moodle nutzen oder Sie nutzen Englisch, aber einige Ihrer Fragen (oder Antworten) in der Befragung enthalten nicht-ascii Zeichen, dann kann es sein, dass <em>Excel</em> (oder <em>Open Office Calc</em>) automatisch erkennen, dass ihre Datei UTF8 kodiert ist und dekodieren sie entsprechend. Bitte beachten Sie: Es kann sein, dass die automatische Erkennung nicht funktioniert, wenn der überwiegende Teil ihrer Datei in Standard-ascii ist und nur ein sehr kleiner Anteil mit nicht-ascii Zeichen vorhanden ist. In diesem Fall müssen Sie die UTF-8 Kodierung aus der Liste heraussuchen, die ihr Softwareprovider zur Verfügung stellt.</p>
+<p>Im Kopf der &quot;Tabelle&quot;, die z.Bsp. in <em>Excel</em> importiert, wird enthält die erste Zeile die Namen der Fragefelder. Diese werden gefolgt von jeweils einer Antwort pro Zeile. Die ersten 7 Felder sind wie folgt: </p>
+<table border="1" cellpadding="3" cellspacing="1">
+  <tr>
+    <td>Antwort</td>
+    <td>abgesendet am</td>
+    <td>Institution</td>
+    <td>Abteilung</td>
+    <td>Kurs</td>
+    <td>Gruppe</td>
+    <td>ID</td>
+    <td>vollständiger Name</td>
+    <td>Username</td>
+  </tr>
+</table>
+<p>Das Feld &quot;abgeschickt am&quot; enthält das Datum (und die Zeit, z.Bsp.: Stunden Minuten Sekunden) als die Befragung abgegeben wurde. Zum Beispiel:  15/09/2007 15:57. Normalerweise sollte es möglich sein die Formatierung in Excel zu nutzen um das Datum so anzuzeigen wie man es wünscht und es den eigenen Landeskonventionen entspricht während die Sortierfunktionalität erhalten bleibt.</p>
+<p>Wenn die Befragung als &quot;anonym&quot; gesetzt wurde, dann bleiben ID und Username leer und anstelle des vollständigen Namens wird &quot;Anonym&quot; angezeigt. </p>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+</p>

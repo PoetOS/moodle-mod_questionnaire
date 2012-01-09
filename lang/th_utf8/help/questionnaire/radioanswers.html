@@ -1,0 +1,153 @@
+<h2 class="main">
+คำตอบ
+</h2>
+  <p>
+  คำถามประเภท <strong>เลือกค่าเดียว</strong> คุณจะต้องระบุคำตอบบรรทัดละข้อ เช่น
+  </p>
+  <table border="1" cellpadding="5">
+  <tr>
+    <th style="width:250" valign="top" scope="col">
+    การแก้ไข
+    </th>
+    <th style="width:243" valign="top" scope="col">
+    ตัวอย่างแบบสอบถาม
+    </th>
+    <th style="width:434" valign="top" scope="col">
+    (แนวนอน)
+    </th>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+    1.คำตอบ
+    </em>:
+      <p>
+    แดง<br />
+    น้ำเงิน<br />
+    ดำ
+    </p></td>
+    <td valign="top"><strong>
+    คุณชอบสีอะไร?
+    </strong><br />
+      <input type="radio" />แดง<br />
+<input type="radio" name="radio" />น้ำเงิน<br />
+<input type="radio" name="radio" />ดำ</td>
+    <td valign="top"><strong>
+    คุณชอบสีอะไร?
+    </strong><br />
+      <input type="radio" />แดง
+	<input type="radio" />น้ำเงิน
+	<input type="radio" />ดำ
+	</td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+2.คำตอบ
+    </em>:
+      <p>
+แดง<br />
+น้ำเงิน<br />
+ดำ<br />
+!other
+      </p></td>
+    <td valign="top"><strong>
+คุณชอบสีอะไร?
+    </strong><br />
+      <input type="radio" />
+แดง<br />
+	<input type="radio" />
+น้ำเงิน<br />
+	<input type="radio" />
+ดำ<br />
+	<input type="radio" />
+อื่น ๆ:
+<input type="text" size="15" /></td>
+    <td valign="top"><strong>
+คุณชอบสีอะไร?
+	</strong><br />
+        <input type="radio" />แดง
+      <input type="radio" />น้ำเงิน
+      <input type="radio" />ดำ
+      <br />
+      <input type="radio" />อื่น ๆ:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+3.คำตอบ:</em>
+      <p>
+แดง<br />
+น้ำเงิน<br />
+ดำ<br />
+!other=สีอื่น:
+</p></td>
+    <td valign="top"><strong>
+คุณชอบสีอะไร?
+</strong><br />
+        <input type="radio" />แดง<br />
+      <input type="radio" />น้ำเงิน<br />
+      <input type="radio" />ดำ<br />
+      <input type="radio" />สีอื่น:
+      <input type="text" size="15" /></td>
+    <td valign="top"><strong>
+คุณชอบสีอะไร?
+</strong><br />
+        <input type="radio" />แดง
+      <input type="radio" />น้ำเงิน
+      <input type="radio" />ดำ 
+<br />
+<input type="radio" />
+สีอื่น:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">
+ตัวอย่างแบบสอบถาม
+</td>
+    <td valign="top"><em><strong>
+ข้อมูลส่งออก
+</strong></em></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+4<a name="4" id="4"></a>.ตัวเลือก:
+	</em>
+      <p>
+แดง=สีเลือด<br />
+น้ำเงิน=สีท้องฟ้า<br />
+ดำ=สีตรงกันข้ามกับสีขาว
+	</p></td>
+    <td valign="top"><strong>
+คุณชอบสีอะไร?
+</strong><br />
+        <input type="radio" />สีเลือด<br />
+      <input type="radio" />สีท้องฟ้า<br />
+      <input type="radio" />สีตรงกันข้ามกับสีขาว</td>
+    <td valign="top"><p><em>
+&quot;ค่า&quot; แดง, น้ำเงิน และดำ จะปรากฎในคอลัมน์แทนเลข 1, 2, 3<br />
+</em></p></td>
+  </tr>
+</table>
+<p>
+คุณอาจใช้ <tt>&#8220;!other&#8221;</tt> เพื่อสร้าง <em><strong>ตัวเลือกอื่น ๆ</strong></em> <em>เติมคำในช่องว่าง</em> <tt>!other</tt> ใช้แสดงข้อความ <em>อื่น ๆ:</em> (หรือข้อความที่ใกล้เคียงกันในภาษาอื่นๆ) คุณอาจเปลี่ยนข้อความโดยใช้รูปแบบ <tt>&#8220;!other=<em>ข้อความ&#8221;</em></tt> ตามตัวอย่างที่ 3 ด้านบน
+</p>
+<h2 class="main">
+หมายเหตุ
+</h2>
+<ol>
+  <li>
+ จำนวนอักษรในช่อง <em>เติมคำในช่องว่าง</em> สูงสุด 25 ตัวอักษร และไม่สามารถแก้ไขผ่านหน้าเว็บได้
+</li>
+<li>
+คุณไม่ควรใช้  <tt>!other</tt> <em>เติมคำในช่องว่าง</em> มากกว่า 1 ช่องในแต่ละคำถาม
+</li>
+<li>
+ถ้าผู้ตอบเลือก <em>เติมคำในช่องว่าง</em>  แต่ไม่พิมพ์ข้อความเข้าไป <em>ระบบจะแสดงข้อผิดพลาด</em> (และอาจมีผลกับการตอบแบบสอบถามหน้าต่อไป)
+</li>
+<li>
+ถ้าผู้ตอบเลือก <em>เติมคำในช่องว่าง</em> แล้วพิมพ์ข้อความเข้าไป ต่อมาเปลี่ยนใจเลือกข้ออื่น ระบบจะไม่สนใจข้อความที่พิมพ์เข้าไป
+</li>
+<li>
+ตัวอย่างที่ 4 แสดง &quot;การซ่อน&quot; ตัวเลือก เพื่อใช้ในการส่งออกการตอบแบบสอบถาม ถ้าคุณไม่สนใจที่จะนำข้อมูลไปวิเคราะห์ด้วยโปรแกรมสถิติอื่น ๆ คุณก็ไม่ต้องสนใจตัวเลือกนี้
+</li>
+</ol>

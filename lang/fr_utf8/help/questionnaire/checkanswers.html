@@ -1,0 +1,54 @@
+<h2 class="main">
+Réponses possibles pour les Cases à cocher
+</h2>
+  <table style="width:100%" border="1" cellpadding="5">
+  <tr>
+    <th style="width:33%" scope="col">
+    Mode édition
+    </th>
+    <th style="width:67%" scope="col">
+    Affichage dans le questionnaire
+    </th>
+  </tr>
+  <tr>
+    <td><table style="width:300" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" valign="top">Réponses possibles.*</td>
+      </tr>
+      <tr>
+        <td style="border:#666666 thin solid">
+		  <p>regarder la télé<br />
+		    danser<br />
+		    l'informatique<br />
+	      !other=Un autre hobby:</p>		  </td>
+      </tr>
+    </table></td>
+    <td><strong>
+    Quels sont vos hobbies préférés?
+    </strong><br />
+      <input name="checkbox" type="checkbox" />
+regarder la télé
+<br /><input name="checkbox" type="checkbox" />
+danser
+<br /><input name="checkbox2" type="checkbox" />
+l'informatique
+<br /><input type="checkbox" />
+Un autre hobby:
+<input type="text" size="25" /></td>
+  </tr>
+</table>
+<p>Vous pouvez facultativement entrer <tt>&#8220;!other&#8221;</tt> sur la dernière ligne des réponses possibles pour créer une option &quot;autre choix&quot; accompagnée d'une boite de texte à remplir. Par défaut, si vous entrez seulement <tt>!other</tt> sur la dernière ligne, le questionnaire affichera l'invite <strong>Autre</strong> (pour la langue française). Si vous voulez faire afficher une invite personnalisée, tapez <tt>!other</tt>= suivi du texte de votre invite (comme dans l'exemple 2 ci-dessus). </p>
+<h3>
+Notes
+</h3>
+<ol>
+  <li>La question de type Cases à cocher permet au répondant d'entrer des réponses multiples à une question. </li>
+  <li>Dans la version actuelle de Questionnaire, la longueur de la boîte de texte suivant une case !other est fixée à 25 caractères. Cette longueur n'est pas modifiable par l'interface. Toutefois, la longueur du texte saisi n'est pas limitée. </li>
+  <li>Il serait possible de prévoir plusieurs options de type <tt>!other</tt> pour une question de type <strong>Cases à cocher</strong>, mais ceci pourrait poser des problèmes de traitement des réponses et est donc <em>déconseillé</em>.</li>
+  <li>Lorsqu'un étudiant répond à une question de type <strong>Cases à cocher</strong> dans laquelle une réponse est <strong>Obligatoire</strong> et que les paramètres <strong>Min. cases à cocher </strong>et <strong>Max. cases à cocher </strong>ont été utilisés, alors un message d'avertissement sera affiché si l'étudiant ne coche pas le nombre requis de cases. </li>
+  <li>Notez que si une cache à cocher accompagnée d'une boite de texte existe dans une question de type <strong>Cases à cocher</strong>, <em>cette case comptera dans le décompte </em>des cases mini. ou maxi. à cocher (si le professeur a utilisé ces paramètres en créant la question). </li>
+  <li>Si un étudiant coche une case à cocher qui est accompagnée d'une boite de texte et ne saisit pas de texte, cette case sera décochée (lorsque l'étudiant quittera la page s'il y en a plusieurs ou lorsqu'il soumettre le questionnaire). </li>
+  <li>Si un étudiant coche une case à cocher qui est accompagnée d'une boite de texte et saisit du texte, puis change d'idée et décoche cette case, le texte sera automatiquement effacé de la boite (génial, non?).</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Mis à jour par  JR le 05-Oct-2008</p>

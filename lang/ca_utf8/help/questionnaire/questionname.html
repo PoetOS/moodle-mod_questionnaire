@@ -1,0 +1,76 @@
+<h2 class="main">
+Editar pregunta - Nom de la pregunta
+</h2>
+
+<p>Podeu, <em>opcionalment</em>, introduir un <strong>Nom de pregunta</strong> per a cada pregunta.</p>
+<p>El <strong>Nom de pregunta</strong> s'usa només si voleu exportar les respostes al format CSV/Excel. Si no exporteu mai a CSV, no vos heu de preocupar en absolut pels noms de les preguntes. Si planejau exportar regularment les dades de la vostra enquesta a CSV, llavors teniu dues opcions per a anomenar preguntes.</p>
+<h4>
+Opció 1: noms significants
+</h4>
+
+<p>A la casella <strong>Nom de la pregunta </strong>, introduïu noms <em>significatius</em>, <em>curts</em> i <strong><em>diferents</em></strong> per a totes les preguntes d'una enquesta. Al fitxer CSV exportat, tots aquests noms de preguntes estaran precedits amb el nombre actual de la pregunta (posició) dins l'enquesta. Per exemple:</p>
+
+<table border="1">
+  <tr>
+    <th scope="col">Nombre de pregunta a l'enquesta</th>
+    <th scope="col">Nombre de pregunta introduit pel professor</th>
+    <th scope="col">Capçalera de camp a l'exportació CSV</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center;">5</div></td>
+    <td>colors preferits</td>
+    <td>Q05_colors_preferits</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center;">6</div></td>
+    <td>per què usar Moodle</td>
+    <td>Q06_per_què_usar_moodle</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center;">7</div></td>
+    <td><p>
+    facilitat d'ús
+    </p>
+    <p><em>(valora la pregunta amb 3 possibles respostes: Moodle, WebCT i Blackboard
+    </em></p></td>
+    <td><p>Q07_facilitat_d_us-&gt;Moodle<br />
+    Q07_facilitat_d_us-&gt;WebCT<br />
+    Q07_facilitat_d_us-&gt;Blackboard</p>
+    </td>
+  </tr>
+</table>
+
+<h4>
+Opció 2: deixeu les caselles de Nom de pregunta en blanc
+</h4>
+<p>Per a cada pregunta sense nom, l'exportació CSV generarà automàticament un nom de pregunta. Això és necessari per a les capçaleres de les taules al CSV i les taules d'Excel o de qualsevol paquet estadístic que estigueu emprant. El nom de pregunta es generarà a partir del número de pregunta a l'enquesta actual (sense comptar amb les pseudo-preguntes de tipus <em>text</em>), p. ex. Q01, Q02, ... Q99. Per a preguntes amb múltiples respostes, com les de tipus qualificació o escala de Likert, es generarà un número de subpregunta (Q02_1, Q02_2, Q02_3, etc.). Aquest tipus d'esquema de nom és aconsellable per a exportar les vostres dades a un programa estadístic. Evidentment, haureu de tenir un sistema per a recordar quin nom abreviat correspon a quina pregunta a la vostra enquesta!</p>
+<table border="1">
+  <tr>
+    <th scope="col">Número de pregunta dins l'enquesta</th>
+    <th scope="col">Nom de pregunta introduit pel professor</th>
+    <th scope="col">Capçalera de camp al fitxer CSV exportat</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>És posible (encara que no recomanable) mesclar els dos sistemes, i tenir dins una enquesta preguntes amb i sense nom.</p>
+
+<hr />
+<p style="font-size:smaller; text-align:center">Darrera modificació:
+  <!-- #BeginDate format:Fr1 -->12/07/08<!-- #EndDate -->
+</p>

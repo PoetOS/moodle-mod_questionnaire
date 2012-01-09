@@ -1,0 +1,176 @@
+<h2 class="main">
+Possibles respostes per a preguntes de botons d'opció
+</h2>
+  <p>
+  Si triau el tipus de pregunta <strong>Botons d'opció</strong>, heu d'omplir una resposta per línia en la meitat inferior de la finestra <strong>Editar preguntes</strong>. Exemples:
+  </p>
+  <table border="1" cellpadding="5">
+  <tr>
+    <th style="width:250" valign="top" scope="col">
+    Mode d'edició
+    </th>
+    <th style="width:243" valign="top" scope="col">
+    Visualització a l'enquesta
+    </th>
+    <th style="width:434" valign="top" scope="col">
+    (visualització horitzontal opcional)
+    </th>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+    1.Possibles respostes
+    </em>:
+      <p>
+    Vermell<br />
+    Blau<br />
+    Negre
+    </p></td>
+    <td valign="top"><strong>
+    Quin és el teu color preferit?
+    </strong><br />
+      <input type="radio" />
+	Vermell<br />
+<input type="radio" name="radio" />
+	Blau<br />
+<input type="radio" name="radio" />
+	Negre
+	</td>
+    <td valign="top"><strong>
+    Quin és el teu color preferit?
+    </strong><br />
+      <input type="radio" />
+Vermell
+	<input type="radio" />
+Blau
+	<input type="radio" />
+Negre
+	</td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+2.Possibles respostes
+    </em>:
+      <p>
+Vermell<br />
+Blau<br />
+Negre<br />
+!other
+      </p></td>
+    <td valign="top"><strong>
+Quin és el teu color preferit?
+    </strong><br />
+      <input type="radio" />
+Vermell<br />
+	<input type="radio" />
+Blau<br />
+	<input type="radio" />
+Negre<br />
+	<input type="radio" />
+Altres:
+<input type="text" size="15" /></td>
+    <td valign="top"><strong>
+Quin és el teu color preferit?
+	</strong><br />
+        <input type="radio" />
+Vermell
+      <input type="radio" />
+Blau
+      <input type="radio" />
+Negre
+      <br />
+      <input type="radio" />
+Altres:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+3.Possibles respostes:</em>
+      <p>
+Vermell<br />
+Blau<br />
+Negre<br />
+!other=Un altre color:
+</p></td>
+    <td valign="top"><strong>
+Quin és el teu color preferit?
+</strong><br />
+        <input type="radio" />
+Vermell<br />
+      <input type="radio" />
+Blau<br />
+      <input type="radio" />
+Negre<br />
+      <input type="radio" />
+Un altre color:
+      <input type="text" size="15" /></td>
+    <td valign="top"><strong>
+Quin és el teu color preferit?
+</strong><br />
+        <input type="radio" />
+Vermell
+      <input type="radio" />
+Blau
+      <input type="radio" />
+Negre
+<br />
+<input type="radio" />
+Un altre color:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">
+Visualització a l'enquesta
+</td>
+    <td valign="top"><em><strong>
+Exportació de dades de text
+</strong></em></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+4.Possibles respostes:
+	</em>
+      <p>
+Vermell=el color de la sang <br />
+Blau=el color del cel <br />
+Negre=contrari de blanc
+	</p></td>
+    <td valign="top"><strong>
+Quin és el teu color preferit?
+</strong><br />
+        <input type="radio" />
+el color de la sang <br />
+      <input type="radio" />
+el color del cel<br />
+      <input type="radio" />
+contrari de blanc
+</td>
+    <td valign="top"><p><em>
+Els &quot;valors&quot; Vermell, Blau i Negre s'exportaran a les columnes en lloc dels nombres per defecte 1, 2 i 3.<br />
+Vegeu el fitxer d'ajuda de la Descàrrega com a text.
+</em></p></td>
+  </tr>
+</table>
+<p>
+Podeu introduir <tt>&#8220;!other&#8221;</tt> a una línia per crear una opció <em><strong>opcional</strong></em> del tipus <em>omplir l'espai en blanc</em>. Una casella 
+        <tt>!other</tt> utilitza per defecte el text <em>Altres: </em>. Podeu canviar aquest text per defecte
+        utilitzant el següent format: <tt>&#8220;!other=<em>nou text&#8221;</em></tt> tal com es mostra a l'Exemple&nbsp;#3 més a dalt.
+</p>
+<h2 class="main">
+Notes
+</h2>
+<ol>
+  <li>Actualment, la longitud de la casella de text per a omplir està fixada a 25 caracters i no es pot modificar
+  a travès de la interfície en línia.</li>
+  <li>No té sentit proporcionar més d'una opció <tt>!other</tt> <em>fill in the blank</em> per a una pregunta del tipus botons d'opció.</li>
+  <li>Si qui respon l'enquesta marca el botó d'opció per a omplir un espai en blant i deixa buit el camp de text, <em>es mostrarà un missatge d'advertència</em> (quan es navegui cap a la següent pàgina o quan s'intenti enviar l'enquesta).</li>
+  <li>Si qui respon l'enquesta ha marcat un botó d'opció del tipus <em>omplir espai en blanc</em> i ha introduit dades al camp de text, i després canvia d'opinió i pitja un botó d'opció diferent a la mateixa pregunta, el camp de text serà buidat automàticament.</li>
+  <li>
+L'exemple #4 mostra una possible opció &quot;amagada&quot;, per exportar, en repostes amb nom, valors com a dades en lloc dels nombres habituals. Si no exportau mai les vostres dades per estudiar-les en paquets estadístics, no necessitareu aquesta opció.
+</li>
+</ol>
+
+<hr />
+<p style="font-size:smaller; text-align:center">Darrera modificació:
+  <!-- #BeginDate format:Fr1 -->12/07/08<!-- #EndDate -->
+</p>

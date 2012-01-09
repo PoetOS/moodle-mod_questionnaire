@@ -1,0 +1,99 @@
+<h3 align="center"><b>Tipos de preguntas </b></h3>
+<p>Seleccione el tipo de pregunta en la lista desplegable <strong>Tipo</strong>. Estas son las opciones posibles:</p>
+<p><strong>Sí/No</strong><br />
+    <input type="radio" name="bool" />
+  Sí<br />
+    <input type="radio" name="bool" />
+  No </p>
+<p><strong>Recuadro de texto (corto)</strong> <br />
+    <input name="text" type="text" size="30" />
+    <br />
+Puede configurar la <em>longitud en caracteres</em> del recuadro de texto y la <em>longitud máxima</em> del texto introducido.</p>
+<p>
+  <strong>Caja de texto (largo)</strong><br />
+  <textarea name="textarea" cols="40" rows="4"></textarea>
+</p>
+<p><strong> </strong>Puede utilizar los parámetros <em>Longitud</em> y <em>Precisión </em>para activar el editor HTML. <strong>No </strong>se recomienda activar el editor HTML si desea exportar los resultados al formato CVS/Excel. </p>
+<p><strong>Botones de Radio</strong><br />
+  <input type="radio" name="radio" />
+  Opción 1<br />
+  <input type="radio" name="radio" />
+  Opción 2<br />
+</p>
+<p><strong>Casillas de selección múltiple</strong><br />
+  <input name="checkbox" type="checkbox" />
+  Opción 1<br />
+  <input name="checkbox" type="checkbox" />
+Opción 2</p>
+<p>Las preguntas de tipo Botón de Radio y Casillas de selección pueden añadir de manera opcional un botón/casilla <em>Otro</em> con un recuadro de texto en blanco para introducir el enunciado deseado. </p>
+<p><strong>Lista desplegable</strong><br />
+  <select name="select">
+    <option></option>
+    <option>Opción 1</option>
+    <option>Opción 2</option>
+  </select>
+</p>
+<p>No hay ventajas reales de usar la lista desplegable o usar las casillas de selección o los botones de radio. </p>
+<p><strong>Escala de Likert (1..5)</strong>
+</p>
+
+
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td width="40" align="center" bgcolor="#eeeeee">1</td>
+    <td width="40" align="center" bgcolor="#dddddd">2</td>
+    <td width="40" align="center" bgcolor="#eeeeee">3</td>
+    <td width="40" align="center" bgcolor="#dddddd">4</td>
+    <td width="40" align="center" bgcolor="#eeeeee">5</td>
+    <td width="40" align="center" bgcolor="#dddddd">NS/NC</td>
+  </tr>
+  <tr>
+    <td>Opción 1</td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="1" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="2" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="3" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="4" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="5" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="NS/NC" /></td>
+  </tr>
+  <tr>
+    <td>Opción 2</td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="1" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="2" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="3" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="4" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="5" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="NS/NC" /></td>
+  </tr>
+  <tr>
+    <td>Opción 3</td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="1" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="2" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="3" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="4" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="5" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="NS/NC" /></td>
+  </tr>
+</table>
+<p>Vaya a los parámetros <strong>Longitud</strong> &amp; <strong>Precisión</strong> para configurar el número de columnas. </p>
+  <p><strong>Fecha</strong><br />
+  <input type="text" name="date" size="10" />
+  <em>(ej. 21/4/2002)</em></p>
+<p>Utilice este tipo de preguntas si espera una fecha con formato adecuado. Dicho formato dependerá del idioma utilizado por quien contesta el cuestionariot. Por ejemplo 4/21/2007 (US); 21/4/2007 (ES); 21-4-2007 (Francia); etc. Se mostrará un ejemplo con la fecha actual para orientar a los alumnos. Si un formato &quot;imposible&quot; or incorrecto es introducido, se reformateará correctamente (siempre y cuando sea posible) y/o se mostrará un mensaje de error. </p>
+<p><strong>Numérica</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>Utilice este tipo de pregunta si espera que la respuesta sea un número con un formato determinado. Utilizando los parámetros <strong>Longitud</strong> y <strong>Precisión</strong> podrá explicitar la longitud y el número de decimales exigidos. </p>
+<p><strong>Descripción<br />
+  </strong>No es un tipo de pregunta, sino un texto (breve) que se mostrará introduciendo a una serie de preguntas.</p>
+<h4>Nota</h4>
+<p>Cuando edita una pregunta existente, <em>puede cambiar el tipo de pregunta</em> pero sólo entre estos grupos de tipos de preguntas semejantes.</p>
+<ul>
+  <li>Tipos de preguntas sin recuadro de selección: <strong>Sí/No</strong>, <strong>Recuadro de texto</strong>, <strong>Caja de texto</strong>, <strong>Fecha</strong>,  <strong>Numéricas</strong> y <strong>Descripción</strong>;</li>
+  <li>Tipos de preguntas con recuadro de selección: <strong>Botones de radio, Casillas de selección</strong> y <strong>Escala de Likert</strong>.</li>
+</ul>
+<p>Ejemplo 1.- Texto de la pregunta: &quot;¿Te gusta Moodle?&quot; con una pregunta tipo Sí/No; puedes mantener el texto de la pregunta y transformar el tipo de pregunta a Caja de texto.</p>
+<p>Ejemplo 2.- Texto de la pregunta: &quot;¿Cuál es tu CMS favorito?&quot; con un tipo de pregunta de Botón de radio, puedes mantener el texto de la pregunta y el listado de posibles respuestas y transformarla en una pregunta de tipo Casillas de selección.</p>
+<p>Obviamente, no es recomendable editar las preguntas de un cuestionario que haya sido respondido por un número determinado de alumnos. </p>
+<p><a href="help.php?file=questionnaire/editquestions.html">Ayuda general - Modificar las preguntas</a> </p>

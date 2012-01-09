@@ -1,0 +1,82 @@
+<h2 class="main">Download in formato testo</h2> 
+<h3>Tipi di domande: bottoni radio o menu a tendina</h3>
+<p>
+Sulla pagina <strong>Download in formato testo</strong> sono dispoibili due caselle di spunta esclusivamente limitate a definire le opzioni di "download in formato testo" delle risposte fornite alle domande di tipo: bottoni radio e menu a tendina.</p>
+<p>Si supponga di voler scaricare le risposte alla seguente domanda: Qual è il vostro colore preferito? Scelta: blu, verde, rosso.</p><p>Sulla base delle selezioni esemplificate nella tabella appresso riportata si scaricheranno i valori corrispondenti.</p>
+<table border="1">
+  <tr>
+    <td><label for="auto-cb0001">colore scelto</label></td>
+    <td>blu</td>
+    <td>verde</td>
+    <td>rosso</td>
+  </tr>
+  <tr>
+    <td>Caso 1: Sovrascrivi le risposte con il valore dell'opzione html</td>
+    <td>1</td>
+    <td>2</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Caso 2: Includi anche i testi delle risposte </td>
+    <td>blu</td>
+    <td>verde</td>
+    <td>rosso</td>
+  </tr>
+  <tr>
+    <td>Caso 3: Sovrascrivi le risposte con il valore dell'opzione html +  Includi anche i testi delle risposte </td>
+    <td>1&nbsp;:&nbsp;blu </td>
+    <td>2&nbsp;:&nbsp;verde </td>
+    <td>3&nbsp;:&nbsp;rosso </td>
+  </tr>
+  <tr>
+    <td>Caso 4: Nessuna selezione della prima casella di spunta ("Sovrascrivi le risposte con il valore dell'opzione html") = come caso 2</td>
+    <td>blu</td>
+    <td>verde</td>
+    <td>rosso</td>
+  </tr>
+</table>
+<p>
+	Per analizzare i dati raccolti nel questionario con software terzi, come <em>Excel</em>, <em>Open Office Calc</em> o pacchetti statistici specifici, è consentita l'esportazione degli stessi nel formato testuale solitamente chiamato CSV (Comma Separated Value), ovvero, "dati separati da virgole". Nonostante questa indicazione, però, per un uso più generale dello strumento, il carattere di separazione dei dati usato correntemente è il TAB (tabulatore) piuttosto che la virgola (,) o il punto e virgola (;).
+</p>
+<p>
+	Selezionando il bottone "Download in formato testo" (da "Le mie risposte (n)" o "Tutte le risposte (n)"->"Visualizza tutte le risposte"), verrà mostrata una finestra per chiedere all'utente se salvare il file di dati o aprirlo. Si selezioni "Salva su disco".
+	<br />
+	Il nome proposto per il file di dati è il nome del questionario, anche se ne viene consentita la modifica. L'estensione proposta è "txt" (nome: *.txt) e, ovviamente, è possibile modificare anche questa. Si noti che è necessario rinominare l'estensione del file in "csv" (nome: *.csv) qualora lo si intenda importare in Open Office Calc.
+</p>
+<p>
+	Procedere quindi aprendo, il file generato, con il software che si intende utilizzare. Le operazioni da eseguire all'interno del software prescelto dipendono, ovviamente, da quest'ultimo. Comunque, se si sta utilizzando un linguaggio non ASCII per i dati del questionario (perché si adopera Moodle in una lingua non ASCII o si acquisiscono dati del questionario in una codifica non ASCII), allora <em>Excel</em> (o <em>Open Office Calc</em>) potrebbero essere in grado di rilevare automaticamente che il file importato, proveniente da Moodle, è codificato in UTF-8, e decodificarlo di conseguenza. Si consideri che se gran parte dei dati del file utilizzano la codifica ASCII mentre solo una minima parte usa una codifica non ASCII, il rilevamento automatico potrebbe non funzionare e potrebbe essere necessario selezionare manualmente la codifica UTF-8 fra quelle rese disponibili dal software in uso.
+</p>
+<p>
+	La prima riga, della "tabella" di dati importata in un software terzo, conterrà i nomi delle domande del questionario di Moodle. Questa prima riga sarà seguita da una nuova riga per ogni questionario acquisito. Le prime sette etichette (colonne) della prima riga sono: 
+</p>
+<table border="1" cellpadding="3" cellspacing="1">
+	<tr>
+		<th>
+			Risposta
+		</th>
+		<th>
+			Data di presentazione
+		</th>
+		<th>
+			Corso
+		</th>
+		<th>
+			Gruppo
+		</th>
+		<th>
+			ID
+		</th>
+		<th>
+			Nome completo
+		</th>
+		<th>
+			Nome utente
+		</th>
+	</tr>
+</table>
+<p>
+	La colonna "Data di presentazione" contiene la data (e l'ora, ovvero, l'ora, i minuti e i secondi) del momento in cui è stata acquisita ogni singola risposta. Per esempio: 15/09/2007 15:57. Solitamente è semplice formattare la colonna del software terzo per visualizzare la data con un formato adeguato alle convenzioni di ogni lingua, pur preservando la possibilità di ordinare i dati sulla base del campo stesso.
+</p>
+<p>
+	Se si è impostato il parametro "Identità del compilatore" ad anonimo allora le colonne relative all'<strong>ID</strong> e al <strong>Nome utente</strong> saranno lasciate vuote mentre la colonna relativa al <strong>Nome completo</strong> riporterà la dicitura "Anonimo". 
+</p>

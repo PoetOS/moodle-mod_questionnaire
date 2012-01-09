@@ -1,0 +1,140 @@
+<h2 class="main">Risposte per i bottoni radio</h2> 
+<p>
+	Quando si sceglie la domanda di tipo <strong>Bottoni radio</strong>, è necessario riportare le possibili risposte in quest'area in fondo alla finestra di <strong>Modifica le domande</strong> riportandone una per riga. Esempio:
+</p>
+<table border="1" cellpadding="5">
+	<tr>
+		<th width="250" valign="top" scope="col">
+			Durante la creazione 
+		</th>
+		<th width="243" valign="top" scope="col">
+			Come appare all'utente remoto 
+		</th>
+		<th width="434" valign="top" scope="col">
+			(se visualizzato in orizzontale) 
+		</th>
+	</tr>
+	<tr>
+		<td valign="top">
+			<em>1. Inserire le risposte</em>: 
+<textarea name="textarea" cols="24" rows="4">Rosso
+Blu
+Nero</textarea>
+		</td>
+		<td valign="top">
+			<strong>Qual è il tuo colore preferito?</strong>
+			<br />
+			<input type="radio" name="radio" /> Rosso
+			<br />
+			<input type="radio" name="radio" /> Blu
+			<br />
+			<input type="radio" name="radio" /> Nero
+		</td>
+		<td valign="top">
+			<strong>Qual è il tuo colore preferito?</strong>
+			<br />
+			<input type="radio" name="radio" /> Rosso <input type="radio" name="radio" /> Blu <input type="radio" name="radio" /> Nero
+		</td>
+	</tr>
+	<tr>
+		<td valign="top">
+			<em>2. Inserire le risposte</em>: 
+<textarea name="textarea" cols="24" rows="4">Rosso
+Blu
+Nero
+!other</textarea>
+		</td>
+		<td valign="top">
+			<strong>Qual è il tuo colore preferito? </strong>
+			<br />
+			<input type="radio" name="radio" /> Rosso
+			<br />
+			<input type="radio" name="radio" /> Blu
+			<br />
+			<input type="radio" name="radio" /> Nero
+			<br />
+			<input type="radio" name="radio" /> Altro: <input type="text" name="date22" size="15" />
+		</td>
+		<td valign="top">
+			<strong>Qual è il tuo colore preferito?</strong>
+			<br />
+			<input type="radio" name="radio" /> Rosso <input type="radio" name="radio" /> Blu <input type="radio" name="radio" /> Nero 
+			<br />
+			<input type="radio" name="radio" /> Altro: <input type="text" name="date2" size="15" />
+		</td>
+	</tr>
+	<tr>
+		<td valign="top">
+			<em>3. Inserire le risposte</em> 
+<textarea name="textarea" cols="24" rows="4">Rosso
+Blu
+Nero
+!other=Altra risposta: </textarea>				
+		</td>
+		<td valign="top">
+			<strong>Qual è il tuo colore preferito?</strong>
+			<br />
+			<input type="radio" name="radio" /> Rosso
+			<br />
+			<input type="radio" name="radio" /> Blu
+			<br />
+			<input type="radio" name="radio" /> Nero
+			<br />
+			<input type="radio" name="radio" /> Altra risposta: <input type="text" name="date22" size="15" />
+		</td>
+		<td valign="top">
+			<strong>Qual è il tuo colore preferito?</strong>
+			<br />
+			<input type="radio" name="radio" /> Rosso <input type="radio" name="radio" /> Blu <input type="radio" name="radio" /> Nero 
+			<br />
+			<input type="radio" name="radio" /> Altra risposta: <input type="text" name="date2" size="15" />
+		</td>
+	</tr>
+	<tr>
+		<td valign="top">
+			&nbsp;
+		</td>
+		<td valign="top">
+			Come appare all'utente remoto 
+		</td>
+		<td valign="top">
+			<em><strong>Dati esportati in formato testo </strong></em>
+		</td>
+	</tr>
+	<tr>
+		<td valign="top">
+			<em>4. Inserire le risposte</em> 
+<textarea name="textarea" cols="24" rows="4">Rosso=Il colore del sangue
+Blu=Il colore del cielo
+Nero=L'opposto del bianco</textarea>				
+		</td>
+		<td valign="top">
+			<strong>Qual è il tuo colore preferito? </strong>
+			<br />
+			<input type="radio" name="radio" />Il colore del sangue
+			<br />
+			<input type="radio" name="radio" />Il colore del cielo
+			<br />
+			<input type="radio" name="radio" />L'opposto del bianco
+		</td>
+		<td valign="top">
+			<p>
+				<em>I &quot;valori&quot; Rosso, Blu e Nero saranno riportati nelle colonne al posto dei numeri 1, 2 e 3.
+					<br />
+					Vedi il file di aiuto <a href="help.php?module=questionnaire&amp;file=downloadtextformat.html">Scarica in formato testo</a>.</em>
+			</p>
+		</td>
+	</tr>
+</table>
+<p>
+	E' possibile usare <tt>"!other"</tt> in una riga per creare il campo "Altro" di testo <em><strong>opzionale</strong></em>.
+	Il campo opzionale <tt>!other</tt> avrà come etichetta di default <em>Altro:</em>. E' possibile cambiare questo testo di default usando il formato: <tt>"!other=<em>nuova etichetta"</em></tt> come mostrato nel precedente esempio 3.
+</p>
+<strong>Note</strong> 
+<ol type="a">
+  <li>Al momento la lunghezza del testo del campo "altro" è di 25 caratteri e non può essere modificata attraverso l'interfaccia web. </li>
+  <li>Non ha senso prevedere più di una possibilità di campo "altro" per le domande con bottoni radio.</li>
+  <li>Se l'utente seleziona il bottone radio corrispondente al campo "Altro" ma lascia vuoto il campo di testo, sarà mostrato un messaggio di attenzione (quando si tenti di passare alla pagina successiva o di inviare il questionario).</li>
+  <li>Se l'utente seleziona il bottone radio relativo all'alternativa <em>campo "altro"</em> e scrive qualcosa nel campo di testo associato ma poi cambia idea e spunta un altro bottone radio nella stessa domanda, il campo di testo precedentemente scritto viene automaticamente vuotato.</li>
+  <li>L'esempio 4 mostra una possibile opzione &quot;nascosta&quot; per esportare  i valori nominali delle risposte piuttosto che i valori numerici standard. Se non si intendono esportare i dati per analizzarli con pacchetti statistici, questa opzione è inutile.</li>
+</ol>

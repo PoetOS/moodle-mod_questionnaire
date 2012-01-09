@@ -1,0 +1,86 @@
+<p align="center"><b>Preguntas: Longitud y Precisión </b></p>
+
+<p>La tabla inferior muestra la incidencia de estos dos parámetros <em>según el tipo de pregunta seleccionada</em>. </p>
+<table width="100%" border="1" align="center" cellpadding="5" cellspacing="5" bordercolor="#333333">
+  <tr>
+    <th width="76" align="left">Tipo</th>
+    <th width="71" align="left">Longitud</th>
+    <th width="81" align="left">Precisión</th>
+    <th width="719" align="left">&nbsp;</th>
+  </tr>
+  <tr>
+    <td><strong>Sí/No</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Recuadro de texto (corto)</strong></td>
+    <td><strong>x&nbsp;</strong>longitud</td>
+    <td><strong>y</strong> longitud máxima</td>
+    <td>Muestra una caja, ocupando el espacio de una línea, para introducir texto de <strong>x</strong> caracteres de longitud donde la máxima longitud de texto que se puede introducir se limita en la opción <strong>y&nbsp;</strong>. </td>
+  </tr>
+  <tr>
+    <td><strong>Caja de texto (largo)</strong></td>
+    <td><strong>x&nbsp;</strong>columnas</td>
+    <td><strong>y</strong> filas</td>
+    <td>Muestra un recuadro de texto de <strong>x</strong> caracteres de anchura y con <strong>y</strong> filas (o número de líneas).<br />
+      Si deja el valor por defecto <strong>0</strong> (o si selecciona <strong>0</strong>), el editor HTML se mostrará con su anchura y  altura estándar (siempre y cuando esté disponible en el contexto de ese curso o usuario).</td>
+  </tr>
+  <tr>
+    <td><strong>Botones de Radio</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Casillas de selección múltiple</strong></td>
+    <td><strong>x</strong>&nbsp;nº mínimo de casillas&nbsp;</td>
+    <td><strong>y&nbsp;</strong>número máximo de casillas&nbsp;</td>
+    <td>Utilice esta opción para forzar a quien hace el cuestionario a que seleccione un mínimo de <strong>x</strong> y un máximo de <strong>y</strong> casillas. Para que seleccionen un número exacto, configure los valores de <strong>x</strong> y de <strong>y</strong> con el mismo valor. Si sólo desea configurar uno de los dos valores (el máximo o el mínimo), deje el que no desea mofificar en su valor por defecto <strong>0</strong>. Si configura<strong> x</strong> o <strong>y</strong> a valores distintos de los que trae por defecto, <strong>0</strong>, se desplegará un mensaje de aviso cuando el encuestado no cumpla con las indicaciones. Obviamente, debería ser muy claro con las normas tanto en las instrucciones generales del cuestionario como en el enunciado de alguna pregunta en particular. </td>
+  </tr>
+  <tr>
+    <td><strong>Lista Desplegable</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong><a href="http://en.wikipedia.org/wiki/Likert_scale" target="_blank">Escala de Likert</a></strong></td>
+    <td><strong>x</strong> ítem </td>
+    <td><strong>y</strong></td>
+    <td><ul>
+      <li><strong>x</strong> es el número de ítem que se usarán en su escala (Likert). Lo habitual es usar valores en una escala de 3 a 5). Si no cambia el valor por defecto <strong>0</strong>, se utilizará el valor <strong>5</strong>.</li>
+      <li> Configure <strong>y</strong> a <strong>1</strong> si desea que aparezca una columna <strong>NS/NC</strong> (No sabe/No contesta).</li>
+      <li>Configure <strong>y</strong> a <strong>2</strong> si desea <em>evitar selecciones duplicadas en cada  <strong>columna</strong></em>.
+        <ul>
+          <li>Esta opción es especialmente útil si desea que el estudiante clasifique un determinado número de ítem en una escala de 1 a n sin posibilidad de ex aequo. Ejemplo: ordenar los ítem A, B y C en orden de preferencia. Será correcto poner A1, B3 y C2 o bien A3, B2 y C1, pero <em>no será posible</em> para el estudiante introducir A1, B1, C2 o A1, B2, C2, etc.</li>
+          <li>Conjuntamente con esta opción de los <a href="help.php?file=questionnaire/possibleanswers.html#named_degrees">grados señalados</a>, la opción <strong>2</strong> puede ser también útil si desea que el estudiante cree asociaciones únicas entre los ítem y una graduación señalada. Por ejemplo, ¿qué factor psicológico asocias a estos colores?: rojo, azul y amarillo; grados posibles: 1-excitación, 2-calma, 3-concentración.</li>
+        </ul>
+      </li>
+    </ul></td>
+  </tr>
+  <tr>
+    <td><strong>Fecha</strong></td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td bgcolor="#CCCCCC">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><strong>Numérica</strong></td>
+    <td><strong>x</strong> longitud</td>
+    <td><strong>y</strong>&nbsp;precisión</td>
+    <td><p>Utilice x para determinar un límite en el número de caracteres introducidos en una pregunta numérica. Utilice <strong>y</strong> para indicar el número de decimales que se han de poner. </p>
+      <ul>
+        <li>Ejemplo 1: x=5; y=2. Si la respuesta introducida es 12, será automáticamente cambiada a 12.00 </li>
+        <li>Ejemplo 2.  x=5; y=2. Si la respuesta introducida es 12.569 será automáticamente cambiada a 12.57 (se desplegará un mensaje explicando el cambio a la persona que está respondiendo al cuestionario) </li>
+        <li>Ejemplo 3.  x=5; y=2. No se podrá escribir un número mayor. En el ejemplo 12.57898 (máxima longitud (x) = 5 + decimales + (y precisión) 2 = 8. </li>
+    </ul></td>
+  </tr>
+</table>
+<p><strong>Notas</strong></p>
+<ol type="a">
+  <li>Estos parámetros (longitud y precisión) no son muy conocidos. En versiones posteriores de Questionnaire esperamos mostrar una interfaz más amigable.</li>
+  <li>En todo caso se ha mantenido esta nomenclatura (Longitud y Precisión) pensando en aquellos usuarios de Moodle que ya han creado cuestionarios. </li>
+</ol>
+<p><a href="help.php?file=questionnaire/editquestions.html"><em><strong>Ayuda general</strong></em> Modificar o editar las preguntas</a> </p>
