@@ -1,4 +1,4 @@
-<?php  // $Id: questions.php,v 1.15.2.3 2010/08/03 20:30:46 joseph_rezeau Exp $
+<?php  // $Id: questions.php,v 1.27 2011/02/07 19:42:24 mchurch Exp $
 /// This page prints a particular instance of questionnaire
 
     require_once("../../config.php");
@@ -9,25 +9,43 @@
     $action = optional_param('action', 'main', PARAM_ALPHA);    // screen
     $qid    = optional_param('qid', 0, PARAM_INT);              // Question id
     $moveq  = optional_param('moveq', 0, PARAM_INT);            // Question id to move
+    $qtype  = optional_param('type_id', 0, PARAM_INT); // Question type
 
     if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-        error("Course Module ID was incorrect");
+        print_error('invalidcoursemodule');
     }
 
-    if (! $course = get_record("course", "id", $cm->course)) {
-        error("Course is misconfigured");
+    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+        print_error('coursemisconf');
     }
 
-    if (! $questionnaire = get_record("questionnaire", "id", $cm->instance)) {
-        error("Course module is incorrect");
+    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+        print_error('invalidcoursemodule');
     }
 
-    require_login($course->id);
+    require_course_login($course, true, $cm);
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+
+    $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/questions.php');
+    $url->param('id', $id);
+    $url->param('action', $action);
+    if ($qid) {
+        $url->param('qid', $qid);
+    }
+    if ($moveq) {
+        $url->param('moveq', $moveq);
+    }
+    if ($qtype) {
+        $url->param('type_id', $qtype);
+    }
+
+    $PAGE->set_url($url);
+    $PAGE->set_context($context);
 
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
     if (!$questionnaire->capabilities->editquestions) {
-        error(get_string('nopermissions', 'error','mod:questionnaire:edit'));
+        print_error('nopermissions', 'error','mod:questionnaire:edit');
     }
 
     $SESSION->questionnaire->current_tab = 'questions';
@@ -72,12 +90,12 @@
             /// Need to use the key, since IE returns the image position as the value rather than the specified
             /// value in the <input> tag.
                 $qid = key($qformdata->removebutton);
-                set_field('questionnaire_question', 'deleted', 'y', 'id', $qid, 'survey_id', $qformdata->sid);
+                $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $qformdata->sid));
                 $select = 'survey_id = '.$qformdata->sid.' AND deleted = \'n\' AND position > '.
                           $questionnaire->questions[$qid]->position;
-                if ($records = get_records_select('questionnaire_question', $select, 'position ASC')) {
+                if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
                     foreach ($records as $record) {
-                        set_field('questionnaire_question', 'position', $record->position-1, 'id', $record->id);
+                        $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
                     }
                 }
                 $reload = true;
@@ -92,7 +110,7 @@
                 if($qformdata->type_id == 99) { // Adding section break is handled right away....
                     $sql = 'SELECT MAX(position) as maxpos FROM '.$CFG->prefix.'questionnaire_question '.
                            'WHERE survey_id = '.$qformdata->sid.' AND deleted = \'n\'';
-                    if ($record = get_record_sql($sql)) {
+                    if ($record = $DB->get_record_sql($sql)) {
                         $pos = $record->maxpos + 1;
                     } else {
                         $pos = 1;
@@ -102,7 +120,7 @@
                     $question->type_id = 99;
                     $question->position = $pos;
                     $question->content = 'break';
-                    insert_record('questionnaire_question', $question);
+                    $DB->insert_record('questionnaire_question', $question);
                     $reload = true;
                 } else {
 	                /// Switch to edit question screen.
@@ -115,10 +133,10 @@
             /// Need to use the key, since IE returns the image position as the value rather than the specified
             /// value in the <input> tag.
                 $qid = key($qformdata->moveupbutton);
-                set_field('questionnaire_question', 'position', $questionnaire->questions[$qid]->position,
-                          'survey_id', $questionnaire->sid, 'position', ($questionnaire->questions[$qid]->position-1));
-                set_field('questionnaire_question', 'position', ($questionnaire->questions[$qid]->position-1),
-                          'id', $qid);
+                $DB->set_field('questionnaire_question', 'position', $questionnaire->questions[$qid]->position,
+                          array('survey_id' => $questionnaire->sid, 'position' => ($questionnaire->questions[$qid]->position-1)));
+                $DB->set_field('questionnaire_question', 'position', ($questionnaire->questions[$qid]->position-1),
+                          array('id' => $qid));
                 /// Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
                 redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
                 $reload = true;
@@ -126,18 +144,18 @@
             /// Need to use the key, since IE returns the image position as the value rather than the specified
             /// value in the <input> tag.
                 $qid = key($qformdata->movednbutton);
-                set_field('questionnaire_question', 'position', $questionnaire->questions[$qid]->position,
-                          'survey_id', $questionnaire->sid, 'position', ($questionnaire->questions[$qid]->position + 1),
-                          'deleted', 'n');
-                set_field('questionnaire_question', 'position', ($questionnaire->questions[$qid]->position+1),
-                          'id', $qid);
+                $DB->set_field('questionnaire_question', 'position', $questionnaire->questions[$qid]->position,
+                          array('survey_id' => $questionnaire->sid, 'position' => ($questionnaire->questions[$qid]->position + 1),
+                                'deleted' => 'n'));
+                $DB->set_field('questionnaire_question', 'position', ($questionnaire->questions[$qid]->position+1),
+                               array('id' => $qid));
                 /// Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
                 redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
                 $reload = true;
             } else if (isset($qformdata->movebutton)) {
                 /// Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
                 redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.
-                         '&amp;moveq='.key($qformdata->movebutton));
+                         '&moveq='.key($qformdata->movebutton));
                 $reload = true;
             } else if (isset($qformdata->moveherebutton)) {
             /// Need to use the key, since IE returns the image position as the value rather than the specified
@@ -152,7 +170,7 @@
                 foreach ($qformdata->pos as $qidx => $position) {
                     $newpos = $position;
                     if (($questionnaire->questions[$qidx]->position) != $newpos) {
-                        set_field('questionnaire_question', 'position', $newpos, 'id', $qidx);
+                        $DB->set_field('questionnaire_question', 'position', $newpos, array('id' => $qidx));
                         $oldpos = $questionnaire->questions[$qidx]->position;
                         break;
                     }
@@ -165,9 +183,9 @@
                         if ($curpos < $newpos) {
                             // do nothing yet.
                         } else if ($curpos < $oldpos) {
-                            set_field('questionnaire_question', 'position', ($curpos+1), 'id', $qidx);
+                            $DB->set_field('questionnaire_question', 'position', ($curpos+1), array('id' => $qidx));
                         } else if ($curpos == $oldpos) {
-                            set_field('questionnaire_question', 'position', $newpos, 'id', $qidx);
+                            $DB->set_field('questionnaire_question', 'position', $newpos, array('id' => $qidx));
                         } else {
                             break;
                         }
@@ -179,9 +197,9 @@
                         if ($curpos < $oldpos) {
                             // do nothing yet.
                         } else if ($curpos == $oldpos) {
-                            set_field('questionnaire_question', 'position', $newpos, 'id', $qidx);
+                            $DB->set_field('questionnaire_question', 'position', $newpos, array('id' => $qidx));
                         } else if ($curpos <= $newpos) {
-                            set_field('questionnaire_question', 'position', ($curpos-1), 'id', $qidx);
+                            $DB->set_field('questionnaire_question', 'position', ($curpos-1), array('id' => $qidx));
                         } else {
                             break;
                         }
@@ -200,17 +218,23 @@
             $question->qid = $question->id;
             $question->sid = $questionnaire->survey->id;
             $question->id = $cm->id;
-            $questions_form = new questionnaire_edit_question_form('questions.php');
+            $draftid_editor = file_get_submitted_draft_itemid('question');
+            $content = file_prepare_draft_area($draftid_editor, $context->id, 'mod_questionnaire', 'question',
+                                               $qid, array('subdirs'=>true), $question->content);
+            $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid'=>$draftid_editor);
         } else {
-            $qtype = optional_param('type_id', 0, PARAM_INT); // Question type
             $question = new Object();
             $question->sid = $questionnaire->survey->id;
             $question->id = $cm->id;
             $question->type_id = $qtype;
             $question->type = '';
-            $questions_form = new questionnaire_edit_question_form('questions.php');
-            $questions_form->set_data($question);
+            $draftid_editor = file_get_submitted_draft_itemid('question');
+            $content = file_prepare_draft_area($draftid_editor, $context->id, 'mod_questionnaire', 'question',
+                                               null, array('subdirs'=>true), '');
+            $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid'=>$draftid_editor);
         }
+        $questions_form = new questionnaire_edit_question_form('questions.php');
+        $questions_form->set_data($question);
         if ($questions_form->is_cancelled()) {
             /// Switch to main screen
             $action = 'main';
@@ -280,8 +304,17 @@
                     $qformdata->precise = max($qformdata->length, $qformdata->precise);
                 }
             }
+
             if (!empty($qformdata->qid)) {
                 /// Update existing question:
+
+                /// Handle any attachments in the content
+                $qformdata->itemid  = $qformdata->content['itemid'];
+                $qformdata->format  = $qformdata->content['format'];
+                $qformdata->content = $qformdata->content['text'];
+                $qformdata->content = file_save_draft_area_files($qformdata->itemid, $context->id, 'mod_questionnaire', 'question',
+                                                                 $qformdata->qid, array('subdirs'=>true), $qformdata->content);
+
                 $fields = array('name','type_id','length','precise','required','content');
                 $question_record = new Object();
                 $question_record->id = $qformdata->qid;
@@ -289,26 +322,37 @@
                     if(isset($qformdata->$f))
                         $question_record->$f = trim($qformdata->$f);
                 }
-                $result = update_record('questionnaire_question', $question_record);
+                $result = $DB->update_record('questionnaire_question', $question_record);
             } else {
                 /// Create new question:
                 // set the position to the end
                 $sql = 'SELECT MAX(position) as maxpos FROM '.$CFG->prefix.'questionnaire_question '.
                        'WHERE survey_id = '.$qformdata->sid.' AND deleted = \'n\'';
-                if ($record = get_record_sql($sql)) {
+                if ($record = $DB->get_record_sql($sql)) {
                     $qformdata->position = $record->maxpos + 1;
                 } else {
                     $qformdata->position = 1;
                 }
+
+                /// Need to update any image content after the question is created, so create then update the content.
                 $qformdata->survey_id = $qformdata->sid;
-                $fields = array('survey_id','name','type_id','length','precise','required','content','position');
+                $fields = array('survey_id','name','type_id','length','precise','required','position');
                 $question_record = new Object();
                 foreach($fields as $f) {
                     if(isset($qformdata->$f)) {
                         $question_record->$f = trim($qformdata->$f);
                     }
                 }
-                $qformdata->qid = insert_record('questionnaire_question', $question_record);
+                $question_record->content = '';
+                $qformdata->qid = $DB->insert_record('questionnaire_question', $question_record);
+
+                /// Handle any attachments in the content
+                $qformdata->itemid  = $qformdata->content['itemid'];
+                $qformdata->format  = $qformdata->content['format'];
+                $qformdata->content = $qformdata->content['text'];
+                $content            = file_save_draft_area_files($qformdata->itemid, $context->id, 'mod_questionnaire', 'question',
+                                                                 $qformdata->qid, array('subdirs'=>true), $qformdata->content);
+                $result = $DB->set_field('questionnaire_question', 'content', $content, array('id' => $qformdata->qid));
             }
 
             // UPDATE or INSERT rows for each of the question choices for this question
@@ -323,13 +367,13 @@
                 }
 
                 $newchoices = explode("\n", $qformdata->allchoices);
-                $nidx = 0; 
+                $nidx = 0;
                 $newcount = count($newchoices);
 
               while (($nidx < $newcount) && ($cidx < $oldcount)) {
                     if ($newchoices[$nidx] != $echoice->content) {
                         $newchoices[$nidx] = trim ($newchoices[$nidx]);
-                        $result = set_field('questionnaire_quest_choice', 'content', $newchoices[$nidx], 'id', $ekey);
+                        $result = $DB->set_field('questionnaire_quest_choice', 'content', $newchoices[$nidx], array('id' => $ekey));
                     }
                     $nidx++;
                     $echoice = next($question->choices);
@@ -342,12 +386,12 @@
                    $choice_record = new Object();
                    $choice_record->question_id = $qformdata->qid;
                    $choice_record->content = trim($newchoices[$nidx]);
-                   $result = insert_record('questionnaire_quest_choice', $choice_record);
+                   $result = $DB->insert_record('questionnaire_quest_choice', $choice_record);
                    $nidx++;
                 }
 
                 while ($cidx < $oldcount) {
-                    $result = delete_records('questionnaire_quest_choice', 'id', $ekey);
+                    $result = $DB->delete_records('questionnaire_quest_choice', array('id' => $ekey));
                     $echoice = next($question->choices);
                     $ekey = key($question->choices);
                     $cidx++;
@@ -389,25 +433,43 @@
                 $question->qid = $question->id;
                 $question->sid = $questionnaire->survey->id;
                 $question->id = $cm->id;
-                $questions_form = new questionnaire_edit_question_form('questions.php');
-                $questions_form->set_data($question);
+                $draftid_editor = file_get_submitted_draft_itemid('question');
+                $content = file_prepare_draft_area($draftid_editor, $context->id, 'mod_questionnaire', 'question',
+                                                   $qid, array('subdirs'=>true), $question->content);
+                $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid'=>$draftid_editor);
             } else {
                 $question = new Object();
                 $question->sid = $questionnaire->survey->id;
                 $question->id = $cm->id;
                 $question->type_id = $qtype;
-                $question->type = get_field('questionnaire_question_type', 'type', 'id', $qtype);
-                $questions_form = new questionnaire_edit_question_form('questions.php');
-                $questions_form->set_data($question);
+                $question->type = $DB->get_field('questionnaire_question_type', 'type', array('id' => $qtype));
+                $draftid_editor = file_get_submitted_draft_itemid('question');
+                $content = file_prepare_draft_area($draftid_editor, $context->id, 'mod_questionnaire', 'question',
+                                                   null, array('subdirs'=>true), '');
+                $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid'=>$draftid_editor);
             }
+            $questions_form = new questionnaire_edit_question_form('questions.php');
+            $questions_form->set_data($question);
         }
     }
 
 /// Print the page header
-    $navigation = build_navigation(get_string('editingsurvey', 'questionnaire'), $questionnaire->cm);
-    print_header_simple(get_string('editingsurvey', 'questionnaire'), '', $navigation);
+    if ($action == 'question') {
+	    if (isset($question->qid)) {
+	        $streditquestion = get_string('editquestion', 'questionnaire', questionnaire_get_type($question->type_id));
+	    } else {
+            $streditquestion = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($question->type_id));
+	    }
+    } else {
+        $streditquestion = get_string('questions', 'questionnaire');
+    }
+
+    $PAGE->set_title($streditquestion);
+    $PAGE->set_heading(format_string($course->fullname));
+    $PAGE->navbar->add($streditquestion);
+    echo $OUTPUT->header();
     include('tabs.php');
     $questions_form->display();
-    print_footer($course);
+    echo $OUTPUT->footer();
 
 ?>

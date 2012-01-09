@@ -1,4 +1,4 @@
-<?php // $Id: resultslib.php,v 1.5 2007/06/12 17:04:48 mchurch Exp $
+<?php // $Id: resultslib.php,v 1.6 2009/06/08 16:15:42 mchurch Exp $
 
 // Written by James Flemer
 // <jflemer@alum.rpi.edu>
@@ -25,10 +25,10 @@ function mkrespercent($counts,$total,$precision,$showTotals) {
         else { $percent = 0; }
         if($percent > 100) { $percent = 100; }
 
-        if($bg != $GLOBALS['ESPCONFIG']['bgalt_color1'])
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color1'];
+        if($bg != QUESTIONNAIRE_BGALT_COLOR1)
+            $bg = QUESTIONNAIRE_BGALT_COLOR1;
         else
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color2'];
+            $bg = QUESTIONNAIRE_BGALT_COLOR2;
 ?>
     <tr bgcolor="<?php echo($bg); ?>">
         <td><?php echo($content); ?></td>
@@ -51,10 +51,10 @@ function mkrespercent($counts,$total,$precision,$showTotals) {
         else { $percent = 0; }
         if($percent > 100) { $percent = 100; }
 
-        if($bg != $GLOBALS['ESPCONFIG']['bgalt_color1'])
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color1'];
+        if($bg != QUESTIONNAIRE_BGALT_COLOR1)
+            $bg = QUESTIONNAIRE_BGALT_COLOR1;
         else
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color2'];
+            $bg = QUESTIONNAIRE_BGALT_COLOR2;
 ?>
     <tr bgcolor="<?php echo($bg); ?>">
         <td><b><?php print_string('total', 'questionnaire'); ?></b></td>
@@ -97,10 +97,10 @@ function mkresrank($counts,$total,$precision,$showTotals) {
             $p = 0;
         $pt += $p;
 
-        if($bg != $GLOBALS['ESPCONFIG']['bgalt_color1'])
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color1'];
+        if($bg != QUESTIONNAIRE_BGALT_COLOR1)
+            $bg = QUESTIONNAIRE_BGALT_COLOR1;
         else
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color2'];
+            $bg = QUESTIONNAIRE_BGALT_COLOR2;
 ?>
     <tr bgcolor="<?php echo($bg); ?>">
         <td align="right"><b><?php echo(++$i); ?></b></td>
@@ -111,10 +111,10 @@ function mkresrank($counts,$total,$precision,$showTotals) {
 <?php
     } // end while
     if($showTotals) {
-        if($bg != $GLOBALS['ESPCONFIG']['bgalt_color1'])
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color1'];
+        if($bg != QUESTIONNAIRE_BGALT_COLOR1)
+            $bg = QUESTIONNAIRE_BGALT_COLOR1;
         else
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color2'];
+            $bg = QUESTIONNAIRE_BGALT_COLOR2;
 ?>
     <tr bgcolor="<?php echo($bg); ?>">
         <td colspan=2 align="left"><b><?php print_string('total', 'questionnaire'); ?></b></td>
@@ -139,10 +139,10 @@ function mkrescount($counts,$total,$precision,$showTotals) {
 <?php
     $bg = '';
     while(list($content,$num) = each($counts)) {
-        if($bg != $GLOBALS['ESPCONFIG']['bgalt_color1'])
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color1'];
+        if($bg != QUESTIONNAIRE_BGALT_COLOR1)
+            $bg = QUESTIONNAIRE_BGALT_COLOR1;
         else
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color2'];
+            $bg = QUESTIONNAIRE_BGALT_COLOR2;
 ?>
     <tr bgcolor="<?php echo($bg); ?>">
         <td><?php echo($content); ?></td>
@@ -153,10 +153,10 @@ function mkrescount($counts,$total,$precision,$showTotals) {
         $i += $num;
     } // end while
     if($showTotals) {
-        if($bg != $GLOBALS['ESPCONFIG']['bgalt_color1'])
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color1'];
+        if($bg != QUESTIONNAIRE_BGALT_COLOR1)
+            $bg = QUESTIONNAIRE_BGALT_COLOR1;
         else
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color2'];
+            $bg = QUESTIONNAIRE_BGALT_COLOR2;
 ?>
     <tr bgcolor="<?php echo($bg); ?>">
         <td><b><?php print_string('total', 'questionnaire'); ?></b></td>
@@ -182,10 +182,10 @@ function mkreslist($counts,$total,$precision,$showTotals) {
     <tr><th align="left"><?php print_string('num', 'questionnaire'); ?></th><th><?php print_string('response', 'questionnaire'); ?></th></tr>
 <?php
     while(list($text,$num) = each($counts)) {
-        if($bg != $GLOBALS['ESPCONFIG']['bgalt_color1'])
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color1'];
+        if($bg != QUESTIONNAIRE_BGALT_COLOR1)
+            $bg = QUESTIONNAIRE_BGALT_COLOR1;
         else
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color2'];
+            $bg = QUESTIONNAIRE_BGALT_COLOR2;
         echo("<tr bgcolor=\"$bg\"><th align=\"left\" valign=\"top\">$num</th><td>$text</td></tr>\n");
     }
 ?>
@@ -221,10 +221,10 @@ function mkresavg($counts,$total,$precision,$showTotals,$length) {
 <?php
     $bg = '';
     while(list($content,$avg) = each($counts)) {
-        if($bg != $GLOBALS['ESPCONFIG']['bgalt_color1'])
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color1'];
+        if($bg != QUESTIONNAIRE_BGALT_COLOR1)
+            $bg = QUESTIONNAIRE_BGALT_COLOR1;
         else
-            $bg = $GLOBALS['ESPCONFIG']['bgalt_color2'];
+            $bg = QUESTIONNAIRE_BGALT_COLOR2;
 ?>
     <tr bgcolor="<?php echo($bg); ?>">
         <td align="right"><?php echo($content); ?>&nbsp;</td>

@@ -1,64 +1,100 @@
-<?php  // $Id: lib.php,v 1.20.2.15 2011/06/16 18:27:58 mchurch Exp $
-
-require_once('locallib.php');
+<?php  // $Id: lib.php,v 1.58.2.1 2011/10/02 13:48:04 joseph_rezeau Exp $
 
 /// Library of functions and constants for module questionnaire
 /// (replace questionnaire with the name of your module and delete this line)
+
+require_once('locallib.php');
+/**
+ * If start and end date for the questionnaire are more than this many seconds
+ * apart they will be represented by two separate events in the calendar
+ */
+require_once($CFG->libdir.'/eventslib.php');
+
+/// Constants
+
+define ('QUESTIONNAIRE_BGALT_COLOR1', '#FFFFFF');
+define ('QUESTIONNAIRE_BGALT_COLOR2', '#EEEEEE');
 
 define ('QUESTIONNAIREUNLIMITED', 0);
 define ('QUESTIONNAIREONCE', 1);
 define ('QUESTIONNAIREDAILY', 2);
 define ('QUESTIONNAIREWEEKLY', 3);
 define ('QUESTIONNAIREMONTHLY', 4);
+
+define ('QUESTIONNAIRE_EDITING', 0);
+define ('QUESTIONNAIRE_ACTIVE1', 1);
+define ('QUESTIONNAIRE_ENDED', 3);
+define ('QUESTIONNAIRE_ARCHIVED', 4);
+define ('QUESTIONNAIRE_TESTING', 8);
+define ('QUESTIONNAIRE_ACTIVE2', 9);
+
+define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER', 0);
+define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED', 1);
+define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED', 2);
+define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS', 3);
+
+define('QUESTIONNAIRE_MAX_EVENT_LENGTH', 5*24*60*60);   // 5 days maximum
+
+function questionnaire_supports($feature) {
+    switch($feature) {
+        case FEATURE_BACKUP_MOODLE2:          return true;
+        case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
+        case FEATURE_GRADE_HAS_GRADE:         return true;
+        case FEATURE_GRADE_OUTCOMES:          return false;
+        case FEATURE_GROUPINGS:               return true;
+        case FEATURE_GROUPMEMBERSONLY:        return true;
+        case FEATURE_GROUPS:                  return true;
+        case FEATURE_MOD_INTRO:               return true;
+
+        default: return null;
+    }
+}
+/**
+ * @return array all other caps used in module
+ */
+function questionnaire_get_extra_capabilities() {
+    return array('moodle/site:accessallgroups');
+}
+
+global $QUESTIONNAIRE_TYPES;
 $QUESTIONNAIRE_TYPES = array (QUESTIONNAIREUNLIMITED => get_string('qtypeunlimited', 'questionnaire'),
                               QUESTIONNAIREONCE => get_string('qtypeonce', 'questionnaire'),
                               QUESTIONNAIREDAILY => get_string('qtypedaily', 'questionnaire'),
                               QUESTIONNAIREWEEKLY => get_string('qtypeweekly', 'questionnaire'),
                               QUESTIONNAIREMONTHLY => get_string('qtypemonthly', 'questionnaire'));
+
+global $QUESTIONNAIRE_RESPONDENTS;
 $QUESTIONNAIRE_RESPONDENTS = array ('fullname' => get_string('respondenttypefullname', 'questionnaire'),
                                     'anonymous' => get_string('respondenttypeanonymous', 'questionnaire'));
+
+global $QUESTIONNAIRE_ELIGIBLES;
 $QUESTIONNAIRE_ELIGIBLES = array ('all' => get_string('respondenteligibleall', 'questionnaire'),
                                   'students' => get_string('respondenteligiblestudents', 'questionnaire'),
                                   'teachers' => get_string('respondenteligibleteachers', 'questionnaire'));
+
+global $QUESTIONNAIRE_REALMS;
 $QUESTIONNAIRE_REALMS = array ('private' => get_string('private', 'questionnaire'),
                                'public' => get_string('public', 'questionnaire'),
                                'template' => get_string('template', 'questionnaire'));
 
-$QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER = 0;
-$QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED = 1;
-$QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED = 2;
-$QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS = 3;
-
+global $QUESTIONNAIRE_RESPONSEVIEWERS;
 $QUESTIONNAIRE_RESPONSEVIEWERS =
-    array ( $QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER => get_string('responseviewstudentsnever', 'questionnaire'),
-            $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
-            $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED => get_string('responseviewstudentswhenclosed', 'questionnaire'),
-            $QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS => get_string('responseviewstudentsalways', 'questionnaire'));
-
-$QUESTIONNAIRE_EDITING = 0;
-$QUESTIONNAIRE_ACTIVE1 = 1;
-$QUESTIONNAIRE_ENDED = 3;
-$QUESTIONNAIRE_ARCHIVED = 4;
-$QUESTIONNAIRE_TESTING = 8;
-$QUESTIONNAIRE_ACTIVE2 = 9;
-
-/**
- * If start and end date for the questionnaire are more than this many seconds
- * apart they will be represented by two separate events in the calendar
- */
-define("QUESTIONNAIRE_MAX_EVENT_LENGTH", 5*24*60*60);   // 5 days maximum
+    array ( QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER => get_string('responseviewstudentsnever', 'questionnaire'),
+            QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
+            QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED => get_string('responseviewstudentswhenclosed', 'questionnaire'),
+            QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS => get_string('responseviewstudentsalways', 'questionnaire'));
 
 function questionnaire_add_instance($questionnaire) {
 /// Given an object containing all the necessary data,
 /// (defined by the form in mod.html) this function
 /// will create a new instance and return the id number
 /// of the new instance.
-    global $COURSE;
+    global $COURSE, $DB;
 
     // Check the realm and set it to the survey if it's set.
     if (!empty($questionnaire->sid) && !empty($questionnaire->realm)) {
 // JR not needed
-//        set_field('questionnaire_survey', 'realm', $questionnaire->realm, 'id', $questionnaire->sid);
+//        $DB->set_field('questionnaire_survey', 'realm', $questionnaire->realm, array('id' => $questionnaire->sid));
     } else if (empty($questionnaire->sid)) {
         /// Create a new survey:
         $cm = new Object();
@@ -71,14 +107,14 @@ function questionnaire_add_instance($questionnaire) {
             $sdata->title = $questionnaire->name;
             $sdata->subtitle = '';
             $sdata->info = '';
-            $sdata->theme = 'default.css';// JR DEV
+            $sdata->theme = '';// theme is deprecated
             $sdata->thanks_page = '';
             $sdata->thank_head = '';
             $sdata->thank_body = '';
             $sdata->email = '';
             $sdata->owner = $COURSE->id;
             if (!($sid = $qobject->survey_update($sdata))) {
-                error('Could not create a new survey!');
+                print_error('couldnotcreatenewsurvey', 'questionnaire');
             }
         } else {
             $copyid = explode('-', $questionnaire->create);
@@ -94,7 +130,7 @@ function questionnaire_add_instance($questionnaire) {
             } else {
                 $sid = $qobject->sid = $qobject->survey_copy($COURSE->id);
                 // JR all new questionnaires should be created as "private", even if they are *copies* of public or template questionnaires
-                set_field('questionnaire_survey', 'realm', 'private', 'id', $sid);
+                $DB->set_field('questionnaire_survey', 'realm', 'private', array('id' => $sid));
             }
         }
         $questionnaire->sid = $sid;
@@ -116,26 +152,27 @@ function questionnaire_add_instance($questionnaire) {
         $questionnaire->resume = 0;
     }
     $questionnaire->navigate = 1; // not used at all!
-    //saving the questionnaire in db
-    if(!$questionnaire->id = insert_record("questionnaire", $questionnaire)) {
+
+    if(!$questionnaire->id = $DB->insert_record("questionnaire", $questionnaire)) {
         return false;
     }
 
     questionnaire_set_events($questionnaire);
 
     return $questionnaire->id;
-
 }
 
 
 function questionnaire_update_instance($questionnaire) {
+        global $DB;
+
 /// Given an object containing all the necessary data,
 /// (defined by the form in mod.html) this function
 /// will update an existing instance with new data.
 
     // Check the realm and set it to the survey if its set.
     if (!empty($questionnaire->sid) && !empty($questionnaire->realm)) {
-        set_field('questionnaire_survey', 'realm', $questionnaire->realm, 'id', $questionnaire->sid);
+        $DB->set_field('questionnaire_survey', 'realm', $questionnaire->realm, array('id' => $questionnaire->sid));
     }
 
     $questionnaire->timemodified = time();
@@ -155,36 +192,41 @@ function questionnaire_update_instance($questionnaire) {
         $questionnaire->resume = 0;
     }
     $questionnaire->navigate = 1;
+
+    // get existing grade item
     questionnaire_grade_item_update($questionnaire);
+
     questionnaire_set_events($questionnaire);
-    questionnaire_update_grades($questionnaire);
-    return update_record("questionnaire", $questionnaire);
+	questionnaire_update_grades($questionnaire);
+    return $DB->update_record("questionnaire", $questionnaire);
 }
 
 
 function questionnaire_delete_instance($id) {
+    global $DB;
+
 /// Given an ID of an instance of this module,
 /// this function will permanently delete the instance
 /// and any data that depends on it.
 
-    if (! $questionnaire = get_record('questionnaire', 'id', $id)) {
+    if (! $questionnaire = $DB->get_record('questionnaire', array('id' => $id))) {
         return false;
     }
 
     $result = true;
 
-    if (! delete_records('questionnaire', 'id', $questionnaire->id)) {
+    if (! $DB->delete_records('questionnaire', array('id' => $questionnaire->id))) {
         $result = false;
     }
 
-    if ($survey = get_record('questionnaire_survey', 'id', $questionnaire->sid)) {
+    if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
     /// If this survey is owned by this course, delete all of the survey records and responses.
         if ($survey->owner == $questionnaire->course) {
             $result = $result && questionnaire_delete_survey($questionnaire->sid, $questionnaire->id);
         }
     }
 
-    if ($events = get_records_select('event', "modulename = 'questionnaire' and instance = '$questionnaire->id'")) {
+    if ($events = $DB->get_records('event', array("modulename"=>'questionnaire', "instance"=>$questionnaire->id))) {
         foreach($events as $event) {
             delete_event($event->id);
         }
@@ -219,9 +261,9 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
  * Get all the questionnaire responses for a user
  */
 function questionnaire_get_user_responses($surveyid, $userid) {
-    global $CFG;
+    global $CFG, $DB;
 
-    return get_records_sql ("SELECT *
+    return $DB->get_records_sql ("SELECT *
         FROM {$CFG->prefix}questionnaire_response
         WHERE survey_id = '$surveyid'
         AND username = '$userid'
@@ -277,15 +319,15 @@ function questionnaire_grades($questionnaireid) {
  * @return array array of grades, false if none
  */
 function questionnaire_get_user_grades($questionnaire, $userid=0) {
-    global $CFG;
+    global $CFG, $DB;
 
     $user = $userid ? "AND u.id = $userid" : "";
 
-    $sql = "SELECT u.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
+    $sql = "SELECT a.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
             FROM {$CFG->prefix}user u, {$CFG->prefix}questionnaire_attempts a, {$CFG->prefix}questionnaire_response r
             WHERE u.id = a.userid AND a.qid = $questionnaire->id AND r.id = a.rid $user";
 
-    return get_records_sql($sql);
+    return $DB->get_records_sql($sql);
 }
 
 /**
@@ -295,19 +337,27 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
  * @param int $userid specific user only, 0 mean all
  */
 function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone=true) {
-    global $CFG;
+    global $CFG, $DB;
     if (!function_exists('grade_update')) { //workaround for buggy PHP versions
         require_once($CFG->libdir.'/gradelib.php');
     }
 
     if ($questionnaire != null) {
-        if ($grades = questionnaire_get_user_grades($questionnaire, $userid)) {
-            foreach($grades as $k=>$v) {
-                if ($v->rawgrade == -1) {
-                    $grades[$k]->rawgrade = null;
+        if ($graderecs = questionnaire_get_user_grades($questionnaire, $userid)) {
+            $grades = array();
+            foreach($graderecs as $v) {
+                if (!isset($grades[$v->userid])) {
+                    if ($v->rawgrade == -1) {
+                        $grades[$v->userid]->rawgrade = null;
+                    } else {
+                        $grades[$v->userid]->rawgrade = $v->rawgrade;
+                    }
+                    $grades[$v->userid]->userid = $v->userid;
+                    $grades[$v->userid]->feedback = '';
+                    $grades[$v->userid]->format = '';
+                } else if (isset($grades[$v->userid]) && ($v->rawgrade > $grades[$v->userid]->rawgrade)) {
+                    $grades[$v->userid]->rawgrade = $v->rawgrade;
                 }
-                $grades[$k]->feedback = '';
-                $grades[$k]->format = '';
             }
             questionnaire_grade_item_update($questionnaire, $grades);
         } else {
@@ -318,15 +368,15 @@ function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone
         $sql = "SELECT q.*, cm.idnumber as cmidnumber, q.course as courseid
                   FROM {$CFG->prefix}questionnaire q, {$CFG->prefix}course_modules cm, {$CFG->prefix}modules m
                  WHERE m.name='questionnaire' AND m.id=cm.module AND cm.instance=q.id";
-        if ($rs = get_recordset_sql($sql)) {
-            while ($questionnaire = rs_fetch_next_record($rs)) {
+        if ($rs = $DB->get_recordset_sql($sql)) {
+            foreach ($rs as $questionnaire) {
                 if ($questionnaire->grade != 0) {
                     questionnaire_update_grades($questionnaire);
                 } else {
                     questionnaire_grade_item_update($questionnaire);
                 }
             }
-            rs_close($rs);
+            $rs->close();
         }
     }
 }
@@ -384,10 +434,10 @@ function questionnaire_get_participants($questionnaireid) {
 //for a given instance of questionnaire. Must include every user involved
 //in the instance, independient of his role (student, teacher, admin...)
 //See other modules as example.
-    global $CFG;
+    global $CFG, $DB;
 
     //Get students
-    $users = get_records_sql('SELECT DISTINCT u.* '.
+    $users = $DB->get_records_sql('SELECT DISTINCT u.* '.
                              'FROM '.$CFG->prefix.'user u, '.
                              '     '.$CFG->prefix.'questionnaire_attempts qa '.
                              'WHERE qa.qid = \''.$questionnaireid.'\' AND '.
@@ -436,6 +486,57 @@ function questionnaire_get_context($cmid) {
 }
 
 /**
+ * Serves the questionnaire attachments. Implements needed access control ;-)
+ *
+ * @param object $course
+ * @param object $cm
+ * @param object $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @return bool false if file not found, does not return if found - justsend the file
+ */
+function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
+    global $CFG, $DB;
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+
+    require_course_login($course, true, $cm);
+
+    $fileareas = array('intro', 'info', 'thankbody', 'question');
+    if (!in_array($filearea, $fileareas)) {
+        return false;
+    }
+
+    $componentid = (int)array_shift($args);
+
+    if ($filearea != 'question') {
+        if (!$survey = $DB->get_record('questionnaire_survey', array('id'=>$componentid))) {
+            return false;
+        }
+    } else {
+        if (!$question = $DB->get_record('questionnaire_question', array('id'=>$componentid))) {
+            return false;
+        }
+    }
+
+    if (!$questionnaire = $DB->get_record('questionnaire', array('id'=>$cm->instance))) {
+        return false;
+    }
+
+    $fs = get_file_storage();
+    $relativepath = implode('/', $args);
+    $fullpath = "/$context->id/mod_questionnaire/$filearea/$componentid/$relativepath";
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        return false;
+    }
+
+    // finally send the file
+    send_stored_file($file, 0, 0, true); // download MUST be forced - security!
+}
+/**
  *  get the capabilities for the questionnaire
  *  @param int $cmid
  *  @return object the available capabilities from current user
@@ -475,14 +576,14 @@ function questionnaire_load_capabilities($cmid) {
 /// This function *really* shouldn't be needed, but since sometimes we can end up with
 /// orphaned surveys, this will clean them up.
 function questionnaire_cleanup() {
-    global $CFG;
+    global $CFG, $DB;
 
     /// Find surveys that don't have questionnaires associated with them.
     $sql = 'SELECT qs.* FROM '.$CFG->prefix.'questionnaire_survey qs '.
            'LEFT JOIN '.$CFG->prefix.'questionnaire q ON q.sid = qs.id '.
            'WHERE q.sid IS NULL';
 
-    if ($surveys = get_records_sql($sql)) {
+    if ($surveys = $DB->get_records_sql($sql)) {
         foreach ($surveys as $survey) {
             questionnaire_delete_survey($survey->id, 0);
         }
@@ -492,172 +593,136 @@ function questionnaire_cleanup() {
 }
 
 function questionnaire_record_submission(&$questionnaire, $userid, $rid=0) {
+    global $DB;
+
     $attempt['qid'] = $questionnaire->id;
     $attempt['userid'] = $userid;
     $attempt['rid'] = $rid;
     $attempt['timemodified'] = time();
-    return insert_record("questionnaire_attempts", (object)$attempt, false);
+    return $DB->insert_record("questionnaire_attempts", (object)$attempt, false);
 }
 
 function questionnaire_delete_survey($sid, $qid) {
-    global $QUESTIONNAIRE_ARCHIVED;
+    global $DB;
 /// Until backup is implemented, just mark the survey as archived.
 
     $status = true;
 
     /// Delete all responses for the survey:
-    if ($responses = get_records('questionnaire_response', 'survey_id', $sid, 'id')) {
+    if ($responses = $DB->get_records('questionnaire_response', array('survey_id' => $sid), 'id')) {
         foreach ($responses as $response) {
             $status = $status && questionnaire_delete_response($response->id);
         }
     }
 
     /// There really shouldn't be any more, but just to make sure...
-    delete_records('questionnaire_response', 'survey_id', $sid);
-    delete_records('questionnaire_attempts', 'qid', $qid);
+    $DB->delete_records('questionnaire_response', array('survey_id' => $sid));
+    $DB->delete_records('questionnaire_attempts', array('qid' => $qid));
 
     /// Delete all question data for the survey:
-    if ($questions = get_records('questionnaire_question', 'survey_id', $sid, 'id')) {
+    if ($questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid), 'id')) {
         foreach ($questions as $question) {
-            delete_records('questionnaire_quest_choice', 'question_id', $question->id);
+            $DB->delete_records('questionnaire_quest_choice', array('question_id' => $question->id));
         }
-        $status = $status && delete_records('questionnaire_question', 'survey_id', $sid);
+        $status = $status && $DB->delete_records('questionnaire_question', array('survey_id' => $sid));
     }
 
-    $status = $status && delete_records('questionnaire_survey', 'id', $sid);
+    $status = $status && $DB->delete_records('questionnaire_survey', array('id' => $sid));
 
     return $status;
 }
 
 function questionnaire_delete_response($rid) {
+    global $DB;
 
     $status = true;
 
     /// Delete all of the survey response data:
-    delete_records('questionnaire_response_bool', 'response_id', $rid);
-    delete_records('questionnaire_response_date', 'response_id', $rid);
-    delete_records('questionnaire_resp_multiple', 'response_id', $rid);
-    delete_records('questionnaire_response_other', 'response_id', $rid);
-    delete_records('questionnaire_response_rank', 'response_id', $rid);
-    delete_records('questionnaire_resp_single', 'response_id', $rid);
-    delete_records('questionnaire_response_text', 'response_id', $rid);
+    $DB->delete_records('questionnaire_response_bool', array('response_id' => $rid));
+    $DB->delete_records('questionnaire_response_date', array('response_id' => $rid));
+    $DB->delete_records('questionnaire_resp_multiple', array('response_id' => $rid));
+    $DB->delete_records('questionnaire_response_other', array('response_id' => $rid));
+    $DB->delete_records('questionnaire_response_rank', array('response_id' => $rid));
+    $DB->delete_records('questionnaire_resp_single', array('response_id' => $rid));
+    $DB->delete_records('questionnaire_response_text', array('response_id' => $rid));
 
-    $status = $status && delete_records('questionnaire_response', 'id', $rid);
-    $status = $status && delete_records('questionnaire_attempts', 'rid', $rid);
+    $status = $status && $DB->delete_records('questionnaire_response', array('id' => $rid));
+    $status = $status && $DB->delete_records('questionnaire_attempts', array('rid' => $rid));
 
     return $status;
 }
 
 function questionnaire_get_active_surveys_menu() {
-    global $QUESTIONNAIRE_ACTIVE1;
-    global $QUESTIONNAIRE_ACTIVE2;
+    global $DB;
 
-    $select = "status in ($QUESTIONNAIRE_ACTIVE1,$QUESTIONNAIRE_ACTIVE2)";
-    return get_records_select_menu('questionnaire_survey', $select);
+    $select = "status in (". QUESTIONNAIRE_ACTIVE1 . "," . QUESTIONNAIRE_ACTIVE2 . ")";
+    return $DB->get_records_select_menu('questionnaire_survey', $select);
 }
 
 function questionnaire_get_surveys_menu($status=NULL) {
+    global $DB;
 
     $field = ($status) ? 'status' : $status;
-    return get_records_menu('questionnaire_survey', $field, $status);
+    return $DB->get_records_menu('questionnaire_survey', array($field => $status));
 }
 
 /// Functions to call directly into phpESP.
 /// Make sure a "require_once('phpESP/admin/phpESP.ini.php')" line is included.
 /// Don't need to include this for all library functions, so don't.
 function questionnaire_get_survey_list($courseid=0, $type='') {
-    global $QUESTIONNAIRE_EDITING, $QUESTIONNAIRE_ACTIVE1, $QUESTIONNAIRE_ENDED,
-           $QUESTIONNAIRE_ARCHIVED, $QUESTIONNAIRE_TESTING, $QUESTIONNAIRE_ACTIVE2;
+    global $DB;
 
     if ($courseid == 0) {
         if (isadmin()) {
-            $select = '';
-            $fields = 'id,name,owner,realm,status';
+            $sql = "SELECT id,name,owner,realm,status " .
+            	   "{questionnaire_survey} " .
+                   "ORDER BY realm,name ";
+            $params = null;
         } else {
             return false;
         }
     } else if (!empty($type)) {
         if ($type == 'public') {
-            $select = 'status != '.$QUESTIONNAIRE_ARCHIVED.' AND realm = \''.$type.'\' ';
+            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
+                   "FROM {questionnaire} q " .
+                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
+                   "WHERE status != ? AND realm = ? " .
+                   "ORDER BY realm,name ";
+            $params = array(QUESTIONNAIRE_ARCHIVED, $type);
     /// Any survey owned by the user or typed as 'template' can be copied.
         } else if ($type == 'template') {
-            $select = 'status != '.$QUESTIONNAIRE_ARCHIVED.' AND '
-                      .'(realm = \''.$type.'\' OR owner = \''.$courseid.'\') ';
+            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
+                   "FROM {questionnaire} q " .
+                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
+                   "WHERE status != ? AND (realm = ? OR owner = ?) " .
+                   "ORDER BY realm,name ";
+            $params = array(QUESTIONNAIRE_ARCHIVED, $type, $courseid);
         }
-        $fields = 'id,name,owner,realm,status,title';
     } else {
-        $select = 'status != '.$QUESTIONNAIRE_ARCHIVED.' AND owner = \''.$courseid.'\' ';
-        $fields = 'id,name,owner,realm,status';
+        $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid " .
+               "FROM {questionnaire} q " .
+               "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
+               "WHERE status != ? AND owner = ? " .
+               "ORDER BY realm,name ";
+        $params = array(QUESTIONNAIRE_ARCHIVED, $courseid);
     }
-    return get_records_select('questionnaire_survey', $select, 'realm,name', $fields);
+    return $DB->get_records_sql($sql, $params);
 }
 
 function questionnaire_survey_has_questions($sid) {
-    return record_exists('questionnaire_question', 'survey_id', $sid, 'deleted', 'n');
+    global $DB;
+
+    return $DB->record_exists('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'));
 }
 
 function questionnaire_survey_exists($sid) {
-    return record_exists('questionnaire_survey', 'id', $sid);
+    global $DB;
+
+    return $DB->record_exists('questionnaire_survey', array('id' => $sid));
 }
-/// JR deprecated function
-/*function questionnaire_print_survey_select($instance, $courseid=0, $sid=0, $fname='sid', $usenone=false, $type='') {
-    global $CFG;
-
-    if ($surveys = questionnaire_get_survey_list($courseid, $type)) {
-        $table->head[] = get_string('select');
-        $table->head[] = get_string('name');
-        $table->head[] = get_string('type', 'questionnaire');
-        $table->align = array('center', 'left', 'center');
-        $table->size = array('*', '100%', '*');
-        $table->wrap = array('', '', 'nowrap');
-
-        if ($usenone) {
-            $select = '<input type="radio" name="sid" value="0"'.(($sid == 0)?' checked':'').' />';
-            $stat = '';
-            $table->data[] = array($select, 'none', $stat);
-        }
-
-        $strpreview = get_string('preview');
-        $strunknown = get_string('unknown', 'questionnaire');
-        $strpublic = get_string('public', 'questionnaire');
-        $strprivate = get_string('private', 'questionnaire');
-        $strtemplate = get_string('template', 'questionnaire');
-        $strviewresp = get_string('viewresponses', 'questionnaire');
-
-        foreach ($surveys as $survey) {
-            if (empty($survey->realm)) {
-                $stat = $strunknown;
-            } else if ($survey->realm == 'public') {
-                $stat = $strpublic;
-            } else if ($survey->realm == 'private') {
-                $stat = $strprivate;
-            } else if ($survey->realm == 'template') {
-                $stat = $strtemplate;
-            } else {
-                $stat = $strunknown;
-            }
-            // prevent creation of a new questionnaire using a public questionnaire IN THE SAME COURSE!
-            if ($type == 'public' && $survey->owner == $courseid) {
-            } else {
-                $select = '<input type="radio" name="'.$fname.'" value="'.$type.'-'.$survey->id.'"'.
-                          (($survey->id == $sid)?' checked':'').' />';
-
-                $view = link_to_popup_window('/mod/questionnaire/manage_survey.php?course='.$courseid.
-                                             '&amp;qact=preview&amp;instance='.$instance.'&amp;sid='.$survey->id,
-                                             $strpreview, $survey->title,
-                                             '', '', $strpreview, '', true);
-                $table->data[] = array($select, $view, $stat);
-            }
-        }
-        print_table($table);
-        return true;
-    } else {
-        return false;
-    }
-}*/
 
 function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='') {
-    global $CFG;
+    global $CFG, $OUTPUT;
 
     $surveylist = array();
     if ($surveys = questionnaire_get_survey_list($courseid, $type)) {
@@ -685,15 +750,14 @@ function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='
             if ($type == 'public' && $survey->owner == $courseid) {
                 continue;
             } else {
-
-                $label = link_to_popup_window ($CFG->wwwroot.'/mod/questionnaire/preview.php?sid='.$survey->id.'&popup=1',
-                                               null, $survey->title, 400, 500, $strpreview, null, true);
+                $args = "sid={$survey->id}&popup=1";
+                if (!empty($survey->qid)) {
+                    $args .= "&qid={$survey->qid}";
+                }
+                $link = new moodle_url("/mod/questionnaire/preview.php?{$args}");
+                $action = new popup_action('click', $link);
+                $label = $OUTPUT->action_link($link, $survey->title, $action, array('title'=>$survey->title));
                 $surveylist[$type.'-'.$survey->id] = $label;
-/// JR deprecated - waiting for preview function to be restored?
-/*                    link_to_popup_window('/mod/questionnaire/manage_survey.php?course='.$courseid.
-                                         '&amp;qact=preview&amp;instance='.$instance.'&amp;sid='.$survey->id,
-                                         $strpreview, $survey->title.' ('.$stat.')',
-                                             '', '', $strpreview, '', true);*/
             }
         }
     }
@@ -747,12 +811,7 @@ function questionnaire_get_post_actions() {
 function questionnaire_print_overview($courses,&$htmlarray) {
 
     global $USER, $CFG;
-    $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED = 0;
-    $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED = 1;
-    $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED = 2;
-    $QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS = 3;
-
-    $LIKE = sql_ilike();
+    global $DB;
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
         return array();
@@ -763,21 +822,29 @@ function questionnaire_print_overview($courses,&$htmlarray) {
     }
 
     // get all questionnaire logs in ONE query (much better!)
-    $sql = "SELECT instance,cmid,l.course,COUNT(l.id) as count FROM {$CFG->prefix}log l "
-        ." JOIN {$CFG->prefix}course_modules cm ON cm.id = cmid "
-        ." JOIN {$CFG->prefix}questionnaire q ON cm.instance = q.id "
+    $params = array();
+    $sql = "SELECT instance,cmid,l.course,COUNT(l.id) as count FROM {log} l "
+        ." JOIN {course_modules} cm ON cm.id = cmid "
+        ." JOIN {questionnaire} q ON cm.instance = q.id "
         ." WHERE (";
     foreach ($courses as $course) {
-        $sql .= '(l.course = '.$course->id.' AND l.time > '.$course->lastaccess.') OR ';
+        $sql .= '(l.course = ? AND l.time > ?) OR ';
+        $params[] = $course->id;
+        $params[] = $course->lastaccess;
     }
+
+
     $sql = substr($sql,0,-3); // take off the last OR
 
     $sql .= ") AND l.module = 'questionnaire' AND action = 'submit' "
-        ." AND userid != ".$USER->id
-        ." AND q.resp_view <> ".$QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
+        ." AND userid != ?"
+        ." AND q.resp_view <> ?"
         ." GROUP BY cmid,l.course,instance";
 
-    if (!$new = get_records_sql($sql)) {
+    $params[] = $USER->id;
+    $params[] = QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED;
+
+    if (!$new = $DB->get_records_sql($sql, $params)) {
         $new = array(); // avoid warnings
     }
 
@@ -812,9 +879,9 @@ function questionnaire_print_overview($courses,&$htmlarray) {
             if( $count > 0  &&
             (has_capability('mod/questionnaire:readallresponseanytime',$context) ||
             (has_capability('mod/questionnaire:readallresponses',$context) && (
-                $questionnaire->resp_view == $QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                ($questionnaire->resp_view == $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $is_closed) ||
-                ($questionnaire->resp_view == $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && $answered)
+                $questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $is_closed) ||
+                ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && $answered)
             )))){
 
                 if( $count == 1 ){
@@ -851,7 +918,13 @@ function questionnaire_print_overview($courses,&$htmlarray) {
 
 function questionnaire_set_events($questionnaire) {
     // adding the questionnaire to the eventtable
-    delete_records('event', 'modulename', 'questionnaire', 'instance', $questionnaire->id);
+    global $DB;
+    if ($events = $DB->get_records('event', array('modulename'=>'questionnaire', 'instance'=>$questionnaire->id))) {
+        foreach($events as $event) {
+            delete_event($event->id);
+        }
+    }
+
     // the open-event
     $event = new stdClass;
     $event->description = $questionnaire->name;

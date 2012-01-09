@@ -1,0 +1,414 @@
+﻿<!--Joseph Rézeau 11 MAY 2007-->
+<h3>Uređivanje pitanja </h3>
+<h3>Mogući odgovori</h3>
+<p>Ukoliko izaberete pitanja koja imaju <em>ponuđene odgovore</em> morate ih uneti u obrazac koji se nalazi u donjoj polovini prozora <strong>Uređivanje pitanja</strong>
+i to tako što ćete za svaku alternativu koristiti posebnu liniju. Ukoliko su Vam potrebne dodatne linije dodajte ih pritiskom na dugme <b>Dodavanje linije za ponuđeni odgovor</b>. 
+Pitanja koja koriste ponuđene odgovore su: <strong>Višestruki izbor - jedan mogući odgovor (Kružići), Višestruki izbor - više mogućih odgovora (Kvadratići), Padajuća lista i Stepena skala</strong>. 
+</p><p>Primeri: </p>
+<table width="100%" border="1" cellpadding="5">
+  <tr>
+<th width="31%" scope="col">Pregled strane za uređivanje </th>
+<th width="69%" scope="col">Prikaz u upitniku</th>
+</tr>
+<tr>
+<td><table cellspacing="0" cellpadding="0">
+<tr>
+<td colspan="2" valign="top"> <strong>Pr. 1 Višestruki izbor - jedan mogući odgovor (Kružići)<br />
+</strong>Unesite moguće odgovore (ukoliko su predviđeni za ovaj tip pitanja)</td>
+</tr>
+      <tr>
+        <td>1.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_1" value="Crvena" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_2" value="Plava" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>3.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_2" value="Žuta" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>4.</td>
+        <td align="left" valign="middle">
+            <input size="40" name="choice_content_3" value="!other" type="text" />        </td>
+      </tr>
+    </table></td>
+    <td><strong>Koja je Vaša omiljena boja? </strong><br />
+      <input type="radio" name="radio" />
+Crvena<br />
+<input type="radio" name="radio" />
+Plava<br />
+<input type="radio" name="radio" />
+Žuta<br />
+<input type="radio" name="radio" />
+Nešto drugo:
+<input type="text" name="date2" size="25" /></td>
+  </tr>
+  <tr>
+    <td><table width="300" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" valign="top"> <strong>Pr. 2 Višestruki izbor - više mogućih odgovora (Kvadratići)<br />
+</strong>Unesite moguće odgovore (ukoliko su predviđeni za ovaj tip pitanja)</td>
+      </tr>
+      <tr>
+        <td width="12">1.</td>
+        <td width="286" align="left" valign="middle"><input size="40" name="choice_content_12" value="Gledanje TV-a" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_22" value="Ples" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>3.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_22" value="Rad na kompjuteru" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>4.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_32" value="!other=Drugi hobi:" type="text" />        </td>
+      </tr>
+    </table>    </td>
+    <td><strong>Koji su Vaši omiljeni vidovi zabave? </strong><br />
+      <input name="checkbox" type="checkbox" />
+Gledanje TV-a <br />
+<input name="checkbox" type="checkbox" />
+Ples<br />
+<input name="checkbox2" type="checkbox" />
+Rad na kompjuteru <br />
+<input type="checkbox" />
+Drugi hobi:
+<input type="text" size="25" /></td>
+  </tr>
+  <tr>
+    <td><table cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="2" valign="top"> <strong>Pr. 3 Padajuća lista<br />
+</strong>Unesite moguće odgovore (ukoliko su predviđeni za ovaj tip pitanja)</td>
+      </tr>
+      <tr>
+        <td width="12">1.</td>
+        <td width="292" align="left" valign="middle"><input size="40" name="choice_content_13" value="crvena" type="text" /></td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_23" value="plava" type="text" /></td>
+      </tr><tr>
+        <td>3.</td>
+        <td align="left" valign="middle"><input size="40" value="žuta" type="text" /></td>
+      </tr>
+    </table>    </td>
+    <td>
+
+      <table cellpadding="10" cellspacing="1">
+        <tbody>
+          <tr>
+            <td><strong>Koja je Vaša omiljena boja? </strong></td>
+          </tr>
+          <tr>
+            <td><select id="menuq17" name="q17">
+                <option value="0">Izaberite...</option>
+                <option value="19">crvena</option>
+                <option value="20">plava</option>
+                <option value="21">žuta</option>
+            </select>              </td>
+          </tr>
+        </tbody>
+      </table>
+        <div></div></td></tr>
+  <tr>
+    <td><p><strong>Pr. 4 Stepena skala </strong> (jedna linija) <br />
+       Unesite moguće odgovore (ukoliko su predviđeni za ovaj tip pitanja) -&gt; <strong>Ne unosite ništa.</strong> Ako kasnije budete uređivali ovo pitanje primetićete <em>jednu</em> praznu liniju za &quot;mogući odgovor&quot;. Ne unosite ništa u nju.</p>
+      <p>    <strong>Parametri: </strong><br />
+          <strong><em>Veličina</em></strong> = 4 (4 kolone označene brojevima 1...4)<br />
+    </p></td>
+    <td valign="top"><strong>Koristite skalu da ocenite Moodle prema lakoći korišćenja od 1 (teško za snalaženje) do 4 (veoma lako za snalaženje).</strong>
+      <table cellspacing="0" cellpadding="0">
+          <tr>
+            <td align="center" width="40">1</td>
+            <td align="center" width="40">2</td>
+            <td align="center" width="40">3</td>
+            <td align="center" width="40">4</td>
+          </tr>
+          <tr>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+          </tr>
+      </table></td>
+  </tr>
+  <tr>
+    <td><strong>Pr. 5 Stepena skala </strong>(više linija)<br />
+ Unesite moguće odgovore (ukoliko su predviđeni za ovaj tip pitanja)
+      <table cellspacing="0" cellpadding="0">
+        
+        <tr>
+          <td>1.</td>
+          <td align="left" valign="middle"><input size="40" value="Moodle" type="text" />          </td>
+        </tr>
+        <tr>
+          <td>2.</td>
+          <td align="left" valign="middle"><input size="40" value="WebCT" type="text" />          </td>
+        </tr>
+        <tr>
+          <td>3.</td>
+          <td align="left" valign="middle"><input size="40" value="Blackboard" type="text" />          </td>
+        </tr>
+      </table>
+      <strong>Parametri: </strong><br />
+      <strong><em>Veličina</em></strong> = 4 (4 kolone označene brojevima 1 do 4)<br />
+      <em><strong>Podešavanja</strong></em> = 1 (za dodavanje kolone 'Bez odgovora')</td>
+    <td><strong>Koristite skale da ocenite ove VLE (virtuelno okruženje za učenje) prema lakoći korišćenja od 1 (teško za snalaženje) do 4 (veoma lako za snalaženje). Označite 'Bez odgovora'  za one VLE koje nikada niste koristili.</strong>
+      <table cellspacing="0" cellpadding="0">
+        <tr>
+          <td></td>
+            <td align="center" width="40">1</td>
+            <td align="center" width="40">2</td>
+            <td align="center" width="40">3</td>
+            <td align="center" width="40">4</td>
+            <td align="center" width="40">Bez odgovora</td>
+        </tr>
+        <tr>
+          <td align="right">Moodle </td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+        <tr>
+          <td align="right">WebCT </td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+        <tr>
+          <td align="right">Blackboard </td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+            <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+  </table></td></tr>
+  <tr>
+    <td><strong>Pr. 6 Stepena skala <em>sa imenovanim podeocima<a name="named_degrees" id="named_degrees"></a></em> </strong><br />
+Unesite moguće odgovore (ukoliko su predviđeni za ovaj tip pitanja)
+  <table width="291" cellpadding="0" cellspacing="0">
+    <tr>
+      <td>1.</td>
+      <td align="left" valign="middle"><input name="text" type="text" value="1=Skoro nikad" size="40" />      </td>
+    </tr>
+    <tr>
+      <td>2.</td>
+      <td align="left" valign="middle"><input name="text" type="text" value="2=Retko" size="40" />      </td>
+    </tr>
+    <tr>
+      <td>3.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="3=Ponekad" size="40" /></td>
+    </tr><tr>
+      <td>4.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="4=Često" size="40" /></td>
+    </tr><tr>
+      <td>5.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="5=Skoro uvek" size="40" /></td>
+    </tr><tr>
+      <td>6.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="Moje učenje je usemereno na ono što me interesuje." size="50" /></td>
+    </tr><tr>
+      <td>7.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="Ono što učim je važno za moju karijeru." size="50" /></td>
+    </tr><tr>
+      <td>8.</td>
+      <td align="left" valign="middle"><input name="text2" type="text" value="Učim kako da poboljšam svoj profesionalni rad." size="50" /></td>
+    </tr>
+      </table>
+  <strong>Parametri: </strong><br />
+  <strong><em>Veličina</em></strong> = 5 (5 imenovanih kolona)<br />
+  <em><strong>Podešavanja</strong></em> = 0 (Kolona 'Bez odgovora' nije potrebna)</td>
+    <td><h4>Tokom proučavanja ove oblasti... Preferiram da/Dolazim do zaključka da... </h4>
+    <table border="1" cellpadding="0" cellspacing="0">
+        <tr>
+          <td></td>
+          <td align="center">Skoro nikad</td>
+          <td align="center">Retko</td>
+          <td align="center">Ponekad</td>
+          <td align="center">Često</td>
+          <td align="center">Skoro uvek</td>
+        </tr>
+        <tr>
+          <td align="right">Moje učenje je usemereno na ono što me interesuje. </td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+        <tr>
+          <td align="right">Ono što učim je važno za moju karijeru. </td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+        <tr>
+          <td align="right">Učim kako da poboljšam svoj profesionalni rad. </td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+      </table>      <p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td><strong>Pr. 7 <a href="http://en.wikipedia.org/wiki/Semantic_differential" target="_blank">Ozgudov Semantički diferencijal</a> <em><a name="osgood" id="osgood"></a></em> </strong><br />
+     Unesite moguće odgovore (ukoliko su predviđeni za ovaj tip pitanja)
+      <table width="291" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>1.</td>
+          <td align="left" valign="middle"><input name="text" type="text" value="1=--" size="40" />          </td>
+        </tr>
+        <tr>
+          <td>2.</td>
+          <td align="left" valign="middle"><input name="text" type="text" value="2=-" size="40" />          </td>
+        </tr>
+        <tr>
+          <td>3.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="3=&plusmn;" size="40" /></td>
+        </tr>
+        <tr>
+          <td>4.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="4=+" size="40" /></td>
+        </tr>
+        <tr>
+          <td>5.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="5=++" size="40" /></td>
+        </tr>
+        <tr>
+          <td>6.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="slaba/jaka" size="50" /></td>
+        </tr>
+        <tr>
+          <td>7.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="hladna/topla" size="50" /></td>
+        </tr>
+        <tr>
+          <td>8.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="plašljiva/hrabra" size="50" /></td>
+        </tr>
+      </table>
+      <p><strong>Parametri: </strong><br />
+        <strong><em>Veličina</em></strong> = 5 (5 imenovanih kolona)<br />
+      <em><strong>Podešavanja</strong></em> = 3 (kako bi drugi pridev u paru bio prikazan na pozitivnom polu skale).</p>
+    <p><strong>Napomena -</strong> Da biste razdvojili parove reči možete koristiti kosu crtu <strong>/</strong> ili "pajp" karakter <strong>|</strong> </p></td>
+    <td valign="top"><h4>Opišite svoju ličnost na skali koja ide od -- do ++.  </h4>
+        <table border="1" cellpadding="0" cellspacing="0">
+          <tr>
+            <td></td>
+            <td align="center">--</td>
+            <td align="center">-</td>
+            <td align="center">&plusmn;</td>
+            <td align="center">+</td>
+            <td align="center">++</td>
+            <td align="center">&nbsp;</td>
+          </tr>
+          <tr>
+            <td align="right"><div align="left">slaba </div></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center">jaka</td>
+          </tr>
+          <tr>
+            <td align="right"><div align="left">hladna</div></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center">topla</td>
+          </tr>
+          <tr>
+            <td align="right"><div align="left">plašljiva</div></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center"><input type="radio" /></td>
+            <td align="center">hrabra</td>
+          </tr>
+        </table>
+      <p>Drugi mogući načini prikaza (<strong>Opište svoju ličnost na skali sa negativnim/pozitivnim polom</strong>) </p>
+      <table border="1" cellpadding="0" cellspacing="0">
+        <tr>
+          <td></td>
+          <td align="center">-3</td>
+          <td align="center">-2</td>
+          <td align="center">-1</td>
+          <td align="center">0</td>
+          <td align="center">+1</td>
+          <td align="center">+2</td>
+          <td align="center">+3</td>
+          <td align="center">&nbsp;</td>
+        </tr>
+        <tr>
+          <td align="right"><div align="left">slaba</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">jaka</td>
+        </tr>
+        <tr>
+          <td align="right"><div align="left">hladna</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">topla</td>
+        </tr>
+        <tr>
+          <td align="right"><div align="left">plašljiva</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">hrabra</td>
+        </tr>
+      </table>      
+      <p>&nbsp;</p></td>
+  </tr>
+</table>
+<p>U okviru pitanja višestrukog izbora sa kružićima i kvadratićima možete koristiti komandu <tt>&#8220;!other&#8221;</tt> kako bi ste kreirali tekstualno polje za unos <em><strong>alternative</strong></em> <em>koju ispitanik sam formuliše</em>.
+<tt>!other</tt> koristi predefinisani natpis <em>Nešto drugo: </em> (ili ekvivalent ovome shodno jezičkom paketu koji se koristi u okviru kursa). Ovaj natpis možete promeniti koristeći format: <tt>&#8220;!other=<em>tekst definisan od strane autora&#8221;</em></tt> kao što je prikazano u primeru &nbsp;#2 iznad.</p>
+<h3>Napomene</h3>
+<ol type="a">
+  <li>U ovom trenutku dužina <em>polja za unos</em> teksta od strane ispitanika ograničena je na 25 karaktera i ne može se menjati. </li>
+  <li>Korišćenje više od jednog ovakvog polja u okviru pitanja Višestrukog izbora sa jednim mogućim odgovorom ne čini se smislenim.</li>
+  <li>Pitanju Višestrukog izbora sa više mogućih odgovora možete dodati više  <tt>!other</tt> <em>polja za unos</em>, ali se tako nešto zbog potencijalnih problema ne preporučuje </li>
+  <li>Kada ispitanik odgovori na pitanje <strong>Višestrukog izbora sa više mogućih odgovora</strong> koje nosi oznaku <strong>Zahtevano</strong> i ima definisan broj minimalnih i maksimalnih opcija koje moraju biti označene dobiće poruku o grešci ukoliko ove zahteve ne ispoštuje. </li>
+  <ul>
+    <li>Zapazite da, ako je <tt>!other</tt> <em>polje za unos</em> označeno od strane ispitanika, ono ulazi u totalni zbir označenih alternativa i odražava se na zahtev za minimumom/maksimumom istih.</li>
+  </ul>
+  <li>Ukoliko ispitanik označi <strong>kružić</strong> ispred ovog polja, a samo polje ne popuni odgovarajućim tekstom <em>dobiće poruku o načinjenom propustu</em> (nakon što pokuša da pređe na drugu stranicu upitnika koji se sastoji iz više delova ili pri pokušaju slanja podataka u bazu).</li>
+  <li>Ukoliko ispitanik označi <strong>kružić</strong> ispred ovog polja i popuni ga, a potom se predomisli i klikne u drugi kružić sav tekst koji je uneo u <em>polja za unos</em> teksta automatski će se izbrisati </li>
+  <li>Ukoliko ispitanik označi <strong>kvadratić</strong>, a polje za unos teksta ostavi praznim <em>ovaj kvadratić biće automatski deštikliran</em> (nakon što pokuša da pređe na drugu stranicu upitnika koji se sastoji iz više delova ili pri pokušaju slanja podataka u bazu).</li>
+  <li>Ukoliko ispitanik označi <em>polje za unos</em>  koristeći <strong>kvadratić</strong> i unese svoju alternativu, a kasnije se prodomisli i poništi izbor <em>polje za unos</em>  biće automatski ispražnjeno.</li>
+  <li><strong><em>Stepena (Likertova) skala</em></strong>. Za ovaj tip pitanja postoje dve opcije kada se radi o njegovom prikazu. Predefinisano je da su podeoci skale označeni brojevima od 1 do n. Međutim, ukoliko želite ove podeoke možete imenovati po sopstvenom nahođenju. <em>Ovo možete ostvariti u okviru odeljka <strong>Unesite moguće odgovore (ukoliko su predviđeni za ovaj tip pitanja)</strong></em> (pogledati <strong><em>Primer 5</em></strong> iznad). U okviru pojedinačne linije za &quot;moguće odgovore&quot; unesite brojčanu oznaku podeoka, potom znak jednakosti = (bez razmaka) i potom (opet bez razmaka) naziv koji želite da dodelite podeoku. Obratite pažnju da se broj podeoka definisan pomoću paramtra Veličine i broj preimenovanih podeoka poklapa pošto će u suprotnom doći do greške u prikazu. Ne bi bilo loše da ovo preimenovanje izvršite na početku, a <em>stavke skale</em> (npr. &quot;Moje učenje je fokusirano...&quot;, &quot;Ono što učim je važno za...&quot; kao u Primeru 5) dodate kasnije. </li>
+</ol>
+<p><a href="help.php?module=questionnaire&file=editquestions.html"><em><strong>Uređivanje pitanja</strong></em> osnovni dokument sa uputstvima. </p>

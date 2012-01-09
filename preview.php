@@ -1,4 +1,4 @@
-<?php // $Id: preview.php,v 1.2.2.3 2008/07/18 15:48:28 mchurch Exp $
+<?php // $Id: preview.php,v 1.13 2011/06/21 16:00:14 mchurch Exp $
 
 /// This page displays a non-completable instance of questionnaire
 
@@ -8,25 +8,26 @@
     $id     = optional_param('id', 0, PARAM_INT);
     $sid    = optional_param('sid', 0, PARAM_INT);
     $popup  = optional_param('popup', 0, PARAM_INT);
+    $qid    = optional_param('qid', 0, PARAM_INT);
 
     if ($id) {
         if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-            error("Course Module ID was incorrect");
+            print_error('invalidcoursemodule');
         }
-    
-        if (! $course = get_record("course", "id", $cm->course)) {
-            error("Course is misconfigured");
+
+        if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+            print_error('coursemisconf');
         }
-    
-        if (! $questionnaire = get_record("questionnaire", "id", $cm->instance)) {
-            error("Course module is incorrect");
+
+        if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+            print_error('invalidcoursemodule');
         }
     } else {
-        if (! $survey = get_record("questionnaire_survey", "id", $sid)) {
-            error("Survey does not exist");
+        if (! $survey = $DB->get_record("questionnaire_survey", array("id" => $sid))) {
+            print_error('surveynotexists', 'questionnaire');
         }
-        if (! $course = get_record("course", "id", $survey->owner)) {
-            error("Course is misconfigured");
+        if (! $course = $DB->get_record("course", array("id" => $survey->owner))) {
+            print_error('coursemisconf');
         }
         /// Dummy questionnaire object:
         $questionnaire = new Object();
@@ -36,12 +37,31 @@
         $questionnaire->sid = $sid;
         $questionnaire->resume = 0;
         ///Dummy cm object:
-        $cm = false;
+        if (!empty($qid)) {
+            $cm = get_coursemodule_from_instance('questionnaire', $qid, $course->id);
+        } else {
+            $cm = false;
+        }
     }
 
 /// Check login and get context.
     require_login($course->id, false, $cm);
-    $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+    $context = $cm ? get_context_instance(CONTEXT_MODULE, $cm->id) : false;
+
+	$url = new moodle_url('/mod/questionnaire/preview.php');
+    if ($id !== 0) {
+        $url->param('id', $id);
+    }
+    if ($sid) {
+        $url->param('sid', $sid);
+    }
+    $PAGE->set_url($url);
+
+    if (!$popup) {
+        $PAGE->set_context($context);
+    }
+
+    $questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
     $owner = (trim($questionnaire->survey->owner) == trim($course->id));
 
     $canpreview = (!isset($questionnaire->capabilities) &&
@@ -56,30 +76,27 @@
 
     $qp = get_string('preview_questionnaire', 'questionnaire');
     $pq = get_string('previewing', 'questionnaire');
-    $currentcss = '';
-    if ( !empty($questionnaire->survey->theme) ) {
-        $currentcss = '<link rel="stylesheet" type="text/css" href="'.
-            $CFG->wwwroot.'/mod/questionnaire/css/'.$questionnaire->survey->theme.'" />';
-    } else {
-        $currentcss = '<link rel="stylesheet" type="text/css" href="'.
-            $CFG->wwwroot.'/mod/questionnaire/css/default.css" />';
-    }
 
 /// Print the page header
     if (!$popup) {
         $navigation = build_navigation($pq, $cm);
     } else {
         $navigation = '';
+        $PAGE->set_pagelayout('popup');
     }
-    print_header($qp, '', $navigation,  '', $currentcss);
+    $PAGE->set_title(format_string($qp));
+    if (!$popup) {
+        $PAGE->set_heading(format_string($course->fullname));
+        $PAGE->navbar->add($pq);
+    }
+    echo $OUTPUT->header();
+
     if (!$popup) {
         include('tabs.php');
     }
     $questionnaire->survey_print_render('', '', $course->id);
     if ($popup) {
-        close_window_button();
-        echo '</body></html>';
-    } else {
-        print_footer($course);
+        echo $OUTPUT->close_window_button();
     }
+    echo $OUTPUT->footer($course);
 ?>

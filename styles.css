@@ -1,0 +1,255 @@
+.questionnaire_qbut {
+    padding-right: 0.5em;
+}
+
+/** Question editing formslib style changes: **/
+
+#page-mod-questionnaire-questions div.qcontainer .fitemtitle {
+    display: none;
+}
+
+#page-mod-questionnaire-mod .mform{
+    width: 100%;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.qnums {
+    display: block;
+    font-weight: bold;
+    width: 10%;
+    float: left;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.qicons {
+    display: block;
+    width: 15%;
+    float: left;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.qtype {
+    display: block;
+    width: 19%;
+    float: left;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.qreq {
+    display: block;
+    width: 9%;
+    float: left;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.qname {
+    float: left;
+    display: block;
+    width: 45%;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.qheader {
+    border-bottom: double #000000 4px;
+    border-top: double #000000 4px;
+    font-weight: bold;
+    margin-top: 20px;
+    padding-bottom:10px;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.fstatic {
+    width: 97%;
+    border-bottom: solid #000000 1px;
+    margin-right: 1em;
+    margin-left: 10px;
+    background-color: #FFFFFF;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.qcontent {
+    margin-bottom:-1em;
+}
+
+div.qoptcontainer div.ftextarea {
+    clear: all;
+    float: none;
+    width: 600px;
+    margin: 0pt auto 10px;
+}
+
+div.qoptcontainer div.ftextarea textarea.qopts {
+    width: 600px;
+    height: 10em;
+    margin-left: 1px;
+}
+
+.response span.selected,
+.generalboxcontent span.selected {
+    font-weight:bold;
+}
+
+#page-mod-questionnaire-print .response .generalbox .generalboxcontent {
+    border-style:hidden;
+}
+
+#page-mod-questionnaire-print .qnInnerTable .generalbox,
+#page-mod-questionnaire-print .qnInnerTable .generalboxcontent {
+    margin-top:0px;
+    margin-bottom:0px;
+}
+.qnOuter {
+	padding-right:5px;
+}
+.qnInnerTd {
+    font-family:"Courier New", Courier, monospace;
+    font-size:1.3em;
+    font-weight:bold;
+    text-align:right;
+    width:1.8em;    
+    vertical-align: top;
+    padding-top:0.25em;
+}
+
+body#page-mod-questionnaire-view td.qnInner,
+body#page-mod-questionnaire-preview td.qnInner,
+body#page-mod-questionnaire-report td.qnInner,
+body#page-mod-questionnaire-myreport td.qnInner,
+.reportQuestionTitle {
+    border: #CCCCCC thin solid;
+    background-color:#fafafa;
+}
+/*remove paragraph bottom margin for better vertical positioning*/
+body#page-mod-questionnaire-view td.qnInner p,
+body#page-mod-questionnaire-preview td.qnInner p,
+body#page-mod-questionnaire-report td.qnInner p,
+body#page-mod-questionnaire-myreport td.qnInner p,
+.reportQuestionTitle p {
+    margin-bottom:0px;
+}
+
+body#page-mod-questionnaire-view td.qnType,
+body#page-mod-questionnaire-preview td.qnType,
+body#page-mod-questionnaire-report td.qnType,
+body#page-mod-questionnaire-myreport td.qnType {
+    border: #CCCCCC thin solid;
+    border-top:none;
+}
+
+body#page-mod-questionnaire-myreport div.respdate {
+    font-size: 0.8em;
+    font-weight:bold;
+    padding-bottom: 4px;
+}
+
+body#page-mod-questionnaire-view .message,
+body#page-mod-questionnaire-view .notifyproblem,
+body#page-mod-questionnaire-view .thankbody,
+body#page-mod-questionnaire-view .thankhead {
+    background-color:#FFFFFF;
+    border-color:#FF0000;
+    border-style: solid;
+    border-width: 2px;
+    margin-bottom:10px;
+    padding:5px;
+    width:50%;
+}
+
+body#page-mod-questionnaire-view .reqQuestion,
+body#page-mod-questionnaire-view .reqQuestionMark {
+    color: #FF0000;
+}
+
+body#page-mod-questionnaire-view .reqQuestion {
+    background-color: #FFFFFF;
+    clear:both;
+    margin-bottom:5px;
+    padding:5px;
+    font-weight:bold;
+}
+
+body#page-mod-questionnaire-view .surveyTitle,
+body#page-mod-questionnaire-view .surveySubtitle,
+body#page-mod-questionnaire-view .addInfo {
+    clear:both;
+    margin:0px;
+    margin-bottom:4px;
+    padding:10px;
+}
+
+body#page-mod-questionnaire-view .surveyPage {
+    background-color: #eee;
+    border-bottom-color:#000000;
+    border-bottom-style: solid;
+    border-bottom-width:2px;
+    clear:right;
+    padding:3px;
+    margin-bottom:5px;
+    margin-top:0px;
+}
+
+.reportQuestionTitle {
+    background-color:#f7f7f7;
+    padding-left:7px;
+    padding-top:5px;
+    padding-bottom:5px;
+}
+.reportQuestionNumber {
+    vertical-align: top;
+    padding-top:0.45em;
+    font-family:"Courier New", Courier, monospace;
+    font-size:1.4em;
+    font-weight:bold;
+    text-align:right;
+}
+body#page-mod-questionnaire-view .c0,
+body#page-mod-questionnaire-preview .c0 {
+    background-color: #fafafa;
+    border: #CCCCCC 1px    solid;
+    padding-left:5px;
+    padding-right:5px;
+    padding-bottom:3px;
+}
+
+body#page-mod-questionnaire-view .c1,
+body#page-mod-questionnaire-preview .c1 {
+    background-color: #eee;
+    border: #FFFFFF 1px    solid;
+    padding-left:5px;
+    padding-right:5px;
+}
+
+body#page-mod-questionnaire-view .monospace,
+body#page-mod-questionnaire-preview .monospace {
+    font-family:"Courier New", Courier, monospace;
+}
+/** overrides any hidden hr tag in current course theme **/
+
+#page hr {
+    display: block;
+    border-width:thin;
+}
+
+
+body#page-mod-questionnaire-view .notice .buttons div,
+body#page-mod-questionnaire-view .notice .buttons form {
+    display:inline;
+}
+
+body#page-mod-questionnaire-report .generaltable,
+body#page-mod-questionnaire-myreport .generaltable {
+    width:100%;
+}
+.floatprinticon {
+    margin-top:-30px;
+    float:right;
+}
+
+/* new styles - keep old (quOuter, qnInner, qnInnerTable, qnType) for sections etc. */
+#page-mod-questionnaire-view .qn-number {
+    float: left;
+}
+#page-mod-questionnaire-view .qn-question {
+    margin-left: 35px;
+    padding-left: 5px;
+    padding-bottom: 2px;
+    border-left: #CCCCCC thin dotted;
+}
+#page-mod-questionnaire-view .qn-type {
+    margin-left: 35px;
+    padding: 5px;
+    border-left: #CCCCCC thin dotted;
+    border-bottom: #CCCCCC thin dotted;
+}

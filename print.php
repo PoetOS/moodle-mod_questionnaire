@@ -1,4 +1,4 @@
-<?php // $Id: print.php,v 1.11.2.6 2011/02/07 22:33:54 mchurch Exp $
+<?php // $Id: print.php,v 1.22 2011/06/16 20:54:10 mchurch Exp $
 
     require_once("../../config.php");
     require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
@@ -10,14 +10,14 @@
     $null = null;
     $referer = $CFG->wwwroot.'/mod/questionnaire/report.php';
 
-    if (! $questionnaire = get_record("questionnaire", "id", $qid)) {
-        error("Course module is incorrect");
+    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $qid))) {
+        print_error('invalidcoursemodule');
     }
-    if (! $course = get_record("course", "id", $questionnaire->course)) {
-        error("Course is misconfigured");
+    if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+        print_error('coursemisconf');
     }
     if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-        error("Course Module ID was incorrect");
+        print_error('invalidcoursemodule');
     }
 
 /// Check login and get context.
@@ -31,17 +31,10 @@
         print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
     }
 
-    $currentcss = '';
-    if ( !empty($questionnaire->survey->theme) ) {
-        $currentcss = '<link rel="stylesheet" type="text/css" href="'.
-            $CFG->wwwroot.'/mod/questionnaire/css/'.$questionnaire->survey->theme.'" />';
-    } else {
-        $currentcss = '<link rel="stylesheet" type="text/css" href="'.
-            $CFG->wwwroot.'/mod/questionnaire/css/default.css" />';
-    }
-
-    print_header('Print Survey', '', '', '', $currentcss, true, '', '');
+    $PAGE->set_title($questionnaire->survey->title);
+    $PAGE->set_pagelayout('popup');
+    echo $OUTPUT->header();
     $questionnaire->survey_print_render('', '', $courseid);
-    close_window_button();
-    echo '</body></html>';
+    echo $OUTPUT->close_window_button();
+    echo $OUTPUT->footer();
 ?>

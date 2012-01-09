@@ -1,12 +1,14 @@
-<?php // $Id: tabs.php,v 1.11.2.6 2009/11/17 22:25:22 joseph_rezeau Exp $
+<?php // $Id: tabs.php,v 1.20 2011/01/17 13:21:17 joseph_rezeau Exp $
 /**
 * prints the tabbed bar
 *
-* @version $Id: tabs.php,v 1.11.2.6 2009/11/17 22:25:22 joseph_rezeau Exp $
+* @version $Id: tabs.php,v 1.20 2011/01/17 13:21:17 joseph_rezeau Exp $
 * @author Mike Churchward
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package questionnaire
 */
+    global $DB;
+
     $tabs = array();
     $row  = array();
     $inactive = array();
@@ -20,7 +22,7 @@
     // viewing all responses...except in the course where that PUBLIC questionnaire was originally created
 
     $courseid = $questionnaire->course->id;
-    if ($survey = get_record('questionnaire_survey', 'id', $questionnaire->sid)) {
+    if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
         $owner = (trim($survey->owner) == trim($courseid));
     } else {
         $survey = false;
@@ -71,13 +73,13 @@
     } else {
         $currentgroupid  = -1;
     }
-    
+
     if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) {
         $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
         $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                                $argstr.'&action=vall'), get_string('viewresponses', 'questionnaire', $numresp));
         if (in_array($current_tab, array('vall', 'vresp', 'valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv',
-                                         'vrespsummary', 'printresp', 'deleteresp'))) {    
+                                         'vrespsummary', 'printresp', 'deleteresp'))) {
         $inactive[] = 'allreport';
             $activated[] = 'allreport';
             $row2 = array();
@@ -86,16 +88,16 @@
                                     get_string('viewallresponses', 'questionnaire'));
             $argstr2 = $argstr.'&byresponse=1&action=vresp';
             if ($questionnaire->capabilities->viewsingleresponse) {
-                    $argstr2 = $argstr.'&byresponse=1&action=vresp';
-                    $row2[] = new tabobject('vresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
-                                            get_string('viewbyresponse', 'questionnaire'));
-             }
+                $argstr2 = $argstr.'&byresponse=1&action=vresp';
+                $row2[] = new tabobject('vresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
+                                    get_string('viewbyresponse', 'questionnaire'));
+            }
         }
         if (in_array($current_tab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
             //$inactive[] = 'vall';
            	$activated[] = 'vall';
            	$row3 = array();
-           	
+
             $argstr2 = $argstr.'&action=vall';
             $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('order_default', 'questionnaire'));
@@ -106,7 +108,7 @@
 	            $argstr2 = $argstr.'&action=vallarsort&currentgroupid='.$currentgroupid;
 				$row3[] = new tabobject('vallarsort', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
 	                                    get_string('order_descending', 'questionnaire'));
-            }                                    
+            }
             if ($questionnaire->capabilities->deleteresponses) {
                 $argstr2 = $argstr.'&action=delallresp';
                 $row3[] = new tabobject('deleteall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
@@ -121,23 +123,25 @@
         }
 
         if (in_array($current_tab, array('vrespsummary', 'printresp', 'deleteresp'))) {
-        	$inactive[] = 'vresp';
+            $inactive[] = 'vresp';
             $activated[] = 'vresp';
+            $inactive[] = 'printresp';
             $row3 = array();
 
             $argstr2 = $argstr.'&action=vresp';
             $row3[] = new tabobject('vrespsummary', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('summary', 'questionnaire'));
-
+            // new way to output popup print window for 2.0 by JR
             $linkname = get_string('print','questionnaire');
-            $title = get_string('printtooltip','questionnaire').'" target="_blank';
             $url = '/mod/questionnaire/print.php?qid='.$questionnaire->id.'&amp;rid='.$rid.
                    '&amp;courseid='.$course->id.'&amp;sec=1';
-            $onclick="this.target='popup'; return openpopup('".$url."', 'popup', 'menubar=1, location=0, scrollbars, resizable', 0);";
-            /// Fudge 'onclick' into the title so we can open a popup window.
-            // Note JR.- 'target' attribute not admitted by validator
-
-            $row3[] = new tabobject('printresp', '', $linkname, $title.'" onclick="'.$onclick);
+            $title = get_string('printtooltip','questionnaire');
+            $options= array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true, 'height' => 600, 'width' => 800);
+            $name = 'popup';
+            $link = new moodle_url($url);
+            $action = new popup_action('click', $link, $name, $options);
+            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title'=>$title));
+            $row3[] = new tabobject('printresp', '', $actionlink);
 
             if ($questionnaire->capabilities->deleteresponses) {
                 $argstr2 = $argstr.'&action=dresp&rid='.$rid;
@@ -146,13 +150,13 @@
             }
         }
     } else if ($questionnaire->capabilities->readallresponses && ($numresp > 0) &&
-               ($questionnaire->resp_view == $QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                ($questionnaire->resp_view == $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
+               ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
                     && $questionnaire->is_closed()) ||
-                ($questionnaire->resp_view == $QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
+                ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
                     && !$questionnaire->user_can_take($USER->id))) &&
                $questionnaire->is_survey_owner()) {
-		$argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
+        $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
         $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                                $argstr.'&action=vall'), get_string('viewresponses', 'questionnaire', $numresp));
         if (in_array($current_tab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
@@ -199,8 +203,10 @@
     if($questionnaire->capabilities->editquestions && $owner) {
         $row[] = new tabobject('questions', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
                                'id='.$questionnaire->cm->id), get_string('questions', 'questionnaire'));
-        $row[] = new tabobject('preview', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/preview.php?'.
+        if (!empty($questionnaire->questions)) {
+            $row[] = new tabobject('preview', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/preview.php?'.
                                'id='.$questionnaire->cm->id), get_string('preview_label', 'questionnaire'));
+        }
     }
 
     if((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {

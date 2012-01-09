@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/questionnaire/db" VERSION="20090610" COMMENT="XMLDB file for Moodle mod/questionnaire"
+<XMLDB PATH="mod/questionnaire/db" VERSION="20080410" COMMENT="XMLDB file for Moodle mod/questionnaire"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -8,11 +8,12 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="course"/>
         <FIELD NAME="course" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Id of course" PREVIOUS="id" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Name for questionnaire." PREVIOUS="course" NEXT="summary"/>
-        <FIELD NAME="summary" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Description text." PREVIOUS="name" NEXT="qtype"/>
-        <FIELD NAME="qtype" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Questionnaire type code." PREVIOUS="summary" NEXT="respondenttype"/>
-        <FIELD NAME="respondenttype" TYPE="char" LENGTH="9" NOTNULL="true" DEFAULT="fullname" SEQUENCE="false" ENUM="true" ENUMVALUES="'fullname', 'anonymous'" COMMENT="Eligible respondents" PREVIOUS="qtype" NEXT="resp_eligible"/>
-        <FIELD NAME="resp_eligible" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="all" SEQUENCE="false" ENUM="true" ENUMVALUES="'all', 'students', 'teachers'" COMMENT="Eligible respondents." PREVIOUS="respondenttype" NEXT="resp_view"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Name for questionnaire." PREVIOUS="course" NEXT="intro"/>
+        <FIELD NAME="intro" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Description text." PREVIOUS="name" NEXT="introformat"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="text format of intro field" PREVIOUS="intro" NEXT="qtype"/>
+        <FIELD NAME="qtype" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Questionnaire type code." PREVIOUS="introformat" NEXT="respondenttype"/>
+        <FIELD NAME="respondenttype" TYPE="char" LENGTH="9" NOTNULL="true" DEFAULT="fullname" SEQUENCE="false" COMMENT="Eligible respondents" PREVIOUS="qtype" NEXT="resp_eligible"/>
+        <FIELD NAME="resp_eligible" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="all" SEQUENCE="false" COMMENT="Eligible respondents." PREVIOUS="respondenttype" NEXT="resp_view"/>
         <FIELD NAME="resp_view" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Questionnaire viewed?" PREVIOUS="resp_eligible" NEXT="opendate"/>
         <FIELD NAME="opendate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Timestamp to open access" PREVIOUS="resp_view" NEXT="closedate"/>
         <FIELD NAME="closedate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Timestamp to close access on" PREVIOUS="opendate" NEXT="resume"/>
@@ -74,8 +75,8 @@
         <FIELD NAME="precise" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="length" NEXT="position"/>
         <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="precise" NEXT="content"/>
         <FIELD NAME="content" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="position" NEXT="required"/>
-        <FIELD NAME="required" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" ENUM="true" ENUMVALUES="'y', 'n'" PREVIOUS="content" NEXT="deleted"/>
-        <FIELD NAME="deleted" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" ENUM="true" ENUMVALUES="'y', 'n'" PREVIOUS="required"/>
+        <FIELD NAME="required" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" PREVIOUS="content" NEXT="deleted"/>
+        <FIELD NAME="deleted" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" PREVIOUS="required"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -97,7 +98,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="typeid"/>
         <FIELD NAME="typeid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The code for the type." PREVIOUS="id" NEXT="type"/>
         <FIELD NAME="type" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="typeid" NEXT="has_choices"/>
-        <FIELD NAME="has_choices" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false" ENUM="true" ENUMVALUES="'y', 'n'" PREVIOUS="type" NEXT="response_table"/>
+        <FIELD NAME="has_choices" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false" PREVIOUS="type" NEXT="response_table"/>
         <FIELD NAME="response_table" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="has_choices"/>
       </FIELDS>
       <KEYS>
@@ -110,7 +111,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="survey_id"/>
         <FIELD NAME="survey_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="submitted"/>
         <FIELD NAME="submitted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="survey_id" NEXT="complete"/>
-        <FIELD NAME="complete" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" ENUM="true" ENUMVALUES="'y', 'n'" PREVIOUS="submitted" NEXT="grade"/>
+        <FIELD NAME="complete" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" PREVIOUS="submitted" NEXT="grade"/>
         <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Grade awarded" PREVIOUS="complete" NEXT="username"/>
         <FIELD NAME="username" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="grade"/>
       </FIELDS>
@@ -123,7 +124,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="response_id"/>
         <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="question_id"/>
         <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="response_id" NEXT="choice_id"/>
-        <FIELD NAME="choice_id" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false" ENUM="true" ENUMVALUES="'y', 'n'" PREVIOUS="question_id"/>
+        <FIELD NAME="choice_id" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false" PREVIOUS="question_id"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -219,21 +220,4 @@
       </INDEXES>
     </TABLE>
   </TABLES>
-  <STATEMENTS>
-    <STATEMENT NAME="insert questionnaire_question_type" TYPE="insert" TABLE="questionnaire_question_type" COMMENT="Initial insert of records on table questionnaire_question_type">
-      <SENTENCES>
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (1,'Yes/No','n','response_bool')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (2,'Text Box','n','response_text')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (3,'Essay Box','n','response_text')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (4,'Radio Buttons','y','resp_single')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (5,'Check Boxes','y','resp_multiple')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (6,'Dropdown Box','y','resp_single')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (8,'Rate (scale 1..5)','y','response_rank')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (9,'Date','n','response_date')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (10,'Numeric','n','response_text')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (99,'Page Break','n','')" />
-        <SENTENCE TEXT="(typeid, type, has_choices, response_table) VALUES (100,'Section Text','n','')" />
-      </SENTENCES>
-    </STATEMENT>
-  </STATEMENTS>
 </XMLDB>

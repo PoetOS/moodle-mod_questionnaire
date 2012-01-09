@@ -31,7 +31,7 @@
 // For the core capabilities, the variable is $moodle_capabilities.
 
 
-$mod_questionnaire_capabilities = array(
+$capabilities = array(
 
     // Ability to see that the questionnaire exists, and the basic information
     // about it.
@@ -44,7 +44,7 @@ $mod_questionnaire_capabilities = array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -55,10 +55,10 @@ $mod_questionnaire_capabilities = array(
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
             'student' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
-    
+
     // Ability to view individual responses to the questionnaire.
     'mod/questionnaire:viewsingleresponse' => array(
 
@@ -67,10 +67,10 @@ $mod_questionnaire_capabilities = array(
         'legacy' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
          )
     ),
-    
+
     // Ability to download responses in a CSV file.
     'mod/questionnaire:downloadresponses' => array(
 
@@ -79,10 +79,10 @@ $mod_questionnaire_capabilities = array(
         'legacy' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
-    
+
     // Ability to delete someone's (or own) previous responses.
     'mod/questionnaire:deleteresponses' => array(
 
@@ -90,10 +90,10 @@ $mod_questionnaire_capabilities = array(
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
             'editingteacher' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
-    
+
     // Ability to create and edit surveys.
     'mod/questionnaire:manage' => array(
 
@@ -102,10 +102,10 @@ $mod_questionnaire_capabilities = array(
         'legacy' => array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
-   
+
     // Ability to edit survey questions.
     'mod/questionnaire:editquestions' => array(
 
@@ -114,10 +114,10 @@ $mod_questionnaire_capabilities = array(
         'legacy' => array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
-   
+
     // Ability to create template surveys which can be copied, but not used.
     'mod/questionnaire:createtemplates' => array(
 
@@ -125,10 +125,10 @@ $mod_questionnaire_capabilities = array(
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
             'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
-   
+
     // Ability to create public surveys which can be accessed from multiple places.
     'mod/questionnaire:createpublic' => array(
 
@@ -136,7 +136,7 @@ $mod_questionnaire_capabilities = array(
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
             'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -148,61 +148,61 @@ $mod_questionnaire_capabilities = array(
         'legacy' => array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
-    
+
     // Ability to read own previous responses to questionnaires.
     'mod/questionnaire:readownresponses' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
-            'admin' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
             'student' => CAP_ALLOW
         )
     ),
-    
+
     // Ability to read others' previous responses to questionnaires.
     // Subject to constraints on whether responses can be viewed whilst
-    // questionnaire still open or user has not yet responded themselves.   
+    // questionnaire still open or user has not yet responded themselves.
     'mod/questionnaire:readallresponses' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
-            'admin' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW
         )
     ),
-    
+
     // Ability to read others's responses without the above checks.
     'mod/questionnaire:readallresponseanytime' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
-            'admin' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW
         )
     ),
-    
+
     // Ability to print a blank questionnaire
     'mod/questionnaire:printblank' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
-            'admin' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'student' => CAP_ALLOW
         )
     )
-    
+
 );
 
 ?>
