@@ -1,4 +1,4 @@
-<?php // $Id: questionnaire.php,v 1.1.2.2 2009/11/10 17:52:33 joseph_rezeau Exp $
+<?php // $Id$
 // translation by Shwu-Fen Kuo
 $string['action'] = '動作';
 $string['additionalinfo'] = '附加通知';

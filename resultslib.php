@@ -1,4 +1,4 @@
-<?php // $Id: resultslib.php,v 1.5 2007/06/12 17:04:48 mchurch Exp $
+<?php // $Id$
 
 // Written by James Flemer
 // <jflemer@alum.rpi.edu>

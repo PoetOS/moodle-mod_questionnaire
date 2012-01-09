@@ -1,8 +1,8 @@
-<?php // $Id: mod_form.php,v 1.3.2.5 2010/08/15 14:08:54 joseph_rezeau Exp $
+<?php // $Id$
 /**
 * print the form to add or edit a questionnaire-instance
 *
-* @version $Id: mod_form.php,v 1.3.2.5 2010/08/15 14:08:54 joseph_rezeau Exp $
+* @version $Id$
 * @author Mike Churchward
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package questionnaire

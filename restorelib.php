@@ -1,4 +1,4 @@
-<?php //$Id: restorelib.php,v 1.12.2.8 2009/12/05 08:21:40 joseph_rezeau Exp $
+<?php //$Id$
     //This php script contains all the stuff to backup/restore
     //questionnaire mods
 

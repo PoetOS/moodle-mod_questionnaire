@@ -1,4 +1,4 @@
-<?php //$Id: styles.php,v 1.3.2.6 2009/11/17 22:25:22 joseph_rezeau Exp $
+<?php //$Id$
 /*
  * Extra styles for questionnaire interface.
  */

@@ -1,4 +1,4 @@
-<?PHP // $Id: questionnaire.php,v 1.1.2.1 2010/10/03 21:26:38 joseph_rezeau Exp $ 
+<?PHP // $Id$ 
       // translation by Gleb Zakhodiakin ; http://moodle.milrti.ru
 
 $string['action'] = 'Действие';

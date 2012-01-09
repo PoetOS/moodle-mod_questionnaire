@@ -1,6 +1,6 @@
 <?php 
-// $Id: questionnaire.php,v 1.1.2.1 2009/08/31 13:29:54 joseph_rezeau Exp $
-// $Id: questionnaire.php,v 1.1.2.1 2009/08/31 13:29:54 joseph_rezeau Exp $
+// $Id$
+// $Id$
 $string['action'] = 'การกระทำ';
 $string['additionalinfo'] = 'ข้อมูลเพิ่มเติม';
 $string['addnewquestion'] = 'เพิ่มคำถาม $a';

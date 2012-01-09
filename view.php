@@ -1,4 +1,4 @@
-<?php  // $Id: view.php,v 1.19.2.4 2009/12/17 22:01:43 joseph_rezeau Exp $
+<?php  // $Id$
 
 /// This page prints a particular instance of questionnaire
 

@@ -1,4 +1,4 @@
-<?php  // $Id: report.php,v 1.14.2.22 2011/10/02 16:44:10 joseph_rezeau Exp $
+<?php  // $Id$
 
 /// This page prints a particular instance of questionnaire
     global $SESSION, $CFG;

@@ -1,4 +1,4 @@
-<?PHP // $Id: questionnaire.php,v 1.1.4.2 2008/07/22 14:15:32 joseph_rezeau Exp $ 
+<?PHP // $Id$ 
       // questionnaire.php - created with Moodle 1.9 + (Build: 20080423) (2007101509)
       // local modifications from http://ioclabs.xtec.cat/ges/moodle19
       // traducció catalana de David Sanchez Crespillo davidsanchezcrespillo arrova gmail punt com

@@ -1,4 +1,4 @@
-<?php //$Id: upgrade.php,v 1.1.2.16 2009/11/23 20:14:49 mchurch Exp $
+<?php //$Id$
 
 function xmldb_questionnaire_upgrade($oldversion=0) {
     global $CFG;

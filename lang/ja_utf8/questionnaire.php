@@ -1,4 +1,4 @@
-<?php // $Id: questionnaire.php,v 1.1.2.1 2011/07/22 12:00:35 joseph_rezeau Exp $
+<?php // $Id$
 $string['action'] = '操作'; //'Action';
 $string['additionalinfo'] = 'アンケートの説明'; //'Additional Info';
 $string['addnewquestion'] = '質問の追加 ($a)'; //'Adding $a question';

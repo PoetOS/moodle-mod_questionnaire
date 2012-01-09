@@ -1,4 +1,4 @@
-<?php // $Id: migrate2utf8.php,v 1.2 2006/08/11 14:33:38 mchurch Exp $
+<?php // $Id$
 function migrate2utf8_questionnaire_name($recordid){
     global $CFG, $globallang;
 

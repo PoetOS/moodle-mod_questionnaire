@@ -1,4 +1,4 @@
-<?php  // $Id: qsettings.php,v 1.7.2.2 2008/06/20 13:36:43 mchurch Exp $
+<?php  // $Id$
 /// This page prints a particular instance of questionnaire
 
     require_once("../../config.php");

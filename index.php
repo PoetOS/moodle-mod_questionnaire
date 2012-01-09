@@ -1,4 +1,4 @@
-<?php // $Id: index.php,v 1.6.2.7 2011/09/19 16:58:00 joseph_rezeau Exp $
+<?php // $Id$
 /// This page lists all the instances of Questionnaire in a particular course
 
 
