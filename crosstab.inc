@@ -1,6 +1,6 @@
-<?php // $Id: crosstab.inc,v 1.13 2008/07/21 18:50:20 mchurch Exp $
+<?php // $Id$
 
- # $Id: crosstab.inc,v 1.13 2008/07/21 18:50:20 mchurch Exp $
+ # $Id$
 
 /* The Cross Tabulation feature has been kept separate from the rest of phpESP intentionally.
    It provides an easier means of disabling it by commenting out the require line in results.inc

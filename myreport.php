@@ -1,4 +1,4 @@
-<?php  // $Id: myreport.php,v 1.22 2011/01/18 17:01:33 joseph_rezeau Exp $
+<?php  // $Id$
 
 /// This page shows results of a questionnaire to a student.
 

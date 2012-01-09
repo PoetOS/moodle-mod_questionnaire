@@ -1,4 +1,4 @@
-<?php // $Id: questiontypes.class.php,v 1.100.2.2 2011/12/14 10:37:28 jmg324 Exp $
+<?php // $Id$
 
 /**
  * This file contains the parent class for questionnaire question types.
