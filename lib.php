@@ -1,4 +1,4 @@
-<?php  // $Id: lib.php,v 1.58.2.1 2011/10/02 13:48:04 joseph_rezeau Exp $
+<?php  // $Id: lib.php,v 1.59 2011/10/02 13:48:49 joseph_rezeau Exp $
 
 /// Library of functions and constants for module questionnaire
 /// (replace questionnaire with the name of your module and delete this line)
@@ -49,12 +49,13 @@ function questionnaire_supports($feature) {
         default: return null;
     }
 }
+
 /**
  * @return array all other caps used in module
  */
 function questionnaire_get_extra_capabilities() {
     return array('moodle/site:accessallgroups');
-}
+} 
 
 global $QUESTIONNAIRE_TYPES;
 $QUESTIONNAIRE_TYPES = array (QUESTIONNAIREUNLIMITED => get_string('qtypeunlimited', 'questionnaire'),

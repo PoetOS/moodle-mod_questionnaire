@@ -1,4 +1,4 @@
-<?php // $Id: questiontypes.class.php,v 1.100.2.2 2011/12/14 10:37:28 jmg324 Exp $
+<?php // $Id: questiontypes.class.php,v 1.101.2.2 2012/01/05 15:59:42 mchurch Exp $
 
 /**
  * This file contains the parent class for questionnaire question types.
@@ -202,13 +202,6 @@ class questionnaire_question {
 /// appropriate function based on its table.
 
     function insert_response($rid, $formdata) {
-        if (isset($formdata->{'q'.$this->id})) {
-            $val = clean_param($formdata->{'q'.$this->id}, PARAM_CLEAN);
-        }
-        else {
-            $val = '';
-        }
-
         $method = 'insert_'.$this->response_table;
         if (method_exists($this, $method)) {
             return $this->$method($rid, $formdata);

@@ -1,4 +1,4 @@
-<?php // $Id: index.php,v 1.20 2011/01/12 18:49:29 mchurch Exp $
+<?php // $Id: index.php,v 1.21 2011/09/19 16:59:32 joseph_rezeau Exp $
 /// This page lists all the instances of Questionnaire in a particular course
 
 
@@ -60,7 +60,7 @@
         }
 
         $questionnaire = $questionnaires[$questionnaireid];
-        $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->id));
+        $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->sid));
         // template surveys should NOT be displayed as an activity to students
         if (!($realm == 'template' && !has_capability('mod/questionnaire:manage',get_context_instance(CONTEXT_MODULE,$questionnaire->coursemodule)))) {
             //Show normal if the mod is visible

@@ -1,4 +1,4 @@
-<?php // $Id: locallib.php,v 1.146.2.8 2011/12/14 10:19:44 jmg324 Exp $
+<?php // $Id: locallib.php,v 1.151.2.3 2012/01/05 16:32:34 mchurch Exp $
 
 /**
  * This library replaces the phpESP application with Moodle specific code. It will eventually
@@ -1105,12 +1105,12 @@ class questionnaire {
                 $resp = $formdata->{'q'.$qid};
                 $pos = strpos($resp, 'other_');
 
-                // "other" choice is checked but text box is empty
+                            // "other" choice is checked but text box is empty
                 if (is_int($pos) == true){
                     $othercontent = "q".$qid.substr($resp, 5);
-                	if ( !$formdata->$othercontent ) {
-	                    $wrongformat++;
-	                    $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+                    if ( !$formdata->$othercontent ) {
+                        $wrongformat++;
+                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
                         break;
                     }
                 }
@@ -1134,14 +1134,14 @@ class questionnaire {
                     $pos = strpos($resp, 'other_');
 
                     // "other" choice is checked but text box is empty
-	                if (is_int($pos) == true){
-	                    $othercontent = "q".$qid.substr($resp, 5);
-	                    if ( !$formdata->$othercontent ) {
-	                        $wrongformat++;
-	                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-	                        break;
-	                    }
-	                }
+                    if (is_int($pos) == true){
+                        $othercontent = "q".$qid.substr($resp, 5);
+                        if ( !$formdata->$othercontent ) {
+                            $wrongformat++;
+                            $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+                            break;
+                        }
+                    }
 
                     if (is_numeric($resp) || is_int($pos) == true) { //JR fixed bug CONTRIB-884
                         $nbrespchoices++;
@@ -2275,13 +2275,13 @@ class questionnaire {
                                ".$castsql."=GM.userid
                          ORDER BY R.id";
             } else if ($groupid == -3) { // not members of any group
-                $sql = "SELECT R.id, R.survey_id, U.id AS user
+                $sql = "SELECT R.id, R.survey_id, U.id AS userid
                           FROM ".$CFG->prefix."questionnaire_response R,
                                 ".$CFG->prefix."user U
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                ".$castsql."=U.id
-                         ORDER BY user";
+                         ORDER BY userid";
             } else { // members of a specific group
                 $sql = "SELECT R.id, R.survey_id
                           FROM ".$CFG->prefix."questionnaire_response R,
@@ -2300,8 +2300,7 @@ class questionnaire {
             }
             if ($groupid == -3) { // members of no group
                 foreach ($rows as $row=>$key) {
-                    $userid = $key->user;
-                    if (groups_has_membership($this->cm, $userid)) {
+                    if (groups_has_membership($this->cm, $key->userid)) {
                         unset($rows[$row]);
                     }
                 }

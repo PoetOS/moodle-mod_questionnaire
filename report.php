@@ -1,4 +1,4 @@
-<?php  // $Id: report.php,v 1.51.2.4 2011/12/14 09:53:34 jmg324 Exp $
+<?php  // $Id: report.php,v 1.54.2.2 2012/01/05 16:32:34 mchurch Exp $
 
 /// This page prints a particular instance of questionnaire
     global $SESSION, $CFG;
@@ -52,7 +52,7 @@
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     if (!has_capability('mod/questionnaire:readallresponseanytime',$context) &&
       !($questionnaire->capabilities->view && $questionnaire->can_view_response($rid))) {
-    /// Should never happen, unless called directly by a snoop...
+        /// Should never happen, unless called directly by a snoop...
         print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
     }
 
@@ -161,17 +161,17 @@
             $SESSION->questionnaire->numrespsallgroupmembers = count ($respsallgroupmembers);
 
             // not members of any group
-            $sql = "SELECT R.id, R.survey_id, R.submitted, R.username, U.id AS user
+            $sql = "SELECT R.id, R.survey_id, R.submitted, R.username, U.id AS userid
                     FROM ".$CFG->prefix."questionnaire_response R,
                         ".$CFG->prefix."user U
                      WHERE R.survey_id=".$sid." AND
                        R.complete='y' AND " . $castsql . "=U.id
-                    ORDER BY user";
+                    ORDER BY userid";
             if (!($respsnongroupmembers = $DB->get_records_sql($sql))) {
                 $respsnongroupmembers = array();
             }
             foreach ($respsnongroupmembers as $resp=>$key) {
-                if (groups_has_membership($cm, $key->user)) {
+                if (groups_has_membership($cm, $key->userid)) {
                     unset($respsnongroupmembers[$resp]);
                 }
             }
