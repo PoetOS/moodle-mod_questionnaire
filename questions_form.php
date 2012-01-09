@@ -1,8 +1,8 @@
-<?php // $Id: questions_form.php,v 1.21.2.7 2011/11/14 08:30:23 joseph_rezeau Exp $
+<?php // $Id: questions_form.php,v 1.33.2.1 2011/11/14 08:30:42 joseph_rezeau Exp $
 /**
 * print the form to add or edit a questionnaire-instance
 *
-* @version $Id: questions_form.php,v 1.21.2.7 2011/11/14 08:30:23 joseph_rezeau Exp $
+* @version $Id: questions_form.php,v 1.33.2.1 2011/11/14 08:30:42 joseph_rezeau Exp $
 * @author Mike Churchward
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package questionnaire
@@ -20,6 +20,7 @@ class questionnaire_questions_form extends moodleform {
 
     function definition() {
         global $CFG, $COURSE, $questionnaire, $QUESTIONNAIRE_REALMS, $SESSION;
+        global $DB;
 
         $mform    =& $this->_form;
 
@@ -27,7 +28,7 @@ class questionnaire_questions_form extends moodleform {
 
         //-------------------------------------------------------------------------------
         $mform->addElement('header', 'questionhdr', get_string('questions', 'questionnaire'));
-        $mform->setHelpButton('questionhdr', array('questiontypes', get_string('questiontypes', 'questionnaire'), 'questionnaire'));
+        $mform->addHelpButton('questionhdr', 'questiontypes', 'questionnaire');
 
         $stredit = get_string('edit', 'questionnaire');
         $strremove = get_string('remove', 'questionnaire');
@@ -50,7 +51,7 @@ class questionnaire_questions_form extends moodleform {
         $attributes = 'onChange="this.form.submit()"';
 
         $select = '';
-        if (!($qtypes = get_records_select_menu('questionnaire_question_type', $select, '', 'typeid,type'))) {
+        if (!($qtypes = $DB->get_records_select_menu('questionnaire_question_type', $select, null, '', 'typeid,type'))) {
             $qtypes = array();
         }
         // needed for non-English languages JR
@@ -121,7 +122,6 @@ class questionnaire_questions_form extends moodleform {
             $butclass = array('class' => 'questionnaire_qbut');
 
             if (!$this->moveq) {
-
                 $uextra = array('value' => $question->id,
                                 'alt' => get_string('moveup', 'questionnaire'),
                                 'title' => get_string('moveup', 'questionnaire')) + $butclass;
@@ -172,7 +172,7 @@ class questionnaire_questions_form extends moodleform {
             } else {
             	${$quesgroup}[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$qnum_txt.'</div>');
             	if ($this->moveq != $question->id) {
-            	                    $mextra = array('value' => $question->id,
+                $mextra = array('value' => $question->id,
                                 'alt' => get_string('movehere', 'questionnaire'),
                                 'title' => get_string('movehere', 'questionnaire')) + $butclass;
                 $msrc = $CFG->wwwroot.'/mod/questionnaire/images/movehere.gif';
@@ -180,7 +180,7 @@ class questionnaire_questions_form extends moodleform {
                 $newposition = $max == $pos ? 0 : $pos;
                 ${$quesgroup}[] =& $mform->createElement('image', 'moveherebutton['.$newposition.']', $msrc, $mextra);
                 ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
-            	}
+            }
             	else {
             		${$quesgroup}[] =& $mform->createElement('static', 'qnums', '', '<div class="qicons">Move From Here</div>');
             	}
@@ -199,13 +199,12 @@ class questionnaire_questions_form extends moodleform {
             ${$quesgroup}[] =& $mform->createElement('static', 'qreq_'.$question->id, '', '<div class="qreq">'.$qreq.'</div>');
 
             $qname = $question->name;
-            ${$quesgroup}[] =& $mform->createElement('static', 'qname_'.$question->id, '', '<div class="qname">'.$qname.'</div><br />');
-            ${$quesgroup}[] =& $mform->createElement('static', 'qcontent_'.$question->id, '', '<div class="qname">'.$content.'</div><br /><hr />');
-            
+            ${$quesgroup}[] =& $mform->createElement('static', 'qname_'.$question->id, '', '<div class="qname">'.$qname.'</div>');
+
             $mform->addGroup($$quesgroup, 'questgroup', '', '', false);
 
-            //$mform->addElement('static', 'qcontent_'.$question->id, '', '<div style=>'.$content.'</div>');
-			
+            $mform->addElement('static', 'qcontent_'.$question->id, '', '<div class="qcontent">'.$content.'</div>');
+
             $pos++;
         }
 
@@ -213,6 +212,7 @@ class questionnaire_questions_form extends moodleform {
         if ($this->moveq) {
             $mform->addElement('hidden', 'moveq', $this->moveq);
         }
+
 
         //-------------------------------------------------------------------------------
         // Hidden fields
@@ -237,13 +237,14 @@ class questionnaire_edit_question_form extends moodleform {
 
     function definition() {
         global $CFG, $COURSE, $questionnaire, $question, $QUESTIONNAIRE_REALMS, $SESSION;
+        global $DB;
 
         // 'sticky' required response value for further new questions
         if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
             $question->required = $SESSION->questionnaire->required;
         }
         if (!isset($question->type_id)) {
-            error('Undefined question type.');
+            print_error('undefinedquestiontype', 'questionnaire');
         }
 
         /// Initialize question type defaults:
@@ -266,14 +267,14 @@ class questionnaire_edit_question_form extends moodleform {
             $lhelpname = 'minforcedresponses';
             $phelpname = 'maxforcedresponses';
             $olabelname = 'possibleanswers';
-            $ohelpname = 'checkanswers';
+            $ohelpname = 'checkboxes';
             break;
         case QUESRADIO:
             $deflength = 0;
             $defprecise = 0;
             $lhelpname = 'alignment';
             $olabelname = 'possibleanswers';
-            $ohelpname = 'radioanswers';
+            $ohelpname = 'radiobuttons';
             break;
         case QUESRATE:
             $deflength = 5;
@@ -281,7 +282,7 @@ class questionnaire_edit_question_form extends moodleform {
             $lhelpname = 'numberscaleitems';
             $phelpname = 'kindofratescale';
             $olabelname = 'possibleanswers';
-            $ohelpname = 'rateanswers';
+            $ohelpname = 'ratescale';
             break;
         case QUESNUMERIC:
             $deflength = 0;
@@ -293,7 +294,7 @@ class questionnaire_edit_question_form extends moodleform {
             $deflength = 0;
             $defprecise = 0;
             $olabelname = 'possibleanswers';
-            $ohelpname = 'dropanswers';
+            $ohelpname = 'dropdown';
             break;
         default:
             $deflength = 0;
@@ -309,8 +310,43 @@ class questionnaire_edit_question_form extends moodleform {
         } else {
             $streditquestion = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($question->type_id));
         }
-
+		switch ($question->type_id) {
+		    case 1:
+		        $qtype='yesno';
+		        break;
+		    case 2:
+		        $qtype='textbox';
+                break;
+	        case 3:
+		        $qtype='essaybox';
+                break;
+		    case 4:
+		        $qtype='radiobuttons';
+		        break;
+            case 5:
+		        $qtype='checkboxes';
+                break;
+		    case 6:
+		        $qtype='dropdown';
+                break;
+		    case 8:
+		        $qtype='ratescale';
+                break;
+		    case 9:
+		        $qtype='date';
+		        break;
+		    case 10:
+		        $qtype='numeric';
+		        break;
+		    case 100:
+		        $qtype='sectiontext';
+		        break;
+            case 99:
+		        $qtype='sectionbreak';
+		    }
+		        
         $mform->addElement('header', 'questionhdr', $streditquestion);
+        $mform->addHelpButton('questionhdr', $qtype, 'questionnaire');
 
         /// Name and required fields:
         if ($question->type_id != QUESSECTIONTEXT && $question->type_id != '') {
@@ -319,13 +355,13 @@ class questionnaire_edit_question_form extends moodleform {
 
             $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'), array('size'=>'30', 'maxlength'=>'30'));
             $mform->setType('name', PARAM_TEXT);
-            $mform->setHelpButton('name', array('questionname', get_string('optionalname', 'questionnaire'), 'questionnaire'));
+            $mform->addHelpButton('name', 'optionalname', 'questionnaire');
 
             $reqgroup = array();
             $reqgroup[] =& $mform->createElement('radio', 'required', '', $stryes, 'y');
             $reqgroup[] =& $mform->createElement('radio', 'required', '', $strno, 'n');
             $mform->addGroup($reqgroup, 'reqgroup', get_string('required', 'questionnaire'), ' ', false);
-            $mform->setHelpButton('reqgroup', array('required', get_string('required', 'questionnaire'), 'questionnaire'));
+            $mform->addHelpButton('reqgroup', 'required', 'questionnaire');
         }
 
         /// Length field:
@@ -337,11 +373,11 @@ class questionnaire_edit_question_form extends moodleform {
             $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('vertical', 'questionnaire'), '0');
             $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('horizontal','questionnaire'), '1');
             $mform->addGroup($lengroup, 'lengroup', get_string($lhelpname, 'questionnaire'), ' ', false);
-            $mform->setHelpButton('lengroup', array($lhelpname, get_string($lhelpname, 'questionnaire'), 'questionnaire'));
+            $mform->addHelpButton('lengroup', $lhelpname, 'questionnaire');
         } else { // QUESTEXT or QUESESSAY or QUESRATE
             $question->length = isset($question->length) ? $question->length : $deflength;
             $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
-            $mform->setHelpButton('length', array($lhelpname, get_string($lhelpname, 'questionnaire'), 'questionnaire'));
+            $mform->addHelpButton('length', $lhelpname, 'questionnaire');
         }
 
         /// Precision field:
@@ -354,22 +390,24 @@ class questionnaire_edit_question_form extends moodleform {
                                  "2" => get_string('noduplicates','questionnaire'),
                                  "3" => get_string('osgood','questionnaire'));
             $mform->addElement('select', 'precise', get_string($phelpname, 'questionnaire'), $precoptions);
-            $mform->setHelpButton('precise', array($phelpname, get_string($lhelpname, 'questionnaire'), 'questionnaire'));
+            $mform->addHelpButton('precise', $phelpname, 'questionnaire');
         } else {
             $question->precise = isset($question->precise) ? $question->precise : $defprecise;
             $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
-            $mform->setHelpButton('precise', array($phelpname, get_string($lhelpname, 'questionnaire'), 'questionnaire'));
+            //$mform->addHelpButton('precise', $phelpname, 'questionnaire');
         }
 
         /// Content field:
-        $mform->addElement('htmleditor', 'content', get_string('text', 'questionnaire'), array('rows' => 10));
+        $modcontext    = $this->_customdata['modcontext'];
+        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext'=>true, 'context'=>$modcontext);
+        $mform->addElement('editor', 'content', get_string('text', 'questionnaire'), null, $editoroptions);
         $mform->setType('content', PARAM_RAW);
         $mform->addRule('content', null, 'required', null, 'client');
-        $mform->setHelpButton('content', array('writing', 'questions', 'richtext'), false, 'editorhelpbutton');
+//        $mform->addHelpButton('content', array('writing', 'questions', 'richtext2'), false, 'editorhelpbutton');
 
         /// Options section:
         // has answer options ... so show that part of the form
-        if (get_field('questionnaire_question_type', 'has_choices', 'typeid', $question->type_id) == 'y' ) {
+        if ($DB->get_field('questionnaire_question_type', 'has_choices', array('typeid' => $question->type_id)) == 'y' ) {
             if (!empty($question->choices)) {
                 $num_choices = count($question->choices);
             } else {
@@ -393,7 +431,7 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addElement('textarea', 'allchoices', get_string('possibleanswers', 'questionnaire'), $options);
             $mform->setType('allchoices', PARAM_RAW);
             $mform->addRule('allchoices', null, 'required', null, 'client');
-            $mform->setHelpButton('allchoices', array($ohelpname, get_string($olabelname, 'questionnaire'), 'questionnaire'));
+            $mform->addHelpButton('allchoices', $ohelpname, 'questionnaire');
 
             $mform->addElement('html', '</div>');
 

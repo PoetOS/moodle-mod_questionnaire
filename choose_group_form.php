@@ -1,8 +1,8 @@
-<?php // $Id: choose_group_form.php,v 1.2.2.4 2009/12/17 17:17:06 joseph_rezeau Exp $
+<?php // $Id: choose_group_form.php,v 1.6.2.2 2011/08/26 08:18:44 jmg324 Exp $
 /**
 * prints the form to choose the group you want to analyse
 *
-* @version $Id: choose_group_form.php,v 1.2.2.4 2009/12/17 17:17:06 joseph_rezeau Exp $
+* @version $Id: choose_group_form.php,v 1.6.2.2 2011/08/26 08:18:44 jmg324 Exp $
 * @author Andreas Grabs
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package questionnaire
@@ -33,7 +33,7 @@ class questionnaire_choose_group_form extends moodleform {
     //this function have to be called manually
     //the advantage is that the data are already set
     function set_form_elements(){
-        global $CFG, $SESSION;
+        global $CFG, $SESSION, $DB;
         $mform =& $this->_form;
         $sid = $SESSION->questionnaire_survey_id;
         $elementgroup = array();
@@ -46,20 +46,20 @@ class questionnaire_choose_group_form extends moodleform {
         	$currentgroupid = $this->questionnairedata->currentgroupid;
         }
         if(isset($this->questionnairedata->groups)){
-        	$canviewallgroups =  $this->questionnairedata->canviewallgroups;
-        	$groupmode =  $this->questionnairedata->groupmode;
+            $canviewallgroups =  $this->questionnairedata->canviewallgroups;
+            $groupmode =  $this->questionnairedata->groupmode;
             if ($canviewallgroups) {
                 $groups_options['-1'] = get_string('allparticipants');
             }
             // count number of responses in each group
+            $castsql = $DB->sql_cast_char2int('R.username');
             foreach($this->questionnairedata->groups as $group) {
-                $sql = "SELECT R.id, GM.id 
+                $sql = "SELECT R.id, GM.id as groupid
                     FROM ".$CFG->prefix."questionnaire_response R, ".$CFG->prefix."groups_members GM
                     WHERE R.survey_id=".$sid." AND
-                        R.complete='y' AND
-                        GM.groupid=".$group->id." AND
-                        R.username=GM.userid";
-                if (!($resps = get_records_sql($sql))) {
+                          R.complete='y' AND
+                          GM.groupid=".$group->id." AND " . $castsql . "=GM.userid";
+                if (!($resps = $DB->get_records_sql($sql))) {
                     $resps = array();
                 }
                 if (!empty ($resps)) {
@@ -73,16 +73,16 @@ class questionnaire_choose_group_form extends moodleform {
                 $groups_options['-2'] = '---'.get_string('membersofselectedgroup','group').' '.get_string('allgroups').'---'; 
                 $groups_options['-3'] = '---'.get_string('groupnonmembers').'---'; 
             }
-            if ($groupmode == 2) {
-                $groups_options['-2'] = '---'.get_string('membersofselectedgroup','group').' '.get_string('allgroups').'---'; 
-            }
+			if ($groupmode == 2) {
+				$groups_options['-2'] = '---'.get_string('membersofselectedgroup','group').' '.get_string('allgroups').'---';
+			}
         }
         $attributes = 'onChange="this.form.submit()"';
-        $elementgroup[] =& $mform->createElement('select','currentgroupid', '', $groups_options, $attributes);
+        $elementgroup[] =& $mform->createElement('select', 'currentgroupid', '', $groups_options, $attributes);
         // buttons
 		$mform->setDefault('currentgroupid', $currentgroupid);
         $mform->addGroup($elementgroup, 'elementgroup', '', array(' '), false);
-        $mform->setHelpButton('elementgroup', array('viewallresponses', get_string('viewallresponses', 'questionnaire'), 'questionnaire'));
+        $mform->addHelpButton('elementgroup', 'viewallresponses', 'questionnaire');
 //-------------------------------------------------------------------------------
     }
 

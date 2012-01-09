@@ -1,0 +1,61 @@
+The questionnaire module allows you to construct questionnaires (surveys) from a
+variety of question type. It is based on phpESP, and Open Source survey tool 
+(see: http://phpesp.sourceforge.net). 
+
+This version has been partially integrated into Moodle -- questionnaires become 
+modules that can be added to courses and all of the data is contained in the 
+Moodle database.
+
+However, creation and management of questionnaires is handled by the phpESP 
+management application. This allows you to use the phpESP edit, test, activate 
+and archive management features as well as the group and designer features. This 
+actually works well, as it separates the questionnaire management functions from 
+the course functions, which seems to be quite a natural separation. Any created 
+questionnaires can be added to courses, allowing you to keep a library of 
+questionnaires.
+
+The group and designer features allow you to set up categories of 
+questionnaires. To create or edit a questionnaire, or review its results, you 
+need to be a member of the group it belongs to.
+
+Consult the phpESP help and documentation for more information.
+
+To Install:
+
+1. Load the questionnaire module directory into your "mod" subdirectory.
+2. Visit your admin page to create all of the necessary data tables.
+
+That should be it!
+
+The phpESP config options use the ones you set in your Moodle config file. You 
+shouldn't have to do anything else.
+
+If you do need to manually set up some config options for phpESP, in the 
+"questionnaire/phpESP/admin" directory, edit the "phpESP.ini.php" file. Here are 
+the changes you (may) need to make:
+
+1. $ESPCONFIG['base_url'] - if your moodle site is not the root level, insert 
+   the appropriate starting directory.
+2. Database information - basically, set it up as you did your 'config.php' for 
+   Moodle.
+3. Moodle Additions - if you use a "prefix" for your Moodle tables, set 
+   MDL_PREFIX to that. If not, set it to "".
+
+To access your phpESP management functions, go to:
+http://[yoursite]/[yourroot]/mod/questionnaire/phpESP/admin/
+
+
+This version uses Moodle usernames to grant access to phpESP. You will need to 
+be a valid admin user to access the phpESP admin functions. Once you are there, 
+you can set up other accounts and groups. All a Moodle user needs is an 
+identical username in the phpESP database to access the features granted to that 
+user. The phpESP password in not used in this version.
+
+To add a questionnaire to a Moodle course, select "Add / Questionnaire" from the 
+edit menu, and fill in the information. Currently, you can only select an 
+'Active' questionnaire for a course.
+
+
+Next up:
+1) Fully integrate the management functions into Moodle.
+2) Fully integrate the reporting functions into Moodle.

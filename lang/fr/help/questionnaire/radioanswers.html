@@ -1,0 +1,179 @@
+<h2 class="main">
+Réponses possibles pour les Boutons radio
+</h2>
+  <p>
+Pour une question de type Boutons radio, vous devez indiquer les réponses possibles dans la boîte Réponses possibles. Exemples.
+</p>
+  <table border="1" cellpadding="5">
+  <tr>
+    <th style="width:250" valign="top" scope="col">
+Mode édition
+    </th>
+    <th style="width:243" valign="top" scope="col">
+Affichage dans le questionnaire
+    </th>
+    <th style="width:434" valign="top" scope="col">
+(affichage horizontal)
+    </th>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+1.Réponses possibles :
+    </em>:
+      <p>
+    le rouge<br />
+    le bleu<br />
+    le noir
+    </p></td>
+    <td valign="top"><strong>
+Quelle est votre couleur préférée ?
+    </strong><br />
+      <input type="radio" />
+    le rouge<br />
+<input type="radio" name="radio" />
+    le bleu<br />
+<input type="radio" name="radio" />
+    le noir
+	</td>
+    <td valign="top"><strong>
+Quelle est votre couleur préférée ?
+    </strong><br />
+      <input type="radio" />
+le rouge
+	<input type="radio" />
+le bleu
+	<input type="radio" />
+le noir
+	</td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+2. Réponses possibles
+    </em>:
+      <p>
+    le rouge<br />
+    le bleu<br />
+    le noir<br />
+	!other
+      </p></td>
+    <td valign="top"><strong>
+What is your favorite color?
+    </strong><br />
+      <input type="radio" />
+le rouge<br />
+	<input type="radio" />
+le bleu<br />
+	<input type="radio" />
+le noir<br />
+	<input type="radio" />
+Autre:
+<input type="text" size="15" /></td>
+    <td valign="top"><strong>
+Quelle est votre couleur préférée ?
+	</strong><br />
+        <input type="radio" />
+le rouge
+      <input type="radio" />
+le bleu
+      <input type="radio" />
+le noir
+      <br />
+      <input type="radio" />
+Autre:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+3.Réponses possibles:</em>
+      <p>
+le rouge<br />
+le bleu<br />
+le noir<br />
+!other=Une autre couleur:
+</p></td>
+    <td valign="top"><strong>
+Quelle est votre couleur préférée ?
+</strong><br />
+        <input type="radio" />
+le rouge<br />
+      <input type="radio" />
+le bleu<br />
+      <input type="radio" />
+le noir<br />
+      <input type="radio" />
+Une autre couleur:
+      <input type="text" size="15" /></td>
+    <td valign="top"><strong>
+Quelle est votre couleur préférée ?
+</strong><br />
+        <input type="radio" />
+le rouge
+      <input type="radio" />
+le bleu
+      <input type="radio" />
+le noir
+<br />
+<input type="radio" />
+Une autre couleur:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">
+Affichage dans le questionnaire
+</td>
+    <td valign="top"><em><strong>
+Export au format texte ou CSV
+</strong></em></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+4<a name="4" id="4"></a>.Réponses possibles:
+	</em>
+      <p>
+le rouge=la couleur du sang<br />
+le bleu=la couleur du ciel<br />
+le noir=le contraire de blanc
+	</p></td>
+    <td valign="top"><strong>
+Quelle est votre couleur préférée ?
+</strong><br />
+        <input type="radio" />
+la couleur du sang<br />
+      <input type="radio" />
+la couleur du ciel<br />
+      <input type="radio" />
+le contraire de blanc
+</td>
+    <td valign="top"><p><em>
+Les "valeurs" le rouge, le bleu et le noir seront exportées dans les colonnes au lieu des valeurs standard 1, 2, 3.
+Voir l'aide de l'export comme fichier texte pour les détails.
+</em></p></td>
+  </tr>
+</table>
+<p>
+Vous pouvez facultativement entrer “!other” sur la dernière ligne des réponses possibles pour créer une option "autre choix" accompagnée d'une boite de texte à remplir. Par défaut, si vous entrez seulement !other sur la dernière ligne, le questionnaire affichera l'invite Autre (pour la langue française). Si vous voulez faire afficher une invite personnalisée, tapez !other= suivi du texte de votre invite (comme dans l'exemple 3 ci-dessus).
+</p>
+<h2 class="main">
+Notes
+</h2>
+<ol>
+  <li>
+Dans la version actuelle de Questionnaire, la longueur de la boîte de texte suivant un bouton est fixée à 25 caractères. Cette longueur n'est pas modifiable par l'interface. Toutefois, la longueur du texte saisi n'est pas limitée.
+</li>
+<li>
+Il n'y a pas de raison de saisir plus d'une seule option de type !other pour une question de type Boutons radio... et il ne fait pas le faire.
+</li>
+<li>
+Si un étudiant coche un bouton radio qui est accompagné d'une boite de texte et ne saisit pas de texte, un message d'avertissement sera affiché (lorsque l'étudiant quittera la page s'il y en a plusieurs ou lorsqu'il soumettre le questionnaire).
+</li>
+<li>
+Si un étudiant coche un bouton radio qui est accompagné d'une boite de texte et saisit du texte, puis change d'idée et coche un autre des boutons radio de cette question, le texte sera automatiquement effacé de la boite.
+</li>
+<li>
+L'exemple 4 montre une option cachée qui permet d'exporter - dans les réponses - des valeurs nommées au lieu de nombres. Si vous n'avez pas l'intention d'exporter les réponses de vos questionnaires vers Excel ou un logiciel de statistiques, nous n'avez pas besoin de cette option cachée.</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Mis à jour par JR le 
+  <!-- #BeginDate format:Sw1 -->21 novembre, 2008<!-- #EndDate -->
+</p>

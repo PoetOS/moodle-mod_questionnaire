@@ -1,6 +1,6 @@
-<?php // $Id: crosstab.inc,v 1.9.2.5 2008/06/20 13:36:45 mchurch Exp $
+<?php // $Id: crosstab.inc,v 1.13 2008/07/21 18:50:20 mchurch Exp $
 
- # $Id: crosstab.inc,v 1.9.2.5 2008/06/20 13:36:45 mchurch Exp $
+ # $Id: crosstab.inc,v 1.13 2008/07/21 18:50:20 mchurch Exp $
 
 /* The Cross Tabulation feature has been kept separate from the rest of phpESP intentionally.
    It provides an easier means of disabling it by commenting out the require line in results.inc
@@ -36,7 +36,7 @@
 
   }
   function process($sid, $qidc, $qidr, $instance){
-        global $CFG;
+        global $CFG, $DB;
 
         $qids = array();
         $cids_col = array();
@@ -58,7 +58,7 @@
         array_push($qids, $qidr);
 
     foreach ($qids as $qid){
-        $result = get_record('questionnaire_question', 'survey_id', $sid, 'id', $qid);
+        $result = $DB->get_record('questionnaire_question', array('survey_id' => $sid, 'id' => $qid));
         array_push($qn_content, $result->content);
         array_push($tids, $result->type_id);
     }
@@ -79,8 +79,8 @@
             }
         }
         else if ($tid_count == 0){
-            if ($results = get_records('questionnaire_quest_choice', 'question_id', $qidc, 
-                                       'id', 'id,content')) {
+            if ($results = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qidc), 
+                                            'id', 'id,content')) {
                 foreach ($results as $result) {
                     array_push($qidc_content, $result->content);
                 }
@@ -98,8 +98,8 @@
             }
         }
         else{
-            if ($results = get_records('questionnaire_quest_choice', 'question_id', $qidr, 
-                                       'id', 'id,content')) {
+            if ($results = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qidr), 
+                                            'id', 'id,content')) {
                 foreach ($results as $result) {
                     array_push($qidr_content, $result->content);
                 }
@@ -145,7 +145,7 @@
             }
         }
         else {
-            if ($results = get_records('questionnaire_'.$from_table, 'question_id', $qids[$count], $order)) {
+            if ($results = $DB->get_records('questionnaire_'.$from_table, array('question_id' => $qids[$count]), $order)) {
                 foreach ($results as $result) {
                     if ($count == 0){
                         array_push($cids_col, $result->id);
@@ -172,7 +172,7 @@
                        'WHERE (r1.question_id = \''.$qids[0].'\' AND r1.choice_id = \''.$xx.'\') '.
                           'AND (r2.question_id = \''.$qids[1].'\' AND r2.choice_id = \''.$yy.'\') '.
                           'AND r1.response_id = r2.response_id';
-                $result = count_records_sql($sql);
+                $result = $DB->count_records_sql($sql);
                 $total_row += intval($result);
                 array_push($col_counts, $result);
           }

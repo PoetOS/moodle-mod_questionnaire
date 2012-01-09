@@ -1,4 +1,4 @@
-/* $Id: default.css,v 1.4.2.6 2011/04/06 21:38:55 joseph_rezeau Exp $ */
+/* $Id: default.css,v 1.5 2008/03/31 14:45:45 mchurch Exp $ */
 .mod-questionnaire form {
 }
 
@@ -197,6 +197,7 @@ div.respdate {
   background-color:#FBFBF5;
   margin:0px;
   margin-bottom:4px;
+  padding:10px;
 }
 
 .surveyPage {
@@ -301,12 +302,4 @@ input[type="button"]:focus {
 .notice .buttons div,
 .notice .buttons form {
   display:inline;
-}
-@media print {
-  .closewindow {
-    display:none;
-  }
-}
-.radioelement {
-    float: left;
 }

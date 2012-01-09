@@ -1,4 +1,4 @@
-<?php  // $Id: report.php,v 1.14.2.22 2011/10/02 16:44:10 joseph_rezeau Exp $
+<?php  // $Id: report.php,v 1.50.2.5 2011/12/14 10:16:54 jmg324 Exp $
 
 /// This page prints a particular instance of questionnaire
     global $SESSION, $CFG;
@@ -29,36 +29,62 @@
         if (!empty($SESSION->instance)) {
             $instance = $SESSION->instance;
         } else {
-            error(get_string('requiredparameter', 'questionnaire'));
+            print_error('requiredparameter', 'questionnaire');
         }
     }
     $SESSION->instance = $instance;
 
-    if (! $questionnaire = get_record("questionnaire", "id", $instance)) {
-        error(get_string('incorrectquestionnaire', 'questionnaire'));
+    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
+        print_error('incorrectquestionnaire', 'questionnaire');
     }
-    if (! $course = get_record("course", "id", $questionnaire->course)) {
-        error("get_string('misconfigured', 'questionnaire')");
+    if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+        print_error('coursemisconf');
     }
     if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-        error(get_string('incorrectmodule', 'questionnaire'));
+        print_error('invalidcoursemodule');
     }
 
-    require_login($course->id);
-
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    require_course_login($course, true, $cm);
 
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
     /// If you can't view the questionnaire, or can't view a specified response, error out.
-    if (!($questionnaire->capabilities->view && $questionnaire->can_view_response($rid))) {
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    if (!has_capability('mod/questionnaire:readallresponseanytime',$context) &&
+      !($questionnaire->capabilities->view && $questionnaire->can_view_response($rid))) {
         /// Should never happen, unless called directly by a snoop...
         print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
     }
 
-    $questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context, NULL, false);
+    $questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
     $sid = $questionnaire->survey->id;
-/// Tab setup:
+
+    $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/report.php');
+    if ($instance) {
+        $url->param('instance', $instance);
+    }
+    $url->param('action', $action);
+    if ($sid) {
+        $url->param('userid', $userid);
+    }
+    if ($rid) {
+        $url->param('rid', $rid);
+    }
+    if ($type) {
+        $url->param('type', $type);
+    }
+    if ($byresponse) {
+        $url->param('byresponse', $byresponse);
+    }
+    $url->param('currentgroupid', $currentgroupid);
+    if ($user) {
+        $url->param('user', $user);
+    }
+
+    $PAGE->set_url($url);
+    $PAGE->set_context($context);
+
+    /// Tab setup:
     $SESSION->questionnaire->current_tab = 'allreport';
 
     $formdata = data_submitted();
@@ -80,11 +106,12 @@
              WHERE R.survey_id=".$sid." AND
                    R.complete='y'
              ORDER BY R.id";
-    if (!($respsallparticipants = get_records_sql($sql))) {
+    if (!($respsallparticipants = $DB->get_records_sql($sql))) {
         $respsallparticipants = array();
     }
     $SESSION->questionnaire->numrespsallparticipants = count ($respsallparticipants);
     $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
+    $castsql = $DB->sql_cast_char2int('R.username');
 
     //available group modes (0 = no groups; 1 = separate groups; 2 = visible groups)
     $groupmode = groups_get_activity_groupmode($cm, $course);
@@ -121,15 +148,14 @@
             }
 
             // all members of any group
-            $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+            $sql = "SELECT DISTINCT R.id, R.survey_id, R.submitted, R.username
                     FROM ".$CFG->prefix."questionnaire_response R,
                         ".$CFG->prefix."groups_members GM
-                     WHERE R.survey_id=".$sid." AND
-                       R.complete='y' AND
-                       GM.groupid>0 AND
-                       R.username=GM.userid
+                    WHERE R.survey_id=".$sid." AND
+                          R.complete='y' AND
+                          GM.groupid>0 AND " . $castsql. " = GM.userid
                     ORDER BY R.id";
-            if (!($respsallgroupmembers = get_records_sql($sql))) {
+            if (!($respsallgroupmembers = $DB->get_records_sql($sql))) {
                 $respsallgroupmembers = array();
             }
             $SESSION->questionnaire->numrespsallgroupmembers = count ($respsallgroupmembers);
@@ -139,10 +165,9 @@
                     FROM ".$CFG->prefix."questionnaire_response R,
                         ".$CFG->prefix."user U
                      WHERE R.survey_id=".$sid." AND
-                       R.complete='y' AND
-                       R.username=U.id
+                       R.complete='y' AND " . $castsql . "=U.id
                     ORDER BY user";
-            if (!($respsnongroupmembers = get_records_sql($sql))) {
+            if (!($respsnongroupmembers = $DB->get_records_sql($sql))) {
                 $respsnongroupmembers = array();
             }
             foreach ($respsnongroupmembers as $resp=>$key) {
@@ -161,10 +186,9 @@
                     ".$CFG->prefix."groups_members GM
                  WHERE R.survey_id=".$sid." AND
                    R.complete='y' AND
-                   GM.groupid=".$currentgroupid." AND
-                   R.username=GM.userid
+                   GM.groupid=".$currentgroupid." AND " . $castsql . "=GM.userid
                 ORDER BY R.id";
-                if (!($currentgroupresps = get_records_sql($sql))) {
+                if (!($currentgroupresps = $DB->get_records_sql($sql))) {
                     $currentgroupresps = array();
                 }
                 $SESSION->questionnaire->numcurrentgroupresps = count ($currentgroupresps);
@@ -218,18 +242,18 @@
             $id = $questionnaire->survey;
             notify ("questionnaire->survey = /$id/");
 
-            error(get_string('surveynotexists', 'questionnaire'));
+            print_error('surveynotexists', 'questionnaire');
         } else if ($questionnaire->survey->owner != $course->id) {
-            error(get_string('surveyowner', 'questionnaire'));
+            print_error('surveyowner', 'questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
-            error(get_string('invalidresponse', 'questionnaire'));
-        } else if (!($resp = get_record('questionnaire_response', 'id', $rid))) {
-            error(get_string('invalidresponserecord', 'questionnaire'));
+            print_error('invalidresponse', 'questionnaire');
+        } else if (!($resp = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
+            print_error('invalidresponserecord', 'questionnaire');
         }
 
         $ruser = false;
         if (is_numeric($resp->username)) {
-            if ($user = get_record('user', 'id', $resp->username)) {
+            if ($user = $DB->get_record('user', array('id' => $resp->username))) {
                 $ruser = fullname($user);
             } else {
                 $ruser = '- '.get_string('unknown', 'questionnaire').' -';
@@ -239,37 +263,31 @@
         }
 
     /// Print the page header
-        $extranav = array();
-        $extranav[] = array('name' => get_string('questionnairereport', 'questionnaire'), 'link' => '', 'type' => 'activity');
-        $extranav[] = array('name' => $strviewallresponses, 'link' => "", 'type' => 'activity');
-        $navigation = build_navigation($extranav, $questionnaire->cm);
-        print_header_simple(get_string('deletingresp', 'questionnaire'), '', $navigation);
+        $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
+        $PAGE->set_heading(format_string($course->fullname));
+        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add($strviewbyresponse);
+        echo $OUTPUT->header();
 
-        /// print the tabs
+    /// print the tabs
         $SESSION->questionnaire->current_tab = 'deleteresp';
         include('tabs.php');
 
         if ($questionnaire->respondenttype == 'anonymous') {
                 $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
         }
-        notice_yesno(get_string('confirmdelresp', 'questionnaire', $ruser),
+        echo $OUTPUT->confirm(get_string('confirmdelresp', 'questionnaire', $ruser),
             $CFG->wwwroot.'/mod/questionnaire/report.php?action=dvresp&amp;sid='.$sid.'&amp;rid='.$rid,
             $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$sid.'&amp;rid='.$rid.
             '&amp;instance='.$instance.'&amp;byresponse=1');
 
     /// Finish the page
-        print_footer($course);
+        echo $OUTPUT->footer($course);
         break;
 
     case 'delallresp': // delete all responses
-    	// TODO
-	    /// Should never happen, unless called directly by a snoop...
-	    if ( !has_capability('mod/questionnaire:deleteresponses',$context) ) {
-	        error('Permission denied');
-	    }
-
         $select = 'survey_id='.$sid.' AND complete = \'y\'';
-        if (!($responses = get_records_select('questionnaire_response', $select, 'id', 'id'))) {
+        if (!($responses = $DB->get_records_select('questionnaire_response', $select, null, 'id', 'id'))) {
             return;
         }
         foreach($responses as $rid=>$valeur) {
@@ -278,18 +296,18 @@
         if (empty($questionnaire->survey)) {
             $id = $questionnaire->survey;
             notify ("questionnaire->survey = /$id/");
-            error(get_string('surveynotexists', 'questionnaire'));
+            print_error('surveynotexists', 'questionnaire');
         } else if ($questionnaire->survey->owner != $course->id) {
-            error(get_string('surveyowner', 'questionnaire'));
+            print_error('surveyowner', 'questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
-            error(get_string('invalidresponse', 'questionnaire'));
-        } else if (!($resp = get_record('questionnaire_response', 'id', $rid))) {
-            error(get_string('invalidresponserecord', 'questionnaire'));
+            print_error('invalidresponse', 'questionnaire');
+        } else if (!($resp = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
+            print_error('invalidresponserecord', 'questionnaire');
         }
 
         $ruser = false;
         if (is_numeric($resp->username)) {
-            if ($user = get_record('user', 'id', $resp->username)) {
+            if ($user = $DB->get_record('user', array('id' => $resp->username))) {
                 $ruser = fullname($user);
             } else {
                 $ruser = '- '.get_string('unknown', 'questionnaire').' -';
@@ -299,11 +317,11 @@
         }
 
     /// Print the page header
-        $extranav = array();
-        $extranav[] = array('name' => get_string('questionnairereport', 'questionnaire'), 'link' => '', 'type' => 'activity');
-        $extranav[] = array('name' => $strviewallresponses, 'link' => "", 'type' => 'activity');
-        $navigation = build_navigation($extranav, $questionnaire->cm);
-        print_header_simple(get_string('deletingresp', 'questionnaire'), '', $navigation);
+        $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
+        $PAGE->set_heading(format_string($course->fullname));
+        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add($strviewallresponses);
+        echo $OUTPUT->header();
 
         /// print the tabs
         $SESSION->questionnaire->current_tab = 'deleteall';
@@ -315,29 +333,29 @@
             $confirmdelstr = get_string('confirmdelgroupresp', 'questionnaire', $groupname);
         }
         echo '<br /><br />';
-        notice_yesno($confirmdelstr,
+        echo $OUTPUT->confirm($confirmdelstr,
                 $CFG->wwwroot.'/mod/questionnaire/report.php?action=dvallresp&amp;sid='.$sid.'&amp;instance='.$instance,
                 $CFG->wwwroot.'/mod/questionnaire/report.php?action=vall&amp;sid='.$sid.'&amp;instance='.$instance);
         echo '</div>';
     /// Finish the page
-        print_footer($course);
+        echo $OUTPUT->footer($course);
         break;
 
     case 'dvresp':
 
         if (empty($questionnaire->survey)) {
-            error(get_string('surveynotexists', 'questionnaire'));
+            print_error('surveynotexists', 'questionnaire');
         } else if ($questionnaire->survey->owner != $course->id) {
-            error(get_string('surveyowner', 'questionnaire'));
+            print_error('surveyowner', 'questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
-            error(get_string('invalidresponse', 'questionnaire'));
-        } else if (!($resp = get_record('questionnaire_response', 'id', $rid))) {
-            error(get_string('invalidresponserecord', 'questionnaire'));
+            print_error('invalidresponse', 'questionnaire');
+        } else if (!($resp = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
+            print_error('invalidresponserecord', 'questionnaire');
         }
 
         $ruser = false;
         if (is_numeric($resp->username)) {
-            if ($user = get_record('user', 'id', $resp->username)) {
+            if ($user = $DB->get_record('user', array('id' => $resp->username))) {
                 $ruser = fullname($user);
             } else {
                 $ruser = '- '.get_string('unknown', 'questionnaire').' -';
@@ -363,16 +381,16 @@
     case 'dvallresp': // delete all responses in questionnaire (or group)
 
         if (empty($questionnaire->survey)) {
-            error(get_string('surveynotexists', 'questionnaire'));
+            print_error('surveynotexists', 'questionnaire');
         } else if ($questionnaire->survey->owner != $course->id) {
-            error(get_string('surveyowner', 'questionnaire'));
+            print_error('surveyowner', 'questionnaire');
         }
 
     /// Print the page header
-        $extranav = 'Survey Reports';
-        $navigation = build_navigation($extranav, $questionnaire->cm);
-
-        print_header_simple(get_string('deleteallresponses', 'questionnaire'), '', $navigation);
+        $PAGE->set_title(get_string('deleteallresponses', 'questionnaire'));
+        $PAGE->set_heading(format_string($course->fullname));
+        $PAGE->navbar->add('Survey Reports');
+        echo $OUTPUT->header();
 
         /// print the tabs
         $SESSION->questionnaire->current_tab = 'deleteall';
@@ -397,10 +415,9 @@
                                 ".$CFG->prefix."groups_members GM
                              WHERE R.survey_id=".$sid." AND
                                R.complete='y' AND
-                               GM.groupid=".$groupid." AND
-                               R.username=GM.userid
+                               GM.groupid=".$groupid." AND " . $castsql . "=GM.userid
                             ORDER BY R.id";
-                    if (!($resps = get_records_sql($sql))) {
+                    if (!($resps = $DB->get_records_sql($sql))) {
                         $resps = array();
                     }
                 }
@@ -411,10 +428,10 @@
                         $resp = current($resps);
                         $rid = $resp->id;
                     } else {
-                        $resp = get_record('questionnaire_response', 'id', $rid);
+                        $resp = $DB->get_record('questionnaire_response', array('id' => $rid));
                     }
                     if (is_numeric($resp->username)) {
-                        if ($user = get_record('user', 'id', $resp->username)) {
+                        if ($user = $DB->get_record('user', array('id' => $resp->username))) {
                             $ruser = fullname($user);
                         } else {
                         $ruser = '- '.get_string('unknown', 'questionnaire').' -';
@@ -444,7 +461,7 @@
                      WHERE R.survey_id=".$sid." AND
                            R.complete='y'
                      ORDER BY R.id";
-            if (!($resps = get_records_sql($sql))) {
+            if (!($resps = $DB->get_records_sql($sql))) {
                 $respsallparticipants = array();
             }
             if (empty($resps)) {
@@ -460,16 +477,11 @@
         break;
 
     case 'dwnpg': // Download page options
-        /// Should never happen, unless called directly by a snoop...
-        if ( !has_capability('mod/questionnaire:downloadresponses',$context,$userid) ) {
-            error('Permission denied');
-        }
-
-    	$extranav = array();
-        $extranav[] = array('name' => get_string('questionnairereport', 'questionnaire'), 'link' => '', 'type' => 'activity');
-        $extranav[] = array('name' => get_string('downloadtext'), 'link' => "", 'type' => 'activity');
-        $navigation = build_navigation($extranav, $questionnaire->cm);
-        print_header_simple(get_string('questionnairereport', 'questionnaire'), '', $navigation);
+        $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->set_heading(format_string($course->fullname));
+        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add(get_string('downloadtext'));
+        echo $OUTPUT->header();
 
         /// print the tabs
     /// Tab setup:
@@ -498,25 +510,25 @@
             }
         }
         echo "<br /><br />\n";
-        helpbutton('downloadtextformat', get_string('downloadtext'), 'questionnaire', true, false);
-        echo (get_string('downloadtext').' <strong>'.$groupname.'</strong>');
-        print_heading(get_string('textdownloadoptions', 'questionnaire'));
-        print_box_start();
+        echo $OUTPUT->help_icon('downloadtextformat','questionnaire');
+        echo (get_string('downloadtext'));
+        echo $OUTPUT->heading(get_string('textdownloadoptions', 'questionnaire'));
+        echo $OUTPUT->box_start();
         echo "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";
         echo "<input type=\"hidden\" name=\"instance\" value=\"$instance\" />\n";
         echo "<input type=\"hidden\" name=\"user\" value=\"$user\" />\n";
         echo "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
         echo "<input type=\"hidden\" name=\"action\" value=\"dcsv\" />\n";
-        print_checkbox('choicecodes', 1, true, get_string('includechoicecodes', 'questionnaire'));
+        echo html_writer::checkbox('choicecodes', 1, true, get_string('includechoicecodes', 'questionnaire'));
         echo "<br />\n";
-        print_checkbox('choicetext', 1, true, get_string('includechoicetext', 'questionnaire'));
+        echo html_writer::checkbox('choicetext', 1, true, get_string('includechoicetext', 'questionnaire'));
         echo "<br />\n";
         echo "<br />\n";
         echo "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
         echo "</form>\n";
-        print_box_end();
+        echo $OUTPUT->box_end();
 
-        print_footer('none');
+        echo $OUTPUT->footer('none');
         exit();
         break;
 
@@ -545,11 +557,11 @@
     case 'vall': // view all responses
     case 'vallasort': // view all responses sorted in ascending order
     case 'vallarsort': // view all responses sorted in descending order
-    	$extranav = array();
-        $extranav[] = array('name' => get_string('questionnairereport', 'questionnaire'), 'link' => '', 'type' => 'activity');
-        $extranav[] = array('name' => $strviewallresponses, 'link' => "", 'type' => 'activity');
-        $navigation = build_navigation($extranav, $questionnaire->cm);
-        print_header_simple(get_string('questionnairereport', 'questionnaire'), '', $navigation);
+        $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->set_heading(format_string($course->fullname));
+        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add($strviewallresponses);
+        echo $OUTPUT->header();
 
         /// print the tabs
 	    switch ($action) {
@@ -563,17 +575,9 @@
                 $SESSION->questionnaire->current_tab = 'valldefault';
 			}
 
-			$SESSION->questionnaire->currentsessiongroupid = $currentgroupid;
-			include('tabs.php');
+		$SESSION->questionnaire->currentsessiongroupid = $currentgroupid;
+        include('tabs.php');
 
-        if (!empty($questionnaire->survey->theme)) {
-            $href = $CFG->wwwroot.'/mod/questionnaire/css/'.$questionnaire->survey->theme;
-            echo '<script type="text/javascript">
-                //<![CDATA[
-                document.write("<link rel=\"stylesheet\" type=\"text/css\" href=\"'.$href.'\">")
-                //]]>
-                </script>';
-        }
         echo ('<br />');
 
         // enable choose_group if there are questionnaire groups and groupmode is not set to "no groups"
@@ -606,16 +610,16 @@
                     $groupname = '<strong>'.get_string('groupnonmembers').'</strong>';
                     break;}
         }
-        echo'<div class = "active">';
+        echo'<div class = "generalbox">';
         echo (get_string('viewallresponses','questionnaire').'. '.$groupname.'. ');
     	$strsort = get_string('order_'.$sort, 'questionnaire');
         echo $strsort;
-        helpbutton('orderresponses', get_string('orderresponses', 'questionnaire'), 'questionnaire', true, false);
+        echo $OUTPUT->help_icon('orderresponses','questionnaire');
         $ret = $questionnaire->survey_results(1, 1, '', '', '', '', $uid=false, $currentgroupid, $sort);
         echo '</div>';
 
     /// Finish the page
-        print_footer($course);
+        echo $OUTPUT->footer($course);
         break;
 
     case 'cross':
@@ -625,9 +629,9 @@
     case 'vresp': // view by response
     default:
         if (empty($questionnaire->survey)) {
-            error(get_string('surveynotexists', 'questionnaire'));
+            print_error('surveynotexists', 'questionnaire');
         } else if ($questionnaire->survey->owner != $course->id) {
-            error(get_string('surveyowner', 'questionnaire'));
+            print_error('surveyowner', 'questionnaire');
         }
         $ruser = false;
         $noresponses = false;
@@ -653,10 +657,9 @@
                                 ".$CFG->prefix."groups_members GM
                              WHERE R.survey_id=".$sid." AND
                                R.complete='y' AND
-                               GM.groupid=".$groupid." AND
-                               R.username=GM.userid
-                            ORDER BY R.id";
-                    if (!($resps = get_records_sql($sql))) {
+                               GM.groupid=".$groupid." AND ".$castsql."=GM.userid
+                              ORDER BY R.id";
+                    if (!($resps = $DB->get_records_sql($sql))) {
                         $resps = array();
                     }
                 }
@@ -667,10 +670,10 @@
                         $resp = current($resps);
                         $rid = $resp->id;
                     } else {
-                        $resp = get_record('questionnaire_response', 'id', $rid);
+                        $resp = $DB->get_record('questionnaire_response', array('id' => $rid));
                     }
                     if (is_numeric($resp->username)) {
-                        if ($user = get_record('user', 'id', $resp->username)) {
+                        if ($user = $DB->get_record('user', array('id' => $resp->username))) {
                             $ruser = fullname($user);
                         } else {
                         $ruser = '- '.get_string('unknown', 'questionnaire').' -';
@@ -689,24 +692,15 @@
         }
 
     /// Print the page header
-        $extranav = array();
-        $extranav[] = array('name' => get_string('questionnairereport', 'questionnaire'), 'link' => '', 'type' => 'activity');
-        $extranav[] = array('name' => $strviewallresponses, 'link' => "", 'type' => 'activity');
-        $navigation = build_navigation($extranav, $questionnaire->cm);
-        print_header_simple(get_string('questionnairereport', 'questionnaire'), '', $navigation);
+        $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->set_heading(format_string($course->fullname));
+        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add($strviewbyresponse);
+        echo $OUTPUT->header();
 
         /// print the tabs
         $SESSION->questionnaire->current_tab = 'vrespsummary';
         include('tabs.php');
-
-        if (!empty($questionnaire->survey->theme)) {
-            $href = $CFG->wwwroot.'/mod/questionnaire/css/'.$questionnaire->survey->theme;
-            echo '<script type="text/javascript">
-                //<![CDATA[
-                document.write("<link rel=\"stylesheet\" type=\"text/css\" href=\"'.$href.'\">")
-                //]]>
-                </script>';
-        }
 
     /// Print the main part of the page
 
@@ -725,9 +719,7 @@
                 $questionnaire->survey_results_navbar($rid);
             }
             echo '</div>';
-            echo'<div class = "active">';
             $ret = $questionnaire->view_response($rid);
-            echo '</div>';
             echo '<div style="text-align:center; padding-bottom:5px;">';
             if ($groupid != -1 ) {
                 $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps, 'report', $sid);
@@ -738,7 +730,7 @@
         echo '</div>';
 
     /// Finish the page
-        print_footer($course);
+        echo $OUTPUT->footer($course);
         break;
     }
 ?>
