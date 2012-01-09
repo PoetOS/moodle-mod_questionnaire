@@ -1,4 +1,4 @@
-<?PHP // $Id: questionnaire.php,v 1.4.2.2 2011/11/27 16:17:56 joseph_rezeau Exp $ 
+<?PHP // $Id$ 
 $string['action'] = 'Action';
 $string['additionalinfo'] = 'Info supplémentaire';
 $string['additionalinfo_help'] = 'Texte qui sera affiché en tête de la première page de ce questionnaire (consignes, etc.).';

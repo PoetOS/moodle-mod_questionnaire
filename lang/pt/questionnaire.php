@@ -1,4 +1,4 @@
-<?php // $Id: questionnaire.php,v 1.5.2.1 2011/06/28 18:16:00 mchurch Exp $
+<?php // $Id$
 $string['addaline'] = 'Adicionar linha de resposta';
 $string['additionalinfo'] = 'Informação Adicional';
 $string['addsectionbreak'] = 'Adicionar Quebra de Secção';

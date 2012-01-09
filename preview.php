@@ -1,4 +1,4 @@
-<?php // $Id: preview.php,v 1.12.2.1 2011/06/21 16:25:26 mchurch Exp $
+<?php // $Id$
 
 /// This page displays a non-completable instance of questionnaire
 

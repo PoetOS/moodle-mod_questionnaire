@@ -1,8 +1,8 @@
-<?php // $Id: tabs.php,v 1.20 2011/01/17 13:21:17 joseph_rezeau Exp $
+<?php // $Id$
 /**
 * prints the tabbed bar
 *
-* @version $Id: tabs.php,v 1.20 2011/01/17 13:21:17 joseph_rezeau Exp $
+* @version $Id$
 * @author Mike Churchward
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package questionnaire

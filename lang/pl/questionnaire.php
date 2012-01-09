@@ -1,4 +1,4 @@
-<?PHP // $Id: questionnaire.php,v 1.1.2.1 2011/06/28 18:16:00 mchurch Exp $ 
+<?PHP // $Id$ 
       // questionnaire.php - created with Moodle 1.9.2+ (Build: 20080806) (2007101521)
       // local modifications from http://www.resonance.com.pl/moodle
 

@@ -1,4 +1,4 @@
-<?php // $Id: locallib.php,v 1.142.2.12 2011/12/14 10:17:25 jmg324 Exp $
+<?php // $Id$
 
 /**
  * This library replaces the phpESP application with Moodle specific code. It will eventually
