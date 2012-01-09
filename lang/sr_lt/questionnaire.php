@@ -1,4 +1,4 @@
-<?PHP // <?PHP // $Id: questionnaire.php,v 1.2 2011/05/09 13:41:31 joseph_rezeau Exp $       
+<?PHP // <?PHP // $Id$       
      // questionnaire.php - created with Moodle 2.0 dev (Build: 20080418) (2008030700)
 
 $string['additionalinfo'] = 'Dodatne informacije';     

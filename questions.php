@@ -1,4 +1,4 @@
-<?php  // $Id: questions.php,v 1.27 2011/02/07 19:42:24 mchurch Exp $
+<?php  // $Id$
 /// This page prints a particular instance of questionnaire
 
     require_once("../../config.php");

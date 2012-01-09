@@ -1,4 +1,4 @@
-<?php  // $Id: lib.php,v 1.59 2011/10/02 13:48:49 joseph_rezeau Exp $
+<?php  // $Id$
 
 /// Library of functions and constants for module questionnaire
 /// (replace questionnaire with the name of your module and delete this line)

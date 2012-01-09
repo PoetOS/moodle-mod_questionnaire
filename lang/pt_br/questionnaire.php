@@ -1,4 +1,4 @@
-<?php // $Id: questionnaire.php,v 1.5 2011/05/09 13:41:31 joseph_rezeau Exp $
+<?php // $Id$
 $string['action'] = 'Ação';
 $string['additionalinfo'] = 'Informação Adicional';
 $string['addnewquestion'] = 'Adicionando questão do tipo: $a';
