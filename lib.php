@@ -49,12 +49,13 @@ function questionnaire_supports($feature) {
         default: return null;
     }
 }
+
 /**
  * @return array all other caps used in module
  */
 function questionnaire_get_extra_capabilities() {
     return array('moodle/site:accessallgroups');
-}
+} 
 
 global $QUESTIONNAIRE_TYPES;
 $QUESTIONNAIRE_TYPES = array (QUESTIONNAIREUNLIMITED => get_string('qtypeunlimited', 'questionnaire'),
