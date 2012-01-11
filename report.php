@@ -161,17 +161,17 @@
             $SESSION->questionnaire->numrespsallgroupmembers = count ($respsallgroupmembers);
 
             // not members of any group
-            $sql = "SELECT R.id, R.survey_id, R.submitted, R.username, U.id AS user
+            $sql = "SELECT R.id, R.survey_id, R.submitted, R.username, U.id AS userid
                     FROM ".$CFG->prefix."questionnaire_response R,
                         ".$CFG->prefix."user U
                      WHERE R.survey_id=".$sid." AND
                        R.complete='y' AND " . $castsql . "=U.id
-                    ORDER BY user";
+                    ORDER BY userid";
             if (!($respsnongroupmembers = $DB->get_records_sql($sql))) {
                 $respsnongroupmembers = array();
             }
             foreach ($respsnongroupmembers as $resp=>$key) {
-                if (groups_has_membership($cm, $key->user)) {
+                if (groups_has_membership($cm, $key->userid)) {
                     unset($respsnongroupmembers[$resp]);
                 }
             }

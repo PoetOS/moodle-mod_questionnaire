@@ -202,13 +202,6 @@ class questionnaire_question {
 /// appropriate function based on its table.
 
     function insert_response($rid, $formdata) {
-        if (isset($formdata->{'q'.$this->id})) {
-            $val = clean_param($formdata->{'q'.$this->id}, PARAM_CLEAN);
-        }
-        else {
-            $val = '';
-        }
-
         $method = 'insert_'.$this->response_table;
         if (method_exists($this, $method)) {
             return $this->$method($rid, $formdata);
@@ -811,6 +804,7 @@ class questionnaire_question {
             return;
         }
         echo html_writer::start_tag('fieldset', array('class' => 'qn-container'));
+        echo html_writer::start_tag('legend', array('class' => 'qn-legend'));
         echo html_writer::start_tag('div', array('class' => 'qn-number'));
         if ($this->required == 'y') {
             echo html_writer::empty_tag('img',

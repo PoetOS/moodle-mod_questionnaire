@@ -2274,13 +2274,13 @@ class questionnaire {
                                ".$castsql."=GM.userid
                          ORDER BY R.id";
             } else if ($groupid == -3) { // not members of any group
-                $sql = "SELECT R.id, R.survey_id, U.id AS user
+                $sql = "SELECT R.id, R.survey_id, U.id AS userid
                           FROM ".$CFG->prefix."questionnaire_response R,
                                 ".$CFG->prefix."user U
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                ".$castsql."=U.id
-                         ORDER BY user";
+                         ORDER BY userid";
             } else { // members of a specific group
                 $sql = "SELECT R.id, R.survey_id
                           FROM ".$CFG->prefix."questionnaire_response R,
@@ -2299,8 +2299,7 @@ class questionnaire {
             }
             if ($groupid == -3) { // members of no group
                 foreach ($rows as $row=>$key) {
-                    $userid = $key->user;
-                    if (groups_has_membership($this->cm, $userid)) {
+                    if (groups_has_membership($this->cm, $key->userid)) {
                         unset($rows[$row]);
                     }
                 }
