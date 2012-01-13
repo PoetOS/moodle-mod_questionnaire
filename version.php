@@ -6,8 +6,8 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 $module->version  = 2010110101;  // The current module version (Date: YYYYMMDDXX)
-$module->release  = '2.0.1.20101101';
 $module->requires = 2010112400;  // Requires this Moodle version
 $module->cron     = 60*60*12;    // Period for cron to check this module (secs)
 
-?>
+$module->release  = '2.0.1 (Build - 20120106)';
+$module->maturity = 'STABLE';
