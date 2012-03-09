@@ -11,4 +11,3 @@ $module->cron     = 60*60*12;    // Period for cron to check this module (secs)
 
 $module->release  = '2.2.2 (Build - 20120131)';
 $module->maturity = 'STABLE';
-?>
