@@ -54,8 +54,10 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $QUESTIONNAIRE_TYPES);
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
         
+        $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $QUESTIONNAIRE_RESPONDENTS);
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
+        $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
         
         $mform->addElement('static', 'old_resp_eligible', get_string('respondenteligible', 'questionnaire'),
                            get_string('respeligiblerepl', 'questionnaire'));
@@ -124,7 +126,8 @@ class mod_questionnaire_mod_form extends moodleform_mod {
     }
 
     function data_preprocessing(&$default_values){
-        if (empty($default_values['opendate'])) {
+        global $DB;
+    	if (empty($default_values['opendate'])) {
             $default_values['useopendate'] = 0;
         } else {
             $default_values['useopendate'] = 1;
@@ -134,7 +137,15 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         } else {
             $default_values['useclosedate'] = 1;
         }
-
+        // prevent questionnaire set to "anonymous" to be reverted to "full name"
+        $default_values['cannotchangerespondenttype'] = 0;
+        if (!empty($default_values['respondenttype']) && $default_values['respondenttype'] == "anonymous") {
+            // if this questionnaire has responses
+        	$numresp = $DB->count_records('questionnaire_response', array('survey_id' => $default_values['sid'],'complete' => 'y'));
+            if ($numresp) {
+                $default_values['cannotchangerespondenttype'] = 1;              
+            }
+        }
     }
 
     function validation($data){
