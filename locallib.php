@@ -216,7 +216,7 @@ class questionnaire {
             if (!empty($viewform->sec)) {
                 $viewform->sec = (int)$viewform->sec;
             }
-            if (confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
+            if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
 
                 $this->response_delete($viewform->rid, $viewform->sec);
@@ -528,9 +528,8 @@ class questionnaire {
         if (!$userid) {
             $userid = $USER->id;
         }
-
         $formdata = new stdClass();
-        if (confirm_sesskey()) {
+        if (data_submitted() && confirm_sesskey()) {
             $formdata = data_submitted();
         }
         $formdata->rid = $this->get_response($quser);
@@ -899,7 +898,7 @@ class questionnaire {
         $this->print_survey_start($message, 1, 1, $has_required);
         /// Print all sections:
         $formdata = new stdClass();
-        if (confirm_sesskey()) {
+        if (data_submitted() && confirm_sesskey()) {
             $formdata = data_submitted();
         }
         foreach ($this->questionsbysec as $section) {
