@@ -201,56 +201,53 @@ class questionnaire_question {
 /// The following methods are defined by the tables they use. Questions should call the
 /// appropriate function based on its table.
 
-    function insert_response($rid, $formdata) {
+    function insert_response($rid) {
         $method = 'insert_'.$this->response_table;
         if (method_exists($this, $method)) {
-            return $this->$method($rid, $formdata);
+            return $this->$method($rid);
         } else {
             return false;
         }
     }
 
-    function insert_response_bool($rid, $formdata) {
+    function insert_response_bool($rid) {
         global $DB;
-
-        if (isset($formdata->{'q'.$this->id})
-            && !empty($formdata->{'q'.$this->id}) // if "no answer" then choice is empty (CONTRIB-846)
-            ) {
+        $val = optional_param('q'.$this->id, '', PARAM_ALPHANUMEXT);
+        if (!empty($val)) { // if "no answer" then choice is empty (CONTRIB-846)
             $record = new Object();
             $record->response_id = $rid;
             $record->question_id = $this->id;
-            $record->choice_id = $formdata->{'q'.$this->id};
+            $record->choice_id = $val;
             return $DB->insert_record('questionnaire_'.$this->response_table, $record);
         } else {
             return false;
         }
     }
 
-    function insert_response_text($rid, $formdata) {
+    function insert_response_text($rid) {
         global $DB;
-
+        $val = optional_param('q'.$this->id, '', PARAM_CLEAN);
         // only insert if non-empty content
         if($this->type_id == 10) { // numeric
-            $formdata->{'q'.$this->id} = ereg_replace("[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*", '\1', $formdata->{'q'.$this->id});
+            $val = ereg_replace("[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*", '\1', $val);
         }
 
-        if(ereg("[^ \t\n]",$formdata->{'q'.$this->id})) {
+        if(ereg("[^ \t\n]",$val)) {
             $record = new Object();
             $record->response_id = $rid;
             $record->question_id = $this->id;
-            $record->response = $formdata->{'q'.$this->id};
+            $record->response = $val;
             return $DB->insert_record('questionnaire_'.$this->response_table, $record);
         } else {
             return false;
         }
     }
 
-    function insert_response_date($rid, $formdata) {
+    function insert_response_date($rid) {
         global $DB;
-
-        $checkdateresult = '';
-        $checkdateresult = check_date($formdata->{'q'.$this->id});
-        $thisdate = $formdata->{'q'.$this->id};
+        $val = optional_param('q'.$this->id, '', PARAM_CLEAN);
+        $checkdateresult = check_date($val);
+        $thisdate = $val;
         if (substr($checkdateresult,0,5) == 'wrong') {
             return false;
         }
@@ -263,16 +260,16 @@ class questionnaire_question {
         return $DB->insert_record('questionnaire_'.$this->response_table, $record);
     }
 
-    function insert_resp_single($rid, $formdata) {
+    function insert_resp_single($rid) {
         global $DB;
-
-        if(!empty($formdata->{'q'.$this->id})) {
+        $val = optional_param('q'.$this->id, null, PARAM_CLEAN);
+        if(!empty($val)) {
             foreach ($this->choices as $cid => $choice) {
                 if (strpos($choice->content, '!other') === 0) {
-                    if (!isset($formdata->{'q'.$this->id.'_'.$cid})) {
+                    $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
+                    if (!isset($other)) {
                         continue;
                     }
-                    $other = clean_param($formdata->{'q'.$this->id.'_'.$cid}, PARAM_CLEAN);
                     if(ereg("[^ \t\n]",$other)) {
                         $record = new Object();
                         $record->response_id = $rid;
@@ -280,18 +277,18 @@ class questionnaire_question {
                         $record->choice_id = $cid;
                         $record->response = $other;
                         $resid = $DB->insert_record('questionnaire_response_other', $record);
-                        $formdata->{'q'.$this->id} = $cid;
+                        $val = $cid;
                         break;
                     }
                 }
             }
         }
-        if(ereg("other_q([0-9]+)", (isset($formdata->{'q'.$this->id})?$formdata->{'q'.$this->id}:''), $regs)) {
+        if(ereg("other_q([0-9]+)", (isset($val)?$val:''), $regs)) {
             $cid=$regs[1];
-            if (!isset($formdata->{'q'.$this->id.'_'.$cid})) {
+            $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
+            if (!isset($other)) {
                 break; // out of the case
             }
-            $other = clean_param($formdata->{'q'.$this->id.'_'.$cid}, PARAM_CLEAN);
             if(ereg("[^ \t\n]",$other)) {
                 $record = new object;
                 $record->response_id = $rid;
@@ -299,13 +296,13 @@ class questionnaire_question {
                 $record->choice_id = $cid;
                 $record->response = $other;
                 $resid = $DB->insert_record('questionnaire_response_other', $record);
-                $formdata->{'q'.$this->id} = $cid;
+                $val = $cid;
             }
         }
         $record = new Object();
         $record->response_id = $rid;
         $record->question_id = $this->id;
-        $record->choice_id = isset($formdata->{'q'.$this->id}) ? $formdata->{'q'.$this->id} : 0;
+        $record->choice_id = isset($val) ? $val : 0;
         if ($record->choice_id) {// if "no answer" then choice_id is empty (CONTRIB-846)
             return $DB->insert_record('questionnaire_'.$this->response_table, $record);
         } else {
@@ -313,20 +310,20 @@ class questionnaire_question {
         }
     }
 
-    function insert_resp_multiple($rid, $formdata) {
+    function insert_resp_multiple($rid) {
         global $DB;
-
+        $val = optional_param('q'.$this->id, null, PARAM_CLEAN);
         foreach ($this->choices as $cid => $choice) {
             if (strpos($choice->content, '!other') === 0) {
-                if (!isset($formdata->{'q'.$this->id.'_'.$cid}) || empty($formdata->{'q'.$this->id.'_'.$cid})) {
+                $other = optional_param('q'.$this->id.'_'.$cid, '', PARAM_CLEAN);
+                if (empty($other)) {
                     continue;
                 }
-                if (!isset($formdata->{'q'.$this->id})) {
-                    $formdata->{'q'.$this->id} = array($cid);
+                if (!isset($val)) {
+                    $val = array($cid);
                 } else {
-                    array_push($formdata->{'q'.$this->id}, $cid);
+                    array_push($val, $cid);
                 }
-                $other = clean_param($formdata->{'q'.$this->id.'_'.$cid}, PARAM_CLEAN);
                 if(ereg("[^ \t\n]",$other)) {
                     $record = new Object();
                     $record->response_id = $rid;
@@ -338,11 +335,11 @@ class questionnaire_question {
             }
         }
 
-        if(!isset($formdata->{'q'.$this->id}) || count($formdata->{'q'.$this->id}) < 1) {
+        if(!isset($val) || count($val) < 1) {
             return false;
         }
 
-        foreach($formdata->{'q'.$this->id} as $cid) {
+        foreach($val as $cid) {
             $cid = clean_param($cid, PARAM_CLEAN);
             if ($cid != 0) { //do not save response if choice is empty
                 if(ereg("other_q[0-9]+", $cid))
@@ -357,20 +354,20 @@ class questionnaire_question {
         return $resid;
     }
 
-    function insert_response_rank($rid, $formdata) {
+    function insert_response_rank($rid) {
         global $DB;
-
+        $val = optional_param('q'.$this->id, null, PARAM_CLEAN);
         if($this->type_id == 8) { // Rank
             $resid = false;
             foreach ($this->choices as $cid => $choice) {
-                if (!isset($formdata->{'q'.$this->id.'_'.$cid})) {
+                $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
+                if (!isset($other)) {
                     continue;
                 }
-                $val = clean_param($formdata->{'q'.$this->id.'_'.$cid}, PARAM_CLEAN);
-                if($val == get_string('notapplicable', 'questionnaire')) {
+                if($other == get_string('notapplicable', 'questionnaire')) {
                     $rank = -1;
                 } else {
-                    $rank = intval($val);
+                    $rank = intval($other);
                 }
                 $record = new Object();
                 $record->response_id = $rid;
@@ -381,11 +378,11 @@ class questionnaire_question {
             }
             return $resid;
         } else { // THIS SHOULD NEVER HAPPEN
-            $r = clean_param($formdata->{'q'.$this->id}, PARAM_CLEAN);
-            if($formdata->{'q'.$this->id} == get_string('notapplicable', 'questionnaire')) {
+            $r = $val;
+            if($val == get_string('notapplicable', 'questionnaire')) {
                 $rank = -1;
             } else {
-                $rank = intval($formdata->{'q'.$this->id});
+                $rank = intval($val);
             }
             $record = new Object();
             $record->response_id = $rid;

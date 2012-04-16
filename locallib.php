@@ -210,7 +210,13 @@ class questionnaire {
     ///     If Survey was submitted with all required fields completed ($msg is empty),
     ///     then record the submittal.
             $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/view.php");
-            if (isset($viewform->submit) && isset($viewform->submittype) &&
+            if (!empty($viewform->rid)) {
+                $viewform->rid = (int)$viewform->rid;
+            }
+            if (!empty($viewform->sec)) {
+                $viewform->sec = (int)$viewform->sec;
+            }
+            if (confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
 
                 $this->response_delete($viewform->rid, $viewform->sec);
@@ -1552,7 +1558,7 @@ class questionnaire {
 
         if (!empty($this->questionsbysec[$section])) {
             foreach ($this->questionsbysec[$section] as $question) {
-                $question->insert_response($rid, $formdata);
+                $question->insert_response($rid);
             }
         }
         return($rid);
