@@ -192,8 +192,6 @@ class questionnaire {
                 exit();
             }
 
-            $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/view.php");
-
             if ((!empty($this->questions)) && $this->capabilities->printblank) {
                 // open print friendly as popup window
 	            $image_url = $CFG->wwwroot.'/mod/questionnaire/images/';
@@ -211,6 +209,7 @@ class questionnaire {
             $msg = $this->print_survey($USER->id, $quser);
     ///     If Survey was submitted with all required fields completed ($msg is empty),
     ///     then record the submittal.
+            $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/view.php");
             if (isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
 
@@ -524,7 +523,10 @@ class questionnaire {
             $userid = $USER->id;
         }
 
-        $formdata = data_submitted('nomatch');
+        $formdata = new stdClass();
+        if (confirm_sesskey()) {
+            $formdata = data_submitted();
+        }
         $formdata->rid = $this->get_response($quser);
         if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
@@ -661,6 +663,7 @@ class questionnaire {
     <input type="hidden" name="sid" value="<?php echo($this->survey->id); ?>" />
     <input type="hidden" name="rid" value="<?php echo (isset($formdata->rid) ? $formdata->rid : '0'); ?>" />
     <input type="hidden" name="sec" value="<?php echo($formdata->sec); ?>" />
+    <input type="hidden" name="sesskey" value="<?php echo sesskey(); ?>" />
     </div>
     <?php
         if (isset($this->questions) && $num_sections) { // sanity check
@@ -889,7 +892,10 @@ class questionnaire {
         echo $OUTPUT->box_start();
         $this->print_survey_start($message, 1, 1, $has_required);
         /// Print all sections:
-        $formdata = data_submitted($referer);
+        $formdata = new stdClass();
+        if (confirm_sesskey()) {
+            $formdata = data_submitted();
+        }
         foreach ($this->questionsbysec as $section) {
             foreach ($section as $question) {
                 if ($question->type_id == QUESSECTIONTEXT) {
@@ -912,9 +918,6 @@ class questionnaire {
 
         $errstr = '';
 
-        if (empty($sdata)) {
-            $sdata = data_submitted('nomatch');
-        }
         $f_arr = array();
         $v_arr = array();
 

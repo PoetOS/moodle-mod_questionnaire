@@ -87,8 +87,6 @@
     /// Tab setup:
     $SESSION->questionnaire->current_tab = 'allreport';
 
-    $formdata = data_submitted();
-
     $strcrossanalyze = get_string('crossanalyze', 'questionnaire');
     $strcrosstabulate = get_string('crosstabulate', 'questionnaire');
     $strdeleteallresponses = get_string('deleteallresponses', 'questionnaire');
