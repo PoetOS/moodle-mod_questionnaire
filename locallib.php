@@ -220,7 +220,7 @@ class questionnaire {
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
 
                 $this->response_delete($viewform->rid, $viewform->sec);
-                $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser, $viewform);
+                $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser);
                 $this->response_commit($this->rid);
 
                 /// If it was a previous save, rid is in the form...
@@ -557,14 +557,14 @@ class questionnaire {
 
         if(!empty($formdata->resume) && ($this->resume)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $formdata);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
             $this->response_goto_saved($action);
             return;
         }
  // JR save each section 's $formdata somewhere in case user returns to that page when navigating the questionnaire...
         if(!empty($formdata->next)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $formdata);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
             $msg = $this->response_check_format($formdata->sec, $formdata);
             if ( $msg ) {
                 $formdata->next = '';
@@ -574,7 +574,7 @@ class questionnaire {
         }
         if (!empty($formdata->prev) && ($this->navigate)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $formdata);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
             $msg = $this->response_check_format($formdata->sec, $formdata);
             if ( $msg ) {
                 $formdata->prev = '';
@@ -1544,7 +1544,7 @@ class questionnaire {
         return $return;
     }
 
-    function response_insert($sid, $section, $rid, $userid, &$formdata) {
+    function response_insert($sid, $section, $rid, $userid) {
         global $CFG;
         global $DB;
 
