@@ -131,7 +131,7 @@ class questionnaire {
     }
 
     function view() {
-        global $CFG, $USER, $SESSION, $PAGE, $OUTPUT;
+        global $CFG, $USER, $PAGE, $OUTPUT;
 
         $PAGE->set_title(format_string($this->name));
         $PAGE->set_heading(format_string($this->course->fullname));
@@ -141,12 +141,6 @@ class questionnaire {
         /// print the tabs
         $questionnaire = $this;
         include('tabs.php');
-
-        $strprint = get_string('print', 'questionnaire');
-        $strprinttooltip = get_string('printtooltip', 'questionnaire');
-        $strprintblank = get_string('printblank', 'questionnaire');
-        $strprintblanktooltip = get_string('printblanktooltip', 'questionnaire');
-        $blankquestionnaire = true;
 
         if (!$this->cm->visible && !$this->capabilities->viewhiddenactivities) {
                 notice(get_string("activityiscurrentlyhidden"));
@@ -277,7 +271,7 @@ class questionnaire {
     *
     */
     function view_response($rid, $blankquestionnaire=false) {
-        global $CFG, $OUTPUT;
+        global $OUTPUT;
 
         echo $OUTPUT->box_start();
         $this->print_survey_start('', 1, 1, 0, $rid, $blankquestionnaire);
@@ -302,7 +296,7 @@ class questionnaire {
     *
     */
     function view_all_responses($resps) {
-        global $CFG, $QTYPENAMES, $OUTPUT;
+        global $QTYPENAMES, $OUTPUT;
         echo $OUTPUT->box_start();
         $this->print_survey_start('', 1, 1, 0);
 
@@ -523,11 +517,8 @@ class questionnaire {
 /// Display Methods
 
     function print_survey($userid=false, $quser) {
-        global $USER, $PAGE, $CFG;
+        global $CFG;
 
-        if (!$userid) {
-            $userid = $USER->id;
-        }
         $formdata = new stdClass();
         if (data_submitted() && confirm_sesskey()) {
             $formdata = data_submitted();
@@ -704,14 +695,11 @@ class questionnaire {
 
     function survey_render($section = 1, $message = '', &$formdata) {
 
-        $usehtmleditor = can_use_html_editor();
         $this->usehtmleditor = null;
 
         if(empty($section)) {
             $section = 1;
         }
-
-        $has_choices = $this->type_has_choices();
 
         $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
         if($section > $num_sections) {
@@ -861,10 +849,6 @@ class questionnaire {
             print_error('incorrectcourseid', 'questionnaire');
         }
         $this->course = $course;
-        $text_input_add = ' readonly="true"';
-        $radio_input_add = ' onclick="this.checked=this.defaultChecked;"';
-        $sid = $this->sid;
-        $usehtmleditor = can_use_html_editor();
 
         if ($this->resume && empty($rid)) {
             $rid = $this->get_response($USER->id, $rid);
@@ -879,8 +863,6 @@ class questionnaire {
         if(empty($section)) {
             $section = 1;
         }
-
-        $has_choices = $this->type_has_choices();
 
         $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
         if($section > $num_sections)
@@ -919,12 +901,9 @@ class questionnaire {
     }
 
     function survey_update($sdata) {
-        global $CFG, $SESSION, $DB;
+        global $DB;
 
-        $errstr = '';
-
-        $f_arr = array();
-        $v_arr = array();
+        $errstr = ''; //TODO: notused!
 
         // new survey
         if(empty($this->survey->id)) {
@@ -943,8 +922,7 @@ class questionnaire {
             $this->add_survey($this->survey->id);
 
             if(!$this->survey->id) {
-                $tab = "general";
-                $errstr = get_string('errnewname', 'questionnaire') .' [ :  ]';
+                $errstr = get_string('errnewname', 'questionnaire') .' [ :  ]'; //TODO: notused!
                 return(false);
             }
         } else {
@@ -961,7 +939,7 @@ class questionnaire {
             if(trim($name) != trim(stripslashes($sdata->name))) {  // $sdata will already have slashes added to it.
                 $count = $DB->count_records('questionnaire_survey', array('name' => $sdata->name));
                 if($count != 0) {
-                    $errstr = get_string('errnewname', 'questionnaire');
+                    $errstr = get_string('errnewname', 'questionnaire');  //TODO: notused!
                     return(false);
                 }
             }
@@ -975,7 +953,7 @@ class questionnaire {
 
             $result = $DB->update_record('questionnaire_survey', $survey_record);
             if(!$result) {
-                $errstr = get_string('warning', 'questionnaire').' [ :  ]';
+                $errstr = get_string('warning', 'questionnaire').' [ :  ]';  //TODO: notused!
                 return(false);
             }
         }
@@ -1015,9 +993,6 @@ class questionnaire {
         // make copies of all the questions
         $pos=1;
         foreach ($this->questions as $question) {
-            $tid = $question->type_id;
-            $qid = $question->id;
-
             // fix some fields first
             unset($question->id);
             $question->survey_id = $new_sid;
@@ -1095,7 +1070,6 @@ class questionnaire {
             $tid = $record->type_id;
             $lid = $record->length;
             $pid = $record->precise;
-            $content = $record->content;
             if ($tid != 100) {
                 $qnum++;
             }
@@ -1337,7 +1311,6 @@ class questionnaire {
     }
 
     function response_commit($rid) {
-        global $USER;
         global $DB;
 
         $record = new object;
@@ -1413,7 +1386,6 @@ class questionnaire {
    $csvexport = true: a parameter to return a different response formatting for CSV export from normal report formatting
  */
     function response_select_name($rid, $choicecodes, $choicetext) {
-        global $CFG;
         $res = $this->response_select($rid, 'position,type_id,name', true, $choicecodes, $choicetext);
         $nam = array();
         reset($res);
@@ -1469,12 +1441,9 @@ class questionnaire {
     }
 
     function response_send_email($rid, $userid=false) {
-        global $CFG, $USER;
-        global $DB;
+        global $CFG, $USER, $DB;
 
         require_once($CFG->libdir.'/phpmailer/class.phpmailer.php');
-
-        $response = $DB->get_record('questionnaire_response', array('id' => $rid));
 
         $name = s($this->name);
         if ($record = $DB->get_record('questionnaire_survey', array('id' => $this->survey->id))) {
@@ -1937,8 +1906,7 @@ class questionnaire {
     }
 
     function response_goto_thankyou() {
-        global $CFG, $USER;
-        global $DB;
+        global $CFG, $USER, $DB;
 
         $select = 'id = '.$this->survey->id;
         $fields = 'thanks_page,thank_head,thank_body';
@@ -2008,8 +1976,7 @@ class questionnaire {
     /// Survey Results Methods
 
     function survey_results_navbar($curr_rid, $userid=false) {
-        global $CFG;
-        global $DB;
+        global $CFG, $DB;
 
 		$stranonymous = get_string('anonymous', 'questionnaire');
 
@@ -2165,7 +2132,6 @@ class questionnaire {
         global $DB;
 
         $SESSION->questionnaire->noresponses = false;
-        $bg = '';
         if(empty($precision)) {
             $precision  = 1;
         }
@@ -2230,10 +2196,8 @@ class questionnaire {
         if (!empty($rid)) {
             $rids = $rid;
             if (is_array($rids)) {
-                $ridstr = "IN (" . ereg_replace("([^,]+)","'\\1'", join(",", $rids)) .")";
                 $navbar = false;
             } else {
-                $ridstr = "= '${rid}'";
                 $navbar = true;
             }
             $total = 1;
@@ -2303,7 +2267,6 @@ class questionnaire {
             if (!($rows = $DB->get_records_sql($sql))) {
                 echo (get_string('noresponses','questionnaire'));
                 $SESSION->questionnaire->noresponses = true;
-                $noresponses = $SESSION->questionnaire->noresponses;
                 return;
             }
             if ($groupid == -3) { // members of no group
@@ -2324,10 +2287,6 @@ class questionnaire {
             foreach ($rows as $row) {
                 array_push($rids, $row->id);
             }
-            // create a string suitable for inclusion in a SQL statement
-            // containing the desired Response IDs
-            // ex: "('304','311','317','345','365','370','403','439')"
-            $ridstr = "IN (" . ereg_replace("([^,]+)","'\\1'", join(",", $rids)) .")";
         }
 
         if ($navbar) {
@@ -2353,7 +2312,6 @@ class questionnaire {
         $i=0; // question number counter
         foreach ($this->questions as $question) {
             // process each question
-            $totals = $showTotals;
 
             if ($question->type_id == 99) {
                 continue;
@@ -2430,8 +2388,7 @@ class questionnaire {
     Exports the results of a survey to an array.
     */
     function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0) {
-	    global $CFG, $SESSION;
-        global $DB;
+	    global $SESSION, $DB;
 
         if (isset($SESSION->questionnaire->currentgroupid)) {
             $groupid = $SESSION->questionnaire->currentgroupid;
@@ -3016,7 +2973,7 @@ function questionnaire_response_key_cmp($l, $r) {
 
     /// deprecated
     function questionnaire_preview ($questionnaire) {
-        global $CFG, $DB;
+        global $DB;
         /// Print the page header
         /// Templates may not have questionnaires yet...
         $tempsid = $questionnaire->survey->id; // this is needed for Preview cases later on
@@ -3093,4 +3050,3 @@ function questionnaire_response_key_cmp($l, $r) {
          }
         return $contents;
     }
-?>
