@@ -1,4 +1,18 @@
-<?php  // $Id$
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /// Library of functions and constants for module questionnaire
 /// (replace questionnaire with the name of your module and delete this line)
@@ -262,10 +276,10 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
  * Get all the questionnaire responses for a user
  */
 function questionnaire_get_user_responses($surveyid, $userid) {
-    global $CFG, $DB;
+    global $DB;
 
     return $DB->get_records_sql ("SELECT *
-        FROM {$CFG->prefix}questionnaire_response
+        FROM {questionnaire_response}
         WHERE survey_id = ?
         AND username = ?
         ORDER BY submitted ASC ", array($surveyid, $userid));
@@ -320,7 +334,7 @@ function questionnaire_grades($questionnaireid) {
  * @return array array of grades, false if none
  */
 function questionnaire_get_user_grades($questionnaire, $userid=0) {
-    global $CFG, $DB;
+    global $DB;
     $params = array();
     if (!empty($userid)) {
         $usersql = "AND u.id = ?";
@@ -328,7 +342,7 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
     }
 
     $sql = "SELECT a.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
-            FROM {$CFG->prefix}user u, {$CFG->prefix}questionnaire_attempts a, {$CFG->prefix}questionnaire_response r
+            FROM {user} u, {questionnaire_attempts} a, {questionnaire_response} r
             WHERE u.id = a.userid AND a.qid = $questionnaire->id AND r.id = a.rid $usersql";
 
     return $DB->get_records_sql($sql, $params);
@@ -370,7 +384,7 @@ function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone
 
     } else {
         $sql = "SELECT q.*, cm.idnumber as cmidnumber, q.course as courseid
-                  FROM {$CFG->prefix}questionnaire q, {$CFG->prefix}course_modules cm, {$CFG->prefix}modules m
+                  FROM {questionnaire} q, {course_modules} cm, {modules} m
                  WHERE m.name='questionnaire' AND m.id=cm.module AND cm.instance=q.id";
         if ($rs = $DB->get_recordset_sql($sql)) {
             foreach ($rs as $questionnaire) {
@@ -438,12 +452,12 @@ function questionnaire_get_participants($questionnaireid) {
 //for a given instance of questionnaire. Must include every user involved
 //in the instance, independient of his role (student, teacher, admin...)
 //See other modules as example.
-    global $CFG, $DB;
+    global $DB;
 
     //Get students
     $users = $DB->get_records_sql('SELECT DISTINCT u.* '.
-                             'FROM '.$CFG->prefix.'user u, '.
-                             '     '.$CFG->prefix.'questionnaire_attempts qa '.
+                             'FROM {user} u, '.
+                             '     {questionnaire_attempts} qa '.
                              'WHERE qa.qid = \''.$questionnaireid.'\' AND '.
                              '      u.id = qa.userid');
     return ($users);
@@ -501,7 +515,7 @@ function questionnaire_get_context($cmid) {
  * @return bool false if file not found, does not return if found - justsend the file
  */
 function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
-    global $CFG, $DB;
+    global $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
@@ -580,11 +594,11 @@ function questionnaire_load_capabilities($cmid) {
 /// This function *really* shouldn't be needed, but since sometimes we can end up with
 /// orphaned surveys, this will clean them up.
 function questionnaire_cleanup() {
-    global $CFG, $DB;
+    global $DB;
 
     /// Find surveys that don't have questionnaires associated with them.
-    $sql = 'SELECT qs.* FROM '.$CFG->prefix.'questionnaire_survey qs '.
-           'LEFT JOIN '.$CFG->prefix.'questionnaire q ON q.sid = qs.id '.
+    $sql = 'SELECT qs.* FROM {questionnaire_survey} qs '.
+           'LEFT JOIN {questionnaire} q ON q.sid = qs.id '.
            'WHERE q.sid IS NULL';
 
     if ($surveys = $DB->get_records_sql($sql)) {
@@ -726,7 +740,7 @@ function questionnaire_survey_exists($sid) {
 }
 
 function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='') {
-    global $CFG, $OUTPUT;
+    global $OUTPUT;
 
     $surveylist = array();
     if ($surveys = questionnaire_get_survey_list($courseid, $type)) {
@@ -962,5 +976,3 @@ function questionnaire_set_events($questionnaire) {
         }
     }
 }
-
-?>
