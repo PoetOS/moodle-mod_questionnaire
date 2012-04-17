@@ -798,10 +798,9 @@ class questionnaire {
                 /// For a public questionnaire, look for the course that used it.
                 $coursename = '';
                 $sql = 'SELECT q.id, q.course, c.fullname '.
-                       'FROM '.$CFG->prefix.'questionnaire q, '.$CFG->prefix.'questionnaire_attempts qa, '.
-                            $CFG->prefix.'course c '.
-                       'WHERE qa.rid = '.$rid.' AND q.id = qa.qid AND c.id = q.course';
-                if ($record = $DB->get_record_sql($sql)) {
+                       'FROM {questionnaire} q, {questionnaire_attempts} qa, {course} c '.
+                       'WHERE qa.rid = ? AND q.id = qa.qid AND c.id = q.course';
+                if ($record = $DB->get_record_sql($sql, array($rid))) {
                     $coursename = $record->fullname;
                 }
                 echo (' '.get_string('course'). ': '.$coursename);
@@ -1364,16 +1363,14 @@ class questionnaire {
 
         $max = 0;
 
-        global $CFG;
         foreach (array('response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
                        'response_other', 'response_date') as $tbl) {
-            $sql = 'SELECT MAX(q.position) as num FROM '.$CFG->prefix.'questionnaire_'.$tbl.' a, '.
-                                                         $CFG->prefix.'questionnaire_question q '.
-                   'WHERE a.response_id = \''.$rid.'\' AND '.
+            $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_'.$tbl.'} a, {questionnaire_question} q '.
+                   'WHERE a.response_id = ? AND '.
                    'q.id = a.question_id AND '.
-                   'q.survey_id = \''.$this->sid.'\' AND '.
+                   'q.survey_id = ? AND '.
                    'q.deleted = \'n\'';
-            if ($record = $DB->get_record_sql($sql)) {
+            if ($record = $DB->get_record_sql($sql, array($rid, $this->sid))) {
                 $max = (int)$record->num;
             }
         }
@@ -1513,7 +1510,6 @@ class questionnaire {
     }
 
     function response_insert($sid, $section, $rid, $userid) {
-        global $CFG;
         global $DB;
 
         if(empty($rid)) {
@@ -1533,7 +1529,6 @@ class questionnaire {
     }
 
     function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
-        global $CFG;
         global $DB;
 
         $sid = $this->survey->id;
@@ -1551,9 +1546,9 @@ class questionnaire {
 
         // --------------------- response_bool (yes/no)---------------------
         $sql = 'SELECT q.id '.$col.', a.choice_id '.
-               'FROM '.$CFG->prefix.'questionnaire_response_bool a, '.$CFG->prefix.'questionnaire_question q '.
-               'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id ';
-        if ($records = $DB->get_records_sql($sql)) {
+               'FROM {questionnaire_response_bool} a, {questionnaire_question} q '.
+               'WHERE a.response_id= ? AND a.question_id=q.id ';
+        if ($records = $DB->get_records_sql($sql, array($rid))) {
             foreach ($records as $qid => $row) {
                 $choice = $row->choice_id;
                 if (isset ($row->name) && $row->name == '') {
@@ -1578,19 +1573,15 @@ class questionnaire {
 
         // --------------------- response_single (radio button or dropdown)---------------------
         $sql = 'SELECT q.id '.$col.', q.type_id as q_type, c.content as ccontent,c.id as cid '.
-               'FROM '.$CFG->prefix.'questionnaire_resp_single a, '.
-                       $CFG->prefix.'questionnaire_question q, '.
-                       $CFG->prefix.'questionnaire_quest_choice c '.
-               'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id AND a.choice_id=c.id ';
-        if ($records = $DB->get_records_sql($sql)) {
+               'FROM {questionnaire_resp_single} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
+               'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id ';
+        if ($records = $DB->get_records_sql($sql, array($rid))) {
             foreach ($records as $qid => $row) {
                 $cid = $row->cid;
                 $qtype = $row->q_type;
                 if ($csvexport) {
                     static $i = 1;
-                    $sql = 'SELECT * FROM '.$CFG->prefix.'questionnaire_quest_choice WHERE question_id = '.$qid.
-                            ' ORDER BY '.$CFG->prefix.'questionnaire_quest_choice.id ';
-                    $qrecords = $DB->get_records_sql($sql);
+                    $qrecords = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
                     foreach($qrecords as $value) {
                         if ($value->id == $cid) {
                             $contents = choice_values($value->content);
@@ -1635,15 +1626,14 @@ class questionnaire {
 
         // --------------------- response_multiple ---------------------
         $sql = 'SELECT a.id as aid, q.id as qid '.$col.',c.content as ccontent,c.id as cid '.
-               'FROM '.$CFG->prefix.'questionnaire_resp_multiple a, '.
-                       $CFG->prefix.'questionnaire_question q, '.$CFG->prefix.'questionnaire_quest_choice c '.
-               'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id AND a.choice_id=c.id '.
+               'FROM {questionnaire_resp_multiple} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
+               'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id '.
                'ORDER BY a.id,a.question_id,c.id';
-
+        $records = $DB->get_records_sql($sql, array($rid));
         if ($csvexport) {
                 $tmp = null;
 
-                if ($records = $DB->get_records_sql($sql)) {
+                if (!empty($records)) {
                     $qids2 = array();
                     $oldqid = '';
                     foreach ($records as $qid => $row) {
@@ -1657,7 +1647,7 @@ class questionnaire {
                     } else {
                         $qids2 = 'question_id= ' . $qids2;
                     }
-                    $sql = 'SELECT * FROM '.$CFG->prefix.'questionnaire_quest_choice WHERE '.$qids2.
+                    $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE '.$qids2.
                         'ORDER BY id';
                     if ($records2 = $DB->get_records_sql($sql)) {
                         foreach ($records2 as $qid => $row2) {
@@ -1680,8 +1670,8 @@ class questionnaire {
                                 }
                             }
                             $sql = 'SELECT a.name as name, a.type_id as q_type, a.position as pos ' .
-                                    'FROM '.$CFG->prefix.'questionnaire_question a WHERE id = '.$qid2;
-                            if ($currentquestion = $DB->get_records_sql($sql)) {
+                                    'FROM {questionnaire_question} a WHERE id = ?';
+                            if ($currentquestion = $DB->get_records_sql($sql, array($qid2))) {
                                 foreach ($currentquestion as $question) {
                                     $name1 = $question->name;
                                     $type1 = $question->q_type;
@@ -1722,7 +1712,7 @@ class questionnaire {
         } else {
                 $arr = array();
                 $tmp = null;
-                if ($records = $DB->get_records_sql($sql)) {
+                if (!empty($records)) {
                     foreach ($records as $aid => $row) {
                         $qid = $row->qid;
                         $cid = $row->cid;
@@ -1765,11 +1755,10 @@ class questionnaire {
             // --------------------- response_other ---------------------
             // this will work even for multiple !other fields within one question AND for identical !other responses in different questions JR
         $sql = 'SELECT c.id as cid, c.content as content, a.response as aresponse, q.id as qid, q.position as position, q.type_id as type_id, q.name as name '.
-               'FROM '.$CFG->prefix.'questionnaire_response_other a, '.$CFG->prefix.'questionnaire_question q, '.
-                       $CFG->prefix.'questionnaire_quest_choice c '.
-               'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id AND a.choice_id=c.id '.
+               'FROM {questionnaire_response_other} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
+               'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
                'ORDER BY a.question_id,c.id ';
-        if ($records = $DB->get_records_sql($sql)) {
+        if ($records = $DB->get_records_sql($sql, array($rid))) {
             foreach ($records as $record) {
                 $newrow = array();
                 $position = $record->position;
@@ -1799,12 +1788,10 @@ class questionnaire {
 
             // --------------------- response_rank ---------------------
         $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid '.$col.',c.content as ccontent,a.rank as arank '.
-               'FROM '.$CFG->prefix.'questionnaire_response_rank a, '.
-                       $CFG->prefix.'questionnaire_question q, '.
-                       $CFG->prefix.'questionnaire_quest_choice c '.
-               'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id AND a.choice_id=c.id '.
+               'FROM {questionnaire_response_rank} a, {questionnaire_question} q, {questionnaire_quest_choice c} '.
+               'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
                'ORDER BY aid, a.question_id,c.id';
-        if ($records = $DB->get_records_sql($sql)) {
+        if ($records = $DB->get_records_sql($sql, array($rid))) {
             foreach ($records as $row) {
                 /// Next two are 'qid' and 'cid', each with numeric and hash keys.
                 $osgood = false;
@@ -1854,7 +1841,7 @@ class questionnaire {
 
             // --------------------- response_text ---------------------
         $sql = 'SELECT q.id '.$col.',a.response as aresponse '.
-               'FROM '.$CFG->prefix.'questionnaire_response_text a, '.$CFG->prefix.'questionnaire_question q '.
+               'FROM {questionnaire_response_text} a, {questionnaire_question} q '.
                'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id ';
         if ($records = $DB->get_records_sql($sql)) {
             foreach ($records as $qid => $row) {
@@ -1874,7 +1861,7 @@ class questionnaire {
 
             // --------------------- response_date ---------------------
         $sql = 'SELECT q.id '.$col.',a.response as aresponse '.
-               'FROM '.$CFG->prefix.'questionnaire_response_date a, '.$CFG->prefix.'questionnaire_question q '.
+               'FROM {questionnaire_response_date} a, {questionnaire_question} q '.
                'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id ';
         if ($records = $DB->get_records_sql($sql)) {
             $dateformat = get_string('strfdate', 'questionnaire');
@@ -2128,8 +2115,7 @@ class questionnaire {
         Returns empty string on sucess, else returns an error
         string. */
     function survey_results($precision = 1, $showTotals = 1, $qid = '', $cids = '', $rid = '', $guicross='', $uid=false, $groupid='', $sort='') {
-        global $CFG, $SESSION;
-        global $DB;
+        global $SESSION, $DB;
 
         $SESSION->questionnaire->noresponses = false;
         if(empty($precision)) {
@@ -2208,8 +2194,8 @@ class questionnaire {
             if($cross) {
                 if(!empty($cidstr))
                     $sql = "SELECT A.response_id, R.id
-                              FROM ".$CFG->prefix.'questionnaire_'.$crossTable." A,
-                                   ".$CFG->prefix."questionnaire_response R
+                              FROM {questionnaire_".$crossTable."} A,
+                                   {questionnaire_response} R
                              WHERE A.response_id=R.id AND
                                    R.complete='y' AND
                                    A.question_id='${qid}' AND
@@ -2217,8 +2203,8 @@ class questionnaire {
                              ORDER BY A.response_id";
                 else
                     $sql = "SELECT A.response_id, R.id
-                              FROM ".$CFG->prefix.'questionnaire_'.$crossTable." A,
-                                   ".$CFG->prefix."questionnaire_response R
+                              FROM {questionnaire_".$crossTable."} A,
+                                   {questionnaire_response} R
                              WHERE A.response_id=R.id AND
                                    R.complete='y' AND
                                    A.question_id='${qid}' AND
@@ -2226,21 +2212,21 @@ class questionnaire {
                              ORDER BY A.response_id";
             } else if ($uid !== false) { // one participant only
                 $sql = "SELECT r.id, r.survey_id
-                          FROM ".$CFG->prefix."questionnaire_response r
+                          FROM {questionnaire_response} r
                          WHERE r.survey_id='{$this->survey->id}' AND
                                r.username = $uid AND
                                r.complete='y'
                          ORDER BY r.id";
             } else if ($groupid == -1) { // all participants
                 $sql = "SELECT R.id, R.survey_id
-                          FROM ".$CFG->prefix."questionnaire_response R
+                          FROM {questionnaire_response} R
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y'
                          ORDER BY R.id";
             } else if ($groupid == -2) { // all members of any group
                 $sql = "SELECT R.id, R.survey_id
-                          FROM ".$CFG->prefix."questionnaire_response R,
-                                ".$CFG->prefix."groups_members GM
+                          FROM {questionnaire_response} R,
+                                {groups_members} GM
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                GM.groupid>0 AND
@@ -2248,16 +2234,16 @@ class questionnaire {
                          ORDER BY R.id";
             } else if ($groupid == -3) { // not members of any group
                 $sql = "SELECT R.id, R.survey_id, U.id AS userid
-                          FROM ".$CFG->prefix."questionnaire_response R,
-                                ".$CFG->prefix."user U
+                          FROM {questionnaire_response} R,
+                                {user} U
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                ".$castsql."=U.id
                          ORDER BY userid";
             } else { // members of a specific group
                 $sql = "SELECT R.id, R.survey_id
-                          FROM ".$CFG->prefix."questionnaire_response R,
-                                ".$CFG->prefix."groups_members GM
+                          FROM {questionnaire_response} R,
+                                {groups_members} GM
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                GM.groupid=".$groupid." AND
@@ -2447,7 +2433,7 @@ class questionnaire {
         if (!($records = $DB->get_records_select('questionnaire_question', $select, null, 'position', $fields))) {
             $records = array();
         }
-        global $CFG;
+
         $num = 1;
         foreach ($records as $record) {
             // establish the table's field names
@@ -2460,8 +2446,8 @@ class questionnaire {
             if ($type == 4 || $type == 5 || $type == 8) {
                 /* single or multiple or rate */
                 $sql = "SELECT c.id as cid, q.id as qid, q.precise AS precise, q.name, c.content
-                FROM ".$CFG->prefix."questionnaire_question q ".
-                'LEFT JOIN '.$CFG->prefix."questionnaire_quest_choice c ON question_id = q.id ".
+                FROM {questionnaire_question} q ".
+                "LEFT JOIN {questionnaire_quest_choice} c ON question_id = q.id ".
                 'WHERE q.id = '.$qid.' ORDER BY cid ASC';
                 if (!($records2 = $DB->get_records_sql($sql))) {
                     $records2 = array();
@@ -2567,7 +2553,7 @@ class questionnaire {
             }
         } else if ($userid) { // download CSV for one user's own responses'
                 $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM ".$CFG->prefix."questionnaire_response R
+                          FROM {questionnaire_response} R
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                R.username='$userid'
@@ -2580,14 +2566,14 @@ class questionnaire {
             $castsql = $DB->sql_cast_char2int('R.username');
             if ($groupid == -1) { // all participants
                 $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM ".$CFG->prefix."questionnaire_response R
+                          FROM {questionnaire_response} R
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y'
                          ORDER BY R.id";
             } else if ($groupid == -2) { // all members of any group
                 $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM ".$CFG->prefix."questionnaire_response R,
-                                ".$CFG->prefix."groups_members GM
+                          FROM {questionnaire_response} R,
+                                {groups_members} GM
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                GM.groupid>0 AND
@@ -2595,16 +2581,16 @@ class questionnaire {
                          ORDER BY R.id";
             } else if ($groupid == -3) { // not members of any group
                 $sql = "SELECT R.id, R.survey_id, R.submitted,  U.id AS username
-                          FROM ".$CFG->prefix."questionnaire_response R,
-                                ".$CFG->prefix."user U
+                          FROM {questionnaire_response} R,
+                                {user} U
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                ".$castsql."=U.id
                          ORDER BY username";
             } else { // members of a specific group
                 $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM ".$CFG->prefix."questionnaire_response R,
-                                ".$CFG->prefix."groups_members GM
+                          FROM {questionnaire_response} R,
+                                {groups_members} GM
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                GM.groupid=".$groupid." AND
@@ -2648,10 +2634,9 @@ class questionnaire {
             } else {
                 /// For a public questionnaire, look for the course that used it.
                 $sql = 'SELECT q.id, q.course, c.fullname '.
-                       'FROM '.$CFG->prefix.'questionnaire q, '.$CFG->prefix.'questionnaire_attempts qa, '.
-                            $CFG->prefix.'course c '.
-                       'WHERE qa.rid = '.$qid.' AND q.id = qa.qid AND c.id = q.course';
-                if ($record = $DB->get_record_sql($sql)) {
+                       'FROM {questionnaire} q, {questionnaire_attempts} qa, {course} c '.
+                       'WHERE qa.rid = ? AND q.id = qa.qid AND c.id = q.course';
+                if ($record = $DB->get_record_sql($sql, array($qid))) {
                     $courseid = $record->course;
                     $coursename = $record->fullname;
                 } else {

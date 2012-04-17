@@ -266,9 +266,9 @@ function questionnaire_get_user_responses($surveyid, $userid) {
 
     return $DB->get_records_sql ("SELECT *
         FROM {$CFG->prefix}questionnaire_response
-        WHERE survey_id = '$surveyid'
-        AND username = '$userid'
-        ORDER BY submitted ASC ");
+        WHERE survey_id = ?
+        AND username = ?
+        ORDER BY submitted ASC ", array($surveyid, $userid));
 }
 
 function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
@@ -321,14 +321,17 @@ function questionnaire_grades($questionnaireid) {
  */
 function questionnaire_get_user_grades($questionnaire, $userid=0) {
     global $CFG, $DB;
-
-    $user = $userid ? "AND u.id = $userid" : "";
+    $params = array();
+    if (!empty($userid)) {
+        $usersql = "AND u.id = ?";
+        $params[] = $userid;
+    }
 
     $sql = "SELECT a.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
             FROM {$CFG->prefix}user u, {$CFG->prefix}questionnaire_attempts a, {$CFG->prefix}questionnaire_response r
-            WHERE u.id = a.userid AND a.qid = $questionnaire->id AND r.id = a.rid $user";
+            WHERE u.id = a.userid AND a.qid = $questionnaire->id AND r.id = a.rid $usersql";
 
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, $params);
 }
 
 /**
