@@ -33,7 +33,7 @@ class questionnaire_choose_group_form extends moodleform {
     //this function have to be called manually
     //the advantage is that the data are already set
     function set_form_elements(){
-        global $CFG, $SESSION, $DB;
+        global $SESSION, $DB;
         $mform =& $this->_form;
         $sid = $SESSION->questionnaire_survey_id;
         $elementgroup = array();
@@ -55,11 +55,11 @@ class questionnaire_choose_group_form extends moodleform {
             $castsql = $DB->sql_cast_char2int('R.username');
             foreach($this->questionnairedata->groups as $group) {
                 $sql = "SELECT R.id, GM.id as groupid
-                    FROM ".$CFG->prefix."questionnaire_response R, ".$CFG->prefix."groups_members GM
-                    WHERE R.survey_id=".$sid." AND
+                    FROM {questionnaire_response} R, {groups_members} GM
+                    WHERE R.survey_id= ? AND
                           R.complete='y' AND
-                          GM.groupid=".$group->id." AND " . $castsql . "=GM.userid";
-                if (!($resps = $DB->get_records_sql($sql))) {
+                          GM.groupid= ? AND " . $castsql . "=GM.userid";
+                if (!($resps = $DB->get_records_sql($sql, array($sid, $group->id)))) {
                     $resps = array();
                 }
                 if (!empty ($resps)) {
@@ -87,4 +87,3 @@ class questionnaire_choose_group_form extends moodleform {
     }
 
 }
-?>
