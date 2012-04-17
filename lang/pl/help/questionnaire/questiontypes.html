@@ -1,0 +1,189 @@
+<h2 class="main">
+Rodzaje pytań
+</h2>
+<p>
+Wybierz rodzaj pytania na rozwijanej liście i kliknij na przycisk <strong>Dodaj wybrany rodzaj pytania</strong>. Poniżej możesz zobaczyć, jak poszczególne rodzaje pytań będą wyglądały w kwestionariuszu. Dalsze informacje znajdziesz w plikach pomocy dostępnych ze strony edycji pytania.
+</p>
+<p><strong>
+---Podział strony---
+</strong></p>
+<p>
+Właściwie nie jest to pytanie, ale narzędzie pozwalające wymusić w długim kwestionariuszu podział strony w żądanym miejscu. Wstawiając podział strony weź pod uwagę, że jeżeli utworzona strona zawiera pytania zdefiniowane jako <em>wymagające odpowiedzi</em>, to respondent nie będzie mógł przejść do następnej strony tak długo, jak nie udzieli tych wymaganych odpowiedzi.
+</p>
+<p>
+</p>
+<p><strong>
+Dłuższa wypowiedź
+</strong><br />
+  <textarea cols="40" rows="4"></textarea>
+</p>
+<p>
+Edycja pytania tego rodzaju pozwala włączyć lub wyłączyć opcję używania edytora HTML, a także - ustawić szerokość i wysokość pola tekstowego do wprowadzenia odpowiedzi.
+</p>
+<p>
+</p>
+<p><strong>
+Data
+</strong><br />
+  <input type="text" />
+<em>Użyj formatu dzień-miesiąc-rok, np. dla daty 14 marca 1945:&nbsp; <strong>14-03-1945</strong></em>
+  </p>
+<p>
+Wybierz ten rodzaj pytania, jeżeli oczekujesz, że w odpowiedzi na nie respondent wprowadzi właściwie sformatowaną datę. Format daty zależy od aktualnie wybranego języka. Może to być, np.: 4/21/2007 (USA), 21/4/2007 (Wlk. Brytania), 21-4-2007 (Polska) itp. Przykład właściwego formatowania będzie podany w kwestionariuszu. W przypadku wprowadzenia przez respondenta &quot;niemożliwej&quot; lub źle sformatowanej daty, albo zostanie ona poprawiona lub przeformatowana, albo - jeśli okaże się to niemożliwe - zostanie wyświetlone ostrzeżenie o błędzie. Poprawny eksport danych zawierających datę do arkusza programu Excel (lub innego, podobnego) wymaga, aby daty wprowadzane przez respondenta mieściły się <em>w przedziale od 1902 do 2037 roku</em>. Jeżeli oczekujesz dat spoza tego przedziału, zastosuj pytanie typu <strong>Pole tekstowe</strong>. Pytanie typu <strong>Data</strong> pozwala na wprowadzenie odpowiedzi zawierającej tylko miesiąc i rok (np., 12-2008 jako grudzień 2008) lub sam rok (np., 2008). Trzeba jednak pamiętać, że w celu zachowania możliwości przetwarzania takich danych w arkuszu kalkulacyjnym, system automatycznie uzupełni takie niekompletne daty do postaci dd-mm-rrrr, np. 12-2008 zostanie zapisane jako <strong>01-</strong>12-2008, a 2008 - jako <strong>01-01-</strong>2008. Treść pytania lub instrukcja do formularza powinny uprzedzić respondenta o takim zachowaniu.
+</p>
+<p>
+</p>
+<p><strong>
+Etykieta
+<br /></strong>
+Nie jest to pytanie, ale (krótki) tekst, jaki zostanie wyświetlony w wybranym miejscu, np. jako wprowadzenie do grupy pytań.
+</p>
+<p>
+</p>
+<p><strong>
+Liczba
+</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>
+Wybierz ten rodzaj pytania, jeżeli oczekujesz, że w odpowiedzi na nie respondent wprowadzi właściwie sformatowaną liczbę. Ustawienie podczas edycji opcji <strong>Maks. dozwolona liczba cyfr </strong>oraz <strong>Liczba cyfr dziesiętnych </strong> pozwala kontrolować długość odpowiedzi wprowadzanej przez respondenta oraz dokładność wyniku.
+</p>
+<p>
+</p>
+<p><strong>
+Lista rozwijana
+</strong><br />
+  <select name="select">
+    <option></option>
+    <option>
+    Opcja 1
+    </option>
+    <option>
+    Opcja 2
+    </option>
+  </select>
+</p>
+<p>
+Wybór pytania rodzaju <strong>Lista rozwijana</strong> nie jest w niczym lepszy niż zastosowanie <strong>Przycisków radiowych</strong>, może poza oszczędnością miejsca na ekranie w przypadku długich list.
+</p>
+<p>
+</p>
+<p><strong>
+Ocena (w skali 1..5)
+</strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td align="center" style="background-color:#eeeeee">1</td>
+    <td align="center" style="background-color:#dddddd">2</td>
+    <td align="center" style="background-color:#eeeeee">3</td>
+    <td align="center" style="background-color:#dddddd">4</td>
+    <td align="center" style="background-color:#eeeeee">5</td>
+    <td align="center" style="background-color:#dddddd">N.D.</td>
+  </tr>
+  <tr>
+    <td>Opcja 1&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Opcja 2&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Opcja 3&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+</table>
+<p>
+Dostępny ze strony edycji plik pomocy, dotyczący użycia parametrów <strong>Liczba pozycji na skali </strong> oraz <strong>Rodzaj skali</strong>, zawiera dalsze informacje o różnych opcjach dostępnych dla tego rodzaju pytań. Zapoznaj się także z plikiem pomocy dla pozycji <strong>Możliwe odpowiedzi</strong>.
+</p>
+<p>
+</p>
+<p><strong>
+Pola do zaznaczenia
+</strong><br />
+  <input type="checkbox" />
+Opcja 1<br />
+<input name="checkbox" type="checkbox" />
+Opcja 2 <br />
+<input name="checkbox2" type="checkbox" />
+Inne
+<input name="text2" type="text" size="20" />
+(opcjonalnie)</p>
+<p>
+<strong>Uwaga</strong>:- Pytania typu <strong>Przyciski radiowe</strong> i <strong>Pola do zaznaczenia</strong> mogą zawierać dodatkowy, opcjonalny przycisk/pole <em>Inne</em> stowarzyszony z polem tekstowym do wypełnienia.
+</p>
+<p>
+</p>
+<p><strong>
+Pole tekstowe
+</strong> <br />
+  <input name="text" type="text" size="30" />
+  <br />
+Edycja pytania tego rodzaju pozwala określić <em>Długość pola tekstowego</em>, w którym respondent będzie wprowadzał odpowiedź oraz <em>Maksymalną dozwoloną długość tekstu</em> odpowiedzi.
+</p>
+<p>
+</p>
+<p><strong>
+Przyciski radiowe
+</strong></p>
+<table style="width:100%; height:80px;" border="1" cellpadding="2" cellspacing="2">
+  <tr>
+    <td style="width:308px"><strong>
+układ pionowy
+    </strong></td>
+    <td style="width:221px"><strong>
+układ poziomy
+    </strong></td>
+  </tr>
+  <tr>
+    <td><input type="radio" name="radio" />
+Opcja 1<br />
+<input type="radio" />
+Opcja 2 <br />
+<input type="radio" />
+Opcja 3
+<br />
+<input type="radio" />
+Opcja 4 
+<input type="text" size="20" />
+(opcjonalne)</td>
+    <td><input type="radio" />
+Opcja 1
+<input type="radio" />
+Opcja 2 
+<input type="radio" />
+Opcja 3
+</td>
+  </tr>
+</table>
+</p>
+<p>
+</p>
+<p><strong>
+Tak/Nie
+</strong><br />
+  <input type="radio" />
+Tak
+<input type="radio" />
+Nie
+</p>
+<hr />
+<p style="font-size:smaller; text-align:center">Uaktualnione przez JR w dniu 
+  <!-- #BeginDate format:Fr1 -->14/06/08<!-- #EndDate -->
+</p>

@@ -1,0 +1,84 @@
+<h2 class="main">Ściągnij w formacie tekstowym</h2>
+<H3>Informacja ogólna </H3>
+<p>Jeżeli chcesz analizować odpowiedzi na dany kwestionariusz poza pakietem Moodle, np. za pomocą programów takich, jak <em>Excel</em>, <em>Open Office Calc</em> lub aplikacje do analizy statystycznej, możesz wyeksportować dane w formacie tekstowym. Format tekstowy, jaki udostępniamy, to CSV (comma separated values), w którym - dla uczynienia go bardziej uniwersalnym - użyto jako separatora nie przecinka, czy średnika, ale <strong>znaku tabulacji</strong> (tabulatora).</p>
+<H3>Działanie procedury</H3>
+<p>Kliknięcie na przycisk <strong>Prześlij</strong> uruchamia procedurę przesłania pliku, która najpierw wyświetla okienko z pytaniem, czy chcesz zapisać, czy otworzyć plik z danymi. Wybierz opcję <em>zapisz</em>. Nazwa pliku tworzona jest na podstawie nazwy formularza z rozszerzeniem .txt. Jeżeli chcesz analizować dane za pomocą <em>Open Office Calc</em>, musisz na swoim komputerze zmienić to rozszerzenie na .csv (oczywiście, możesz również zmienić nazwę pliku).</p>
+<p>Przejdź do programu, który chcesz użyć i otwórz plik za jego pomocą. Dalsze kroki zależą od tego, jaki program wybrałeś/wybrałaś, a także od kilku innych parametrów. Jeżeli używasz w Moodle języka posługującego się znakami spoza zestawu ascii (np., polskiego), albo, gdy w środowisku angielskim analizujesz ankiety zawierające takie znaki, wówczas <em>Excel</em> (lub <em>Open Office Calc</em>) może być w stanie <em>automatycznie rozpoznać</em>, że Twój plik używa kodowania UTF-8 i odpowiednio go zinterpretować. Należy jednak pamiętać, że w przypadku pliku z bardzo niewielką liczbą znaków spoza zestawu ascii, procedura automatyczna może nie zadziałać. W takim przypadku należy ręcznie ustawić rodzaj kodowania wczytywanego pliku na UTF-8 (wybierając taką opcję ze stosownej listy). </p>
+<H3>Struktura pliku CSV</H3>
+<p>Pierwszy wiersz &quot;tabeli&quot; zaimportowanej np. do <em>Excela</em> zawiera nazwy pól. W każdym kolejnym wierszu znajdują się dane kolejnej odpowiedzi (czyli - ankiety). 7 pierwszych pól ma następujące (polskie) nazwy: </p>
+<table border="1" cellpadding="3" cellspacing="1">
+  <tr>
+    <td height="17">Odpowiedź</td>
+    <td>Przesłane w dniu:</td>
+    <td>Instytucja</td>
+    <td>Wydział</td>
+    <td>Kurs</td>
+    <td>Grupa</td>
+    <td>ID</td>
+    <td>Pełna nazwa</td>
+    <td>Nazwa użytkownika</td>
+  </tr>
+</table>
+<p>Ponieważ nazwy te mogą się zmieniać zależnie od aktualnej wersji obowiązującego tłumaczenia, dla kompletu podajemy też nomenklaturę angielską:</p>
+<table border="1" cellpadding="3" cellspacing="1">
+  <tr>
+    <td height="17">Response</td>
+    <td>Submitted on:</td>
+    <td>Institution</td>
+    <td>Department</td>
+    <td>Course</td>
+    <td>Group</td>
+    <td>ID</td>
+    <td>Full name</td>
+    <td>Username</td>
+  </tr>
+</table>
+<p>Następne pola nazwane są zgodnie z nazwami wszystkich kolejnych pytań kwestionariusza. Opis sposobu tworzenia nazw pytań znajdziesz w pliku pomocy <a href="help.php?module=questionnaire&amp;file=questionname.html">&quot;Nazwa pytania&quot;</a>.</p>
+<p>Pole &quot;Przesłane w dniu:&quot; zawiera datę oraz czas (godzinę, minutę i sekundę) przesłania ankiety przez respondenta, np. 30-10-2008 23:44:42. W normalnych okolicznościach ustawienie stosownego sposobu formatowania daty przez <em>Excela</em> powinno pozwolić na wyświetlanie tego pola w różny sposób, łącznie z używaniem pełnych nazw miesiąca, przy zachowaniu możliwości sortowania.</p>
+<p>Jeżeli &quot;Rodzaj respondenta&quot; dla kwestionariusza został określony jako &quot;anonimowy&quot;, wówczas pola &quot;ID&quot; oraz &quot;Nazwa użytkownika&quot; są puste, a pole &quot;Pełna nazwa&quot; zawiera słowo &quot;Anonimowy&quot;. </p>
+<H3>Opcje procedury ściągania pliku CSV</H3>
+<P>Strona wyświetlana pod zakładką <STRONG>Ściągnij w formacie tekstowym</STRONG> umożliwia ustawienie wartości dwóch parametrów, kontrolujących sposób eksportu odpowiedzi na pytania typu: <STRONG>&quot;Przyciski radiowe&quot;</STRONG>. Poniższa tabela pokazuje dostępne opcje i ich efekt:</P>
+<P>Pytanie: Jaki kolor lubisz najbardziej? Odpowiedzi do wyboru: niebieski, zielony, czerwony.</P>
+<TABLE border=1>
+  <TBODY>
+  <TR>
+    <TD><LABEL for=auto-cb0001>wybrany kolor </LABEL></TD>
+    <TD>niebieski</TD>
+    <TD>zielony</TD>
+    <TD>czerwony</TD></TR>
+  <TR>
+    <TD>Zaznaczono: Uwzględnij kod odpowiedzi</TD>
+    <TD>1</TD>
+    <TD>2</TD>
+    <TD>3</TD></TR>
+  <TR>
+    <TD>Zaznaczono: Uwzględnij tekst odpowiedzi</TD>
+    <TD>niebieski</TD>
+    <TD>zielony</TD>
+    <TD>czerwony</TD></TR>
+  <TR>
+    <TD>Zaznaczono: Uwzględnij kod odpowiedzi + Uwzględnij tekst odpowiedzi</TD>
+    <TD>1&nbsp;:&nbsp;niebieski&nbsp;</TD>
+    <TD>2&nbsp;:&nbsp;zielony&nbsp;</TD>
+    <TD>3&nbsp;:&nbsp;czerwony&nbsp;</TD></TR>
+  <TR>
+    <TD>Nie zaznaczono żadnej opcji - ten sam efekt, jak przy zaznaczeniu: Uwzględnij kod odpowiedzi </TD>
+    <TD>niebieski</TD>
+    <TD>zielony</TD>
+    <TD>czerwony</TD></TR></TBODY></TABLE>
+<P>Prosimy pamiętać, że powyższe opcje nie mają znaczenia w przypadku zastosowania w pytaniu &quot;ukrytego&quot; (dla respondenta) opisu odpowiedzi do wyboru. W takim przypadku, wyeksportowane dane zawsze będą miały postać &quot;ukrytych&quot; opisów. Więcej informacji na ten temat znajdziesz w pliku pomocy, dotyczącym 
+<a href="help.php?module=questionnaire&amp;file=radioanswers.html">&quot;odpowiedzi na pytania typu: Przyciski radiowe&quot;</a>.
+</P>
+<TABLE cellPadding=5 border=1>
+  <TBODY>
+  <TR>
+    <TD vAlign=top><EM>Możliwe odpowiedzi: </EM>
+      <P>Czerwony=kolor krwi <BR>Niebieski=kolor nieba <BR>Czarny=przeciwieństwo bieli </P></TD>
+    <TD vAlign=top><STRONG>Jaki kolor lubisz najbardziej? </STRONG><BR><INPUT 
+      type=radio> kolor krwi<BR><INPUT type=radio> kolor nieba <BR><INPUT type=radio> przeciwieństwo bieli </TD>
+    <TD vAlign=top>
+      <P><EM>Niezależnie od wyboru opcji &quot;Uwzględnij kod odpowiedzi&quot;/&quot;Uwzględnij tekst odpowiedzi&quot; procedury ściągania pliku tekstowego, w tym przypadku jako dane, do pliku CSV zostaną wyeksportowane nazwy: 
+      <STRONG>Czerwony</STRONG>, <STRONG>Niebieski</STRONG> lub <STRONG>Czarny</STRONG>.</EM> </P></TD></TR></TBODY></TABLE>
+<hr />
+<p style="font-size:smaller; text-align:center">Zaktualizowane przez JR (i zaadaptowane przez PK) w dniu <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+</p>

@@ -1,0 +1,476 @@
+ <h3 align="center">Editar Questão: Respostas Possíveis</h3>
+<p>Se seleccionar um tipo de questão que tem <em>opções de resposta</em> (<em>escolhas</em>), 
+  deve inserir cada resposta em cada uma das caixas de texto no final da p&aacute;gina 
+  <strong>Editar Quest&atilde;o</strong>. Se necessita de mais linhas, clique 
+  em <b>Adicionar linha de resposta</b>. Os tipos de quest&atilde;o com op&ccedil;&otilde;es 
+  de resposta s&atilde;o: <strong>Bot&otilde;es R&aacute;dio, Caixas de Verifica&ccedil;&atilde;o, 
+  Caixas de Combina&ccedil;&atilde;o, Classifica&ccedil;&atilde;o</strong>. Exemplos: 
+</p>
+<table width="100%" border="1" cellpadding="5">
+  <tr>
+    <th width="33%" scope="col">Modo de Edi&ccedil;&atilde;o</th>
+    <th width="67%" scope="col">Visualiza&ccedil;&atilde;o do Question&aacute;rio</th>
+  </tr>
+  <tr>
+    <td><table cellspacing="0" cellpadding="0">
+      <tr>
+          <td height="40" colspan="2" valign="top"> <strong>Ex. 1 Bot&otilde;es r&aacute;dio</strong><br>
+            Introduza as respostas poss&iacute;veis (se aplic&aacute;vel).</td>
+      </tr>
+      <tr>
+        <td>1.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_1" value="Vermelho" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_2" value="Azul" type="text" />        </td>
+      </tr>
+      <tr>
+        <td height="24">3.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_2" value="Preto" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>4.</td>
+        <td align="left" valign="middle">
+            <input size="40" name="choice_content_3" value="!other" type="text" />        </td>
+      </tr>
+    </table></td>
+    <td><strong>Qual a sua cor favorita? </strong><br /> <input type="radio" name="radio" />
+      Vermelho<br /> <input type="radio" name="radio" />
+      Azul<br /> <input type="radio" name="radio" />
+      Preto<br /> <input type="radio" name="radio" />
+      Outra: 
+      <input type="text" name="date2" size="25" /></td>
+  </tr>
+  <tr>
+    <td><table width="300" cellpadding="0" cellspacing="0">
+      <tr>
+          <td colspan="2" valign="top"> <strong>Ex. 2 Caixas de Verifica&ccedil;&atilde;o<br />
+            </strong> Introduza as respostas poss&iacute;veis (se aplic&aacute;vel).</td>
+      </tr>
+      <tr>
+        <td width="12">1.</td>
+        <td width="286" align="left" valign="middle"><input size="40" name="choice_content_12" value="Assistir TV" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_22" value="Dan&ccedil;ar" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>3.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_22" value="Internet" type="text" />        </td>
+      </tr>
+      <tr>
+        <td>4.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_32" value="!other=Outro passatempo:" type="text" />        </td>
+      </tr>
+    </table>    </td>
+    <td><strong>Qual o seu passatempo favorito? </strong><br /> <input name="checkbox" type="checkbox" />
+      Assistir TV<br /> <input name="checkbox" type="checkbox" />
+      Dan&ccedil;ar<br /> <input name="checkbox2" type="checkbox" />
+      Internet<br /> <input name="checkbox" type="checkbox" />
+      Outro passatempo: 
+      <input name="text3" type="text" size="25" /></td>
+  </tr>
+  <tr>
+    <td><table cellspacing="0" cellpadding="0">
+      <tr>
+          <td height="38" colspan="2" valign="top"> <strong>Ex. 3 Caixa de Combina&ccedil;&atilde;o</strong><br>
+            Introduza as respostas poss&iacute;veis (se aplic&aacute;vel).</td>
+      </tr>
+      <tr>
+        <td width="12">1.</td>
+        <td width="292" align="left" valign="middle"><input size="40" name="choice_content_13" value="Vermelho" type="text" /></td>
+      </tr>
+      <tr>
+        <td>2.</td>
+        <td align="left" valign="middle"><input size="40" name="choice_content_23" value="Azul" type="text" /></td>
+      </tr><tr>
+        <td>3.</td>
+        <td align="left" valign="middle"><input size="40" value="Preto" type="text" /></td>
+      </tr>
+    </table>    </td>
+    <td valign="top"> <table width="211" cellpadding="10" cellspacing="1">
+        <tbody>
+          <tr> 
+            <td width="153"><strong>Qual a sua cor favorita? </strong></td>
+          </tr>
+          <tr> 
+            <td><select id="select" name="q17">
+                <option value="0">Choose...</option>
+                <option value="19">Vermelho</option>
+                <option value="20">Azul</option>
+                <option value="21">Preto</option>
+              </select> </td>
+          </tr>
+        </tbody>
+      </table>
+      <div></div></td></tr>
+  <tr>
+    <td><p><strong>Ex. 4 Classifica&ccedil;&atilde;o</strong> (linha &uacute;nica) 
+        <br />
+        Introduza as respostas poss&iacute;veis (se aplic&aacute;vel). <br>
+        -&gt; <strong>N&atilde;o introduza nada.</strong> Se no futuro editar 
+        esta quest&atilde;o vai verificar que existe <em>uma</em> &quot;resposta 
+        poss&iacute;vel&quot; vazia. N&atilde;o insira nada nesta resposta. </p>
+      <p> <strong>Configura&ccedil;&otilde;es: </strong><br />
+        <strong><em>Tamanho</em></strong> = 4 (4 colunas numeradas de 1 a .4)</p></td>
+    <td valign="top"><strong>Classifique o Moodle em termos de facilidade de utilização 
+      numa escala de 1 (difícil) a 4 (fácil).</strong> <table cellspacing="0" cellpadding="0">
+        <tr> 
+          <td align="center" width="40">1</td>
+          <td align="center" width="40">2</td>
+          <td align="center" width="40">3</td>
+          <td align="center" width="40">4</td>
+        </tr>
+        <tr> 
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr>
+    <td><strong>Ex. 5 Classifica&ccedil;&atilde;o</strong> (v&aacute;rias linhas) 
+      <br />
+      Introduza as respostas poss&iacute;veis (se aplic&aacute;vel). <br>
+      <table cellspacing="0" cellpadding="0">
+        
+        <tr>
+          <td>1.</td>
+          <td align="left" valign="middle"><input size="40" value="Moodle" type="text" />          </td>
+        </tr>
+        <tr>
+          <td>2.</td>
+          <td align="left" valign="middle"><input size="40" value="WebCT" type="text" />          </td>
+        </tr>
+        <tr>
+          <td>3.</td>
+          <td align="left" valign="middle"><input size="40" value="Blackboard" type="text" />          </td>
+        </tr>
+      </table>
+      <strong>Configura&ccedil;&otilde;es: </strong><br />
+      <strong><em>Tamanho</em></strong> = 4 (4 colunas numeradas de 1 a .4)<br />
+      <em><strong>Precis&atilde;o</strong></em> = 1 (para obter a coluna extra 
+      NS/NR)</td>
+    <td valign="top"><strong>Classifique estes LMS em termos de facilidade de 
+      utilização numa escala de 1 (difícil) a 4 (fácil). Seleccione N/A nos LMS 
+      que não conhece.</strong> <table cellspacing="0" cellpadding="0">
+        <tr> 
+          <td></td>
+          <td align="center" width="40">1</td>
+          <td align="center" width="40">2</td>
+          <td align="center" width="40">3</td>
+          <td align="center" width="40">4</td>
+          <td align="center" width="40">N/A</td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">Moodle</div></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">WebCT</div></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">Blackboard </div></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+          <td align="center" width="40"><input type="radio" /></td>
+        </tr>
+      </table></td></tr>
+  <tr>
+    <td><strong>Ex. 6 Classifica&ccedil;&atilde;o <em>com escala personalizada<a name="named_degrees" id="named_degrees"></a></em> 
+      </strong><br>
+      Introduza as respostas poss&iacute;veis (se aplic&aacute;vel). <br>
+      <table width="291" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>1.</td>
+          <td align="left" valign="middle"><input name="text" type="text" value="1=Quase Nunca" size="40" />          </td>
+        </tr>
+        <tr>
+          <td>2.</td>
+          <td align="left" valign="middle"><input name="text" type="text" value="2=Raramente" size="40" />          </td>
+        </tr>
+        <tr>
+          <td>3.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="3=Algumas vezes" size="40" /></td>
+        </tr>
+        <tr>
+          <td>4.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="4=Frequentemente" size="40" /></td>
+        </tr>
+        <tr>
+          <td>5.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="5=Quase sempre" size="40" /></td>
+        </tr>
+        <tr>
+          <td>6.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="A aprendizagem incide em tópicos que me interessam" size="50" /></td>
+        </tr>
+        <tr>
+          <td height="24">7.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="O que aprendi &eacute; importante para a minha profissão" size="50" /></td>
+        </tr>
+        <tr>
+          <td>8.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="Aprendi a melhorar o desempenho da minha profissão" size="50" /></td>
+        </tr>
+      </table>
+      <strong>Configura&ccedil;&otilde;es: </strong><br />
+      <strong><em>Tamanho</em></strong> = 5 (5 colunas c/escala personalizada)<br />
+      <em><strong>Precis&atilde;o</strong></em> = 0 (n&atilde;o &eacute; necess&aacute;ria 
+      a coluna NS/NR)</td>
+    <td valign="top"><h4>Nesta unidade de aprendizagem... Penso que... </h4>
+      <table border="1" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td></td>
+          <td align="center">Quase Nunca</td>
+          <td align="center">Rara-mente</td>
+          <td align="center">Algumas vezes</td>
+          <td align="center">Frequente-mente</td>
+          <td align="center">Quase sempre</td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">A aprendizagem incide em tópicos 
+              que me interessam</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">O que aprendi &eacute; importante 
+              para a minha profissão</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">Aprendi a melhorar o desempenho 
+              da minha profissão</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Ex. 7 <a href="http://en.wikipedia.org/wiki/Semantic_differential" target="_blank"><strong>Diferencial 
+      sem&acirc;ntico de Osgood</strong></a> <em><a name="osgood" id="osgood"></a></em> 
+      </strong><br />
+      Introduza as respostas poss&iacute;veis (se aplic&aacute;vel). <br>
+      <table width="291" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>1.</td>
+          <td align="left" valign="middle"><input name="text" type="text" value="1=--" size="40" />          </td>
+        </tr>
+        <tr>
+          <td>2.</td>
+          <td align="left" valign="middle"><input name="text" type="text" value="2=-" size="40" />          </td>
+        </tr>
+        <tr>
+          <td>3.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="3=&plusmn;" size="40" /></td>
+        </tr>
+        <tr>
+          <td>4.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="4=+" size="40" /></td>
+        </tr>
+        <tr>
+          <td>5.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="5=++" size="40" /></td>
+        </tr>
+        <tr>
+          <td>6.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="fraco/forte" size="50" /></td>
+        </tr>
+        <tr>
+          <td>7.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="frio/caloroso" size="50" /></td>
+        </tr>
+        <tr>
+          <td>8.</td>
+          <td align="left" valign="middle"><input name="text2" type="text" value="cobarde/corajoso" size="50" /></td>
+        </tr>
+      </table>
+      <p><em><strong>Configura&ccedil;&otilde;es: </strong><br />
+        <strong><em>Tamanho</em></strong> </em>= 5 (5 colunas c/escala personalizada)<em><br />
+        <strong>Precis&atilde;o</strong></em> = 3 (para que a segunda parte de 
+        cada para possa ser exibida &agrave; direita das colunas com bot&otilde;es 
+        r&aacute;dio).</p>
+      <p><strong>Nota -</strong> Para separar os pares de palavras pode usar a 
+        barra inclinada <strong>/</strong> ou vertical <strong>|</strong> </p></td>
+    <td valign="top"><h4>Descreva a sua personalidade numa escala de -- a ++. 
+      </h4>
+      <table border="1" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td></td>
+          <td align="center">--</td>
+          <td align="center">-</td>
+          <td align="center">&plusmn;</td>
+          <td align="center">+</td>
+          <td align="center">++</td>
+          <td align="center">&nbsp;</td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">fraco </div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">forte</td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">frio</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">caloroso</td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">cobarde</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">corajoso</td>
+        </tr>
+      </table>
+      <p>Outra apresentação alternativa (<strong>Descreva a sua personalidade 
+        numa escala positiva/negativa</strong>) </p>
+      <table border="1" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td></td>
+          <td align="center">-3</td>
+          <td align="center">-2</td>
+          <td align="center">-1</td>
+          <td align="center">0</td>
+          <td align="center">+1</td>
+          <td align="center">+2</td>
+          <td align="center">+3</td>
+          <td align="center">&nbsp;</td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">fraco </div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">forte</td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">frio</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">caloroso</td>
+        </tr>
+        <tr> 
+          <td align="right"><div align="left">cobarde</div></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center"><input type="radio" /></td>
+          <td align="center">corajoso</td>
+        </tr>
+      </table>
+      <p>&nbsp;</p></td>
+  </tr>
+</table>
+<p>Nos bot&otilde;es r&aacute;dio e caixas de verifica&ccedil;&atilde;o pode introduzir 
+  <tt>&#8220;!other&#8221;</tt> numa linha para criar uma <em>op&ccedil;&atilde;o 
+  aberta</em> com caixa de texto. Uma caixa <tt>!other</tt> surge no question&aacute;rio 
+  com o texto <em>Outra: </em>, (ou o equivalente na l&iacute;ngua seleccionada). 
+  Pode mudar este texto padr&atilde;o usando: <tt>&#8220;!other=<em>texto alternativo&#8221;</em></tt> 
+  como ilustrado no Exemplo&nbsp;#2 acima.</p>
+<h3>Notas</h3>
+<ol type="a">
+  <li>De momento o tamanho da caixa de texto usada nas op&ccedil;&otilde;es <tt>!other</tt> 
+    &eacute; de 25 caracteres e n&atilde;o pode ser modificada atrav&eacute;s 
+    do interface. </li>
+  <li>N&atilde;o faz sentido configurar mais de uma op&ccedil;&atilde;o <tt>!other</tt> 
+    numa quest&atilde;o tipo Bot&atilde;o R&aacute;dio.</li>
+  <li>Pode configurar mais de uma op&ccedil;&atilde;o <tt>!other</tt> numa quest&atilde;o 
+    do tipo Caixa de Verifica&ccedil;&atilde;o, mas isto pode causar problemas 
+    pelo que n&atilde;o &eacute; recomendado. </li>
+  <li>Quando um utilizador responde a uma quest&atilde;o do tipo <strong>Caixa 
+    de Verifica&ccedil;&atilde;o </strong>crada com a op&ccedil;&atilde;o <strong>Resposta 
+    Obrigat&oacute;ra </strong>, e os par&acirc;metros <strong>Tamanho</strong> 
+    e <strong>Precis&atilde;o</strong> foram usados para obrigar a um n&uacute;mero 
+    m&iacute;nimo ou m&aacute;ximo de caixas activas, ent&atilde;o uma mensagem 
+    ser&aacute; exibida se o utlizsador n&atilde;o activa o n&ordm; requerido 
+    de caixas. </li>
+  <ul>
+    <li>Note que, se a op&ccedil;&atilde;o<tt>!other</tt> foi utilizada, esta 
+      contar&aacute; do memso modo para o total de caixas de verifica&ccedil;&atilde;o 
+      activas exigido. </li>
+  </ul>
+  <li>Se o utilizador activa um <strong>Bot&atilde;o R&aacute;dio </strong> com 
+    a op&ccedil;&atilde;o <tt>!other</tt> e deixa a caixa de texto vazia, <em>ser&aacute; 
+    exibida uma mensagem de aviso</em> (quando o utilizador vai para a p&aacute;gina 
+    seguinte ou submete o question&aacute;rio).</li>
+  <li>Se um utilizador activa um <strong>Bot&atilde;o R&aacute;dio </strong> com 
+    a op&ccedil;&atilde;o <tt>!other</tt> e introduziu o texto, e mais tarde muda 
+    de ideias e clica noutro bot&atilde;o r&aacute;dio da mesma quest&atilde;o, 
+    o texto introduzido na op&ccedil;&atilde;o <tt>!other</tt> ser&aacute; eliminado 
+    automaticamente.. </li>
+  <li>Se o utilizador activa uma <strong>Caixa de Verifica&ccedil;&atilde;o</strong> 
+    com a op&ccedil;&atilde;o <tt>!other</tt> e deixa a caixa de texto vazia, 
+    <em>aquela caixa ser&aacute; desactivada</em> (quando o utilizador vai para 
+    a p&aacute;gina seguinte ou submete o question&aacute;rio).</li>
+  <li>Se um utilizador activa uma <strong>Caixa de Verifica&ccedil;&atilde;o</strong> 
+    com a op&ccedil;&atilde;o <tt>!other</tt> e introduziu o texto, e mais tarde 
+    muda de ideias e desactiva a caixa, o texto introduzido ser&aacute; eliminado 
+    automaticamente.. </li>
+  <li><strong><em>Classifica&ccedil;&atilde;o (Likert)</em></strong>. Para este 
+    tipo de quest&otilde;es tem duas alternativas de exibi&ccedil;&atilde;o. A 
+    op&ccedil;&atilde;o por omiss&atilde;o exibe os graus da escala Likert como 
+    n&uacute;meros (1...5). Se prefere uma escala nominal qualitativa, em vez 
+    de quantitativa, deve introduzir os factores da escala na lista <strong><em>Introduza 
+    as respostas poss&iacute;veis (se aplic&aacute;vel)</em></strong> (ver <strong><em>Exemplo 
+    5</em></strong> acima). Em cada linha de &quot;respostas poss&iacute;veis&quot; 
+    introduza o n&uacute;mero da resposta, seguido imediatamente do sinal = e 
+    depois do nome que pretende atribuir &agrave;quela resposta. Tenha em considera&ccedil;&atilde;o 
+    que o n&uacute;mero de respostas poss&iacute;veis deve ser coerente com o 
+    introduzido no par&acirc;metro Tamanho. Se decidir usar uma escala personalizada, 
+    recomenda-se (n&atilde;o &eacute; obrigat&oacute;rio) que inicie a lista de 
+    respostas poss&iacute;veis com as respostas poss&iacute;veis, e depois os 
+    v&aacute;rios <em>itens</em> a ser classificados (exemplo. &quot;A aprendizagem 
+    incide...&quot;, &quot;O que aprendi &eacute; importante&quot;, etc. no Ex. 
+    5 acima). </li>
+</ol>
+<p><a href="help.php?module=questionnaire&file=editquestions.html">Ajuda geral 
+  sobre <strong>Editar Quest&otilde;es</strong></a> </p>

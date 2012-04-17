@@ -1,0 +1,95 @@
+<h2><strong>Télécharger en format texte </strong></h2>
+<h3>Les questions de type bouton radio/question à réponse unique</h3>
+<p>Sur la page <strong>Télécharger en format texte</strong>, vous avez deux options qui ne concernent que les questions de type bouton radio. Voici comment ces options fonctionnent. </p>
+<p>Question : Quelle est votre couleur préférée&nbsp;? Choix&nbsp;: bleu, vert, rouge.</p>
+<table border="1">
+  <tr>
+    <td>couleur choisie</td>
+    <td>bleu</td>
+    <td>vert</td>
+    <td>rouge</td>
+  </tr>
+  <tr>
+    <td>Inclure les numéros des réponses choisies<td>1</td>
+    <td>2</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Inclure le texte des réponses choisies</td>
+    <td>bleu</td>
+    <td>vert</td>
+    <td>rouge</td>
+  </tr>
+  <tr>
+    <td>Inclure les numéros des réponses choisies + Inclure le texte des réponses choisies</td>
+    <td>1&nbsp;:&nbsp;bleu</td>
+    <td>2&nbsp;:&nbsp;vert</td>
+    <td>3&nbsp;:&nbsp;rouge</td>
+  </tr>
+  <tr>
+    <td>Aucune case cochée = même résultat que Inclure le texte des réponses choisies seul. </td>
+    <td>bleu</td>
+    <td>vert</td>
+    <td>rouge</td>
+  </tr>
+</table>
+<p>Notez que ces options d'export ne s'appliquent pas si lors de la création de votre question de type bouton radio vous avez choisi l'option &quot;cachée&quot;, qui permet d'exporter des valeurs nommées au lieu de nombres. Voir l'<a href="help.php?module=questionnaire&amp;file=radioanswers.html#4">aide en ligne ici</a>. </p>
+<table border="1" cellpadding="5">
+  <tr>
+    <td valign="top"><em> 4.Réponses possibles: </em>
+        <p> rouge=la couleur du sang<br />
+          bleu=la couleur du ciel<br />
+          noir=le contraire de blanc </p></td>
+    <td valign="top"><strong> Quelle est votre couleur préférée ? </strong><br />
+        <input type="radio" />
+      la couleur du sang<br />
+      <input type="radio" />
+      la couleur du ciel<br />
+      <input type="radio" />
+      le contraire de blanc </td>
+    <td valign="top"><p><em> Les &quot;valeurs&quot;  <strong>rouge</strong>, <strong>bleu</strong> et <strong>noir</strong> seront exportées dans votre fichier CSV quel que soit votre choix d'options sur la page </em><strong>Télécharger en format texte</strong>.</p></td>
+  </tr>
+</table>
+<h3>Les fichiers CSV  </h3>
+<p>Si vous avez besoin de traiter les réponses à un questionnaire  en dehors de Moodle dans un logiciel comme <em>Excel</em>, le tableur <em>Calc</em> d'<em>Open Office</em> ou un logiciel de statistiques, vous pouvez exporter les données au format texte. Le format texte disponible ici est du type CSV (comma separated values= valeurs séparées par une virgule). Toutefois, un usage plus universel, le séparateur utilisé ici est la tabulation, et non pas la virgule ou le point-virgule (qui posent des problèmes dans Excel). </p>
+<p>Lorsque vous cliquez sur le bouton <strong>Télécharger en format texte</strong>, une fenêtre s'ouvre vous demandant si vous voulez sauvegarder ou ouvrir le fichier. Choisissez <em>Sauvegarder sous</em>. Le fichier de données est nommé automatiquement du nom du questionnaire en cours, mais vous pouvez le sauvegarder sous un nom différent. L'extension proposée est *.txt, mais vous pouvez la changer. Notez que vous devrez sauvegarder votre fichier avec l'extension *.csv et non pas *.txt si vous souhaitez ultérieurement l'importer dans <em>Open Office Calc</em>.</p>
+<p>Rendez vous ensuite dans votre logiciel externe (<em>Excel</em>, le tableur <em>Calc</em> d'<em>Open Office</em> ou logiciel de statistiques) et ouvrez/importez-y le fichier de données que vous venez de sauvegarder sur votre machine. Si vous utilisez une langue non-ascii (comme le français) ou que les noms des questions (ou le texte des réponses) comportent des caractères non-ascii, votre logiciel <em>Excel</em> (ou <em>Open Office Calc</em>) peuvent être capables de détecter automatiquement que votre fichier est encodé en UTF-8 et le décoder correctement. Mais s'il y a peu de caractères non-ascii dans votre fichier de données, le décodage automatique risque de ne pas fonctionner, et vous devrez l'effectuer à la main, en sélectionnant l'encodage UTF-8 dans la liste déroulante <em>Origine du fichier</em> (sous <em>Excel</em>). </p>
+<p>En haut du &quot;tableau de données&quot; importé par exemple dans <em>Excel</em>, la toute première ligne comporte les noms de tous les champs. Suivent ensuite une ligne par &quot;réponse&quot;. Voici les 7 premiers champs (pour la version française). </p>
+<table border="1" cellpadding="2" cellspacing="1">
+  <tr>
+    <td height="17">Réponse</td>
+    <td>Soumis le :</td>
+    <td>Cours</td>
+    <td>Institution</td>
+    <td>Département</td>
+    <td>Groupe</td>
+    <td>ID</td>
+    <td>Nom complet</td>
+    <td>Nom d'utilisateur</td>
+  </tr>
+</table>
+<p>Le champ ID contient l'identificateur unique de chaque utilisateur inscrit dans Moodle. S'il s'agit d'un questionnaire réglé pour des réponses anonymes, les champs ID et Nom d'utilisateur seront vides, et le champ Nomo complet indiquera &quot;Anonyme&quot;. </p>
+<p>Le champ &quot;Soumis le :&quot; contient la date de soumission des réponses au questionnaire (au format jj/mm/aaaa hh:mm). Par exemple . Normalement vous pouvez utiliser le système de formatage des cellules d'Excel pour modifier l'affichage du format de ces dates comme vous le souhaitez. Voici quelques exemples.</p>
+<table border="1">
+  <tr>
+    <th scope="col">ce format de cellule Excel... </th>
+    <th scope="col">affichera&nbsp;:</th>
+  </tr>
+  <tr>
+    <td>jj-mm-aa hh &quot;h&quot; m &quot;min&quot; </td>
+    <td>15-09-07 15 h 57 min </td>
+  </tr>
+  <tr>
+    <td>jj/mm/aaaa hh:mm:s</td>
+    <td>17/09/2007  23:13:19</td>
+  </tr>
+  <tr>
+    <td>jjjj jj mmmm aaaa &quot;à&quot;  hh:mm</td>
+    <td>lundi 17 septembre 2007 à 23:13</td>
+  </tr>
+</table>
+<p>Notez que même après ces divers formatages la colonne <em>Soumis le:</em> peut être triée chronologiquement.</p>
+<hr />
+<p align="center"><span style="font-size:smaller">Mis à jour par JR le 
+    <!-- #BeginDate format:En2 -->21-Nov-2008<!-- #EndDate -->
+</span></p>

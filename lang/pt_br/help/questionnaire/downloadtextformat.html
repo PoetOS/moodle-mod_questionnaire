@@ -1,0 +1,71 @@
+<h2 class="main">Fazer download em formato texto</h2>
+<h3>Os tipo de questão botão de rádio/resposta única</h3>
+<p>Na página <strong>Fazer download em formato texto</strong> você tem duas opções que são exclusivamente sobre a saída das questões de botão de rádio/resposta única. O funcionamento destas opções é detalhado a seguir.</p>
+<p>Texto da questão: Qual sua cor faorita? Opções: azul, verde, vermelho.</p>
+<table border="1">
+  <tr>
+    <td><label for="auto-cb0001">cor selecionada</label></td>
+    <td>azul</td>
+    <td>verde</td>
+    <td>vermelho</td>
+  </tr>
+  <tr>
+    <td>Incluir código das opções</td>
+    <td>1</td>
+    <td>2</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Incluir texto das opções</td>
+    <td>azul</td>
+    <td>verde</td>
+    <td>vermelho</td>
+  </tr>
+  <tr>
+    <td>Incluir código e texto das opções</td>
+    <td>1&nbsp;:&nbsp;azul</td>
+    <td>2&nbsp;:&nbsp;verde </td>
+    <td>3&nbsp;:&nbsp;vermelho </td>
+  </tr>
+  <tr>
+    <td>Não incluir caixa marcada = o mesmo que incluir texto da escolha da caixa maracada</td>
+    <td>azul</td>
+    <td>verde</td>
+    <td>vermelho</td>
+  </tr>
+</table>
+<p>Note que estas opções de saída são sobrescritas no caso de você ter selecionado a opção "escondida" quando criou suas questões de botão de rádio, por exemplo os valores nomeados serão exportados como dados. Veja <a href="help.php?module=questionnaire&amp;file=radioanswers.html#4">este arquivo de ajuda</a>.</p>
+<table border="1" cellpadding="5">
+  <tr>
+    <td valign="top">
+     <em> 4.Respostas possíveis: </em>
+        <p>Vermelho=a cor do sangue<br /> Azul=a cor do céu<br /> Preto=o oposto de branco</p>
+    </td>
+    <td valign="top">
+       <strong> Qual sua cor favorita? </strong><br />
+       <input type="radio" />a cor do sangue<br />
+      <input type="radio" />a cor do céu<br />
+      <input type="radio" />o oposto do branco</td>
+    <td valign="top"><p><em>Independentemente da opção "Incluir texto/código da opção" selecionada na página "Download em formato texto", a saída no arquivo CSV será <strong>Vermelho</strong>, <strong>Azul</strong> ou <strong>Preto</strong>.</em> </p></td>
+  </tr>
+</table>
+<h3>O arquivo CSV</h3>
+<p>Se você precisar estudar os dados das respostas da enquete fora do Moodle, em um software como o <em>Excel</em>, o <em>Open Office Calc</em> ou outro pacote de software estatístico, você pode exportar os dados no formato de texto. O formato de texto disponível aqui é chamado CSV (valores separados por vírgula, do inglês comma separated values). Entretanto, para um uso mais universal, o separador <strong>tab</strong> (tabulação) é utilizado ao invés da vírgula ou do ponto-e-vírgula.
+<p>Quando você clica no botão <strong>Fazer download em formato texto</strong>, uma janela será aberta, perguntando se você gostaria de salvar o arquivo no seu computador ou abrí-lo diretamente. Selecione <em>salvar</em>. O nome do arquivo deve ser o nome da enquete atual, mas você pode alterá-lo. A extensão proposta para o arquivo é .txt, mas você também pode alterá-la. Note que você deve renomeá-la para .csv para poder importar o arquivo no <em>Open Office Calc</em>.</p>
+<p>Agora vá ao software que você deseja usar e abra o arquivo. As próximas operações dependem do software que você está usando e de uma série de outros parâmetros. Se você está utilizando um pacote de idiomas não ASCII no Moodle, ou se você está usando o idioma inglês mas algumas das perguntas (ou respostas) da enquete possuem caracteres não ASCII, então o software que você usa deve ser capaz de detectar automaticamente que o seu arquivo está codificado em UTF-8 e decodificá-lo de acordo. Por favor, note que se apenas uma pequena parte dos caracteres (ou nenhum deles) forem não ASCII, a detecção automática pode não funcionar e você terá que selecionar a codificação em UTF-8 manualmente.
+<p>No topo da "tabela" importada, a primeira linha contém o nome de todos os campos da questão. Isto é seguido por uma resposta por linha. Os primeiros sete campos são:</p>
+<table border="1" cellpadding="3" cellspacing="1">
+  <tr>
+    <td>Resposta</td>
+    <td>Submetida em:</td>
+    <td>Instituição</td>
+    <td>Departmento</td>
+    <td>Curso</td>
+    <td>Grupo</td>
+    <td>ID</td>
+    <td>Nome completo</td>
+    <td>Nome de usuário</td>
+  </tr>
+</table>
+<p>O campo submitted_date contém a data (e o horário, i.e. hora minutos e segundos) na qual a resposta foi submetida pelo respondente. Por exemplo: 15/09/2007 15:57. Normalmente você deve poder usar a formatação de células para mostrar datas no formato desejado, nas convenções de formatação do seu idioma, incluindo segundos e, se você desejar, o nome completo dos dias ou meses, mantendo a facilidade para ordenação.</p>
+<p>Se a enquete foi configurada para "respostas anônimas", o ID e o "Nome de usuário" estão vazios e o campo "nome completo" mostrará "Anonymous".</p>

@@ -1,0 +1,198 @@
+<h2 class="main">
+    Tipos de Questões
+</h2>
+<p>
+    Selecione o tipo de questão pela <strong>lista suspensa</strong> e clique no botão <strong>Adicionar tipo de questão selecionado</strong>.
+    Esta opção é o que definirá como cada questão se parecerá.
+</p>
+<p>
+    Você pode obter mais ajuda para cada tipo de questão na tela de edição das mesmas.
+</p>
+<p><strong>---Quebra de Página---</strong></p>
+<p>
+    Use esta opção para dividir a enquete em mais de uma página, para o caso de enquetes muito grandes.
+</p>
+<p>
+    Atenção, se a página contiver questões em que a resposta seja obrigatória, o usuário não poderá navegar para a próxima página enquanto não responder as mesmas.
+</p>
+<p>
+    <strong>Caixas de seleção</strong><br />
+    <input type="checkbox" />
+    Opção 1<br />
+    <input name="checkbox" type="checkbox" />
+    Opção 2 <br />
+    <input name="checkbox2" type="checkbox" />
+    Outra
+    <input name="text2" type="text" size="20" />
+    (opcional)</p>
+<p>
+    <strong>Observação</strong>: <strong>Botões de opção</strong> e <strong>Caixas de seleção</strong> podem ter um campo opcional (<em>Outro</em>) de entrada de texto.
+</p>
+<p>
+    <strong>Data</strong><br />
+    <input type="text" />
+    <em>Use o formato dia/mes/ano ex. para dia 14 de Março de 1945: <strong>14/3/1945</strong></em>
+</p>
+<p>
+    Use este tipo de questão se você espera que a resposta seja uma data formatada corretamente.
+</p>
+<p>
+    O formato vai depender do idioma utilizado pelo usuário, por exemplo:
+</p>
+<ul>
+    <li>4/21/2007 (Inglês/Estados Unidos)</li>
+    <li>21/4/2007 (Inglês/Reuno Unido)</li>
+    <li>21-4-2007 (Francês/França)</li>
+</ul>
+<p>
+    Não se preocupe, um exemplo será exibido no questionário.
+</p>
+<p>
+    Se for informado um um formato de data &quot;impossivel&quot; ou formatado de maneira incorreta, ele será reformatado corretamente (se for possível) ou uma mensagem de erro vai ser exibida ao usuário.
+</p>
+<p> 
+    <strong>Atenção:</strong> Para que as datas possam ser exportadas corretamente para uma planilha eletrônica, a data digitada pelo usuário precisa estar entre <em>1902 e 2037</em>. 
+    Se a data esperada estiver fora desse limite, então utilize uma questão do tipo <strong>Caixa de texto</strong>.
+<p>
+    <strong>Observação:</strong> As questões do tipo data, aceitam também data que consistam somente do mês junto com o ano (ex: 12/2008 para dezembro de 2008) ou somente o ano (ex: 2008).
+    Porém, para compatibilidade com as planilhas eletrônicas, essas datas incompletas serão automaticamente transformadas em datas completas no formato dd/mm/yy, ex: 12/2008 -&gt; <strong>01/</strong>12/2008 e 2008 -&gt; <strong>01/01/</strong>2008.<br />
+    Talvez você precise explicar essa peculiaridade aos seus alunos antes dele utilizarem a enquete.
+</p>
+<p>
+    <strong>Lista suspensa</strong><br />
+    <select name="select">
+        <option></option>
+        <option>
+            Opção 1
+        </option>
+        <option>
+            Opção 2
+        </option>
+    </select>
+</p>
+<p>
+    Não existe nenhuma vantagem em usar uma <strong>Lista suspensa</strong> no lugar de alguns <strong>Botões de opção</strong> exceto no caso de existir muitas opções, evitando assim ocupar muito espaço da tela.
+</p>
+<p>
+    <strong>Área de texto</strong><br />
+    <textarea cols="40" rows="4"></textarea>
+</p>
+<p>
+    Algumas configurações estão disponíveis para permitir ativar ou desativar o editor HTML e para personalizar o tamanho e largura da área de texto.
+</p>
+<p>
+    <strong>Rótulo</strong><br />
+    Iste não é um tipo de questão, mas sim um (pequeno) texto que será exibido para auxiliar na explicação sobre uma série de questões.
+</p>
+<p>
+    <strong>Campo numérico</strong><br />
+    <input type="text" name="numeric" size="10" />
+</p>
+<p>
+    Use este tipo de questão se você espera que a resposta seja um número corretamente formatado.
+</p>
+<p>
+    Você pode especificar a quantidade de digitos e o número de casas decimentais requeridas, utilizando os parâmetros:
+</p>
+<ul>
+    <li><strong>Quantidade máxima de digitos permitidos</strong></li>
+    <li><strong>Número de casas decimais</strong></li>
+</ul>
+<p>
+    <strong>Botões de opção</strong></p>
+
+<table style="width:100%; height:80px;" border="1" cellpadding="2" cellspacing="2">
+    <tr>
+        <td style="width:308px"><strong>
+                exibição vertical
+            </strong></td>
+        <td style="width:221px"><strong>
+                exibição horizontal
+            </strong></td>
+    </tr>
+    <tr>
+        <td><input type="radio" name="radio" />
+            Opção 1<br />
+            <input type="radio" />
+            Opção 2 <br />
+            <input type="radio" />
+            Opção 3
+            <br />
+            <input type="radio" />
+            Opção 4
+            <input type="text" size="20" />
+            (opcional)</td>
+        <td><input type="radio" />
+            Opção 1
+            <input type="radio" />
+            Opção 2
+            <input type="radio" />
+            Opção 3
+        </td>
+    </tr>
+</table>
+<p><strong>
+        Avaliação/Escala (1..5)
+    </strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+    <tr>
+        <td></td>
+        <td align="center" style="background-color:#eeeeee">1</td>
+        <td align="center" style="background-color:#dddddd">2</td>
+        <td align="center" style="background-color:#eeeeee">3</td>
+        <td align="center" style="background-color:#dddddd">4</td>
+        <td align="center" style="background-color:#eeeeee">5</td>
+        <td align="center" style="background-color:#dddddd">N/A</td>
+    </tr>
+    <tr>
+        <td>Opção 1&nbsp;</td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    </tr>
+    <tr>
+        <td>Opção 2&nbsp;</td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    </tr>
+    <tr>
+        <td>Opção 3&nbsp;</td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+        <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+        <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    </tr>
+</table>
+<p>
+    Para mais informações sobre esse tipo de questão veja os parâmetros:
+</p>
+<ul>
+    <li><strong>Número de items na escala</strong></li>
+    <li><strong>Tipo da escala de avaliação</strong></li>
+</ul>
+<p>
+    Veja também a ajuda sobre <strong>Possiveis respostas</strong>.
+</p>
+<p>
+    <strong>Campos de texto</strong> <br />
+    <input name="text" type="text" size="30" />
+</p>
+<p>
+    Você pode definir o <em>tamanho do campo de texto</em> e o <em>tamanho máximo de texto</em>.
+</p>
+<p>
+    <strong>Sim/Não</strong><br />
+    <input type="radio" />
+    Sim
+    <input type="radio" />
+    Não
+</p>

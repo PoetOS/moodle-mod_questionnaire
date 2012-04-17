@@ -1,0 +1,99 @@
+﻿<h3 align="center">Tipovi pitanja</h3>
+<p>Odaberite tip pitanja iz padajuće liste <strong>Tip</strong>. U nastavku sledi prikaz i objašnjenje svakog pojedinačnog tipa pitanja:</a></p>
+<p><strong>Da/Ne</strong><br />
+    <input type="radio" name="bool" />
+  Da<br />
+    <input type="radio" name="bool" />
+  Ne </p>
+<p><strong>Kratak otvoreni odgovor</strong> <br />
+    <input name="text" type="text" size="30" />
+    </p>
+<p>Možete podesiti <em>dužinu linije</em> koja će biti prikazana i <em>maksimanlan broj</em> unetih karaktera.</p>
+<p>
+  <strong>Esej pitanje</strong><br />
+  <textarea name="textarea" cols="40" rows="4"></textarea>
+</p>
+<p><strong> </strong>Možete koristiti  <em>Veličinu</em> i <em>Podešavanja </em>da biste omogućili HTML editor. Ukoliko imate nameru da izvozite odgovore kroz CVS ili u Excel formatu ovo <strong>nije preporučljivo</strong>.</p>
+<p><strong>Višestruki izbor - jedan mogući odgovor</strong><br />
+  <input type="radio" name="radio" />
+  Opcija 1<br />
+  <input type="radio" name="radio" />
+  Opcija 2<br />
+</p>
+<p><strong>Višestruki izbor - više mogućih odgovora</strong><br />
+  <input name="checkbox" type="checkbox" />
+  Opcija 1<br />
+  <input name="checkbox" type="checkbox" />
+Opcija 2</p>
+<p>Ova dva tipa pitanja mogu u okviru sebe da obuhvate i <em>polje za unos teksta</em> u vidu opcije <strong>Nešto drugo</strong> koja ispitaniku dozvoljava da sam formuliše alternativu i odluči se za nju. </p>
+<p><strong>Padajuća lista</strong><br />
+  <select name="select">
+    <option></option>
+    <option>Opcija 1</option>
+    <option>Opcija 2</option>
+  </select>
+</p>
+<p>Ne postoji neki poseban razlog za korišćenje ovog formata umesto umesto alternativnog tipa Višestruki izbor sa jednim ponuđenim odgovorom uređenog pomoću <em>Kružića</em>. </p>
+<p><strong>Stepena skala (1..n)</strong>
+</p>
+
+
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td width="40" align="center" bgcolor="#eeeeee">1</td>
+    <td width="40" align="center" bgcolor="#dddddd">2</td>
+    <td width="40" align="center" bgcolor="#eeeeee">3</td>
+    <td width="40" align="center" bgcolor="#dddddd">4</td>
+    <td width="40" align="center" bgcolor="#eeeeee">5</td>
+    <td width="40" align="center" bgcolor="#dddddd">Bez odgovora</td>
+  </tr>
+  <tr>
+    <td>Opcija 1</td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="1" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="2" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="3" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="4" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="5" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="0" /></td>
+  </tr>
+  <tr>
+    <td>Opcija 2</td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="1" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="2" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="3" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="4" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="5" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="0" /></td>
+  </tr>
+  <tr>
+    <td>Opcija 3</td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="1" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="2" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="3" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="4" /></td>
+    <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="5" /></td>
+    <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="0" /></td>
+  </tr>
+</table>
+<p>Pogledajte parametre <strong>Veličina</strong> i <strong>Podešavanja</strong> da biste podesili broj kolona. </p>
+  <p><strong>Datum</strong><br />
+  <input type="text" name="date" size="10" />
+  <em>(npr. 4/21/2002)</em></p>
+<p>Koristite ovaj tip pitanja ukoliko kao odgovor očekujete datum napisan na tačno određen način. Sam format će da zavisi od jezika koji ispitanik koristi. Npr. 4/21/2007 (US); 21/4/2007 (UK); 21-4-2007 (Francuska); itd. Primer sa prikazom tekućeg datuma biće prikazan u okviru pitanja. Ukoliko uspitanik unese &quot;nemoguć&quot; ili neispravno formatiran datum isti će biti ili prepravljen u odgovarajući (ako je to moguće) i/ili će mu biti prikazana poruka o grešci.</p>
+<p><strong>Numeričko</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>Koristite ovaj tip pitanja ukoliko kao odgovor očekujete broj napisan na tačno određen način. Koristeći parametre <strong>Veličinu</strong> i <strong>Podešavanja</strong> (za više informacija kliknite ne dugme za Pomoć) možete odrediti dužinu unosa i broj decimalnih mesta. </p>
+<p><strong>Uputstvo za blok pitanja<br />
+  </strong>Ovo nije pitanje već kratak tekst koji prethodi seriji pitanja.</p>
+<h4>Napomena:</h4>
+<p>Kada uređujete postojeće pitanje, <em>možete promeniti tip pitanja</em> ali u okviru pitanja koja pripadaju istoj grupi: <em>pitanja sa</em> nasuprot <em>pitanjima bez ponuđenih odgovora</em>.</p>
+<ul>
+  <li>Pitanja bez ponuđenih odgovora: <strong>Da/Ne</strong>, <strong>Kratak otvoreni odgovor</strong>, <strong>Esej pitanje</strong>, <strong>Datum</strong>,  <strong>Numeričko</strong> i <strong>Uputstvo za blok pitanja</strong>;</li>
+  <li>Pitanja sa ponuđenim odgovorima: <strong>Višestruki izbor - jedan moguć odgovor (Kružići)</strong>, <strong>Višestruki izbor - više mogućih odgovora (Kvadratići)</strong> i <strong>Stepena skala</strong>.</li>
+</ul>
+<p>Primer 1.- Pitanje: &quot;Da li Vam se dopada Moodle?&quot; u originalu napravljeno kao Da/Ne pitanje može biti preinačeno u pitanje sa Kratkim otvorenim odgovorom</p>
+<p>Primer 1.- Pitanje: &quot;Koji je Vaš omiljeni CMS?&quot; u originalu napravljeno kao pitanje Višestrukog izbora sa jednim mogućim odgovorom (Kružići) može biti preinačeno u pitanje Višestrukog izbora sa više mogućih odgovora (Kvadratići).</p>
+<p>Očigledno, nije preporučljivo menjati pitanja u upitniku koji je već u upotrebi, odnosno na koje je odgovarano. </p>
+<p><a href="help.php?module=questionnaire&file=editquestions.html"><strong>Uređivanje pitanja</strong></em> osnovni dokument sa uputstvima.</a> </p>

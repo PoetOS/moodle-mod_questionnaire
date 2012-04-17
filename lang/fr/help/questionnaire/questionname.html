@@ -1,0 +1,77 @@
+<h2 class="main">
+Nom de la question
+</h2>
+<p>Vous pouvez entrer un nom dans le champ <strong>Nom de la question</strong>. </p>
+<p>Le <strong>Nom de la question</strong> est seulement utilisé lors de l'exportation des données au format CSV/Excel. Si vous ne faites jamais d'export de ce type, vous n'avez pas besoin d'entrer un nom de question. En revanche, si vous utilisez ce type d'export, vous disposez de 2 options. </p>
+<h4>
+Option 1&nbsp;: noms significatifs
+</h4>
+<p>Dans le champ <strong>Nom de la question</strong>, entrez un nom significatif, court et différent pour chacune des questions de votre questionnaire. Dans le fichier exporté en CSV, chaque nom sera automatiquement préfixé par un numéro correspondant à la position de la question dans le questionnaire (en excluant les pseudo-questions de type <em>Description</em>, bien entendu. Exemples </p>
+<table width="70%" border="1">
+  <tr>
+    <th scope="col">numéro de la question dans le questionnaire </th>
+    <th scope="col">nom de la question donné par le professeur</th>
+    <th scope="col">nom du champ dans la table CSV/Excel</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td>couleurs préférées </td>
+    <td>Q05_couleurs préférées</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td>pourquoi_utiliser_Moodle</td>
+    <td>Q06_pourquoi_utiliser_Moodle</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">7</div></td>
+    <td><p>
+    convivialité
+    </p>
+    <p><em>
+    (question de type Likert avec 3 réponses possibles : Moodle, WebCT et Blackboard
+    </em></p></td>
+    <td><p>
+    Q07_convivialité-&gt;Moodle<br />
+    Q07_convivialité-&gt;WebCT<br />
+    Q07_convivialité-&gt;Blackboard
+    </p></td>
+  </tr>
+</table>
+<h4>
+Option 2&nbsp;: laisser les noms de questions vide
+</h4>
+<p>
+Pour chaque question sans nom, l'export CSV générera automatiquement un nom abrégé, comme indiqué ci-dessus. Notez que pour les questions de type Likert, un sous-numéro sera rajouté. Ce type de schéma de nommage abrégé est préférable si vous exportés les données de vos questionnaires pour les traiter dans des logiciels de statistiques. Bien entendu, il vous appartient d'avoir votre propre système pour vous souvenir de la question qui va avec chaque nom abrégé!
+</p>
+<table width="70%" border="1">
+  <tr>
+    <th style="width:16%" scope="col">numéro de la question dans le questionnaire</th>
+    <th style="width:30%" scope="col">nom de la question donné par le professeur </th>
+    <th style="width:54%" scope="col">nom du champ dans la table CSV/Excel</th>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">5</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td><div style="text-align:center">6</div></td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td align="center">7</td>
+    <td style="background-color:#CCCCCC">&nbsp;</td>
+    <td><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>
+Il est possible (mais pas conseillé) de mélanger les deux systèmes, et d'avoir au sein d'un même questionnaire des questions nommées et d'autres sans nom.
+</p>
+<hr />
+<p style="font-size:smaller; text-align:center">Mis à jour par JR le 
+  <!-- #BeginDate format:Sw1 -->14 juin, 2008<!-- #EndDate -->
+</p>

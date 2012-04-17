@@ -1,0 +1,175 @@
+/* $Id$ */
+/* Brian Crawford @ IT Lab (http://www.itlab.musc.edu/) */
+.headerGraphic {
+    background-repeat: no-repeat;
+    width: 100%;
+    border: none;
+}
+.image {
+    height:60;
+    width:100%;
+}
+/* title - extra large normal font */
+.surveyTitle {
+    font-family: "Arial", Arial, Helvetica, sans-serif, mono;
+    font-size: x-large;
+    font-style: normal;
+    font-weight: bold;
+    text-transform: none;
+    color: #000000;
+    text-decoration: none;
+    text-align: center;
+    vertical-align: default;
+}
+/* subtitle - bold normal font */
+.surveySubtitle {
+    font-family: "Arial", Arial, Helvetica, sans-serif, mono;
+    font-size: large;
+    font-style: normal;
+    font-weight: bold;
+    text-transform: none;
+    color: #000000;
+    text-decoration: none;
+    text-align: center;
+    vertical-align: default;
+}
+/* information below subtitle - normal font */
+.addInfo {
+    font-family: "Arial", Arial, Helvetica, sans-serif, mono;
+    font-size: medium;
+    font-style: normal;
+    font-weight: normal;
+    text-transform: none;
+    color: #000000;
+    text-align: center;
+    vertical-align: default;
+}
+.message {
+    font-family: "Arial", Arial, Helvetica, sans-serif;
+    font-size: medium;
+    font-weight: bold;
+    color: #000000;
+    text-align: center;
+}
+.reqQuestion {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    color: #000000;
+    text-decoration: none;
+    text-align: center;
+}
+/* main table (bordering the question boxes) - white */
+.mainTable {
+    background-color: #FFFFFF;
+    background-image: url((URL));
+    background-repeat: repeat-y;
+    cell-spacing: 0;
+    width: 100%;
+    border: 0;
+}
+body {
+    background-color: #FFFFFF;
+    margin: 0px;
+}
+/* bars between question boxes - white */
+.questioncontainer {
+    width: 100%;
+    margin: 0px auto;
+    text-align: center;
+    padding: 8px 2px 2px 2px;
+    border: 5px #000000;
+    background-color: #FFFFFF;
+    vertical-align: text-top;
+}
+
+/* outer borders, surrounding each question and answer */
+.qnOuter {
+    width: 100%;
+    border: none;
+    background-color: #660000;
+    padding: 1px;
+    border-spacing: 1px;
+}
+
+/* inner borders - surrounding boxes inside question boxes - burgundy, thick */
+.qnInnerTable {
+    width: 99%;
+    border: 3;
+    padding: 3px;
+    background-color: #660000;
+    cell-spacing: 3;
+}
+/* number cell box - extra large bold white number inside a black box */
+.qnInnerTd {
+    background-color: #660000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: bold;
+    text-transform: none;
+    color: #FFFFFF;
+    text-decoration: none;
+    width: 1.5em;
+    vertical-align: text-top;
+}
+/* question box color */
+.qnInner {
+    background-color: #CCCCCC;
+    height: 27;
+    text-align: left;
+    vertical-align: middle;
+    color: #000000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    font-style: normal;
+    text-transform: none;
+    text-decoration: none;
+}
+/* answer box  - white, normal black font */
+.qnType {
+    height: auto;
+    background-color: #FFFFFF;
+    text-align: left;
+    vertical-align: middle;
+    color: #000000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-style: normal;
+    text-transform: none;
+    text-decoration: none;
+    padding-left: 4em;
+    padding-right: 4em;
+}
+.thankHead {
+/* completion page font - large black */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: x-large;
+    color: #000000;
+}
+.thankBody {
+/* completion page body font - normal black */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: medium;
+    color: #000000;
+}
+.returnLink {
+/* completion page link font - small burgundy */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: small;
+    color: #660000;
+    text-decoration: underline;
+}
+/* textbox and radio button colors - black answers in white boxes */
+INPUT, TEXTAREA, SELECT, OPTION {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: normal;
+    color: #000000;
+    background-color: #FFFFFF;
+}
+.notice .buttons div,
+.notice .buttons form {
+  display:inline;
+}

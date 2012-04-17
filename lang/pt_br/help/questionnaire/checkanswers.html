@@ -1,0 +1,54 @@
+<h2 class="main">
+Respostas possíveis para check-boxes
+</h2>
+  <table style="width:100%" border="1" cellpadding="5">
+  <tr>
+    <th style="width:33%" scope="col">
+    Modo de edição
+    </th>
+    <th style="width:67%" scope="col">
+    Visualização da Enquete
+    </th>
+  </tr>
+  <tr>
+    <td><table style="width:300" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" valign="top">Respostas possíveis.*</td>
+      </tr>
+      <tr>
+        <td style="border:#666666 thin solid">
+		  <p>Assistir TV<br />
+		    Dançar
+		      <br />
+		      Usar o computador<br />
+	      !other=Outro passatempo:</p>
+		  </td>
+      </tr>
+    </table></td><td><strong>
+    Quais seus passatempos preferidos?
+    </strong><br />
+      <input name="checkbox" type="checkbox" />
+Assistir TV
+<br /><input name="checkbox" type="checkbox" />
+Dançar
+<br /><input name="checkbox2" type="checkbox" />
+Usar o computador
+<br /><input type="checkbox" />
+Outro passatempo:
+<input type="text" size="25" /></td>
+  </tr>
+</table>
+<p>Você deve inserir <tt>&#8220;!other&#8221;</tt> em uma linha para criar um campo <em><strong>opcional</strong></em> <em>do tipo texto</em>. Uma caixa <tt>!other</tt> usa como nome de campo <em>Outro: </em> como padrão, (ou a tradução equivalente para <em>Outro</em> no idioma que estiver em uso). Você pode alterar esse nome padrão utilizando o formato: <tt>&#8220;!other=<em>nome do campo&#8221;</em></tt> como mostrado no examplo 1 acima.</p>
+<h3>
+Notas
+</h3>
+<ol>
+  <li>O tipo de questão check-box permite que o repondente marque várias respostas para uma questão.</li>
+  <li>No momento, o tamanho do campo opcional de texto está definido para 25 caracteres e não é personalizável na interface online.</li>
+  <li>Você pode utilizar mais que um campo opcional de texto para uma questão do tipo check-box, porém isso pode causar problemas e é extremamente <em>não recomendado</em></li>
+  <li>Quando um respondente responde a questão do tipo check-box que foi criada como <strong>Obrigatória</strong> e os parâmetros <strong>Número mínimo de marcações</strong> e <strong>Número máximo de marcações</strong> foram usados, uma mensagem de alerta será mostrada caso o respondente não marque o número necessário de caixas. Perceba que se o campo opcional de texto foi criado, se ele for marcado pelo respondente, ele contará como uma checkbox.</li>
+  <li>Se o respondente marcar a cehckbox do campo opcional de texto e deixar o campo vazio, aquela checkbox será desmarcada(quando navegar para uma outra página ou submeter a enquete)</li>
+  <li>If a respondent has cheked a checked <em>a fill in the blank</em> option <strong>check box</strong> and has filled in the text field, and later on changes his mind and unckecks that box, the <em>fill in the blank</em> text field will be automatically emptied (cool, ain't it?).</li>
+  <li>Se um respondente marcar uma checkbox de um campo opcional de texto e preencher este campo, e só mais tarde mudar de idéia e desmarcar a caixa, o campo de texto será esvaziado automaticamente (divertido, não?)</li>
+</ol>
+<hr />

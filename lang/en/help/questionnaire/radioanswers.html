@@ -1,0 +1,180 @@
+<h2 class="main">
+Possible Answers for Radio buttons question
+</h2>
+  <p>
+  If you choose the <strong>Radio Buttons</strong> question type, you must fill in one answer per line on the bottom half of the <strong>Edit Questions</strong> window. Examples:
+  </p>
+  <table border="1" cellpadding="5">
+  <tr>
+    <th style="width:250" valign="top" scope="col">
+    Editing Mode
+    </th>
+    <th style="width:243" valign="top" scope="col">
+    Questionnaire View
+    </th>
+    <th style="width:434" valign="top" scope="col">
+    (optional horizontal display)
+    </th>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+    1.Possible answers
+    </em>:
+      <p>
+    Red<br />
+    Blue<br />
+    Black
+    </p></td>
+    <td valign="top"><strong>
+    What is your favorite color?
+    </strong><br />
+      <input type="radio" />
+	Red<br />
+<input type="radio" name="radio" />
+	Blue<br />
+<input type="radio" name="radio" />
+	Black
+	</td>
+    <td valign="top"><strong>
+    What is your favorite color?
+    </strong><br />
+      <input type="radio" />
+Red
+	<input type="radio" />
+Blue
+	<input type="radio" />
+Black
+	</td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+2.Possible answers
+    </em>:
+      <p>
+Red<br />
+Blue<br />
+Black<br />
+!other
+      </p></td>
+    <td valign="top"><strong>
+What is your favorite color?
+    </strong><br />
+      <input type="radio" />
+Red<br />
+	<input type="radio" />
+Blue<br />
+	<input type="radio" />
+Black<br />
+	<input type="radio" />
+Other:
+<input type="text" size="15" /></td>
+    <td valign="top"><strong>
+What is your favorite color?
+	</strong><br />
+        <input type="radio" />
+Red
+      <input type="radio" />
+Blue
+      <input type="radio" />
+Black
+      <br />
+      <input type="radio" />
+Other:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+3.Possible answers:</em>
+      <p>
+Red<br />
+Blue<br />
+Black<br />
+!other=Another color:
+</p></td>
+    <td valign="top"><strong>
+What is your favorite color?
+</strong><br />
+        <input type="radio" />
+Red<br />
+      <input type="radio" />
+Blue<br />
+      <input type="radio" />
+Black<br />
+      <input type="radio" />
+Another color:
+      <input type="text" size="15" /></td>
+    <td valign="top"><strong>
+What is your favorite color?
+</strong><br />
+        <input type="radio" />
+Red
+      <input type="radio" />
+Blue
+      <input type="radio" />
+Black 
+<br />
+<input type="radio" />
+Another color:
+      <input type="text" size="15" /></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">
+Questionnaire View
+</td>
+    <td valign="top"><em><strong>
+Text data export
+</strong></em></td>
+  </tr>
+  <tr>
+    <td valign="top"><em>
+4<a name="4" id="4"></a>.Possible answers:
+	</em>
+      <p>
+Red=the color of blood <br />
+Blue=the color of the sky <br />
+Black=opposite of white
+	</p></td>
+    <td valign="top"><strong>
+What is your favorite color?
+</strong><br />
+        <input type="radio" />
+the color of blood<br />
+      <input type="radio" />
+the color of the sky<br />
+      <input type="radio" />
+opposite of white
+</td>
+    <td valign="top"><p><em>
+The &quot;values&quot; Red, Blue and Black will be exported to the columns instead of standard 1, 2 and 3 numbers.<br />
+See the Download as text format Help File.
+</em></p></td>
+  </tr>
+</table>
+<p>
+You may enter <tt>&#8220;!other&#8221;</tt> on a line to create an <em><strong>optional</strong></em> <em>fill in the blank</em> option. An <tt>!other</tt> box defaults to using the prompt <em>Other:</em>, (or the equivalent translation for <em>Other</em> in the current language being used). You may change this default prompt by using the format: <tt>&#8220;!other=<em>prompt text&#8221;</em></tt> as shown in Example&nbsp;#3 above.
+</p>
+<h2 class="main">
+Notes
+</h2>
+<ol>
+  <li>
+At the moment the length of the <em>fill in the blank</em> input text box is set to 25 characters and is not customizable through the online interface.
+</li>
+<li>
+It does not make sense to provide more than one <tt>!other</tt> <em>fill in the blank</em> option for a Radio Buttons question.
+</li>
+<li>
+If a respondent checks a <em>fill in the blank</em> option <strong>radio button</strong> and leaves the text field empty, <em>a warning message will be displayed</em> (upon navigating to the next page or upon submitting the questionnaire).
+</li>
+<li>
+If a respondent has checked a <em>fill in the blank</em> option <strong>radio button</strong> and has filled in the text field, and later on changes his mind and clicks a different radio button in the same question, the <em>fill in the blank</em> text field previously entered will be automatically emptied.
+</li>
+<li>
+Example #4 shows a possible &quot;hidden&quot; option, for exporting - in responses - named values as data instead of standard numbers. If you never export your data for studying it in stats packages you won't need this option.
+</li>
+</ol>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on
+  <!-- #BeginDate format:Fr1 -->21/11/08<!-- #EndDate -->
+</p>

@@ -1,0 +1,174 @@
+/* $Id$ */
+.headerGraphic {
+    background-image: url(../../images/surveyimages/phpespHeader.jpg);
+    background-repeat: no-repeat;
+    width: 100%;
+    border: none;
+}
+.image {
+    height:60;
+    width:100%;
+}
+.surveyTitle {
+    font-family: "Courier New", Courier, mono;
+    font-size: x-large;
+    font-style: normal;
+    font-weight: bold;
+    font-variant: small-caps;
+    text-transform: capitalize;
+    color: #999999;
+    text-decoration: underline;
+    text-align: center;
+    vertical-align: default;
+}
+.surveySubtitle {
+    font-family: "Courier New", Courier, mono;
+    font-size: large;
+    font-style: normal;
+    font-weight: bold;
+    font-variant: small-caps;
+    text-transform: none;
+    color: #999999;
+    text-decoration: none;
+    text-align: center;
+    vertical-align: default;
+}
+.surveyPage {
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 600;
+        font-variant: small-caps;
+        text-transform: none;
+        color: #CC0000;
+        text-decoration: none;
+        text-align: center;
+}	
+.addInfo {
+    font-family: "Courier New", Courier, mono;
+    font-size: medium;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: small-caps;
+    text-transform: lowercase;
+    color: #999999;
+    text-align: center;
+    vertical-align: default;
+}
+.message {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: medium;
+    font-variant: small-caps;
+    font-weight: bold;
+    color: #CC0000;
+    text-align: center;
+}
+.reqQuestion {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    font-variant: small-caps;
+    text-transform: none;
+    color: #CC0000;
+    text-decoration: none;
+    text-align: center;
+}
+.mainTable {
+    background-color: orange;
+    background-image: url((URL));
+    background-repeat: repeat-y;
+    cell-sapcing: 0;
+    width: 100%;
+    border: 0;
+}
+body {
+    background-color: #BEBEBE;
+    margin: 0px;
+}
+.preQuestionBorder {
+    width: 500px;
+    margin: 0px auto;
+    text-align: center;
+    padding: 0px;
+    border: 1px none #999999;
+    background-color: darkred;
+    height: 8px;
+    vertical-align: text-top;
+}
+.qnOuterTable {
+    width: 100%;
+    border: none;
+    background-color: #000000;
+    cell-spacing: 1;
+}
+.qnInnerTable {
+    width: 100%;
+    border: none;
+    background-color: #FFFFFF;
+    cell-spacing: 1;
+}
+.qnInnerTd {
+    background-color: #CCCCCC;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-variant: small-caps;
+    text-transform: none;
+    color: #000000;
+    text-decoration: none;
+    width: 26px;
+    vertical-align: text-top;
+}
+.qnInner {
+    background-color: #999999;
+    width: 100%;
+    height: 27;
+    vertical-align: middle;
+    color: #FFFFFF;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-variant: small-caps;
+    text-transform: none;
+    text-decoration: none;
+}
+.qnType {
+    height: auto;
+    background-color: khaki;
+    vertical-align: middle;
+    color: #000000;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-variant: small-caps;
+    text-transform: none;
+    text-decoration: none;
+}
+.thankHead {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: medium;
+    font-variant: small-caps;
+    color: #CCCCCC;
+}
+.thankBody {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: small;
+    font-variant: small-caps;
+    color: #FFFFFF;
+}
+.returnLink {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: x-small;
+    font-variant: small-caps;
+    color: #FFFFFF;
+    text-decoration: underline;
+}
+INPUT, TEXTAREA, SELECT, OPTION {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: x-small;
+}
+.notice .buttons div,
+.notice .buttons form {
+  display:inline;
+}

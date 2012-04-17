@@ -1,0 +1,58 @@
+<h3 align="center"><b>Naziv pitanja</b></h3>
+<p>Unesite tekst svog pitanja (npr. <em>Koja je Vaša omiljena boja?</em>) u polje <strong>Tekst pitanja</strong>. Možete opciono da popunite i polje <strong>Naziv pitanja</strong></p>
+<p><strong>Naziv pitanja</strong> se koristi jedino prilikom izvoza pitanja u CSV/Excel format. Ukoliko nemate nameru da izvozite svoja pitanja, onda ovu opciju možete u potpunosti da zanemarite. Ukoliko ste, pak, planirali da svoje prikupljene podatke redovno izvozite kao CVS, tada su Vam na raspolaganju dve opcije za imenovanje pitanja. </p>
+<h5>Opcija 1: karakteristična imena</h5>
+<p>U polje <strong>Naziv pitanja </strong>, unesite <em>smisleno</em>, <em>kratko</em> i <strong><em>jedinstveno</em></strong> ime pitanja za svako od pitanja ponaosob. U CVS fajlu, sva ova imena će biti prikazana sa prefiksom kojeg će da čini redni broj (na osnovu pozicije) pitanja u upitniku. Primeri:</p>
+<table width="70%" border="1">
+   <tr>
+    <th width="16%" scope="col">redni broj pitanja u upitniku </th>
+    <th width="30%" scope="col">naziv pitanja koje je uneo autor </th>
+    <th width="54%" scope="col">polje zaglavlja u izvezenom cvs fajlu </th>
+  </tr>
+<tr>
+    <td>5</td>
+    <td>omiljena boja</td>
+    <td>Q05_omiljena_boja</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>zasto koristiti Moodle</td>
+    <td>Q06_zasto_koristiti_moodle</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>lak za koriscenje (skala sa tri stavke: Moodle, WebCT and Blackboard </td>
+    <td><p>Q07_lak-za-koriscenje-&gt;Moodle<br />
+    Q07_lak-za-koriscenje-&gt;WebCT<br />
+    Q07_lak-za-koriscenje-&gt;Blackboard</p>
+    </td>
+  </tr>
+</table>
+<h5>Opcija 2: ostavite polje Naziv pitanja praznim</h5>
+<p>Za svako neimenovano pitanja, CSV fajl će generisati posebno ime. Ovo je neophodno za pravljenje zaglavlja u CVS fajlu i Excel tabelama (ili tabelama nekog drugog programa za statističku obradu) koje će se na osnovu njega formirati. nazivi pitanja biće generisani na osnovu rednog broja (prema poziciji u nizu) pitanja u konkretnom upitniku (ne uzimajući pri tom u ubzir <em>Tekstualna uputstva</em> koja i ne predstavljaju prava pitanja) npr. Q01, Q02, ... Q99. Za pitanja koja objedinjuju više tvrdnji kojima treba dodeliti ocenu kao što su Likertove skale, biće generisan dodatni broj takođe na osnovu pozicije koji data stavka ima u nizu (Q02_1, Q02_2, Q02_3, etc.). Ovaj tip šeme za imenovanje poznatije kao &quot;kratk-naziv&quot; preporučuje se za iszvoz podataka koji će biti korišćeni u statističkim programima. Naravno, na Vama je da vodite računa o tome koja šifra odgovara kom pitanju u upitniku što možete da rešite tako što ćete u Nazive pitanja upisati dodatne informacije. </p>
+<table width="70%" border="1">
+  <tr>
+    <th width="16%" scope="col">redni broj pitanja u upitniku </th>
+    <th width="30%" scope="col">naziv pitanja koje je uneo autor </th>
+    <th width="54%" scope="col">polje zaglavlja u izvezenom cvs fajlu </th>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>&nbsp;</td>
+    <td>Q05</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>&nbsp;</td>
+    <td>Q06</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>&nbsp;</td>
+    <td><p>Q07_1<br />
+      Q07_2<br />
+      Q07_3</p></td>
+  </tr>
+</table>
+<p>Moguće je (ali ne i preporučljivo) mešati ova dva sistema, odnosno imati u jednom upitniku i imenovana i neimenovana pitanja. </p>
+<p><a href="help.php?module=questionnaire&file=editquestions.html"><em><strong>Uređivanje pitanja</strong></em> osnovni dokument sa uputstvima.</a> </p>

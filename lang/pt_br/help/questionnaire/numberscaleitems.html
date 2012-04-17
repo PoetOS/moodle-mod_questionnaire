@@ -1,0 +1,24 @@
+<h2 class="main">Parâmetros de questões do tipo Avaliação/escala</h2>
+
+<ul>
+  <li>
+    <strong>Número de items da escala</strong>é o <em>número de itens</em> a ser usado na sua escala. Você provavelmente usará um valor entre 3 e 5. O valor padrão é <strong>5</strong>.
+  </li>
+  <li>
+    <strong>Tipo de escala de avaliação</strong>
+    <ul>
+      <li><strong> Normal </strong> (valor padrão) </li>
+      <li><strong> Colunas N/A (não aplicável) </strong> : Escolha esta opção caso você queira que uma coluna <strong>N/A</strong> seja adicionada à direita da sua coluna com itens de avaliação.</li>
+      <li>
+        <strong> Sem escolhas duplicadas</strong>: Escolha esta opção caso você queira <em>previnir seleção do mesmo grau</em> em colunas distintas.
+        <ul>
+          <li> Isto é útil se você quer que o respondente elenque um número de itens em um escala de 1 a n e garantir que cada graduação seja usada apenas uma única vez. Exemplo: ordene os items A,B e C na ordem de preferência aceitará: <em>A1, B3 and C2</em> ou <em>A3, B2 and C1</em>, mas <em>não será possível</em> que o respondente marque: <em>A1, B1, C2</em> ou <em>A1, B2, C2,</em> etc.</li>
+          <li> Usado em conjunto com <a href="help.php?module=questionnaire&amp;file=rateanswers.html#named_degrees">a opção de graus nomeados</a>, a opção <strong>Sem escolhas duplicadas</strong> pode ser útil caso você queira que o respondente case items com graus nomeados, por exemplo as cores <em>vermelho, azul, amarelo</em> com um conjunto de respostas fisiológicas: <em>excitação, tranquilidade, concentração</em> onde cada cor pode casas com apenas <em>uma</em> resposta fisiológica.</li>
+        </ul>
+      </li>
+      <li>
+      <strong>Diferencial semântico (osgood)</strong>: Escolha esta opção para criar um questão do tipo <a href="http://en.wikipedia.org/wiki/Semantic_differential">diferencial semântico de Osgood</a>. Este parâmetro deve ser usado em conjunto com a opção <a href="help.php?module=questionnaire&amp;file=rateanswers.html#osgood">graduação nomeada</a>.
+      </li>
+    </ul>
+  </li>
+</ul>

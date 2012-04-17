@@ -1,0 +1,184 @@
+<?php
+
+# $Id$
+
+// Written by James Flemer
+// For eGrad2000.com
+// <jflemer@alum.rpi.edu>
+
+?>
+<a name="top"></a>
+<table bgcolor="#ffffff" border=2 width="98%"><tr><td>
+<p align="center"><b>Befragungen anlegen</b></p>
+<ul>
+    <li><a href="#new">Eine neue Befragung erstellen</a></li>
+    <li><a href="#types">Beispiele für Fragentypen</a></li>
+    <li><a href="#analysis">Tabellarische Auswertungen</a></li>
+    <li><a href="#tabulation">Kreuztabellen</a></li>
+</ul>
+
+<hr>
+
+<ul>
+<li><h3><a name="new">Eine neue Befragung erstellen</a></h3>
+    <ol>
+    <li><b>Fragenb-Tab:</b>
+        <p>Tragen Sie den Fragentext (z.B. <em>Welche
+        Farbe bevorzugen Sie?</em>) in das
+        <b>Frage</b>-Feld. Als Option können Sie eine <b>Feldbezeichnung</b> eintragen. 
+        Wenn Sie das Feld leer lassen wird ein Eintrag automatisch erzeugt.</p>
+
+        <p>Wenn Teilnehmer/innen diese Frage ausfüllen müssen (Pflichtfrage), klicken Sie im Feld <b>erforderlich</b> auf <b>ja</b>.</p>
+
+        <p>Wählen Sie nun den <b>Antworttyp</b> für diese Frage aus. [Klicken Sie hier, um ein <a href="#types">Beispiel</a> zu sehen.] Für verschiedene Typen gibt es Parameter zur Auswahl. Diese legen <b>Länge</b> und <b>Genauigkeit</b> für die Felder fest.</p>
+
+        <table border="0">
+          <tr><th align="left">Typ</th><th align="left">Länge</th><th align="left">Genauigkeit</th></tr>
+          <tr><td colspan="3"><hr size="0" noshadow="true"></td></tr>
+          <tr><td>Ja/Nein</td><td>n/a</td><td>n/a</td></tr>
+          <tr><td>Text</td><td>Länge</td><td>max Länge</td></tr>
+          <tr><td>Essay</td><td>Zeichen</td><td>Reihen</td></tr>
+          <tr><td>Radio</td><td>n/a</td><td>n/a</td></tr>
+          <tr><td>Checkboxes</td><td>min #</td><td>max # <em>(noch nicht verfügbar )</em></td></tr>
+          <tr><td>Dropdown</td><td>n/a</td><td>n/a</td></tr>
+          <tr><td>Bewerten</td><td>1..N</td><td>Use "N/A"</td></tr>
+          <tr><td>Datum</td><td>n/a</td><td>n/a</td></tr>
+          <tr><td>Numerisch</td><td>Länge</td><td>Genauigkeit</td></tr>
+        </table>
+
+        <p>Wenn Sie einen Fragentyp mit Antwortoptionen auswählen geben Sie 
+        die Antwortoptionen in das Feld ein. Tragen Sie jede Antwortoption in eine neue Zeile ein. Falls Sie weitere Zeilen benötigen, klicken Sie auf 
+        <b>Eine weitere Antwortzeile hinzufügen</b>. [Fragentypen mit Antwortoptonen sind		with answer options are: Check Boxes, Dropdown Box, Radio Buttons, Bewertung.] Für check boxes und radio
+        buttons können Sie <tt>&quot;!other&quot;</tt>
+        in eine Zeile eintragen. Damit ermöglichen Sie den Teilnehmer/innen selber Texteinträge vorzunehmen und nicht nur aus Ihren Vorgaben auszuwählen. Eine
+        &quot;Other&quot; Der Vorgabetext für dieses Feld lautet
+        <em>Other: </em>. Sie können ihn aber frei anpassen durch den folgenden Eintrag:
+        <br><center><tt>!other=Mein Text</tt></center></p>
+
+        <p>Weitere Fragen werden mit Hilfe des <b>Neue
+        Frage</b> Buttons angelegt. Bearbeiten/Anzeigen bestehender Frage ist mit einem Klick auf dieFragenummer oben im Formular möglich.<p>
+
+    </li>
+    <li><b>Reihenfolge Tab:</b>
+        <p>In diesem Bereich gestalten Sie die Reihenfolge der Fragen in der Befragung. Sie können aber auch Fragen löscehn oder Seitenumbrüche einfügen. Der Seitenumbruch teilt die Befragung auf mehrereSeiten auf. Bei langen Befragunge mit vielen Fragen ist das sinnvoll..</p>
+    </li>
+    <li><b>Vorschau Tab:</b>
+        <p>Hier finden Sie eine Vorschau auf die von Ihnen angelegte Befragung. Die Vorschau steht Ihnen jederzeit zur Verfügung. Wenn Sie nach der Vorschau Veränderungen vornehmen wollen, gehen Sie zum vorherigen Tab und verändern Sie die gewünschten Stellen dort. Wenn Sie mit Ihren Eintragungen zufrieden sind, klicken Sie auf <b>"Beenden"</b> am Fuß der Seite.</p>
+
+        <p>Diee Funktionen <b>Nächste Seite</b> und <b>Befragung einreichen</b>
+        sind im Vorschaumodus inaktiv.</p>
+    </li>
+    </ol>
+
+    <p><a href="#top">Nach oben</a></p>
+</li>
+<li><h3><a name="types">Beispiele für Fragentypen</h3></a>
+    <ul>
+    <li>Yes/No<br>
+        <input type="radio" name="bool">Ja<br>
+        <input type="radio" name="bool">Nein
+    </li>
+    <li>EinzeligerText<br>
+        <input type="text" size=30>
+    </li>
+    <li>Essay/Text<br>
+        <textarea cols="40" rows="4"></textarea>
+    </li>
+    <li>Radio Button<br>
+        <input type="radio" name="radio">Option 1<br>
+        <input type="radio" name="radio">Option 2<br>
+    </li>
+    <li>Check Boxes<br>
+        <input type="checkbox">Option 1<br>
+        <input type="checkbox">Option 2<br>
+    </li>
+    <li>Dropdown Box<br>
+        <select>
+            <option></option>
+            <option>Option 1</option>
+            <option>Option 2</option>
+        </select>
+    </li>
+    <li>Bewertung (scale 1..N)
+    <blockquote>
+        <table border="0" cellspacing="1" cellpadding="0">
+            <tr>
+                <td></td>
+                <td width="40" align="center" bgcolor="#eeeeee">1</td>
+                <td width="40" align="center" bgcolor="#dddddd">2</td>
+                <td width="40" align="center" bgcolor="#eeeeee">3</td>
+                <td width="40" align="center" bgcolor="#dddddd">4</td>
+                <td width="40" align="center" bgcolor="#eeeeee">5</td>
+                <td width="40" align="center" bgcolor="#dddddd">N/A</td>
+            </tr>
+            <tr>
+                <td>Option 1</td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="1"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="2"></td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="3"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="4"></td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_124" value="5"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_124" value="N/A"></td>
+            </tr>
+            <tr>
+                <td>Option 2</td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="1"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="2"></td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="3"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="4"></td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_125" value="5"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_125" value="N/A"></td>
+            </tr>
+            <tr>
+                <td>Option 3</td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="1"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="2"></td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="3"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="4"></td>
+                <td width="40" align="center" bgcolor="#eeeeee"><input type="radio" name="118_126" value="5"></td>
+                <td width="40" align="center" bgcolor="#dddddd"><input type="radio" name="118_126" value="N/A"></td>
+            </tr>
+        </table>
+    </blockquote>
+    </li>
+    <li>Datum<br>
+    <input type="text" name="date" size="10"> <em>(z.B. 4/21/2002)</em>
+    </li>
+    <li>Numerisch<br>
+    <input type="text" name="numeric" size="10">
+    </li>
+    </ul>
+    <p><a href="#top">Nach oben</a></p>
+</li>
+
+<li><h3><a name="analysis">Tabellarische Auswertung</h3></a>
+    Für die tabellarische Auswertung einer Frage wählen Sie die Frage aus, deren Ergebnisse in Tabellenform dargestellt werde (durch Klick auf das Auswahlkästchen links neben der Frage. Wählen Sie dann einen oder mehrere Antwortoptionen aus, deren Ergebnisse angezeigt werden sollen. Dazu klicken Sie auf die entsprechenden Auswahlfeldern bei den Antwortoptionen der Frage. Die Ergebnisse zu dieser Frage werden nun dargestellt. Die tabellarische Auswertrug kann zur Zeit immer nur für eine Frage gezeigt werden.
+    <p><img src="<?php echo($CFG->wwwroot);?>/mod/questionnaire/images/cross_analysis.jpg" width="700" height="262"><br>
+    <br>
+    Das führt zu diesem Ergebnis:<br>
+    <br>
+    <img src="<?php echo($CFG->wwwroot);?>/mod/questionnaire/images/cross_analysis_result.jpg" width="700" height="284"><br>
+    <br>
+    Angezeigt werden alle Antworten bei denen in Frage 1 &quot;Ja&quot; gewählt wurde.
+<p><a href="#top">Nach open</a></p>
+</li>
+<li><h3><a name="tabulation">Kreuztabellen</h3></a>
+    Kreuztabellen verbinden die Ergebnisse zu zwei Fragen. Dazulegen sie fest, welche Frageoptionen in den Zeilen und welche in den Spalten dargestellt werden sollen. Das rote Auswahlfeld ordnet die Auswahl den Reihen, das blaue Auswahlfeld den Spalten zu.</p>
+    <p><img src="<?php echo($CFG->wwwroot);?>/mod/questionnaire/images/cross_tabulate.jpg" width="700" height="273"></p>
+    <p>In der obigen Auswahl wurde eine Kreuztabelle der Frage 1 (Reihen) und der Frage 4 (Spalten) gewählt. So sieht das Ergennis aus. <br>
+    <br>
+    <img src="<?php echo($CFG->wwwroot);?>/mod/questionnaire/images/cross_tabulate_result1.jpg" width="700" height="187"><br>
+    Das geht auch anders herum Frage4 (Reihen), Frage 1 (Spalten), wie hier unten gezeigt:<br>
+    <br>
+    <img src="<?php echo($CFG->wwwroot);?>/mod/questionnaire/images/cross_tabulate2.jpg" width="700" height="271"><br>
+    <br>
+    Und hier das Ergebnis:<br>
+    <br>
+    <img src="<?php echo($CFG->wwwroot);?>/mod/questionnaire/images/cross_tabulate_result2.jpg" width="700" height="274"> </p>
+<p><a href="#top">Nach oben</a></p>
+</li>
+</ul>
+
+</td>
+</tr>
+</table>

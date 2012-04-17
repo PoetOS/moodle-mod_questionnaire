@@ -1,0 +1,168 @@
+<h2 class="main">
+Question Types
+</h2>
+<p>
+Select the type of question from the<strong> </strong>drop-down list and click on the Add selected question type button. This is what each type will look like in your questionnaire. More help is available on each question type edit screen.
+</p>
+<p><strong>
+---Page Break---
+</strong></p>
+<p>
+Use this to insert page breaks in longish Questionnaires. Note that if a page contains questions with required response the respondent will not be allowed to navigate to the next page unless those required responses have been given.
+</p>
+<p><strong>
+Check Boxes
+</strong><br />
+  <input type="checkbox" />
+Option 1<br />
+<input name="checkbox" type="checkbox" />
+Option 2 <br />
+<input name="checkbox2" type="checkbox" />
+Other
+<input name="text2" type="text" size="20" />
+(optional)</p>
+<p>
+<strong>Note</strong>.- <strong>Radio Buttons</strong> and <strong>Check Boxes</strong> can feature an optional <em>Other</em> button/box with a fill-in-the-blank text field.
+</p>
+<p><strong>
+Date
+</strong><br />
+  <input type="text" />
+  <em>Use the day/month/year format, e.g. for March 14th, 1945:  <strong>14/3/1945</strong></em>
+  </p>
+<p>
+Use this question type if you expect the response to be a correctly formatted date. The format will depend upon the language currently being used by the questionnaire respondent. For example 4/21/2007 (US); 21/4/2007 (UK); 21-4-2007 (France); etc. An example will be displayed in the questionnaire. If an &quot;impossible&quot; or wrongly formatted date is entered, it will either be re-written or reformatted correctly (if possible) or an error message will be displayed to the respondent. In order for dates to be correctly exported to spreadsheets such as Excel, respondent must enter <em>a date in the 1902 to 2037 range</em>. If a date outside this range is expected from respondents, then use the <strong>Text Box</strong> question type instead. The date question type will accept dates consisting only of a month plus a year (e.g. 12/2008 for december 2008) or only a year (e.g. 2008). However, for spreadsheet processing compatibility, such incomplete dates will be automatically transformed to complete dd/mm/yy dates, e.g. 12/2008 -&gt; <strong>01/</strong>12/2008 and 2008 -&gt; <strong>01/01/</strong>2008. You may have to explain this pecularity to your questionnaire users beforehand.
+</p>
+<p><strong>
+Dropdown Box
+</strong><br />
+  <select name="select">
+    <option></option>
+    <option>
+    Option 1
+    </option>
+    <option>
+    Option 2
+    </option>
+  </select>
+</p>
+<p>
+There is no real advantage to using the <strong>Dropdown Box</strong> over using the <strong>Radio Buttons</strong> except perhaps for longish lists of options, to save screen space.
+</p>
+<p><strong>
+Essay Box
+</strong><br />
+  <textarea cols="40" rows="4"></textarea>
+</p>
+<p>
+Settings are available for enabling or disabling the HTML editor and for setting the height and width of the plain textarea box.
+</p>
+<p><strong>
+Label
+<br /></strong>
+This is not a question but a (short) text which will be displayed to introduce a series of questions.
+</p>
+<p><strong>
+Numeric
+</strong><br />
+  <input type="text" name="numeric" size="10" />
+</p>
+<p>
+Use this question type if you expect the response to be a correctly formatted number. By using the <strong>Max. digits allowed </strong>and <strong>Nb of decimal digits </strong>parameters you can specify the length and number of decimal places required.
+</p>
+<p><strong>
+Radio Buttons
+</strong></p>
+<table style="width:100%; height:80px;" border="1" cellpadding="2" cellspacing="2">
+  <tr>
+    <td style="width:308px"><strong>
+vertical display
+    </strong></td>
+    <td style="width:221px"><strong>
+horizontal display
+    </strong></td>
+  </tr>
+  <tr>
+    <td><input type="radio" name="radio" />
+Option 1<br />
+<input type="radio" />
+Option 2 <br />
+<input type="radio" />
+Option 3
+<br />
+<input type="radio" />
+Option 4 
+<input type="text" size="20" />
+(optional)</td>
+    <td><input type="radio" />
+Option 1
+<input type="radio" />
+Option 2 
+<input type="radio" />
+Option 3
+</td>
+  </tr>
+</table>
+<p><strong>
+Rate (scale 1..5)
+</strong></p>
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td></td>
+    <td align="center" style="background-color:#eeeeee">1</td>
+    <td align="center" style="background-color:#dddddd">2</td>
+    <td align="center" style="background-color:#eeeeee">3</td>
+    <td align="center" style="background-color:#dddddd">4</td>
+    <td align="center" style="background-color:#eeeeee">5</td>
+    <td align="center" style="background-color:#dddddd">N/A</td>
+  </tr>
+  <tr>
+    <td>Option 1&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Option 2&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+  <tr>
+    <td>Option 3&nbsp;</td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+    <td align="center" style="background-color:#eeeeee"><input type="radio" /></td>
+    <td align="center" style="background-color:#dddddd"><input type="radio" /></td>
+  </tr>
+</table>
+<p>
+See the <strong>Nb of scale items </strong>&amp; <strong>Type of rate scale</strong> parameters help for more options for this question type. See also the <strong>Possible answers</strong> help.
+</p>
+<p><strong>
+Text Box
+</strong> <br />
+  <input name="text" type="text" size="30" />
+  <br />
+You can set the <em>Input box length</em> of the Text Box and the <em>maximum text length</em> of text entered.
+</p>
+<p><strong>
+Yes/No
+</strong><br />
+  <input type="radio" />
+Yes
+<input type="radio" />
+No
+</p>
+<hr />
+<p style="font-size:smaller; text-align:center">Updated by JR on 
+  <!-- #BeginDate format:Fr1 -->14/06/08<!-- #EndDate -->
+</p>
