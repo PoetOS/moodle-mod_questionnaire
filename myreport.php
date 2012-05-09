@@ -130,8 +130,8 @@
             $rid = $rids[0];
         }
         if ($rid) {
-        	$numresp = $questionnaire->count_submissions($USER->id);
-            $titletext = '<strong>'.get_string('myresponsetitle', 'questionnaire', $numresp).'</strong>: ';
+            $numresp = $questionnaire->count_submissions($USER->id);
+            $titletext = get_string('myresponsetitle', 'questionnaire', $numresp);
         }
 
     /// Print the page header
@@ -139,10 +139,10 @@
 
         /// print the tabs
         include('tabs.php');
+        echo $OUTPUT->heading($titletext);
 
         if (count($resps) > 1) {
             echo '<div style="text-align:center; padding-bottom:5px;">';
-            echo ($titletext);
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps);
             echo '</div>';
         }
@@ -151,7 +151,6 @@
         echo ('</td></tr></table>');
         if (count($resps) > 1) {
             echo '<div style="text-align:center; padding-bottom:5px;">';
-            echo ($titletext);
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps);
             echo '</div>';
         }
