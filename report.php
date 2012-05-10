@@ -1,4 +1,19 @@
-<?php  // $Id$
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 
 /// This page prints a particular instance of questionnaire
     global $SESSION, $CFG;
@@ -87,8 +102,6 @@
     /// Tab setup:
     $SESSION->questionnaire->current_tab = 'allreport';
 
-    $formdata = data_submitted();
-
     $strcrossanalyze = get_string('crossanalyze', 'questionnaire');
     $strcrosstabulate = get_string('crosstabulate', 'questionnaire');
     $strdeleteallresponses = get_string('deleteallresponses', 'questionnaire');
@@ -102,11 +115,11 @@
     /// get all responses for further use in viewbyresp and deleteall etc.
     // all participants
     $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-             FROM ".$CFG->prefix."questionnaire_response R
-             WHERE R.survey_id=".$sid." AND
+             FROM {questionnaire_response} R
+             WHERE R.survey_id = ? AND
                    R.complete='y'
              ORDER BY R.id";
-    if (!($respsallparticipants = $DB->get_records_sql($sql))) {
+    if (!($respsallparticipants = $DB->get_records_sql($sql, array($sid)))) {
         $respsallparticipants = array();
     }
     $SESSION->questionnaire->numrespsallparticipants = count ($respsallparticipants);
@@ -149,25 +162,25 @@
 
             // all members of any group
             $sql = "SELECT DISTINCT R.id, R.survey_id, R.submitted, R.username
-                    FROM ".$CFG->prefix."questionnaire_response R,
-                        ".$CFG->prefix."groups_members GM
-                    WHERE R.survey_id=".$sid." AND
+                    FROM {questionnaire_response} R,
+                        {groups_members} GM
+                    WHERE R.survey_id = ? AND
                           R.complete='y' AND
                           GM.groupid>0 AND " . $castsql. " = GM.userid
                     ORDER BY R.id";
-            if (!($respsallgroupmembers = $DB->get_records_sql($sql))) {
+            if (!($respsallgroupmembers = $DB->get_records_sql($sql, array($sid)))) {
                 $respsallgroupmembers = array();
             }
             $SESSION->questionnaire->numrespsallgroupmembers = count ($respsallgroupmembers);
 
             // not members of any group
             $sql = "SELECT R.id, R.survey_id, R.submitted, R.username, U.id AS userid
-                    FROM ".$CFG->prefix."questionnaire_response R,
-                        ".$CFG->prefix."user U
-                     WHERE R.survey_id=".$sid." AND
+                    FROM {questionnaire_response} R,
+                        {user} U
+                     WHERE R.survey_id = ? AND
                        R.complete='y' AND " . $castsql . "=U.id
                     ORDER BY userid";
-            if (!($respsnongroupmembers = $DB->get_records_sql($sql))) {
+            if (!($respsnongroupmembers = $DB->get_records_sql($sql, array($sid)))) {
                 $respsnongroupmembers = array();
             }
             foreach ($respsnongroupmembers as $resp=>$key) {
@@ -182,13 +195,13 @@
 
             // current group members
             $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                FROM ".$CFG->prefix."questionnaire_response R,
-                    ".$CFG->prefix."groups_members GM
-                 WHERE R.survey_id=".$sid." AND
+                FROM {questionnaire_response} R,
+                    {groups_members} GM
+                 WHERE R.survey_id= ? AND
                    R.complete='y' AND
-                   GM.groupid=".$currentgroupid." AND " . $castsql . "=GM.userid
+                   GM.groupid = ? AND " . $castsql . "=GM.userid
                 ORDER BY R.id";
-                if (!($currentgroupresps = $DB->get_records_sql($sql))) {
+                if (!($currentgroupresps = $DB->get_records_sql($sql, array($sid, $currentgroupid)))) {
                     $currentgroupresps = array();
                 }
                 $SESSION->questionnaire->numcurrentgroupresps = count ($currentgroupresps);
@@ -411,13 +424,13 @@
                             break;
                     default: // members of a specific group
                     $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                            FROM ".$CFG->prefix."questionnaire_response R,
-                                ".$CFG->prefix."groups_members GM
-                             WHERE R.survey_id=".$sid." AND
+                            FROM {questionnaire_response} R,
+                                {groups_members} GM
+                             WHERE R.survey_id = ? AND
                                R.complete='y' AND
-                               GM.groupid=".$groupid." AND " . $castsql . "=GM.userid
+                               GM.groupid = ? AND " . $castsql . "=GM.userid
                             ORDER BY R.id";
-                    if (!($resps = $DB->get_records_sql($sql))) {
+                    if (!($resps = $DB->get_records_sql($sql, array($sid, $groupid)))) {
                         $resps = array();
                     }
                 }
@@ -457,11 +470,11 @@
                 $deletedstr = get_string('deletedallgroupresp', 'questionnaire', '<strong>'.groups_get_group_name($groupid).'</strong>');
             }
             $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                     FROM ".$CFG->prefix."questionnaire_response R
-                     WHERE R.survey_id=".$sid." AND
+                     FROM {questionnaire_response} R
+                     WHERE R.survey_id = ? AND
                            R.complete='y'
                      ORDER BY R.id";
-            if (!($resps = $DB->get_records_sql($sql))) {
+            if (!($resps = $DB->get_records_sql($sql, array($sid)))) {
                 $respsallparticipants = array();
             }
             if (empty($resps)) {
@@ -653,13 +666,13 @@
                             break;
                     default: // members of a specific group
                     $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                            FROM ".$CFG->prefix."questionnaire_response R,
-                                ".$CFG->prefix."groups_members GM
-                             WHERE R.survey_id=".$sid." AND
+                            FROM {questionnaire_response} R,
+                                {groups_members} GM
+                             WHERE R.survey_id= ? AND
                                R.complete='y' AND
-                               GM.groupid=".$groupid." AND ".$castsql."=GM.userid
+                               GM.groupid= ? AND ".$castsql."=GM.userid
                               ORDER BY R.id";
-                    if (!($resps = $DB->get_records_sql($sql))) {
+                    if (!($resps = $DB->get_records_sql($sql, array($sid, $groupid)))) {
                         $resps = array();
                     }
                 }
@@ -733,4 +746,3 @@
         echo $OUTPUT->footer($course);
         break;
     }
-?>
