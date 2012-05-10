@@ -21,7 +21,7 @@
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package questionnaire
 */
-    global $DB;
+    global $DB, $SESSION;
 
     $tabs = array();
     $row  = array();

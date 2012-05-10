@@ -1802,7 +1802,7 @@ class questionnaire {
 
             // --------------------- response_rank ---------------------
         $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid '.$col.',c.content as ccontent,a.rank as arank '.
-               'FROM {questionnaire_response_rank} a, {questionnaire_question} q, {questionnaire_quest_choice c} '.
+               'FROM {questionnaire_response_rank} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
                'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
                'ORDER BY aid, a.question_id,c.id';
         if ($records = $DB->get_records_sql($sql, array($rid))) {

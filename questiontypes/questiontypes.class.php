@@ -325,7 +325,7 @@ class questionnaire_question {
 
     function insert_resp_multiple($rid) {
         global $DB;
-        $val = optional_param('q'.$this->id, null, PARAM_CLEAN);
+        $val = optional_param_array('q'.$this->id, null, PARAM_CLEAN);
         foreach ($this->choices as $cid => $choice) {
             if (strpos($choice->content, '!other') === 0) {
                 $other = optional_param('q'.$this->id.'_'.$cid, '', PARAM_CLEAN);
@@ -1331,7 +1331,7 @@ class questionnaire_question {
             }
         }
         echo $date_mess;
-        echo html_writer::start_tag('div', array('class' => 'qn-date'));        
+        echo html_writer::start_tag('div', array('class' => 'qn-date'));
         echo '<input type="text" size="12" name="q'.$this->id.'" maxlength="10" value="'.
              (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').'" />';
         echo html_writer::end_tag('div');
