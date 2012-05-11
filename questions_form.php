@@ -299,7 +299,7 @@ class questionnaire_edit_question_form extends moodleform {
             $ohelpname = 'ratescale';
             break;
         case QUESNUMERIC:
-            $deflength = 0;
+            $deflength = 10;
             $defprecise = 0;
             $lhelpname = 'maxdigitsallowed';
             $phelpname = 'numberofdecimaldigits';
@@ -358,7 +358,7 @@ class questionnaire_edit_question_form extends moodleform {
             case 99:
 		        $qtype='sectionbreak';
 		    }
-		        
+
         $mform->addElement('header', 'questionhdr', $streditquestion);
         $mform->addHelpButton('questionhdr', $qtype, 'questionnaire');
 
