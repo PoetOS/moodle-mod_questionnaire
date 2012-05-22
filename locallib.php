@@ -1892,7 +1892,7 @@ class questionnaire {
                     // does not work with dates prior to 1900 under Windows
                         if (preg_match('/\d\d\d\d-\d\d-\d\d/', $val)) {
                             $dateparts = split('-', $val);
-                           $val = gmmktime(0, 0, 0, $dateparts[1], $dateparts[2], $dateparts[0]); // Unix timestamp
+                            $val = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp
                             $val = userdate ( $val, $dateformat);
                             $newrow[] = $val;
                         }
