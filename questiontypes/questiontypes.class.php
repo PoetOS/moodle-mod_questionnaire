@@ -242,10 +242,10 @@ class questionnaire_question {
         $val = optional_param('q'.$this->id, '', PARAM_CLEAN);
         // only insert if non-empty content
         if($this->type_id == 10) { // numeric
-            $val = ereg_replace("[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*", '\1', $val);
+            $val = preg_replace("[/^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
         }
 
-        if(ereg("[^ \t\n]",$val)) {
+        if(preg_match("/[^ \t\n]/",$val)) {
             $record = new Object();
             $record->response_id = $rid;
             $record->question_id = $this->id;
@@ -283,7 +283,7 @@ class questionnaire_question {
                     if (!isset($other)) {
                         continue;
                     }
-                    if(ereg("[^ \t\n]",$other)) {
+                    if(preg_match("/[^ \t\n]/",$other)) {
                         $record = new Object();
                         $record->response_id = $rid;
                         $record->question_id = $this->id;
@@ -296,13 +296,13 @@ class questionnaire_question {
                 }
             }
         }
-        if(ereg("other_q([0-9]+)", (isset($val)?$val:''), $regs)) {
+        if(preg_match("/other_q([0-9]+)/", (isset($val)?$val:''), $regs)) {
             $cid=$regs[1];
             $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
             if (!isset($other)) {
                 break; // out of the case
             }
-            if(ereg("[^ \t\n]",$other)) {
+            if(preg_match("/[^ \t\n]/",$other)) {
                 $record = new object;
                 $record->response_id = $rid;
                 $record->question_id = $this->id;
@@ -337,7 +337,7 @@ class questionnaire_question {
                 } else {
                     array_push($val, $cid);
                 }
-                if(ereg("[^ \t\n]",$other)) {
+                if(preg_match("/[^ \t\n]/",$other)) {
                     $record = new Object();
                     $record->response_id = $rid;
                     $record->question_id = $this->id;
@@ -355,7 +355,7 @@ class questionnaire_question {
         foreach($val as $cid) {
             $cid = clean_param($cid, PARAM_CLEAN);
             if ($cid != 0) { //do not save response if choice is empty
-                if(ereg("other_q[0-9]+", $cid))
+                if(preg_match("/other_q[0-9]+/", $cid))
                     continue;
                 $record = new Object();
                 $record->response_id = $rid;
@@ -676,7 +676,7 @@ class questionnaire_question {
             /// Count identical answers (case insensitive)
                 $this->text = $row->response;
                 if(!empty($this->text)) {
-                    $dateparts = split('-', $this->text);
+                    $dateparts = preg_split('/-/', $this->text);
                     $this->text = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp 
                     $textidx = clean_text($this->text);
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
@@ -1203,7 +1203,7 @@ class questionnaire_question {
         foreach ($this->choices as $cid => $choice) {
             $content = $choice->content;
             // check for number from 1 to 3 digits, followed by the equal sign = (to accomodate named degrees)
-            if (ereg("^([0-9]{1,3})=(.*)$", $content,$ndd)) {
+            if (preg_match("/^([0-9]{1,3})=(.*)$/", $content,$ndd)) {
                 $n[$nameddegrees] = format_text($ndd[2], FORMAT_HTML);
                 $this->choices[$cid] = '';
                 $nameddegrees++;
@@ -1264,7 +1264,7 @@ class questionnaire_question {
                 echo '<tr>';
                 $content = $choice->content;
                 if ($osgood) {
-                    list($content, $contentright) = split('[|]', $content);
+                    list($content, $contentright) = preg_split('/[|]/', $content);
                 }
                 echo '<td class="'.$bgr.'">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
                 if ($bgr == 'qntype r0') {
@@ -1575,7 +1575,7 @@ class questionnaire_question {
         $n = array();
         foreach ($this->choices as $cid => $choice) {
             $content = $choice->content;
-             if (ereg("^[0-9]{1,3}=", $content,$ndd)) {
+             if (preg_match("/^[0-9]{1,3}=/", $content,$ndd)) {
                 $n[$nameddegrees] = format_text(substr($content, strlen($ndd[0])), FORMAT_HTML);
                 $cidnamed[$cid] = true;
                 $nameddegrees++;
@@ -1616,7 +1616,7 @@ class questionnaire_question {
                     $content = $contents->text;
                 }
                 if ($osgood) {
-                    list($content, $contentright) = split('[|]', $content);
+                    list($content, $contentright) = preg_split('/[|]/', $content);
                 }
                 echo '<td align="left">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
                 $bg = 'qntype c0';
@@ -1936,7 +1936,7 @@ class questionnaire_question {
         foreach ($this->choices as $choice) {
             // to take into account languages filter
             $content = (format_text($choice->content, FORMAT_HTML));
-            if (ereg("^[0-9]{1,3}=", $content,$ndd)) {
+            if (preg_match("/^[0-9]{1,3}=/", $content,$ndd)) {
                 $n[$nameddegrees] = substr($content, strlen($ndd[0]));
                 $nameddegrees++;
             }
@@ -1976,7 +1976,7 @@ class questionnaire_question {
         if (!empty($this->counts) && is_array($this->counts)) {
             while(list($content) = each($this->counts)) {
                 // eliminate potential named degrees on Likert scale
-                 if (!ereg("^[0-9]{1,3}=", $content)) {
+                 if (!preg_match("/^[0-9]{1,3}=/", $content)) {
                     if (isset($this->counts[$content]->avg)) {
                         $avg = $this->counts[$content]->avg;
                     } else {
@@ -1997,7 +1997,7 @@ class questionnaire_question {
                     }
 
                     if ($osgood) {
-                        list($content, $contentright) = split('[|]', $content);
+                        list($content, $contentright) = preg_split('/[|]/', $content);
                     } else {
                         $contents = choice_values($content);
                         if ($contents->modname) {

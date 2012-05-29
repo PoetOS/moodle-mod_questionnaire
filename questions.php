@@ -284,7 +284,7 @@
                     foreach ($allchoices as $choice) {
                         if ($choice) {
                             // check for number from 1 to 3 digits, followed by the equal sign =
-                             if (ereg("^[0-9]{1,3}=", $choice)) {
+                             if (preg_match("/^[0-9]{1,3}=/", $choice)) {
                                 $nbnameddegrees++;
                             } else {
                                 $nbvalues++;

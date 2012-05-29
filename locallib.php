@@ -1178,7 +1178,7 @@ class questionnaire {
                     // in case we have named degrees on the Likert scale, count them to substract from nbchoices
                     $nameddegrees = 0;
                     $content = $choice->content;
-                    if (ereg("^[0-9]{1,3}=", $content,$ndd)) {
+                    if (preg_match("/^[0-9]{1,3}=/", $content,$ndd)) {
                         $nameddegrees++;
                     } else {
                         $str = 'q'."{$record->id}_$cid";
@@ -1413,7 +1413,7 @@ class questionnaire {
             // strip potential html tags from modality name
             if (!empty($qchoice)) {
             	$qchoice = strip_tags($arr[3]);
-                $qchoice = ereg_replace("[\r\n\t]", ' ', $qchoice);
+                $qchoice = preg_replace("/[\r\n\t]/", ' ', $qchoice);
 			}
             $q4 = ''; // for rate questions: modality; for multichoice: selected = 1; not selected = 0
             if (isset($arr[4])) {
@@ -1605,7 +1605,7 @@ class questionnaire {
                                 $row->ccontent = $contents->modname;
                             } else {
                                 $content = $contents->text;
-                                if (ereg('^!other', $content)) {
+                                if (preg_match('/^!other/', $content)) {
                                     $row->ccontent = get_string('other','questionnaire');
                                 } else if (($choicecodes == 1) && ($choicetext == 1)) {
                                     $row->ccontent = "$i : $content";
@@ -1631,7 +1631,7 @@ class questionnaire {
                         $newrow[] = $val;
                     }
                 }
-                if (ereg('^!other', $row->ccontent)) {
+                if (preg_match('/^!other/', $row->ccontent)) {
                     $newrow[] = 'other_' . $cid;
                 } else {
                     $newrow[] = (int)$cid;
@@ -1675,7 +1675,7 @@ class questionnaire {
                             if ($c2 == '!other') {
                                 $c2 = '!other='.get_string('other','questionnaire');
                             }
-                            if (ereg('^!other', $c2)) {
+                            if (preg_match('/^!other/', $c2)) {
                                 $otherend = true;
                             } else {
                                 $contents = choice_values($c2);
@@ -1742,7 +1742,7 @@ class questionnaire {
                                 $newrow[] = $val;
                             }
                         }
-                        if (ereg('^!other', $row->ccontent)) {
+                        if (preg_match('/^!other/', $row->ccontent)) {
                             $newrow[] = 'other_' . $cid;
                         } else {
                             $newrow[] = (int)$cid;
@@ -1825,7 +1825,7 @@ class questionnaire {
                     if ($key != 'content') { // no need to keep question text - ony keep choice text and rank
                         if ($key == 'ccontent') {
                             if ($osgood) {
-                                list($contentleft, $contentright) = split('[|]', $val);
+                                list($contentleft, $contentright) = preg_split('/[|]/', $val);
                                 $contents = choice_values($contentleft);
                                 if ($contents->title) {
                                     $contentleft = $contents->title;
@@ -1835,7 +1835,7 @@ class questionnaire {
                                     $contentright = $contents->title;
                                 }
                                 $val = strip_tags($contentleft.'|'.$contentright);
-                                $val = ereg_replace("[\r\n\t]", ' ', $val);
+                                $val = preg_replace("/[\r\n\t]/", ' ', $val);
                             } else {
                                 $contents = choice_values($val);
                                 if ($contents->modname) {
@@ -1844,7 +1844,7 @@ class questionnaire {
                                     $val = $contents->title;
                                 } elseif ($contents->text) {
                                     $val = strip_tags($contents->text);
-                                    $val = ereg_replace("[\r\n\t]", ' ', $val);
+                                    $val = preg_replace("/[\r\n\t]/", ' ', $val);
                                 }
                             }
                         }
@@ -1891,7 +1891,7 @@ class questionnaire {
                     // convert date from yyyy-mm-dd database format to actual questionnaire dateformat
                     // does not work with dates prior to 1900 under Windows
                         if (preg_match('/\d\d\d\d-\d\d-\d\d/', $val)) {
-                            $dateparts = split('-', $val);
+                            $dateparts = preg_split('/-/', $val);
                             $val = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp
                             $val = userdate ( $val, $dateformat);
                             $newrow[] = $val;
@@ -2145,7 +2145,7 @@ class questionnaire {
             $cids = array($cids);
         }
         if(is_string($cids)) {
-            $cids = split(" ",$cids); // turn space seperated list into array
+            $cids = preg_split("/ /",$cids); // turn space seperated list into array
         }
 
         // set up things differently for cross analysis
@@ -2477,7 +2477,7 @@ class questionnaire {
                         $thisnum = 1;
                         foreach ($records2 as $record2) {
                             $content = $record2->content;
-                            if (ereg('^!other', $content)) {
+                            if (preg_match('/^!other/', $content)) {
                                 $col = $record2->name.'_'.$stringother;
                                 $columns[][$qpos] = $col;
                                 array_push($types, '0');
@@ -2490,7 +2490,7 @@ class questionnaire {
                         foreach ($records2 as $record2) {
                             $content = $record2->content;
                             $modality = '';
-                            if (ereg('^!other', $content)) {
+                            if (preg_match('/^!other/', $content)) {
                                 $content = $stringother;
                                 $col = $record2->name.'->['.$content.']';
                                 $columns[][$qpos] = $col;
@@ -2519,11 +2519,11 @@ class questionnaire {
                             if ($record2->precise == 3) {
                                 $osgood = true;
                             }
-                            if (ereg("^[0-9]{1,3}=", $content,$ndd)) {
+                            if (preg_match("/^[0-9]{1,3}=/", $content,$ndd)) {
                                 $nameddegrees++;
                             } else {
                                 if ($osgood) {
-                                    list($contentleft, $contentright) = split('[|]', $content);
+                                    list($contentleft, $contentright) = preg_split('/[|]/', $content);
                                     $contents = choice_values($contentleft);
                                     if ($contents->title) {
                                         $contentleft = $contents->title;
@@ -2533,7 +2533,7 @@ class questionnaire {
                                         $contentright = $contents->title;
                                     }
                                     $modality = strip_tags($contentleft.'|'.$contentright);
-                                    $modality = ereg_replace("[\r\n\t]", ' ', $modality);
+                                    $modality = preg_replace("/[\r\n\t]/", ' ', $modality);
                                 } else {
                                     $contents = choice_values($content);
                                     if ($contents->modname) {
@@ -2542,7 +2542,7 @@ class questionnaire {
                                         $modality = $contents->title;
                                     } else {
                                         $modality = strip_tags($contents->text);
-                                        $modality = ereg_replace("[\r\n\t]", ' ', $modality);
+                                        $modality = preg_replace("/[\r\n\t]/", ' ', $modality);
                                     }
                                 }
                                 $col = $record2->name.'->'.$modality;
@@ -2731,8 +2731,8 @@ class questionnaire {
                         // but it must be stripped of carriage returns
                     if ($thisresponse) {
                         $thisresponse = format_text($thisresponse, FORMAT_HTML, $format_options);
-                        $thisresponse = ereg_replace("[\r\n\t]", ' ', $thisresponse);
-                        $thisresponse = ereg_replace('"', '""', $thisresponse);
+                        $thisresponse = preg_replace("/[\r\n\t]/", ' ', $thisresponse);
+                        $thisresponse = preg_replace('/"/', '""', $thisresponse);
                     }
                      // fall through
                 case 0:  //number
@@ -3028,7 +3028,7 @@ function questionnaire_response_key_cmp($l, $r) {
                 $contents->title = $matches[2];
             } else {
                 // image has no title nor alt text: use its filename (without the extension)
-                ereg(".*\/(.*)\..*$", $imageurl, $matches);
+                preg_match("/.*\/(.*)\..*$/", $imageurl, $matches);
                 $contents->title = $matches[1];
             }
             // content has text or named modality plus an image
