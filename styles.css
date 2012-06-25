@@ -238,7 +238,8 @@ body#page-mod-questionnaire-myreport .generaltable {
 }
 
 /* new styles - keep old (quOuter, qnInner, qnInnerTable, qnType) for sections etc. */
-#page-mod-questionnaire-view .qn-number {
+#page-mod-questionnaire-view .qn-number,
+#page-mod-questionnaire-view .qn-legend {
     float: left;
 }
 #page-mod-questionnaire-view .qn-question {
