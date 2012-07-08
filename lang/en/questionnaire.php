@@ -114,6 +114,7 @@ $string['misconfigured'] = 'Course is misconfigured';
 $string['missingquestion'] = 'Error, please answer question ';
 $string['missingquestions'] = 'Error, please answer questions: ';
 $string['modulename'] = 'Questionnaire';
+$string['modulename_help'] = 'The questionnaire module allows you to construct surveys using a variety of question types, for the purpose of gathering data from users.';
 $string['modulenameplural'] = 'Questionnaires';
 $string['move'] = 'Move this question';
 $string['movedn'] = 'Move question down';
