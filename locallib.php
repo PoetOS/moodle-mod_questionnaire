@@ -1048,7 +1048,7 @@ class questionnaire {
 
     function array_to_insql($array) {
         if (count($array))
-            return("IN (".ereg_replace("([^,]+)","'\\1'",join(",",$array)).")");
+            return("IN (".preg_replace("/([^,]+)/","'\\1'",join(",",$array)).")");
         return 'IS NULL';
     }
 

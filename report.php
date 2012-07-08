@@ -549,7 +549,7 @@
 
     /// Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($questionnaire->name, PARAM_FILE);
-        $name = eregi_replace("[^A-Z0-9]+", "_", trim($name));
+        $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
 
             $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
             $choicetext  = optional_param('choicetext', '0', PARAM_INT);
