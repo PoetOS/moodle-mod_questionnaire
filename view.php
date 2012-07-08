@@ -20,6 +20,9 @@
     require_once("lib.php");
     require_once($CFG->libdir . '/completionlib.php');
 
+    if (!isset($SESSION->questionnaire)) {
+        $SESSION->questionnaire = new stdClass();
+    }
     $SESSION->questionnaire->current_tab = 'view';
 
     $id = optional_param('id', NULL, PARAM_INT);    // Course Module ID, or

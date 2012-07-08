@@ -241,10 +241,10 @@ class questionnaire_questions_form extends moodleform {
 
     }
 
-    function validation($data){
-
+    function validation($data, $files){
+        return parent::validation($data, $files);
     }
-
+    
 }
 
 class questionnaire_edit_question_form extends moodleform {
@@ -471,8 +471,8 @@ class questionnaire_edit_question_form extends moodleform {
         $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
     }
 
-    function validation($data){
-
+    function validation($data, $files){
+        return parent::validation($data, $files);
     }
-
+    
 }

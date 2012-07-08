@@ -189,19 +189,12 @@ class questionnaire_question {
         $this->context = $context;
     }
 
-    /**
-     * Fake constructor to keep PHP5 happy
-     *
-     */
-    function __construct($id = 0, $question = null, $context = null) {
-        $this->questionnaire_question($id, $question, $context);
-    }
-
     function get_choices() {
         global $DB;
 
         if ($choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $this->id), 'id ASC')) {
-            foreach ($choices as $choice) {
+            foreach ($choices as $choice) { 
+                $this->choices[$choice->id] = new stdClass();
                 $this->choices[$choice->id]->content = $choice->content;
                 $this->choices[$choice->id]->value = $choice->value;
             }
@@ -545,7 +538,7 @@ class questionnaire_question {
             $select = 'question_id='.$this->id.' AND content NOT LIKE \'!other%\' ORDER BY id ASC'; //JR 4 NOV 2009 added ORDER
             if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
                 foreach ($rows as $row) {
-                    $this->counts[$row->content] = null;
+                    $this->counts[$row->content] = new stdClass();
                     $nbna = $DB->count_records('questionnaire_response_rank', array('question_id' => $this->id, 'choice_id' => $row->id, 'rank' => '-1'));
                     $this->counts[$row->content]->nbna = $nbna;
                 }

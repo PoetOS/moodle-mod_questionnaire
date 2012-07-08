@@ -94,8 +94,7 @@ class questionnaire_settings_form extends moodleform {
         $mform->addElement('submit', 'submitbutton', get_string('savesettings', 'questionnaire'));
     }
 
-    function validation($data){
-
+    function validation($data, $files){
+        return parent::validation($data, $files);
     }
-
 }

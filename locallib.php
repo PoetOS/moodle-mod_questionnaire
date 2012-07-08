@@ -88,14 +88,6 @@ class questionnaire {
     }
 
     /**
-     * Fake constructor to keep PHP5 happy
-     *
-     */
-    function __construct($id = 0, $questionnaire = null, &$course, &$cm, $addquestions = true) {
-        $this->questionnaire($id, $questionnaire, $course, $cm, $addquestions);
-    }
-
-    /**
      * Adding a survey record to the object.
      *
      */
@@ -833,7 +825,7 @@ class questionnaire {
             }
         }
         if($num_sections>1) {
-            $a = '';
+            $a = new stdClass();
             $a->page = $section;
             $a->totpages = $num_sections;
             echo '<div class="surveyPage">&nbsp;'.get_string('pageof', 'questionnaire', $a).'</div>';
@@ -846,7 +838,7 @@ class questionnaire {
 
     function print_survey_end($section, $num_sections) {
         if($num_sections>1) {
-            $a = '';
+            $a = new stdClass();
             $a->page = $section;
             $a->totpages = $num_sections;
             echo get_string('pageof', 'questionnaire', $a).'&nbsp;&nbsp;';
@@ -3013,7 +3005,7 @@ function questionnaire_response_key_cmp($l, $r) {
         /// If we run the content through format_text first, any filters we want to use (e.g. multilanguage) should work.
         // examines the content of a possible answer from radio button, check boxes or rate question
         // returns ->text to be displayed, ->image if present, ->modname name of modality, image ->title
-        $contents = '';
+        $contents = new stdClass();
         $contents->text = '';
         $contents->image = '';
         $contents->modname = '';
