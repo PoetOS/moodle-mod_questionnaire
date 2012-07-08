@@ -33,6 +33,19 @@
 
 $capabilities = array(
 
+    // Ability to add a new questionnaire instance to the course.
+    'mod/questionnaire:addinstance' => array(
+
+        'riskbitmask' => RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+        'clonepermissionsfrom' => 'moodle/course:manageactivities'
+    ),
+                
     // Ability to see that the questionnaire exists, and the basic information
     // about it.
     'mod/questionnaire:view' => array(
