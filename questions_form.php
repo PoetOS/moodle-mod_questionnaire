@@ -27,7 +27,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 
 class questionnaire_questions_form extends moodleform {
 
-    function questionnaire_questions_form($action, $moveq=false) {
+    function __construct($action, $moveq=false) {
         $this->moveq = $moveq;
         return parent::moodleform($action);
     }

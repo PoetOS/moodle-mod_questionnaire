@@ -155,7 +155,7 @@ class questionnaire_question {
      * The class constructor
      *
      */
-    function questionnaire_question($id = 0, $question = null, $context = null) {
+    function __construct($id = 0, $question = null, $context = null) {
         global $DB;
         static $qtypes = null;
 
