@@ -922,7 +922,8 @@ class questionnaire {
                     $record->$f = $sdata->$f;
                 }
             }
-
+            
+            $this->survey = new stdClass();
             $this->survey->id = $DB->insert_record('questionnaire_survey', $record);
             $this->add_survey($this->survey->id);
 
