@@ -235,7 +235,7 @@ class questionnaire_question {
         $val = optional_param('q'.$this->id, '', PARAM_CLEAN);
         // only insert if non-empty content
         if($this->type_id == 10) { // numeric
-            $val = preg_replace("[/^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
+            $val = preg_replace("/[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
         }
 
         if(preg_match("/[^ \t\n]/",$val)) {
