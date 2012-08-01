@@ -506,6 +506,7 @@ class questionnaire_question {
         if ($recs = $DB->get_records_sql($sql, array($this->id))) {
             $i = 1;
             foreach ($recs as $rec) {
+                $rows['other'.$i]= new stdClass();
                 $rows['other'.$i]->content = $rec->content;
                 $rows['other'.$i]->response = $rec->response;
                 $i++;
