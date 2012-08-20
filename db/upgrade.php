@@ -9,6 +9,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
     if ($oldversion < 2007120101) {
         $result &= questionnaire_upgrade_2007120101();
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2007120101, 'questionnaire');
     }
 
     if ($oldversion < 2007120102) {
@@ -110,6 +113,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     /// Upgrade question_type table with corrected 'response_table' fields.
         $DB->set_field('questionnaire_question_type', 'response_table', 'resp_single', array('response_table' => 'response_single'));
         $DB->set_field('questionnaire_question_type', 'response_table', 'resp_multiple', array('response_table' => 'response_multiple'));
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2007120102, 'questionnaire');
     }
 
     if ($oldversion < 2008031902) {
@@ -124,6 +130,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $field = new xmldb_field('grade');
         $field->set_attributes(XMLDB_TYPE_INTEGER, '10', false, true, false, false, null, 0, 'complete');
         $dbman->add_field($table, $field);
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008031902, 'questionnaire');
     }
 
     if ($oldversion < 2008031904) {
@@ -158,12 +167,18 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             }
             $rs->close();
         }
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008031904, 'questionnaire');
     }
 
     if ($oldversion < 2008031905) {
         $table = new xmldb_table('questionnaire_survey');
         $field = new xmldb_field('changed');
         $dbman->drop_field($table, $field);
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008031905, 'questionnaire');
     }
 
     if ($oldversion < 2008031906) {
@@ -172,6 +187,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $field->set_attributes(XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, null, '0', 'choice_id');
         $field->setUnsigned(false);
         $dbman->change_field_unsigned($table, $field);
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008031906, 'questionnaire');
     }
 
     if ($oldversion < 2008060401) {
@@ -180,6 +198,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $field->set_attributes(XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null, null, null, 'survey_id');
         $field->setNotnull(false);
         $dbman->change_field_notnull($table, $field);
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008060401, 'questionnaire');
     }
 
     if ($oldversion < 2008070702) {
@@ -188,6 +209,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $field->set_attributes(XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null, null, null, 'has_choices');
         $field->setNotnull(false);
         $dbman->change_field_notnull($table, $field);
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008070702, 'questionnaire');
     }
 
     if ($oldversion < 2008070703) {
@@ -197,6 +221,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008070703, 'questionnaire');
     }
 
     if ($oldversion < 2008070704) {
@@ -206,6 +233,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $field->set_attributes(XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null, null, null, 'title');
         $field->setLength('255');
         $dbman->change_field_precision($table, $field);
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008070704, 'questionnaire');
     }
 
     if ($oldversion < 2008070705) {
@@ -220,6 +250,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $dbman->add_field($table, $field);
         /// Set all existing records to HTML format.
         $DB->set_field('questionnaire', 'introformat', 1);
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008070705, 'questionnaire');
     }
 
     if ($oldversion < 2008070706) {
@@ -235,6 +268,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         if ($dbman->field_exists($table, $field)) {
             $dbman->drop_field($table, $field);
         }
+
+        // questionnaire savepoint reached
+        upgrade_mod_savepoint(true, 2008070706, 'questionnaire');
     }
 
     if ($oldversion < 2010110100) {
