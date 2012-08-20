@@ -27,5 +27,5 @@ $module->requires = 2012062500;  // Requires this Moodle version
 $module->component = 'mod_questionnaire';
 $module->cron     = 60*60*12;    // Period for cron to check this module (secs)
 
-$module->release  = '2.3.1 (Build - 20120708)';
+$module->release  = '2.3.2 (Build - 20120820)';
 $module->maturity = 'STABLE';
