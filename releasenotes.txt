@@ -1,0 +1,9 @@
+Release Notes:
+
+Version 2.3.2 - Release date 20120820
+
+- CONTRIB-3696 added addinstance string to lang/en/questionnaire.php and lang/fr/questionnaire.php
+- CONTRIB-3797 : fixed typo 
+- CONTRIB-3704 (one more compliance with Strict Standards fix !) 
+- one more missing new stdClass() for strict compliance 
+- CONTRIB-3864 - Added savepoints to all upgrade steps. 
