@@ -235,7 +235,7 @@ class questionnaire_question {
         $val = optional_param('q'.$this->id, '', PARAM_CLEAN);
         // only insert if non-empty content
         if($this->type_id == 10) { // numeric
-            $val = preg_replace("[/^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
+            $val = preg_replace("/[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
         }
 
         if(preg_match("/[^ \t\n]/",$val)) {
@@ -506,6 +506,7 @@ class questionnaire_question {
         if ($recs = $DB->get_records_sql($sql, array($this->id))) {
             $i = 1;
             foreach ($recs as $rec) {
+                $rows['other'.$i]= new stdClass();
                 $rows['other'.$i]->content = $rec->content;
                 $rows['other'.$i]->response = $rec->response;
                 $i++;

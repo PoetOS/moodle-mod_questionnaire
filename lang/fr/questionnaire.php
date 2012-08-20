@@ -205,6 +205,7 @@ $string['qtypemonthly'] = 'répondre tous les mois';
 $string['qtypeonce'] = 'répondre une fois seulement';
 $string['qtypeunlimited'] = 'répondre un nombre illimité de fois';
 $string['qtypeweekly'] = 'répondre chaque semaine';
+$string['questionnaire:addinstance'] = 'Ajouter un questionnaire';
 $string['questionnaire:copysurveys'] = 'Copier des questionnaires Modèles et Privés';
 $string['questionnaire:createpublic'] = 'Créer des questionnaires Public';
 $string['questionnaire:createtemplates'] = 'Créer des questionnaires Modèle';

@@ -207,6 +207,7 @@ $string['qtypemonthly'] = 'respond monthly';
 $string['qtypeonce'] = 'respond once';
 $string['qtypeunlimited'] = 'respond many';
 $string['qtypeweekly'] = 'respond weekly';
+$string['questionnaire:addinstance'] = 'Add a new questionnaire';
 $string['questionnaire:copysurveys'] = 'Copy template and private questionnaires';
 $string['questionnaire:createpublic'] = 'Create public questionnaires';
 $string['questionnaire:createtemplates'] = 'Create template questionnaires';
