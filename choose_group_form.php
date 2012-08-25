@@ -77,7 +77,7 @@ class questionnaire_choose_group_form extends moodleform {
 				$groups_options['-2'] = '---'.get_string('membersofselectedgroup','group').' '.get_string('allgroups').'---';
 			}
         }
-        $attributes = 'onChange="this.form.submit()"';
+        $attributes = 'onChange="M.core_formchangechecker.set_form_submitted(); this.form.submit()"';
         $elementgroup[] =& $mform->createElement('select', 'currentgroupid', '', $groups_options, $attributes);
         // buttons
 		$mform->setDefault('currentgroupid', $currentgroupid);
