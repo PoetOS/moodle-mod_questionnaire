@@ -381,9 +381,19 @@
             if ($questionnaire->respondenttype == 'anonymous') {
                     $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
             }
-            redirect($CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$sid.
-                     '&amp;instance='.$instance.'&amp;byresponse=1', get_string('deletedresp', 'questionnaire').
-                     $rid.get_string('by', 'questionnaire').$ruser.'.');
+            $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+            FROM {questionnaire_response} R
+            WHERE R.survey_id = ? AND
+            R.complete='y'
+            ORDER BY R.id";
+            $resps = $DB->get_records_sql($sql, array($sid)) ;
+            if (empty($resps)) {
+                $redirection = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
+            } else {
+                $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$sid.'&amp;instance='.$instance.'&amp;byresponse=1';
+            }
+            $deletedstr = get_string('deletedresp', 'questionnaire').$rid.get_string('by', 'questionnaire').$ruser.'.';
+            redirect($redirection, $deletedstr, -1);
         } else {
             error (get_string('couldnotdelresp', 'questionnaire').$rid.get_string('by', 'questionnaire').$ruser.'?',
                    $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$sid.'&amp;&amp;instance='.
