@@ -399,16 +399,6 @@
             print_error('surveyowner', 'questionnaire');
         }
 
-    /// Print the page header
-        $PAGE->set_title(get_string('deleteallresponses', 'questionnaire'));
-        $PAGE->set_heading(format_string($course->fullname));
-        $PAGE->navbar->add('Survey Reports');
-        echo $OUTPUT->header();
-
-        /// print the tabs
-        $SESSION->questionnaire->current_tab = 'deleteall';
-        include('tabs.php');
-
         //available group modes (0 = no groups; 1 = separate groups; 2 = visible groups)
             $groupid = $currentsessiongroupid;
             if ($groupmode > 0) {
