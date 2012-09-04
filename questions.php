@@ -139,10 +139,10 @@
                     $reload = true;
                 } else {
 	                /// Switch to edit question screen.
-    	            $action = 'question';
-        	        $qtype = $qformdata->type_id;
-            	    $qid = 0;
-                	$reload = true;
+                    $action = 'question';
+                    $qtype = $qformdata->type_id;
+                    $qid = 0;
+                    $reload = true;
                 }
             } else if (isset($qformdata->moveupbutton)) {
             /// Need to use the key, since IE returns the image position as the value rather than the specified

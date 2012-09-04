@@ -261,4 +261,3 @@ function mkresavg($counts,$total,$precision,$showTotals,$length) {
 <?php
 }
 /* }}} */
-

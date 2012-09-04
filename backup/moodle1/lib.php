@@ -1,5 +1,5 @@
 <?php
- 
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * Provides support for the conversion of moodle1 backup to the moodle2 format
  *
@@ -23,14 +23,14 @@
  * @copyright  2011 Robin de Vries <robin@celp.nl>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- 
+
 defined('MOODLE_INTERNAL') || die();
- 
+
 /**
  * Choice conversion handler
  */
 class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
- 
+
     /**
      * Declare the paths in moodle.xml we are able to convert
      *
@@ -60,7 +60,7 @@ public function get_paths() {
         ),
        new convert_path('survey', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY'),
        new convert_path('question','/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION'),
-       new convert_path('question_choice','/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION/QUESTION_CHOICE'),      
+       new convert_path('question_choice','/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION/QUESTION_CHOICE'),
     );
 }
     /**
@@ -68,25 +68,25 @@ public function get_paths() {
      * data available
      */
     public function process_questionnaire($data) {
-         
+
           // get the course module id and context id
             $instanceid = $data['id'];
             $cminfo     = $this->get_cminfo($instanceid);
             $moduleid   = $cminfo['id'];
             $contextid  = $this->converter->get_contextid(CONTEXT_MODULE, $moduleid);
-            
+
              // we now have all information needed to start writing into the file
             $this->open_xml_writer("activities/questionnaire_{$moduleid}/questionnaire.xml");
             $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $moduleid,
                 'modulename' => 'questionnaire', 'contextid' => $contextid));
             $this->xmlwriter->begin_tag('questionnaire', array('id' => $instanceid));
-         
+
             unset($data['id']); // we already write it as attribute, do not repeat it as child element
             foreach ($data as $field => $value) {
                 $this->xmlwriter->full_tag($field, $value);
             }
-            
-            $this->xmlwriter->begin_tag('surveys');      
+
+            $this->xmlwriter->begin_tag('surveys');
     }
     /**
      * This is executed when we reach the closing </MOD> tag of our 'questionnaire' path
@@ -105,16 +105,16 @@ public function get_paths() {
      */
     public function process_survey($data){
         $this->xmlwriter->begin_tag('survey', array('id' => $data['id']));
-         
+
          unset($data['id']); // we already write it as attribute, do not repeat it as child element
          foreach ($data as $field => $value) {
              $this->xmlwriter->full_tag($field, $value);
          }
         $this->xmlwriter->begin_tag('questions');
     }
-    
+
     /**
-     * This is executed when we reach the closing </SURVEY> tag 
+     * This is executed when we reach the closing </SURVEY> tag
     */
     public function on_survey_end() {
         $this->xmlwriter->end_tag('questions');
@@ -126,31 +126,31 @@ public function get_paths() {
      * data available
      */
     public function process_question($data){
-        
+
         $this->xmlwriter->begin_tag('question', array('id' => $data['id']));
-         
+
          unset($data['id']); // we already write it as attribute, do not repeat it as child element
          foreach ($data as $field => $value) {
              $this->xmlwriter->full_tag($field, $value);
          }
-         
+
         $this->xmlwriter->begin_tag('quest_choices');
     }
     /**
-     * This is executed when we reach the closing </QUESTION> tag 
+     * This is executed when we reach the closing </QUESTION> tag
     */
     public function on_question_end() {
         $this->xmlwriter->end_tag('quest_choices');
         $this->xmlwriter->end_tag('question');
-        
+
     }
-    
+
     /**
      * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION/QUESTION_CHOICE
      * data available
      */
     public function process_question_choice($data){
         $this->write_xml('quest_choice', $data, array('/question_choice/id'));
-    }      
+    }
 
 }

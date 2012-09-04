@@ -67,23 +67,23 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $QUESTIONNAIRE_TYPES);
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
-        
+
         $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $QUESTIONNAIRE_RESPONDENTS);
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
-        
+
         $mform->addElement('static', 'old_resp_eligible', get_string('respondenteligible', 'questionnaire'),
                            get_string('respeligiblerepl', 'questionnaire'));
         $mform->addHelpButton('old_resp_eligible', 'respondenteligible', 'questionnaire');
-        
+
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $QUESTIONNAIRE_RESPONSEVIEWERS);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
-        
+
         $options = array('0'=>get_string('no'),'1'=>get_string('yes'));
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
-        
+
         $mform->addElement('modgrade', 'grade', get_string('grade', 'questionnaire'), false);
         $mform->setDefault('grade', 0);
 
@@ -95,7 +95,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
             $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
             $mform->addHelpButton('contenthdr', 'createcontent', 'questionnaire');
-            
+
             $mform->addElement('radio', 'create', get_string('createnew', 'questionnaire'), '', 'new-0');
 
             $surveys = questionnaire_get_survey_select($questionnaire->id, $COURSE->id, 0, 'template');
@@ -141,7 +141,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
     function data_preprocessing(&$default_values){
         global $DB;
-    	if (empty($default_values['opendate'])) {
+        if (empty($default_values['opendate'])) {
             $default_values['useopendate'] = 0;
         } else {
             $default_values['useopendate'] = 1;
@@ -155,9 +155,9 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $default_values['cannotchangerespondenttype'] = 0;
         if (!empty($default_values['respondenttype']) && $default_values['respondenttype'] == "anonymous") {
             // if this questionnaire has responses
-        	$numresp = $DB->count_records('questionnaire_response', array('survey_id' => $default_values['sid'],'complete' => 'y'));
+            $numresp = $DB->count_records('questionnaire_response', array('survey_id' => $default_values['sid'],'complete' => 'y'));
             if ($numresp) {
-                $default_values['cannotchangerespondenttype'] = 1;              
+                $default_values['cannotchangerespondenttype'] = 1;
             }
         }
     }
@@ -165,5 +165,5 @@ class mod_questionnaire_mod_form extends moodleform_mod {
     function validation($data, $files){
         return parent::validation($data, $files);
     }
-    
+
 }

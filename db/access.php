@@ -45,7 +45,7 @@ $capabilities = array(
         ),
         'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
-                
+
     // Ability to see that the questionnaire exists, and the basic information
     // about it.
     'mod/questionnaire:view' => array(

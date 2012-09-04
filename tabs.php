@@ -109,8 +109,8 @@
         }
         if (in_array($current_tab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
             //$inactive[] = 'vall';
-           	$activated[] = 'vall';
-           	$row3 = array();
+            $activated[] = 'vall';
+            $row3 = array();
 
             $argstr2 = $argstr.'&action=vall';
             $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
@@ -174,7 +174,7 @@
         $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                                $argstr.'&action=vall'), get_string('viewresponses', 'questionnaire', $numresp));
         if (in_array($current_tab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
-        	$inactive[] = 'vall';
+         $inactive[] = 'vall';
             $activated[] = 'vall';
             $row2 = array();
             $argstr2 = $argstr.'&action=vall';
@@ -183,7 +183,7 @@
 			$inactive[] = $current_tab;
 			$activated[] = $current_tab;
             $row3 = array();
-        	$argstr2 = $argstr.'&action=vall';
+            $argstr2 = $argstr.'&action=vall';
             $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('order_default', 'questionnaire'));
             $argstr2 = $argstr.'&action=vallasort&currentgroupid='.$currentgroupid;

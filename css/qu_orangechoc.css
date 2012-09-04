@@ -232,7 +232,7 @@ cell.c1 {
   padding-right:5px;
 }
 
-#content input[type="submit"], 
+#content input[type="submit"],
 input[type="button"] {
   background-color:#4D1700;
   border-bottom:1px solid black;
@@ -249,9 +249,9 @@ input[type="button"] {
   width:auto;
 }
 
-#content input[type="submit"]:hover, 
+#content input[type="submit"]:hover,
 input[type="button"]:hover,
-#content input[type="submit"]:focus, 
+#content input[type="submit"]:focus,
 input[type="button"]:focus {
   color:#4D1700;
   background-color:#FFCC00;

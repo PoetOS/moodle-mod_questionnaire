@@ -31,11 +31,11 @@
     $userid = $USER->id;
     switch ($action) {
 		case 'vallasort':
-	    	$sort = 'ascending';
-	    	break;
-		case 'vallarsort':
-	    	$sort = 'descending';
-	    	break;
+            $sort = 'ascending';
+           break;
+        case 'vallarsort':
+            $sort = 'descending';
+           break;
 		default:
 			$sort = 'default';
 	}
@@ -514,12 +514,12 @@
                     break;
                 case -2: // all members of any group
                     $groupname = get_string('membersofselectedgroup','group').' '.get_string('allgroups');
-                	break;
+                    break;
                 case -3: // not members of any group
                     $groupname = get_string('groupnonmembers');
-                	break;
+                    break;
                 default: // members of a specific group
-                	$groupname = get_string('membersofselectedgroup','group').' '.get_string('group').' '.$questionnairegroups[$currentgroupid]->name;
+                    $groupname = get_string('membersofselectedgroup','group').' '.get_string('group').' '.$questionnairegroups[$currentgroupid]->name;
             }
         }
         echo "<br /><br />\n";
@@ -625,7 +625,7 @@
         }
         echo'<div class = "generalbox">';
         echo (get_string('viewallresponses','questionnaire').'. '.$groupname.'. ');
-    	$strsort = get_string('order_'.$sort, 'questionnaire');
+        $strsort = get_string('order_'.$sort, 'questionnaire');
         echo $strsort;
         echo $OUTPUT->help_icon('orderresponses','questionnaire');
         $ret = $questionnaire->survey_results(1, 1, '', '', '', '', $uid=false, $currentgroupid, $sort);

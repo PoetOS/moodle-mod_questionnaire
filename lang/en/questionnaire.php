@@ -24,8 +24,8 @@ $string['checkboxes_help'] = 'Enter one option per line for the user to select o
 $string['checkboxes_link'] = 'mod/questionnaire/questions#Check_Boxes';
 $string['closed'] = 'The questionnaire was closed on {$a}. Thanks.';
 $string['closedate'] = 'Use Close Date';
-$string['closedate_help'] = 'You can specify a date to close the questionnaire here. Check the check box, and select the date and time you want. 
-Users will not be able to fill out the questionnaire after that date. If this is not selected, it will never be closed.';
+$string['closedate_help'] = 'You can specify a date to close the questionnaire here. Check the check box, and select the date and time you want.
+ Users will not be able to fill out the questionnaire after that date. If this is not selected, it will never be closed.';
 $string['confalts'] = '- OR - <br />Confirmation page';
 $string['confirmdelallresp'] = 'Are you sure you want to delete ALL the responses in this questionnaire?';
 $string['confirmdelgroupresp'] = 'Are you sure you want to delete ALL the responses of {$a}?';
@@ -38,7 +38,7 @@ $string['couldnotdelresp'] = 'Could not delete response ';
 $string['couldnotcreatenewsurvey'] = 'Could not create a new survey!';
 $string['createcontent'] = 'Define New Content';
 $string['createcontent_help'] = 'Select one of the radio button options. \'Create new\' is the default.';
-$string['createcontent_link'] = 'mod/questionnaire/mod#Content_Options'; 
+$string['createcontent_link'] = 'mod/questionnaire/mod#Content_Options';
 $string['createnew'] = 'Create new';
 $string['crossanalyze'] = 'Cross Analyze';
 $string['crosstabulate'] = 'Cross Tabulate';
@@ -57,12 +57,12 @@ $string['deletingresp'] = 'Deleting Response';
 $string['displaymethod'] = 'Display method not defined for question.';
 $string['download'] = 'Download';
 $string['downloadtextformat'] = 'Download in text format';
-$string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a text file (CSV). 
-This file can then be imported into a spreadsheet (e.g. MS Excel or Open Office Calc) or a statistical package for further processing the data.';
-$string['downloadtextformat_link'] = 'mod/questionnaire/report#Download_in_text_format'; 
+$string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a text file (CSV).
+ This file can then be imported into a spreadsheet (e.g. MS Excel or Open Office Calc) or a statistical package for further processing the data.';
+$string['downloadtextformat_link'] = 'mod/questionnaire/report#Download_in_text_format';
 $string['dropdown'] = 'Dropdown Box';
-$string['dropdown_help'] = 'There is no real advantage to using the Dropdown Box over using the Radio Buttons 
-except perhaps for longish lists of options, to save screen space.';
+$string['dropdown_help'] = 'There is no real advantage to using the Dropdown Box over using the Radio Buttons
+ except perhaps for longish lists of options, to save screen space.';
 $string['dropdown_link'] = 'mod/questionnaire/questions#Dropdown_Box';
 $string['edit'] = 'Edit';
 $string['editingquestionnaire'] = 'Editing Questionnaire Settings';
@@ -75,8 +75,8 @@ $string['errortable'] = 'Error system table corrupt.';
 $string['essaybox'] = 'Essay Box';
 $string['essaybox_help'] = 'This question will display a plain text box with x Textarea columns (or area width) and y Textarea rows (number of text lines).
 
-If you leave both x and y to their default 0 value (or if you set it to 0), then moodle\'s HTML editor will be displayed 
-with standard height and width (if available in the course/user context & user profile). ';
+If you leave both x and y to their default 0 value (or if you set it to 0), then moodle\'s HTML editor will be displayed
+ with standard height and width (if available in the course/user context & user profile). ';
 $string['field'] = 'Question {$a}';
 $string['fieldlength'] = 'Input box length';
 $string['fieldlength_help'] = 'For the **Text Box** question type, enter the **Input Box length** and the **Maximum text length** of text to be entered by
@@ -100,8 +100,8 @@ $string['kindofratescale_help'] = 'See the Moodle Documentation below';
 $string['kindofratescale_link'] = 'mod/questionnaire/questions#Type_of_rate_scale';
 $string['length'] = 'Length';
 $string['maxdigitsallowed'] = 'Max. digits allowed';
-$string['maxdigitsallowed_help'] = 'By using the Max. digits allowed and Nb of decimal digits parameters you can specify 
-the length and number of decimal places required.';
+$string['maxdigitsallowed_help'] = 'By using the Max. digits allowed and Nb of decimal digits parameters you can specify
+ the length and number of decimal places required.';
 $string['maxforcedresponses'] = 'Max. forced responses';
 $string['maxtextlength'] = 'Max. text length';
 $string['minforcedresponses'] = 'Min. forced responses';
@@ -150,30 +150,30 @@ $string['numeric'] = 'Numeric';
 $string['numeric_help'] = 'Use this question type if you expect the response to be a correctly formatted number.';
 $string['of'] = 'of';
 $string['opendate'] = 'Use Open Date';
-$string['opendate_help'] = 'You can specify a date to open the questionnaire here. Check the check box, and select the date and time you want. 
-Users will not be able to fill out the questionnaire before that date. If this is not selected, it will be open immediately.';
+$string['opendate_help'] = 'You can specify a date to open the questionnaire here. Check the check box, and select the date and time you want.
+ Users will not be able to fill out the questionnaire before that date. If this is not selected, it will be open immediately.';
 $string['option'] = 'option {$a}';
 $string['optionalname'] = 'Question Name';
-$string['optionalname_help'] = 'The Question Name is only used when you export responses to CSV/Excel format. 
-If you never export to CSV, then you needn\'t worry about Question names at all. 
-If you plan to regularly export your questionnaire data to CSV, then you have a choice of two options for question naming. ';
-$string['optionalname_link'] = 'mod/questionnaire/questions#Question_Name'; 
+$string['optionalname_help'] = 'The Question Name is only used when you export responses to CSV/Excel format.
+ If you never export to CSV, then you needn\'t worry about Question names at all.
+ If you plan to regularly export your questionnaire data to CSV, then you have a choice of two options for question naming. ';
+$string['optionalname_link'] = 'mod/questionnaire/questions#Question_Name';
 $string['or'] = '- OR -';
 $string['order_ascending'] = 'Ascending order';
 $string['order_default'] = 'View Default order';
 $string['order_descending'] = 'Descending order';
 $string['orderresponses'] = 'Order Responses';
-$string['orderresponses_help'] = 'When displaying All Responses you can order the choices by number of responses (the Average column) for the following 
-4 types of questions.
+$string['orderresponses_help'] = 'When displaying All Responses you can order the choices by number of responses (the Average column) for the following
+ 4 types of questions.
 
 * single choices radio button
 * single choices dropdown list
 * multiple choices (check boxes)
 * rate questions (including Likert scales).
 
-When you arrive on the All Responses page, by default all responses are ordered in the order that the questionnaire creator entered the question choices. 
-You can choose to order them by ascending or descending order.';
-$string['orderresponses_link'] = 'mod/questionnaire/report#Order_Responses'; 
+When you arrive on the All Responses page, by default all responses are ordered in the order that the questionnaire creator entered the question choices.
+ You can choose to order them by ascending or descending order.';
+$string['orderresponses_link'] = 'mod/questionnaire/report#Order_Responses';
 $string['osgood'] = 'Osgood';
 $string['other'] = 'Other:';
 $string['otherempty'] = 'If you tick this choice you must enter some text in the text box!';
@@ -233,7 +233,7 @@ $string['questiontypes_help'] = 'See the Moodle Documentation below';
 $string['questiontypes_link'] = 'mod/questionnaire/questions#Question_Types';
 $string['radiobuttons'] = 'Radio Buttons';
 $string['radiobuttons_help'] = 'In this question type, the respondent must select one out of the choices offered.';
-$string['radiobuttons_link'] = 'mod/questionnaire/questions#Radio_Buttons'; 
+$string['radiobuttons_link'] = 'mod/questionnaire/questions#Radio_Buttons';
 $string['rank'] = 'Rank';
 $string['ratescale'] = 'Rate (scale 1..5)';
 $string['ratescale_help'] = 'See the Moodle Documentation below';
@@ -243,11 +243,11 @@ $string['realm_help'] = '* **There are  three types of questionnaires:**
  * Private - belongs to the course it is defined in only.
  * Template - can be copied and edited.
  * Public - can be shared among courses.';
-$string['realm_link'] = 'mod/questionnaire/qsettings#Questionnaire_Type'; 
+$string['realm_link'] = 'mod/questionnaire/qsettings#Questionnaire_Type';
 $string['redirecturl'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['remove'] = 'Delete';
 $string['required'] = 'Response Required';
-$string['required_help'] = 'If you select ***Yes***, response to this question will be required, i.e. 
+$string['required_help'] = 'If you select ***Yes***, response to this question will be required, i.e.
 the respondent will not be able to submit the questionnaire
 until this question has been answered.';
 $string['required_link'] = 'mod/questionnaire/questions#Response_Required';
@@ -256,9 +256,9 @@ $string['reset'] = 'Reset';
 $string['respeligiblerepl'] = '(replaced by role overrides)';
 $string['respondent'] = 'Respondent';
 $string['respondenteligible'] = 'Respondent Eligibility';
-$string['respondenteligible_help'] = 'Decide whether everyone can answer or whether you want to restrict it to tutor only or student only responses. 
-For restricted access options remember to assign the correct roles either at the course or activity level. 
-For example, if you put a questionnaire on the front page, intended for teachers only, then you will have to let Moodle know which users are teachers. ';
+$string['respondenteligible_help'] = 'Decide whether everyone can answer or whether you want to restrict it to tutor only or student only responses.
+ For restricted access options remember to assign the correct roles either at the course or activity level.
+ For example, if you put a questionnaire on the front page, intended for teachers only, then you will have to let Moodle know which users are teachers. ';
 $string['respondenteligibleall'] = 'all';
 $string['respondenteligiblestudents'] = 'students only';
 $string['respondenteligibleteachers'] = 'teachers only';
@@ -281,9 +281,9 @@ $string['responseviewstudentswhenanswered'] = 'After answering the questionnaire
 $string['responseviewstudentswhenclosed'] = 'After the questionnaire is closed';
 $string['restrictedtoteacher'] = 'These functions are restricted to editing teachers only!';
 $string['resume'] = 'Save/Resume answers';
-$string['resume_help'] = 'Setting this option allows users to save their answers to a questionnaire before submitting them. 
-Users can leave the questionnaire unfinished and resume from the save point at a later date.';
-$string['resume_link'] = 'mod/questionnaire/mod#Save/Resume_answers'; 
+$string['resume_help'] = 'Setting this option allows users to save their answers to a questionnaire before submitting them.
+ Users can leave the questionnaire unfinished and resume from the save point at a later date.';
+$string['resume_link'] = 'mod/questionnaire/mod#Save/Resume_answers';
 $string['resumesurvey'] = 'Resume questionnaire';
 $string['return'] = 'Return';
 $string['save'] = 'Save';
@@ -346,11 +346,11 @@ $string['usetemplate'] = 'Copy existing';
 $string['vertical'] = 'Vertical';
 $string['view'] = 'View';
 $string['viewallresponses'] = 'View All Responses';
-$string['viewallresponses_help'] = 'If the questionnaire is set to **Group Mode**: *Visible groups*, or is set to *Separate groups* and the current user 
-has the *moodle/site:accessallgroups* capability (in the current context), and groups have been defined in the current course, 
-then the user has access to a dropdown list of groups. This dropdown list enables the user to "filter" the questionnaire responses by groups. 
-If the setting is **Group Mode**: *Separate groups*, then users who do not have the *moodle/site:accessallgroups* capability 
-(usually students, or non-editing teachers, etc.) will only be able to view the responses of the group(s) they belong to.';
+$string['viewallresponses_help'] = 'If the questionnaire is set to **Group Mode**: *Visible groups*, or is set to *Separate groups* and the current user
+ has the *moodle/site:accessallgroups* capability (in the current context), and groups have been defined in the current course,
+ then the user has access to a dropdown list of groups. This dropdown list enables the user to "filter" the questionnaire responses by groups.
+ If the setting is **Group Mode**: *Separate groups*, then users who do not have the *moodle/site:accessallgroups* capability
+ (usually students, or non-editing teachers, etc.) will only be able to view the responses of the group(s) they belong to.';
 $string['viewallresponses_link'] = 'Viewing_Questionnaire_responses#Group_filtering';
 $string['viewbyresponse'] = 'View By Response';
 $string['viewresponses'] = 'All responses ({$a})';

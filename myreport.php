@@ -46,7 +46,7 @@
     require_course_login($course, true, $cm);
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     /// Should never happen, unless called directly by a snoop...
-    if ( !has_capability('mod/questionnaire:readownresponses',$context) 
+    if ( !has_capability('mod/questionnaire:readownresponses',$context)
         || $userid != $USER->id) {
         print_error('Permission denied');
     }

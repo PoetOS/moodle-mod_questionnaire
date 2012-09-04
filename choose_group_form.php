@@ -43,7 +43,7 @@ class questionnaire_choose_group_form extends moodleform {
         // visible elements
         $groups_options = array();
         if(isset($this->questionnairedata->currentgroupid)){
-        	$currentgroupid = $this->questionnairedata->currentgroupid;
+            $currentgroupid = $this->questionnairedata->currentgroupid;
         }
         if(isset($this->questionnairedata->groups)){
             $canviewallgroups =  $this->questionnairedata->canviewallgroups;
@@ -70,8 +70,8 @@ class questionnaire_choose_group_form extends moodleform {
                 $groups_options[$group->id] = get_string('group').': '.$group->name.' ('.$respscount.')';
             }
             if ($canviewallgroups) {
-                $groups_options['-2'] = '---'.get_string('membersofselectedgroup','group').' '.get_string('allgroups').'---'; 
-                $groups_options['-3'] = '---'.get_string('groupnonmembers').'---'; 
+                $groups_options['-2'] = '---'.get_string('membersofselectedgroup','group').' '.get_string('allgroups').'---';
+                $groups_options['-3'] = '---'.get_string('groupnonmembers').'---';
             }
 			if ($groupmode == 2) {
 				$groups_options['-2'] = '---'.get_string('membersofselectedgroup','group').' '.get_string('allgroups').'---';

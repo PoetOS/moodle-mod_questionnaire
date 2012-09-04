@@ -1,6 +1,6 @@
 The questionnaire module allows you to construct questionnaires (surveys) from a
-variety of question type. It was originally based on phpESP, and Open Source 
-survey tool (see: http://phpesp.sourceforge.net), but has since diverged. 
+variety of question type. It was originally based on phpESP, and Open Source
+survey tool (see: http://phpesp.sourceforge.net), but has since diverged.
 
 --------------------------------------------------------------------------------
 To Install:
@@ -19,11 +19,11 @@ To Upgrade:
    'public' or 'temmplate'. Surveys assigned to a single questionnaire are set
    to 'private' with the questionnaire's course as the owner. Surveys assigned
    to multiple questionnaires in the same course are set to 'public' with the
-   questionnaire's course as the owner. Surveys assigned to multiple 
+   questionnaire's course as the owner. Surveys assigned to multiple
    questionnaires in multiple courses are set to 'public' with the site ID as
    the owner. Surveys that are not deleted but have no associated questionnaires
    are set to 'template' with the site ID as the owner.
-   
+
 IF YOU ARE UPGRADING TO MOODLE 2.3...
 
 Make sure that you upgrade the questionnaire module to the latest 2.2 version in

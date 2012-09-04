@@ -194,17 +194,17 @@ class questionnaire {
 
             if ((!empty($this->questions)) && $this->capabilities->printblank) {
                 // open print friendly as popup window
-	            $image_url = $CFG->wwwroot.'/mod/questionnaire/images/';
-	            $linkname = '<img src="'.$image_url.'print.gif" alt="Printer-friendly version" />';
+                $image_url = $CFG->wwwroot.'/mod/questionnaire/images/';
+                $linkname = '<img src="'.$image_url.'print.gif" alt="Printer-friendly version" />';
                 $title = get_string('printblanktooltip','questionnaire');
                 $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
                 $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-	                    'height' => 600, 'width' => 800, 'title'=>$title);
-	            $name = 'popup';
-	            $link = new moodle_url($url);
-	            $action = new popup_action('click', $link, $name, $options);
+                        'height' => 600, 'width' => 800, 'title'=>$title);
+                $name = 'popup';
+                $link = new moodle_url($url);
+                $action = new popup_action('click', $link, $name, $options);
                 $class = "floatprinticon";
-	            echo $OUTPUT->action_link($link, $linkname, $action, array('class'=>$class, 'title'=>$title));
+                echo $OUTPUT->action_link($link, $linkname, $action, array('class'=>$class, 'title'=>$title));
             }
             $msg = $this->print_survey($USER->id, $quser);
     ///     If Survey was submitted with all required fields completed ($msg is empty),
@@ -718,7 +718,7 @@ class questionnaire {
     // find out what question number we are on $i New fix for question numbering
         $i = 0;
         if ($section > 1) {
-        	for($j = 2; $j<=$section; $j++) {
+            for($j = 2; $j<=$section; $j++) {
                 foreach ($this->questionsbysec[$j-1] as $question) {
                     if ($question->type_id < 99) {
                         $i++;
@@ -922,7 +922,7 @@ class questionnaire {
                     $record->$f = $sdata->$f;
                 }
             }
-            
+
             $this->survey = new stdClass();
             $this->survey->id = $DB->insert_record('questionnaire_survey', $record);
             $this->add_survey($this->survey->id);
@@ -1175,9 +1175,9 @@ class questionnaire {
                         $nameddegrees++;
                     } else {
                         $str = 'q'."{$record->id}_$cid";
-						if (isset($formdata->$str) && $formdata->$str == $na) {
-							$formdata->$str = -1;
-						}
+                        if (isset($formdata->$str) && $formdata->$str == $na) {
+                            $formdata->$str = -1;
+                        }
                         for ($j = 0; $j < $record->length; $j++) {
                             $num += (isset($formdata->$str) && ($j == $formdata->$str));
                         }
@@ -1288,7 +1288,7 @@ class questionnaire {
         if ($sec < 1 || !isset($this->questionsbysec[$sec])) {
             return;
         }
-		$vals = $this->response_select($rid, 'content');
+        $vals = $this->response_select($rid, 'content');
         reset($vals);
         foreach ($vals as $id => $arr) {
             if (isset($arr[0]) && is_array($arr[0])) {
@@ -1405,9 +1405,9 @@ class questionnaire {
 
             // strip potential html tags from modality name
             if (!empty($qchoice)) {
-            	$qchoice = strip_tags($arr[3]);
+                $qchoice = strip_tags($arr[3]);
                 $qchoice = preg_replace("/[\r\n\t]/", ' ', $qchoice);
-			}
+            }
             $q4 = ''; // for rate questions: modality; for multichoice: selected = 1; not selected = 0
             if (isset($arr[4])) {
                 $q4 = $arr[4];
@@ -1939,14 +1939,14 @@ class questionnaire {
             $thank_head = get_string('thank_head', 'questionnaire');
         }
         $message =  '<h3>'.$thank_head.'</h3>'.file_rewrite_pluginfile_urls($thank_body, 'pluginfile.php', $this->context->id, 'mod_questionnaire', 'thankbody', $this->id);
-		echo ($message);
+        echo ($message);
         if ($this->capabilities->readownresponses) {
-        	echo('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
-			$this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'">'.
-			get_string("continue").'</a>');
+            echo('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
+            $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'">'.
+            get_string("continue").'</a>');
         } else {
-        	echo('<a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
-			get_string("continue").'</a>');
+            echo('<a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
+            get_string("continue").'</a>');
         }
         return;
     }
@@ -1974,7 +1974,7 @@ class questionnaire {
     function survey_results_navbar($curr_rid, $userid=false) {
         global $CFG, $DB;
 
-		$stranonymous = get_string('anonymous', 'questionnaire');
+        $stranonymous = get_string('anonymous', 'questionnaire');
 
         $select = 'survey_id='.$this->survey->id.' AND complete = \'y\'';
         if ($userid !== false) {
@@ -2383,7 +2383,7 @@ class questionnaire {
     Exports the results of a survey to an array.
     */
     function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0) {
-	    global $SESSION, $DB;
+        global $SESSION, $DB;
 
         if (isset($SESSION->questionnaire->currentgroupid)) {
             $groupid = $SESSION->questionnaire->currentgroupid;

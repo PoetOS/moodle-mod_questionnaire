@@ -173,7 +173,7 @@ div.respdate {
 }
 
 .returnLink a:link,
-.returnLink a:visited, 
+.returnLink a:visited,
 .returnLink a:hover {
   color: #000;
   text-decoration: none;
@@ -242,7 +242,7 @@ div.respdate {
   background-color:#FFFFFF;
 }
 
-#content input[type="submit"], 
+#content input[type="submit"],
 [type="button"] {
   background-color:#e3dfd4;
   border-bottom:1px solid black;
@@ -259,9 +259,9 @@ div.respdate {
   font-weight:bold;
 }
 
-#content input[type="submit"]:hover, 
+#content input[type="submit"]:hover,
 input[type="button"]:hover,
-#content input[type="submit"]:focus, 
+#content input[type="submit"]:focus,
 input[type="button"]:focus {
   color:#990000;
   background-color: #fffae6;

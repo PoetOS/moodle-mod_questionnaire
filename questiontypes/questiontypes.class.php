@@ -193,7 +193,7 @@ class questionnaire_question {
         global $DB;
 
         if ($choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $this->id), 'id ASC')) {
-            foreach ($choices as $choice) { 
+            foreach ($choices as $choice) {
                 $this->choices[$choice->id] = new stdClass();
                 $this->choices[$choice->id]->content = $choice->content;
                 $this->choices[$choice->id]->value = $choice->value;
@@ -671,7 +671,7 @@ class questionnaire_question {
                 $this->text = $row->response;
                 if(!empty($this->text)) {
                     $dateparts = preg_split('/-/', $this->text);
-                    $this->text = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp 
+                    $this->text = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp
                     $textidx = clean_text($this->text);
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }

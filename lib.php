@@ -69,7 +69,7 @@ function questionnaire_supports($feature) {
  */
 function questionnaire_get_extra_capabilities() {
     return array('moodle/site:accessallgroups');
-} 
+}
 
 global $QUESTIONNAIRE_TYPES;
 $QUESTIONNAIRE_TYPES = array (QUESTIONNAIREUNLIMITED => get_string('qtypeunlimited', 'questionnaire'),
@@ -696,7 +696,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
     if ($courseid == 0) {
         if (isadmin()) {
             $sql = "SELECT id,name,owner,realm,status " .
-            	   "{questionnaire_survey} " .
+                   "{questionnaire_survey} " .
                    "ORDER BY realm,name ";
             $params = null;
         } else {
