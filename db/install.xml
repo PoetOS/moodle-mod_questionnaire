@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/questionnaire/db" VERSION="20120417" COMMENT="XMLDB file for Moodle mod/questionnaire"
+<XMLDB PATH="mod/questionnaire/db" VERSION="2012100800" COMMENT="XMLDB file for Moodle mod/questionnaire"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
         >
@@ -31,7 +31,7 @@
         <TABLE NAME="questionnaire_survey" COMMENT="questionnaire_survey table retrofitted from MySQL" PREVIOUS="questionnaire" NEXT="questionnaire_attempts">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
-                <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="owner"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="owner"/>
                 <FIELD NAME="owner" TYPE="char" LENGTH="16" NOTNULL="true" SEQUENCE="false" PREVIOUS="name" NEXT="realm"/>
                 <FIELD NAME="realm" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="owner" NEXT="status"/>
                 <FIELD NAME="status" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="realm" NEXT="title"/>
