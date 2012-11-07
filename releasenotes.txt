@@ -1,0 +1,11 @@
+Issues covered in release 2.2.4:
+
+CONTRIB-4005 - Fixed wrong API usage from 1.9 to 2.2.
+CONTRIB-3841 - "Notice: Undefined variable: usersql" message when resetting a course with a questionnaire module
+CONTRIB-3954 - Questionnaire - no security checks before executing actions on 'report.php' page
+CONTRIB-3962 - Cannot access list of questionnaires if there is a template questionnaire
+CONTRIB-3864 - Added savepoints to all upgrade steps.
+CONTRIB-3193 - Fix invisible question number in Chrome
+CONTRIB-3661 - Displaying date fields incorrectly - applied Joseph Rézeau's patch as posted here: http://moodle.org/mod/forum/discuss.php?d=181966#p8477
+CONTRIB-2999 - Make sure survey name field doesn't get too big.
+CONTRIB-2946 - Defaulted numeric size to 10.
