@@ -1,5 +1,17 @@
 Release Notes:
 
+Version 2.3.3 - Release date 20121107
+
+CONTRIB-3954 - Questionnaire - no security checks before executing actions on 'report.php' page
+CONTRIB-3962 - Cannot access list of questionnaires if there is a template questionnaire
+CONTRIB-3930 Extend survey name to match questionnaire name
+CONTRIB-3898 duplicate records error on adding new questionnaires
+[no issue] whitespace and unix line endings fixes for better git compatibility
+CONTRIB-3894
+CONTRIB-3815
+CONTRIB-3892
+CONTRIB-3890 Warning undefined variable $usersql
+
 Version 2.3.2 - Release date 20120820
 
 - CONTRIB-3696 added addinstance string to lang/en/questionnaire.php and lang/fr/questionnaire.php
