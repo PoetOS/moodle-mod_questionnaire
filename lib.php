@@ -336,6 +336,7 @@ function questionnaire_grades($questionnaireid) {
 function questionnaire_get_user_grades($questionnaire, $userid=0) {
     global $DB;
     $params = array();
+    $usersql = '';
     if (!empty($userid)) {
         $usersql = "AND u.id = ?";
         $params[] = $userid;
