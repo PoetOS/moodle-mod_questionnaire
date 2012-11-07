@@ -23,7 +23,7 @@
  */
 
 $module->version  = 2012110701;  // The current module version (Date: YYYYMMDDXX)
-$module->requires = 2011120100;  // Requires this Moodle version
+$module->requires = 2011120500;  // Requires this Moodle version
 $module->component = 'mod_questionnaire';
 $module->cron     = 60*60*12;    // Period for cron to check this module (secs)
 
