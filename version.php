@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$module->version  = 2010110101;  // The current module version (Date: YYYYMMDDXX)
+$module->version  = 2011110101;  // The current module version (Date: YYYYMMDDXX) (this needs to stay as 2011 so as not to conflict with older or newer major Moodle releases)
 $module->requires = 2011120500;  // Requires this Moodle version
 $module->component = 'mod_questionnaire';
 $module->maturity = MATURITY_STABLE;
