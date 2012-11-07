@@ -21,32 +21,32 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $table = new xmldb_table('questionnaire_question');
 
         $field = new xmldb_field('required');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, false, null, 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $DB->set_field('questionnaire_question', 'required', 'y', array('required' => 'Y'));
         $DB->set_field('questionnaire_question', 'required', 'n', array('required' => 'N'));
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, XMLDB_ENUM, array('y', 'n'), 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $dbman->change_field_default($table, $field);
         unset($field);
 
         $field = new xmldb_field('deleted');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, false, null, 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $DB->set_field('questionnaire_question', 'deleted', 'y', array('deleted' => 'Y'));
         $DB->set_field('questionnaire_question', 'deleted', 'n', array('deleted' => 'N'));
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, XMLDB_ENUM, array('y', 'n'), 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $dbman->change_field_default($table, $field);
         unset($field);
 
         $field = new xmldb_field('public');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, false, null, 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $DB->set_field('questionnaire_question', 'public', 'y', array('public' => 'Y'));
         $DB->set_field('questionnaire_question', 'public', 'n', array('public' => 'N'));
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, XMLDB_ENUM, array('y', 'n'), 'y');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'y');
+        change_field_enum($table, $field);
         $dbman->change_field_default($table, $field);
         unset($field);
 
@@ -56,12 +56,12 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $table = new xmldb_table('questionnaire_question_type');
 
         $field = new xmldb_field('has_choices');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, false, null, 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $DB->set_field('questionnaire_question_type', 'has_choices', 'y', array('has_choices' => 'Y'));
         $DB->set_field('questionnaire_question_type', 'has_choices', 'n', array('has_choices' => 'N'));
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, XMLDB_ENUM, array('y', 'n'), 'y');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'y');
+        change_field_enum($table, $field);
         $dbman->change_field_default($table, $field);
         unset($field);
 
@@ -71,12 +71,12 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $table = new xmldb_table('questionnaire_response');
 
         $field = new xmldb_field('complete');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, false, null, 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $DB->set_field('questionnaire_response', 'complete', 'y', array('complete' => 'Y'));
         $DB->set_field('questionnaire_response', 'complete', 'n', array('complete' => 'N'));
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, XMLDB_ENUM, array('y', 'n'), 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $dbman->change_field_default($table, $field);
         unset($field);
 
@@ -86,12 +86,12 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $table = new xmldb_table('questionnaire_response_bool');
 
         $field = new xmldb_field('choice_id');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, false, null, 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $DB->set_field('questionnaire_response_bool', 'choice_id', 'y', array('choice_id' => 'Y'));
         $DB->set_field('questionnaire_response_bool', 'choice_id', 'n', array('choice_id' => 'N'));
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, XMLDB_ENUM, array('y', 'n'), 'y');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'y');
+        change_field_enum($table, $field);
         $dbman->change_field_default($table, $field);
         unset($field);
 
@@ -101,12 +101,12 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $table = new xmldb_table('questionnaire_survey');
 
         $field = new xmldb_field('public');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, false, null, 'n');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'n');
+        change_field_enum($table, $field);
         $DB->set_field('questionnaire_survey', 'public', 'y', array('public' => 'Y'));
         $DB->set_field('questionnaire_survey', 'public', 'n', array('public' => 'N'));
-        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, XMLDB_ENUM, array('y', 'n'), 'y');
-        $dbman->change_field_enum($table, $field);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'y');
+        change_field_enum($table, $field);
         $dbman->change_field_default($table, $field);
         unset($field);
 
@@ -121,14 +121,14 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     if ($oldversion < 2008031902) {
         $table = new xmldb_table('questionnaire');
         $field = new xmldb_field('grade');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', false, true, false, false, null, 0, 'navigate');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', false, true, null, 0, 'navigate');
         $dbman->add_field($table, $field);
 
         unset($field);
         unset($table);
         $table = new xmldb_table('questionnaire_response');
         $field = new xmldb_field('grade');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', false, true, false, false, null, 0, 'complete');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', false, true, null, 0, 'complete');
         $dbman->add_field($table, $field);
 
         // questionnaire savepoint reached
@@ -184,7 +184,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     if ($oldversion < 2008031906) {
         $table = new xmldb_table('questionnaire_response_rank');
         $field = new xmldb_field('rank');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, null, '0', 'choice_id');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, '0', 'choice_id');
         $field->setUnsigned(false);
         $dbman->change_field_unsigned($table, $field);
 
@@ -195,7 +195,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     if ($oldversion < 2008060401) {
         $table = new xmldb_table('questionnaire_question');
         $field = new xmldb_field('name');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null, null, null, 'survey_id');
+        $field->set_attributes(XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null, 'survey_id');
         $field->setNotnull(false);
         $dbman->change_field_notnull($table, $field);
 
@@ -206,7 +206,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     if ($oldversion < 2008070702) {
         $table = new xmldb_table('questionnaire_question_type');
         $field = new xmldb_field('response_table');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null, null, null, 'has_choices');
+        $field->set_attributes(XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null, 'has_choices');
         $field->setNotnull(false);
         $dbman->change_field_notnull($table, $field);
 
@@ -230,7 +230,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         /// CONTRIB-1542
         $table = new xmldb_table('questionnaire_survey');
         $field = new xmldb_field('email');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null, null, null, 'title');
+        $field->set_attributes(XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null, 'title');
         $field->setLength('255');
         $dbman->change_field_precision($table, $field);
 
@@ -242,7 +242,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         /// Rename summary field to 'intro' to adhere to new Moodle standard.
         $table = new xmldb_table('questionnaire');
         $field = new xmldb_field('summary');
-        $field->set_attributes(XMLDB_TYPE_TEXT, 'small', null, XMLDB_NOTNULL, null, null, null, null, 'name');
+        $field->set_attributes(XMLDB_TYPE_TEXT, 'small', null, XMLDB_NOTNULL, null, null, 'name');
         $dbman->rename_field($table, $field, 'intro');
 
         /// Add 'introformat' to adhere to new Moodle standard.
@@ -348,15 +348,15 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         /// Upgrade the questionnaire_question_type table to use typeid.
         $table = new xmldb_table('questionnaire_question_type');
         $field = new xmldb_field('typeid');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '20', true, true, false, false, null, '0', 'id');
+        $field->set_attributes(XMLDB_TYPE_CHAR, '20', true, true, null, '0', 'id');
         $dbman->add_field($table, $field);
-        if (($numrecs = $dbman->count_records('questionnaire_question_type')) > 0) {
+        if (($numrecs = $DB->count_records('questionnaire_question_type')) > 0) {
             $recstart = 0;
             $recstoget = 100;
             while ($recstart < $numrecs) {
-                if ($records = $dbman->get_records('questionnaire_question_type', array(), '', '*', $recstart, $recstoget)) {
+                if ($records = $DB->get_records('questionnaire_question_type', array(), '', '*', $recstart, $recstoget)) {
                     foreach ($records as $record) {
-                        $dbman->set_field('questionnaire_question_type', 'typeid', $record->id, array('id' => $record->id));
+                        $DB->set_field('questionnaire_question_type', 'typeid', $record->id, array('id' => $record->id));
                     }
                 }
                 $recstart += $recstoget;
