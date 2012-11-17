@@ -36,9 +36,18 @@ class questionnaire_settings_form extends moodleform {
         //-------------------------------------------------------------------------------
         $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
 
-        $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $QUESTIONNAIRE_REALMS);
-        $mform->setDefault('realm', $questionnaire->survey->realm);
-        $mform->addHelpButton('realm', 'realm', 'questionnaire');
+        $capabilities = questionnaire_load_capabilities($questionnaire->cm->id);
+        if (!$capabilities->createtemplates) {
+            unset($QUESTIONNAIRE_REALMS['template']);
+        }
+        if (!$capabilities->createpublic) {
+            unset($QUESTIONNAIRE_REALMS['public']);
+        }
+        if (isset($QUESTIONNAIRE_REALMS['public']) || isset($QUESTIONNAIRE_REALMS['template'])) {
+            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $QUESTIONNAIRE_REALMS);
+            $mform->setDefault('realm', $questionnaire->survey->realm);
+            $mform->addHelpButton('realm', 'realm', 'questionnaire');
+        }
 
         $mform->addElement('text', 'title', get_string('title', 'questionnaire'), array('size'=>'60'));
         $mform->setDefault('title', $questionnaire->survey->title);
