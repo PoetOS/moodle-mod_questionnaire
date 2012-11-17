@@ -59,6 +59,7 @@ function questionnaire_supports($feature) {
         case FEATURE_GROUPMEMBERSONLY:        return true;
         case FEATURE_GROUPS:                  return true;
         case FEATURE_MOD_INTRO:               return true;
+        case FEATURE_SHOW_DESCRIPTION:        return true;
 
         default: return null;
     }
