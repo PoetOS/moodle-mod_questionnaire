@@ -1204,7 +1204,7 @@ class questionnaire {
             case 9: // Date
                 $checkdateresult = '';
                 if ($formdata->{'q'.$qid} != '') {
-                    $checkdateresult = check_date($formdata->{'q'.$qid});
+                    $checkdateresult = questionnaire_check_date($formdata->{'q'.$qid});
                 }
                 if (substr($checkdateresult,0,5) == 'wrong') {
                     $wrongformat++;
@@ -1593,7 +1593,7 @@ class questionnaire {
                     $qrecords = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
                     foreach($qrecords as $value) {
                         if ($value->id == $cid) {
-                            $contents = choice_values($value->content);
+                            $contents = questionnaire_choice_values($value->content);
                             if ($contents->modname) {
                                 $row->ccontent = $contents->modname;
                             } else {
@@ -1671,7 +1671,7 @@ class questionnaire {
                             if (preg_match('/^!other/', $c2)) {
                                 $otherend = true;
                             } else {
-                                $contents = choice_values($c2);
+                                $contents = questionnaire_choice_values($c2);
                                 if ($contents->modname) {
                                     $c2 = $contents->modname;
                                 } elseif ($contents->title) {
@@ -1819,18 +1819,18 @@ class questionnaire {
                         if ($key == 'ccontent') {
                             if ($osgood) {
                                 list($contentleft, $contentright) = preg_split('/[|]/', $val);
-                                $contents = choice_values($contentleft);
+                                $contents = questionnaire_choice_values($contentleft);
                                 if ($contents->title) {
                                     $contentleft = $contents->title;
                                 }
-                                $contents = choice_values($contentright);
+                                $contents = questionnaire_choice_values($contentright);
                                 if ($contents->title) {
                                     $contentright = $contents->title;
                                 }
                                 $val = strip_tags($contentleft.'|'.$contentright);
                                 $val = preg_replace("/[\r\n\t]/", ' ', $val);
                             } else {
-                                $contents = choice_values($val);
+                                $contents = questionnaire_choice_values($val);
                                 if ($contents->modname) {
                                     $val = $contents->modname;
                                 } elseif ($contents->title) {
@@ -2489,7 +2489,7 @@ class questionnaire {
                                 $columns[][$qpos] = $col;
                                 array_push($types, '0');
                             }
-                            $contents = choice_values($content);
+                            $contents = questionnaire_choice_values($content);
                             if ($contents->modname) {
                                 $modality = $contents->modname;
                             } elseif ($contents->title) {
@@ -2517,18 +2517,18 @@ class questionnaire {
                             } else {
                                 if ($osgood) {
                                     list($contentleft, $contentright) = preg_split('/[|]/', $content);
-                                    $contents = choice_values($contentleft);
+                                    $contents = questionnaire_choice_values($contentleft);
                                     if ($contents->title) {
                                         $contentleft = $contents->title;
                                     }
-                                    $contents = choice_values($contentright);
+                                    $contents = questionnaire_choice_values($contentright);
                                     if ($contents->title) {
                                         $contentright = $contents->title;
                                     }
                                     $modality = strip_tags($contentleft.'|'.$contentright);
                                     $modality = preg_replace("/[\r\n\t]/", ' ', $modality);
                                 } else {
-                                    $contents = choice_values($content);
+                                    $contents = questionnaire_choice_values($content);
                                     if ($contents->modname) {
                                         $modality = $contents->modname;
                                     } elseif ($contents->title) {
@@ -2873,7 +2873,7 @@ function questionnaire_response_key_cmp($l, $r) {
     return ($lc > $rc) ? 1 : -1;
 }
 
-    function check_date ($thisdate, $insert=false) {
+    function questionnaire_check_date ($thisdate, $insert=false) {
         $dateformat = get_string('strfdate', 'questionnaire');
         if (preg_match('/(%[mdyY])(.+)(%[mdyY])(.+)(%[mdyY])/', $dateformat, $matches)) {
             $date_pieces = explode($matches[2], $thisdate);
@@ -3001,7 +3001,7 @@ function questionnaire_response_key_cmp($l, $r) {
         break;
     }
 
-    function choice_values($content) {
+    function questionnaire_choice_values($content) {
 
         /// If we run the content through format_text first, any filters we want to use (e.g. multilanguage) should work.
         // examines the content of a possible answer from radio button, check boxes or rate question
