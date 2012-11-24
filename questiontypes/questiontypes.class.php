@@ -446,10 +446,16 @@ class questionnaire_question {
         } else if (is_int($rids)) {
             $ridstr = ' AND response_id = '.$rids.' ';
         }
-        $sql = 'SELECT id, response '.
-               'FROM {questionnaire_'.$this->response_table.'} '.
-               'WHERE question_id= ? '.$ridstr;
-        return $DB->get_records_sql($sql, array($this->id));
+        
+        $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, U.id AS user, U.lastname, U.firstname, R.survey_id, R.id AS rid '.
+                        'FROM {questionnaire_'.$this->response_table.'} T, '.
+                        '{questionnaire_response} R, '.
+                        '{user} U '.
+                        'WHERE question_id='.$this->id.$ridstr.
+                        ' AND T.response_id = R.id'.
+                        ' AND U.id = R.username '.
+                        'ORDER BY U.lastname, U.firstname';
+        return $DB->get_records_sql($sql);
     }
 
 
@@ -652,7 +658,7 @@ class questionnaire_question {
             if ($isnumeric) {
                 $this->mkreslistnumeric(count($rids), $this->precise);
             } else {
-                $this->mkreslist(count($rids), $this->precise, $prtotal);
+                $this->mkreslisttext($rows);
             }
         } else {
             print_string('noresponsedata', 'questionnaire');
@@ -1816,6 +1822,48 @@ class questionnaire_question {
             $table->data[] = array('', get_string('noresponsedata', 'questionnaire'));
         }
 
+        echo html_writer::table($table);
+    }
+    
+    function mkreslisttext($rows) {
+        global $CFG, $SESSION, $questionnaire, $OUTPUT;
+        $strresponse = get_string('response', 'questionnaire');
+        $viewsingleresponse	= $questionnaire->capabilities->viewsingleresponse;
+        $nonanonymous = $questionnaire->respondenttype != 'anonymous';
+        $table = new html_table();
+        if ($viewsingleresponse && $nonanonymous) {
+            $strrespondent = get_string('respondent', 'questionnaire');
+            $table->align = array('left', 'left');
+            $currentgroupid = '';
+            if (isset($SESSION->questionnaire->currentgroupid)) {
+                $currentgroupid = $SESSION->questionnaire->currentgroupid;
+            }
+            $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$questionnaire->survey->id.
+            '&currentgroupid='.$currentgroupid;
+            $table->head = array($strrespondent, $strresponse);
+            $table->size = array('15%', '*');
+        } else {
+            $table->align = array('left', 'left');
+            $table->head = array('',$strresponse);
+            $table->size = array('2%', '*');
+        }
+        $username = '';
+        foreach ($rows as $row) {
+            $text = format_text($row->response, FORMAT_HTML);
+            if ($viewsingleresponse && $nonanonymous) {
+                $rurl = $url.'&rid='.$row->rid;
+                $title = userdate($row->submitted);
+                $username = $row->username;
+                $user = new stdClass();
+                $user->firstname = $row->firstname;
+                $user->lastname = $row->lastname;
+                $rusername = '<a href="'.$rurl.'" title="'.$title.'">'.fullname($user).'</a>';
+                $table->data[] = array($rusername, $text);
+            } else {
+                $table->data[] = array('&#8226;',$text);
+            }
+
+        }   
         echo html_writer::table($table);
     }
 
