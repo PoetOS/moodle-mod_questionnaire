@@ -9,6 +9,7 @@ $string['alignment_help'] = 'Select buttons alignment: vertical (default) or hor
 $string['alignment_link'] = 'mod/questionnaire/questions#Radio_Buttons';
 $string['all'] = 'All';
 $string['alreadyfilled'] = 'You have already filled out this questionnaire for us{$a}. Thank you.';
+$string['andaveragevalues'] = 'and average values';
 $string['anonymous'] = 'Anonymous';
 $string['average'] = 'Average';
 $string['averagerank'] = 'Average rank';
