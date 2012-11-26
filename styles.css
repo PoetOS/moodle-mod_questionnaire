@@ -53,7 +53,6 @@
 
 #page-mod-questionnaire-questions div.qcontainer div.fstatic {
     width: 97%;
-    border-bottom: solid #000000 1px;
     margin-right: 1em;
     margin-left: 10px;
     background-color: #FFFFFF;
@@ -61,6 +60,7 @@
 
 #page-mod-questionnaire-questions div.qcontainer div.qcontent {
     margin-bottom:-1em;
+    border-bottom: solid #000000 1px;
 }
 
 div.qoptcontainer div.ftextarea {
@@ -254,3 +254,12 @@ body#page-mod-questionnaire-myreport .generaltable {
     border-left: #CCCCCC thin dotted;
     border-bottom: #CCCCCC thin dotted;
 }
+
+/*skip logic BEGIN*/
+
+#page-mod-questionnaire-questions div.qcontainer div.qdepend {
+    color:#FF0000;
+    margin-bottom:-1.2em;
+    border-bottom: #CCCCCC thin dotted;
+}
+/*skip logic END*/

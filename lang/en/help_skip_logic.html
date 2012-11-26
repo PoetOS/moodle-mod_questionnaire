@@ -1,0 +1,122 @@
+<html>
+<body style=" font-family:Verdana, Arial, Helvetica, sans-serif; font-size:small;">
+<style type="text/css">
+<!--
+.red {
+	color: #F00;
+}
+-->
+</style>
+<h2 class="main">Skip Logic &amp; Conditional branching</h2>
+<hr />
+<p>The Skip logic (<em>aka</em> Conditional branching) feature will jump a respondent over a group/page of questions that isn't  relevant to them.</p>
+<h3>Skip logic simple example </h3>
+<ol>
+  <li>Page 1  
+    <ul>
+      <li>Question 1 Do you own a car? Yes/No. 
+        <ul>
+          <li>Answer Yes -&gt; go to page 2</li>
+          <li>Answer No -&gt; go to page <strong>5</strong> (i.e. <strong><em>skip</em></strong> over irrelevant questions in pages 2 through 4) </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li>Page 2
+    <ul>
+      <li>Question 2: What is the color of your car?</li>
+      <li>Question 3: Did you buy it new or second-hand?
+        <ul>
+          <li>Answer <em>new</em> -&gt; go to page <strong>3</strong> </li>
+          <li>Answer <em>second-hand</em> -&gt; go to page <strong>4</strong> </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Page 3
+    <ul>
+      <li>Question 4: Why did you buy your car new?</li>
+    </ul>
+  </li>
+  <li>Page 4 </li>
+  <ul>
+    <li>Question 5: Why did you buy your car second-hand?</li>
+  </ul>
+  <li>Page 5
+    <ul>
+      <li>Question 6: Do you sometimes use public transport to go to work?</li>
+      <li>etc. </li>
+    </ul>
+  </li>
+</ol>
+<h4>Procedure to be followed to obtain the above &quot;skip logic&quot; flow</h4>
+<ul>
+  <li>Create Q1 as a Yes/No question.
+    <ul>
+      <li><strong>Question Name</strong>: <em>own car</em>. Note that you <em>must</em> give your question a name, as this name will be used later on in the Questionnaire for the list of Depend questions. Please make this name as short as possible. </li>
+      <li><strong>Response Required</strong>: <em>Yes</em> </li>
+      <li><strong>Question Text</strong>: <em>Do you own a car?  </em></li>
+    </ul>
+  </li>
+  <li>Insert a Page Break ---</li>
+  <li>Create Q2 as a Text Box question type<ul><li><strong>Question Name</strong>: optional </li>
+      <li><strong>Response Required</strong>: <em>Yes</em> or <em>No</em> </li>
+      <li><strong>Depend Question </strong>: own car-&gt;<em>Yes</em></li>
+      <li><strong>Question Text</strong>: <em>What color is your car? </em></li>
+    </ul>
+  </li>
+  <li>Create Q3
+    as a Radio buttons or Dropdown box question type
+    <ul>
+      <li><strong>Question Name</strong>: <em>car status</em> </li>
+      <li><strong>Response Required</strong>: <em>Yes</em></li>
+      <li><strong>Depend Question </strong>: own car-&gt;<em>Yes</em></li>
+      <li><strong>Question Text</strong>: <em>Did you buy it new or second-hand?</em></li>
+      <li><strong>Possible answers:
+        </strong>
+        <ul>
+          <li>new</li>
+          <li>second-hand </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Create Q4 as a Text Box question type
+    <ul>
+      <ul>
+        <li><strong>Question Name</strong>: optional</li>
+        <li><strong>Response Required</strong>: <em>Yes</em> or <em>No</em></li>
+        <li><strong>Depend Question </strong>: car status-&gt;<em>new</em></li>
+        <li><strong>Question Text</strong>: <em>Why did you buy your car new?</em></li>
+      </ul>
+    </ul>
+  </li>
+  <li>Insert a Page Break---</li>
+  <li>Create Q5 as a Text Box question type
+    <ul>
+      <ul>
+        <li><strong>Question Name</strong>: optional</li>
+        <li><strong>Response Required</strong>: <em>Yes</em> or <em>No</em></li>
+        <li><strong>Depend Question </strong>: car status-&gt;<em>second-hand</em></li>
+        <li><strong>Question Text</strong>: <em>Why did you buy your car second-hand?</em></li>
+      </ul>
+    </ul>
+  </li>
+  <li>Insert a Page Break---</li>
+  <li>Question 6 (see above). Now continue creating questions normally, until you want to use Skip Logic again.</li>
+  </ul>
+<h3>Note 1 </h3>
+<p>A respondent can walk a questionnaire which contains one (or more) skip logic pages forward <em>and backward</em>, as any &quot;normal&quot; multi-pages questionnaire. This means that any answer can be changed at any time (until the <strong><em>Submit</em></strong> button is pressed on the final page). Obviously if a respondent changes their response to a question containing a &quot;Depend Question&quot; setting, this will take the respondent along a new, different path through the questionnaire.</p>
+<h3>Note 2</h3>
+<p>Once a questionnaire has been created containing &quot;Depend Questions&quot;, <em>moving</em> or <em>deleting</em> those questions must only be done with great care, not to destroy the Skip Logic flow. Should you move a question that has a &quot;Depend Question&quot; setting <em>before</em> that Depend Question, it's &quot;Depend Question&quot; setting will be removed. If you delete a question that is linked to as a Depend Question by other questions, the &quot;Depend Question&quot; settings in those questions will be removed.</p>
+<h3>Note 3</h3>
+<p>Only the following 3 &quot;choice&quot; question types can be used to <em>trigger</em> the Skip Logic feature: <strong>Yes/No</strong>, <strong>Dropdown boxes</strong> and <strong>Radio buttons</strong>. However, as seen in the example above, any question type can use a Depend Question setting once they have been made available by the 3 &quot;choice&quot; question types. </p>
+<h3>Note 4</h3>
+<p>On the Questions editing page, for those questions which use a Depend Question setting, the Depend Question <em>name</em> and <em>choice</em> will be displayed in red. </p>
+<hr />
+<p class="red" style="font-size:smaller; text-align:center">Updated by JR on 
+  <!-- #BeginDate format:En2 -->25-Jul-2012<!-- #EndDate -->
+</p>
+</body>
+</html>

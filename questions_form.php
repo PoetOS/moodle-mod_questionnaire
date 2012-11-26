@@ -39,8 +39,6 @@ class questionnaire_questions_form extends moodleform {
         $mform    =& $this->_form;
 
         $mform->addElement('html', '<div class="qcontainer">');
-
-        //-------------------------------------------------------------------------------
         $mform->addElement('header', 'questionhdr', get_string('questions', 'questionnaire'));
         $mform->addHelpButton('questionhdr', 'questiontypes', 'questionnaire');
 
@@ -82,8 +80,14 @@ class questionnaire_questions_form extends moodleform {
         }
 
         $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
+        if (questionnaire_has_dependencies($questionnaire->questions)) {
+            $addqgroup[] =& $mform->createElement('submit', 'validate', get_string('validate', 'questionnaire'));
+        }
         $mform->addGroup($addqgroup, 'addqgroup', '', '', false);
-
+        if (isset($SESSION->questionnaire->validateresults) && $SESSION->questionnaire->validateresults != '') {
+            $mform->addElement('static', 'validateresult', '', '<div class="qdepend warning">'.$SESSION->questionnaire->validateresults.'</div>');
+        }
+        
         $mform->addElement('html', '<div class="qheader">');
 
         $quesgroup = array();
@@ -102,37 +106,70 @@ class questionnaire_questions_form extends moodleform {
         $mform->addElement('html', '</div>');
 
         $qnum = 0;
+
+        // JR skip logic :: to prevent moving child higher than parent OR parent lower than child
+        // we must get now the parent and child positions
+        $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
+        if ($questionnairehasdependencies) {
+            $parentpositions = questionnaire_get_parent_positions ($questionnaire->questions);
+            $childpositions = questionnaire_get_child_positions ($questionnaire->questions);
+        }
+
         foreach ($questionnaire->questions as $question) {
-
-            /// Skip displaying this question if we are moving this question.
-            //if ($this->moveq && ($this->moveq == $question->id)) {
-            //    continue;
-            //}
-
             $required = '';
             $qid = $question->id;
             $tid = $question->type_id;
             $qtype = $question->type;
             $required = $question->required;
-            $pos = $question->position;
-            $qnum_txt = '&nbsp;';
-            if ($tid<99) {
-                $qnum++;
-                $qnum_txt = $qnum;
+            // does this questionnaire contain branching questions already?
+            if ($questionnairehasdependencies) {
+                $dependency = '';
+                $dependchoice = '';
+                if ($question->dependquestion != 0) {
+                    $dependquestion = $DB->get_record('questionnaire_question', array('id' => $question->dependquestion), $fields='name,type_id');
+                    if (is_object($dependquestion)) {
+                        switch ($dependquestion->type_id) {
+                            case QUESRADIO:
+                            case QUESDROP:
+                                $dependchoice = $DB->get_record('questionnaire_quest_choice', array('id' => $question->dependchoice), $fields='content');
+                                $dependchoice = $dependchoice->content;
+                                $contents = questionnaire_choice_values($dependchoice);
+                                if ($contents->modname) {
+                                    $dependchoice = $contents->modname;
+                                }
+                                break;
+                            case QUESYESNO:
+                                switch ($question->dependchoice) {
+                                    case 0:
+                                        $dependchoice = get_string('yes');
+                                        break;
+                                    case 1:
+                                        $dependchoice = get_string('no');
+                                        break;
+                                }
+                                break;
+                        }
+                        $dependency = '<strong>'.get_string('dependquestion', 'questionnaire').'</strong> : '.$dependquestion->name.'->'.$dependchoice;
+                    }
+                }
             }
+                        
+            $pos = $question->position;
+            $qnum++;
+            $qnum_txt = $qnum;
+            
             // needed for non-English languages JR
             $qtype = '['.questionnaire_get_type($tid).']';
             $content = '';
-            if($tid == 99) {
+            if($tid == QUESPAGEBREAK) {
                 $sec++;
-                $content .= '<b>'.get_string('sectionbreak', 'questionnaire').'</b>';
             } else {
             // to take into account languages filter
                 $content = (format_text($question->content, FORMAT_HTML));
             }
 
             $quesgroup = 'quesgroup_'.$pos;
-            $$quesgroup = array();
+
             $butclass = array('class' => 'questionnaire_qbut');
 
             if (!$this->moveq) {
@@ -176,16 +213,49 @@ class questionnaire_questions_form extends moodleform {
 
             /// Need to index by 'id' since IE doesn't return assigned 'values' for image inputs.
                 ${$quesgroup}[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '<div class="qicons">');
-                ${$quesgroup}[] =& $mform->createElement('image', 'moveupbutton['.$question->id.']', $usrc, $uextra);
-                ${$quesgroup}[] =& $mform->createElement('image', 'movednbutton['.$question->id.']', $dsrc, $dextra);
+                $msrc = $CFG->wwwroot.'/mod/questionnaire/images/move.gif';
+                // do not allow moving parent question at position #1 to be moved down if it has a child at position < 4
+                if ($questionnairehasdependencies) {
+                    if ($pos == 1) {
+                        if (isset($childpositions[$qid])) {
+                            $maxdown = $childpositions[$qid];
+                            if ($maxdown < 4) {
+                                // we should use a disabled move icon here (to be created)
+                                $msrc = $CFG->wwwroot.'/mod/questionnaire/images/downd.gif';
+                                $mextra = array('value' => $question->id,
+                                                'alt' => get_string('disabled', 'questionnaire'),
+                                                'title' => get_string('disabled', 'questionnaire')) + $butclass;
+                                $mextra += array('disabled' => 'disabled');
+                            }
+                        }
+                    }
+                }
                 ${$quesgroup}[] =& $mform->createElement('image', 'movebutton['.$question->id.']',
-                                   $CFG->wwwroot.'/mod/questionnaire/images/move.gif', $mextra);
+                                    $msrc, $mextra);
                 ${$quesgroup}[] =& $mform->createElement('image', 'editbutton['.$question->id.']', $esrc, $eextra);
                 ${$quesgroup}[] =& $mform->createElement('image', 'removebutton['.$question->id.']', $rsrc, $rextra);
                 ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
             } else {
                 ${$quesgroup}[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$qnum_txt.'</div>');
-                if ($this->moveq != $question->id) {
+
+                $display = true;
+                if ($questionnairehasdependencies) {
+                    // prevent moving child to higher position than its parent
+                    if (isset($parentpositions[$this->moveq])) {
+                        $maxup = $parentpositions[$this->moveq];
+                        if ($pos <= $maxup) {
+                            $display = false;
+                        }
+                    }
+                    // prevent moving parent to lower position than its (first) child
+                    if (isset($childpositions[$this->moveq])) {
+                        $maxdown = $childpositions[$this->moveq];
+                        if ($pos >= $maxdown) {
+                            $display = false;
+                        }
+                    }
+                }
+                if ($this->moveq != $question->id && $display) {
                 $mextra = array('value' => $question->id,
                                 'alt' => get_string('movehere', 'questionnaire'),
                                 'title' => get_string('movehere', 'questionnaire')) + $butclass;
@@ -195,8 +265,10 @@ class questionnaire_questions_form extends moodleform {
                 ${$quesgroup}[] =& $mform->createElement('image', 'moveherebutton['.$newposition.']', $msrc, $mextra);
                 ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
             }
-                else {
+                elseif ($display) {
                     ${$quesgroup}[] =& $mform->createElement('static', 'qnums', '', '<div class="qicons">Move From Here</div>');
+                } else {
+                    ${$quesgroup}[] =& $mform->createElement('static', 'qnums', '', '<div class="qicons">---</div>');
                 }
             }
 
@@ -216,9 +288,11 @@ class questionnaire_questions_form extends moodleform {
             ${$quesgroup}[] =& $mform->createElement('static', 'qname_'.$question->id, '', '<div class="qname">'.$qname.'</div>');
 
             $mform->addGroup($$quesgroup, 'questgroup', '', '', false);
+            if ($dependency) {
+                $mform->addElement('static', 'qdepend_'.$question->id, '', '<div class="qdepend">'.$dependency.'</div>');
+            }
 
             $mform->addElement('static', 'qcontent_'.$question->id, '', '<div class="qcontent">'.$content.'</div>');
-
             $pos++;
         }
 
@@ -226,7 +300,6 @@ class questionnaire_questions_form extends moodleform {
         if ($this->moveq) {
             $mform->addElement('hidden', 'moveq', $this->moveq);
         }
-
 
         //-------------------------------------------------------------------------------
         // Hidden fields
@@ -314,6 +387,10 @@ class questionnaire_edit_question_form extends moodleform {
             $deflength = 0;
             $defprecise = 0;
         }
+
+        $defdependquestion = 0;
+        $defdependchoice = 0;
+        $dlabelname = 'dependquestion';
 
         $mform    =& $this->_form;
 
@@ -408,16 +485,24 @@ class questionnaire_edit_question_form extends moodleform {
         } else {
             $question->precise = isset($question->precise) ? $question->precise : $defprecise;
             $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
-            //$mform->addHelpButton('precise', $phelpname, 'questionnaire');
         }
 
+        /// Dependence fields:
+        $position = isset($question->position) ? $question->position : count($questionnaire->questions) + 1;  
+        $dependencies = questionnaire_get_dependencies($questionnaire->questions, $position);
+        if (count($dependencies) > 1) {
+            $question->dependquestion = isset($question->dependquestion) ? $question->dependquestion.','.$question->dependchoice : '0,0';
+            $group = array($mform->createElement('selectgroups', 'dependquestion', '', $dependencies) );
+            $mform->addGroup($group, 'selectdependency', get_string('dependquestion', 'questionnaire'), '', false);
+            $mform->addHelpButton('selectdependency', 'dependquestion', 'questionnaire');
+        }
+            
         /// Content field:
         $modcontext    = $this->_customdata['modcontext'];
         $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext'=>true, 'context'=>$modcontext);
         $mform->addElement('editor', 'content', get_string('text', 'questionnaire'), null, $editoroptions);
         $mform->setType('content', PARAM_RAW);
         $mform->addRule('content', null, 'required', null, 'client');
-//        $mform->addHelpButton('content', array('writing', 'questions', 'richtext2'), false, 'editorhelpbutton');
 
         /// Options section:
         // has answer options ... so show that part of the form

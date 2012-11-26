@@ -22,13 +22,18 @@ $string['checkallradiobuttons'] = 'Please check <strong>{$a}</strong> radio butt
 $string['checkboxes'] = 'Check Boxes';
 $string['checkboxes_help'] = 'Enter one option per line for the user to select one or multiple answers from. ';
 $string['checkboxes_link'] = 'mod/questionnaire/questions#Check_Boxes';
+$string['checkbreaksadded'] = 'New Page Break(s) inserted at position(s):';
+$string['checkbreaksok'] = 'All the required Page breaks are present!';
+$string['checkbreaksremoved'] = 'Removed {$a} extra Page break(s).';
 $string['closed'] = 'The questionnaire was closed on {$a}. Thanks.';
 $string['closedate'] = 'Use Close Date';
 $string['closedate_help'] = 'You can specify a date to close the questionnaire here. Check the check box, and select the date and time you want.
  Users will not be able to fill out the questionnaire after that date. If this is not selected, it will never be closed.';
 $string['confalts'] = '- OR - <br />Confirmation page';
 $string['confirmdelallresp'] = 'Are you sure you want to delete ALL the responses in this questionnaire?';
+$string['confirmdelchildren'] = 'If you delete this question, its child(ren) question(s) will also be deleted:';
 $string['confirmdelgroupresp'] = 'Are you sure you want to delete ALL the responses of {$a}?';
+$string['confirmdelquestion'] = 'Are you sure you want to delete the following question?';
 $string['confirmdelresp'] = 'Are you sure you want to delete the response by&nbsp;{$a}&nbsp;?';
 $string['confpage'] = 'Heading text';
 $string['confpage_help'] = 'Heading (in bold) and body text for the "Confirmation" page displayed after a user completes this questionnaire. (URL, if present, takes precedence over confirmation text.) If you leave this field empty, a default message will be displayed upon questionnaire completion (Thank you for completing this Questionnaire).';
@@ -54,6 +59,9 @@ $string['deletedallresp'] = 'Deleted ALL Responses';
 $string['deletedresp'] = 'Deleted Response';
 $string['deleteresp'] = 'Delete this Response';
 $string['deletingresp'] = 'Deleting Response';
+$string['dependquestion'] = 'Parent Question';
+$string['dependquestion_help'] = 'For detailed help on the branching feature, <b>right</b>-click <a href="lang/en/help_skip_logic.html"><b>HERE</b></a>';
+$string['disabled'] = 'Disabled';
 $string['displaymethod'] = 'Display method not defined for question.';
 $string['download'] = 'Download';
 $string['downloadtextformat'] = 'Download in text format';
@@ -83,6 +91,7 @@ $string['fieldlength_help'] = 'For the **Text Box** question type, enter the **I
 respondent.
 
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
+$string['finished'] = 'You have answered all the questions in this questionnaire!';
 $string['grade'] = 'Submission grade';
 $string['headingtext'] = 'Heading text';
 $string['horizontal'] = 'Horizontal';
@@ -226,7 +235,7 @@ $string['questionnaireadministration'] = 'Questionnaire Administration';
 $string['questionnairecloses'] = 'Questionnaire Closes';
 $string['questionnaireopens'] = 'Questionnaire Opens';
 $string['questionnairereport'] = 'Questionnaire Report';
-$string['questionnum'] = 'Question #';
+$string['questionnum'] = '#';
 $string['questions'] = 'Questions';
 $string['questiontypes'] = 'Question types';
 $string['questiontypes_help'] = 'See the Moodle Documentation below';
@@ -343,6 +352,8 @@ $string['url'] = 'Confirmation URL';
 $string['url_help'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['usepublic'] = 'Use public';
 $string['usetemplate'] = 'Copy existing';
+$string['validate'] = 'Check Page breaks (for branching)';
+$string['validate_help'] = 'TODO Check Page breaks (for branching)';
 $string['vertical'] = 'Vertical';
 $string['view'] = 'View';
 $string['viewallresponses'] = 'View All Responses';
