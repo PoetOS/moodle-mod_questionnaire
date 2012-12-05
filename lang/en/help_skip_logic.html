@@ -54,7 +54,7 @@
 <ul>
   <li>Create Q1 as a Yes/No question.
     <ul>
-      <li><strong>Question Name</strong>: <em>own car</em>. Note that you <em>must</em> give your question a name, as this name will be used later on in the Questionnaire for the list of Depend questions. Please make this name as short as possible. </li>
+      <li><strong>Question Name</strong>: <em>own car</em>. Note that you <em>must</em> give your question a name, as this name will be used later on in the Questionnaire for the list of Parent questions. Please make this name as short as possible. </li>
       <li><strong>Response Required</strong>: <em>Yes</em> </li>
       <li><strong>Question Text</strong>: <em>Do you own a car?  </em></li>
     </ul>
@@ -62,7 +62,7 @@
   <li>Insert a Page Break ---</li>
   <li>Create Q2 as a Text Box question type<ul><li><strong>Question Name</strong>: optional </li>
       <li><strong>Response Required</strong>: <em>Yes</em> or <em>No</em> </li>
-      <li><strong>Depend Question </strong>: own car-&gt;<em>Yes</em></li>
+      <li><strong>Parent Question </strong>: own car-&gt;<em>Yes</em></li>
       <li><strong>Question Text</strong>: <em>What color is your car? </em></li>
     </ul>
   </li>
@@ -71,7 +71,7 @@
     <ul>
       <li><strong>Question Name</strong>: <em>car status</em> </li>
       <li><strong>Response Required</strong>: <em>Yes</em></li>
-      <li><strong>Depend Question </strong>: own car-&gt;<em>Yes</em></li>
+      <li><strong>Parent Question </strong>: own car-&gt;<em>Yes</em></li>
       <li><strong>Question Text</strong>: <em>Did you buy it new or second-hand?</em></li>
       <li><strong>Possible answers:
         </strong>
@@ -87,7 +87,7 @@
       <ul>
         <li><strong>Question Name</strong>: optional</li>
         <li><strong>Response Required</strong>: <em>Yes</em> or <em>No</em></li>
-        <li><strong>Depend Question </strong>: car status-&gt;<em>new</em></li>
+        <li><strong>Parent Question </strong>: car status-&gt;<em>new</em></li>
         <li><strong>Question Text</strong>: <em>Why did you buy your car new?</em></li>
       </ul>
     </ul>
@@ -98,25 +98,30 @@
       <ul>
         <li><strong>Question Name</strong>: optional</li>
         <li><strong>Response Required</strong>: <em>Yes</em> or <em>No</em></li>
-        <li><strong>Depend Question </strong>: car status-&gt;<em>second-hand</em></li>
+        <li><strong>Parent Question </strong>: car status-&gt;<em>second-hand</em></li>
         <li><strong>Question Text</strong>: <em>Why did you buy your car second-hand?</em></li>
       </ul>
     </ul>
   </li>
   <li>Insert a Page Break---</li>
   <li>Question 6 (see above). Now continue creating questions normally, until you want to use Skip Logic again.</li>
-  </ul>
+</ul>
 <h3>Note 1 </h3>
-<p>A respondent can walk a questionnaire which contains one (or more) skip logic pages forward <em>and backward</em>, as any &quot;normal&quot; multi-pages questionnaire. This means that any answer can be changed at any time (until the <strong><em>Submit</em></strong> button is pressed on the final page). Obviously if a respondent changes their response to a question containing a &quot;Depend Question&quot; setting, this will take the respondent along a new, different path through the questionnaire.</p>
+<p>A respondent can walk a questionnaire which contains one (or more) skip logic pages forward <em>and backward</em>, as any &quot;normal&quot; multi-pages questionnaire. This means that any answer can be changed at any time (until the <strong><em>Submit</em></strong> button is pressed on the final page). Obviously if a respondent changes their response to a question containing a &quot;Parent Question&quot; setting, this will take the respondent along a new, different path through the questionnaire.</p>
 <h3>Note 2</h3>
-<p>Once a questionnaire has been created containing &quot;Depend Questions&quot;, <em>moving</em> or <em>deleting</em> those questions must only be done with great care, not to destroy the Skip Logic flow. Should you move a question that has a &quot;Depend Question&quot; setting <em>before</em> that Depend Question, it's &quot;Depend Question&quot; setting will be removed. If you delete a question that is linked to as a Depend Question by other questions, the &quot;Depend Question&quot; settings in those questions will be removed.</p>
+<p>Once a questionnaire has been created containing Parent questions, <em>moving</em> or <em>deleting</em> those questions must be done with great care, not to destroy the Skip Logic flow. </p>
+<p>On the Questions Editing page, in the Action column, the &quot;Move this question&quot; feature will not allow the user to move a Child question <em>before</em> its Parent question or a Parent question <em>after</em> its first Child question. That is to say, the &quot;Move question here&quot; boxes will not be displayed in those forbidden positions. </p>
+<p>If you click on the Delete icon of a Parent question , i.e. a question which has one or more Child questions depending on it, a warning message will display those Child quesions, asking you to confirm that you want to delete the Parent question <em>and</em> its Child questions.</p>
 <h3>Note 3</h3>
-<p>Only the following 3 &quot;choice&quot; question types can be used to <em>trigger</em> the Skip Logic feature: <strong>Yes/No</strong>, <strong>Dropdown boxes</strong> and <strong>Radio buttons</strong>. However, as seen in the example above, any question type can use a Depend Question setting once they have been made available by the 3 &quot;choice&quot; question types. </p>
+<p>Only the following 3 Choice question types can be used as Parent questions: <strong>Yes/No</strong>, <strong>Dropdown boxes</strong> and <strong>Radio buttons</strong>. However, as seen in the example above, questions of any type can use a Parent Question. </p>
 <h3>Note 4</h3>
-<p>On the Questions editing page, for those questions which use a Depend Question setting, the Depend Question <em>name</em> and <em>choice</em> will be displayed in red. </p>
+<p>On the Questions editing page, the Parent question names will be displayed in red just above each of their Child questions. </p>
+<h3>Note 5 </h3>
+<p>On the Questions editing page, once you have created one or more Child questions, a <strong>Check Page breaks</strong> button will be displayed next to the <strong>Add selected question type</strong> button. You can click that button at any time of creating questions, to check that the required Page breaks have been created before your Child questions. Missing required Page breaks will be added in the correct positions. If you do not want to bother with adding Page breaks as you create Child questions, you can just continue to create your questions and wait until you have created all your questions before clicking that <strong>Check Page breaks</strong> button to do the job for you. </p>
+<p>&nbsp;</p>
 <hr />
 <p class="red" style="font-size:smaller; text-align:center">Updated by JR on 
-  <!-- #BeginDate format:En2 -->25-Jul-2012<!-- #EndDate -->
+  <!-- #BeginDate format:En2 -->05-D&eacute;c-2012<!-- #EndDate -->
 </p>
 </body>
 </html>
