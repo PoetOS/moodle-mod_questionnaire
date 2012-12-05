@@ -1138,7 +1138,6 @@ class questionnaire {
     // ---- RESPONSE LIBRARY
 
     function response_check_format($section, &$formdata, $qnum='') {
-
         $missing = 0;
         $strmissing = ''; // missing questions
         $wrongformat = 0;
