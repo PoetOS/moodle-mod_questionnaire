@@ -737,9 +737,6 @@ class questionnaire {
             }
         //  Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
 
-            if ($formdata->sec > $num_sections) {
-                $formdata->sec = $num_sections;
-            }
             if($formdata->sec == $num_sections) {
                 echo '
             <div><input type="hidden" name="submittype" value="Submit Survey" />
@@ -770,6 +767,7 @@ class questionnaire {
 
         $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
         if($section > $num_sections) {
+            $formdata->sec = $num_sections;
             echo '<div class=warning>'.get_string('finished', 'questionnaire').'</div>';
             return(false);  // invalid section
         }
@@ -797,9 +795,7 @@ class questionnaire {
             if ($question->type_id != QUESSECTIONTEXT) {
                 $i++;
             }
-            if ($section == 1 || !questionnaire_has_dependencies($this->questions) || in_array($question->id, $SESSION->questionnaire->nbquestionsonpage)) {
-                $question->survey_display($formdata, $i, $this->usehtmleditor);
-            }
+            $question->survey_display($formdata, $i, $this->usehtmleditor);
             /// Bug MDL-7292 - Don't count section text as a question number.
             // process each question
         }
@@ -1064,10 +1060,12 @@ class questionnaire {
 
         // make copies of all the questions
         $pos=1;
+        // JR skip logic feature :: some changes needed here for dependencies down below
         $qid_array = array();
         $cid_array = array();
         foreach ($this->questions as $question) {
             // fix some fields first
+
             $old_id = $question->id;
             unset($question->id);
             $question->survey_id = $new_sid;
@@ -1140,9 +1138,6 @@ class questionnaire {
     // ---- RESPONSE LIBRARY
 
     function response_check_format($section, &$formdata, $qnum='') {
-        // skip logic
-        $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
-        $section = min($num_sections , $section);
 
         $missing = 0;
         $strmissing = ''; // missing questions
@@ -1169,7 +1164,7 @@ class questionnaire {
             if ($tid != 100) {
                 $qnum++;
             }
-            if ( ($record->required == 'y') && ($record->deleted == 'n') && ((isset($formdata->{'q'.$qid}) && $formdata->{'q'.$qid} == '') ) && $tid != 8 && $tid != 100 ) {
+            if ( ($record->required == 'y') && ($record->deleted == 'n') && ((isset($formdata->{'q'.$qid}) && $formdata->{'q'.$qid} == '') || (!isset($formdata->{'q'.$qid}))) && $tid != 8 && $tid != 100 ) {
                 $missing++;
                 $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
             }
@@ -1240,14 +1235,6 @@ class questionnaire {
                     $wrongformat++;
                     $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
                     break;
-                }
-                break;
-
-            case 6: // Drop
-                $resp = $formdata->{'q'.$qid};
-                if (!$resp && $record->required == 'y') {
-                    $missing++;
-                    $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
                 }
                 break;
 
@@ -3343,7 +3330,7 @@ function questionnaire_check_page_breaks($questionnaire) {
     }
     if (empty($newpbids) && !$msg) {
         $msg = get_string('checkbreaksok', 'questionnaire');
-    } else {
+    } elseif ($newpbids) {
         $msg .= get_string('checkbreaksadded', 'questionnaire').'&nbsp;';
         $newpbids = array_reverse ($newpbids);
         $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm);

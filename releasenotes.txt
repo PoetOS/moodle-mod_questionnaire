@@ -1,9 +1,14 @@
-Release Notes:
+Release Notes: for CONTRIB CONTRIB-3525
 
-Version 2.3.2 - Release date 20120820
+branch CONTRIB-3525_24 by JR "skip logic"
 
-- CONTRIB-3696 added addinstance string to lang/en/questionnaire.php and lang/fr/questionnaire.php
-- CONTRIB-3797 : fixed typo
-- CONTRIB-3704 (one more compliance with Strict Standards fix !)
-- one more missing new stdClass() for strict compliance
-- CONTRIB-3864 - Added savepoints to all upgrade steps.
+- INSTALL / UPGRADE
+- This version installs 2 new fields in the questionnaire_question table: dependquestion and dependchoice. 
+The dependquestion field stores the ID of the Parent question (if any) and the Parent question choice which the Child question depends on.
+- Some minor additions to the styles.css files have been made, for displaying of the Parent question + choice on the Questions editing page.
+- Deleting a question now triggers a Confirm page, including a further warning message when trying to delete a Parent question.
+- The MoveUp and MoveDown buttons have been removed from the Questions editing page, in order to simplify the interface, especially for the "skip logic" feature.
+- When trying to move a Parent or a Child questions, the interface ensures that no Parent question can be moved AFTER its first Child question 
+or a Child question BEFORE its Parent question.
+- In the Report "View by Response" tab, only those Child questions that have been answered are displayed.
+- A dozen new strings have been added to the language strings

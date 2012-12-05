@@ -122,8 +122,8 @@ class questionnaire_questions_form extends moodleform {
             $qtype = $question->type;
             $required = $question->required;
             // does this questionnaire contain branching questions already?
+            $dependency = '';
             if ($questionnairehasdependencies) {
-                $dependency = '';
                 $dependchoice = '';
                 if ($question->dependquestion != 0) {
                     $dependquestion = $DB->get_record('questionnaire_question', array('id' => $question->dependquestion), $fields='name,type_id');
