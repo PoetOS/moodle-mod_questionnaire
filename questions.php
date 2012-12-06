@@ -63,18 +63,23 @@
     if (!$questionnaire->capabilities->editquestions) {
         print_error('nopermissions', 'error','mod:questionnaire:edit');
     }
-
+    $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
+    $haschildren = array();
     $SESSION->questionnaire->current_tab = 'questions';
     $SESSION->questionnaire->validateresults = '';
     $reload = false;
 
     /// Process form data:
-    $cannotdelete = false;
+    
+    // Delete question button has been pressed in questions_form AND deletion has been confirmed on the confirmation page 
     if ($delq) {
         $qid = $delq;
         $sid = $questionnaire->survey->id;
-        $haschildren = questionnaire_check_dependencies_qu ($questionnaire->id, $qid);
-        // need to reload questions
+        // does the question to be deleted have any child questions?
+        if (questionnaire_has_dependencies($questionnaire->questions)) {
+            $haschildren = questionnaire_check_dependencies_qu ($questionnaire->id, $qid);
+        }
+        // need to reload questions before setting deleted question to 'y'
         $questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
         $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $sid));
         $select = 'survey_id = '.$sid.' AND deleted = \'n\' AND position > '.
@@ -84,12 +89,11 @@
                 $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
             }
         }
-        // this is a parent question so we must also delete its child(ren)
+        // the deleted question was a parent, so now we must delete its child question(s)
         if (count($haschildren) != 0) {
-            foreach($haschildren as $child) {
-                // need to reload questions
+            foreach($haschildren as $qid => $child) {
+                // need to reload questions first
                 $questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
-                $qid = $child->id;
                 $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $sid));
                 $select = 'survey_id = '.$sid.' AND deleted = \'n\' AND position > '.
                                 $questions[$qid]->position;
@@ -115,18 +119,17 @@
                 $pos++;
             }
         }
+        
+        
         $questions_form->set_data($sdata);
+        
 
         if ($qformdata = $questions_form->get_data()) {
 
         /// Quickforms doesn't return values for 'image' input types using 'exportValue', so we need to grab
         /// it from the raw submitted data.
             $exformdata = data_submitted();
-            if (isset($exformdata->moveupbutton)) {
-                $qformdata->moveupbutton = $exformdata->moveupbutton;
-            } else if (isset($exformdata->movednbutton)) {
-                $qformdata->movednbutton = $exformdata->movednbutton;
-            } else if (isset($exformdata->movebutton)) {
+            if (isset($exformdata->movebutton)) {
                 $qformdata->movebutton = $exformdata->movebutton;
             } else if (isset($exformdata->moveherebutton)) {
                 $qformdata->moveherebutton = $exformdata->moveherebutton;
@@ -140,13 +143,16 @@
             if (isset($qformdata->removebutton)){
             /// Need to use the key, since IE returns the image position as the value rather than the specified
             /// value in the <input> tag.
-                $qid = key($qformdata->removebutton);                
+                $qid = key($qformdata->removebutton);
                 $qtype = $questionnaire->questions[$qid]->type_id;
+
                 // delete section breaks without asking for confirmation
                 if ($qtype == 99) {
                     redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.'&amp;delq='.$qid);
                 }
-                $haschildren = questionnaire_check_dependencies_qu ($questionnaire->id, $qid); 
+                if (questionnaire_has_dependencies($questionnaire->questions)) {
+                    $haschildren = questionnaire_check_dependencies_qu ($questionnaire->id, $qid);
+                }
                 if (count($haschildren) != 0) {
                     $action = "confirmdelquestionparent";
                 } else {
@@ -466,19 +472,18 @@
     $PAGE->navbar->add($streditquestion);
     echo $OUTPUT->header();
     include('tabs.php');
-    if ($action == "confirmdelquestion") {
-        
-    }
     if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
         $qid = key($qformdata->removebutton);
         $question = $questionnaire->questions[$qid];
         $msg = '<div class="warning">'.get_string('confirmdelquestion', 'questionnaire').'</div><br />';
         $msg .= get_string('num', 'questionnaire').$question->position.'<div class="reportQuestionTitle">'.$question->content.'</div><br />';
         if ($action == "confirmdelquestionparent") {
+            $str_num = get_string('num', 'questionnaire');
             $qid = key($qformdata->removebutton);
             $msg .= '<div class="warning">'.get_string('confirmdelchildren', 'questionnaire').'</div><br />';
             foreach ($haschildren as $child) {
-                $msg .= get_string('num', 'questionnaire').$child->position.'<br />'.'<div class="reportQuestionTitle">'.$child->content.'</div>';
+                $msg .= $str_num.$child['position'].'<br />'.'<div class="reportQuestionTitle">'.
+                    $child['content'].'<strong>'.get_string('dependquestion', 'questionnaire').'</strong> ('.$str_num.$child['parentposition'].')&nbsp;:&nbsp;'.$child['parent'].'</div>';
             }
         }
         $buttonno = $CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id;

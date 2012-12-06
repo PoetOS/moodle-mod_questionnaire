@@ -116,41 +116,18 @@ class questionnaire_questions_form extends moodleform {
         }
 
         foreach ($questionnaire->questions as $question) {
-            $required = '';
+            //$required = '';
             $qid = $question->id;
             $tid = $question->type_id;
             $qtype = $question->type;
             $required = $question->required;
+
             // does this questionnaire contain branching questions already?
             $dependency = '';
             if ($questionnairehasdependencies) {
-                $dependchoice = '';
                 if ($question->dependquestion != 0) {
-                    $dependquestion = $DB->get_record('questionnaire_question', array('id' => $question->dependquestion), $fields='name,type_id');
-                    if (is_object($dependquestion)) {
-                        switch ($dependquestion->type_id) {
-                            case QUESRADIO:
-                            case QUESDROP:
-                                $dependchoice = $DB->get_record('questionnaire_quest_choice', array('id' => $question->dependchoice), $fields='content');
-                                $dependchoice = $dependchoice->content;
-                                $contents = questionnaire_choice_values($dependchoice);
-                                if ($contents->modname) {
-                                    $dependchoice = $contents->modname;
-                                }
-                                break;
-                            case QUESYESNO:
-                                switch ($question->dependchoice) {
-                                    case 0:
-                                        $dependchoice = get_string('yes');
-                                        break;
-                                    case 1:
-                                        $dependchoice = get_string('no');
-                                        break;
-                                }
-                                break;
-                        }
-                        $dependency = '<strong>'.get_string('dependquestion', 'questionnaire').'</strong> : '.$dependquestion->name.'->'.$dependchoice;
-                    }
+                    $parent = questionnaire_get_parent ($question);
+                    $dependency = '<strong>'.get_string('dependquestion', 'questionnaire').'</strong> : '.$parent[$qid]['parent'];
                 }
             }
                         
@@ -173,12 +150,6 @@ class questionnaire_questions_form extends moodleform {
             $butclass = array('class' => 'questionnaire_qbut');
 
             if (!$this->moveq) {
-                $uextra = array('value' => $question->id,
-                                'alt' => get_string('moveup', 'questionnaire'),
-                                'title' => get_string('moveup', 'questionnaire')) + $butclass;
-                $dextra = array('value' => $question->id,
-                                'alt' => get_string('movedn', 'questionnaire'),
-                                'title' => get_string('movedn', 'questionnaire')) + $butclass;
                 $mextra = array('value' => $question->id,
                                 'alt' => get_string('move', 'questionnaire'),
                                 'title' => get_string('move', 'questionnaire')) + $butclass;
@@ -188,18 +159,6 @@ class questionnaire_questions_form extends moodleform {
                 $rextra = array('value' => $question->id,
                                 'alt' => get_string('remove', 'questionnaire'),
                                 'title' => get_string('remove', 'questionnaire')) + $butclass;
-                if ($pos == 1) {
-                    $usrc = $CFG->wwwroot.'/mod/questionnaire/images/upd.gif';
-                    $uextra += array('disabled' => 'disabled');
-                } else {
-                    $usrc = $CFG->wwwroot.'/mod/questionnaire/images/up.gif';
-                }
-                if ($pos == ($numq)) {
-                    $dsrc = $CFG->wwwroot.'/mod/questionnaire/images/downd.gif';
-                    $dextra += array('disabled' => 'disabled');
-                } else {
-                    $dsrc = $CFG->wwwroot.'/mod/questionnaire/images/down.gif';
-                }
                 if ($question->type_id == QUESPAGEBREAK) {
                     $esrc = $CFG->wwwroot.'/mod/questionnaire/images/editd.gif';
                     $eextra += array('disabled' => 'disabled');
@@ -256,15 +215,15 @@ class questionnaire_questions_form extends moodleform {
                     }
                 }
                 if ($this->moveq != $question->id && $display) {
-                $mextra = array('value' => $question->id,
-                                'alt' => get_string('movehere', 'questionnaire'),
-                                'title' => get_string('movehere', 'questionnaire')) + $butclass;
-                $msrc = $CFG->wwwroot.'/mod/questionnaire/images/movehere.gif';
-                ${$quesgroup}[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '<div class="qicons">');
-                $newposition = $max == $pos ? 0 : $pos;
-                ${$quesgroup}[] =& $mform->createElement('image', 'moveherebutton['.$newposition.']', $msrc, $mextra);
-                ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
-            }
+                    $mextra = array('value' => $question->id,
+                                    'alt' => get_string('movehere', 'questionnaire'),
+                                    'title' => get_string('movehere', 'questionnaire')) + $butclass;
+                    $msrc = $CFG->wwwroot.'/mod/questionnaire/images/movehere.gif';
+                    ${$quesgroup}[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '<div class="qicons">');
+                    $newposition = $max == $pos ? 0 : $pos;
+                    ${$quesgroup}[] =& $mform->createElement('image', 'moveherebutton['.$newposition.']', $msrc, $mextra);
+                    ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
+                }
                 elseif ($display) {
                     ${$quesgroup}[] =& $mform->createElement('static', 'qnums', '', '<div class="qicons">Move From Here</div>');
                 } else {

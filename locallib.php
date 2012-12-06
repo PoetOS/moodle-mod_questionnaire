@@ -610,6 +610,7 @@ class questionnaire {
                 $SESSION->questionnaire->end = false;
                 $formdata->sec --;
             }
+            // if this page does contains child questions, allow navigating back without checking the responses 
             foreach ($this->questionsbysec[$formdata->sec] as $question) {
                 if ($question->dependquestion != 0) {
                     $caninsertresponse = false;
@@ -3126,7 +3127,6 @@ function questionnaire_response_key_cmp($l, $r) {
     // // DEV JR skip logic feature :: we need to find out how many questions will actually be displayed on next page/section
     function questionnaire_nb_questions_on_page ($questionsinquestionnaire, $questionsinsection, $rid) {
         global $DB;
-        $nbqonpage = 0;
         $questionstodisplay = array();
         foreach ($questionsinsection as $question) {
             if ($question->dependquestion != 0) {
@@ -3145,16 +3145,10 @@ function questionnaire_response_key_cmp($l, $r) {
                 }
                 $sql = 'SELECT * FROM {questionnaire}_'.$responsetable.' WHERE response_id = '.$rid.
                 ' AND question_id = '.$question->dependquestion.' AND choice_id = '.$question_dependchoice;
-                //echo $sql;
-                
-                // TODO rework this to exclude dependquestions who should not be on this page but retain potentail non-dependent ones...
-                
                 if ($DB->get_record_sql($sql)) {
-                    $nbqonpage++;
                     $questionstodisplay [] = $question->id;
                 }
             } else {
-                $nbqonpage++;
                 $questionstodisplay [] = $question->id;
             }
         }
@@ -3193,27 +3187,72 @@ function questionnaire_response_key_cmp($l, $r) {
         global $DB;
         // we need to load freshly updated questions from current questionnaire
         $questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
-        $haschildren = array();
-        foreach ($questions as $question) {
-            $dependquestion = $question->dependquestion;
-            if ($dependquestion != 0) {
-                if ($questions[$dependquestion]->id == $qid) {
-                    $haschildren[] = $question;
-                }
+        $thisparent = $qid;
+        $family = array_reverse($questions, true);     
+        $children = array();
+        foreach($family as $member) {
+            $parentid = $member->dependquestion;
+            if ($parentid >= $thisparent) {
+                $children [$member->id] = new stdClass();
+                $children[$member->id]->id = $member->id;
+                $children[$member->id]->dependquestion = $member->dependquestion;
+                $children[$member->id]->dependchoice = $member->dependchoice;
+                $children[$member->id]->position = $member->position;
+                $children[$member->id]->content = $member->content;
             }
         }
-        return $haschildren;
+        $children = array_reverse($children, true);
+        $parents = array();
+        foreach ($children as $question) {
+             if ($question->dependquestion != 0) {
+                 $parents += questionnaire_get_parent ($question);
+                }
+            }
+        return $parents;
     }
 
+    // get the parent of a child question
+    function questionnaire_get_parent ($question) {
+        global $DB;
+        $qid = $question->id;
+        $parent = array();
+        $dependquestion = $DB->get_record('questionnaire_question', array('id' => $question->dependquestion), $fields='position,name,type_id');
+        if (is_object($dependquestion)) {
+            switch ($dependquestion->type_id) {
+                case QUESRADIO:
+                case QUESDROP:
+                    $dependchoice = $DB->get_record('questionnaire_quest_choice', array('id' => $question->dependchoice), $fields='content');
+                    $dependchoice = $dependchoice->content;
+                    $contents = questionnaire_choice_values($dependchoice);
+                    if ($contents->modname) {
+                        $dependchoice = $contents->modname;
+                    }
+                    break;
+                case QUESYESNO:
+                    switch ($question->dependchoice) {
+                        case 0:
+                            $dependchoice = get_string('yes');
+                            break;
+                        case 1:
+                            $dependchoice = get_string('no');
+                            break;
+                }
+                    break;
+            }
+            $parent [$qid]['position'] = $question->position;
+            $parent [$qid]['content'] = $question->content;
+            $parent [$qid]['parentposition'] = $dependquestion->position;
+            $parent [$qid]['parent'] = $dependquestion->name.'->'.$dependchoice;
+        }
+        return $parent;
+    }
+    
     // get parent position of all child questions in current questionnaire
     function questionnaire_get_parent_positions ($questions) {
         global $DB;
-        // we need to load freshly updated questions from current questionnaire
-        //$questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
         $parentpositions = array();
         foreach ($questions as $question) {
             $dependquestion = $question->dependquestion;
-            // this is a child
             if ($dependquestion != 0) {
                 $childid = $question->id;
                 $parentpos = $questions[$dependquestion]->position;
@@ -3223,13 +3262,12 @@ function questionnaire_response_key_cmp($l, $r) {
         return $parentpositions;
     }
     
-    // get child position of all child questions in current questionnaire
+    // get child position of all parent questions in current questionnaire
     function questionnaire_get_child_positions ($questions) {
         global $DB;
         $childpositions = array();
         foreach ($questions as $question) {
             $dependquestion = $question->dependquestion;
-            // this is a child
             if ($dependquestion != 0) {                
                 $parentid = $questions[$dependquestion]->id;
                 if (!isset($firstchildfound[$parentid])) {
@@ -3242,6 +3280,7 @@ function questionnaire_response_key_cmp($l, $r) {
         return $childpositions;
     }    
 
+    // check if current questionnaire contains child questions
     function questionnaire_has_dependencies($questions) {   
         foreach($questions as $question) {
             if ($question->dependquestion != 0) {
@@ -3259,6 +3298,7 @@ function questionnaire_check_page_breaks($questionnaire) {
     // store the new page breaks ids
     $newpbids = array();
     $delpb = 0;
+    $sid = $questionnaire->survey->id;
     $questions = $questionnaire->questions;
     $positions = array();
     foreach ($questions as $key => $qu) {
@@ -3279,7 +3319,6 @@ function questionnaire_check_page_breaks($questionnaire) {
             $prevtypeid = $prevqu['type_id']; 
             if ($prevtypeid == QUESPAGEBREAK) {
                 $qid = $qu['question_id'];
-                $sid = $questionnaire->survey->id;
                 $delpb ++;
                 $msg = get_string("checkbreaksremoved", "questionnaire", $delpb).'<br />';
                 // need to reload questions
