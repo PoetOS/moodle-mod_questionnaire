@@ -759,7 +759,7 @@ class questionnaire {
     }
 
     function survey_render($section = 1, $message = '', &$formdata) {
-        global $SESSION;
+
         $this->usehtmleditor = null;
 
         if(empty($section)) {

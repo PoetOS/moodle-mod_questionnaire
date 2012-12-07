@@ -87,7 +87,7 @@ class questionnaire_questions_form extends moodleform {
         if (isset($SESSION->questionnaire->validateresults) && $SESSION->questionnaire->validateresults != '') {
             $mform->addElement('static', 'validateresult', '', '<div class="qdepend warning">'.$SESSION->questionnaire->validateresults.'</div>');
         }
-        
+
         $mform->addElement('html', '<div class="qheader">');
 
         $quesgroup = array();
@@ -106,7 +106,6 @@ class questionnaire_questions_form extends moodleform {
         $mform->addElement('html', '</div>');
 
         $qnum = 0;
-
         // JR skip logic :: to prevent moving child higher than parent OR parent lower than child
         // we must get now the parent and child positions
         $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);

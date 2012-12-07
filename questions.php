@@ -119,10 +119,7 @@
                 $pos++;
             }
         }
-        
-        
         $questions_form->set_data($sdata);
-        
 
         if ($qformdata = $questions_form->get_data()) {
 
