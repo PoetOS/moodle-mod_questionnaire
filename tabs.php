@@ -222,6 +222,12 @@
                                'id='.$questionnaire->cm->id), get_string('preview_label', 'questionnaire'));
         }
     }
+    if ($questionnaire->capabilities->viewsingleresponse) {
+        $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>$questionnaire->cm->id));
+        $row[] = new tabobject('nonrespondents',
+                        $nonrespondenturl->out(),
+                        get_string('show_nonrespondents', 'questionnaire'));
+    }
 
     if((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {
         $tabs[] = $row;

@@ -49,6 +49,8 @@ define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS', 3);
 
 define('QUESTIONNAIRE_MAX_EVENT_LENGTH', 5*24*60*60);   // 5 days maximum
 
+define('QUESTIONNAIRE_DEFAULT_PAGE_COUNT', 20);
+
 function questionnaire_supports($feature) {
     switch($feature) {
         case FEATURE_BACKUP_MOODLE2:          return true;
@@ -980,3 +982,75 @@ function questionnaire_set_events($questionnaire) {
         }
     }
 }
+/**
+ * count users which have not completed the questionnaire
+ *
+ * @global object
+ * @uses CONTEXT_MODULE
+ * @param object $cm
+ * @param int $group single groupid
+ * @param string $sort
+ * @param int $startpage
+ * @param int $pagecount
+ * @return object the userrecords
+ */
+function questionnaire_get_incomplete_users($cm, $sid,
+                $group = false,
+                $sort = '',
+                $startpage = false,
+                $pagecount = false) {
+
+    global $DB;
+
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+
+    //first get all users who can complete this questionnaire
+    $cap = 'mod/questionnaire:submit';
+    $fields = 'u.id, u.username';
+    if (!$allusers = get_users_by_capability($context,
+                    $cap,
+                    $fields,
+                    $sort,
+                    '',
+                    '',
+                    $group,
+                    '',
+                    true)) {
+        return false;
+    }
+    $allusers = array_keys($allusers);
+
+    //now get all completeds
+    $params = array('survey_id'=>$sid, 'complete'=>'y');
+    $sql = "SELECT username FROM {questionnaire_response} "
+    . "WHERE survey_id = $sid AND complete = 'y' "
+    . "GROUP BY username ";
+    
+    if (!$completedusers = $DB->get_records_sql($sql)) {
+        return $allusers;
+    }
+    $completedusers = array_keys($completedusers);
+    //now strike all completedusers from allusers
+    $allusers = array_diff($allusers, $completedusers);
+    //for paging I use array_slice()
+    if ($startpage !== false AND $pagecount !== false) {
+        $allusers = array_slice($allusers, $startpage, $pagecount);
+    }
+    return $allusers;
+}
+
+/**
+ * count users which have not completed the questionnaire
+ *
+ * @global object
+ * @param object $cm
+ * @param int $group single groupid
+ * @return int count of userrecords
+ */
+function questionnaire_count_incomplete_users($cm, $sid, $group = false) {
+    if ($allusers = questionnaire_get_incomplete_users($cm, $sid, $group)) {
+        return count($allusers);
+    }
+    return 0;
+}
+
