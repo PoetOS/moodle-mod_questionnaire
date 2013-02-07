@@ -353,7 +353,6 @@
         echo $OUTPUT->confirm($confirmdelstr,
                 $CFG->wwwroot.'/mod/questionnaire/report.php?action=dvallresp&amp;sid='.$sid.'&amp;instance='.$instance,
                 $CFG->wwwroot.'/mod/questionnaire/report.php?action=vall&amp;sid='.$sid.'&amp;instance='.$instance);
-        echo '</div>';
     /// Finish the page
         echo $OUTPUT->footer($course);
         break;
