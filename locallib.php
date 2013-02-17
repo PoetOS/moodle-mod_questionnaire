@@ -2050,6 +2050,122 @@ class questionnaire {
         echo implode(' | ', $linkarr);
     }
 
+    // ************************************************************************************************
+    // respondents list feature AUGUST 2012
+    function survey_results_navbar_alpha($curr_rid, $groupid, $cm, $byresponse) {
+        global $CFG, $DB;
+        $selectgroupid ='';
+        $gmuserid = ', GM.userid ';
+        $groupmembers = ', '.$CFG->prefix.'groups_members GM ';
+        switch ($groupid) {
+            case 0: // no groups
+            case -1: // all participants
+            case -3: // not members of any group
+                $gmuserid = '';
+                $groupmembers = '';
+                break;
+            case -2: // all members of any group
+                $selectgroupid = ' AND GM.groupid>0 AND R.username = GM.userid ';
+                break;
+            default: // members of a specific group
+                $selectgroupid = ' AND GM.groupid='.$groupid.' AND R.username = GM.userid ';
+        }
+    
+        $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username, U.id AS user, U.lastname, U.firstname '.$gmuserid.
+        'FROM '.$CFG->prefix.'questionnaire_response R,
+        '.$CFG->prefix.'user U
+        '.$groupmembers.
+        'WHERE R.survey_id='.$this->survey->id.
+        ' AND complete = \'y\''.
+        ' AND U.id = R.username '.
+        $selectgroupid.
+        'ORDER BY U.lastname, U.firstname, R.submitted DESC';
+        if (!$responses = $DB->get_records_sql($sql)) {
+            return;
+        }
+        if ($groupid == -3) { // not members of any group
+            foreach ($responses as $resp=>$key) {
+                $userid = $key->user;
+                if (groups_has_membership($cm, $userid)) {
+                    unset($responses[$resp]);
+                }
+            }
+        }
+        $total = count($responses);
+        if ($total === 0) {
+            return;
+        }
+        $rids = array();
+        $ridssub = array();
+        $ridsusername = array();
+        $ridsfirstname = array();
+        $ridslastname = array();
+        $i = 0;
+        $curr_pos = -1;
+        foreach ($responses as $response) {
+            array_push($rids, $response->responseid);
+            array_push($ridssub, $response->submitted);
+            array_push($ridsusername, $response->username);
+            array_push($ridsfirstname, $response->firstname);
+            array_push($ridslastname, $response->lastname);
+            if ($response->responseid == $curr_rid) {
+                $curr_pos = $i;
+            }
+            $i++;
+        }
+    
+        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.'&currentgroupid='.$groupid;
+        $linkarr = array();
+        if (!$byresponse) { // display single response + navbar
+            $prev_rid = ($curr_pos > 0) ? $rids[$curr_pos - 1] : null;
+            $next_rid = ($curr_pos < $total - 1) ? $rids[$curr_pos + 1] : null;
+            $first_rid = $rids[0];
+            $last_rid = $rids[$total - 1];
+            $display_pos = 1;
+            if ($prev_rid != null) {
+                $pos = $curr_pos - 1;
+                $userfullname = $ridsfirstname[$pos].' '.$ridslastname[$pos];
+                $responsedate = userdate($ridssub[$pos]);
+                $title = $userfullname;
+                if ($ridsusername[$pos] == $ridsusername[$curr_pos]) { // only add date if more than one response by a student
+                    $title .= ' | '.$responsedate;
+                }
+                $firstuserfullname = $ridsfirstname[0].' '.$ridslastname[0];
+                array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$first_rid.'" title="'.$firstuserfullname.'">'.
+                    get_string('firstrespondent','questionnaire').'</a>');
+                array_push($linkarr, '<b><&nbsp;</b><a href="'.$url.'&amp;rid='.$prev_rid.'" title="'.$title.'">'.get_string('previous').'</a>');
+            }
+            array_push($linkarr, '<b>'.($curr_pos + 1).' / '.$total.'</b>');
+            if ($next_rid != null) {
+                $pos = $curr_pos + 1;
+                $userfullname = $ridsfirstname[$pos].' '.$ridslastname[$pos];
+                $responsedate = userdate($ridssub[$pos]);
+                $title = $userfullname;
+                if ($ridsusername[$pos] == $ridsusername[$curr_pos]) { // only add date if more than one response by a student
+                    $title .= ' | '.$responsedate;
+                }
+                $lastuserfullname = $ridsfirstname[$total - 1].' '.$ridslastname[$total - 1];
+                array_push($linkarr, '<a href="'.$url.'&amp;rid='.$next_rid.'" title="'.$title.'">'.get_string('next').'</a>&nbsp;<b>></b>');
+                array_push($linkarr, '<a href="'.$url.'&amp;rid='.$last_rid.'"  title="'.$lastuserfullname .'">'.
+                    get_string('lastrespondent','questionnaire').'</a>&nbsp;<b>>></b>');
+            }
+            $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.'&byresponse=1';
+            echo '<div style="text-align:center;padding-bottom:10px; padding-top:10px;">'.
+                            implode(' | ', $linkarr);
+            echo '<br /><b><<< <a href="'.$url.'">'.get_string('backtorespondentslist', 'questionnaire').'</a></b>'.'</div>';
+    
+        } else { //display respondents list
+            $userfullname = '';
+            for ($i = 0; $i < $total; $i++) {
+                $userfullname = $ridsfirstname[$i].' '.$ridslastname[$i];
+                $responsedate = userdate($ridssub[$i]);
+                array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.$rids[$i].'" >'.$userfullname.'</a>');
+            }
+            echo '<div class="respondentstable">'.implode('<br />', $linkarr).'</div>';
+        }
+    }
+    // ************ end individual respondents list feature ************************************************************************************
+
     function survey_results_navbar_student($curr_rid, $userid, $instance, $resps, $reporttype='myreport', $sid='') {
         global $DB;
 

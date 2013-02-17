@@ -12,6 +12,7 @@ $string['alreadyfilled'] = 'You have already filled out this questionnaire for u
 $string['anonymous'] = 'Anonymous';
 $string['average'] = 'Average';
 $string['averagerank'] = 'Average rank';
+$string['backtorespondentslist'] = 'Back to Respondents List';
 $string['bodytext'] = 'Body text';
 $string['boxesnbexact'] = 'exactly {$a} box(es).';
 $string['boxesnbmax'] = 'a maximum of {$a} box(es).';
@@ -83,6 +84,7 @@ $string['fieldlength_help'] = 'For the **Text Box** question type, enter the **I
 respondent.
 
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
+$string['firstrespondent'] = 'First Respondent';
 $string['grade'] = 'Submission grade';
 $string['headingtext'] = 'Heading text';
 $string['horizontal'] = 'Horizontal';
@@ -98,6 +100,7 @@ $string['invalidsurveyid'] = 'Invalid questionnaire ID.';
 $string['kindofratescale'] = 'Type of rate scale';
 $string['kindofratescale_help'] = 'See the Moodle Documentation below';
 $string['kindofratescale_link'] = 'mod/questionnaire/questions#Type_of_rate_scale';
+$string['lastrespondent'] = 'Last Respondent';
 $string['length'] = 'Length';
 $string['maxdigitsallowed'] = 'Max. digits allowed';
 $string['maxdigitsallowed_help'] = 'By using the Max. digits allowed and Nb of decimal digits parameters you can specify
@@ -353,6 +356,7 @@ $string['viewallresponses_help'] = 'If the questionnaire is set to **Group Mode*
  (usually students, or non-editing teachers, etc.) will only be able to view the responses of the group(s) they belong to.';
 $string['viewallresponses_link'] = 'Viewing_Questionnaire_responses#Group_filtering';
 $string['viewbyresponse'] = 'View By Response';
+$string['viewbyresponse_help'] = 'View By Response HELP TODO';
 $string['viewresponses'] = 'All responses ({$a})';
 $string['viewyourresponses'] = 'Your responses- view {$a}';
 $string['warning'] = 'Warning, error encountered.';

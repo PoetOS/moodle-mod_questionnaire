@@ -254,3 +254,16 @@ body#page-mod-questionnaire-myreport .generaltable {
     border-left: #CCCCCC thin dotted;
     border-bottom: #CCCCCC thin dotted;
 }
+/*respondents list feature*/
+
+.respondentstable {
+    padding-top:10px; 
+    padding-left:25px;
+    text-align:left;
+}
+.username {
+    font-size:larger;
+    font-weight:bold;
+    background-color:#dceff3;
+    color:#1e707c;
+}

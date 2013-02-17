@@ -734,18 +734,27 @@
             echo (get_string('group').' <strong>'.groups_get_group_name($groupid).'</strong>: '.
                 get_string('noresponses','questionnaire'));
         } else {
-            if ($groupid != -1 ) {
-                $questionnaire->survey_results_navbar_student ($rid, $resp->username, $instance, $resps, 'report', $sid);
-            } else {
-                $questionnaire->survey_results_navbar($rid);
+            $groupname = get_string('group').': <strong>'.groups_get_group_name($groupid).'</strong>';
+            if ($groupid == -1 ) {
+                $groupname = get_string('allparticipants');
             }
-            echo '</div>';
-            $ret = $questionnaire->view_response($rid);
-            echo '<div style="text-align:center; padding-bottom:5px;">';
-            if ($groupid != -1 ) {
-                $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps, 'report', $sid);
-            } else {
-                $questionnaire->survey_results_navbar($rid);
+            // devjr no need to display names list if questionnaire is anonymous!
+            if ($questionnaire->respondenttype != 'anonymous') {
+                echo $OUTPUT->help_icon('viewbyresponse', 'questionnaire');
+                echo (get_string('viewbyresponse','questionnaire').' <strong> : '.$groupname.'</strong>');
+                if ($byresponse) { // show list of respondents
+                    $questionnaire->survey_results_navbar_alpha($rid, $groupid, $cm, $byresponse);
+                } else { // display individual responses
+                    echo'<div class = "viewbyresponsenavbar">';
+                    
+                    // respondents list feature AUGUST 2012
+                    $questionnaire->survey_results_navbar_alpha($rid, $groupid, $cm, $byresponse);
+                    
+                    echo '</div>';
+                    echo'<div style="text-align: left;">';
+                    $questionnaire->view_response($rid);
+                    echo '</div>';
+                }
             }
         }
         echo '</div>';
