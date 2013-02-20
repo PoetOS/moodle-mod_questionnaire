@@ -51,7 +51,7 @@
         die;
     }
 
-    $modinfo =& get_fast_modinfo($course);
+    $modinfo = get_fast_modinfo($course);
 
     if (!isset($modinfo->instances['questionnaire'])) {
         $modinfo->instances['questionnaire'] = array();
