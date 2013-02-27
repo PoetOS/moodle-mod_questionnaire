@@ -2296,12 +2296,12 @@ class questionnaire {
         if ($this->survey->subtitle) {
             echo('<h3>'.$this->survey->subtitle.'</h3>');
         }
-    ?>
         if ($this->survey->info) {
             $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php', 
                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
             echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
         }
+    ?>
     <?php
         if($cross) {
             echo("<blockquote>" ._('Cross analysis on QID:') ." ${qid}</blockquote>\n");
