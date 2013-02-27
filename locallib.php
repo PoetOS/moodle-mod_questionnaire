@@ -1938,7 +1938,8 @@ class questionnaire {
         if(empty($thank_head)) {
             $thank_head = get_string('thank_head', 'questionnaire');
         }
-        $message =  '<h3>'.$thank_head.'</h3>'.file_rewrite_pluginfile_urls($thank_body, 'pluginfile.php', $this->context->id, 'mod_questionnaire', 'thankbody', $this->id);
+        $message =  '<h3>'.$thank_head.'</h3>'.file_rewrite_pluginfile_urls(format_text($thank_body, FORMAT_HTML), 'pluginfile.php', 
+                $this->context->id, 'mod_questionnaire', 'thankbody', $this->id);
         echo ($message);
         if ($this->capabilities->readownresponses) {
             echo('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
@@ -2296,7 +2297,13 @@ class questionnaire {
             echo('<h3>'.$this->survey->subtitle.'</h3>');
         }
     ?>
-    <?php echo(file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php', $this->context->id, 'mod_questionnaire', 'info', $this->id)); ?>
+    <?php 
+        if ($this->survey->info) {
+            $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php', 
+                $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
+            echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
+        }
+     ?>
     <?php
         if($cross) {
             echo("<blockquote>" ._('Cross analysis on QID:') ." ${qid}</blockquote>\n");
