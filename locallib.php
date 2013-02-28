@@ -142,6 +142,9 @@ class questionnaire {
         $PAGE->set_title(format_string($this->name));
         $PAGE->set_heading(format_string($this->course->fullname));
         $PAGE->set_button(update_module_button($this->cm->id, $this->course->id, $this->strquestionnaire));
+        // Initialise the JavaScript.
+        $PAGE->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
+        
         echo $OUTPUT->header();
 
         /// print the tabs
@@ -3051,3 +3054,26 @@ function questionnaire_response_key_cmp($l, $r) {
          }
         return $contents;
     }
+    
+    /**
+     * Get the information about the standard questionnaire JavaScript module.
+     * @return array a standard jsmodule structure.
+     */
+    function questionnaire_get_js_module() {
+        global $PAGE;
+        return array(
+                'name' => 'mod_questionnaire',
+                'fullpath' => '/mod/questionnaire/module.js',
+                'requires' => array('base', 'dom', 'event-delegate', 'event-key',
+                        'core_question_engine', 'moodle-core-formchangechecker'),
+                'strings' => array(
+                        array('cancel', 'moodle'),
+                        array('flagged', 'question'),
+                        array('functiondisabledbysecuremode', 'quiz'),
+                        array('startattempt', 'quiz'),
+                        array('timesup', 'quiz'),
+                        array('changesmadereallygoaway', 'moodle'),
+                ),
+        );
+    }
+    
