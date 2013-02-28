@@ -33,7 +33,7 @@ class questionnaire_questions_form extends moodleform {
     }
 
     function definition() {
-        global $CFG, $questionnaire, $SESSION;
+        global $CFG, $questionnaire, $SESSION, $OUTPUT;
         global $DB;
 
         $mform    =& $this->_form;
@@ -134,7 +134,9 @@ class questionnaire_questions_form extends moodleform {
             $quesgroup = 'quesgroup_'.$pos;
             $$quesgroup = array();
             $butclass = array('class' => 'questionnaire_qbut');
-
+            $disabledclass = array('class' => 'questionnaire_qbut_disabled',
+                        'disabled' => 'disabled', 'style' => 'width: 11px;');
+            $spacer = $OUTPUT->pix_url('spacer');
             if (!$this->moveq) {
                 $uextra = array('value' => $question->id,
                                 'alt' => get_string('moveup', 'questionnaire'),
@@ -152,24 +154,24 @@ class questionnaire_questions_form extends moodleform {
                                 'alt' => get_string('remove', 'questionnaire'),
                                 'title' => get_string('remove', 'questionnaire')) + $butclass;
                 if ($pos == 1) {
-                    $usrc = $CFG->wwwroot.'/mod/questionnaire/images/upd.gif';
-                    $uextra += array('disabled' => 'disabled');
+                    $usrc = $spacer;
+                    $uextra = $disabledclass;
                 } else {
-                    $usrc = $CFG->wwwroot.'/mod/questionnaire/images/up.gif';
+                    $usrc = $OUTPUT->pix_url('t/up');
                 }
                 if ($pos == ($numq)) {
-                    $dsrc = $CFG->wwwroot.'/mod/questionnaire/images/downd.gif';
-                    $dextra += array('disabled' => 'disabled');
+                    $dsrc = $spacer;
+                    $dextra = $disabledclass;
                 } else {
-                    $dsrc = $CFG->wwwroot.'/mod/questionnaire/images/down.gif';
+                    $dsrc = $OUTPUT->pix_url('t/down');
                 }
                 if ($question->type_id == QUESPAGEBREAK) {
-                    $esrc = $CFG->wwwroot.'/mod/questionnaire/images/editd.gif';
-                    $eextra += array('disabled' => 'disabled');
+                    $esrc = $spacer;
+                    $eextra  = $disabledclass;
                 } else {
-                    $esrc = $CFG->wwwroot.'/mod/questionnaire/images/edit.gif';
+                    $esrc = $OUTPUT->pix_url('t/edit');
                 }
-                $rsrc = $CFG->wwwroot.'/mod/questionnaire/images/delete.gif';
+                $rsrc = $OUTPUT->pix_url('t/delete');
 
             //Question numbers
                 ${$quesgroup}[] =& $mform->createElement('static', 'qnums', '', '<div class="qnums">'.$qnum_txt.'</div>');
@@ -179,23 +181,22 @@ class questionnaire_questions_form extends moodleform {
                 ${$quesgroup}[] =& $mform->createElement('image', 'moveupbutton['.$question->id.']', $usrc, $uextra);
                 ${$quesgroup}[] =& $mform->createElement('image', 'movednbutton['.$question->id.']', $dsrc, $dextra);
                 ${$quesgroup}[] =& $mform->createElement('image', 'movebutton['.$question->id.']',
-                                   $CFG->wwwroot.'/mod/questionnaire/images/move.gif', $mextra);
+                                   $OUTPUT->pix_url('t/move'), $mextra);
                 ${$quesgroup}[] =& $mform->createElement('image', 'editbutton['.$question->id.']', $esrc, $eextra);
                 ${$quesgroup}[] =& $mform->createElement('image', 'removebutton['.$question->id.']', $rsrc, $rextra);
                 ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
             } else {
                 ${$quesgroup}[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$qnum_txt.'</div>');
                 if ($this->moveq != $question->id) {
-                $mextra = array('value' => $question->id,
+                    $mextra = array('value' => $question->id,
                                 'alt' => get_string('movehere', 'questionnaire'),
                                 'title' => get_string('movehere', 'questionnaire')) + $butclass;
-                $msrc = $CFG->wwwroot.'/mod/questionnaire/images/movehere.gif';
+                $msrc = $OUTPUT->pix_url('movehere');
                 ${$quesgroup}[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '<div class="qicons">');
                 $newposition = $max == $pos ? 0 : $pos;
                 ${$quesgroup}[] =& $mform->createElement('image', 'moveherebutton['.$newposition.']', $msrc, $mextra);
                 ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
-            }
-                else {
+                } else {
                     ${$quesgroup}[] =& $mform->createElement('static', 'qnums', '', '<div class="qicons">Move From Here</div>');
                 }
             }
