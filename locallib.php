@@ -556,7 +556,7 @@ class questionnaire {
 
         if(!empty($formdata->resume) && ($this->resume)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume=true);
             $this->response_goto_saved($action);
             return;
         }
@@ -1521,15 +1521,23 @@ class questionnaire {
         return $return;
     }
 
-    function response_insert($sid, $section, $rid, $userid) {
-        global $DB;
-
+    function response_insert($sid, $section, $rid, $userid, $resume=false) {
+        global $DB, $USER;
+        
+        $record = new object;
+        $record->submitted = time();
+        
         if(empty($rid)) {
             // create a uniqe id for this response
-            $record = new object;
             $record->survey_id = $sid;
             $record->username = $userid;
             $rid = $DB->insert_record('questionnaire_response', $record);
+        } else { 
+            $record->id = $rid;
+            $DB->update_record('questionnaire_response', $record);
+        }
+        if ($resume) {
+            add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
         }
 
         if (!empty($this->questionsbysec[$section])) {

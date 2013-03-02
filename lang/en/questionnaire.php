@@ -92,6 +92,7 @@ $string['includechoicetext'] = 'Include choice text';
 $string['incorrectcourseid'] = 'Course ID is incorrect';
 $string['incorrectmodule'] = 'Course Module ID was incorrect';
 $string['incorrectquestionnaire'] = 'Questionnaire is incorrect';
+$string['attemptstillinprogress'] = 'In progress. Saved on:';
 $string['invalidresponse'] = 'Invalid response specified.';
 $string['invalidresponserecord'] = 'Invalid response record specified.';
 $string['invalidsurveyid'] = 'Invalid questionnaire ID.';

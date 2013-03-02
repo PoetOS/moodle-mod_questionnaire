@@ -258,8 +258,8 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
 /// Used for user activity reports.
 /// $return->time = the time they did it
 /// $return->info = a short text description
-    $result = '';
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id)) {
+    $result = new stdClass();
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=true)) {
         $n = count($responses);
         if ($n == 1) {
             $result->info = $n.' '.get_string("response", "questionnaire");
@@ -277,22 +277,30 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
 /**
  * Get all the questionnaire responses for a user
  */
-function questionnaire_get_user_responses($surveyid, $userid) {
+function questionnaire_get_user_responses($surveyid, $userid, $complete=true) {
     global $DB;
-
+    $andcomplete = '';
+    if ($complete) {
+        $andcomplete = " AND complete = 'y' ";
+    }
     return $DB->get_records_sql ("SELECT *
         FROM {questionnaire_response}
         WHERE survey_id = ?
         AND username = ?
+        ".$andcomplete."
         ORDER BY submitted ASC ", array($surveyid, $userid));
 }
 
 function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
 /// Print a detailed representation of what a  user has done with
 /// a given particular instance of this module, for user activity reports.
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=false)) {
         foreach ($responses as $response) {
-            echo get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
+            if ($response->complete == 'y') {
+                echo get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
+            } else {
+                echo get_string('attemptstillinprogress', 'questionnaire').' '.userdate($response->submitted).'<br />';
+            }
         }
     } else {
        print_string('noresponses', 'questionnaire');
