@@ -187,6 +187,7 @@ $string['page'] = 'Page';
 $string['pageof'] = 'Page {$a->page} of {$a->totpages}';
 $string['pluginadministration'] = 'Questionnaire administration';
 $string['pluginname'] = 'Questionnaire';
+$string['portfolio'] = 'Update answers ("portfolio")';
 $string['possibleanswers'] = 'Possible answers';
 $string['posteddata'] = 'Reached page with posted data:';
 $string['preview'] = 'This is a preview of how this questionnaire will look. When you are done previewing, click <strong>Close</strong> at the bottom of this page.';
@@ -281,9 +282,11 @@ $string['responseviewstudentsnever'] = 'Never';
 $string['responseviewstudentswhenanswered'] = 'After answering the questionnaire';
 $string['responseviewstudentswhenclosed'] = 'After the questionnaire is closed';
 $string['restrictedtoteacher'] = 'These functions are restricted to editing teachers only!';
-$string['resume'] = 'Save/Resume answers';
-$string['resume_help'] = 'Setting this option allows users to save their answers to a questionnaire before submitting them.
- Users can leave the questionnaire unfinished and resume from the save point at a later date.';
+$string['resume'] = 'Save and Resume / Update answers';
+$string['resume_help'] = '<b>Save and Resume</b> allows users to save their answers to a questionnaire before submitting them.
+ Users can leave the questionnaire unfinished and resume from the save point at a later date.
+ 
+ <b>Update answers</b> allows users to update their previous sumbission. This enables Questionnaire to work as a kind of Portfolio.';
 $string['resume_link'] = 'mod/questionnaire/mod#Save/Resume_answers';
 $string['resumesurvey'] = 'Resume questionnaire';
 $string['return'] = 'Return';
@@ -291,6 +294,7 @@ $string['save'] = 'Save';
 $string['saveasnew'] = 'Save as New Question';
 $string['savedprogress'] = 'Your progress has been saved.  You may return at any time to complete this questionnaire.  To do so, simply bookmark the {$a} link below.  You may be prompted for your username and password to complete the questionnaire.';
 $string['saveeditedquestion'] = 'Save question {$a}';
+$string['saveresume'] = 'Save and Resume answers';
 $string['savesettings'] = 'Save settings';
 $string['section'] = 'Description';
 $string['sectionbreak'] = '----- Page Break -----';

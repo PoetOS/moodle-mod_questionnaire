@@ -221,8 +221,14 @@ class questionnaire {
             }
             if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
+                // this is a "portfolio" questionnaire
+                if ($this->resume == 2) {
+                    // save current response as new response
+                    $viewform->rid = '';
+                } else {
+                    $this->response_delete($viewform->rid, $viewform->sec);
+                }
 
-                $this->response_delete($viewform->rid, $viewform->sec);
                 $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser);
                 $this->response_commit($this->rid);
 
@@ -554,7 +560,7 @@ class questionnaire {
             }
         }
 
-        if(!empty($formdata->resume) && ($this->resume)) {
+        if(!empty($formdata->resume) && ($this->resume == 1)) {
             $this->response_delete($formdata->rid, $formdata->sec);
             $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume=true);
             $this->response_goto_saved($action);
@@ -677,7 +683,7 @@ class questionnaire {
             if (($this->navigate) && ($formdata->sec > 1)) {
                 echo '<input type="submit" name="prev" value="'.get_string('previouspage', 'questionnaire').'" />';
             }
-            if ($this->resume) {
+            if ($this->resume == 1) {
                 echo '<input type="submit" name="resume" value="'.get_string('save', 'questionnaire').'" />';
             }
         //  Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
@@ -858,7 +864,7 @@ class questionnaire {
         }
         $this->course = $course;
 
-        if ($this->resume && empty($rid)) {
+        if ($this->resume == 1 && empty($rid)) {
             $rid = $this->get_response($USER->id, $rid);
         }
 
@@ -1349,7 +1355,12 @@ class questionnaire {
 
         } else {
             // find latest in progress rid
-            $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND username = \''.$username.'\'';
+            // Is this a "portfolio" questionnaire? : get latest complete submitted answer (complete = y)
+            if ($this->resume == 2) {
+                $select = 'survey_id = '.$this->sid.' AND complete = \'y\' AND username = \''.$username.'\'';
+            } else {
+                $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND username = \''.$username.'\'';
+            }
             if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
                                               'id,survey_id', 0, 1)) {
                 $rec = reset($records);
@@ -1523,7 +1534,7 @@ class questionnaire {
 
     function response_insert($sid, $section, $rid, $userid, $resume=false) {
         global $DB, $USER;
-        
+
         $record = new object;
         $record->submitted = time();
         

@@ -80,7 +80,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $QUESTIONNAIRE_RESPONSEVIEWERS);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
-        $options = array('0'=>get_string('no'),'1'=>get_string('yes'));
+        $options = array(0 => get_string('no'), 1 => get_string('saveresume', 'questionnaire'), 2 => get_string('portfolio', 'questionnaire'));
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
 

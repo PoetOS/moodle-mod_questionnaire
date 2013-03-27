@@ -162,11 +162,6 @@ function questionnaire_add_instance($questionnaire) {
         $questionnaire->closedate = 0;
     }
 
-    if ($questionnaire->resume == '1') { //JR
-        $questionnaire->resume = 1;
-    } else {
-        $questionnaire->resume = 0;
-    }
     $questionnaire->navigate = 1; // not used at all!
 
     if(!$questionnaire->id = $DB->insert_record("questionnaire", $questionnaire)) {
@@ -202,11 +197,6 @@ function questionnaire_update_instance($questionnaire) {
         $questionnaire->closedate = 0;
     }
 
-    if ($questionnaire->resume == '1') { //JR
-        $questionnaire->resume = 1;
-    } else {
-        $questionnaire->resume = 0;
-    }
     $questionnaire->navigate = 1;
 
     // get existing grade item
