@@ -289,6 +289,7 @@ $string['resume_help'] = '<b>Save and Resume</b> allows users to save their answ
  <b>Update answers</b> allows users to update their previous sumbission. This enables Questionnaire to work as a kind of Portfolio.';
 $string['resume_link'] = 'mod/questionnaire/mod#Save/Resume_answers';
 $string['resumesurvey'] = 'Resume questionnaire';
+$string['resumeyourresponses'] = 'Resuming your responses saved on {$a}.';
 $string['return'] = 'Return';
 $string['save'] = 'Save';
 $string['saveasnew'] = 'Save as New Question';
@@ -344,6 +345,7 @@ $string['type'] = 'Question Type';
 $string['undefinedquestiontype'] = 'Undefined question type!';
 $string['unknown'] = 'Unknown';
 $string['unknownaction'] = 'Unknown questionnaire action specified...';
+$string['updateyourresponses'] = 'Updating your responses submitted on {$a}.';
 $string['url'] = 'Confirmation URL';
 $string['url_help'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['usepublic'] = 'Use public';

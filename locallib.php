@@ -213,6 +213,7 @@ class questionnaire {
     ///     If Survey was submitted with all required fields completed ($msg is empty),
     ///     then record the submittal.
             $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/view.php");
+            
             if (!empty($viewform->rid)) {
                 $viewform->rid = (int)$viewform->rid;
             }
@@ -221,14 +222,8 @@ class questionnaire {
             }
             if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
-                // this is a "portfolio" questionnaire
-                if ($this->resume == 2) {
-                    // save current response as new response
-                    $viewform->rid = '';
-                } else {
-                    $this->response_delete($viewform->rid, $viewform->sec);
-                }
 
+                $this->response_delete($viewform->rid, $viewform->sec);
                 $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser);
                 $this->response_commit($this->rid);
 
@@ -538,7 +533,10 @@ class questionnaire {
         if (data_submitted() && confirm_sesskey()) {
             $formdata = data_submitted();
         }
-        $formdata->rid = $this->get_response($quser);
+        // if resume or update previous responses, get previously saved responses for this user
+        if ($this->resume > 0 && empty($formdata->rid) ) {
+            $formdata->rid = $this->get_response($quser);
+        }
         if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
         }
@@ -547,6 +545,7 @@ class questionnaire {
         } else {
             $formdata->sec = (intval($formdata->sec) > 0) ? intval($formdata->sec) : 1;
         }
+
 
         $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
         $msg = '';
@@ -562,7 +561,7 @@ class questionnaire {
 
         if(!empty($formdata->resume) && ($this->resume == 1)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume=true);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume = 1);
             $this->response_goto_saved($action);
             return;
         }
@@ -863,10 +862,6 @@ class questionnaire {
             print_error('incorrectcourseid', 'questionnaire');
         }
         $this->course = $course;
-
-        if ($this->resume == 1 && empty($rid)) {
-            $rid = $this->get_response($USER->id, $rid);
-        }
 
         if (!empty($rid)) {
         // If we're viewing a response, use this method.
@@ -1256,7 +1251,6 @@ class questionnaire {
 
     function response_delete($rid, $sec = null) {
         global $DB;
-
         if (empty($rid)) {
             return;
         }
@@ -1345,7 +1339,6 @@ class questionnaire {
 
     function get_response($username, $rid = 0) {
         global $DB;
-
         $rid = intval($rid);
         if ($rid != 0) {
             // check for valid rid
@@ -1354,16 +1347,41 @@ class questionnaire {
             return ($DB->get_record_select('questionnaire_response', $select, null, $fields) !== false) ? $rid : '';
 
         } else {
-            // find latest in progress rid
-            // Is this a "portfolio" questionnaire? : get latest complete submitted answer (complete = y)
+            // if portfolio, first save all latest previous responses with new response id
             if ($this->resume == 2) {
                 $select = 'survey_id = '.$this->sid.' AND complete = \'y\' AND username = \''.$username.'\'';
-            } else {
-                $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND username = \''.$username.'\'';
+                if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
+                        'id, survey_id, submitted', 0, 1)) {
+                    $rec = reset($records);
+                    echo get_string('updateyourresponses', 'questionnaire', userdate($rec->submitted));
+                    $oldrid = $rec->id;
+                    $record = new object;
+                    $record->submitted = time();
+                    // create a unique new rid for this response
+                    $record->survey_id = $this->survey->id;
+                    $record->username = $username;
+                    $newrid = $DB->insert_record('questionnaire_response', $record);
+                    $oldresponses = $this->response_select($oldrid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1);
+                    foreach ($oldresponses as $key => $oldresponse) {
+                        $response_table = $this->questions[$key]->response_table;
+                        $qid = $key;
+                        if ($response = $DB->get_record('questionnaire_'.$response_table, 
+                                array('response_id' => $oldrid, 'question_id' => $qid))) {
+                            $record = new Object();
+                            $record = $response;
+                            $record->response_id = $newrid;
+                            $DB->insert_record('questionnaire_'.$response_table, $record);
+                        }
+                    }
+                    return $newrid;
+                }
             }
+            // find latest in progress rid
+            $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND username = \''.$username.'\'';
             if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
-                                              'id,survey_id', 0, 1)) {
+                                              'id,survey_id, submitted', 0, 1)) {
                 $rec = reset($records);
+                echo get_string('resumeyourresponses', 'questionnaire', userdate($rec->submitted));
                 return $rec->id;
             } else {
                 return '';
@@ -1532,9 +1550,9 @@ class questionnaire {
         return $return;
     }
 
-    function response_insert($sid, $section, $rid, $userid, $resume=false) {
+    function response_insert($sid, $section, $rid, $userid, $resume = 0) {
         global $DB, $USER;
-
+        
         $record = new object;
         $record->submitted = time();
         
@@ -1547,7 +1565,7 @@ class questionnaire {
             $record->id = $rid;
             $DB->update_record('questionnaire_response', $record);
         }
-        if ($resume) {
+        if ($resume == 1) {
             add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
         }
 
