@@ -286,7 +286,7 @@ $string['resume'] = 'Save and Resume / Update answers';
 $string['resume_help'] = '<b>Save and Resume</b> allows users to save their answers to a questionnaire before submitting them.
  Users can leave the questionnaire unfinished and resume from the save point at a later date.
  
- <b>Update answers</b> allows users to update their previous sumbission. This enables Questionnaire to work as a kind of Portfolio.';
+ <b>Update answers</b> allows users to update their previous sumbission. The previous submission is not deleted. This enables Questionnaire to work as a kind of Portfolio.';
 $string['resume_link'] = 'mod/questionnaire/mod#Save/Resume_answers';
 $string['resumesurvey'] = 'Resume questionnaire';
 $string['resumeyourresponses'] = 'Resuming your responses saved on {$a}.';

@@ -1363,7 +1363,9 @@ class questionnaire {
                     $newrid = $DB->insert_record('questionnaire_response', $record);
                     $oldresponses = $this->response_select($oldrid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1);
                     foreach ($oldresponses as $key => $oldresponse) {
-                        $response_table = $this->questions[$key]->response_table;
+                        print_object($oldresponse);
+                        echo"key = $key<br>";
+                        /* $response_table = $this->questions[$key]->response_table;
                         $qid = $key;
                         if ($response = $DB->get_record('questionnaire_'.$response_table, 
                                 array('response_id' => $oldrid, 'question_id' => $qid))) {
@@ -1371,7 +1373,7 @@ class questionnaire {
                             $record = $response;
                             $record->response_id = $newrid;
                             $DB->insert_record('questionnaire_'.$response_table, $record);
-                        }
+                        } */
                     }
                     return $newrid;
                 }
