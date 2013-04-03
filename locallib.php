@@ -542,7 +542,9 @@ class questionnaire {
         if ($this->resume > 0 && empty($formdata->rid) ) {
             $formdata->rid = $this->get_response($quser);
         }
-        
+
+        // if student saved a "resume" questionnaire OR left a questionnaire unfinished
+        // and there are more pages than one find the page of the last answered question
         if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
         }
@@ -1377,21 +1379,26 @@ class questionnaire {
                     // now we must copy old responses into new responses
                     $oldresponses = $this->response_select($oldrid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1);
                     $stringother = get_string('other', 'questionnaire');
-                    foreach ($oldresponses as $qid => $oldresponse) {
+                    
+                    foreach ($oldresponses as $key => $oldresponse) {
                         $response_table = '';
-                        $qtype = '';
+                        $choiceid = '';
+                        $getchoiceid = '';
+                        if ($pos = strpos($key, '_')) {
+                            $qid = substr($key, 0,$pos);
+                        } else {
+                            $qid = $key;
+                        }
+                        $rs = $DB->get_record_select('questionnaire_question', 'id = '.$qid, null, 'type_id');
+                        $qtype = $rs->type_id;
                         // there is an "other" or a rank in oldresponse                        
-                        if ($pos = strpos($qid, '_')) {
-                            // if response is single with other element
-                            if ( isset($oldresponse[3]) && $oldresponse[3] == $stringother) {
-                        
+                        if ($pos = strpos($key, '_')) {
+                            // if response is single or multiple with !other element
+                            if ($qtype == QUESCHECK || $qtype == QUESRADIO) {
                                 $response_table = 'response_other';
-                                $qid = substr($qid, 0,$pos);
                             // else this is a rank response
                             } else {
-                                $choiceid = substr($qid, $pos + 1);
-                                $qid = substr($qid, 0,$pos);
-                                $qtype = QUESRATE;
+                                $choiceid = substr($key, $pos + 1);
                             }
                         }
                         // check that question still exists (it may have been deleted from questionnaire)
@@ -1401,33 +1408,20 @@ class questionnaire {
                         if ($response_table == '') {
                             $response_table = $this->questions[$qid]->response_table;
                         }
-                        $prevqid = $qid;
-                        $rs = $DB->get_record_select('questionnaire_question', 'id = '.$qid, null, 'type_id');
-                        $qtype = $rs->type_id;
                         if ($qtype == QUESRATE) {
-                            if ($responses = $DB->get_records('questionnaire_'.$response_table,
-                                    array('response_id' => $oldrid, 'question_id' => $qid, 'choice_id' => $choiceid))) {
-                                foreach($responses as $response) {
-                                    $record = new Object();
-                                    $record = $response;
-                                    $record->response_id = $newrid;
-                                    $DB->insert_record('questionnaire_'.$response_table, $record);
-                                }
-                            }
-                        } else {
-                          //  echo"1414 --------- response_table=$response_table<br>";
-                            if ($responses = $DB->get_records('questionnaire_'.$response_table, 
-                                    array('response_id' => $oldrid, 'question_id' => $qid))) {
-                                foreach($responses as $response) {
-                                    
-                                    $record = new Object();
-                                    $record = $response;
-                                    $record->response_id = $newrid;
-                                    $DB->insert_record('questionnaire_'.$response_table, $record);
-                                }
+                            $getchoiceid = ", 'choice_id' => $choiceid";
+                        }
+                        if ($responses = $DB->get_records('questionnaire_'.$response_table, 
+                                array('response_id' => $oldrid, 'question_id' => $qid.$getchoiceid))) {
+                            foreach($responses as $response) {    
+                                $record = new Object();
+                                $record = $response;
+                                $record->response_id = $newrid;
+                                $DB->insert_record('questionnaire_'.$response_table, $record);
                             }
                         }
                     }
+                    $newresponses = $this->response_select($newrid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1);
                     return $newrid;
                 }
             }
@@ -1444,6 +1438,7 @@ class questionnaire {
         }
     }
 
+    // Returns the number of the section in which questions have been answered in a response.
     function response_select_max_sec($rid) {
         global $DB;
 
@@ -1454,6 +1449,7 @@ class questionnaire {
         return $max;
     }
 
+    //Returns the position of the last answered question in a response.
     function response_select_max_pos($rid) {
         global $DB;
 
@@ -1467,7 +1463,11 @@ class questionnaire {
                    'q.survey_id = ? AND '.
                    'q.deleted = \'n\'';
             if ($record = $DB->get_record_sql($sql, array($rid, $this->sid))) {
-                $max = (int)$record->num;
+            $max = (int)$record->num;
+                $newmax = (int)$record->num;
+                if ($newmax > $max) {
+                    $max = $newmax;
+                }
             }
         }
         return $max;
