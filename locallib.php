@@ -533,6 +533,8 @@ class questionnaire {
             $formdata = data_submitted();
         }
         $formdata->rid = $this->get_response($quser);
+        // if student saved a "resume" questionnaire OR left a questionnaire unfinished 
+        // and there are more pages than one find the page of the last answered question 
         if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
         }
@@ -1360,6 +1362,7 @@ class questionnaire {
         }
     }
 
+    // Returns the number of the section in which questions have been answered in a response.
     function response_select_max_sec($rid) {
         global $DB;
 
@@ -1370,6 +1373,7 @@ class questionnaire {
         return $max;
     }
 
+    //Returns the position of the last answered question in a response.
     function response_select_max_pos($rid) {
         global $DB;
 
@@ -1383,7 +1387,10 @@ class questionnaire {
                    'q.survey_id = ? AND '.
                    'q.deleted = \'n\'';
             if ($record = $DB->get_record_sql($sql, array($rid, $this->sid))) {
-                $max = (int)$record->num;
+                $newmax = (int)$record->num;
+                if ($newmax > $max) {
+                    $max = $newmax;
+                }
             }
         }
         return $max;
