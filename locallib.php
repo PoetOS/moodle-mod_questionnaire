@@ -1347,93 +1347,90 @@ class questionnaire {
         return $DB->update_record('questionnaire_response', $record);
     }
 
-    function get_response($username, $rid = 0) {
+    function get_response($username) {
         global $DB;
-        $rid = intval($rid);
-        if ($rid != 0) {
-            // check for valid rid
-            $fields = 'id, username';
-            $select = 'id = '.$rid.' AND survey_id = '.$this->sid.' AND username = \''.$username.'\' AND complete = \'n\'';
-            return ($DB->get_record_select('questionnaire_response', $select, null, $fields) !== false) ? $rid : '';
-
-        } else {
-            // if portfolio, first save all latest previous responses with new response id
-            if ($this->resume == 2) {
-                $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
-                $select = 'survey_id = '.$this->sid.' AND complete = \'y\' AND username = \''.$username.'\'';
-                if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
-                        'id, survey_id, submitted', 0, 1)) {
-                    $rec = reset($records);
+        // case where student left a questionnaire without submitting it
+        // either by saving it or accidentally (in case of a multi-pages questionnaire)
+        $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND username = \''.$username.'\'';
+        if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
+                'id, survey_id, submitted', 0, 1)) {
+            $rec = reset($records);
+            $oldrid = $rec->id;
+            switch ($this->resume) {
+                case 1:
+                    echo get_string('resumeyourresponses', 'questionnaire', userdate($rec->submitted));
+                    break;
+                case 2:
                     echo get_string('updateyourresponses', 'questionnaire', userdate($rec->submitted));
-                    $oldrid = $rec->id;
-                    // if only one section (page) no need to get a new $rid, it will be automatically set upon submitting questionnaire
-                    if ($num_sections == 1) {
-                        return $oldrid;
-                    }
-                    // create a unique new rid for this response
-                    $record = new object;
-                    $record->submitted = time();
-                    $record->survey_id = $this->survey->id;
-                    $record->username = $username;
-                    $newrid = $DB->insert_record('questionnaire_response', $record);
-                    // now we must copy old responses into new responses
-                    $oldresponses = $this->response_select($oldrid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1);
-                    $stringother = get_string('other', 'questionnaire');
-                    
-                    foreach ($oldresponses as $key => $oldresponse) {
-                        $response_table = '';
-                        $choiceid = '';
-                        $getchoiceid = '';
-                        if ($pos = strpos($key, '_')) {
-                            $qid = substr($key, 0,$pos);
-                        } else {
-                            $qid = $key;
-                        }
-                        $rs = $DB->get_record_select('questionnaire_question', 'id = '.$qid, null, 'type_id');
-                        $qtype = $rs->type_id;
-                        // there is an "other" or a rank in oldresponse                        
-                        if ($pos = strpos($key, '_')) {
-                            // if response is single or multiple with !other element
-                            if ($qtype == QUESCHECK || $qtype == QUESRADIO) {
-                                $response_table = 'response_other';
-                            // else this is a rank response
-                            } else {
-                                $choiceid = substr($key, $pos + 1);
-                            }
-                        }
-                        // check that question still exists (it may have been deleted from questionnaire)
-                        if (!isset($this->questions[$qid])) {
-                            break;
-                        }
-                        if ($response_table == '') {
-                            $response_table = $this->questions[$qid]->response_table;
-                        }
-                        if ($qtype == QUESRATE) {
-                            $getchoiceid = ", 'choice_id' => $choiceid";
-                        }
-                        if ($responses = $DB->get_records('questionnaire_'.$response_table, 
-                                array('response_id' => $oldrid, 'question_id' => $qid.$getchoiceid))) {
-                            foreach($responses as $response) {    
-                                $record = new Object();
-                                $record = $response;
-                                $record->response_id = $newrid;
-                                $DB->insert_record('questionnaire_'.$response_table, $record);
-                            }
-                        }
-                    }
-                    $newresponses = $this->response_select($newrid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1);
-                    return $newrid;
-                }
+                    break;
             }
-            // find latest in progress rid
-            $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND username = \''.$username.'\'';
+            return $oldrid;
+        }
+        // if portfolio, first save all latest previous responses with new response id
+        if ($this->resume == 2) {
+            $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
+            $select = 'survey_id = '.$this->sid.' AND complete = \'y\' AND username = \''.$username.'\'';
             if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
-                                              'id,survey_id, submitted', 0, 1)) {
+                    'id, survey_id, submitted', 0, 1)) {
                 $rec = reset($records);
-                echo get_string('resumeyourresponses', 'questionnaire', userdate($rec->submitted));
-                return $rec->id;
-            } else {
-                return '';
+                echo get_string('updateyourresponses', 'questionnaire', userdate($rec->submitted));
+                $oldrid = $rec->id;
+                // if only one section (page) no need to get a new $rid, it will be automatically set upon submitting questionnaire
+                if ($num_sections == 1) {
+                    return $oldrid;
+                }
+                // create a unique new rid for this response
+                $record = new object;
+                $record->submitted = time();
+                $record->survey_id = $this->survey->id;
+                $record->username = $username;
+                $newrid = $DB->insert_record('questionnaire_response', $record);
+                // now we must copy old responses into new responses
+                $oldresponses = $this->response_select($oldrid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1);
+                $stringother = get_string('other', 'questionnaire');
+                
+                foreach ($oldresponses as $key => $oldresponse) {
+                    $response_table = '';
+                    $choiceid = '';
+                    $getchoiceid = '';
+                    if ($pos = strpos($key, '_')) {
+                        $qid = substr($key, 0,$pos);
+                    } else {
+                        $qid = $key;
+                    }
+                    $rs = $DB->get_record_select('questionnaire_question', 'id = '.$qid, null, 'type_id');
+                    $qtype = $rs->type_id;
+                    // there is an "other" or a rank in oldresponse                        
+                    if ($pos = strpos($key, '_')) {
+                        // if response is single or multiple with !other element
+                        if ($qtype == QUESCHECK || $qtype == QUESRADIO) {
+                            $response_table = 'response_other';
+                        // else this is a rank response
+                        } else {
+                            $choiceid = substr($key, $pos + 1);
+                        }
+                    }
+                    // check that question still exists (it may have been deleted from questionnaire)
+                    if (!isset($this->questions[$qid])) {
+                        break;
+                    }
+                    if ($response_table == '') {
+                        $response_table = $this->questions[$qid]->response_table;
+                    }
+                    if ($qtype == QUESRATE) {
+                        $getchoiceid = ", 'choice_id' => $choiceid";
+                    }
+                    if ($responses = $DB->get_records('questionnaire_'.$response_table, 
+                            array('response_id' => $oldrid, 'question_id' => $qid.$getchoiceid))) {
+                        foreach($responses as $response) {    
+                            $record = new Object();
+                            $record = $response;
+                            $record->response_id = $newrid;
+                            $DB->insert_record('questionnaire_'.$response_table, $record);
+                        }
+                    }
+                }
+                return $newrid;
             }
         }
     }

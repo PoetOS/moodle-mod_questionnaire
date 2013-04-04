@@ -318,6 +318,7 @@ class questionnaire_question {
 
     function insert_resp_multiple($rid) {
         global $DB;
+        $resid = '';
         $val = optional_param_array('q'.$this->id, null, PARAM_CLEAN);
         foreach ($this->choices as $cid => $choice) {
             if (strpos($choice->content, '!other') === 0) {
