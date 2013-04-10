@@ -10,6 +10,7 @@ $string['alignment_link'] = 'mod/questionnaire/questions#Radio_Buttons';
 $string['all'] = 'All';
 $string['alreadyfilled'] = 'You have already filled out this questionnaire for us{$a}. Thank you.';
 $string['anonymous'] = 'Anonymous';
+$string['answerquestions'] = 'Answer the questions...';
 $string['average'] = 'Average';
 $string['averagerank'] = 'Average rank';
 $string['bodytext'] = 'Body text';
@@ -84,6 +85,7 @@ respondent.
 
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
 $string['grade'] = 'Submission grade';
+$string['guestsno'] = 'Sorry, guests cannot respond to questionnaires.';
 $string['headingtext'] = 'Heading text';
 $string['horizontal'] = 'Horizontal';
 $string['id'] = 'ID';

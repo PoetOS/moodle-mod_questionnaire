@@ -58,7 +58,6 @@
 /// Check login and get context.
     require_course_login($course, true, $cm);
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-    require_capability('mod/questionnaire:view', $context);
 
     $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/view.php');
     if (isset($id)) {
@@ -72,18 +71,102 @@
 
     $PAGE->set_url($url);
     $PAGE->set_context($context);
-
-	add_to_log($course->id, "questionnaire", "view", "view.php?id=$cm->id", "$questionnaire->name", $cm->id, $USER->id);
-
-/// Print the page header
-
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
-    $questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
-    $questionnaire->strquestionnaire  = get_string("modulename", "questionnaire");
+    
+    $PAGE->set_title(format_string($questionnaire->name));
+    
+    $PAGE->set_heading(format_string($course->fullname));
+    
+    echo $OUTPUT->header();
+    // if teacher or admin, then include tabs : not needed if student
+    if($questionnaire->capabilities->manage) {
+        include('tabs.php');
+    }
 
+    echo $OUTPUT->heading(format_text($questionnaire->name));
+    /// Print the main part of the page
+    echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
 
-    /// Mark as viewed
-	$completion=new completion_info($course);
-	$completion->set_module_viewed($cm);
-    $questionnaire->view();
+    if (!$questionnaire->is_active()) {
+        echo '<div class="message">'
+        .get_string('notavail', 'questionnaire')
+        .'</div>';
+    }
+    else if (!$questionnaire->is_open()) {
+        echo '<div class="message">'
+        .get_string('notopen', 'questionnaire', userdate($questionnaire->opendate))
+        .'</div>';
+    }
+    else if ($questionnaire->is_closed()) {
+        echo '<div class="message">'
+        .get_string('closed', 'questionnaire', userdate($questionnaire->closedate))
+        .'</div>';
+    }
+    else if ($questionnaire->survey->realm == 'template') {
+        print_string('templatenotviewable', 'questionnaire');
+        echo $OUTPUT->footer($questionnaire->course);
+        exit();
+    }
+    else if (!$questionnaire->user_is_eligible($USER->id)) {
+        echo '<div class="message">'
+        .get_string('noteligible', 'questionnaire')
+        .'</div>';
+    } else if (!$questionnaire->user_can_take($USER->id)) {
+        switch ($questionnaire->qtype) {
+            case QUESTIONNAIREDAILY:
+                $msgstring = ' '.get_string('today', 'questionnaire');
+                break;
+            case QUESTIONNAIREWEEKLY:
+                $msgstring = ' '.get_string('thisweek', 'questionnaire');
+                break;
+            case QUESTIONNAIREMONTHLY:
+                $msgstring = ' '.get_string('thismonth', 'questionnaire');
+                break;
+            default:
+                $msgstring = '';
+                break;
+        }
+        echo ('<div class="message">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
+    } else if ($questionnaire->user_can_take($USER->id)) {
+        
+        echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
+            'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>';  
+    }
+
+    echo $OUTPUT->box_end();
+    if (isguestuser()) {
+        $output = '';
+        $guestno = html_writer::tag('p', get_string('guestsno', 'questionnaire'));
+        $liketologin = html_writer::tag('p', get_string('liketologin'));
+        $output .= $OUTPUT->confirm($guestno."\n\n".$liketologin."\n", get_login_url(),
+                get_referer(false));
+        echo $output;
+    }
+
+    $numresp = $questionnaire->count_submissions($USER->id);
+
+    if ($questionnaire->capabilities->readownresponses && ($numresp > 0)) {
+        echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
+        $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
+        echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
+            $argstr).'">'.get_string('viewyourresponses', 'questionnaire', $numresp).'</a>';
+        echo $OUTPUT->box_end();
+    }
+
+    $numresp = $questionnaire->count_submissions();
+    if ($questionnaire->capabilities->readallresponses && ($numresp > 0) &&
+               ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
+                    && $questionnaire->is_closed()) ||
+                ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
+                    /* && !$questionnaire->user_can_take($USER->id) */)) &&
+               $questionnaire->is_survey_owner()) {
+        echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
+        $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
+        echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
+                $argstr).'">'.get_string('viewresponses', 'questionnaire', $numresp).'</a>';
+        echo $OUTPUT->box_end();
+    }
+    
+    echo $OUTPUT->footer();
 ?>

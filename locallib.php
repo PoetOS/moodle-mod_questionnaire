@@ -155,17 +155,11 @@ class questionnaire {
                 notice(get_string("activityiscurrentlyhidden"));
         }
 
-        if (!$this->capabilities->view) {
-            echo('<br/>');
-            questionnaire_notify(get_string("guestsno", "questionnaire", $this->name));
-            echo('<div><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
-                get_string("continue").'</a></div>');
-            exit;
-        }
+        
 
     /// Print the main part of the page
 
-        if (!$this->is_active()) {
+/*         if (!$this->is_active()) {
             echo '<div class="message">'
             .get_string('notavail', 'questionnaire')
             .'</div>';
@@ -185,15 +179,15 @@ class questionnaire {
             .get_string('noteligible', 'questionnaire')
             .'</div>';
         }
-        else if ($this->user_can_take($USER->id)) {
+        else if ($this->user_can_take($USER->id)) { */
             $sid=$this->sid;
             $quser = $USER->id;
 
-            if ($this->survey->realm == 'template') {
+            /* if ($this->survey->realm == 'template') {
                 print_string('templatenotviewable', 'questionnaire');
                 echo $OUTPUT->footer($this->course);
                 exit();
-            }
+            } */
 
             if ((!empty($this->questions)) && $this->capabilities->printblank) {
                 // open print friendly as popup window
@@ -212,7 +206,7 @@ class questionnaire {
             $msg = $this->print_survey($USER->id, $quser);
     ///     If Survey was submitted with all required fields completed ($msg is empty),
     ///     then record the submittal.
-            $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/view.php");
+            $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/complete.php");
             if (!empty($viewform->rid)) {
                 $viewform->rid = (int)$viewform->rid;
             }
@@ -247,13 +241,13 @@ class questionnaire {
                     questionnaire_update_grades($questionnaire, $quser);
                 }
 
-                add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
+                add_to_log($this->course->id, "questionnaire", "submit", "complete.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
 
                 $this->response_send_email($this->rid);
                 $this->response_goto_thankyou();
             }
 
-        } else {
+        /* } else {
             switch ($this->qtype) {
                 case QUESTIONNAIREDAILY:
                     $msgstring = ' '.get_string('today', 'questionnaire');
@@ -269,7 +263,7 @@ class questionnaire {
                     break;
             }
             echo ('<div class="message">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
-        }
+        } */
 
     /// Finish the page
         echo $OUTPUT->footer($this->course);
@@ -500,6 +494,8 @@ class questionnaire {
             // provide for groups setting
             return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'complete' => 'y'));
         } else {
+            $n = $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'username' => $userid,
+                                      'complete' => 'y'));
             return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'username' => $userid,
                                       'complete' => 'y'));
         }
@@ -527,7 +523,6 @@ class questionnaire {
 
     function print_survey($userid=false, $quser) {
         global $CFG;
-
         $formdata = new stdClass();
         if (data_submitted() && confirm_sesskey()) {
             $formdata = data_submitted();
@@ -546,7 +541,7 @@ class questionnaire {
 
         $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
         $msg = '';
-        $action = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$this->cm->id;
+        $action = $CFG->wwwroot.'/mod/questionnaire/complete.php?id='.$this->cm->id;
 
 /// TODO - Need to rework this. Too much crossover with ->view method.
         if(!empty($formdata->submit)) {
@@ -1544,7 +1539,7 @@ class questionnaire {
             $DB->update_record('questionnaire_response', $record);
         }
         if ($resume) {
-            add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
+            add_to_log($this->course->id, "questionnaire", "save", "complete.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
         }
 
         if (!empty($this->questionsbysec[$section])) {
@@ -1964,7 +1959,7 @@ class questionnaire {
             $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'">'.
             get_string("continue").'</a>');
         } else {
-            echo('<a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
+            echo('<a href="'.$CFG->wwwroot.'/course/complete.php?id='.$this->course->id.'">'.
             get_string("continue").'</a>');
         }
         return;
@@ -1980,7 +1975,7 @@ class questionnaire {
 
     <?php
         global $CFG;
-        echo ('<div class="homelink"><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">&nbsp;&nbsp;'
+        echo ('<div class="homelink"><a href="'.$CFG->wwwroot.'/course/complete.php?id='.$this->course->id.'">&nbsp;&nbsp;'
         .get_string("backto","moodle",$this->course->fullname).'&nbsp;&nbsp;</a></div>');
     ?>
     <?php

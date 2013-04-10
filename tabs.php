@@ -43,10 +43,10 @@
         $owner = true;
     }
 
-    if ($questionnaire->capabilities->view) {
+    /* if ($questionnaire->capabilities->view) {
         $row[] = new tabobject('view', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/view.php?'.
                                'id='.$questionnaire->cm->id), get_string('view', 'questionnaire'));
-    }
+    } */
     $numresp = $questionnaire->count_submissions($USER->id);
 
     if ($questionnaire->capabilities->readownresponses && ($numresp > 0)) {
