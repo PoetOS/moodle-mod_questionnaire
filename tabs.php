@@ -47,12 +47,12 @@
         $row[] = new tabobject('view', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/view.php?'.
                                'id='.$questionnaire->cm->id), get_string('view', 'questionnaire'));
     }
-    $numresp = $questionnaire->count_submissions($USER->id);
+    $usernumresp = $questionnaire->count_submissions($USER->id);
 
-    if ($questionnaire->capabilities->readownresponses && ($numresp > 0)) {
+    if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
         $row[] = new tabobject('myreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
-                               $argstr), get_string('viewyourresponses', 'questionnaire', $numresp));
+                               $argstr), get_string('viewyourresponses', 'questionnaire', $usernumresp));
 
         if (in_array($current_tab, array('mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'))) {
             $inactive[] = 'myreport';
@@ -168,7 +168,7 @@
                 ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
                     && $questionnaire->is_closed()) ||
                 ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
-                    && !$questionnaire->user_can_take($USER->id))) &&
+                    && $usernumresp > 0 )) &&
                $questionnaire->is_survey_owner()) {
         $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
         $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
