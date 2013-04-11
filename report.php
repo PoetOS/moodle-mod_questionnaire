@@ -578,13 +578,20 @@
     case 'vall': // view all responses
     case 'vallasort': // view all responses sorted in ascending order
     case 'vallarsort': // view all responses sorted in descending order
-        require_capability('mod/questionnaire:readallresponseanytime', $context);
+        //require_capability('mod/questionnaire:readallresponseanytime', $context);
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
         $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
         $PAGE->navbar->add($strviewallresponses);
         echo $OUTPUT->header();
-
+        if (!$questionnaire->capabilities->readallresponses && !$questionnaire->capabilities->readallresponseanytime) {
+            /// Should never happen, unless called directly by a snoop...
+            print_error('nopermissions', '', '', get_string('viewallresponses', 'questionnaire'));
+            /// Finish the page
+            echo $OUTPUT->footer($course);
+            break;
+        }
+        
         /// print the tabs
 	    switch ($action) {
 			case 'vallasort':
