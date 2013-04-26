@@ -80,7 +80,7 @@
     echo $OUTPUT->header();
     // if teacher or admin, then include tabs : not needed if student
     if($questionnaire->capabilities->manage) {
-        include('tabs.php');
+        //include('tabs.php');
     }
 
     echo $OUTPUT->heading(format_text($questionnaire->name));
@@ -128,9 +128,15 @@
         }
         echo ('<div class="message">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
     } else if ($questionnaire->user_can_take($USER->id)) {
-        
+        $select = 'survey_id = '.$questionnaire->survey->id.' AND username = \''.$USER->id.'\' AND complete = \'n\'';
+        $resume = $DB->get_record_select('questionnaire_response', $select, null) !== false;
+        if (!$resume) {
+            $complete = get_string('answerquestions', 'questionnaire');
+        } else {
+            $complete = get_string('resumesurvey', 'questionnaire');
+        }
         echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
-            'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>';  
+            'id='.$questionnaire->cm->id).'">'.$complete.'</a>';  
     }
 
     echo $OUTPUT->box_end();
@@ -143,26 +149,39 @@
         echo $output;
     }
 
-    $numresp = $questionnaire->count_submissions($USER->id);
+    $usernumresp = $questionnaire->count_submissions($USER->id);
 
-    if ($questionnaire->capabilities->readownresponses && ($numresp > 0)) {
+    if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
         $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
         echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
-            $argstr).'">'.get_string('viewyourresponses', 'questionnaire', $numresp).'</a>';
+            $argstr).'">'.get_string('viewyourresponses', 'questionnaire', $usernumresp).'</a>';
         echo $OUTPUT->box_end();
     }
 
+    if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
+        $owner = (trim($survey->owner) == trim($course->id));
+    } else {
+        $survey = false;
+        $owner = true;
+    }
     $numresp = $questionnaire->count_submissions();
-    if ($questionnaire->capabilities->readallresponses && ($numresp > 0) &&
+    // number of responses in currently selected group (or all participants etc.)
+    if (isset($SESSION->questionnaire->numselectedresps)) {
+        $numselectedresps = $SESSION->questionnaire->numselectedresps;
+    } else {
+        $numselectedresps = $numresp;
+    }
+    if ( ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) ||
+            $questionnaire->capabilities->readallresponses && ($numresp > 0) &&
                ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                 ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
                     && $questionnaire->is_closed()) ||
                 ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
-                    /* && !$questionnaire->user_can_take($USER->id) */)) &&
+                    && $usernumresp > 0)) &&
                $questionnaire->is_survey_owner()) {
         echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
-        $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
+        $argstr = 'instance='.$questionnaire->id;
         echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                 $argstr).'">'.get_string('viewresponses', 'questionnaire', $numresp).'</a>';
         echo $OUTPUT->box_end();

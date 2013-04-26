@@ -62,12 +62,12 @@ class questionnaire_choose_group_form extends moodleform {
                 if (!($resps = $DB->get_records_sql($sql, array($sid, $group->id)))) {
                     $resps = array();
                 }
+                // do not display groups with no responses in the dropdown list as this may cause problems
+                // in further actions (delete, export, etc)
                 if (!empty ($resps)) {
-                    $respscount = count($resps);
-                } else {
-                    $respscount = 0;
+                    $groups_options[$group->id] = get_string('group').': '.$group->name.' ('.count($resps).')';
                 }
-                $groups_options[$group->id] = get_string('group').': '.$group->name.' ('.$respscount.')';
+                
             }
             if ($canviewallgroups) {
                 $groups_options['-2'] = '---'.get_string('membersofselectedgroup','group').' '.get_string('allgroups').'---';
@@ -79,8 +79,12 @@ class questionnaire_choose_group_form extends moodleform {
         }
         $attributes = 'onChange="M.core_formchangechecker.set_form_submitted(); this.form.submit()"';
         $elementgroup[] =& $mform->createElement('select', 'currentgroupid', '', $groups_options, $attributes);
-        // buttons
-		$mform->setDefault('currentgroupid', $currentgroupid);
+        $mform->setDefault('currentgroupid', $currentgroupid);
+        if ($canviewallgroups) {
+            $mform->setDefault('currentgroupid', -1);
+        } else {
+            $mform->setDefault('currentgroupid', -2);
+        }
         $mform->addGroup($elementgroup, 'elementgroup', '', array(' '), false);
         $mform->addHelpButton('elementgroup', 'viewallresponses', 'questionnaire');
 //-------------------------------------------------------------------------------

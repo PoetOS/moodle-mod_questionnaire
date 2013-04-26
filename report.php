@@ -79,9 +79,6 @@
         $url->param('instance', $instance);
     }
     $url->param('action', $action);
-    if ($sid) {
-        $url->param('userid', $userid);
-    }
     if ($rid) {
         $url->param('rid', $rid);
     }
@@ -91,7 +88,6 @@
     if ($byresponse) {
         $url->param('byresponse', $byresponse);
     }
-    $url->param('currentgroupid', $currentgroupid);
     if ($user) {
         $url->param('user', $user);
     }
@@ -215,7 +211,6 @@
 
             if ($currentsessiongroupid > 0) {
                 $groupname = get_string('group').' <strong>'.groups_get_group_name($currentsessiongroupid).'</strong>';
-                //$numselectedresps = $numcurrentgroupresps;
             } else {
                 switch ($currentsessiongroupid) {
                     case '0':
@@ -280,13 +275,11 @@
     /// Print the page header
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->navbar->add($strviewbyresponse);
         echo $OUTPUT->header();
 
     /// print the tabs
         $SESSION->questionnaire->current_tab = 'deleteresp';
-        include('tabs.php');
+        //include('tabs.php');
 
         if ($questionnaire->respondenttype == 'anonymous') {
                 $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
@@ -336,8 +329,8 @@
     /// Print the page header
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->navbar->add($strviewallresponses);
+        /* $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add($strviewallresponses); */
         echo $OUTPUT->header();
 
         /// print the tabs
@@ -499,8 +492,8 @@
         
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->navbar->add(get_string('downloadtext'));
+        /* $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add(get_string('downloadtext')); */
         echo $OUTPUT->header();
 
         /// print the tabs
@@ -578,13 +571,20 @@
     case 'vall': // view all responses
     case 'vallasort': // view all responses sorted in ascending order
     case 'vallarsort': // view all responses sorted in descending order
-        require_capability('mod/questionnaire:readallresponseanytime', $context);
+        //require_capability('mod/questionnaire:readallresponseanytime', $context);
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->navbar->add($strviewallresponses);
+        /* $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add($strviewallresponses); */
         echo $OUTPUT->header();
-
+        if (!$questionnaire->capabilities->readallresponses && !$questionnaire->capabilities->readallresponseanytime) {
+            /// Should never happen, unless called directly by a snoop...
+            print_error('nopermissions', '', '', get_string('viewallresponses', 'questionnaire'));
+            /// Finish the page
+            echo $OUTPUT->footer($course);
+            break;
+        }
+        
         /// print the tabs
 	    switch ($action) {
 			case 'vallasort':
@@ -615,10 +615,16 @@
         } else {
             echo ('<br />');
         }
+
         if ($currentgroupid > 0) {
             $groupname = get_string('group').': <strong>'.groups_get_group_name($currentgroupid).'</strong>';
         } else {
-            switch ($currentgroupid) {
+            // even if questionnaire is set to view all groups, students cannot view all participants
+            // i.e. participants NOT IN A GROUP
+            if (!$questionnaire->canviewallgroups && $currentgroupid = -1) {
+                $currentgroupid = -2;
+            }
+            switch     ($currentgroupid) {
                 case '0':
                     $groupname = '<strong>'.get_string('groupmembersonlyerror','group').'</strong>';
                     break;
@@ -716,8 +722,8 @@
     /// Print the page header
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->navbar->add($strviewbyresponse);
+        /* $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
+        $PAGE->navbar->add($strviewbyresponse); */
         echo $OUTPUT->header();
 
         /// print the tabs

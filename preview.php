@@ -102,12 +102,12 @@
     $PAGE->set_title(format_string($qp));
     if (!$popup) {
         $PAGE->set_heading(format_string($course->fullname));
-        $PAGE->navbar->add($pq);
+        //$PAGE->navbar->add($pq);
     }
     echo $OUTPUT->header();
 
     if (!$popup) {
-        include('tabs.php');
+        //include('tabs.php');
     }
     $questionnaire->survey_print_render('', '', $course->id);
     if ($popup) {

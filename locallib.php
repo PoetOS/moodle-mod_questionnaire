@@ -147,123 +147,72 @@ class questionnaire {
         
         echo $OUTPUT->header();
 
-        /// print the tabs
-        $questionnaire = $this;
-        include('tabs.php');
-
         if (!$this->cm->visible && !$this->capabilities->viewhiddenactivities) {
                 notice(get_string("activityiscurrentlyhidden"));
         }
 
-        
-
     /// Print the main part of the page
 
-/*         if (!$this->is_active()) {
-            echo '<div class="message">'
-            .get_string('notavail', 'questionnaire')
-            .'</div>';
+        $sid=$this->sid;
+        $quser = $USER->id;
+
+        if ((!empty($this->questions)) && $this->capabilities->printblank) {
+            // open print friendly as popup window
+            $image_url = $CFG->wwwroot.'/mod/questionnaire/images/';
+            $linkname = '<img src="'.$image_url.'print.gif" alt="Printer-friendly version" />';
+            $title = get_string('printblanktooltip','questionnaire');
+            $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
+            $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
+                    'height' => 600, 'width' => 800, 'title'=>$title);
+            $name = 'popup';
+            $link = new moodle_url($url);
+            $action = new popup_action('click', $link, $name, $options);
+            $class = "floatprinticon";
+            echo $OUTPUT->action_link($link, $linkname, $action, array('class'=>$class, 'title'=>$title));
         }
-        else if (!$this->is_open()) {
-            echo '<div class="message">'
-            .get_string('notopen', 'questionnaire', userdate($this->opendate))
-            .'</div>';
+        $msg = $this->print_survey($USER->id, $quser);
+///     If Survey was submitted with all required fields completed ($msg is empty),
+///     then record the submittal.
+        $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/complete.php");
+        if (!empty($viewform->rid)) {
+            $viewform->rid = (int)$viewform->rid;
         }
-        else if ($this->is_closed()) {
-            echo '<div class="message">'
-            .get_string('closed', 'questionnaire', userdate($this->closedate))
-            .'</div>';
+        if (!empty($viewform->sec)) {
+            $viewform->sec = (int)$viewform->sec;
         }
-        else if (!$this->user_is_eligible($USER->id)) {
-            echo '<div class="message">'
-            .get_string('noteligible', 'questionnaire')
-            .'</div>';
+        if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
+            ($viewform->submittype == "Submit Survey") && empty($msg)) {
+
+            $this->response_delete($viewform->rid, $viewform->sec);
+            $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser);
+            $this->response_commit($this->rid);
+
+            /// If it was a previous save, rid is in the form...
+            if (!empty($viewform->rid) && is_numeric($viewform->rid)) {
+                $rid = $viewform->rid;
+
+            /// Otherwise its in this object.
+            } else {
+                $rid = $this->rid;
+            }
+
+            questionnaire_record_submission($this, $USER->id, $rid);
+
+            if ($this->grade != 0) {
+                $questionnaire = new Object();
+                $questionnaire->id = $this->id;
+                $questionnaire->name = $this->name;
+                $questionnaire->grade = $this->grade;
+                $questionnaire->cmidnumber = $this->cm->idnumber;
+                $questionnaire->courseid = $this->course->id;
+                questionnaire_update_grades($questionnaire, $quser);
+            }
+
+            add_to_log($this->course->id, "questionnaire", "submit", "complete.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
+
+            $this->response_send_email($this->rid);
+            $this->response_goto_thankyou();
         }
-        else if ($this->user_can_take($USER->id)) { */
-            $sid=$this->sid;
-            $quser = $USER->id;
-
-            /* if ($this->survey->realm == 'template') {
-                print_string('templatenotviewable', 'questionnaire');
-                echo $OUTPUT->footer($this->course);
-                exit();
-            } */
-
-            if ((!empty($this->questions)) && $this->capabilities->printblank) {
-                // open print friendly as popup window
-                $image_url = $CFG->wwwroot.'/mod/questionnaire/images/';
-                $linkname = '<img src="'.$image_url.'print.gif" alt="Printer-friendly version" />';
-                $title = get_string('printblanktooltip','questionnaire');
-                $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
-                $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                        'height' => 600, 'width' => 800, 'title'=>$title);
-                $name = 'popup';
-                $link = new moodle_url($url);
-                $action = new popup_action('click', $link, $name, $options);
-                $class = "floatprinticon";
-                echo $OUTPUT->action_link($link, $linkname, $action, array('class'=>$class, 'title'=>$title));
-            }
-            $msg = $this->print_survey($USER->id, $quser);
-    ///     If Survey was submitted with all required fields completed ($msg is empty),
-    ///     then record the submittal.
-            $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/complete.php");
-            if (!empty($viewform->rid)) {
-                $viewform->rid = (int)$viewform->rid;
-            }
-            if (!empty($viewform->sec)) {
-                $viewform->sec = (int)$viewform->sec;
-            }
-            if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
-                ($viewform->submittype == "Submit Survey") && empty($msg)) {
-
-                $this->response_delete($viewform->rid, $viewform->sec);
-                $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser);
-                $this->response_commit($this->rid);
-
-                /// If it was a previous save, rid is in the form...
-                if (!empty($viewform->rid) && is_numeric($viewform->rid)) {
-                    $rid = $viewform->rid;
-
-                /// Otherwise its in this object.
-                } else {
-                    $rid = $this->rid;
-                }
-
-                questionnaire_record_submission($this, $USER->id, $rid);
-
-                if ($this->grade != 0) {
-                    $questionnaire = new Object();
-                    $questionnaire->id = $this->id;
-                    $questionnaire->name = $this->name;
-                    $questionnaire->grade = $this->grade;
-                    $questionnaire->cmidnumber = $this->cm->idnumber;
-                    $questionnaire->courseid = $this->course->id;
-                    questionnaire_update_grades($questionnaire, $quser);
-                }
-
-                add_to_log($this->course->id, "questionnaire", "submit", "complete.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
-
-                $this->response_send_email($this->rid);
-                $this->response_goto_thankyou();
-            }
-
-        /* } else {
-            switch ($this->qtype) {
-                case QUESTIONNAIREDAILY:
-                    $msgstring = ' '.get_string('today', 'questionnaire');
-                    break;
-                case QUESTIONNAIREWEEKLY:
-                    $msgstring = ' '.get_string('thisweek', 'questionnaire');
-                    break;
-                case QUESTIONNAIREMONTHLY:
-                    $msgstring = ' '.get_string('thismonth', 'questionnaire');
-                    break;
-                default:
-                    $msgstring = '';
-                    break;
-            }
-            echo ('<div class="message">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
-        } */
 
     /// Finish the page
         echo $OUTPUT->footer($this->course);
@@ -529,7 +478,7 @@ class questionnaire {
         }
         $formdata->rid = $this->get_response($quser);
         // if student saved a "resume" questionnaire OR left a questionnaire unfinished 
-        // and there are more pages than one find the page of the last answered question 
+        // and there are more pages than one, then find the page of the last answered question 
         if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
         }
@@ -1473,7 +1422,7 @@ class questionnaire {
         $end_plaintext = "\r\n";
 
         $subject = get_string('surveyresponse', 'questionnaire') .": $name [$rid]";
-        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.
+        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&byresponse=1&amp;sid='.$this->survey->id.
                 '&amp;rid='.$rid.'&amp;instance='.$this->id;
 
         // html and plaintext body
@@ -1975,7 +1924,7 @@ class questionnaire {
 
     <?php
         global $CFG;
-        echo ('<div class="homelink"><a href="'.$CFG->wwwroot.'/course/complete.php?id='.$this->course->id.'">&nbsp;&nbsp;'
+        echo ('<div class="homelink"><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">&nbsp;&nbsp;'
         .get_string("backto","moodle",$this->course->fullname).'&nbsp;&nbsp;</a></div>');
     ?>
     <?php
@@ -2021,7 +1970,7 @@ class questionnaire {
         $rows_per_page = 1;
         $pages = ceil($total / $rows_per_page);
 
-        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id;
+        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;byresponse=1&amp;sid='.$this->survey->id;
 
         $mlink = create_function('$i,$r', 'return "<a href=\"'.$url.'&amp;rid=$r\">$i</a>";');
 
@@ -2101,7 +2050,7 @@ class questionnaire {
         $pages = ceil($total / $rows_per_page);
 
         if ($reporttype == 'myreport') {
-            $url = 'myreport.php?instance='.$instance.'&amp;user='.$userid.'&amp;action=vresp';
+            $url = 'myreport.php?instance='.$instance.'&amp;user='.$userid.'&amp;action=vresp&amp;byresponse=1';
         } else {
             $url = 'report.php?instance='.$instance.'&amp;user='.$userid.'&amp;action=vresp&amp;byresponse=1&amp;sid='.$sid;
         }

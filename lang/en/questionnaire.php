@@ -163,7 +163,7 @@ $string['optionalname_help'] = 'The Question Name is only used when you export r
 $string['optionalname_link'] = 'mod/questionnaire/questions#Question_Name';
 $string['or'] = '- OR -';
 $string['order_ascending'] = 'Ascending order';
-$string['order_default'] = 'View Default order';
+$string['order_default'] = 'Default order';
 $string['order_descending'] = 'Descending order';
 $string['orderresponses'] = 'Order Responses';
 $string['orderresponses_help'] = 'When displaying All Responses you can order the choices by number of responses (the Average column) for the following
@@ -348,7 +348,7 @@ $string['usepublic'] = 'Use public';
 $string['usetemplate'] = 'Copy existing';
 $string['vertical'] = 'Vertical';
 $string['view'] = 'View';
-$string['viewallresponses'] = 'View All Responses';
+$string['viewallresponses'] = 'All Responses';
 $string['viewallresponses_help'] = 'If the questionnaire is set to **Group Mode**: *Visible groups*, or is set to *Separate groups* and the current user
  has the *moodle/site:accessallgroups* capability (in the current context), and groups have been defined in the current course,
  then the user has access to a dropdown list of groups. This dropdown list enables the user to "filter" the questionnaire responses by groups.
@@ -357,7 +357,7 @@ $string['viewallresponses_help'] = 'If the questionnaire is set to **Group Mode*
 $string['viewallresponses_link'] = 'Viewing_Questionnaire_responses#Group_filtering';
 $string['viewbyresponse'] = 'View By Response';
 $string['viewresponses'] = 'All responses ({$a})';
-$string['viewyourresponses'] = 'Your responses- view {$a}';
+$string['viewyourresponses'] = 'Your responses ({$a})';
 $string['warning'] = 'Warning, error encountered.';
 $string['wrongdateformat'] = 'The date entered: <strong>{$a}</strong> does not correspond to the format shown in the example.';
 $string['wrongdaterange'] = 'ERROR! The year must be set in the 1902 to 2037 range.';
@@ -365,4 +365,5 @@ $string['wrongformat'] = 'There is something wrong with question:&nbsp;';
 $string['wrongformats'] = 'There is something wrong with questions:&nbsp;';
 $string['yesno'] = 'Yes/No';
 $string['yesno_help'] = 'Simple Yes/No question.';
+$string['yourresponses'] = 'Your responses';
 ?>

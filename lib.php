@@ -598,6 +598,156 @@ function questionnaire_load_capabilities($cmid) {
 
     return $cb;
 }
+/**
+ * Adds module specific settings to the settings block
+ *
+ * @param settings_navigation $settings The settings navigation object
+ * @param navigation_node $feedbacknode The node to add module settings to
+ */
+function questionnaire_extend_settings_navigation(settings_navigation $settings,
+        navigation_node $questionnairenode) {
+
+    global $PAGE, $DB, $USER;
+
+    if (!$context = context_module::instance($PAGE->cm->id, IGNORE_MISSING)) {
+        print_error('badcontext');
+    }
+    $cmid = $PAGE->cm->id;
+
+    if (! $cm = get_coursemodule_from_id('questionnaire', $cmid)) {
+        print_error('invalidcoursemodule');
+    }
+    
+    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+        print_error('coursemisconf');
+    }
+    
+    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+        print_error('invalidcoursemodule');
+    }
+    
+    $courseid = $course->id;
+    $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+    if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
+        $owner = (trim($survey->owner) == trim($courseid));
+    } else {
+        $survey = false;
+        $owner = true;
+    }
+    
+    // We want to add these new nodes after the Edit settings node, and before the
+    // Locally assigned roles node. Of course, both of those are controlled by capabilities.
+    $keys = $questionnairenode->get_children_key_list();
+    $beforekey = null;
+    $i = array_search('modedit', $keys);
+    if ($i === false and array_key_exists(0, $keys)) {
+        $beforekey = $keys[0];
+    } else if (array_key_exists($i + 1, $keys)) {
+        $beforekey = $keys[$i + 1];
+    }
+    
+    if (has_capability('mod/questionnaire:manage', $context) && $owner) {
+        $url = '/mod/questionnaire/qsettings.php';
+        $node = navigation_node::create(get_string('advancedsettings'),
+                new moodle_url($url, array('id' => $cmid)),
+                navigation_node::TYPE_SETTING, null, '',
+                new pix_icon('t/edit', ''));
+        $questionnairenode->add_node($node, $beforekey);
+    }
+
+        
+    if (has_capability('mod/questionnaire:editquestions', $context) && $owner) {
+        $questionnairenode->add(get_string('questions', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/questions.php',
+                        array('id' => $PAGE->cm->id)),
+                navigation_node::TYPE_SETTING, null, '',
+                new pix_icon('t/edit', ''));
+        $questionnairenode->add(get_string('preview_label', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/preview.php',
+                        array('id' => $PAGE->cm->id)),
+                        navigation_node::TYPE_SETTING, null, '',
+                        new pix_icon('t/preview', ''));
+    }
+
+    if ($questionnaire->user_can_take($USER->id)) {
+        $questionnairenode->add(get_string('answerquestions', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/complete.php',
+                        array('id' => $PAGE->cm->id)),
+                        navigation_node::TYPE_SETTING, null, '',
+                        new pix_icon('i/info', ''));        
+    }
+    $usernumresp = $questionnaire->count_submissions($USER->id);
+
+    if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
+        $myreportnode = $questionnairenode->add(get_string('yourresponses', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/myreport.php',
+                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
+        $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/myreport.php',
+                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
+        $byresponsenode = $myreportnode->add(get_string('viewbyresponse', 'questionnaire'), 
+                new moodle_url('/mod/questionnaire/myreport.php',
+                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')));
+        $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/myreport.php',
+                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'vall')));
+    }
+
+    $numresp = $questionnaire->count_submissions();
+    // number of responses in currently selected group (or all participants etc.)
+    if (isset($SESSION->questionnaire->numselectedresps)) {
+        $numselectedresps = $SESSION->questionnaire->numselectedresps;
+    } else {
+        $numselectedresps = $numresp;
+    }
+
+    if (($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) ||
+            $questionnaire->capabilities->readallresponses && ($numresp > 0) &&
+            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
+                            && $questionnaire->is_closed()) ||
+                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
+                            && $usernumresp > 0)) &&
+                    $questionnaire->is_survey_owner()) {  
+
+        $reportnode = $questionnairenode->add(get_string('viewallresponses', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/report.php',
+                        array('instance' => $questionnaire->id, 'action' => 'vall')));
+        if ($questionnaire->capabilities->viewsingleresponse) {
+            $summarynode = $reportnode->add(get_string('summary', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/report.php',
+                            array('instance' => $questionnaire->id, 'action' => 'vall')));
+        } else {
+            $summarynode = $reportnode;
+        }
+        $defaultordernode = $summarynode->add(get_string('order_default', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/report.php',
+                        array('instance' => $questionnaire->id, 'action' => 'vall')));
+        $ascendingordernode = $summarynode->add(get_string('order_ascending', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/report.php',
+                        array('instance' => $questionnaire->id, 'action' => 'vallasort')));
+        $descendingordernode = $summarynode->add(get_string('order_descending', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/report.php',
+                        array('instance' => $questionnaire->id, 'action' => 'vallarsort')));
+        
+        if ($questionnaire->capabilities->deleteresponses) {
+            $deleteallnode = $summarynode->add(get_string('deleteallresponses', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/report.php',
+                            array('instance' => $questionnaire->id, 'action' => 'delallresp')));
+        }
+        
+        if ($questionnaire->capabilities->downloadresponses) {
+            $downloadresponsesnode = $summarynode->add(get_string('downloadtextformat', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/report.php',
+                            array('instance' => $questionnaire->id, 'action' => 'dwnpg')));
+        }        
+        if ($questionnaire->capabilities->viewsingleresponse) {
+            $byresponsenode = $reportnode->add(get_string('viewbyresponse', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/report.php',
+                            array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1)));
+        }        
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 /// Any other questionnaire functions go here.  Each of them must have a name that

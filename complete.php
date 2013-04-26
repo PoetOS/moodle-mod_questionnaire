@@ -60,7 +60,7 @@
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     require_capability('mod/questionnaire:view', $context);
 
-    $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/view.php');
+    $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/complete.php');
     if (isset($id)) {
         $url->param('id', $id);
     } else {
