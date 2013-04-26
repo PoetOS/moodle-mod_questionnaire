@@ -443,8 +443,6 @@ class questionnaire {
             // provide for groups setting
             return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'complete' => 'y'));
         } else {
-            $n = $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'username' => $userid,
-                                      'complete' => 'y'));
             return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'username' => $userid,
                                       'complete' => 'y'));
         }

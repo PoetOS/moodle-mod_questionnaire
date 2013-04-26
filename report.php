@@ -78,15 +78,20 @@
     if ($instance) {
         $url->param('instance', $instance);
     }
+    
     $url->param('action', $action);
-    if ($rid) {
-        $url->param('rid', $rid);
-    }
+    
     if ($type) {
         $url->param('type', $type);
     }
     if ($byresponse) {
         $url->param('byresponse', $byresponse);
+    }
+
+    // if we are deleting a single response, keep displaying navigation links to 'view by response'
+    if ($action == 'dresp') {
+        $url->param('action', 'vresp');
+        $url->param('byresponse', 1);
     }
     if ($user) {
         $url->param('user', $user);
@@ -276,10 +281,6 @@
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
         echo $OUTPUT->header();
-
-    /// print the tabs
-        $SESSION->questionnaire->current_tab = 'deleteresp';
-        //include('tabs.php');
 
         if ($questionnaire->respondenttype == 'anonymous') {
                 $ruser = '- '.get_string('anonymous', 'questionnaire').' -';

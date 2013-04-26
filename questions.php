@@ -43,16 +43,6 @@
 
     $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/questions.php');
     $url->param('id', $id);
-    /* $url->param('action', $action);
-    if ($qid) {
-        $url->param('qid', $qid);
-    }
-    if ($moveq) {
-        $url->param('moveq', $moveq);
-    }
-    if ($qtype) {
-        $url->param('type_id', $qtype);
-    } */
 
     $PAGE->set_url($url);
     $PAGE->set_context($context);
@@ -481,7 +471,6 @@
 
     $PAGE->set_title($streditquestion);
     $PAGE->set_heading(format_string($course->fullname));
-    //$PAGE->navbar->add($streditquestion);
     echo $OUTPUT->header();
     include('tabs.php');
     $questions_form->display();

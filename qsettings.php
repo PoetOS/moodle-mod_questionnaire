@@ -103,10 +103,8 @@
 /// Print the page header
     $PAGE->set_title(get_string('editingquestionnaire', 'questionnaire'));
     $PAGE->set_heading(format_string($course->fullname));
-    //$PAGE->navbar->add(get_string('editingquestionnaire', 'questionnaire'));
     echo $OUTPUT->header();
  //   $navigation = build_navigation(get_string('editingquestionnaire', 'questionnaire'), $questionnaire->cm);
  //   print_header_simple(get_string('editingquestionnaire', 'questionnaire'), '', $navigation);
-    //include('tabs.php');
     $settings_form->display();
     echo $OUTPUT->footer($course);
