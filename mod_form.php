@@ -165,5 +165,14 @@ class mod_questionnaire_mod_form extends moodleform_mod {
     function validation($data, $files){
         return parent::validation($data, $files);
     }
+    
+    function add_completion_rules() {
+        $mform =& $this->_form;    
+        $mform->addElement('checkbox', 'completionsubmit', '', get_string('completionsubmit', 'questionnaire'));
+        return array('completionsubmit');
+    }
 
+    function completion_rule_enabled($data) {
+        return !empty($data['completionsubmit']);
+    }
 }

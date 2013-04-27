@@ -52,8 +52,9 @@ define('QUESTIONNAIRE_MAX_EVENT_LENGTH', 5*24*60*60);   // 5 days maximum
 function questionnaire_supports($feature) {
     switch($feature) {
         case FEATURE_BACKUP_MOODLE2:          return true;
-        case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
-        case FEATURE_GRADE_HAS_GRADE:         return true;
+        case FEATURE_COMPLETION_TRACKS_VIEWS: return false;
+        case FEATURE_COMPLETION_HAS_RULES:    return true;
+        case FEATURE_GRADE_HAS_GRADE:         return false;
         case FEATURE_GRADE_OUTCOMES:          return false;
         case FEATURE_GROUPINGS:               return true;
         case FEATURE_GROUPMEMBERSONLY:        return true;
@@ -986,5 +987,32 @@ function questionnaire_set_events($questionnaire) {
             $event->eventtype = 'close';
             add_event($event);
         }
+    }
+}
+
+/**
+ * Obtains the automatic completion state for this questionnaire based on any conditions
+ * in questionnaire settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function questionnaire_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG,$DB;
+
+    // Get questionnaire details
+    $questionnaire = $DB->get_record('questionnaire', array('id'=>$cm->instance), '*',
+            MUST_EXIST);
+
+    // If completion option is enabled, evaluate it and return true/false
+    if($questionnaire->completionsubmit) {
+        return $DB->record_exists('questionnaire_response', array(
+                'survey_id'=>$questionnaire->id, 'username'=>$userid, 'complete'=>'y'));
+    } else {
+        // Completion option is not enabled so just return $type
+        return $type;
     }
 }
