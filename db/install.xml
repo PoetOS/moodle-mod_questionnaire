@@ -21,7 +21,8 @@
                 <FIELD NAME="navigate" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can have page navigation." PREVIOUS="resume" NEXT="grade"/>
                 <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="Assign a grade to be received on submission." PREVIOUS="navigate" NEXT="sid"/>
                 <FIELD NAME="sid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id entry in the questionnaire_survey field." PREVIOUS="grade" NEXT="timemodified"/>
-                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The timestamp record last modified." PREVIOUS="sid"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The timestamp record last modified." PREVIOUS="sid" NEXT="completionsubmit"/>
+                <FIELD NAME="completionsubmit" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire marked as 'complete' when submitted." PREVIOUS="timemodified"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="sid"/>
