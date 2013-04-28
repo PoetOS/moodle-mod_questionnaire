@@ -83,9 +83,15 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $options = array('0'=>get_string('no'),'1'=>get_string('yes'));
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
-
-        $mform->addElement('modgrade', 'grade', get_string('grade', 'questionnaire'), false);
+        
+        $grades = array();
+        $grades[0] = get_string('nograde');
+        for ($i=100; $i>=1; $i--) {
+            $grades[$i] = $i;
+        }
+        $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);
         $mform->setDefault('grade', 0);
+        $mform->addHelpButton('grade', 'grade', 'questionnaire');
 
         //-------------------------------------------------------------------------------
         if (empty($questionnaire->sid)) {

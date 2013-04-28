@@ -84,6 +84,8 @@ respondent.
 
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
 $string['grade'] = 'Submission grade';
+$string['grade_help'] = 'If you enter a grade value here, when a student submits this questionnaire that grade value 
+will be automatically added to the student\'s gradebook for this questionnaire activity.';
 $string['headingtext'] = 'Heading text';
 $string['horizontal'] = 'Horizontal';
 $string['id'] = 'ID';
