@@ -1,5 +1,10 @@
 Release Notes:
 
+Version 2.3.4 - Release date 20130519
+
+In accordance with current Moodle languages policy, all language folders other than English have been
+removed from the lang folder. All translations are now available from AMOS.
+
 Version 2.3.3 - Release date 20121107
 
 CONTRIB-3954 - Questionnaire - no security checks before executing actions on 'report.php' page
