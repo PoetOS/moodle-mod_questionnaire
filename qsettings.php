@@ -17,9 +17,8 @@
 /// This page prints a particular instance of questionnaire
 
     require_once("../../config.php");
-// JR moved further down after course_require_login
-//    require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
     require_once($CFG->dirroot.'/mod/questionnaire/settings_form.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     $id = required_param('id', PARAM_INT);        // course module ID
 
@@ -38,7 +37,6 @@
     // needed here for forced language courses
     require_course_login($course, true, $cm);
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-    require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 
     $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/qsettings.php', array('id' => $id));
     $PAGE->set_url($url);

@@ -57,7 +57,7 @@ $QTYPENAMES = array(
         QUESPAGEBREAK =>    'pagebreak',
         QUESSECTIONTEXT =>  'sectiontext'
         );
-GLOBAL $idcounter;
+GLOBAL $idcounter, $CFG;
 $idcounter = 0;
 
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');

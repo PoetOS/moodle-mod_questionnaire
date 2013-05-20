@@ -23,7 +23,8 @@
 */
 
 require_once ($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
 class mod_questionnaire_mod_form extends moodleform_mod {
 

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
     require_once("../../config.php");
-    require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     $qid = required_param('qid', PARAM_INT);
     $rid = required_param('rid', PARAM_INT);
@@ -45,6 +45,12 @@
         print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
     }
 
+    $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/print.php');
+    $url->param('qid', $qid);
+    $url->param('rid', $rid);
+    $url->param('courseid', $courseid);
+    $url->param('sec', $sec);
+    $PAGE->set_url($url);
     $PAGE->set_title($questionnaire->survey->title);
     $PAGE->set_pagelayout('popup');
     echo $OUTPUT->header();

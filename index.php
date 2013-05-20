@@ -25,7 +25,7 @@
 
 
     require_once("../../config.php");
-    require_once("lib.php");
+    require_once("locallib.php");
 
     $id = required_param('id', PARAM_INT);
     $PAGE->set_url('/mod/questionnaire/index.php', array('id' => $id));
@@ -65,17 +65,17 @@
     // Configure table for displaying the list of instances.
     $headings = array(get_string('name'));
     $align = array('left');
-    
+
     if ($showclosingheader) {
         array_push($headings, get_string('questionnairecloses', 'questionnaire'));
         array_push($align, 'left');
     }
-    
+
     array_unshift($headings, get_string('sectionname', 'format_'.$course->format));
     array_unshift($align, 'left');
-    
+
     $showing = '';
-    
+
     // current user role == admin or teacher
     if (has_capability('mod/questionnaire:viewsingleresponse', $coursecontext)) {
         array_push($headings, get_string('responses', 'questionnaire'));
@@ -129,7 +129,7 @@
                 if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete=false)) {
                     foreach ($responses as $response) {
                         if ($response->complete == 'y') {
-                            $status .= get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';   
+                            $status .= get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
                         } else {
                             $status .= get_string('attemptstillinprogress', 'questionnaire').' '.userdate($response->submitted).'<br />';
                         }

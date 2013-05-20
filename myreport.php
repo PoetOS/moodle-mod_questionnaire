@@ -17,7 +17,7 @@
 /// This page shows results of a questionnaire to a student.
 
     require_once("../../config.php");
-    require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     $strsummary = get_string('summary', 'questionnaire');
     $strall = get_string('myresponses', 'questionnaire');

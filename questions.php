@@ -17,8 +17,8 @@
 /// This page prints a particular instance of questionnaire
 
     require_once("../../config.php");
-    require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
     require_once($CFG->dirroot.'/mod/questionnaire/questions_form.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     $id     = required_param('id', PARAM_INT);                  // course module ID
     $action = optional_param('action', 'main', PARAM_ALPHA);    // screen

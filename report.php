@@ -18,7 +18,7 @@
 /// This page prints a particular instance of questionnaire
     global $SESSION, $CFG;
     require_once("../../config.php");
-    require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     $instance = optional_param('instance', false, PARAM_INT);   // questionnaire ID
     $action = optional_param('action', 'vall', PARAM_ALPHA);
@@ -252,7 +252,7 @@
 
     case 'dresp':
         require_capability('mod/questionnaire:deleteresponses', $context);
-        
+
         if (empty($questionnaire->survey)) {
             $id = $questionnaire->survey;
             notify ("questionnaire->survey = /$id/");
@@ -302,7 +302,7 @@
 
     case 'delallresp': // delete all responses
         require_capability('mod/questionnaire:deleteresponses', $context);
-        
+
         $select = 'survey_id='.$sid.' AND complete = \'y\'';
         if (!($responses = $DB->get_records_select('questionnaire_response', $select, null, 'id', 'id'))) {
             return;
@@ -407,7 +407,7 @@
 
     case 'dvallresp': // delete all responses in questionnaire (or group)
         require_capability('mod/questionnaire:deleteresponses', $context);
-        
+
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');
         } else if ($questionnaire->survey->owner != $course->id) {
@@ -496,7 +496,7 @@
 
     case 'dwnpg': // Download page options
         require_capability('mod/questionnaire:downloadresponses', $context);
-        
+
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
         $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
