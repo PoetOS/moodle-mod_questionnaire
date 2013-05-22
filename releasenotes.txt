@@ -1,9 +1,12 @@
 Release Notes:
 
+Version 2.5.0
+- removed unused files: css folder; various unused images in images folder; crosstab.inc, resultslib.php
+- CONTRIB-4304 removed un-used functions plus all calls to "cross tabulation"
+
 Version 2.4.1 - Release date 20130519
 
-In accordance with current Moodle languages policy, all language folders other than English have been
-removed from the lang folder. All translations are now available from AMOS.
+- In accordance with current Moodle languages policy, all language folders other than English have been removed from the lang folder. All translations are now available from AMOS.
 
 
 Version 2.3.2 - Release date 20120820

@@ -70,6 +70,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
 
         $mform->addElement('hidden', 'cannotchangerespondenttype');
+        $mform->setType('cannotchangerespondenttype', PARAM_INT);
         $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $QUESTIONNAIRE_RESPONDENTS);
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
