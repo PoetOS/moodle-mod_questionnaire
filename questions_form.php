@@ -386,6 +386,7 @@ class questionnaire_edit_question_form extends moodleform {
         if ($question->type_id == QUESYESNO || $question->type_id == QUESDROP || $question->type_id == QUESDATE ||
             $question->type_id == QUESSECTIONTEXT) {
             $mform->addElement('hidden', 'length', $deflength);
+            $mform->setType('length', PARAM_INT);
         } else if ($question->type_id == QUESRADIO) {
             $lengroup = array();
             $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('vertical', 'questionnaire'), '0');
@@ -395,7 +396,7 @@ class questionnaire_edit_question_form extends moodleform {
         } else { // QUESTEXT or QUESESSAY or QUESRATE
             $question->length = isset($question->length) ? $question->length : $deflength;
             $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
-            $mform->setType('length', PARAM_INT);
+            $mform->setType('length', PARAM_TEXT);
             $mform->addHelpButton('length', $lhelpname, 'questionnaire');
         }
 
