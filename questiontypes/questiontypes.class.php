@@ -1984,9 +1984,9 @@ class questionnaire_question {
                         if (($j = $avg * $width) > 0) {
                             $interval = 50 / $length;
                             $out .= sprintf('<img alt="" src="'.$image_url.
-                                'rhbar.gif" height="0" width="%d%%" style="visibility:hidden" />', $j - $interval - 0.3);
+                                'hbar.gif" height="0" width="%d%%" style="visibility:hidden" />', $j - $interval - 0.3);
                         }
-                        $out .= '<img alt="" src="'.$image_url.'rhbar.gif" height="12" width="6" />';
+                        $out .= '<img alt="" src="'.$image_url.'hbar.gif" height="12" width="6" />';
                     } else {
                             $out = '';
                     }
