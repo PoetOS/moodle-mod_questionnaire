@@ -86,6 +86,7 @@
         print_error('nopermissions', 'questionnaire', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
     }
 
+    $SESSION->questionnaire = new stdClass();
     $SESSION->questionnaire->current_tab = new stdClass();
     $SESSION->questionnaire->current_tab = 'preview';
 
