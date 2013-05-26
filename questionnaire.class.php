@@ -2125,7 +2125,7 @@ class questionnaire {
         choice ids for the given question id.
         Returns empty string on sucess, else returns an error
         string. */
-    function survey_results($precision = 1, $showTotals = 1, $qid = '', $cids = '', $rid = '', $guicross='', $uid=false, $groupid='', $sort='') {
+    function survey_results($precision = 1, $showTotals = 1, $qid = '', $cids = '', $rid = '', $uid=false, $groupid='', $sort='') {
         global $SESSION, $DB;
 
         $SESSION->questionnaire->noresponses = false;
@@ -2141,16 +2141,6 @@ class questionnaire {
         }
         if(is_string($cids)) {
             $cids = preg_split("/ /",$cids); // turn space seperated list into array
-        }
-
-        // set up things differently for cross analysis
-        $cross = !empty($qid);
-        if($cross) {
-            if(is_array($cids) && count($cids)>0) {
-                $cidstr = $this->array_to_insql($cids);
-            } else {
-                $cidstr = '';
-            }
         }
 
         // build associative array holding whether each question
@@ -2179,15 +2169,6 @@ class questionnaire {
             return($errmsg);
         }
 
-        // find out more about the question we are cross analyzing on (if any)
-        if($cross) {
-            $crossTable = $response_table[$DB->get_field('questionnaire_question', 'type_id', array('id' => $qid))];
-            if(!in_array($crossTable, array('resp_single','response_bool','resp_multiple'))) {
-                $errmsg = get_string('errorcross', 'questionnaire') .' [ '. 'Table' .": ${crossTable} ]";
-                return($errmsg);
-            }
-        }
-
     // find total number of survey responses
     // and relevant response ID's
         if (!empty($rid)) {
@@ -2202,26 +2183,7 @@ class questionnaire {
             $navbar = false;
             $sql = "";
             $castsql = $DB->sql_cast_char2int('R.username');
-            if($cross) {
-                if(!empty($cidstr))
-                    $sql = "SELECT A.response_id, R.id
-                              FROM {questionnaire_".$crossTable."} A,
-                                   {questionnaire_response} R
-                             WHERE A.response_id=R.id AND
-                                   R.complete='y' AND
-                                   A.question_id='${qid}' AND
-                                   A.choice_id ${cidstr}
-                             ORDER BY A.response_id";
-                else
-                    $sql = "SELECT A.response_id, R.id
-                              FROM {questionnaire_".$crossTable."} A,
-                                   {questionnaire_response} R
-                             WHERE A.response_id=R.id AND
-                                   R.complete='y' AND
-                                   A.question_id='${qid}' AND
-                                   A.choice_id = 0
-                             ORDER BY A.response_id";
-            } else if ($uid !== false) { // one participant only
+            if ($uid !== false) { // one participant only
                 $sql = "SELECT r.id, r.survey_id
                           FROM {questionnaire_response} r
                          WHERE r.survey_id='{$this->survey->id}' AND
@@ -2305,11 +2267,6 @@ class questionnaire {
             echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
         }
      ?>
-    <?php
-        if($cross) {
-            echo("<blockquote>" ._('Cross analysis on QID:') ." ${qid}</blockquote>\n");
-        }
-    ?>
     <table border="0" style="width:100%">
     <?php
         $i=0; // question number counter
@@ -2327,48 +2284,10 @@ class questionnaire {
             echo ("<tr>\n");
             echo ("<td class = \"reportQuestionNumber\">");
             if ($question->type_id < 50) {
-                if (!empty($guicross)){
-                    echo ('<div>');
-                    echo ('<input type="hidden" name="where" value="results" />');
-                    echo ('<input type="hidden" name="sid" value="'.$this->survey->id.'" />');
-                    echo ('</div>');
-                    echo ("\n<table width=\"90%\" border=\"0\">\n");
-                    echo ("<tbody>\n");
-                    echo ("   <tr>\n");
-                    echo ("      <td width=\"34\" height=\"31\" >\n");
-                    if ($question->type_id ==1 || $question->type_id ==4 || $question->type_id ==5 || $question->type_id ==6){
-                        echo ("<div align=\"center\">\n");
-                        echo ("   <input type=\"radio\" name=\"qid\" value=\"".$question->id."\" />\n");
-                        echo ("</div>\n");
-                    }
-                    echo ("</td>\n");
-                    echo ("<td width=\"429\" >\n");
-                } //end if empty($guicross)
                 echo ++$i;
                 echo ("</td>");
                 echo ("<td>");
                 echo ("<div class = \"reportQuestionTitle\">");
-
-                if (!empty($guicross)){
-                    echo ("</td>\n");
-                    echo ("<td width=\"33\" >\n");
-                    if ($question->type_id ==1 || $question->type_id ==4 || $question->type_id ==5 || $question->type_id ==6){
-                        echo ("<div align=\"center\">\n");
-                        echo ("<input type=\"radio\" name=\"qidr\" value=\"".$question->id."\" />\n");
-                        echo ("</div>\n");
-                    }
-                    echo ("</td>\n");
-                    echo ("<td width=\"32\" >\n");
-                    if ($question->type_id ==1 || $question->type_id ==4 || $question->type_id ==5 || $question->type_id ==6){
-                        echo ("<div align=\"center\">\n");
-                        echo ("<input type=\"radio\" name=\"qidc\" value=\"".$question->id."\" />\n");
-                        echo ("</div>\n");
-                    }
-                    echo ("</td>\n");
-                    echo ("</tr>\n");
-                    echo ("</tbody>\n");
-                    echo ("</table>\n");
-                } //end if empty($guicross)
             } //end if ($question->type_id  < 50)
 
     $counts = array();
@@ -2376,7 +2295,7 @@ class questionnaire {
     // ---------------------------------------------------------------------------
     echo format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php', $question->context->id, 'mod_questionnaire',
                                                   'question', $question->id), FORMAT_HTML).'</div>'; // moved from $question->display_results
-    $question->display_results($rids, $guicross, $sort);
+    $question->display_results($rids, $sort);
 
     ?>
             </td>

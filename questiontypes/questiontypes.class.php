@@ -593,17 +593,17 @@ class questionnaire_question {
 
 /// Display Methods
 
-    function display_results($rids=false, $guicross=false, $sort) {
+    function display_results($rids=false,  $sort) {
         $method = 'display_'.$this->response_table.'_results';
         if (method_exists($this, $method)) {
-            $a = $this->$method($rids, $guicross, $sort);
+            $a = $this->$method($rids, $sort);
             return $a;
         } else {
             return false;
         }
     }
 
-    function display_response_bool_results($rids=false, $guicross=false) {
+    function display_response_bool_results($rids=false) {
         if (empty($this->stryes)) {
             $this->stryes = get_string('yes');
             $this->strno = get_string('no');
@@ -627,7 +627,7 @@ class questionnaire_question {
                 }
                 $this->counts[$this->choice] = $count;
             }
-            $this->mkrespercent(count($rids), $this->precise, $prtotal, $guicross, $sort='');
+            $this->mkrespercent(count($rids), $this->precise, $prtotal, $sort='');
         } else {
             print_string('noresponsedata', 'questionnaire');
         }
@@ -683,7 +683,7 @@ class questionnaire_question {
         }
     }
 
-    function display_resp_single_results($rids=false, $guicross=false, $sort) {
+    function display_resp_single_results($rids=false, $sort) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -706,13 +706,13 @@ class questionnaire_question {
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            $this->mkrespercent(count($rids), $this->precise, $prtotal, $guicross, $sort);
+            $this->mkrespercent(count($rids), $this->precise, $prtotal, $sort);
         } else {
             print_string('noresponsedata', 'questionnaire');
         }
     }
 
-    function display_resp_multiple_results($rids=false, $guicross=false, $sort) {
+    function display_resp_multiple_results($rids=false, $sort) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -736,13 +736,13 @@ class questionnaire_question {
                 }
             }
 
-            $this->mkrespercent(count($rids), $this->precise, 0, $guicross, $sort);
+            $this->mkrespercent(count($rids), $this->precise, 0, $sort);
         } else {
             print_string('noresponsedata', 'questionnaire');
         }
     }
 
-    function display_response_rank_results($rids=false, $guicross=false, $sort) {
+    function display_response_rank_results($rids=false, $sort) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -1694,7 +1694,7 @@ class questionnaire_question {
 
     /* {{{ proto void mkrespercent(array weights, int total, int precision, bool show_totals)
       Builds HTML showing PERCENTAGE results. */
-    function mkrespercent($total, $precision, $showTotals, $guicross=false, $sort) {
+    function mkrespercent($total, $precision, $showTotals, $sort) {
         global $CFG, $OUTPUT;
         $precision = 0;
         $i=0;
@@ -1707,12 +1707,6 @@ class questionnaire_question {
         $table->align = array();
         $table->head = array();
         $table->wrap = array();
-        if ($guicross) {
-            $table->size[] = '34';
-            $table->align[] = 'center';
-            $table->head[] = ' ';
-            $table->wrap[] = '';
-        }
         $table->size = array_merge($table->size, array('*', '50%', '7%'));
         $table->align = array_merge($table->align, array('left', 'left', 'right'));
         $table->wrap = array_merge($table->wrap, array('', 'nowrap', ''));
@@ -1749,9 +1743,6 @@ class questionnaire_question {
                     $out = '';
                 }
                 $tabledata = array();
-                if ($guicross) {
-                    $tabledata[] = $this->mkcrossformat($pos, $this->id, $this->type_id);
-                }
                 $tabledata = array_merge($tabledata, array(format_text($content, FORMAT_HTML), $out, $num));
                 $table->data[] = $tabledata;
                 $i += $num;
@@ -1771,17 +1762,11 @@ class questionnaire_question {
                        sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 $table->data[] = 'hr';
                 $tabledata = array();
-                if ($guicross) {
-                    $tabledata[] = ' ';
-                }
                 $tabledata = array_merge($tabledata, array($strtotal, $out, "$i/$total"));
                 $table->data[] = $tabledata;
             }
         } else {
             $tabledata = array();
-            if ($guicross) {
-                $tabledata[] = ' ';
-            }
             $tabledata = array_merge($tabledata, array('', get_string('noresponsedata', 'questionnaire')));
             $table->data[] = $tabledata;
         }
@@ -2073,31 +2058,6 @@ class questionnaire_question {
     <?php } ?>
     </table>
     <?php
-    }
-
-    function mkcrossformat($pos, $qid, $tid) {
-        global $DB;
-
-        $cids = array();
-        $cidCount = 0;
-
-        // let's grab the cid values for each of the questions
-        // that we allow cross analysis on.
-        if ($tid == 1) {
-            $cids = array('y', 'n');
-        } else if ($records = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid), 'id')) {
-            foreach ($records as $record) {
-                array_push($cids, $record->id);
-            }
-        }
-
-        $bg = QUESTIONNAIRE_BGALT_COLOR1;
-        $output = '';
-        if ($pos >= count($cids)) {
-            $pos = count($cids) - 1;
-        }
-        $output .= '<input type="checkbox" name="cids[]" value="'.$cids[$pos].'" />';
-        return $output;
     }
 }
 function sortavgasc($a, $b) {

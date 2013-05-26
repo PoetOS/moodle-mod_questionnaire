@@ -102,8 +102,6 @@
     /// Tab setup:
     $SESSION->questionnaire->current_tab = 'allreport';
 
-    $strcrossanalyze = get_string('crossanalyze', 'questionnaire');
-    $strcrosstabulate = get_string('crosstabulate', 'questionnaire');
     $strdeleteallresponses = get_string('deleteallresponses', 'questionnaire');
     $strdeleteresp = get_string('deleteresp', 'questionnaire');
     $strdownloadcsv = get_string('downloadtext');
@@ -644,16 +642,12 @@
         $strsort = get_string('order_'.$sort, 'questionnaire');
         echo $strsort;
         echo $OUTPUT->help_icon('orderresponses','questionnaire');
-        $ret = $questionnaire->survey_results(1, 1, '', '', '', '', $uid=false, $currentgroupid, $sort);
+        $ret = $questionnaire->survey_results(1, 1, '', '','', $uid=false, $currentgroupid, $sort);
         echo '</div>';
 
     /// Finish the page
         echo $OUTPUT->footer($course);
         break;
-
-    case 'cross':
-        $type = 'cross';
-        /// Fall down into the vresp section.
 
     case 'vresp': // view by response
     default:
