@@ -1,8 +1,11 @@
 Release Notes:
 
 Version 2.5.0
-- removed unused files: css folder; various unused images in images folder; crosstab.inc, resultslib.php
-- CONTRIB-4304 removed un-used functions plus all calls to "cross tabulation"
+- removed many no longer used items: css folder; lots of unused images in images folder; crosstab.inc, resultslib.php
+- CONTRIB-4304 removed from locallib.php all unused functions: questionnaire_response_key_cmp, questionnaire_preview, 
+  questionnaire_get_active_surveys_menu, questionnaire_get_surveys_menu, questionnaire_survey_has_questions,
+  questionnaire_survey_exists
+- removed all references to cross analysis from all files   
 
 Version 2.4.1 - Release date 20130519
 
