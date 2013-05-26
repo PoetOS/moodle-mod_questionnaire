@@ -237,6 +237,7 @@ class questionnaire_questions_form extends moodleform {
         $mform->setType('sid', PARAM_INT);
         $mform->addElement('hidden', 'action', 'main');
         $mform->setType('action', PARAM_RAW);
+        $mform->setType('moveq', PARAM_RAW);
 
         //-------------------------------------------------------------------------------
         // buttons
