@@ -34,6 +34,7 @@ $string['alignment_link'] = 'mod/questionnaire/questions#Radio_Buttons';
 $string['all'] = 'All';
 $string['alreadyfilled'] = 'You have already filled out this questionnaire for us{$a}. Thank you.';
 $string['anonymous'] = 'Anonymous';
+$string['answerquestions'] = 'Answer the questions...';
 $string['average'] = 'Average';
 $string['averagerank'] = 'Average rank';
 $string['bodytext'] = 'Body text';
@@ -383,4 +384,5 @@ $string['wrongformat'] = 'There is something wrong with question:&nbsp;';
 $string['wrongformats'] = 'There is something wrong with questions:&nbsp;';
 $string['yesno'] = 'Yes/No';
 $string['yesno_help'] = 'Simple Yes/No question.';
+$string['yourresponses'] = 'Your responses';
 ?>

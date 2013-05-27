@@ -1,5 +1,8 @@
 Release Notes:
 
+Version 2.5.1
+- CONTRIB-4281 Improve navigation in Questionnaire 
+
 Version 2.5.0
 - removed many no longer used items: css folder; lots of unused images in images folder; crosstab.inc, resultslib.php
 - CONTRIB-4304 removed from locallib.php all unused functions: questionnaire_response_key_cmp, questionnaire_preview, 

@@ -108,7 +108,7 @@ div.qoptcontainer div.ftextarea textarea.qopts {
     padding-top:0.25em;
 }
 
-body#page-mod-questionnaire-view td.qnInner,
+body#page-mod-questionnaire-complete td.qnInner,
 body#page-mod-questionnaire-preview td.qnInner,
 body#page-mod-questionnaire-report td.qnInner,
 body#page-mod-questionnaire-myreport td.qnInner,
@@ -117,7 +117,7 @@ body#page-mod-questionnaire-myreport td.qnInner,
     background-color:#fafafa;
 }
 /*remove paragraph bottom margin for better vertical positioning*/
-body#page-mod-questionnaire-view td.qnInner p,
+body#page-mod-questionnaire-complete td.qnInner p,
 body#page-mod-questionnaire-preview td.qnInner p,
 body#page-mod-questionnaire-report td.qnInner p,
 body#page-mod-questionnaire-myreport td.qnInner p,
@@ -125,7 +125,7 @@ body#page-mod-questionnaire-myreport td.qnInner p,
     margin-bottom:0px;
 }
 
-body#page-mod-questionnaire-view td.qnType,
+body#page-mod-questionnaire-complete td.qnType,
 body#page-mod-questionnaire-preview td.qnType,
 body#page-mod-questionnaire-report td.qnType,
 body#page-mod-questionnaire-myreport td.qnType {
@@ -139,25 +139,24 @@ body#page-mod-questionnaire-myreport div.respdate {
     padding-bottom: 4px;
 }
 
-body#page-mod-questionnaire-view .message,
-body#page-mod-questionnaire-view .notifyproblem,
-body#page-mod-questionnaire-view .thankbody,
-body#page-mod-questionnaire-view .thankhead {
+body#page-mod-questionnaire-complete .message,
+body#page-mod-questionnaire-complete .notifyproblem,
+body#page-mod-questionnaire-complete .thankbody,
+body#page-mod-questionnaire-complete .thankhead {
     background-color:#FFFFFF;
     border-color:#FF0000;
     border-style: solid;
     border-width: 2px;
     margin-bottom:10px;
     padding:5px;
-    width:50%;
 }
 
-body#page-mod-questionnaire-view .reqQuestion,
-body#page-mod-questionnaire-view .reqQuestionMark {
+body#page-mod-questionnaire-complete .reqQuestion,
+body#page-mod-questionnaire-complete .reqQuestionMark {
     color: #FF0000;
 }
 
-body#page-mod-questionnaire-view .reqQuestion {
+body#page-mod-questionnaire-complete .reqQuestion {
     background-color: #FFFFFF;
     clear:both;
     margin-bottom:5px;
@@ -165,16 +164,16 @@ body#page-mod-questionnaire-view .reqQuestion {
     font-weight:bold;
 }
 
-body#page-mod-questionnaire-view .surveyTitle,
-body#page-mod-questionnaire-view .surveySubtitle,
-body#page-mod-questionnaire-view .addInfo {
+body#page-mod-questionnaire-complete .surveyTitle,
+body#page-mod-questionnaire-complete .surveySubtitle,
+body#page-mod-questionnaire-complete .addInfo {
     clear:both;
     margin:0px;
     margin-bottom:4px;
     padding:10px;
 }
 
-body#page-mod-questionnaire-view .surveyPage {
+body#page-mod-questionnaire-complete .surveyPage {
     background-color: #eee;
     border-bottom-color:#000000;
     border-bottom-style: solid;
@@ -199,7 +198,7 @@ body#page-mod-questionnaire-view .surveyPage {
     font-weight:bold;
     text-align:right;
 }
-body#page-mod-questionnaire-view .c0,
+body#page-mod-questionnaire-complete .c0,
 body#page-mod-questionnaire-preview .c0 {
     background-color: #fafafa;
     border: #CCCCCC 1px    solid;
@@ -208,7 +207,7 @@ body#page-mod-questionnaire-preview .c0 {
     padding-bottom:3px;
 }
 
-body#page-mod-questionnaire-view .c1,
+body#page-mod-questionnaire-complete .c1,
 body#page-mod-questionnaire-preview .c1 {
     background-color: #eee;
     border: #FFFFFF 1px    solid;
@@ -216,7 +215,7 @@ body#page-mod-questionnaire-preview .c1 {
     padding-right:5px;
 }
 
-body#page-mod-questionnaire-view .monospace,
+body#page-mod-questionnaire-complete .monospace,
 body#page-mod-questionnaire-preview .monospace {
     font-family:"Courier New", Courier, monospace;
 }
@@ -228,8 +227,8 @@ body#page-mod-questionnaire-preview .monospace {
 }
 
 
-body#page-mod-questionnaire-view .notice .buttons div,
-body#page-mod-questionnaire-view .notice .buttons form {
+body#page-mod-questionnaire-complete .notice .buttons div,
+body#page-mod-questionnaire-complete .notice .buttons form {
     display:inline;
 }
 
@@ -243,17 +242,17 @@ body#page-mod-questionnaire-myreport .generaltable {
 }
 
 /* new styles - keep old (quOuter, qnInner, qnInnerTable, qnType) for sections etc. */
-#page-mod-questionnaire-view .qn-number,
-#page-mod-questionnaire-view .qn-legend {
+#page-mod-questionnaire-complete .qn-number,
+#page-mod-questionnaire-complete .qn-legend {
      float: left;
 }
-#page-mod-questionnaire-view .qn-question {
+#page-mod-questionnaire-complete .qn-question {
     margin-left: 35px;
     padding-left: 5px;
     padding-bottom: 2px;
     border-left: #CCCCCC thin dotted;
 }
-#page-mod-questionnaire-view .qn-type {
+#page-mod-questionnaire-complete .qn-type {
     margin-left: 35px;
     padding: 5px;
     border-left: #CCCCCC thin dotted;

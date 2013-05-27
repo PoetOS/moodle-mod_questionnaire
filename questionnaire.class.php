@@ -193,18 +193,19 @@ class questionnaire {
                 echo $OUTPUT->action_link($link, $linkname, $action, array('class'=>$class, 'title'=>$title));
             }
             $msg = $this->print_survey($USER->id, $quser);
+
     ///     If Survey was submitted with all required fields completed ($msg is empty),
     ///     then record the submittal.
-            $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/view.php");
+            $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/complete.php");
             if (!empty($viewform->rid)) {
                 $viewform->rid = (int)$viewform->rid;
             }
             if (!empty($viewform->sec)) {
                 $viewform->sec = (int)$viewform->sec;
             }
+
             if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
-
                 $this->response_delete($viewform->rid, $viewform->sec);
                 $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser);
                 $this->response_commit($this->rid);
@@ -529,7 +530,7 @@ class questionnaire {
 
         $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
         $msg = '';
-        $action = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$this->cm->id;
+        $action = $CFG->wwwroot.'/mod/questionnaire/complete.php?id='.$this->cm->id;
 
 /// TODO - Need to rework this. Too much crossover with ->view method.
         if(!empty($formdata->submit)) {

@@ -43,35 +43,40 @@
         $owner = true;
     }
 
-    if ($questionnaire->capabilities->view) {
-        $row[] = new tabobject('view', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/view.php?'.
-                               'id='.$questionnaire->cm->id), get_string('view', 'questionnaire'));
+    if($questionnaire->capabilities->manage  && $owner) {
+        $row[] = new tabobject('settings', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/qsettings.php?'.
+                'id='.$questionnaire->cm->id), get_string('advancedsettings'));
     }
+    
+    if($questionnaire->capabilities->editquestions && $owner) {
+        $row[] = new tabobject('questions', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
+                'id='.$questionnaire->cm->id), get_string('questions', 'questionnaire'));
+        if (!empty($questionnaire->questions)) {
+            $row[] = new tabobject('preview', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/preview.php?'.
+                    'id='.$questionnaire->cm->id), get_string('preview_label', 'questionnaire'));
+        }
+    }
+    
     $usernumresp = $questionnaire->count_submissions($USER->id);
 
     if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
         $row[] = new tabobject('myreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
-                               $argstr), get_string('viewyourresponses', 'questionnaire', $usernumresp));
+                               $argstr), get_string('yourresponses', 'questionnaire'));
 
         if (in_array($current_tab, array('mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'))) {
             $inactive[] = 'myreport';
             $activated[] = 'myreport';
             $row2 = array();
-            $argstr2 = $argstr.'&byresp=0&action=summary';
+            $argstr2 = $argstr.'&action=summary';
             $row2[] = new tabobject('mysummary', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr2),
-                                    get_string('order_default', 'questionnaire'));
-            $argstr2 = $argstr.'&byresp=0&action=vresp';
+                                    get_string('summary', 'questionnaire'));
+            $argstr2 = $argstr.'&byresponse=1&action=vresp';
             $row2[] = new tabobject('mybyresponse', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr2),
                                     get_string('viewbyresponse', 'questionnaire'));
-            $argstr2 = $argstr.'&byresp=1&action=vall';
+            $argstr2 = $argstr.'&byresponse=0&action=vall';
             $row2[] = new tabobject('myvall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr2),
                                     get_string('myresponses', 'questionnaire'));
-            if ($questionnaire->capabilities->downloadresponses) {
-                $argstr2 = $argstr.'&action=dwnpg'.'&sid='.$questionnaire->sid;
-                $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
-                $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtext'));
-            }
         }
     }
 
@@ -99,7 +104,7 @@
             $row2 = array();
             $argstr2 = $argstr.'&action=vall';
             $row2[] = new tabobject('vall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
-                                    get_string('viewallresponses', 'questionnaire'));
+                                    get_string('summary', 'questionnaire'));
             $argstr2 = $argstr.'&byresponse=1&action=vresp';
             if ($questionnaire->capabilities->viewsingleresponse) {
                 $argstr2 = $argstr.'&byresponse=1&action=vresp';
@@ -140,11 +145,9 @@
             $inactive[] = 'vresp';
             $activated[] = 'vresp';
             $inactive[] = 'printresp';
+            
             $row3 = array();
 
-            $argstr2 = $argstr.'&action=vresp';
-            $row3[] = new tabobject('vrespsummary', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
-                                    get_string('summary', 'questionnaire'));
             // new way to output popup print window for 2.0 by JR
             $linkname = get_string('print','questionnaire');
             $url = '/mod/questionnaire/print.php?qid='.$questionnaire->id.'&amp;rid='.$rid.
@@ -155,7 +158,7 @@
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
             $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title'=>$title));
-            $row3[] = new tabobject('printresp', '', $actionlink);
+            $row3[] = new tabobject('printresp', '', $actionlink);            
 
             if ($questionnaire->capabilities->deleteresponses) {
                 $argstr2 = $argstr.'&action=dresp&rid='.$rid;
@@ -209,19 +212,6 @@
         }
     }
 
-    if($questionnaire->capabilities->manage  && $owner) {
-        $row[] = new tabobject('settings', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/qsettings.php?'.
-                               'id='.$questionnaire->cm->id), get_string('advancedsettings'));
-    }
-
-    if($questionnaire->capabilities->editquestions && $owner) {
-        $row[] = new tabobject('questions', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
-                               'id='.$questionnaire->cm->id), get_string('questions', 'questionnaire'));
-        if (!empty($questionnaire->questions)) {
-            $row[] = new tabobject('preview', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/preview.php?'.
-                               'id='.$questionnaire->cm->id), get_string('preview_label', 'questionnaire'));
-        }
-    }
 
     if((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {
         $tabs[] = $row;

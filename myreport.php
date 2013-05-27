@@ -29,10 +29,10 @@
 
     $instance = required_param('instance', PARAM_INT);   // questionnaire ID
     $userid = optional_param('user', $USER->id, PARAM_INT);
-    $rid = optional_param('rid', false, PARAM_INT);
-    $byresponse = optional_param('byresp', false, PARAM_INT);
-    $action = optional_param('action', $strsummary, PARAM_RAW); // for languages utf-8 compatibility JR
-
+    $rid = optional_param('rid', null, PARAM_INT);
+    $byresponse = optional_param('byresponse', 0, PARAM_INT);
+    $action = optional_param('action', 'summary', PARAM_RAW);
+    
     if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
         print_error('incorrectquestionnaire', 'questionnaire');
     }
@@ -54,10 +54,6 @@
     if (isset($userid)) {
         $url->param('userid', $userid);
     }
-    if (isset($rid)) {
-        $url->param('rid', $rid);
-        $params['rid'] = $rid;
-    }
     if (isset($byresponse)) {
         $url->param('byresponse', $byresponse);
     }
@@ -69,8 +65,6 @@
     $PAGE->set_context($context);
     $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
     $PAGE->set_heading(format_string($course->fullname));
-    $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
-    $PAGE->navbar->add($strmyresults);
 
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
