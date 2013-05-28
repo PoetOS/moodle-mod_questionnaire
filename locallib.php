@@ -400,25 +400,25 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
                    "FROM {questionnaire} q " .
                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.owner = q.course " .
-                   "WHERE status != ? AND realm = ? " .
+                   "WHERE realm = ? " .
                    "ORDER BY realm,name ";
-            $params = array(QUESTIONNAIRE_ARCHIVED, $type);
+            $params = array($type);
     /// Any survey owned by the user or typed as 'template' can be copied.
         } else if ($type == 'template') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
                    "FROM {questionnaire} q " .
                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.owner = q.course " .
-                   "WHERE status != ? AND (realm = ? OR owner = ?) " .
+                   "WHERE (realm = ? OR owner = ?) " .
                    "ORDER BY realm,name ";
-            $params = array(QUESTIONNAIRE_ARCHIVED, $type, $courseid);
+            $params = array($type, $courseid);
         }
     } else {
         $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid " .
                "FROM {questionnaire} q " .
                "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
-               "WHERE status != ? AND owner = ? " .
+               "WHERE owner = ? " .
                "ORDER BY realm,name ";
-        $params = array(QUESTIONNAIRE_ARCHIVED, $courseid);
+        $params = array($courseid);
     }
     return $DB->get_records_sql($sql, $params);
 }
