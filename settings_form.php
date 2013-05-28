@@ -50,6 +50,7 @@ class questionnaire_settings_form extends moodleform {
         } else {
             $mform->addElement('hidden', 'realm', 'private');
         }
+        $mform->setType('realm', PARAM_RAW);
 
         $mform->addElement('text', 'title', get_string('title', 'questionnaire'), array('size'=>'60'));
         $mform->setDefault('title', $questionnaire->survey->title);

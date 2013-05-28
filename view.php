@@ -104,9 +104,9 @@
         exit();
     }
     else if (!$questionnaire->user_is_eligible($USER->id)) {
-        echo '<div class="message">'
-        .get_string('noteligible', 'questionnaire')
-        .'</div>';
+        if ($questionnaire->questions) {
+            echo '<div class="message">'.get_string('noteligible', 'questionnaire').'</div>';
+        }
     } else if (!$questionnaire->user_can_take($USER->id)) {
         switch ($questionnaire->qtype) {
             case QUESTIONNAIREDAILY:
@@ -131,10 +131,18 @@
         } else {
             $complete = get_string('resumesurvey', 'questionnaire');
         }
-        echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
+        if ($questionnaire->questions) { // sanity check
+            echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
             'id='.$questionnaire->cm->id).'">'.$complete.'</a>';  
+        }
     }
-
+    if (!$questionnaire->questions) {
+        echo '<p>'.get_string('noneinuse','questionnaire').'</p>';
+    }
+    if ($questionnaire->capabilities->editquestions && !$questionnaire->questions) { // sanity check
+        echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
+                    'id='.$questionnaire->cm->id).'">'.'<strong>'.get_string('questions', 'questionnaire').'</strong></a>';
+    }
     echo $OUTPUT->box_end();
     if (isguestuser()) {
         $output = '';
