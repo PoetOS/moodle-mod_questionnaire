@@ -469,6 +469,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         navigation_node $questionnairenode) {
 
     global $PAGE, $DB, $USER;
+    require_once('questionnaire.class.php');
 
     if (!$context = context_module::instance($PAGE->cm->id, IGNORE_MISSING)) {
         print_error('badcontext');
