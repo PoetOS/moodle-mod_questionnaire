@@ -519,7 +519,7 @@
         }
         echo "<br /><br />\n";
         echo $OUTPUT->help_icon('downloadtextformat','questionnaire');
-        echo (get_string('downloadtext'));
+        echo '&nbsp;'.(get_string('downloadtext'));
         echo $OUTPUT->heading(get_string('textdownloadoptions', 'questionnaire'));
         echo $OUTPUT->box_start();
         echo "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";

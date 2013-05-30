@@ -65,7 +65,6 @@
 
     $SESSION->questionnaire->current_tab = 'questions';
     $reload = false;
-
     /// Process form data:
     if ($action == 'main') {
         $questions_form = new questionnaire_questions_form('questions.php', $moveq);
@@ -385,10 +384,18 @@
                 $nidx = 0;
                 $newcount = count($newchoices);
 
-              while (($nidx < $newcount) && ($cidx < $oldcount)) {
+                while (($nidx < $newcount) && ($cidx < $oldcount)) {
                     if ($newchoices[$nidx] != $echoice->content) {
                         $newchoices[$nidx] = trim ($newchoices[$nidx]);
                         $result = $DB->set_field('questionnaire_quest_choice', 'content', $newchoices[$nidx], array('id' => $ekey));
+                        $r = preg_match_all("/^(\d{1,2})(=.*)$/", $newchoices[$nidx], $matches);
+                        // this choice has been attributed a "score value" OR this is a rate question type
+                        if ($r) {
+                            $new_score = $matches[1][0];
+                            $result = $DB->set_field('questionnaire_quest_choice', 'value', $new_score, array('id' => $ekey));
+                        } else { // no score value for this choice
+                            $result = $DB->set_field('questionnaire_quest_choice', 'value', null, array('id' => $ekey));
+                        }
                     }
                     $nidx++;
                     $echoice = next($question->choices);
@@ -401,6 +408,11 @@
                    $choice_record = new Object();
                    $choice_record->question_id = $qformdata->qid;
                    $choice_record->content = trim($newchoices[$nidx]);
+                   $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choice_record->content, $matches);
+                   // this choice has been attributed a "score value" OR this is a rate question type
+                   if ($r) {
+                       $choice_record->value = $matches[1][0];
+                   }
                    $result = $DB->insert_record('questionnaire_quest_choice', $choice_record);
                    $nidx++;
                 }

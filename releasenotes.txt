@@ -1,6 +1,10 @@
 Release Notes:
 
-Version 2.5.1
+Version 2.5.1 Build - 2013062202
+- CONTRIB-3163 Display number of responses to rate questions
+- plus various minor changes to the display of responses
+
+Version 2.5.1 Build - 2013062201
 - CONTRIB-4281 Improve navigation in Questionnaire 
 
 Version 2.5.0

@@ -202,13 +202,10 @@ function questionnaire_choice_values($content) {
     }
     // look for named modalities
     $contents->text = $content;
-    if ($pos = strpos($content, '=')) {
-        // the equal sign used for named modalities must NOT be followed by a double quote
-        // because an equal sign followed by double quote might introduce e.g. a lang tag
-        if (substr($content, $pos + 1, 1) != '"') {
-            $contents->text = substr($content, $pos + 1);
-            $contents->modname =substr($content, 0, $pos);
-        }
+    // DEV JR from version 2.5, a double colon :: must be used here instead of the equal sign
+    if ($pos = strpos($content, '::')) {
+        $contents->text = substr($content, $pos + 2);
+        $contents->modname =substr($content, 0, $pos);
      }
     return $contents;
 }

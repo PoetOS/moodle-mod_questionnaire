@@ -268,6 +268,7 @@ class questionnaire {
 
         echo $OUTPUT->box_start();
         $this->print_survey_start('', 1, 1, 0, $rid, $blankquestionnaire);
+        echo $OUTPUT->box_end();
 
         $data = new Object();
         $i = 1;
@@ -276,12 +277,14 @@ class questionnaire {
         }
         foreach ($this->questions as $question) {
             if ($question->type_id < QUESPAGEBREAK) {
+                echo $OUTPUT->box_start();
                 $question->response_display($data, $i++);
+                echo $OUTPUT->box_end();
             }
         }
 
         $this->print_survey_end(1, 1);
-        echo $OUTPUT->box_end();
+        
     }
 
    /**
@@ -290,7 +293,6 @@ class questionnaire {
     */
     function view_all_responses($resps) {
         global $QTYPENAMES, $OUTPUT;
-        echo $OUTPUT->box_start();
         $this->print_survey_start('', 1, 1, 0);
 
         foreach ($resps as $resp) {
@@ -299,21 +301,17 @@ class questionnaire {
         }
 
         $i = 1;
-        echo '<div class="mainTable">';
+
         foreach ($this->questions as $question) {
+            echo $OUTPUT->box_start();
             if ($question->type_id < QUESPAGEBREAK) {
                 $method = $QTYPENAMES[$question->type_id].'_response_display';
                 if (method_exists($question, $method)) {
                     $question->questionstart_survey_display($i);
                     $numItems = count($data);
-                    $inneri = 0;
                     foreach ($data as $respid => $respdata) {
                         echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
                         $question->$method($respdata);
-                        $inneri++;
-                        if ($inneri < $numItems) {
-                            echo '<hr />';
-                        }
                     }
                     $question->questionend_survey_display($i);
                 } else {
@@ -321,11 +319,10 @@ class questionnaire {
                 }
             $i++;
             }
+            echo $OUTPUT->box_end();
         }
-        echo '</div>';
 
         $this->print_survey_end(1, 1);
-        echo $OUTPUT->box_end();
     }
 
 /// Access Methods

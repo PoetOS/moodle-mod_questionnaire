@@ -136,7 +136,9 @@ body#page-mod-questionnaire-myreport td.qnType {
 body#page-mod-questionnaire-myreport div.respdate {
     font-size: 0.8em;
     font-weight:bold;
-    padding-bottom: 4px;
+    margin-bottom: 6px;
+    padding-top: 6px;
+    border-bottom: 1px dashed gray;
 }
 
 body#page-mod-questionnaire-complete .message,
@@ -243,8 +245,17 @@ body#page-mod-questionnaire-myreport .generaltable {
 
 /* new styles - keep old (quOuter, qnInner, qnInnerTable, qnType) for sections etc. */
 #page-mod-questionnaire-complete .qn-number,
-#page-mod-questionnaire-complete .qn-legend {
+#page-mod-questionnaire-complete .qn-legend,
+#page-mod-questionnaire-preview .qn-number,
+#page-mod-questionnaire-preview .qn-legend,
+#page-mod-questionnaire-report .qn-legend,
+#page-mod-questionnaire-myreport .qn-legend {
      float: left;
+}
+#page-mod-questionnaire-preview .qn-number:after,
+#page-mod-questionnaire-report .qn-number:after,
+#page-mod-questionnaire-myreport .qn-number:after {
+    content:".-\0000a0";
 }
 #page-mod-questionnaire-complete .qn-question {
     margin-left: 35px;
@@ -257,4 +268,7 @@ body#page-mod-questionnaire-myreport .generaltable {
     padding: 5px;
     border-left: #CCCCCC thin dotted;
     border-bottom: #CCCCCC thin dotted;
+}
+.unselected {
+    color: gray;
 }
