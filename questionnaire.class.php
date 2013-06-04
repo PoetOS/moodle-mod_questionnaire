@@ -967,7 +967,7 @@ class questionnaire {
         unset($survey->id);
         $survey->owner = $owner;
         // Make sure that the survey name is not larger than the field size (CONTRIB-2999). Leave room for extra chars.
-        $survey->name = substr($survey->name, 0, (64-10));
+        $survey->name = textlib::substr($survey->name, 0, (64-10));
         $survey->name .= '_copy';
         $survey->status = 0;
 
