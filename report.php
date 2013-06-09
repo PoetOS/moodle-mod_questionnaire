@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+// This page prints a particular instance of questionnaire
 
-/// This page prints a particular instance of questionnaire
     global $SESSION, $CFG;
     require_once("../../config.php");
     require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
@@ -26,6 +26,7 @@
     $rid = optional_param('rid', false, PARAM_INT);
     $type = optional_param('type', '', PARAM_ALPHA);
     $byresponse = optional_param('byresponse', false, PARAM_INT);
+    $individualresponse = optional_param('individualresponse', false, PARAM_INT);
     $currentgroupid = optional_param('currentgroupid', -1, PARAM_INT); //groupid
     $user = optional_param('user', '', PARAM_INT);
     $userid = $USER->id;
@@ -63,11 +64,11 @@
 
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
-    /// If you can't view the questionnaire, or can't view a specified response, error out.
+    // If you can't view the questionnaire, or can't view a specified response, error out.
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     if (!has_capability('mod/questionnaire:readallresponseanytime',$context) &&
       !($questionnaire->capabilities->view && $questionnaire->can_view_response($rid))) {
-        /// Should never happen, unless called directly by a snoop...
+        // Should never happen, unless called directly by a snoop...
         print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
     }
 
@@ -84,10 +85,9 @@
     if ($type) {
         $url->param('type', $type);
     }
-    if ($byresponse) {
-        $url->param('byresponse', $byresponse);
+    if ($byresponse || $individualresponse) {
+        $url->param('byresponse', 1);
     }
-
     // if we are deleting a single response, keep displaying navigation links to 'view by response'
     if ($action == 'dresp') {
         $url->param('action', 'vresp');
@@ -96,11 +96,10 @@
     if ($user) {
         $url->param('user', $user);
     }
-
     $PAGE->set_url($url);
     $PAGE->set_context($context);
 
-    /// Tab setup:
+    // Tab setup:
     $SESSION->questionnaire->current_tab = 'allreport';
 
     $strdeleteallresponses = get_string('deleteallresponses', 'questionnaire');
@@ -111,8 +110,8 @@
     $strviewbyresponse = get_string('viewbyresponse', 'questionnaire');
     $strquestionnaires = get_string('modulenameplural', 'questionnaire');
 
-    /// get all responses for further use in viewbyresp and deleteall etc.
-    // all participants
+    // Get all responses for further use in viewbyresp and deleteall etc.
+    // All participants.
     $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
              FROM {questionnaire_response} R
              WHERE R.survey_id = ? AND
@@ -125,7 +124,7 @@
     $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
     $castsql = $DB->sql_cast_char2int('R.username');
 
-    //available group modes (0 = no groups; 1 = separate groups; 2 = visible groups)
+    // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
     $groupmode = groups_get_activity_groupmode($cm, $course);
     $questionnairegroups = '';
     $groupscount = 0;
@@ -159,7 +158,7 @@
                 $currentsessiongroupid = -1;
             }
 
-            // all members of any group
+            // All members of any group.
             $sql = "SELECT DISTINCT R.id, R.survey_id, R.submitted, R.username
                     FROM {questionnaire_response} R,
                         {groups_members} GM
@@ -172,7 +171,7 @@
             }
             $SESSION->questionnaire->numrespsallgroupmembers = count ($respsallgroupmembers);
 
-            // not members of any group
+            // Not members of any group.
             $sql = "SELECT R.id, R.survey_id, R.submitted, R.username, U.id AS userid
                     FROM {questionnaire_response} R,
                         {user} U
@@ -192,7 +191,7 @@
             }
             $SESSION->questionnaire->numrespsnongroupmembers = count ($respsnongroupmembers);
 
-            // current group members
+            // Current group members.
             $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
                 FROM {questionnaire_response} R,
                     {groups_members} GM
@@ -205,8 +204,8 @@
                 }
                 $SESSION->questionnaire->numcurrentgroupresps = count ($currentgroupresps);
             } else {
-                //groupmode = separate groups but user is not member of any group
-                // and does not have moodle/site:accessallgroups capability -> refuse view responses
+                // Groupmode = separate groups but user is not member of any group
+                // and does not have moodle/site:accessallgroups capability -> refuse view responses.
                 if (!$questionnaire->canviewallgroups) {
                     $currentgroupid = 0;
                 }
@@ -216,7 +215,7 @@
                 $groupname = get_string('group').' <strong>'.groups_get_group_name($currentsessiongroupid).'</strong>';
             } else {
                 switch ($currentsessiongroupid) {
-                    case '0':
+                    case '0':	// Should not happen.
                         $groupname = '<strong>'.get_string('groupmembersonlyerror','group').'</strong>';
                         break;
                     case '-1':
@@ -275,7 +274,7 @@
             $ruser = $resp->username;
         }
 
-    /// Print the page header
+    // Print the page header
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
         echo $OUTPUT->header();
@@ -288,7 +287,7 @@
             $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$sid.'&amp;rid='.$rid.
             '&amp;instance='.$instance.'&amp;byresponse=1');
 
-    /// Finish the page
+    // Finish the page
         echo $OUTPUT->footer($course);
         break;
 
@@ -325,12 +324,12 @@
             $ruser = $resp->username;
         }
 
-    /// Print the page header
+    // Print the page header
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
         echo $OUTPUT->header();
 
-        /// print the tabs
+        // print the tabs
         $SESSION->questionnaire->current_tab = 'deleteall';
         include('tabs.php');
 
@@ -343,7 +342,7 @@
         echo $OUTPUT->confirm($confirmdelstr,
                 $CFG->wwwroot.'/mod/questionnaire/report.php?action=dvallresp&amp;sid='.$sid.'&amp;instance='.$instance,
                 $CFG->wwwroot.'/mod/questionnaire/report.php?action=vall&amp;sid='.$sid.'&amp;instance='.$instance);
-    /// Finish the page
+    // Finish the page
         echo $OUTPUT->footer($course);
         break;
 
@@ -491,8 +490,8 @@
         $PAGE->set_heading(format_string($course->fullname));
         echo $OUTPUT->header();
 
-        /// print the tabs
-    /// Tab setup:
+        // print the tabs
+    // Tab setup:
         if (empty($user)) {
             $SESSION->questionnaire->current_tab = 'downloadcsv';
         } else {
@@ -543,7 +542,7 @@
     case 'dcsv': // download as text (cvs) format
         require_capability('mod/questionnaire:downloadresponses', $context);
 
-    /// Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
+    // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($questionnaire->name, PARAM_FILE);
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
 
@@ -571,14 +570,14 @@
         $PAGE->set_heading(format_string($course->fullname));
         echo $OUTPUT->header();
         if (!$questionnaire->capabilities->readallresponses && !$questionnaire->capabilities->readallresponseanytime) {
-            /// Should never happen, unless called directly by a snoop...
+            // Should never happen, unless called directly by a snoop...
             print_error('nopermissions', '', '', get_string('viewallresponses', 'questionnaire'));
-            /// Finish the page
+            // Finish the page
             echo $OUTPUT->footer($course);
             break;
         }
         
-        /// print the tabs
+        // print the tabs
 	    switch ($action) {
 			case 'vallasort':
                 $SESSION->questionnaire->current_tab = 'vallasort';
@@ -611,14 +610,9 @@
         if ($currentgroupid > 0) {
             $groupname = get_string('group').': <strong>'.groups_get_group_name($currentgroupid).'</strong>';
         } else {
-            // even if questionnaire is set to view all groups, students cannot view all participants
-            // i.e. participants NOT IN A GROUP
-            if (!$questionnaire->canviewallgroups && $currentgroupid = -1) {
-                $currentgroupid = -2;
-            }
             switch ($currentgroupid) {
                 case '0':
-                    $groupname = '<strong>'.get_string('groupmembersonlyerror','group').'</strong>';
+                    $groupname = '<p><strong>'.get_string('groupmembersonlyerror','group').'</strong></p>';
                     break;
                 case '-1':
                     $groupname = '<strong>'.get_string('allparticipants').'</strong>';
@@ -635,10 +629,11 @@
         $strsort = get_string('order_'.$sort, 'questionnaire');
         echo $strsort;
         echo $OUTPUT->help_icon('orderresponses','questionnaire');
+
         $ret = $questionnaire->survey_results(1, 1, '', '','', $uid=false, $currentgroupid, $sort);
         echo '</div>';
 
-    /// Finish the page
+    // Finish the page
         echo $OUTPUT->footer($course);
         break;
 
@@ -707,45 +702,53 @@
             $rid = $rids[0];
         }
 
-    /// Print the page header
+    // Print the page header
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->navbar->add($strviewbyresponse);
         echo $OUTPUT->header();
 
-        /// print the tabs
-        $SESSION->questionnaire->current_tab = 'vrespsummary';
+        // print the tabs
+        if ($byresponse) {
+            $SESSION->questionnaire->current_tab = 'vrespsummary';
+        }
+        if ($individualresponse) {
+            $SESSION->questionnaire->current_tab = 'individualresp';
+        }
         include('tabs.php');
 
-    /// Print the main part of the page
+    // Print the main part of the page
+    // TODO provide option to select how many columns and/or responses per page
 
-        echo '<br/><br/>';
-        echo '<div style="text-align:center; padding-bottom:5px;">';
-        if ($groupid === 0) {
-            $groupname = '<strong>'.get_string('groupmembersonlyerror','group').'</strong>';;
-            echo (get_string('viewbyresponse','questionnaire').'. '.$groupname.'. ');
+        echo $OUTPUT->box_start();
+        
+        if ($groupid === 0) {	// Should not happen.
+            $groupname = '<strong>'.get_string('groupmembersonlyerror','group').'</strong>';
+            echo (get_string('viewindividualresponse','questionnaire').'. '.$groupname.'. ');
         } elseif  ($noresponses){
             echo (get_string('group').' <strong>'.groups_get_group_name($groupid).'</strong>: '.
                 get_string('noresponses','questionnaire'));
         } else {
-            if ($groupid != -1 ) {
-                $questionnaire->survey_results_navbar_student ($rid, $resp->username, $instance, $resps, 'report', $sid);
-            } else {
-                $questionnaire->survey_results_navbar($rid);
+            $groupname = get_string('group').': <strong>'.groups_get_group_name($groupid).'</strong>';
+            if ($groupid == -1 ) {
+                $groupname = get_string('allparticipants');
             }
-            echo '</div>';
-            $ret = $questionnaire->view_response($rid);
-            echo '<div style="text-align:center; padding-bottom:5px;">';
-            if ($groupid != -1 ) {
-                $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps, 'report', $sid);
-            } else {
-                $questionnaire->survey_results_navbar($rid);
+            // No need to display names list if questionnaire is anonymous!
+            if ($questionnaire->respondenttype != 'anonymous') {
+                if ($byresponse) {
+                    echo $OUTPUT->box_start();
+                    echo $OUTPUT->help_icon('viewindividualresponse', 'questionnaire').'&nbsp;';
+                    echo (get_string('viewindividualresponse','questionnaire').' <strong> : '.$groupname.'</strong>');
+                    echo $OUTPUT->box_end();
+                }
+                $questionnaire->survey_results_navbar_alpha($rid, $groupid, $cm, $byresponse);
+                if (!$byresponse) {		// Show respondents individual responses.
+                    $questionnaire->view_response($rid);
+                }
             }
         }
-        echo '</div>';
+        echo $OUTPUT->box_end();
 
-    /// Finish the page
+    // Finish the page
         echo $OUTPUT->footer($course);
         break;
     }

@@ -1,7 +1,14 @@
 Release Notes:
 
+Version 2.5.2 Build - 2013062204
+- CONTRIB-3528 Change navigate by numbers to navigate by names in the "View by Response tab"
+- Improve the display of Answer the questions page to make it look more like Quiz questions.
+- Generally improve the display of questions to make it similar in all pages: Answer questions, Preview, Print, Reports.
+- Generally tidy up the stylesheet.
+- Started work on making code more Moodle-compliant.
+
 Version 2.5.1 Build - 2013062203
-CONTRIB-4038 Display respondents' names in front of their answers in the Essay Box question type. 
+- CONTRIB-4038 Display respondents' names in front of their answers in the Essay Box question type. 
 
 Version 2.5.1 Build - 2013062202
 - CONTRIB-3163 Display number of responses to rate questions

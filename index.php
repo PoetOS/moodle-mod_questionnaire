@@ -24,127 +24,128 @@
  */
 
 
-    require_once("../../config.php");
-    require_once("locallib.php");
+require_once("../../config.php");
+require_once("locallib.php");
 
-    $id = required_param('id', PARAM_INT);
-    $PAGE->set_url('/mod/questionnaire/index.php', array('id' => $id));
-    if (! $course = $DB->get_record('course', array('id' => $id))) {
-        print_error('incorrectcourseid', 'questionnaire');
+$id = required_param('id', PARAM_INT);
+$PAGE->set_url('/mod/questionnaire/index.php', array('id' => $id));
+if (! $course = $DB->get_record('course', array('id' => $id))) {
+    print_error('incorrectcourseid', 'questionnaire');
+}
+$coursecontext = context_course::instance($id);
+require_login($course->id);
+$PAGE->set_pagelayout('incourse');
+
+add_to_log($course->id, "questionnaire", "view all", "index.php?id=$course->id", "");
+
+// Print the header.
+$strquestionnaires = get_string("modulenameplural", "questionnaire");
+$PAGE->navbar->add($strquestionnaires);
+$PAGE->set_title("$course->shortname: $strquestionnaires");
+$PAGE->set_heading(format_string($course->fullname));
+echo $OUTPUT->header();
+
+// Get all the appropriate data.
+if (!$questionnaires = get_all_instances_in_course("questionnaire", $course)) {
+    notice(get_string('thereareno', 'moodle', $strquestionnaires), "../../course/view.php?id=$course->id");
+    die;
+}
+
+// Check if we need the closing date header.
+$showclosingheader = false;
+foreach ($questionnaires as $questionnaire) {
+    if ($questionnaire->closedate!=0) {
+        $showclosingheader=true;
     }
-    $coursecontext = context_course::instance($id);
-    require_login($course->id);
-    $PAGE->set_pagelayout('incourse');
-
-    add_to_log($course->id, "questionnaire", "view all", "index.php?id=$course->id", "");
-
-    // Print the header
-    $strquestionnaires = get_string("modulenameplural", "questionnaire");
-    $PAGE->navbar->add($strquestionnaires);
-    $PAGE->set_title("$course->shortname: $strquestionnaires");
-    $PAGE->set_heading(format_string($course->fullname));
-    echo $OUTPUT->header();
-
-/// Get all the appropriate data
-    if (!$questionnaires = get_all_instances_in_course("questionnaire", $course)) {
-        notice(get_string('thereareno', 'moodle', $strquestionnaires), "../../course/view.php?id=$course->id");
-        die;
-    }
-
-    // Check if we need the closing date header.
-    $showclosingheader = false;
-    foreach ($questionnaires as $questionnaire) {
-        if ($questionnaire->closedate!=0) {
-            $showclosingheader=true;
-        }
-        if ($showclosingheader) {
-            break;
-        }
-    }
-
-    // Configure table for displaying the list of instances.
-    $headings = array(get_string('name'));
-    $align = array('left');
-
     if ($showclosingheader) {
-        array_push($headings, get_string('questionnairecloses', 'questionnaire'));
-        array_push($align, 'left');
+        break;
     }
+}
 
-    array_unshift($headings, get_string('sectionname', 'format_'.$course->format));
-    array_unshift($align, 'left');
+// Configure table for displaying the list of instances.
+$headings = array(get_string('name'));
+$align = array('left');
 
-    $showing = '';
+if ($showclosingheader) {
+    array_push($headings, get_string('questionnairecloses', 'questionnaire'));
+    array_push($align, 'left');
+}
 
-    // current user role == admin or teacher
-    if (has_capability('mod/questionnaire:viewsingleresponse', $coursecontext)) {
-        array_push($headings, get_string('responses', 'questionnaire'));
-        array_push($align, 'center');
-        $showing = 'stats';
-        array_push($headings, get_string('realm', 'questionnaire'));
-        array_push($align, 'left');
-    // current user role == student
-    } else if (has_capability('mod/questionnaire:submit',$coursecontext)) {
-        array_push($headings, get_string('status'));
-        array_push($align, 'left');
-        $showing = 'responses';
-    }
+array_unshift($headings, get_string('sectionname', 'format_'.$course->format));
+array_unshift($align, 'left');
 
-    $table = new html_table();
-    $table->head = $headings;
-    $table->align = $align;
+$showing = '';
 
-    // Populate the table with the list of instances.
-    $currentsection = '';
-    foreach($questionnaires as $questionnaire) {
-        $cmid = $questionnaire->coursemodule;
-        $data = array();
+// Current user role == admin or teacher.
+if (has_capability('mod/questionnaire:viewsingleresponse', $coursecontext)) {
+    array_push($headings, get_string('responses', 'questionnaire'));
+    array_push($align, 'center');
+    $showing = 'stats';
+    array_push($headings, get_string('realm', 'questionnaire'));
+    array_push($align, 'left');
+    // Current user role == student.
+} else if (has_capability('mod/questionnaire:submit', $coursecontext)) {
+    array_push($headings, get_string('status'));
+    array_push($align, 'left');
+    $showing = 'responses';
+}
 
-        $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->sid));
-        // template surveys should NOT be displayed as an activity to students
-        if (!($realm == 'template' && !has_capability('mod/questionnaire:manage',get_context_instance(CONTEXT_MODULE,$cmid)))) {
-            // Section number if necessary.
-            $strsection = '';
-            if ($questionnaire->section != $currentsection) {
-                $strsection = get_section_name($course, $questionnaire->section);
-                $currentsection = $questionnaire->section;
-            }
-            $data[] = $strsection;
-            //Show normal if the mod is visible
-            $class = '';
-            if (!$questionnaire->visible) {
-                $class = ' class="dimmed"';
-            }
-            $data[] = "<a$class href=\"view.php?id=$cmid\">$questionnaire->name</a>";
+$table = new html_table();
+$table->head = $headings;
+$table->align = $align;
 
-            // Close date.
-            if ($questionnaire->closedate) {
-                $data[] = userdate($questionnaire->closedate);
-            } else if ($showclosingheader) {
-                $data[] = '';
-            }
+// Populate the table with the list of instances.
+$currentsection = '';
+foreach ($questionnaires as $questionnaire) {
+    $cmid = $questionnaire->coursemodule;
+    $data = array();
 
-            if ($showing == 'responses') {
-                $status = '';
-                if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete=false)) {
-                    foreach ($responses as $response) {
-                        if ($response->complete == 'y') {
-                            $status .= get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
-                        } else {
-                            $status .= get_string('attemptstillinprogress', 'questionnaire').' '.userdate($response->submitted).'<br />';
-                        }
+    $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->sid));
+    // Template surveys should NOT be displayed as an activity to students.
+    if (!($realm == 'template' && !has_capability('mod/questionnaire:manage', get_context_instance(CONTEXT_MODULE, $cmid)))) {
+        // Section number if necessary.
+        $strsection = '';
+        if ($questionnaire->section != $currentsection) {
+            $strsection = get_section_name($course, $questionnaire->section);
+            $currentsection = $questionnaire->section;
+        }
+        $data[] = $strsection;
+        // Show normal if the mod is visible.
+        $class = '';
+        if (!$questionnaire->visible) {
+            $class = ' class="dimmed"';
+        }
+        $data[] = "<a$class href=\"view.php?id=$cmid\">$questionnaire->name</a>";
+
+        // Close date.
+        if ($questionnaire->closedate) {
+            $data[] = userdate($questionnaire->closedate);
+        } else if ($showclosingheader) {
+            $data[] = '';
+        }
+
+        if ($showing == 'responses') {
+            $status = '';
+            if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete=false)) {
+                foreach ($responses as $response) {
+                    if ($response->complete == 'y') {
+                        $status .= get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
+                    } else {
+                        $status .= get_string('attemptstillinprogress', 'questionnaire').' '.
+                            userdate($response->submitted).'<br />';
                     }
                 }
-                $data[] = $status;
-            } elseif ($showing == 'stats') {
-                $data[] = $DB->count_records('questionnaire_response', array('survey_id' => $questionnaire->sid, 'complete' => 'y'));
-                $data[] = get_string($realm, 'questionnaire');
             }
+            $data[] = $status;
+        } else if ($showing == 'stats') {
+            $data[] = $DB->count_records('questionnaire_response', array('survey_id' => $questionnaire->sid, 'complete' => 'y'));
+            $data[] = get_string($realm, 'questionnaire');
         }
-        $table->data[] = $data;
-    } // End of loop over questionnaire instances.
+    }
+    $table->data[] = $data;
+} // End of loop over questionnaire instances.
 
-    echo html_writer::table($table);
+echo html_writer::table($table);
 
-    /// Finish the page
-    echo $OUTPUT->footer();
+// Finish the page.
+echo $OUTPUT->footer();

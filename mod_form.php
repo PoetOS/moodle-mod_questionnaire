@@ -62,8 +62,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->disabledIf('enableclosegroup', 'useclosedate', 'notchecked');
 
         //-------------------------------------------------------------------------------
-        global $QUESTIONNAIRE_TYPES, $QUESTIONNAIRE_RESPONDENTS, $QUESTIONNAIRE_ELIGIBLES,
-               $QUESTIONNAIRE_RESPONSEVIEWERS, $QUESTIONNAIRE_REALMS;
+        global $QUESTIONNAIRE_TYPES, $QUESTIONNAIRE_RESPONDENTS, $QUESTIONNAIRE_RESPONSEVIEWERS, $QUESTIONNAIRE_REALMS;
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
         $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $QUESTIONNAIRE_TYPES);
@@ -74,10 +73,6 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $QUESTIONNAIRE_RESPONDENTS);
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
-
-        $mform->addElement('static', 'old_resp_eligible', get_string('respondenteligible', 'questionnaire'),
-                           get_string('respeligiblerepl', 'questionnaire'));
-        $mform->addHelpButton('old_resp_eligible', 'respondenteligible', 'questionnaire');
 
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $QUESTIONNAIRE_RESPONSEVIEWERS);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');

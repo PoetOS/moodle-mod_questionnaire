@@ -118,9 +118,7 @@
         include('tabs.php');
 
         echo $OUTPUT->heading($titletext.':');
-
         $questionnaire->view_all_responses($resps);
-
     /// Finish the page
         echo $OUTPUT->footer($course);
         break;
@@ -154,15 +152,12 @@
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps);
             echo '</div>';
         }
-        echo '<table class = "active"><tr><td>';
         $questionnaire->view_response($rid);
-        echo ('</td></tr></table>');
         if (count($resps) > 1) {
             echo '<div style="text-align:center; padding-bottom:5px;">';
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps);
             echo '</div>';
         }
-
 
     /// Finish the page
         echo $OUTPUT->footer($course);

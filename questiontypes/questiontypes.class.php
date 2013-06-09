@@ -817,52 +817,55 @@ class questionnaire_question {
         }
     }
 
-    function question_display($data, $qnum='') {
+    function question_display($data, $qnum='', $blankquestionnaire) {
         global $QTYPENAMES;
         $method = $QTYPENAMES[$this->type_id].'_survey_display';
         if (method_exists($this, $method)) {
             $this->questionstart_survey_display($qnum, $data);
-            $this->$method($data);
+            $this->$method($data, $blankquestionnaire);
             $this->questionend_survey_display($qnum);
         } else {
             print_error('displaymethod', 'questionnaire');
         }
     }
 
-    function survey_display($data, $qnum='', $usehtmleditor=null) {
+    function survey_display($data, $qnum='', $usehtmleditor=null, $blankquestionnaire=false) {
         if (!is_null($usehtmleditor)) {
            $this->usehtmleditor = can_use_html_editor();
         } else {
             $this->usehtmleditor = $usehtmleditor;
         }
 
-        $this->question_display($data, $qnum);
+        $this->question_display($data, $qnum, $blankquestionnaire);
     }
 
     function questionstart_survey_display($qnum, $data='') {
         global $OUTPUT;
         if ($this->type_id == QUESSECTIONTEXT) {
-            return;
+            $qnum = '';
         }
         echo html_writer::start_tag('fieldset', array('class' => 'qn-container'));
         echo html_writer::start_tag('legend', array('class' => 'qn-legend'));
-        echo html_writer::start_tag('div', array('class' => 'qn-number'));
-        if ($this->required == 'y') {
-            echo html_writer::empty_tag('img',
-                array('class' => 'req',
-                    'title' => get_string('required', 'questionnaire'),
-                    'alt' => get_string('required', 'questionnaire'),
-                    'src' => $OUTPUT->pix_url('req')));
-        }
+        echo html_writer::start_tag('div', array('class' => 'qn-info'));
         echo html_writer::start_tag('div', array('class' => 'accesshide'));
         echo get_string('questionnum','questionnaire');
         echo html_writer::end_tag('div');
-        echo $qnum;
-        echo html_writer::start_tag('div', array('class' => 'accesshide'));
+        
+        $required = '';
+        if ($this->required == 'y') {
+            $required = html_writer::empty_tag('img',
+                    array('class' => 'req',
+                            'title' => get_string('required', 'questionnaire'),
+                            'alt' => get_string('required', 'questionnaire'),
+                            'src' => $OUTPUT->pix_url('req')));
+        }
+        echo html_writer::tag('h2', $qnum.' '.$required, array('class' => 'qn-number'));
+        echo html_writer::start_tag('div', array('class' => 'accesshide'));        
         echo get_string('required','questionnaire');
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('legend');
+        echo html_writer::start_tag('div', array('class' => 'qn-content'));
         echo html_writer::start_tag('div', array('class' => 'qn-question'));
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
             $this->type_id == QUESDROP) {
@@ -878,13 +881,10 @@ class questionnaire_question {
             echo html_writer::end_tag('label');
         }
         echo html_writer::end_tag('div');
-        echo html_writer::start_tag('div', array('class' => 'qn-type'));
+        echo html_writer::start_tag('div', array('class' => 'qn-answer'));
     }
 
     function questionend_survey_display() {
-        if ($this->type_id == QUESSECTIONTEXT) {
-            return;
-        }
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('fieldset');
     }
@@ -904,7 +904,7 @@ class questionnaire_question {
         }
     }
 
-    function yesno_survey_display($data) {
+    function yesno_survey_display($data, $blankquestionnaire=false) {
         /// moved choose_from_radio() here to fix unwanted selection of yesno buttons and radio buttons with identical ID
         static $stryes = null;
         static $strno = null;
@@ -922,19 +922,17 @@ class questionnaire_question {
         $name =  'q'.$this->id;
         $checked=(isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
 
-        $output = '<span class="radiogroup '.$name."\">\n";
-
+        $output = '';
         $currentradio = 0;
         $ischecked = false;
         foreach ($options as $value => $label) {
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
-            $output .= ' <span class="radioelement '.$name.' rb'.$currentradio."\">";
             $output .= '<input name="'.$name.'" id="'.$htmlid.'" type="radio" value="'.$value.'"';
             if ($value == $checked) {
                 $output .= ' checked="checked"';
                 $ischecked = true;
             }
-            $output .= ' /> <label for="'.$htmlid.'" style="vertical-align:top;">'.  $label .'</label></span>' .  "\n";
+            $output .= ' /><label for="'.$htmlid.'">'. $label .'</label>&nbsp;&nbsp;&nbsp;' . "\n";
             $currentradio = ($currentradio + 1) % 2;
             }
         // CONTRIB-846
@@ -943,17 +941,17 @@ class questionnaire_question {
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="'.$id.'"'.
                 ' onclick="other_check_empty(name, value)"';
-            if (!$ischecked) {
+            if (!$ischecked && !$blankquestionnaire) {
                 $output .= ' checked="checked"';
             }
             $content = get_string('noanswer','questionnaire');
-            $output .= ' />&nbsp;<label for="'.$htmlid.'" style="vertical-align:top;">'.
+            $output .= ' /><label for="'.$htmlid.'" >'.
                 format_text($content, FORMAT_HTML).'</label>&nbsp;&nbsp;';
             $currentradio = ($currentradio + 1) % 2;
         }
         // end CONTRIB-846
 
-        $output .= '</span>' .  "\n";
+        $output .= '</span>' . "\n";
         echo $output;
     }
 
@@ -994,7 +992,7 @@ class questionnaire_question {
         }
     }
 
-    function radio_survey_display($data) { // Radio buttons
+    function radio_survey_display($data, $blankquestionnaire=false) { // Radio buttons
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007
         $currentradio = 0;
         $otherempty = false;
@@ -1009,11 +1007,12 @@ class questionnaire_question {
         $ischecked = false;
         foreach ($this->choices as $id => $choice) {
             $other = strpos($choice->content, '!other');
+            if ($horizontal) {
+                $output .= ' <span style="white-space:nowrap;">';
+            }
             if ($other !== 0)  { // this is a normal radio button
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
-                if ($horizontal) {
-                    $output .= ' <span class="radioelement">';
-                }
+                
                 $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="'.$id.'"'.
                     ' onclick="other_check_empty(name, value)"';
                 if ($id == $checked) {
@@ -1021,19 +1020,10 @@ class questionnaire_question {
                     $ischecked = true;
                 }
                 $content = $choice->content;
-                $valign = 'top';
                 $contents = questionnaire_choice_values($choice->content);
-                if ($contents->image != '') {
-                     $valign = 'baseline';
-                }
-                $output .= ' />&nbsp;<label for="'.$htmlid.'" style="vertical-align:'.$valign.';">'.
+                $output .= ' /><label for="'.$htmlid.'" >'.
                     format_text($contents->text, FORMAT_HTML).$contents->image.'</label>&nbsp;&nbsp;';
                 $currentradio = ($currentradio + 1) % 2;
-                if ($horizontal) {
-                    $output .='</span>';
-                } else {
-                    $output .= '<br />';
-                }
             } else { // radio button with associated !other text field
                 $other_text = preg_replace(
                         array("/^!other=/","/^!other/"),
@@ -1046,9 +1036,6 @@ class questionnaire_question {
                     $checked = substr($checked,6);
                 }
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
-                if ($horizontal) {
-                    $output .= ' <span style="white-space:nowrap;">';
-                }
                 $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="other_'.$id.'"'.
                     ' onclick="other_check_empty(name, value)"';
                 if (($id == $checked) || !empty($data->$cid)) {
@@ -1058,20 +1045,21 @@ class questionnaire_question {
                         $otherempty = true;
                     }
                 }
-                $output .= ' /> <label for="'.$htmlid.'" style="vertical-align:top;">'.format_text($other_text, FORMAT_HTML).'</label>';
+                $output .= ' /><label for="'.$htmlid.'" >'.format_text($other_text, FORMAT_HTML).'</label>&nbsp;';
                 $currentradio = ($currentradio + 1) % 2;
 
                 $choices['other_'.$cid] = $other_text;
-                $output .= '&nbsp;<input type="text" size="25" name="'.$cid.'" onclick="other_check(name)"';
+                $output .= '<input type="text" size="25" name="'.$cid.'" onclick="other_check(name)"';
                 if (isset($data->$cid)) {
                     $output .= ' value="'.stripslashes($data->$cid) .'"';
                 }
-                $output .= ' />';
-                if ($horizontal) {
-                    $output .= '</span>';
-                } else {
-                    $output .= '<br />';
-                }
+                $output .= ' />&nbsp;';
+            }
+            if ($horizontal) {
+                // added a zero-width space character to make MSIE happy!
+                $output .= '</span>&#8203;';
+            } else {
+                $output .= '<br />';
             }
         }
 
@@ -1080,20 +1068,19 @@ class questionnaire_question {
             $id='';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             if ($horizontal) {
-                $output .= ' <span class="radioelement">';
-                }
+                $output .= ' <span style="white-space:nowrap;">';
+            }
             $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="'.$id.'"'.
                 ' onclick="other_check_empty(name, value)"';
-            if (!$ischecked) {
+            if (!$ischecked && !$blankquestionnaire) {
                 $output .= ' checked="checked"';
             }
-            $valign = 'top';
             $content = get_string('noanswer','questionnaire');
-            $output .= ' />&nbsp;<label for="'.$htmlid.'" style="vertical-align:'.$valign.';">'.
-                format_text($content, FORMAT_HTML).'</label>&nbsp;&nbsp;';
+            $output .= ' /><label for="'.$htmlid.'" >'.
+                format_text($content, FORMAT_HTML).'</label>';
             $currentradio = ($currentradio + 1) % 2;
             if ($horizontal) {
-                $output .='</span>';
+                $output .= '</span>&nbsp;&nbsp;';
             } else {
                 $output .= '<br />';
             }
@@ -1207,7 +1194,7 @@ class questionnaire_question {
             array(''=>'choosedots'), array('id' => $this->type . $this->id));
     }
 
-    function rate_survey_display($data) { // Rate
+    function rate_survey_display($data, $blankquestionnaire=false) { // Rate
         if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
             $data->{'q'.$this->id} = array();
         }
@@ -1215,7 +1202,7 @@ class questionnaire_question {
         echo '<tbody>';
         echo '<tr>';
         echo '<td></td>';
-        $bg = 'qntype c0';
+        
         if ($this->precise == 1) {
             $na = get_string('notapplicable', 'questionnaire');
         } else {
@@ -1261,20 +1248,15 @@ class questionnaire_question {
             } else {
                 $str = $j+1;
             }
-            echo '<td style="width:'.$colwidth.'; text-align:center;" class="'.$bg.'">'.$str.'</td>';
-            if ($bg == 'qntype c0') {
-                $bg = 'qntype c1';
-            } else {
-                $bg = 'qntype c0';
-            }
+            echo '<td style="width:'.$colwidth.'; text-align:center;" >'.$str.'</td>';
         }
         if ($na) {
-            echo '<td style="width:'.$colwidth.'; text-align:center;" class="'.$bg.'">'.$na.'</td>';
+            echo '<td style="width:'.$colwidth.'; text-align:center;" >'.$na.'</td>';
         }
         echo '</tr>';
 
         $num = 0;
-        if ($this->precise != 2) {  //dev jr 9 JUL 2010
+        if ($this->precise != 2) {
             $nbchoices = count($this->choices) - $nameddegrees;
         } else { // if "No duplicate choices", can restrict nbchoices to number of rate items specified
             $nbchoices = $this->length;
@@ -1290,7 +1272,6 @@ class questionnaire_question {
         if ( ($num != $nbchoices) && ($num!=0) ) {
             questionnaire_notify(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
         }
-        $bgr = 'qntype r0';
         foreach ($this->choices as $cid => $choice) {
             if (isset($choice->content)) {
                 $str = 'q'."{$this->id}_$cid";
@@ -1299,13 +1280,8 @@ class questionnaire_question {
                 if ($osgood) {
                     list($content, $contentright) = preg_split('/[|]/', $content);
                 }
-                echo '<td class="'.$bgr.'">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
-                if ($bgr == 'qntype r0') {
-                    $bgr = 'qntype r1';
-                } else {
-                    $bgr = 'qntype r0';
-                }
-                $bg = 'qntype c0';
+                echo '<td>'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
+                $bg = 'c0';
                 for ($j = 0; $j < $this->length; $j++) {
                     $checked = ((isset($data->$str) && ($j == $data->$str)) ? ' checked="checked"' : '');
                     echo '<td style="text-align:center" class="'.$bg.'">';
@@ -1313,16 +1289,17 @@ class questionnaire_question {
                     echo html_writer::tag('span', get_string('option', 'questionnaire', $i),
                         array('class' => 'accesshide'));
                     echo '<input name="'.$str.'" type="radio" value="'.$j .'"'.$checked.$order.' /></td>';
-                                        if ($bg == 'qntype c0') {
-                        $bg = 'qntype c1';
+                    if ($bg == 'c0') {
+                        $bg = 'c1';
                     } else {
-                        $bg = 'qntype c0';
+                        $bg = 'c0';
                     }
                 }
                 if ($na) {
                     if ( (in_array($na, $data->{'q'.$this->id})) ||
                             (isset($data->$str) && $data->$str == -1) ||
-                            $this->required == 'n' ) { // automatically check N/A buttons if rate question is not required
+                            $this->required == 'n' && !$blankquestionnaire) { 
+                        // automatically check N/A buttons if rate question is not required except if we are printing questionnaire
                         $checked = ' checked="checked"';
                     } else {
                         $checked = '';
@@ -1331,12 +1308,7 @@ class questionnaire_question {
                     echo '<input name="'.$str.'" type="radio" value="'.$na.'"'.$checked.' /></td>';
                 }
                 if ($osgood) {
-                    if ($bgr == 'qntype r0') {
-                        $bgr2 = 'qntype r1';
-                    } else {
-                        $bgr2 = 'qntype r0';
-                    }
-                    echo '<td class="'.$bgr2.'">&nbsp;'.format_text($contentright, FORMAT_HTML).'</td>';
+                    echo '<td>&nbsp;'.format_text($contentright, FORMAT_HTML).'</td>';
                 }
                 echo '</tr>';
             }
@@ -1411,27 +1383,15 @@ class questionnaire_question {
     }
 
     function sectiontext_survey_display($data) {
-        echo '
-    <div class="questioncontainer">
-        <div class="qnOuter">
-            <table class="qnInnerTable" style="width:100%" cellpadding="10"  cellspacing="1">
-                <tr>
-                    <td class="qnInner" style="height:35px">' .
-                        format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php', $this->context->id,
-                                                             'mod_questionnaire', 'question', $this->id), FORMAT_HTML).'
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </div>
-        ';
+        return;
     }
 
 ///***
     function response_display($data, $qnum='') {
         global $QTYPENAMES;
-
+        
         $method = $QTYPENAMES[$this->type_id].'_response_display';
+        
         if (method_exists($this, $method)) {
             $this->questionstart_survey_display($qnum, $data);
             $this->$method($data);
@@ -1485,22 +1445,24 @@ class questionnaire_question {
 
     function radio_response_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
-
+        $horizontal = $this->length;
         $currentradio = 0;
         $checked = (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
-        echo '<div class="response radio">';
         foreach ($this->choices as $id => $choice) {
+            if ($horizontal) {
+                echo ' <span style="white-space:nowrap;">';
+            }
             if (strpos($choice->content, '!other') !== 0) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
                 if ($id == $checked) {
                     echo '<span class="selected">'.
                          '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.
-                         ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span><br />';
+                         ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
                 } else {
                     echo '<span class="unselected">'.
                          '<input type="radio" disabled="disabled" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
-                         ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span><br />';
+                         ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
                 }
                 $currentradio = ($currentradio + 1) % 2;
 
@@ -1516,14 +1478,18 @@ class questionnaire_question {
                          '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.$other_text.' ';
                     echo '<span class="response text">';
                     echo (!empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;');
-                    echo '</span></span><br />';
+                    echo '</span></span>';
                 } else {
                     echo '<span class="unselected"><input type="radio" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
-                         $other_text.'</span><br />';
+                         $other_text.'</span>';
                 }
             }
+            if ($horizontal) {
+                echo '</span>';
+            } else {
+                echo '<br />';
+            }
         }
-        echo '</div>';
     }
 
     function check_response_display($data) {
@@ -1590,15 +1556,12 @@ class questionnaire_question {
 
     function rate_response_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
-
         if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
             $data->{'q'.$this->id} = array();
         }
-
-        echo '<div class="response rate">';
-        echo '<table border="0" cellspacing="1" cellpadding="0">';
+        echo '<table class="individual" border="0" cellspacing="1" cellpadding="0">';
         echo '<tbody><tr><td></td>';
-        $bg = 'qntype c0';
+        $bg = 'c0';
         $osgood = false;
         if ($this->precise == 3) { // Osgood's semantic differential
             $osgood = true;
@@ -1627,10 +1590,10 @@ class questionnaire_question {
                 $str = $j+1;
             }
             echo '<td style="width:'.$colwidth.'; text-align:center" class="'.$bg.'">'.$str.'</td>';
-            if ($bg == 'qntype c0') {
-                $bg = 'qntype c1';
+            if ($bg == 'c0') {
+                $bg = 'c1';
             } else {
-                $bg = 'qntype c0';
+                $bg = 'c0';
             }
         }
         if ($this->precise == 1) {
@@ -1652,7 +1615,7 @@ class questionnaire_question {
                     list($content, $contentright) = preg_split('/[|]/', $content);
                 }
                 echo '<td align="left">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
-                $bg = 'qntype c0';
+                $bg = 'c0';
                 for ($j = 0; $j < $this->length; $j++) {
                     $checked = ((isset($data->$str) && ($j == $data->$str)) ? ' checked="checked"' : '');
                     $checkedna = ((isset($data->$str) && ($data->$str == -1)) ? ' checked="checked"' : ''); // N/A column checked
@@ -1665,10 +1628,10 @@ class questionnaire_question {
                                  '<input type="radio" disabled="disabled" name="'.$str.$j.$uniquetag++.'" onclick="this.checked=false;" /></span>';
                     }
                     echo '</td>';
-                    if ($bg == 'qntype c0') {
-                        $bg = 'qntype c1';
+                    if ($bg == 'c0') {
+                        $bg = 'c1';
                     } else {
-                        $bg = 'qntype c0';
+                        $bg = 'c0';
                     }
                 }
                 if ($this->precise == 1) { // N/A column
@@ -1685,11 +1648,10 @@ class questionnaire_question {
                 if ($osgood) {
                     echo '<td>&nbsp;'.format_text($contentright, FORMAT_HTML).'</td>';
                 }
-
             echo '</tr>';
             }
         }
-        echo '</tbody></table></div>';
+        echo '</tbody></table>';
     }
 
     function date_response_display($data) {
@@ -1713,20 +1675,7 @@ class questionnaire_question {
     }
 
     function sectiontext_response_display($data) {
-        echo '
-    <div class="questioncontainer">
-        <div class="qnOuter">
-            <table class="qnInnerTable" style="width:100%" cellpadding="10"  cellspacing="1">
-                <tr>
-                    <td class="qnInnerTd" style="vertical-align:top;">&nbsp;</td>
-                    <td class="qnInner" style="height:35px">' .
-                    $this->content.'
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </div>
-        ';
+        return;
     }
 ///****
 
@@ -1761,13 +1710,13 @@ class questionnaire_question {
                 arsort($this->counts);
                 break;
             }
-            $numresponses = 0; //devjr
+            $numresponses = 0;
             foreach ($this->counts as $key => $value) {
                 $numresponses = $numresponses + $value;
             }
             reset ($this->counts);
             while(list($content,$num) = each($this->counts)) {
-                if($num>0) { $percent = $num/$numresponses*100.0; } //devjr
+                if($num>0) { $percent = $num/$numresponses*100.0; }
                 else { $percent = 0; }
                 if($percent > 100) {
                     $percent = 100;
@@ -1868,7 +1817,7 @@ class questionnaire_question {
         foreach ($rows as $row) {
             $text = format_text($row->response, FORMAT_HTML);
             if ($viewsingleresponse && $nonanonymous) {
-                $rurl = $url.'&rid='.$row->rid;
+                $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
                 $title = userdate($row->submitted);
                 $username = $row->username;
                 $user = new stdClass();
@@ -2184,8 +2133,6 @@ class questionnaire_question {
         if ($isna) {
             $isnahead = get_string('notapplicable', 'questionnaire').'<br />(#)';
         }
-        // background color for even-number cell
-        $bg = 'c0';
         if ($precision == 1) {
             $na = get_string('notapplicable', 'questionnaire');
         } else {

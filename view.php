@@ -100,6 +100,7 @@
     }
     else if ($questionnaire->survey->realm == 'template') {
         print_string('templatenotviewable', 'questionnaire');
+        echo $OUTPUT->box_end();
         echo $OUTPUT->footer($questionnaire->course);
         exit();
     }

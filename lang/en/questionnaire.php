@@ -106,6 +106,7 @@ $string['fieldlength_help'] = 'For the **Text Box** question type, enter the **I
 respondent.
 
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
+$string['firstrespondent'] = 'First Respondent';
 $string['grade'] = 'Submission grade';
 $string['headingtext'] = 'Heading text';
 $string['horizontal'] = 'Horizontal';
@@ -122,6 +123,7 @@ $string['invalidsurveyid'] = 'Invalid questionnaire ID.';
 $string['kindofratescale'] = 'Type of rate scale';
 $string['kindofratescale_help'] = 'See the Moodle Documentation below';
 $string['kindofratescale_link'] = 'mod/questionnaire/questions#Type_of_rate_scale';
+$string['lastrespondent'] = 'Last Respondent';
 $string['length'] = 'Length';
 $string['maxdigitsallowed'] = 'Max. digits allowed';
 $string['maxdigitsallowed_help'] = 'By using the Max. digits allowed and Nb of decimal digits parameters you can specify
@@ -279,10 +281,6 @@ $string['requiredparameter'] = 'A required parameter was missing.';
 $string['reset'] = 'Reset';
 $string['respeligiblerepl'] = '(replaced by role overrides)';
 $string['respondent'] = 'Respondent';
-$string['respondenteligible'] = 'Respondent Eligibility';
-$string['respondenteligible_help'] = 'Decide whether everyone can answer or whether you want to restrict it to tutor only or student only responses.
- For restricted access options remember to assign the correct roles either at the course or activity level.
- For example, if you put a questionnaire on the front page, intended for teachers only, then you will have to let Moodle know which users are teachers. ';
 $string['respondenteligibleall'] = 'all';
 $string['respondenteligiblestudents'] = 'students only';
 $string['respondenteligibleteachers'] = 'teachers only';
@@ -376,7 +374,9 @@ $string['viewallresponses_help'] = 'If the questionnaire is set to **Group Mode*
  If the setting is **Group Mode**: *Separate groups*, then users who do not have the *moodle/site:accessallgroups* capability
  (usually students, or non-editing teachers, etc.) will only be able to view the responses of the group(s) they belong to.';
 $string['viewallresponses_link'] = 'Viewing_Questionnaire_responses#Group_filtering';
-$string['viewbyresponse'] = 'View By Response';
+$string['viewbyresponse'] = 'List of responses';
+$string['viewindividualresponse'] = 'View Individual Responses';
+$string['viewindividualresponse_help'] = 'Click on the respondents\' names in the list below to view their individual responses.';
 $string['viewresponses'] = 'All responses ({$a})';
 $string['viewyourresponses'] = 'Your responses- view {$a}';
 $string['warning'] = 'Warning, error encountered.';

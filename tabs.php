@@ -42,7 +42,6 @@
         $survey = false;
         $owner = true;
     }
-
     if($questionnaire->capabilities->manage  && $owner) {
         $row[] = new tabobject('settings', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/qsettings.php?'.
                 'id='.$questionnaire->cm->id), get_string('advancedsettings'));
@@ -73,7 +72,7 @@
                                     get_string('summary', 'questionnaire'));
             $argstr2 = $argstr.'&byresponse=1&action=vresp';
             $row2[] = new tabobject('mybyresponse', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr2),
-                                    get_string('viewbyresponse', 'questionnaire'));
+                                    get_string('responses', 'questionnaire'));
             $argstr2 = $argstr.'&byresponse=0&action=vall';
             $row2[] = new tabobject('myvall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr2),
                                     get_string('myresponses', 'questionnaire'));
@@ -98,22 +97,28 @@
         $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                                $argstr.'&action=vall'), get_string('viewresponses', 'questionnaire', $numresp));
         if (in_array($current_tab, array('vall', 'vresp', 'valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv',
-                                         'vrespsummary', 'printresp', 'deleteresp'))) {
-        $inactive[] = 'allreport';
+                                         'vrespsummary','individualresp', 'printresp', 'deleteresp'))) {
+            $inactive[] = 'allreport';
             $activated[] = 'allreport';
+            if ($current_tab == 'vrespsummary' || $current_tab == 'valldefault') {
+                $inactive[] = 'vresp';
+            }
             $row2 = array();
             $argstr2 = $argstr.'&action=vall';
             $row2[] = new tabobject('vall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('summary', 'questionnaire'));
-            $argstr2 = $argstr.'&byresponse=1&action=vresp';
-            if ($questionnaire->capabilities->viewsingleresponse) {
+            if ($questionnaire->capabilities->viewsingleresponse && $questionnaire->respondenttype != 'anonymous') {
                 $argstr2 = $argstr.'&byresponse=1&action=vresp';
-                $row2[] = new tabobject('vresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
+                $row2[] = new tabobject('vrespsummary', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('viewbyresponse', 'questionnaire'));
+                if ($current_tab == 'individualresp') {
+                    $argstr2 = $argstr.'&byresponse=1&action=vresp';
+                    $row2[] = new tabobject('vresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
+                            get_string('viewindividualresponse', 'questionnaire'));
+                }
             }
         }
         if (in_array($current_tab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
-            //$inactive[] = 'vall';
             $activated[] = 'vall';
             $row3 = array();
 
@@ -141,7 +146,7 @@
             }
         }
 
-        if (in_array($current_tab, array('vrespsummary', 'printresp', 'deleteresp'))) {
+        if (in_array($current_tab, array('individualresp', 'printresp', 'deleteresp'))) {
             $inactive[] = 'vresp';
             $activated[] = 'vresp';
             $inactive[] = 'printresp';
@@ -158,6 +163,7 @@
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
             $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title'=>$title));
+            // DEV JR
             $row3[] = new tabobject('printresp', '', $actionlink);            
 
             if ($questionnaire->capabilities->deleteresponses) {

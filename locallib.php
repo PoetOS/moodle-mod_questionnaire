@@ -59,11 +59,6 @@ global $QUESTIONNAIRE_RESPONDENTS;
 $QUESTIONNAIRE_RESPONDENTS = array ('fullname' => get_string('respondenttypefullname', 'questionnaire'),
                                     'anonymous' => get_string('respondenttypeanonymous', 'questionnaire'));
 
-global $QUESTIONNAIRE_ELIGIBLES;
-$QUESTIONNAIRE_ELIGIBLES = array ('all' => get_string('respondenteligibleall', 'questionnaire'),
-                                  'students' => get_string('respondenteligiblestudents', 'questionnaire'),
-                                  'teachers' => get_string('respondenteligibleteachers', 'questionnaire'));
-
 global $QUESTIONNAIRE_REALMS;
 $QUESTIONNAIRE_REALMS = array ('private' => get_string('private', 'questionnaire'),
                                'public' => get_string('public', 'questionnaire'),

@@ -14,74 +14,70 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This page prints a particular instance of questionnaire
+// This page prints a particular instance of questionnaire.
 
-    require_once("../../config.php");
-    //require_once("lib.php");
-    require_once($CFG->libdir . '/completionlib.php');
-    require_once('questionnaire.class.php');
+require_once("../../config.php");
+require_once($CFG->libdir . '/completionlib.php');
+require_once('questionnaire.class.php');
 
-    if (!isset($SESSION->questionnaire)) {
-        $SESSION->questionnaire = new stdClass();
-    }
-    $SESSION->questionnaire->current_tab = 'view';
+if (!isset($SESSION->questionnaire)) {
+    $SESSION->questionnaire = new stdClass();
+}
+$SESSION->questionnaire->current_tab = 'view';
 
-    $id = optional_param('id', NULL, PARAM_INT);    // Course Module ID, or
-    $a = optional_param('a', NULL, PARAM_INT);      // questionnaire ID
+$id = optional_param('id', null, PARAM_INT);    // Course Module ID.
+$a = optional_param('a', null, PARAM_INT);      // questionnaire ID.
 
-    $sid = optional_param('sid', NULL, PARAM_INT);  // Survey id.
+$sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 
-    if ($id) {
-        if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-            print_error('invalidcoursemodule');
-        }
-
-        if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-            print_error('coursemisconf');
-        }
-
-        if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
-            print_error('invalidcoursemodule');
-        }
-
-    } else {
-        if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $a))) {
-            print_error('invalidcoursemodule');
-        }
-        if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
-            print_error('coursemisconf');
-        }
-        if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-            print_error('invalidcoursemodule');
-        }
+if ($id) {
+    if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
+        print_error('invalidcoursemodule');
     }
 
-/// Check login and get context.
-    require_course_login($course, true, $cm);
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-    require_capability('mod/questionnaire:view', $context);
-
-    $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/complete.php');
-    if (isset($id)) {
-        $url->param('id', $id);
-    } else {
-        $url->param('a', $a);
-    }
-    if (isset($sid)) {
-        $url->param('sid', $sid);
+    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+        print_error('coursemisconf');
     }
 
-    $PAGE->set_url($url);
-    $PAGE->set_context($context);
-    $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+        print_error('invalidcoursemodule');
+    }
 
-	add_to_log($course->id, "questionnaire", "view", "view.php?id=$cm->id", "$questionnaire->name", $cm->id, $USER->id);
+} else {
+    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $a))) {
+        print_error('invalidcoursemodule');
+    }
+    if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+        print_error('coursemisconf');
+    }
+    if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
+        print_error('invalidcoursemodule');
+    }
+}
 
-    $questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
-    $questionnaire->strquestionnaire  = get_string("modulename", "questionnaire");
+// Check login and get context.
+require_course_login($course, true, $cm);
+$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+require_capability('mod/questionnaire:view', $context);
 
-    /// Mark as viewed
-	$completion=new completion_info($course);
-	$completion->set_module_viewed($cm);
-    $questionnaire->view();
-?>
+$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/complete.php');
+if (isset($id)) {
+    $url->param('id', $id);
+} else {
+    $url->param('a', $a);
+}
+if (isset($sid)) {
+    $url->param('sid', $sid);
+}
+
+$PAGE->set_url($url);
+$PAGE->set_context($context);
+$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+add_to_log($course->id, "questionnaire", "view", "view.php?id=$cm->id", "$questionnaire->name", $cm->id, $USER->id);
+$questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
+$questionnaire->strquestionnaire  = get_string("modulename", "questionnaire");
+
+// Mark as viewed.
+$completion=new completion_info($course);
+$completion->set_module_viewed($cm);
+$questionnaire->view();

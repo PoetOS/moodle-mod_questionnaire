@@ -155,7 +155,7 @@ function questionnaire_update_instance($questionnaire) {
 
     questionnaire_set_events($questionnaire);
     // JR removed line because triggers error in moodle 2.3 STRICT STANDARDS mode ???
-	//questionnaire_update_grades($questionnaire);
+    //questionnaire_update_grades($questionnaire);
     return $DB->update_record("questionnaire", $questionnaire);
 }
 
@@ -517,38 +517,43 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $questionnairenode->add_node($node, $beforekey);
     }
 
-
     if (has_capability('mod/questionnaire:editquestions', $context) && $owner) {
-        $questionnairenode->add(get_string('questions', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/questions.php',
-                        array('id' => $PAGE->cm->id)),
+        $url = '/mod/questionnaire/questions.php';
+        $node = navigation_node::create(get_string('questions', 'questionnaire'),
+                new moodle_url($url, array('id' => $cmid)),
                 navigation_node::TYPE_SETTING, null, 'questions',
                 new pix_icon('t/edit', ''));
+        $questionnairenode->add_node($node, $beforekey);
 
-        $questionnairenode->add(get_string('preview_label', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/preview.php',
-                        array('id' => $PAGE->cm->id)),
+        $url = '/mod/questionnaire/preview.php';
+        $node = navigation_node::create(get_string('preview_label', 'questionnaire'),
+                new moodle_url($url, array('id' => $cmid)),
                 navigation_node::TYPE_SETTING, null, 'preview',
                 new pix_icon('t/preview', ''));
+        $questionnairenode->add_node($node, $beforekey);
     }
 
     if ($questionnaire->user_can_take($USER->id)) {
-        $questionnairenode->add(get_string('answerquestions', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/complete.php',
-                        array('id' => $PAGE->cm->id)),
+        $url = '/mod/questionnaire/complete.php';
+        $node = navigation_node::create(get_string('answerquestions', 'questionnaire'),
+                new moodle_url($url, array('id' => $cmid)),
                 navigation_node::TYPE_SETTING, null, '',
                 new pix_icon('i/info', 'answerquestions'));
+        $questionnairenode->add_node($node, $beforekey);
     }
     $usernumresp = $questionnaire->count_submissions($USER->id);
 
     if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
-        $myreportnode = $questionnairenode->add(get_string('yourresponses', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/myreport.php',
-                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
+        $url = '/mod/questionnaire/myreport.php';
+        $node = navigation_node::create(get_string('yourresponses', 'questionnaire'),
+                new moodle_url($url, array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')),
+                navigation_node::TYPE_SETTING, null, 'yourresponses');
+        $myreportnode = $questionnairenode->add_node($node, $beforekey);
+        
         $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                         array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
-        $byresponsenode = $myreportnode->add(get_string('viewbyresponse', 'questionnaire'),
+        $byresponsenode = $myreportnode->add(get_string('responses', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                         array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')));
         $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
@@ -573,9 +578,12 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                             && $usernumresp > 0)) &&
             $questionnaire->is_survey_owner()) {
 
-        $reportnode = $questionnairenode->add(get_string('viewallresponses', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/report.php',
-                        array('instance' => $questionnaire->id, 'action' => 'vall')));
+        $url = '/mod/questionnaire/report.php';
+        $node = navigation_node::create(get_string('viewallresponses', 'questionnaire'),
+                new moodle_url($url, array('instance' => $questionnaire->id, 'action' => 'vall')),
+                navigation_node::TYPE_SETTING, null, 'vall');
+        $reportnode = $questionnairenode->add_node($node, $beforekey);
+
         if ($questionnaire->capabilities->viewsingleresponse) {
             $summarynode = $reportnode->add(get_string('summary', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
@@ -604,7 +612,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                     new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'action' => 'dwnpg')));
         }
-        if ($questionnaire->capabilities->viewsingleresponse) {
+        if ($questionnaire->capabilities->viewsingleresponse && $questionnaire->respondenttype != 'anonymous') {
             $byresponsenode = $reportnode->add(get_string('viewbyresponse', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1)));
