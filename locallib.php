@@ -388,10 +388,11 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
             return false;
         }
     } else if (!empty($type)) {
+        $castsql = $DB->sql_cast_char2int('s.owner');
         if ($type == 'public') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
                    "FROM {questionnaire} q " .
-                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.owner = q.course " .
+                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
                    "WHERE realm = ? " .
                    "ORDER BY realm,name ";
             $params = array($type);
@@ -399,7 +400,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
         } else if ($type == 'template') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
                    "FROM {questionnaire} q " .
-                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.owner = q.course " .
+                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
                    "WHERE (realm = ? OR owner = ?) " .
                    "ORDER BY realm,name ";
             $params = array($type, $courseid);

@@ -259,7 +259,7 @@ class questionnaire {
         $this->response_import_all($rid, $data);
         //echo '<div class="individualresp">';
         foreach ($this->questions as $question) {
-            if ($question->type_id < QUESPAGEBREAK) {                
+            if ($question->type_id < QUESPAGEBREAK) {
                 $question->response_display($data, $i++);
             }
         }
@@ -282,7 +282,7 @@ class questionnaire {
         $i = 1;
 
         foreach ($this->questions as $question) {
-            
+
             if ($question->type_id < QUESPAGEBREAK) {
                 $method = $QTYPENAMES[$question->type_id].'_response_display';
                 if (method_exists($question, $method)) {
@@ -300,7 +300,7 @@ class questionnaire {
                 }
             $i++;
             }
-            
+
         }
 
         $this->print_survey_end(1, 1);
@@ -495,8 +495,8 @@ class questionnaire {
             $formdata = data_submitted();
         }
         $formdata->rid = $this->get_response($quser);
-        // if student saved a "resume" questionnaire OR left a questionnaire unfinished 
-        // and there are more pages than one find the page of the last answered question 
+        // if student saved a "resume" questionnaire OR left a questionnaire unfinished
+        // and there are more pages than one find the page of the last answered question
         if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
         }
@@ -960,7 +960,7 @@ class questionnaire {
         $survey->owner = $owner;
         // Make sure that the survey name is not larger than the field size (CONTRIB-2999). Leave room for extra chars.
         $survey->name = textlib::substr($survey->name, 0, (64-10));
-        
+
         $survey->name .= '_copy';
         $survey->status = 0;
 
@@ -2062,14 +2062,14 @@ class questionnaire {
             default: // members of a specific group
                 $selectgroupid = ' AND GM.groupid='.$groupid.' AND R.username = GM.userid ';
         }
-    
+        $castsql = $DB->sql_cast_char2int('R.username');
         $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username, U.id AS user, U.lastname, U.firstname '.$gmuserid.
         'FROM '.$CFG->prefix.'questionnaire_response R,
         '.$CFG->prefix.'user U
         '.$groupmembers.
         'WHERE R.survey_id='.$this->survey->id.
         ' AND complete = \'y\''.
-        ' AND U.id = R.username '.
+        ' AND U.id = '.$castsql.
         $selectgroupid.
         'ORDER BY U.lastname, U.firstname, R.submitted DESC';
         if (!$responses = $DB->get_records_sql($sql)) {
@@ -2105,7 +2105,7 @@ class questionnaire {
             }
             $i++;
         }
-    
+
         $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.'&currentgroupid='.$groupid;
         $linkarr = array();
         if (!$byresponse) { // display navbar
@@ -2337,7 +2337,7 @@ class questionnaire {
 
             // Changed the system for retrieval of respondents list for moodle 2.5 to avoid Duplicate values warning.
             // All participants or all members of a group or non group members
-            } else if ($groupid < 0) { 
+            } else if ($groupid < 0) {
                 $sql = "SELECT R.id, R.survey_id, R.username as userid
                           FROM {questionnaire_response} R
                          WHERE R.survey_id='{$this->survey->id}' AND
@@ -2373,9 +2373,9 @@ class questionnaire {
                                unset($rows[$row]);
                            }
                        }
-                       break;    
+                       break;
             }
-            
+
             $total = count($rows);
             echo (' '.get_string('responses','questionnaire').": <strong>$total</strong>");
             if(empty($rows)) {
