@@ -266,7 +266,6 @@ function questionnaire_load_capabilities($cmid) {
     $cb->editquestions          = has_capability('mod/questionnaire:editquestions', $context);
     $cb->createtemplates        = has_capability('mod/questionnaire:createtemplates', $context);
     $cb->createpublic           = has_capability('mod/questionnaire:createpublic', $context);
-    $cb->copysurveys            = has_capability('mod/questionnaire:copysurveys', $context);
     $cb->readownresponses       = has_capability('mod/questionnaire:readownresponses', $context);
     $cb->readallresponses       = has_capability('mod/questionnaire:readallresponses', $context);
     $cb->readallresponseanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
