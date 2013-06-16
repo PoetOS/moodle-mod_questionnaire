@@ -622,7 +622,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $url = '/mod/questionnaire/show_nonrespondents.php';
         $node = navigation_node::create(get_string('show_nonrespondents', 'questionnaire'),
                 new moodle_url($url, array('id' => $cmid)),
-                navigation_node::TYPE_SETTING, null, 'vall');
+                navigation_node::TYPE_SETTING, null, 'nonrespondents');
         $nonrespondentsnode = $questionnairenode->add_node($node, $beforekey);
 
     }
