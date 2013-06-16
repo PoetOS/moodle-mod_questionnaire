@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * scorm version information.
+ * Defines message providers (types of messages being sent)
  *
- * @package    mod
- * @subpackage questionnaire
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package mod-questionnaire
+ * @copyright  2010 onwards  Aparup Banerjee  http://moodle.com
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$module->version  = 2013062205;  // The current module version (Date: YYYYMMDDXX)
-$module->requires = 2013051400;  // Requires this Moodle version.
-$module->component = 'mod_questionnaire';
-$module->cron     = 60*60*12;    // Period for cron to check this module (secs).
+$messageproviders = array (
 
-$module->release  = '2.5.3 (Build - 2013062205)';
-$module->maturity = 'BETA';
+/// Message to nonrespondents
+    'message' => array (
+    )
+
+);

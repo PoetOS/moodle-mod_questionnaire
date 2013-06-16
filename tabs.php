@@ -46,7 +46,7 @@
         $row[] = new tabobject('settings', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/qsettings.php?'.
                 'id='.$questionnaire->cm->id), get_string('advancedsettings'));
     }
-    
+
     if($questionnaire->capabilities->editquestions && $owner) {
         $row[] = new tabobject('questions', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
                 'id='.$questionnaire->cm->id), get_string('questions', 'questionnaire'));
@@ -55,7 +55,7 @@
                     'id='.$questionnaire->cm->id), get_string('preview_label', 'questionnaire'));
         }
     }
-    
+
     $usernumresp = $questionnaire->count_submissions($USER->id);
 
     if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
@@ -150,7 +150,7 @@
             $inactive[] = 'vresp';
             $activated[] = 'vresp';
             $inactive[] = 'printresp';
-            
+
             $row3 = array();
 
             // new way to output popup print window for 2.0 by JR
@@ -164,7 +164,7 @@
             $action = new popup_action('click', $link, $name, $options);
             $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title'=>$title));
             // DEV JR
-            $row3[] = new tabobject('printresp', '', $actionlink);            
+            $row3[] = new tabobject('printresp', '', $actionlink);
 
             if ($questionnaire->capabilities->deleteresponses) {
                 $argstr2 = $argstr.'&action=dresp&rid='.$rid;
@@ -218,6 +218,12 @@
         }
     }
 
+    if ($questionnaire->capabilities->viewsingleresponse) {
+        $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>$questionnaire->cm->id));
+        $row[] = new tabobject('nonrespondents',
+                        $nonrespondenturl->out(),
+                        get_string('show_nonrespondents', 'questionnaire'));
+    }
 
     if((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {
         $tabs[] = $row;

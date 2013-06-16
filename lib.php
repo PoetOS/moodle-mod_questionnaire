@@ -549,7 +549,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                 new moodle_url($url, array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')),
                 navigation_node::TYPE_SETTING, null, 'yourresponses');
         $myreportnode = $questionnairenode->add_node($node, $beforekey);
-        
+
         $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                         array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
@@ -617,6 +617,14 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                     new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1)));
         }
+    }
+    if ($questionnaire->capabilities->viewsingleresponse) {
+        $url = '/mod/questionnaire/show_nonrespondents.php';
+        $node = navigation_node::create(get_string('show_nonrespondents', 'questionnaire'),
+                new moodle_url($url, array('id' => $cmid)),
+                navigation_node::TYPE_SETTING, null, 'vall');
+        $nonrespondentsnode = $questionnairenode->add_node($node, $beforekey);
+
     }
 }
 

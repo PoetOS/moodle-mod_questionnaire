@@ -22,7 +22,7 @@
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- 
+
 $string['action'] = 'Action';
 $string['additionalinfo'] = 'Additional Info';
 $string['additionalinfo_help'] = 'Text to be displayed at the top of the first page of this questionnaire. (i.e. instructions, background info, etc.)';
@@ -49,6 +49,8 @@ $string['checkallradiobuttons'] = 'Please check <strong>{$a}</strong> radio butt
 $string['checkboxes'] = 'Check Boxes';
 $string['checkboxes_help'] = 'Enter one option per line for the user to select one or multiple answers from. ';
 $string['checkboxes_link'] = 'mod/questionnaire/questions#Check_Boxes';
+$string['checknotstarted'] = 'Select not started';
+$string['checkstarted'] = 'Select started';
 $string['closed'] = 'The questionnaire was closed on {$a}. Thanks.';
 $string['closedate'] = 'Use Close Date';
 $string['closedate_help'] = 'You can specify a date to close the questionnaire here. Check the check box, and select the date and time you want.
@@ -130,6 +132,7 @@ $string['maxdigitsallowed_help'] = 'By using the Max. digits allowed and Nb of d
  the length and number of decimal places required.';
 $string['maxforcedresponses'] = 'Max. forced responses';
 $string['maxtextlength'] = 'Max. text length';
+$string['messageprovider:message'] = 'Questionnaire reminder';
 $string['minforcedresponses'] = 'Min. forced responses';
 $string['minforcedresponses_help'] = 'Use these parameters to force respondent to tick a minimum of **Min.** boxes and a maximum of **Max.** check boxes. To
 force an exact number of check boxes to be ticked, set **Min.** and **Max.** to the same value. If only a min or a max value is desired, just leave the other
@@ -156,6 +159,7 @@ $string['noanswer'] = 'No answer';
 $string['nodata'] = 'No data posted.';
 $string['noduplicates'] = 'No duplicate choices';
 $string['noneinuse'] = 'No content currently defined.';
+$string['non_respondents'] = 'Users who have not yet submitted their responses to this questionnaire';
 $string['nopublicsurveys'] = 'No public questionnaires.';
 $string['noresponsedata'] = 'No responses for this question.';
 $string['noresponses'] = 'No responses';
@@ -167,6 +171,7 @@ $string['notavail'] = 'That questionnaire is not available yet. Try again later.
 $string['noteligible'] = 'You are not eligible to take this questionnaire.';
 $string['notemplatesurveys'] = 'No template questionnaires.';
 $string['notopen'] = 'This questionnaire will not open until {$a}.';
+$string['not_started'] = 'not started';
 $string['num'] = '#';
 $string['numberfloat'] = 'The number you entered <strong>{$a->number}</strong> has been reformatted/rounded with <strong>{$a->precision}</strong> decimal place(s).';
 $string['numberofdecimaldigits'] = 'Nb of decimal digits';
@@ -319,12 +324,16 @@ $string['sectionbreak_help'] = '----- Page Break -----';
 $string['sectiontext'] = 'Label';
 $string['sectiontext_help'] = 'This is not a question but a (short) text which will be displayed to introduce a series of questions.';
 $string['selecttheme'] = 'Select a theme (css) to use with this questionnaire.';
+$string['send'] = 'Send';
 $string['sendemail'] = 'Send email';
+$string['send_message'] = 'Send message to selected users';
 $string['sendemail_help'] = 'Sends a copy of each submission to the specified address or addresses.
 You can provide more than one address by separating them with commas.
 Leave blank for no email backup.';
 $string['settings'] = 'Settings';
 $string['settingssaved'] = 'Settings saved';
+$string['show_nonrespondents'] = 'Show nonrespondents';
+$string['started'] = 'started';
 $string['strfdate'] = '%d/%m/%Y';
 $string['strfdateformatcsv'] = 'd/m/Y H:i:s';
 $string['submitoptions'] = 'Submission options';
@@ -332,6 +341,7 @@ $string['submitsurvey'] = 'Submit questionnaire';
 $string['submitted'] = 'Submitted on:';
 $string['subtitle'] = 'Subtitle';
 $string['subtitle_help'] = 'Subtitle of this questionnaire. Appears below the title on the first page only.';
+$string['subject'] = 'Subject';
 $string['summary'] = 'Summary';
 $string['surveynotexists'] = 'questionnaire does not exist.';
 $string['surveyowner'] = 'You must be a questionnaire owner to perform this operation.';

@@ -28,3 +28,38 @@ M.mod_questionnaire.init_attempt_form = function(Y) {
     M.core_question_engine.init_form(Y, '#phpesp_response');
     M.core_formchangechecker.init({formid: 'phpesp_response'});
 };
+
+M.mod_questionnaire.init_sendmessage = function(Y) {
+    Y.on('click', function(e) {
+        Y.all('input.usercheckbox').each(function() {
+            this.set('checked', 'checked');
+        });
+    }, '#checkall');
+
+    Y.on('click', function(e) {
+        Y.all('input.usercheckbox').each(function() {
+            this.set('checked', '');
+        });
+    }, '#checknone');
+
+    Y.on('click', function(e) {
+        Y.all('input.usercheckbox').each(function() {
+            if (this.get('alt') == 0) {
+                this.set('checked', 'checked');
+            } else {
+            	this.set('checked', '');
+            }
+        });
+    }, '#checknotstarted');
+
+    Y.on('click', function(e) {
+        Y.all('input.usercheckbox').each(function() {
+            if (this.get('alt') == 1) {
+                this.set('checked', 'checked');
+            } else {
+            	this.set('checked', '');
+            }
+        });
+    }, '#checkstarted');
+
+};
