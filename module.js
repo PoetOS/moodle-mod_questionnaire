@@ -17,8 +17,8 @@
  * JavaScript library for the quiz module.
  *
  * @package    mod
- * @subpackage quiz
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @subpackage questionnaire
+ * @copyright  
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

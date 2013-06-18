@@ -15,27 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
-* print the form to add or edit a questionnaire-instance
-*
-* @author Mike Churchward
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package questionnaire
-*/
+ * print the form to add or edit a questionnaire-instance
+ *
+ * @author Mike Churchward
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package questionnaire
+ */
 
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot.'/course/moodleform_mod.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
 class mod_questionnaire_mod_form extends moodleform_mod {
 
-    function definition() {
+    protected function definition() {
         global $COURSE;
 
         $questionnaire = new questionnaire($this->_instance, null, $COURSE, $this->_cm);
 
         $mform    =& $this->_form;
 
-        //-------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
         $mform->addElement('text', 'name', get_string('name', 'questionnaire'), array('size'=>'64'));
@@ -44,7 +43,6 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $this->add_intro_editor(false, get_string('summary', 'questionnaire'));
 
-        //-------------------------------------------------------------------------------
         $mform->addElement('header', 'timinghdr', get_string('timing', 'form'));
 
         $enableopengroup = array();
@@ -61,30 +59,28 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addHelpButton('enableclosegroup', 'closedate', 'questionnaire');
         $mform->disabledIf('enableclosegroup', 'useclosedate', 'notchecked');
 
-        //-------------------------------------------------------------------------------
-        global $QUESTIONNAIRE_TYPES, $QUESTIONNAIRE_RESPONDENTS, $QUESTIONNAIRE_RESPONSEVIEWERS, $QUESTIONNAIRE_REALMS;
+        global $questionnaire_types, $questionnaire_respondents, $questionnaire_responseviewers, $questionnaire_realms;
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
-        $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $QUESTIONNAIRE_TYPES);
+        $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnaire_types);
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
 
         $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->setType('cannotchangerespondenttype', PARAM_INT);
-        $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $QUESTIONNAIRE_RESPONDENTS);
+        $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $questionnaire_respondents);
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
 
-        $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $QUESTIONNAIRE_RESPONSEVIEWERS);
+        $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaire_responseviewers);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
-        $options = array('0'=>get_string('no'),'1'=>get_string('yes'));
+        $options = array('0'=>get_string('no'), '1'=>get_string('yes'));
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
 
         $mform->addElement('modgrade', 'grade', get_string('grade', 'questionnaire'), false);
         $mform->setDefault('grade', 0);
 
-        //-------------------------------------------------------------------------------
         if (empty($questionnaire->sid)) {
             if (!isset($questionnaire->id)) {
                 $questionnaire->id = 0;
@@ -122,21 +118,13 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             $mform->setDefault('create', 'new-0');
         }
 
-        //-------------------------------------------------------------------------------
-// features definitions moved to lib.php, lines 39 & seq. by JR 21 JAN 2010
-/*        $features = new stdClass;
-        $features->groups = true;
-        $features->groupings = true;
-        $features->groupmembersonly = true;
-        $features->intro = true;
-        $this->standard_coursemodule_elements($features);*/
         $this->standard_coursemodule_elements();
-        //-------------------------------------------------------------------------------
-        // buttons
+
+        // Buttons.
         $this->add_action_buttons();
     }
 
-    function data_preprocessing(&$default_values){
+    public function data_preprocessing(&$default_values) {
         global $DB;
         if (empty($default_values['opendate'])) {
             $default_values['useopendate'] = 0;
@@ -148,19 +136,21 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         } else {
             $default_values['useclosedate'] = 1;
         }
-        // prevent questionnaire set to "anonymous" to be reverted to "full name"
+        // Prevent questionnaire set to "anonymous" to be reverted to "full name".
         $default_values['cannotchangerespondenttype'] = 0;
         if (!empty($default_values['respondenttype']) && $default_values['respondenttype'] == "anonymous") {
-            // if this questionnaire has responses
-            $numresp = $DB->count_records('questionnaire_response', array('survey_id' => $default_values['sid'],'complete' => 'y'));
+            // If this questionnaire has responses.
+            $numresp = $DB->count_records('questionnaire_response',
+                            array('survey_id' => $default_values['sid'], 'complete' => 'y'));
             if ($numresp) {
                 $default_values['cannotchangerespondenttype'] = 1;
             }
         }
     }
 
-    function validation($data, $files){
-        return parent::validation($data, $files);
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        return $errors;
     }
 
 }

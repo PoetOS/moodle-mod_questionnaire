@@ -14,64 +14,64 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This page shows results of a questionnaire to a student.
+// This page shows results of a questionnaire to a student.
 
-    require_once("../../config.php");
-    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once("../../config.php");
+require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
-    $strsummary = get_string('summary', 'questionnaire');
-    $strall = get_string('myresponses', 'questionnaire');
-    $strviewbyresponse = get_string('viewbyresponse', 'questionnaire');
-    $strmodname = get_string('modulename', 'questionnaire');
-    $strmodnameplural = get_string('modulenameplural', 'questionnaire');
-    $strmyresults = get_string('myresults', 'questionnaire');
-    $strquestionnaires = get_string('modulenameplural', 'questionnaire');
+$strsummary = get_string('summary', 'questionnaire');
+$strall = get_string('myresponses', 'questionnaire');
+$strviewbyresponse = get_string('viewbyresponse', 'questionnaire');
+$strmodname = get_string('modulename', 'questionnaire');
+$strmodnameplural = get_string('modulenameplural', 'questionnaire');
+$strmyresults = get_string('myresults', 'questionnaire');
+$strquestionnaires = get_string('modulenameplural', 'questionnaire');
 
-    $instance = required_param('instance', PARAM_INT);   // questionnaire ID
-    $userid = optional_param('user', $USER->id, PARAM_INT);
-    $rid = optional_param('rid', null, PARAM_INT);
-    $byresponse = optional_param('byresponse', 0, PARAM_INT);
-    $action = optional_param('action', 'summary', PARAM_RAW);
-    
-    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
-        print_error('incorrectquestionnaire', 'questionnaire');
-    }
-    if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
-        print_error('coursemisconf');
-    }
-    if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-        print_error('invalidcoursemodule');
-    }
+$instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
+$userid = optional_param('user', $USER->id, PARAM_INT);
+$rid = optional_param('rid', null, PARAM_INT);
+$byresponse = optional_param('byresponse', 0, PARAM_INT);
+$action = optional_param('action', 'summary', PARAM_RAW);
 
-    require_course_login($course, true, $cm);
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-    /// Should never happen, unless called directly by a snoop...
-    if ( !has_capability('mod/questionnaire:readownresponses',$context)
-        || $userid != $USER->id) {
-        print_error('Permission denied');
-    }
-    $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance'=>$instance));
-    if (isset($userid)) {
-        $url->param('userid', $userid);
-    }
-    if (isset($byresponse)) {
-        $url->param('byresponse', $byresponse);
-    }
-    if (isset($action)) {
-        $url->param('action', $action);
-    }
+if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
+    print_error('incorrectquestionnaire', 'questionnaire');
+}
+if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+    print_error('coursemisconf');
+}
+if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
+    print_error('invalidcoursemodule');
+}
 
-    $PAGE->set_url($url);
-    $PAGE->set_context($context);
-    $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
-    $PAGE->set_heading(format_string($course->fullname));
+require_course_login($course, true, $cm);
+$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+// Should never happen, unless called directly by a snoop...
+if ( !has_capability('mod/questionnaire:readownresponses', $context)
+    || $userid != $USER->id) {
+    print_error('Permission denied');
+}
+$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance'=>$instance));
+if (isset($userid)) {
+    $url->param('userid', $userid);
+}
+if (isset($byresponse)) {
+    $url->param('byresponse', $byresponse);
+}
+if (isset($action)) {
+    $url->param('action', $action);
+}
 
-    $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$PAGE->set_url($url);
+$PAGE->set_context($context);
+$PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
+$PAGE->set_heading(format_string($course->fullname));
 
-/// Tab setup:
-    $SESSION->questionnaire->current_tab = 'myreport';
+$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
-    switch ($action) {
+// Tab setup.
+$SESSION->questionnaire->current_tab = 'myreport';
+
+switch ($action) {
     case $strsummary:
     case 'summary':
         if (empty($questionnaire->survey)) {
@@ -86,10 +86,10 @@
         $rids = array_keys($resps);
         $titletext = get_string('myresponsetitle', 'questionnaire', count($resps));
 
-    /// Print the page header
+        // Print the page header.
         echo $OUTPUT->header();
 
-        /// print the tabs
+        // Print the tabs.
         include('tabs.php');
 
         echo $OUTPUT->heading($titletext);
@@ -97,7 +97,7 @@
         $questionnaire->survey_results(1, 1, '', '', $rids, '', $USER->id);
         echo '</div>';
 
-    /// Finish the page
+        // Finish the page.
         echo $OUTPUT->footer($course);
         break;
 
@@ -111,15 +111,16 @@
         $resps = $DB->get_records_select('questionnaire_response', $select);
         $titletext = get_string('myresponses', 'questionnaire');
 
-    /// Print the page header
+        // Print the page header.
         echo $OUTPUT->header();
 
-        /// print the tabs
+        // Print the tabs.
         include('tabs.php');
 
         echo $OUTPUT->heading($titletext.':');
         $questionnaire->view_all_responses($resps);
-    /// Finish the page
+
+        // Finish the page.
         echo $OUTPUT->footer($course);
         break;
 
@@ -140,10 +141,10 @@
             $titletext = get_string('myresponsetitle', 'questionnaire', $numresp);
         }
 
-    /// Print the page header
+        // Print the page header.
         echo $OUTPUT->header();
 
-        /// print the tabs
+        // Print the tabs.
         include('tabs.php');
         echo $OUTPUT->heading($titletext);
 
@@ -159,11 +160,11 @@
             echo '</div>';
         }
 
-    /// Finish the page
+        // Finish the page.
         echo $OUTPUT->footer($course);
         break;
 
     case get_string('return', 'questionnaire'):
     default:
         redirect('view.php?id='.$cm->id);
-    }
+}

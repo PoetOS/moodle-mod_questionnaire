@@ -397,4 +397,3 @@ $string['wrongformats'] = 'There is something wrong with questions:&nbsp;';
 $string['yesno'] = 'Yes/No';
 $string['yesno_help'] = 'Simple Yes/No question.';
 $string['yourresponses'] = 'Your responses';
-?>

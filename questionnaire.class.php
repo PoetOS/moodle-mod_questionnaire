@@ -18,20 +18,20 @@ require_once('questiontypes/questiontypes.class.php');
 
 class questionnaire {
 
-/// Class Properties
-    /**
+    // Class Properties.
+    /*
      * The survey record.
      * @var object $survey
      */
-     var $survey;
+     //  Todo var $survey; TODO.
 
-/// Class Methods
+    // Class Methods.
 
-    /**
+    /*
      * The class constructor
      *
      */
-    function __construct($id = 0, $questionnaire = null, &$course, &$cm, $addquestions = true) {
+    public function __construct($id = 0, $questionnaire = null, &$course, &$cm, $addquestions = true) {
         global $DB;
 
         if ($id) {
@@ -51,7 +51,7 @@ class questionnaire {
 
         $this->course = $course;
         $this->cm = $cm;
-        /// When we are creating a brand new questionnaire, we will not yet have a context.
+        // When we are creating a brand new questionnaire, we will not yet have a context.
         if (!empty($cm) && !empty($this->id)) {
             $this->context = get_context_instance(CONTEXT_MODULE, $cm->id);
         } else {
@@ -64,7 +64,7 @@ class questionnaire {
 
         $this->usehtmleditor = can_use_html_editor();
 
-    /// Load the capabilities for this user and questionnaire, if not creating a new one.
+        // Load the capabilities for this user and questionnaire, if not creating a new one.
         if (!empty($this->cm->id)) {
             $this->capabilities = questionnaire_load_capabilities($this->cm->id);
         }
@@ -74,7 +74,7 @@ class questionnaire {
      * Adding a survey record to the object.
      *
      */
-    function add_survey($sid = 0, $survey = null) {
+    public function add_survey($sid = 0, $survey = null) {
         global $DB;
 
         if ($sid) {
@@ -87,7 +87,7 @@ class questionnaire {
     /**
      * Adding questions to the object.
      */
-    function add_questions($sid = false, $section = false) {
+    public function add_questions($sid = false, $section = false) {
         global $DB;
 
         if ($sid === false) {
@@ -109,7 +109,7 @@ class questionnaire {
                     $this->questionsbysec[$sec][$record->id] = &$this->questions[$record->id];
                     $isbreak = false;
                 } else {
-                    // sanity check: no section break allowed as first position, no 2 consecutive section breaks
+                    // Sanity check: no section break allowed as first position, no 2 consecutive section breaks.
                     if ($record->position != 1 && $isbreak == false) {
                         $sec++;
                         $isbreak = true;
@@ -119,20 +119,18 @@ class questionnaire {
         }
     }
 
-    function view() {
+    public function view() {
         global $CFG, $USER, $PAGE, $OUTPUT;
 
         $PAGE->set_title(format_string($this->name));
         $PAGE->set_heading(format_string($this->course->fullname));
-        //$PAGE->set_button(update_module_button($this->cm->id, $this->course->id, $this->strquestionnaire));
+
         // Initialise the JavaScript.
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
 
         echo $OUTPUT->header();
 
-        /// print the tabs
         $questionnaire = $this;
-        //include('tabs.php');
 
         if (!$this->cm->visible && !$this->capabilities->viewhiddenactivities) {
                 notice(get_string("activityiscurrentlyhidden"));
@@ -146,29 +144,25 @@ class questionnaire {
             exit;
         }
 
-    /// Print the main part of the page
+        // Print the main part of the page.
 
         if (!$this->is_active()) {
             echo '<div class="message">'
             .get_string('notavail', 'questionnaire')
             .'</div>';
-        }
-        else if (!$this->is_open()) {
-            echo '<div class="message">'
-            .get_string('notopen', 'questionnaire', userdate($this->opendate))
-            .'</div>';
-        }
-        else if ($this->is_closed()) {
+        } else if (!$this->is_open()) {
+                echo '<div class="message">'
+                .get_string('notopen', 'questionnaire', userdate($this->opendate))
+                .'</div>';
+        } else if ($this->is_closed()) {
             echo '<div class="message">'
             .get_string('closed', 'questionnaire', userdate($this->closedate))
             .'</div>';
-        }
-        else if (!$this->user_is_eligible($USER->id)) {
+        } else if (!$this->user_is_eligible($USER->id)) {
             echo '<div class="message">'
             .get_string('noteligible', 'questionnaire')
             .'</div>';
-        }
-        else if ($this->user_can_take($USER->id)) {
+        } else if ($this->user_can_take($USER->id)) {
             $sid=$this->sid;
             $quser = $USER->id;
 
@@ -180,8 +174,8 @@ class questionnaire {
 
             $msg = $this->print_survey($USER->id, $quser);
 
-    ///     If Survey was submitted with all required fields completed ($msg is empty),
-    ///     then record the submittal.
+            // If Survey was submitted with all required fields completed ($msg is empty),
+            // then record the submittal.
             $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/complete.php");
             if (!empty($viewform->rid)) {
                 $viewform->rid = (int)$viewform->rid;
@@ -196,11 +190,11 @@ class questionnaire {
                 $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser);
                 $this->response_commit($this->rid);
 
-                /// If it was a previous save, rid is in the form...
+                // If it was a previous save, rid is in the form...
                 if (!empty($viewform->rid) && is_numeric($viewform->rid)) {
                     $rid = $viewform->rid;
 
-                /// Otherwise its in this object.
+                    // Otherwise its in this object.
                 } else {
                     $rid = $this->rid;
                 }
@@ -217,7 +211,8 @@ class questionnaire {
                     questionnaire_update_grades($questionnaire, $quser);
                 }
 
-                add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
+                add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}",
+                    $this->cm->id, $USER->id);
 
                 $this->response_send_email($this->rid);
                 $this->response_goto_thankyou();
@@ -241,15 +236,15 @@ class questionnaire {
             echo ('<div class="message">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
         }
 
-    /// Finish the page
+        // Finish the page.
         echo $OUTPUT->footer($this->course);
     }
 
-   /**
+    /*
     * Function to view an entire responses data.
     *
     */
-    function view_response($rid, $blankquestionnaire=false) {
+    public function view_response($rid, $blankquestionnaire=false) {
         global $OUTPUT;
 
         $this->print_survey_start('', 1, 1, 0, $rid, false);
@@ -257,21 +252,19 @@ class questionnaire {
         $data = new Object();
         $i = 1;
         $this->response_import_all($rid, $data);
-        //echo '<div class="individualresp">';
         foreach ($this->questions as $question) {
             if ($question->type_id < QUESPAGEBREAK) {
                 $question->response_display($data, $i++);
             }
         }
-        //echo '</div>';
     }
 
-   /**
+    /*
     * Function to view an entire responses data.
     *
     */
-    function view_all_responses($resps) {
-        global $QTYPENAMES, $OUTPUT;
+    public function view_all_responses($resps) {
+        global $qtypenames, $OUTPUT;
         $this->print_survey_start('', 1, 1, 0);
 
         foreach ($resps as $resp) {
@@ -284,11 +277,10 @@ class questionnaire {
         foreach ($this->questions as $question) {
 
             if ($question->type_id < QUESPAGEBREAK) {
-                $method = $QTYPENAMES[$question->type_id].'_response_display';
+                $method = $qtypenames[$question->type_id].'_response_display';
                 if (method_exists($question, $method)) {
                     echo $OUTPUT->box_start('individualresp');
                     $question->questionstart_survey_display($i);
-                    $numItems = count($data);
                     foreach ($data as $respid => $respdata) {
                         echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
                         $question->$method($respdata);
@@ -298,48 +290,44 @@ class questionnaire {
                 } else {
                     print_error('displaymethod', 'questionnaire');
                 }
-            $i++;
+                $i++;
             }
-
         }
 
         $this->print_survey_end(1, 1);
     }
 
-/// Access Methods
-    function is_active() {
+    // Access Methods.
+    public function is_active() {
         return (!empty($this->survey));
     }
 
-    function is_open() {
+    public function is_open() {
         return ($this->opendate > 0) ? ($this->opendate < time()) : true;
     }
 
-    function is_closed() {
+    public function is_closed() {
         return ($this->closedate > 0) ? ($this->closedate < time()) : false;
     }
 
-    function user_can_take($userid) {
+    public function user_can_take($userid) {
 
         if (!$this->is_active() || !$this->user_is_eligible($userid)) {
             return false;
-        }
-        else if ($this->qtype == QUESTIONNAIREUNLIMITED) {
+        } else if ($this->qtype == QUESTIONNAIREUNLIMITED) {
             return true;
-        }
-        else if ($userid > 0){
+        } else if ($userid > 0) {
             return $this->user_time_for_new_attempt($userid);
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    function user_is_eligible($userid) {
+    public function user_is_eligible($userid) {
         return ($this->capabilities->view && $this->capabilities->submit);
     }
 
-    function user_time_for_new_attempt($userid) {
+    public function user_time_for_new_attempt($userid) {
         global $DB;
 
         $select = 'qid = '.$this->id.' AND userid = '.$userid;
@@ -395,71 +383,71 @@ class questionnaire {
         return $cantake;
     }
 
-    function is_survey_owner() {
+    public function is_survey_owner() {
         return (!empty($this->survey->owner) && ($this->course->id == $this->survey->owner));
     }
 
-    function can_view_response($rid) {
+    public function can_view_response($rid) {
         global $USER, $DB;
 
         if (!empty($rid)) {
             $response = $DB->get_record('questionnaire_response', array('id' => $rid));
 
-            /// If the response was not found, can't view it.
+            // If the response was not found, can't view it.
             if (empty($response)) {
                 return false;
             }
 
-            /// If the response belongs to a different survey than this one, can't view it.
+            // If the response belongs to a different survey than this one, can't view it.
             if ($response->survey_id != $this->survey->id) {
                 return false;
             }
 
-            /// If you can view all responses always, then you can view it.
+            // If you can view all responses always, then you can view it.
             if ($this->capabilities->readallresponseanytime) {
                 return true;
             }
 
-            /// If you are allowed to view this response for another user.
+            // If you are allowed to view this response for another user.
             if ($this->capabilities->readallresponses &&
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))) {
                 return true;
-             }
+            }
 
-             /// If you can read your own response
-            if (($response->username == $USER->id) && $this->capabilities->readownresponses && ($this->count_submissions($USER->id) > 0)) {
+             // If you can read your own response.
+            if (($response->username == $USER->id) && $this->capabilities->readownresponses &&
+                            ($this->count_submissions($USER->id) > 0)) {
                 return true;
             }
 
         } else {
-            /// If you can view all responses always, then you can view it.
+            // If you can view all responses always, then you can view it.
             if ($this->capabilities->readallresponseanytime) {
                 return true;
             }
 
-            /// If you are allowed to view this response for another user.
+            // If you are allowed to view this response for another user.
             if ($this->capabilities->readallresponses &&
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))) {
                 return true;
-             }
-
-             /// If you can read your own response
-            if ($this->capabilities->readownresponses && ($this->count_submissions($USER->id) > 0)) {
-             return true;
             }
 
-         }
+             // If you can read your own response.
+            if ($this->capabilities->readownresponses && ($this->count_submissions($USER->id) > 0)) {
+                return true;
+            }
+        }
     }
 
-    function count_submissions($userid=false) {
+    public function count_submissions($userid=false) {
         global $DB;
 
         if (!$userid) {
-            // provide for groups setting
+            // Provide for groups setting.
             return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'complete' => 'y'));
         } else {
             return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'username' => $userid,
@@ -467,7 +455,7 @@ class questionnaire {
         }
     }
 
-    function has_required($section = 0) {
+    private function has_required($section = 0) {
         if (empty($this->questions)) {
             return false;
         } else if ($section <= 0) {
@@ -485,9 +473,10 @@ class questionnaire {
         }
         return false;
     }
-/// Display Methods
 
-    function print_survey($userid=false, $quser) {
+    // Display Methods.
+
+    public function print_survey($userid=false, $quser) {
         global $CFG;
 
         $formdata = new stdClass();
@@ -495,8 +484,8 @@ class questionnaire {
             $formdata = data_submitted();
         }
         $formdata->rid = $this->get_response($quser);
-        // if student saved a "resume" questionnaire OR left a questionnaire unfinished
-        // and there are more pages than one find the page of the last answered question
+        // If student saved a "resume" questionnaire OR left a questionnaire unfinished
+        // and there are more pages than one find the page of the last answered question.
         if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
         }
@@ -506,26 +495,26 @@ class questionnaire {
             $formdata->sec = (intval($formdata->sec) > 0) ? intval($formdata->sec) : 1;
         }
 
-        $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
+        $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    // Indexed by section.
         $msg = '';
         $action = $CFG->wwwroot.'/mod/questionnaire/complete.php?id='.$this->cm->id;
 
-/// TODO - Need to rework this. Too much crossover with ->view method.
-        if(!empty($formdata->submit)) {
+        // TODO - Need to rework this. Too much crossover with ->view method.
+        if (!empty($formdata->submit)) {
             $msg = $this->response_check_format($formdata->sec, $formdata);
-            if(empty($msg)) {
+            if (empty($msg)) {
                 return;
             }
         }
 
-        if(!empty($formdata->resume) && ($this->resume)) {
+        if (!empty($formdata->resume) && ($this->resume)) {
             $this->response_delete($formdata->rid, $formdata->sec);
             $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume=true);
             $this->response_goto_saved($action);
             return;
         }
- // JR save each section 's $formdata somewhere in case user returns to that page when navigating the questionnaire...
-        if(!empty($formdata->next)) {
+        // JR save each section 's $formdata somewhere in case user returns to that page when navigating the questionnaire...
+        if (!empty($formdata->next)) {
             $this->response_delete($formdata->rid, $formdata->sec);
             $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
             $msg = $this->response_check_format($formdata->sec, $formdata);
@@ -549,6 +538,8 @@ class questionnaire {
         if (!empty($formdata->rid)) {
             $this->response_import_sec($formdata->rid, $formdata->sec, $formdata);
         }
+
+        // TODO move this script to questionnaire/module.js.
         echo '
     <script type="text/javascript">
     <!-- // Begin
@@ -596,7 +587,8 @@ class questionnaire {
         var inputbuttons = document.getElementsByTagName("input");
         for (var i=0; i<=inputbuttons.length - 1; i++) {
             button = inputbuttons[i];
-            if (button.type == "radio" && button.name != name && button.value == value && button.name.substr(0, name.indexOf("_")) == col_name) {
+            if (button.type == "radio" && button.name != name && button.value == value
+                        && button.name.substr(0, name.indexOf("_")) == col_name) {
                 button.checked = false;
             }
         }
@@ -621,21 +613,21 @@ class questionnaire {
     // End -->
     </script>
             ';
-
+        $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
+        $formdatarid = isset($formdata->rid) ? $formdata->rid : '0';
         echo '<div class="generalbox">';
-
-    ?>
-    <form id="phpesp_response" method="post" action="<?php echo($action); ?>">
-    <div>
-    <input type="hidden" name="referer" value="<?php echo (!empty($formdata->referer) ? htmlspecialchars($formdata->referer) : ''); ?>" />
-    <input type="hidden" name="a" value="<?php echo($this->id); ?>" />
-    <input type="hidden" name="sid" value="<?php echo($this->survey->id); ?>" />
-    <input type="hidden" name="rid" value="<?php echo (isset($formdata->rid) ? $formdata->rid : '0'); ?>" />
-    <input type="hidden" name="sec" value="<?php echo($formdata->sec); ?>" />
-    <input type="hidden" name="sesskey" value="<?php echo sesskey(); ?>" />
-    </div>
-    <?php
-        if (isset($this->questions) && $num_sections) { // sanity check
+        echo '
+                <form id="phpesp_response" method="post" action="'.$action.'">
+                <div>
+                <input type="hidden" name="referer" value="'.$formdatareferer.'" />
+                <input type="hidden" name="a" value="'.$this->id.'" />
+                <input type="hidden" name="sid" value="'.$this->survey->id.'" />
+                <input type="hidden" name="rid" value="'.$formdatarid.'" />
+                <input type="hidden" name="sec" value="'.$formdata->sec.'" />
+                <input type="hidden" name="sesskey" value="'.sesskey().'" />
+                </div>
+            ';
+        if (isset($this->questions) && $num_sections) { // Sanity check.
             $this->survey_render($formdata->sec, $msg, $formdata);
             echo '<div class="notice" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">';
             if (($this->navigate) && ($formdata->sec > 1)) {
@@ -644,48 +636,48 @@ class questionnaire {
             if ($this->resume) {
                 echo '<input type="submit" name="resume" value="'.get_string('save', 'questionnaire').'" />';
             }
-        //  Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
 
-            if($formdata->sec == $num_sections) {
+            //  Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
+
+            if ($formdata->sec == $num_sections) {
                 echo '
-            <div><input type="hidden" name="submittype" value="Submit Survey" />
-            <input type="submit" name="submit" value="'.get_string('submitsurvey', 'questionnaire').'" /></div>';
+                    <div><input type="hidden" name="submittype" value="Submit Survey" />
+                    <input type="submit" name="submit" value="'.get_string('submitsurvey', 'questionnaire').'" /></div>';
             } else {
                 echo '<div><input type="submit" name="next" value="'.get_string('nextpage', 'questionnaire').'" /></div>';
             }
-            echo '</div></div>'; //divs notice & buttons
+            echo '</div></div>'; // Divs notice & buttons.
             echo '</form>';
-
-            echo '</div>'; //div class="generalbox"
+            echo '</div>'; // Div class="generalbox".
 
             return $msg;
         } else {
-            echo '<p>'.get_string('noneinuse','questionnaire').'</p>';
+            echo '<p>'.get_string('noneinuse', 'questionnaire').'</p>';
             echo '</form>';
-            echo '</div>'; //div class="generalbox"
+            echo '</div>';
         }
     }
 
-    function survey_render($section = 1, $message = '', &$formdata) {
+    private function survey_render($section = 1, $message = '', &$formdata) {
 
         $this->usehtmleditor = null;
 
-        if(empty($section)) {
+        if (empty($section)) {
             $section = 1;
         }
 
-        $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    /// indexed by section.
-        if($section > $num_sections) {
-            return(false);  // invalid section
+        $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    // Indexed by section.
+        if ($section > $num_sections) {
+            return(false);  // Invalid section.
         }
 
-    // check to see if there are required questions
+        // Check to see if there are required questions.
         $has_required = $this->has_required($section);
 
-    // find out what question number we are on $i New fix for question numbering
+        // Find out what question number we are on $i New fix for question numbering.
         $i = 0;
         if ($section > 1) {
-            for($j = 2; $j<=$section; $j++) {
+            for ($j = 2; $j<=$section; $j++) {
                 foreach ($this->questionsbysec[$j-1] as $question) {
                     if ($question->type_id < 99) {
                         $i++;
@@ -703,31 +695,31 @@ class questionnaire {
                 $i++;
             }
             $question->survey_display($formdata, $i, $this->usehtmleditor);
-            /// Bug MDL-7292 - Don't count section text as a question number.
-            // process each question
+            // Bug MDL-7292 - Don't count section text as a question number.
+            // Process each question.
         }
-        // end of questions
+        // End of questions.
         echo ('<div class="surveyPage">');
         $this->print_survey_end($section, $num_sections);
         echo '</div>';
         return;
     }
 
-    function print_survey_start($message, $section, $num_sections, $has_required, $rid='', $blankquestionnaire=false) {
+    private function print_survey_start($message, $section, $num_sections, $has_required, $rid='', $blankquestionnaire=false) {
         global $CFG, $DB, $OUTPUT;
         require_once($CFG->libdir.'/filelib.php');
         $userid = '';
         $resp = '';
         $groupname = '';
         $timesubmitted = '';
-        //available group modes (0 = no groups; 1 = separate groups; 2 = visible groups)
+        // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
 
         if ($rid) {
             $courseid = $this->course->id;
             if ($resp = $DB->get_record('questionnaire_response', array('id' => $rid)) ) {
                 if ($this->respondenttype == 'fullname') {
                     $userid = $resp->username;
-                    // display name of group(s) that student belongs to... if questionnaire is set to Groups separate or visible
+                    // Display name of group(s) that student belongs to... if questionnaire is set to Groups separate or visible.
                     if ($this->cm->groupmode > 0) {
                         if ($groups = groups_get_all_groups($courseid, $resp->username)) {
                             if (count($groups) == 1) {
@@ -757,7 +749,7 @@ class questionnaire {
             if ($this->respondenttype == 'anonymous') {
                 $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
             } else {
-            // JR DEV comment following line out if you do NOT want time submitted displayed in Anonymous surveys
+                // JR DEV comment following line out if you do NOT want time submitted displayed in Anonymous surveys.
                 if ($resp->submitted) {
                     $timesubmitted = '&nbsp;'.get_string('submitted', 'questionnaire').'&nbsp;'.userdate($resp->submitted);
                 }
@@ -766,7 +758,7 @@ class questionnaire {
         if ($ruser) {
             echo (get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>');
             if ($this->survey->realm == 'public') {
-                /// For a public questionnaire, look for the course that used it.
+                // For a public questionnaire, look for the course that used it.
                 $coursename = '';
                 $sql = 'SELECT q.id, q.course, c.fullname '.
                        'FROM {questionnaire} q, {questionnaire_attempts} qa, {course} c '.
@@ -781,12 +773,12 @@ class questionnaire {
         }
         echo '<h3 class="surveyTitle">'.s($this->survey->title).'</h3>';
 
-        // we don't want to display the print icon in the print popup window itself!
+        // We don't want to display the print icon in the print popup window itself!
         if ($this->capabilities->printblank && $blankquestionnaire && $section == 1) {
-            // open print friendly as popup window
+            // Open print friendly as popup window.
             $image_url = $CFG->wwwroot.'/mod/questionnaire/images/';
             $linkname = '<img src="'.$image_url.'print.gif" alt="Printer-friendly version" />';
-            $title = get_string('printblanktooltip','questionnaire');
+            $title = get_string('printblanktooltip', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
             $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
                     'height' => 600, 'width' => 800, 'title'=>$title);
@@ -801,24 +793,25 @@ class questionnaire {
                 echo '<h4 class="surveySubtitle">'.(format_text($this->survey->subtitle, FORMAT_HTML)).'</h4>';
             }
             if ($this->survey->info) {
-                $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php', $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
+                $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
+                                $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
                 echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
             }
         }
-        if($num_sections>1) {
+        if ($num_sections>1) {
             $a = new stdClass();
             $a->page = $section;
             $a->totpages = $num_sections;
             echo '<div class="surveyPage">&nbsp;'.get_string('pageof', 'questionnaire', $a).'</div>';
         }
         if ($message) {
-            echo '<div class="message">'.$message.'</div>'; //JR
+            echo '<div class="message">'.$message.'</div>';
         }
 
     }
 
-    function print_survey_end($section, $num_sections) {
-        if($num_sections>1) {
+    private function print_survey_end($section, $num_sections) {
+        if ($num_sections>1) {
             $a = new stdClass();
             $a->page = $section;
             $a->totpages = $num_sections;
@@ -826,8 +819,8 @@ class questionnaire {
         }
     }
 
-    // blankquestionnaire : if we are printing a blank questionnaire
-    function survey_print_render($message = '', $referer='', $courseid, $blankquestionnaire=false) {
+    // Blankquestionnaire : if we are printing a blank questionnaire.
+    public function survey_print_render($message = '', $referer='', $courseid, $blankquestionnaire=false) {
         global $USER, $DB, $OUTPUT;
         $rid = optional_param('rid', 0, PARAM_INT);
 
@@ -841,30 +834,36 @@ class questionnaire {
         }
 
         if (!empty($rid)) {
-        // If we're viewing a response, use this method.
+            // If we're viewing a response, use this method.
             $this->view_response($rid, $blankquestionnaire);
             return;
         }
 
-        if(empty($section)) {
+        if (empty($section)) {
             $section = 1;
         }
 
-        $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
-        if($section > $num_sections)
-            return(false);  // invalid section
+        if (isset($this->questionsbysec)) {
+            $num_sections = count($this->questionsbysec);
+        } else {
+            $num_sections = 0;
+        }
+
+        if ($section > $num_sections) {
+            return(false);  // Invalid section.
+        }
 
         $has_required = $this->has_required();
 
-    // find out what question number we are on $i
+        // Find out what question number we are on $i.
         $i = 1;
-        for($j = 2; $j<=$section; $j++) {
+        for ($j = 2; $j<=$section; $j++) {
             $i += count($this->questionsbysec[$j-1]);
         }
 
         echo $OUTPUT->box_start();
         $this->print_survey_start($message, 1, 1, $has_required);
-        /// Print all sections:
+        // Print all sections.
         $formdata = new stdClass();
         if (data_submitted() && confirm_sesskey()) {
             $formdata = data_submitted();
@@ -877,28 +876,30 @@ class questionnaire {
                 $question->survey_display($formdata, $i++, $usehtmleditor=null, $blankquestionnaire);
             }
             if (!$blankquestionnaire) {
-                echo (get_string('sectionbreak', 'questionnaire').'<br /><br />'); // print on preview questionaire page only
+                echo (get_string('sectionbreak', 'questionnaire').'<br /><br />'); // Print on preview questionaire page only.
             }
         }
-        // end of questions
+        // End of questions.
         echo $OUTPUT->box_end();
         return;
     }
 
-    function survey_update($sdata) {
+    public function survey_update($sdata) {
         global $DB;
 
-        $errstr = ''; //TODO: notused!
+        $errstr = ''; // TODO: notused!
 
-        // new survey
-        if(empty($this->survey->id)) {
-            // create a new survey in the database
-            $fields = array('name','realm','title','subtitle','email','theme','thanks_page','thank_head','thank_body','info'); // theme field deprecated
+        // New survey.
+        if (empty($this->survey->id)) {
+            // Create a new survey in the database.
+            $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page', 'thank_head',
+                            'thank_body', 'info');
+            // Theme field deprecated.
             $record = new Object();
             $record->id = 0;
             $record->owner = $sdata->owner;
-            foreach($fields as $f) {
-                if(isset($sdata->$f)) {
+            foreach ($fields as $f) {
+                if (isset($sdata->$f)) {
                     $record->$f = $sdata->$f;
                 }
             }
@@ -907,39 +908,40 @@ class questionnaire {
             $this->survey->id = $DB->insert_record('questionnaire_survey', $record);
             $this->add_survey($this->survey->id);
 
-            if(!$this->survey->id) {
-                $errstr = get_string('errnewname', 'questionnaire') .' [ :  ]'; //TODO: notused!
+            if (!$this->survey->id) {
+                $errstr = get_string('errnewname', 'questionnaire') .' [ :  ]'; // TODO: notused!
                 return(false);
             }
         } else {
-            if(empty($sdata->name) || empty($sdata->title)
+            if (empty($sdata->name) || empty($sdata->title)
                     || empty($sdata->realm)) {
                 return(false);
             }
 
-            $fields = array('name','realm','title','subtitle','email','theme','thanks_page','thank_head','thank_body','info');  // theme field deprecated
+            $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page', 'thank_head',
+                            'thank_body', 'info');  // Theme field deprecated.
 
             $name = $DB->get_field('questionnaire_survey', 'name', array('id' => $this->survey->id));
 
-            // trying to change survey name
-            if(trim($name) != trim(stripslashes($sdata->name))) {  // $sdata will already have slashes added to it.
+            // Trying to change survey name.
+            if (trim($name) != trim(stripslashes($sdata->name))) {  // $sdata will already have slashes added to it.
                 $count = $DB->count_records('questionnaire_survey', array('name' => $sdata->name));
-                if($count != 0) {
-                    $errstr = get_string('errnewname', 'questionnaire');  //TODO: notused!
+                if ($count != 0) {
+                    $errstr = get_string('errnewname', 'questionnaire');  // TODO: notused!
                     return(false);
                 }
             }
 
-            // UPDATE the row in the DB with current values
+            // UPDATE the row in the DB with current values.
             $survey_record = new Object();
             $survey_record->id = $this->survey->id;
-            foreach($fields as $f) {
+            foreach ($fields as $f) {
                 $survey_record->$f = trim($sdata->{$f});
             }
 
             $result = $DB->update_record('questionnaire_survey', $survey_record);
-            if(!$result) {
-                $errstr = get_string('warning', 'questionnaire').' [ :  ]';  //TODO: notused!
+            if (!$result) {
+                $errstr = get_string('warning', 'questionnaire').' [ :  ]';  // TODO: notused!
                 return(false);
             }
         }
@@ -948,10 +950,10 @@ class questionnaire {
     }
 
     /* Creates an editable copy of a survey. */
-    function survey_copy($owner) {
+    public function survey_copy($owner) {
         global $DB;
 
-        // clear the sid, clear the creation date, change the name, and clear the status
+        // Clear the sid, clear the creation date, change the name, and clear the status.
         // Since we're copying a data record, addslashes.
         // 2.0 - don't need to do this now, since its handled by the $DB-> functions.
         $survey = clone($this->survey);
@@ -964,32 +966,32 @@ class questionnaire {
         $survey->name .= '_copy';
         $survey->status = 0;
 
-        // check for 'name' conflict, and resolve
+        // Check for 'name' conflict, and resolve.
         $i=0;
         $name = $survey->name;
         while ($DB->count_records('questionnaire_survey', array('name' => $name)) > 0) {
             $name = $survey->name.(++$i);
         }
-        if($i) {
+        if ($i) {
             $survey->name .= $i;
         }
 
-        // create new survey
+        // Create new survey.
         if (!($new_sid = $DB->insert_record('questionnaire_survey', $survey))) {
             return(false);
         }
 
-        // make copies of all the questions
+        // Make copies of all the questions.
         $pos=1;
         foreach ($this->questions as $question) {
-            // fix some fields first
+            // Fix some fields first.
             unset($question->id);
             $question->survey_id = $new_sid;
             $question->position = $pos++;
             $question->name = addslashes($question->name);
             $question->content = addslashes($question->content);
 
-            // copy question to new survey
+            // Copy question to new survey.
             if (!($new_qid = $DB->insert_record('questionnaire_question', $question))) {
                 return(false);
             }
@@ -1008,14 +1010,14 @@ class questionnaire {
         return($new_sid);
     }
 
-    function type_has_choices() {
+    public function type_has_choices() {
         global $DB;
 
         $has_choices = array();
 
-        if ($records = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid,has_choices')) {
+        if ($records = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid, has_choices')) {
             foreach ($records as $record) {
-                if($record->has_choices == 'y') {
+                if ($record->has_choices == 'y') {
                     $has_choices[$record->typeid]=1;
                 } else {
                     $has_choices[$record->typeid]=0;
@@ -1028,26 +1030,27 @@ class questionnaire {
         return($has_choices);
     }
 
-    function array_to_insql($array) {
-        if (count($array))
-            return("IN (".preg_replace("/([^,]+)/","'\\1'",join(",",$array)).")");
+    private function array_to_insql($array) {
+        if (count($array)) {
+            return("IN (".preg_replace("/([^,]+)/", "'\\1'", join(",", $array)).")");
+        }
         return 'IS NULL';
     }
 
-    // ---- RESPONSE LIBRARY
+    // RESPONSE LIBRARY.
 
-    function response_check_format($section, &$formdata, $qnum='') {
+    private function response_check_format($section, &$formdata, $qnum='') {
         $missing = 0;
-        $strmissing = ''; // missing questions
+        $strmissing = '';     // Missing questions.
         $wrongformat = 0;
-        $strwrongformat = ''; // wrongly formatted questions (Numeric, 5:Check Boxes, Date)
+        $strwrongformat = ''; // Wrongly formatted questions (Numeric, 5:Check Boxes, Date).
         $i = 1;
-        for($j = 2; $j<=$section; $j++) {
-        // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED
+        for ($j = 2; $j<=$section; $j++) {
+            // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED.
             foreach ($this->questionsbysec[$j-1] as $sectionrecord) {
-            $tid = $sectionrecord->type_id;
+                $tid = $sectionrecord->type_id;
                 if ($tid < 99) {
-                $i++;
+                    $i++;
                 }
             }
         }
@@ -1062,50 +1065,24 @@ class questionnaire {
             if ($tid != 100) {
                 $qnum++;
             }
-            if ( ($record->required == 'y') && ($record->deleted == 'n') && ((isset($formdata->{'q'.$qid}) && $formdata->{'q'.$qid} == '') || (!isset($formdata->{'q'.$qid}))) && $tid != 8 && $tid != 100 ) {
+            if ( ($record->required == 'y') && ($record->deleted == 'n') && ((isset($formdata->{'q'.$qid})
+                    && $formdata->{'q'.$qid} == '')
+                    || (!isset($formdata->{'q'.$qid}))) && $tid != 8 && $tid != 100 ) {
                 $missing++;
                 $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
             }
 
             switch ($tid) {
 
-            case 4: // Radio Buttons with !other field
-                if (!isset($formdata->{'q'.$qid})) {
-                    break;
-                }
-                $resp = $formdata->{'q'.$qid};
-                $pos = strpos($resp, 'other_');
-
-                            // "other" choice is checked but text box is empty
-                if (is_int($pos) == true){
-                    $othercontent = "q".$qid.substr($resp, 5);
-                    if ( !$formdata->$othercontent ) {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+                case 4: // Radio Buttons with !other field.
+                    if (!isset($formdata->{'q'.$qid})) {
                         break;
                     }
-                }
-
-                if (is_int($pos) == true && $record->required == 'y') {
-                    $resp = 'q'.$qid.''.substr($resp,5);
-                    if (!$formdata->$resp) {
-                        $missing++;
-                        $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                    }
-                }
-                break;
-
-            case 5: // Check Boxes
-                if (!isset($formdata->{'q'.$qid})) {
-                    break;
-                }
-                $resps = $formdata->{'q'.$qid};
-                $nbrespchoices = 0;
-                foreach ($resps as $resp) {
+                    $resp = $formdata->{'q'.$qid};
                     $pos = strpos($resp, 'other_');
 
-                    // "other" choice is checked but text box is empty
-                    if (is_int($pos) == true){
+                    // Other "other" choice is checked but text box is empty.
+                    if (is_int($pos) == true) {
                         $othercontent = "q".$qid.substr($resp, 5);
                         if ( !$formdata->$othercontent ) {
                             $wrongformat++;
@@ -1114,98 +1091,126 @@ class questionnaire {
                         }
                     }
 
-                    if (is_numeric($resp) || is_int($pos) == true) { //JR fixed bug CONTRIB-884
-                        $nbrespchoices++;
-                    }
-                }
-                $nbquestchoices = count($record->choices);
-                $min = $lid;
-                $max = $pid;
-                if ($max == 0) {
-                    $max = $nbquestchoices;
-                }
-                if ($min > $max) {
-                    $min = $max; // sanity check
-                }
-                $min = min($nbquestchoices, $min);
-                // number of ticked boxes is not within min and max set limits
-                if ( $nbrespchoices && ($nbrespchoices < $min || $nbrespchoices > $max) ) {
-                    $wrongformat++;
-                    $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                    break;
-                }
-                break;
-
-            case 6: // Drop
-                $resp = $formdata->{'q'.$qid};
-                if (!$resp && $record->required == 'y') {
-                    $missing++;
-                    $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                }
-                break;
-
-            case 8: // Rate
-                $num = 0;
-                $nbchoices = count($record->choices);
-                $na = get_string('notapplicable', 'questionnaire');
-                foreach ($record->choices as $cid => $choice) {
-                    // in case we have named degrees on the Likert scale, count them to substract from nbchoices
-                    $nameddegrees = 0;
-                    $content = $choice->content;
-                    if (preg_match("/^[0-9]{1,3}=/", $content,$ndd)) {
-                        $nameddegrees++;
-                    } else {
-                        $str = 'q'."{$record->id}_$cid";
-                        if (isset($formdata->$str) && $formdata->$str == $na) {
-                            $formdata->$str = -1;
+                    if (is_int($pos) == true && $record->required == 'y') {
+                        $resp = 'q'.$qid.''.substr($resp, 5);
+                        if (!$formdata->$resp) {
+                            $missing++;
+                            $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
                         }
-                        for ($j = 0; $j < $record->length; $j++) {
-                            $num += (isset($formdata->$str) && ($j == $formdata->$str));
-                        }
-                        $num += (($record->precise) && isset($formdata->$str) && ($formdata->$str == -1));
                     }
-                    $nbchoices -= $nameddegrees;
-                }
-                if ( $num == 0 && $record->required == 'y') {
-                    $missing++;
-                    $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
                     break;
-                }
-                // if nodupes and nb choice restricted, nbchoices may be > actual choices, so limit it to $record->length
-                $isrestricted = ($record->length < count($record->choices)) && $record->precise == 2;
-                if ($isrestricted) {
-                    $nbchoices = min ($nbchoices, $record->length);
-                }
-                if ( $num != $nbchoices && $num!=0 ) {
-                    $wrongformat++;
-                    $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                }
-                break;
 
-            case 9: // Date
-                $checkdateresult = '';
-                if ($formdata->{'q'.$qid} != '') {
-                    $checkdateresult = questionnaire_check_date($formdata->{'q'.$qid});
-                }
-                if (substr($checkdateresult,0,5) == 'wrong') {
-                    $wrongformat++;
-                    $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                }
-                break;
+                case 5: // Check Boxes.
+                    if (!isset($formdata->{'q'.$qid})) {
+                        break;
+                    }
+                    $resps = $formdata->{'q'.$qid};
+                    $nbrespchoices = 0;
+                    foreach ($resps as $resp) {
+                        $pos = strpos($resp, 'other_');
 
-            case 10: // Numeric
-                if ( ($formdata->{'q'.$qid} != '') && (!is_numeric($formdata->{'q'.$qid})) ) {
-                    $wrongformat++;
-                    $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                }
-                break;
+                        // Other "other" choice is checked but text box is empty.
+                        if (is_int ($pos) == true) {
+                            $othercontent = "q".$qid.substr($resp, 5);
+                            if ( !$formdata->$othercontent ) {
+                                $wrongformat++;
+                                $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+                                break;
+                            }
+                        }
 
-            default:
+                        if (is_numeric($resp) || is_int($pos) == true) {
+                            $nbrespchoices++;
+                        }
+                    }
+                    $nbquestchoices = count($record->choices);
+                    $min = $lid;
+                    $max = $pid;
+                    if ($max == 0) {
+                        $max = $nbquestchoices;
+                    }
+                    if ($min > $max) {
+                        $min = $max;     // Sanity check.
+                    }
+                    $min = min($nbquestchoices, $min);
+                    // Number of ticked boxes is not within min and max set limits.
+                    if ( $nbrespchoices && ($nbrespchoices < $min || $nbrespchoices > $max) ) {
+                        $wrongformat++;
+                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+                        break;
+                    }
+                    break;
+
+                case 6: // Drop.
+                    $resp = $formdata->{'q'.$qid};
+                    if (!$resp && $record->required == 'y') {
+                        $missing++;
+                        $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+                    }
+                    break;
+
+                case 8: // Rate.
+                    $num = 0;
+                    $nbchoices = count($record->choices);
+                    $na = get_string('notapplicable', 'questionnaire');
+                    foreach ($record->choices as $cid => $choice) {
+                        // In case we have named degrees on the Likert scale, count them to substract from nbchoices.
+                        $nameddegrees = 0;
+                        $content = $choice->content;
+                        if (preg_match("/^[0-9]{1, 3}=/", $content, $ndd)) {
+                            $nameddegrees++;
+                        } else {
+                            $str = 'q'."{$record->id}_$cid";
+                            if (isset($formdata->$str) && $formdata->$str == $na) {
+                                $formdata->$str = -1;
+                            }
+                            for ($j = 0; $j < $record->length; $j++) {
+                                $num += (isset($formdata->$str) && ($j == $formdata->$str));
+                            }
+                            $num += (($record->precise) && isset($formdata->$str) && ($formdata->$str == -1));
+                        }
+                        $nbchoices -= $nameddegrees;
+                    }
+                    if ( $num == 0 && $record->required == 'y') {
+                        $missing++;
+                        $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+                        break;
+                    }
+                    // If nodupes and nb choice restricted, nbchoices may be > actual choices, so limit it to $record->length.
+                    $isrestricted = ($record->length < count($record->choices)) && $record->precise == 2;
+                    if ($isrestricted) {
+                        $nbchoices = min ($nbchoices, $record->length);
+                    }
+                    if ( $num != $nbchoices && $num!=0 ) {
+                        $wrongformat++;
+                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+                    }
+                    break;
+
+                case 9: // Date.
+                    $checkdateresult = '';
+                    if ($formdata->{'q'.$qid} != '') {
+                        $checkdateresult = questionnaire_check_date($formdata->{'q'.$qid});
+                    }
+                    if (substr($checkdateresult, 0, 5) == 'wrong') {
+                        $wrongformat++;
+                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+                    }
+                    break;
+
+                case 10: // Numeric.
+                    if ( ($formdata->{'q'.$qid} != '') && (!is_numeric($formdata->{'q'.$qid})) ) {
+                        $wrongformat++;
+                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+                    }
+                    break;
+
+                default:
                 break;
             }
         }
         $message ='';
-        if($missing) {
+        if ($missing) {
             if ($missing == 1) {
                 $message = get_string('missingquestion', 'questionnaire').$strmissing;
             } else {
@@ -1215,7 +1220,7 @@ class questionnaire {
                 $message .= '<br />';
             }
         }
-        if($wrongformat) {
+        if ($wrongformat) {
             if ($wrongformat == 1) {
                 $message .= get_string('wrongformat', 'questionnaire').$strwrongformat;
             } else {
@@ -1226,7 +1231,7 @@ class questionnaire {
     }
 
 
-    function response_delete($rid, $sec = null) {
+    private function response_delete($rid, $sec = null) {
         global $DB;
 
         if (empty($rid)) {
@@ -1265,7 +1270,7 @@ class questionnaire {
         }
     }
 
-    function response_import_sec($rid, $sec, &$varr) {
+    private function response_import_sec($rid, $sec, &$varr) {
         if ($sec < 1 || !isset($this->questionsbysec[$sec])) {
             return;
         }
@@ -1273,7 +1278,7 @@ class questionnaire {
         reset($vals);
         foreach ($vals as $id => $arr) {
             if (isset($arr[0]) && is_array($arr[0])) {
-                // multiple
+                // Multiple.
                 $varr->{'q'.$id} = array_map('array_pop', $arr);
             } else {
                 $varr->{'q'.$id} = array_pop($arr);
@@ -1283,23 +1288,23 @@ class questionnaire {
 
 
 
-    function response_import_all($rid, &$varr) {
+    private function response_import_all($rid, &$varr) {
         $vals = $this->response_select($rid, 'content');
         reset($vals);
         foreach ($vals as $id => $arr) {
-            if (strstr($id, '_') && isset($arr[4])) { // single OR multiple with !other choice selected
+            if (strstr($id, '_') && isset($arr[4])) { // Single OR multiple with !other choice selected.
                 $varr->{'q'.$id} = $arr[4];
             } else {
-                if (isset($arr[0]) && is_array($arr[0])) { // multiple
+                if (isset($arr[0]) && is_array($arr[0])) { // Multiple.
                     $varr->{'q'.$id} = array_map('array_pop', $arr);
-                } else { // boolean, rate and other
+                } else { // Boolean, rate and other.
                     $varr->{'q'.$id} = array_pop($arr);
                 }
             }
         }
     }
 
-    function response_commit($rid) {
+    private function response_commit($rid) {
         global $DB;
 
         $record = new object;
@@ -1308,25 +1313,25 @@ class questionnaire {
         $record->submitted = time();
 
         if ($this->grade < 0) {
-            $record->grade = 1;  /// Don't know what to do if its a scale...
+            $record->grade = 1;  // Don't know what to do if its a scale...
         } else {
             $record->grade = $this->grade;
         }
         return $DB->update_record('questionnaire_response', $record);
     }
 
-    function get_response($username, $rid = 0) {
+    private function get_response($username, $rid = 0) {
         global $DB;
 
         $rid = intval($rid);
         if ($rid != 0) {
-            // check for valid rid
+            // Check for valid rid.
             $fields = 'id, username';
             $select = 'id = '.$rid.' AND survey_id = '.$this->sid.' AND username = \''.$username.'\' AND complete = \'n\'';
             return ($DB->get_record_select('questionnaire_response', $select, null, $fields) !== false) ? $rid : '';
 
         } else {
-            // find latest in progress rid
+            // Find latest in progress rid.
             $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND username = \''.$username.'\'';
             if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
                                               'id,survey_id', 0, 1)) {
@@ -1339,7 +1344,7 @@ class questionnaire {
     }
 
     // Returns the number of the section in which questions have been answered in a response.
-    function response_select_max_sec($rid) {
+    private function response_select_max_sec($rid) {
         global $DB;
 
         $pos = $this->response_select_max_pos($rid);
@@ -1349,8 +1354,8 @@ class questionnaire {
         return $max;
     }
 
-    //Returns the position of the last answered question in a response.
-    function response_select_max_pos($rid) {
+    // Returns the position of the last answered question in a response.
+    private function response_select_max_pos($rid) {
         global $DB;
 
         $max = 0;
@@ -1372,55 +1377,60 @@ class questionnaire {
         return $max;
     }
 
-/* {{{ proto array response_select_name(int survey_id, int response_id, array question_ids)
-   A wrapper around response_select(), that returns an array of
-   key/value pairs using the field name as the key.
-   $csvexport = true: a parameter to return a different response formatting for CSV export from normal report formatting
- */
-    function response_select_name($rid, $choicecodes, $choicetext) {
-        $res = $this->response_select($rid, 'position,type_id,name', true, $choicecodes, $choicetext);
+    /* {{{ proto array response_select_name(int survey_id, int response_id, array question_ids)
+       A wrapper around response_select(), that returns an array of
+       key/value pairs using the field name as the key.
+       $csvexport = true: a parameter to return a different response formatting for CSV export from normal report formatting
+     */
+    private function response_select_name($rid, $choicecodes, $choicetext) {
+        $res = $this->response_select($rid, 'position, type_id, name', true, $choicecodes, $choicetext);
         $nam = array();
         reset($res);
         $subqnum = 0;
         $oldpos = '';
-        while(list($qid, $arr) = each($res)) {
-            $qpos = $arr[0]; // question position (there may be "holes" in positions list)
-            $qtype = $arr[1]; // question type (1:bool,2:text,3:essay,4:radio,5:check,6:dropdn,7:rating(not used),8:rate,9:date,10:numeric)
-            $qname = $arr[2]; // variable name; (may be empty); for rate questions: 'variable group' name
-            $qchoice = $arr[3]; // modality; for rate questions: variable
+        while (list($qid, $arr) = each($res)) {
+            // Question position (there may be "holes" in positions list).
+            $qpos = $arr[0];
+            // Question type (1:bool,2:text,3:essay,4:radio,5:check,6:dropdn,7:rating(not used),8:rate,9:date,10:numeric).
+            $qtype = $arr[1];
+            // Variable name; (may be empty); for rate questions: 'variable group' name.
+            $qname = $arr[2];
+            // Modality; for rate questions: variable.
+            $qchoice = $arr[3];
 
-            // strip potential html tags from modality name
+            // Strip potential html tags from modality name.
             if (!empty($qchoice)) {
                 $qchoice = strip_tags($arr[3]);
                 $qchoice = preg_replace("/[\r\n\t]/", ' ', $qchoice);
             }
-            $q4 = ''; // for rate questions: modality; for multichoice: selected = 1; not selected = 0
+            // For rate questions: modality; for multichoice: selected = 1; not selected = 0.
+            $q4 = '';
             if (isset($arr[4])) {
                 $q4 = $arr[4];
             }
             if (strstr($qid, '_')) {
-                if ($qtype == 4) { //single
+                if ($qtype == 4) {     // Single.
                     $nam[$qpos][$qname.'_'.get_string('other', 'questionnaire')] = $q4;
                     continue;
                 }
-                // multiple OR rank
+                // Multiple OR rank.
                 if ($oldpos != $qpos) {
                     $subqnum = 1;
                     $oldpos = $qpos;
                 } else {
                         $subqnum++;
                 }
-                if ($qtype == 8) { // rate
+                if ($qtype == 8) {     // Rate.
                     $qname .= "->$qchoice";
                     if ($q4 == -1) {
-//                        $q4 = get_string('notapplicable', 'questionnaire'); DEV JR choose one solution please
+                        // Here $q4 = get_string('notapplicable', 'questionnaire'); DEV JR choose one solution please.
                         $q4 = '';
                     } else {
                         if (is_numeric($q4)) {
                             $q4++;
                         }
                     }
-                } else { // multiple
+                } else {     // Multiple.
                     $qname .= "->$qchoice";
                 }
                 $nam[$qpos][$qname] = $q4;
@@ -1432,7 +1442,7 @@ class questionnaire {
         return $nam;
     }
 
-    function response_send_email($rid, $userid=false) {
+    private function response_send_email($rid, $userid=false) {
         global $CFG, $USER, $DB;
 
         require_once($CFG->libdir.'/phpmailer/class.phpmailer.php');
@@ -1444,12 +1454,12 @@ class questionnaire {
             $email = '';
         }
 
-        if(empty($email)) {
+        if (empty($email)) {
             return(false);
         }
         $answers = $this->generate_csv($rid, $userid='', null, 1);
 
-        // line endings for html and plaintext emails
+        // Line endings for html and plaintext emails.
         $end_html = "\r\n<br>";
         $end_plaintext = "\r\n";
 
@@ -1457,7 +1467,7 @@ class questionnaire {
         $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.
                 '&amp;rid='.$rid.'&amp;instance='.$this->id;
 
-        // html and plaintext body
+        // Html and plaintext body.
         $body_html        = '<a href="'.$url.'">'.$url.'</a>'.$end_html;
         $body_plaintext   = $url.$end_plaintext;
         $body_html       .= get_string('surveyresponse', 'questionnaire') .' "'.$name.'"'.$end_html;
@@ -1467,25 +1477,26 @@ class questionnaire {
 
         for ($i = 0; $i < count($answers[0]); $i++) {
             $sep = ' : ';
+
             switch($i) {
-            case 1:
-                $sep = ' ';
-                break;
-            case 4:
-                $body_html        .= get_string('user').' ';
-                $body_plaintext   .= get_string('user').' ';
-                break;
-            case 6:
-                if ($this->respondenttype != 'anonymous') {
-                    $body_html         .= get_string('email').$sep.$USER->email. $end_html;
-                    $body_plaintext    .= get_string('email').$sep.$USER->email. $end_plaintext;
-                }
+                case 1:
+                    $sep = ' ';
+                    break;
+                case 4:
+                    $body_html        .= get_string('user').' ';
+                    $body_plaintext   .= get_string('user').' ';
+                    break;
+                case 6:
+                    if ($this->respondenttype != 'anonymous') {
+                        $body_html         .= get_string('email').$sep.$USER->email. $end_html;
+                        $body_plaintext    .= get_string('email').$sep.$USER->email. $end_plaintext;
+                    }
             }
             $body_html         .= $answers[0][$i].$sep.$answers[1][$i]. $end_html;
             $body_plaintext    .= $answers[0][$i].$sep.$answers[1][$i]. $end_plaintext;
         }
 
-        // use plaintext version for altbody
+        // Use plaintext version for altbody.
         $altbody =  "\n$body_plaintext\n";
 
         $return = true;
@@ -1504,14 +1515,14 @@ class questionnaire {
         return $return;
     }
 
-    function response_insert($sid, $section, $rid, $userid, $resume=false) {
+    private function response_insert($sid, $section, $rid, $userid, $resume=false) {
         global $DB, $USER;
 
         $record = new object;
         $record->submitted = time();
 
-        if(empty($rid)) {
-            // create a uniqe id for this response
+        if (empty($rid)) {
+            // Create a uniqe id for this response.
             $record->survey_id = $sid;
             $record->username = $userid;
             $rid = $DB->insert_record('questionnaire_response', $record);
@@ -1520,7 +1531,8 @@ class questionnaire {
             $DB->update_record('questionnaire_response', $record);
         }
         if ($resume) {
-            add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
+            add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}",
+                "{$this->name}", $this->cm->id, $USER->id);
         }
 
         if (!empty($this->questionsbysec[$section])) {
@@ -1531,7 +1543,7 @@ class questionnaire {
         return($rid);
     }
 
-    function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
+    private function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
         global $DB;
 
         $sid = $this->survey->id;
@@ -1541,13 +1553,13 @@ class questionnaire {
             $col = '';
         }
         if (!is_array($col) && !empty($col)) {
-            $col = explode(',', preg_replace("/\s/",'', $col));
+            $col = explode(',', preg_replace("/\s/", '', $col));
         }
         if (is_array($col) && count($col) > 0) {
-            $col = ',' . implode(',', array_map(create_function('$a','return "q.$a";'), $col));
+            $col = ',' . implode(',', array_map(create_function('$a', 'return "q.$a";'), $col));
         }
 
-        // --------------------- response_bool (yes/no)---------------------
+        // Response_bool (yes/no).
         $sql = 'SELECT q.id '.$col.', a.choice_id '.
                'FROM {questionnaire_response_bool} a, {questionnaire_question} q '.
                'WHERE a.response_id= ? AND a.question_id=q.id ';
@@ -1555,7 +1567,7 @@ class questionnaire {
             foreach ($records as $qid => $row) {
                 $choice = $row->choice_id;
                 if (isset ($row->name) && $row->name == '') {
-                    $noname = TRUE;
+                    $noname = true;
                 }
                 unset ($row->id);
                 unset ($row->choice_id);
@@ -1569,12 +1581,12 @@ class questionnaire {
                 $values[$qid] = $newrow;
                 array_push($values["$qid"], ($choice == 'y') ? '1' : '0');
                 if (!$csvexport) {
-                    array_push($values["$qid"], $choice); //DEV still needed for responses display
+                    array_push($values["$qid"], $choice); // DEV still needed for responses display.
                 }
             }
         }
 
-        // --------------------- response_single (radio button or dropdown)---------------------
+        // Response_single (radio button or dropdown).
         $sql = 'SELECT q.id '.$col.', q.type_id as q_type, c.content as ccontent,c.id as cid '.
                'FROM {questionnaire_resp_single} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
                'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id ';
@@ -1585,7 +1597,7 @@ class questionnaire {
                 if ($csvexport) {
                     static $i = 1;
                     $qrecords = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
-                    foreach($qrecords as $value) {
+                    foreach ($qrecords as $value) {
                         if ($value->id == $cid) {
                             $contents = questionnaire_choice_values($value->content);
                             if ($contents->modname) {
@@ -1593,7 +1605,7 @@ class questionnaire {
                             } else {
                                 $content = $contents->text;
                                 if (preg_match('/^!other/', $content)) {
-                                    $row->ccontent = get_string('other','questionnaire');
+                                    $row->ccontent = get_string('other', 'questionnaire');
                                 } else if (($choicecodes == 1) && ($choicetext == 1)) {
                                     $row->ccontent = "$i : $content";
                                 } else if ($choicecodes == 1) {
@@ -1627,137 +1639,136 @@ class questionnaire {
             }
         }
 
-        // --------------------- response_multiple ---------------------
+        // Response_multiple.
         $sql = 'SELECT a.id as aid, q.id as qid '.$col.',c.content as ccontent,c.id as cid '.
                'FROM {questionnaire_resp_multiple} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
                'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id '.
                'ORDER BY a.id,a.question_id,c.id';
         $records = $DB->get_records_sql($sql, array($rid));
         if ($csvexport) {
-                $tmp = null;
-
-                if (!empty($records)) {
-                    $qids2 = array();
-                    $oldqid = '';
-                    foreach ($records as $qid => $row) {
-                        if ($row->qid != $oldqid) {
-                            $qids2[] = $row->qid;
-                            $oldqid = $row->qid;
-                        }
-                    }
-                    if (is_array($qids2)) {
-                        $qids2 = 'question_id ' . $this->array_to_insql($qids2);
-                    } else {
-                        $qids2 = 'question_id= ' . $qids2;
-                    }
-                    $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE '.$qids2.
-                        'ORDER BY id';
-                    if ($records2 = $DB->get_records_sql($sql)) {
-                        foreach ($records2 as $qid => $row2) {
-                            $selected = '0';
-                            $qid2 = $row2->question_id;
-                            $cid2 = $row2->id;
-                            $c2 = $row2->content;
-                            $otherend = false;
-                            if ($c2 == '!other') {
-                                $c2 = '!other='.get_string('other','questionnaire');
-                            }
-                            if (preg_match('/^!other/', $c2)) {
-                                $otherend = true;
-                            } else {
-                                $contents = questionnaire_choice_values($c2);
-                                if ($contents->modname) {
-                                    $c2 = $contents->modname;
-                                } elseif ($contents->title) {
-                                    $c2 = $contents->title;
-                                }
-                            }
-                            $sql = 'SELECT a.name as name, a.type_id as q_type, a.position as pos ' .
-                                    'FROM {questionnaire_question} a WHERE id = ?';
-                            if ($currentquestion = $DB->get_records_sql($sql, array($qid2))) {
-                                foreach ($currentquestion as $question) {
-                                    $name1 = $question->name;
-                                    $type1 = $question->q_type;
-                                }
-                            }
-                            $newrow = array();
-                            foreach ($records as $qid => $row1) {
-                                $qid1 = $row1->qid;
-                                $cid1 = $row1->cid;
-                                // if available choice has been selected by student
-                                if ($qid1 == $qid2 && $cid1 == $cid2) {
-                                    $selected = '1';
-                                }
-                            }
-                            if ($otherend) {
-                                $newrow2 = array();
-                                $newrow2[] = $question->pos;
-                                $newrow2[] = $type1;
-                                $newrow2[] = $name1;
-                                $newrow2[] = '['.get_string('other','questionnaire').']';
-                                $newrow2[] = $selected;
-                                $tmp2 = $qid2.'_other';
-                                $values["$tmp2"]=$newrow2;
-                            }
-                            $newrow[] = $question->pos;
-                            $newrow[] = $type1;
-                            $newrow[] = $name1;
-                            $newrow[] = $c2;
-                            $newrow[] = $selected;
-                            $tmp = $qid2.'_'.$cid2;
-                            $values["$tmp"]=$newrow;
-                        }
+            $tmp = null;
+            if (!empty($records)) {
+                $qids2 = array();
+                $oldqid = '';
+                foreach ($records as $qid => $row) {
+                    if ($row->qid != $oldqid) {
+                        $qids2[] = $row->qid;
+                        $oldqid = $row->qid;
                     }
                 }
-                unset($tmp);
-                unset($row);
+                if (is_array($qids2)) {
+                    $qids2 = 'question_id ' . $this->array_to_insql($qids2);
+                } else {
+                    $qids2 = 'question_id= ' . $qids2;
+                }
+                $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE '.$qids2.
+                    'ORDER BY id';
+                if ($records2 = $DB->get_records_sql($sql)) {
+                    foreach ($records2 as $qid => $row2) {
+                        $selected = '0';
+                        $qid2 = $row2->question_id;
+                        $cid2 = $row2->id;
+                        $c2 = $row2->content;
+                        $otherend = false;
+                        if ($c2 == '!other') {
+                            $c2 = '!other='.get_string('other', 'questionnaire');
+                        }
+                        if (preg_match('/^!other/', $c2)) {
+                            $otherend = true;
+                        } else {
+                            $contents = questionnaire_choice_values($c2);
+                            if ($contents->modname) {
+                                $c2 = $contents->modname;
+                            } else if ($contents->title) {
+                                $c2 = $contents->title;
+                            }
+                        }
+                        $sql = 'SELECT a.name as name, a.type_id as q_type, a.position as pos ' .
+                                'FROM {questionnaire_question} a WHERE id = ?';
+                        if ($currentquestion = $DB->get_records_sql($sql, array($qid2))) {
+                            foreach ($currentquestion as $question) {
+                                $name1 = $question->name;
+                                $type1 = $question->q_type;
+                            }
+                        }
+                        $newrow = array();
+                        foreach ($records as $qid => $row1) {
+                            $qid1 = $row1->qid;
+                            $cid1 = $row1->cid;
+                            // If available choice has been selected by student.
+                            if ($qid1 == $qid2 && $cid1 == $cid2) {
+                                $selected = '1';
+                            }
+                        }
+                        if ($otherend) {
+                            $newrow2 = array();
+                            $newrow2[] = $question->pos;
+                            $newrow2[] = $type1;
+                            $newrow2[] = $name1;
+                            $newrow2[] = '['.get_string('other', 'questionnaire').']';
+                            $newrow2[] = $selected;
+                            $tmp2 = $qid2.'_other';
+                            $values["$tmp2"]=$newrow2;
+                        }
+                        $newrow[] = $question->pos;
+                        $newrow[] = $type1;
+                        $newrow[] = $name1;
+                        $newrow[] = $c2;
+                        $newrow[] = $selected;
+                        $tmp = $qid2.'_'.$cid2;
+                        $values["$tmp"]=$newrow;
+                    }
+                }
+            }
+            unset($tmp);
+            unset($row);
 
         } else {
                 $arr = array();
                 $tmp = null;
-                if (!empty($records)) {
-                    foreach ($records as $aid => $row) {
-                        $qid = $row->qid;
-                        $cid = $row->cid;
-                        unset($row->aid);
-                        unset($row->qid);
-                        unset($row->cid);
-                        $arow = get_object_vars($row);
-                        $newrow = array();
-                        foreach ($arow as $key => $val) {
-                            if (!is_numeric($key)) {
-                                $newrow[] = $val;
-                            }
+            if (!empty($records)) {
+                foreach ($records as $aid => $row) {
+                    $qid = $row->qid;
+                    $cid = $row->cid;
+                    unset($row->aid);
+                    unset($row->qid);
+                    unset($row->cid);
+                    $arow = get_object_vars($row);
+                    $newrow = array();
+                    foreach ($arow as $key => $val) {
+                        if (!is_numeric($key)) {
+                            $newrow[] = $val;
                         }
-                        if (preg_match('/^!other/', $row->ccontent)) {
-                            $newrow[] = 'other_' . $cid;
-                        } else {
-                            $newrow[] = (int)$cid;
-                        }
-                        if($tmp == $qid) {
-                            $arr[] = $newrow;
-                            continue;
-                        }
-                        if($tmp != null) {
-                            $values["$tmp"]=$arr;
-                        }
-                        $tmp = $qid;
-                        $arr = array($newrow);
                     }
+                    if (preg_match('/^!other/', $row->ccontent)) {
+                        $newrow[] = 'other_' . $cid;
+                    } else {
+                        $newrow[] = (int)$cid;
+                    }
+                    if ($tmp == $qid) {
+                        $arr[] = $newrow;
+                        continue;
+                    }
+                    if ($tmp != null) {
+                        $values["$tmp"]=$arr;
+                    }
+                    $tmp = $qid;
+                    $arr = array($newrow);
                 }
-                if($tmp != null) {
-                    $values["$tmp"]=$arr;
-                }
-                unset($arr);
-                unset($tmp);
-                unset($row);
-
-
+            }
+            if ($tmp != null) {
+                $values["$tmp"]=$arr;
+            }
+            unset($arr);
+            unset($tmp);
+            unset($row);
         }
 
-            // --------------------- response_other ---------------------
-            // this will work even for multiple !other fields within one question AND for identical !other responses in different questions JR
-        $sql = 'SELECT c.id as cid, c.content as content, a.response as aresponse, q.id as qid, q.position as position, q.type_id as type_id, q.name as name '.
+            // Response_other.
+            // This will work even for multiple !other fields within one question
+            // AND for identical !other responses in different questions JR.
+        $sql = 'SELECT c.id as cid, c.content as content, a.response as aresponse, q.id as qid, q.position as position,
+                                    q.type_id as type_id, q.name as name '.
                'FROM {questionnaire_response_other} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
                'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
                'ORDER BY a.question_id,c.id ';
@@ -1771,14 +1782,14 @@ class questionnaire {
                 $qid = $record->qid;
                 $content = $record->content;
 
-                //!other modality with no label
+                // The !other modality with no label.
                 if ($content == '!other') {
                     $content = '!other='.$stringother;
                 }
-                $content = substr($content,7);
+                $content = substr($content, 7);
                 $aresponse = $record->aresponse;
-                // the first two empty values are needed for compatibility with "normal" (non !other) responses
-                // they are only needed for the CSV export, in fact - JR
+                // The first two empty values are needed for compatibility with "normal" (non !other) responses.
+                // They are only needed for the CSV export, in fact.
                 $newrow[] = $position;
                 $newrow[] = $type_id;
                 $newrow[] = $name;
@@ -1789,27 +1800,28 @@ class questionnaire {
             }
         }
 
-            // --------------------- response_rank ---------------------
-        $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid '.$col.',c.content as ccontent,a.rank as arank '.
+        // Response_rank.
+        $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid '.$col.', c.content as ccontent,
+                                a.rank as arank '.
                'FROM {questionnaire_response_rank} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
                'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
-               'ORDER BY aid, a.question_id,c.id';
+               'ORDER BY aid, a.question_id, c.id';
         if ($records = $DB->get_records_sql($sql, array($rid))) {
             foreach ($records as $row) {
-                /// Next two are 'qid' and 'cid', each with numeric and hash keys.
+                // Next two are 'qid' and 'cid', each with numeric and hash keys.
                 $osgood = false;
                 if ($row->precise == 3) {
                     $osgood = true;
                 }
                 $qid = $row->qid.'_'.$row->cid;
-                unset($row->aid); // get rid of the answer id.
+                unset($row->aid); // Get rid of the answer id.
                 unset($row->qid);
                 unset($row->cid);
                 unset($row->precise);
                 $row = (array)$row;
                 $newrow = array();
                 foreach ($row as $key => $val) {
-                    if ($key != 'content') { // no need to keep question text - ony keep choice text and rank
+                    if ($key != 'content') { // No need to keep question text - ony keep choice text and rank.
                         if ($key == 'ccontent') {
                             if ($osgood) {
                                 list($contentleft, $contentright) = preg_split('/[|]/', $val);
@@ -1827,9 +1839,9 @@ class questionnaire {
                                 $contents = questionnaire_choice_values($val);
                                 if ($contents->modname) {
                                     $val = $contents->modname;
-                                } elseif ($contents->title) {
+                                } else if ($contents->title) {
                                     $val = $contents->title;
-                                } elseif ($contents->text) {
+                                } else if ($contents->text) {
                                     $val = strip_tags($contents->text);
                                     $val = preg_replace("/[\r\n\t]/", ' ', $val);
                                 }
@@ -1842,8 +1854,8 @@ class questionnaire {
             }
         }
 
-            // --------------------- response_text ---------------------
-        $sql = 'SELECT q.id '.$col.',a.response as aresponse '.
+        // Response_text.
+        $sql = 'SELECT q.id '.$col.', a.response as aresponse '.
                'FROM {questionnaire_response_text} a, {questionnaire_question} q '.
                'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id ';
         if ($records = $DB->get_records_sql($sql)) {
@@ -1862,8 +1874,8 @@ class questionnaire {
             }
         }
 
-            // --------------------- response_date ---------------------
-        $sql = 'SELECT q.id '.$col.',a.response as aresponse '.
+        // Response_date.
+        $sql = 'SELECT q.id '.$col.', a.response as aresponse '.
                'FROM {questionnaire_response_date} a, {questionnaire_question} q '.
                'WHERE a.response_id=\''.$rid.'\' AND a.question_id=q.id ';
         if ($records = $DB->get_records_sql($sql)) {
@@ -1875,11 +1887,11 @@ class questionnaire {
                 foreach ($row as $key => $val) {
                     if (!is_numeric($key)) {
                         $newrow[] = $val;
-                    // convert date from yyyy-mm-dd database format to actual questionnaire dateformat
-                    // does not work with dates prior to 1900 under Windows
+                        // Convert date from yyyy-mm-dd database format to actual questionnaire dateformat.
+                        // does not work with dates prior to 1900 under Windows.
                         if (preg_match('/\d\d\d\d-\d\d-\d\d/', $val)) {
                             $dateparts = preg_split('/-/', $val);
-                            $val = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp
+                            $val = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
                             $val = userdate ( $val, $dateformat);
                             $newrow[] = $val;
                         }
@@ -1890,16 +1902,14 @@ class questionnaire {
                 array_push($values["$qid"], '', '', $val);
             }
         }
-
-            // --------------------- return ---------------------
-            return($values);
+        return($values);
     }
 
-    function response_goto_thankyou() {
+    private function response_goto_thankyou() {
         global $CFG, $USER, $DB;
 
         $select = 'id = '.$this->survey->id;
-        $fields = 'thanks_page,thank_head,thank_body';
+        $fields = 'thanks_page, thank_head, thank_body';
         if ($result = $DB->get_record_select('questionnaire_survey', $select, null, $fields)) {
             $thank_url = $result->thanks_page;
             $thank_head = $result->thank_head;
@@ -1909,27 +1919,26 @@ class questionnaire {
             $thank_head = '';
             $thank_body = '';
         }
-        if(!empty($thank_url)) {
-            if(!headers_sent()) {
+        if (!empty($thank_url)) {
+            if (!headers_sent()) {
                 header("Location: $thank_url");
                 exit;
             }
-    ?>
-    <script language="JavaScript" type="text/javascript">
-    <!--
-    window.location="<?php echo($thank_url); ?>"
-    //-->
-    </script>
-    <noscript>
-    <h2 class="thankhead">Thank You for completing this survey.</h2>
-    <blockquote class="thankbody">Please click
-    <a href="<?php echo($thank_url); ?>">here</a>
-    to continue.</blockquote>
-    </noscript>
-    <?php
+            echo '
+                <script language="JavaScript" type="text/javascript">
+                <!--
+                window.location="'.$thank_url.'"
+                //-->
+                </script>
+                <noscript>
+                <h2 class="thankhead">Thank You for completing this survey.</h2>
+                <blockquote class="thankbody">Please click
+                <a href="'.$thank_url.'">here</a> to continue.</blockquote>
+                </noscript>
+            ';
             exit;
         }
-        if(empty($thank_head)) {
+        if (empty($thank_head)) {
             $thank_head = get_string('thank_head', 'questionnaire');
         }
         $message =  '<h3>'.$thank_head.'</h3>'.file_rewrite_pluginfile_urls(format_text($thank_body, FORMAT_HTML), 'pluginfile.php',
@@ -1946,27 +1955,22 @@ class questionnaire {
         return;
     }
 
-    function response_goto_saved($url) {
-    ?>
-    <div class="thankbody">
-    <?php print_string('savedprogress', 'questionnaire', '<strong>'.get_string('resumesurvey', 'questionnaire').'</strong>'); ?>
-        <div><a href="<?php echo $url; ?>"><?php print_string('resumesurvey', 'questionnaire'); ?></a>
-        </div>
-    </div>
-
-    <?php
+    private function response_goto_saved($url) {
         global $CFG;
-        echo ('<div class="homelink"><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">&nbsp;&nbsp;'
-        .get_string("backto","moodle",$this->course->fullname).'&nbsp;&nbsp;</a></div>');
-    ?>
-    <?php
+        $resumesurvey =  get_string('resumesurvey', 'questionnaire');
+        $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>'.$resumesurvey.'</strong>');
+
+        echo '
+                <div class="thankbody">'.$savedprogress.'</div>
+                <div class="homelink"><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">&nbsp;&nbsp;'
+                    .get_string("backto", "moodle", $this->course->fullname).'&nbsp;&nbsp;</a></div>
+             ';
         return;
     }
 
+    // Survey Results Methods.
 
-    /// Survey Results Methods
-
-    function survey_results_navbar($curr_rid, $userid=false) {
+    public function survey_results_navbar($curr_rid, $userid=false) {
         global $CFG, $DB;
 
         $stranonymous = get_string('anonymous', 'questionnaire');
@@ -1975,7 +1979,8 @@ class questionnaire {
         if ($userid !== false) {
             $select .= ' AND username = \''.$userid.'\'';
         }
-        if (!($responses = $DB->get_records_select('questionnaire_response', $select, null, 'id', 'id,survey_id,submitted,username'))) {
+        if (!($responses = $DB->get_records_select('questionnaire_response', $select, null,
+                'id', 'id, survey_id, submitted, username'))) {
             return;
         }
         $total = count($responses);
@@ -2044,26 +2049,28 @@ class questionnaire {
         }
         echo implode(' | ', $linkarr);
     }
-    function survey_results_navbar_alpha($curr_rid, $groupid, $cm, $byresponse) {
+
+    public function survey_results_navbar_alpha($curr_rid, $groupid, $cm, $byresponse) {
         global $CFG, $DB, $OUTPUT;
         $selectgroupid ='';
         $gmuserid = ', GM.userid ';
         $groupmembers = ', '.$CFG->prefix.'groups_members GM ';
         switch ($groupid) {
-            case 0: // no groups
-            case -1: // all participants
-            case -3: // not members of any group
+            case 0:     // No groups.
+            case -1:     // All participants.
+            case -3:     // Not members of any group.
                 $gmuserid = '';
                 $groupmembers = '';
                 break;
-            case -2: // all members of any group
+            case -2:     // All members of any group.
                 $selectgroupid = ' AND GM.groupid>0 AND R.username = GM.userid ';
                 break;
-            default: // members of a specific group
+            default:     // Members of a specific group.
                 $selectgroupid = ' AND GM.groupid='.$groupid.' AND R.username = GM.userid ';
         }
         $castsql = $DB->sql_cast_char2int('R.username');
-        $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username, U.id AS user, U.lastname, U.firstname '.$gmuserid.
+        $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username,
+                        U.id AS user, U.lastname, U.firstname '.$gmuserid.
         'FROM '.$CFG->prefix.'questionnaire_response R,
         '.$CFG->prefix.'user U
         '.$groupmembers.
@@ -2075,8 +2082,8 @@ class questionnaire {
         if (!$responses = $DB->get_records_sql($sql)) {
             return;
         }
-        if ($groupid == -3) { // not members of any group
-            foreach ($responses as $resp=>$key) {
+        if ($groupid == -3) {     // Not members of any group.
+            foreach ($responses as $resp => $key) {
                 $userid = $key->user;
                 if (groups_has_membership($cm, $userid)) {
                     unset($responses[$resp]);
@@ -2108,8 +2115,8 @@ class questionnaire {
 
         $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.'&currentgroupid='.$groupid;
         $linkarr = array();
-        if (!$byresponse) { // display navbar
-            // build navbar
+        if (!$byresponse) {     // Display navbar.
+            // Build navbar.
             $prev_rid = ($curr_pos > 0) ? $rids[$curr_pos - 1] : null;
             $next_rid = ($curr_pos < $total - 1) ? $rids[$curr_pos + 1] : null;
             $first_rid = $rids[0];
@@ -2120,13 +2127,16 @@ class questionnaire {
                 $userfullname = $ridsfirstname[$pos].' '.$ridslastname[$pos];
                 $responsedate = userdate($ridssub[$pos]);
                 $title = $userfullname;
-                if ($ridsusername[$pos] == $ridsusername[$curr_pos]) { // only add date if more than one response by a student
+                // Only add date if more than one response by a student.
+                if ($ridsusername[$pos] == $ridsusername[$curr_pos]) {
                     $title .= ' | '.$responsedate;
                 }
                 $firstuserfullname = $ridsfirstname[0].' '.$ridslastname[0];
-                array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$first_rid.'&amp;individualresponse=1" title="'.$firstuserfullname.'">'.
-                        get_string('firstrespondent','questionnaire').'</a>');
-                array_push($linkarr, '<b><&nbsp;</b><a href="'.$url.'&amp;rid='.$prev_rid.'&amp;individualresponse=1" title="'.$title.'">'.get_string('previous').'</a>');
+                array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$first_rid.'&amp;individualresponse=1" title="'.
+                                $firstuserfullname.'">'.
+                                get_string('firstrespondent', 'questionnaire').'</a>');
+                array_push($linkarr, '<b><&nbsp;</b><a href="'.$url.'&amp;rid='.$prev_rid.'&amp;individualresponse=1"
+                                title="'.$title.'">'.get_string('previous').'</a>');
             }
             array_push($linkarr, '<b>'.($curr_pos + 1).' / '.$total.'</b>');
             if ($next_rid != null) {
@@ -2134,55 +2144,59 @@ class questionnaire {
                 $userfullname = $ridsfirstname[$pos].' '.$ridslastname[$pos];
                 $responsedate = userdate($ridssub[$pos]);
                 $title = $userfullname;
-                if ($ridsusername[$pos] == $ridsusername[$curr_pos]) { // only add date if more than one response by a student
+                // Only add date if more than one response by a student.
+                if ($ridsusername[$pos] == $ridsusername[$curr_pos]) {
                     $title .= ' | '.$responsedate;
                 }
                 $lastuserfullname = $ridsfirstname[$total - 1].' '.$ridslastname[$total - 1];
-                array_push($linkarr, '<a href="'.$url.'&amp;rid='.$next_rid.'&amp;individualresponse=1" title="'.$title.'">'.get_string('next').'</a>&nbsp;<b>></b>');
-                array_push($linkarr, '<a href="'.$url.'&amp;rid='.$last_rid.'&amp;individualresponse=1" title="'.$lastuserfullname .'">'.
-                        get_string('lastrespondent','questionnaire').'</a>&nbsp;<b>>></b>');
+                array_push($linkarr, '<a href="'.$url.'&amp;rid='.$next_rid.'&amp;individualresponse=1"
+                                title="'.$title.'">'.get_string('next').'</a>&nbsp;<b>></b>');
+                array_push($linkarr, '<a href="'.$url.'&amp;rid='.$last_rid.'&amp;individualresponse=1"
+                                title="'.$lastuserfullname .'">'.
+                                get_string('lastrespondent', 'questionnaire').'</a>&nbsp;<b>>></b>');
             }
             $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.'&byresponse=1';
-            // display navbar
+            // Display navbar.
             echo $OUTPUT->box_start('respondentsnavbar');
             echo implode(' | ', $linkarr);
             echo '<br /><b><<< <a href="'.$url.'">'.get_string('viewbyresponse', 'questionnaire').'</a></b>';
             echo $OUTPUT->box_end();
-        } else { //display respondents list
+        } else { // Display respondents list.
             $userfullname = '';
             for ($i = 0; $i < $total; $i++) {
                 $userfullname = $ridsfirstname[$i].' '.$ridslastname[$i];
                 $responsedate = userdate($ridssub[$i]);
-                array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.$rids[$i].'&amp;individualresponse=1" >'.$userfullname.'</a>'.'&nbsp;');
+                array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
+                    $rids[$i].'&amp;individualresponse=1" >'.$userfullname.'</a>'.'&nbsp;');
             }
-            /// table formatting from http://wikkawiki.org/PageAndCategoryDivisionInACategory
+            // Table formatting from http://wikkawiki.org/PageAndCategoryDivisionInACategory.
             $total = count($linkarr);
             $entries = count($linkarr);
-            // default max 3 columns, max 25 lines per column
-            // TODO make this setting customizable
+            // Default max 3 columns, max 25 lines per column.
+            // TODO make this setting customizable.
             $maxlines = 20;
             $maxcols = 3;
             if ($entries >= $maxlines) {
-                $colnumber = min (intval($entries / $maxlines),$maxcols);
+                $colnumber = min (intval($entries / $maxlines), $maxcols);
             } else {
                 $colnumber = 1;
             }
             $lines = 0;
             $a = 0;
             $str = '';
-            //how many lines with an entry in every column do we have?
+            // How many lines with an entry in every column do we have?
             while ($entries / $colnumber > 1) {
                 $lines++;
                 $entries = $entries - $colnumber;
             }
-            //prepare output
-            for ($i=0;$i<$colnumber;$i++) {
+            // Prepare output.
+            for ($i=0; $i<$colnumber; $i++) {
                 $str .= '<div id="respondentscolumn">'."\n";
-                for ($j=0;$j<$lines;$j++) {
+                for ($j=0; $j<$lines; $j++) {
                     $str .= $linkarr[$a].'<br />'."\n";
                     $a++;
                 }
-                //the rest of the entries (less than the number of cols)
+                // The rest of the entries (less than the number of cols).
                 if ($entries) {
                     $str .= $linkarr[$a].'<br />'."\n";
                     $entries--;
@@ -2197,7 +2211,7 @@ class questionnaire {
         }
     }
 
-    function survey_results_navbar_student($curr_rid, $userid, $instance, $resps, $reporttype='myreport', $sid='') {
+    public function survey_results_navbar_student($curr_rid, $userid, $instance, $resps, $reporttype='myreport', $sid='') {
         global $DB;
 
         $stranonymous = get_string('anonymous', 'questionnaire');
@@ -2262,37 +2276,40 @@ class questionnaire {
         echo implode(' | ', $linkarr);
     }
 
-    /* {{{ proto string survey_results(int survey_id, int precision, bool show_totals, int question_id, array choice_ids, int response_id)
+    /* {{{ proto string survey_results(int survey_id, int precision, bool show_totals, int question_id,
+     * array choice_ids, int response_id)
         Builds HTML for the results for the survey. If a
         question id and choice id(s) are given, then the results
         are only calculated for respodants who chose from the
         choice ids for the given question id.
         Returns empty string on sucess, else returns an error
         string. */
-    function survey_results($precision = 1, $showTotals = 1, $qid = '', $cids = '', $rid = '', $uid=false, $groupid='', $sort='') {
+
+    public function survey_results($precision = 1, $showtotals = 1, $qid = '', $cids = '', $rid = '',
+                $uid=false, $groupid='', $sort='') {
         global $SESSION, $DB;
 
         $SESSION->questionnaire->noresponses = false;
-        if(empty($precision)) {
+        if (empty($precision)) {
             $precision  = 1;
         }
-        if($showTotals === '') {
-            $showTotals = 1;
+        if ($showtotals === '') {
+            $showtotals = 1;
         }
 
-        if(is_int($cids)) {
+        if (is_int($cids)) {
             $cids = array($cids);
         }
-        if(is_string($cids)) {
-            $cids = preg_split("/ /",$cids); // turn space seperated list into array
+        if (is_string($cids)) {
+            $cids = preg_split("/ /", $cids); // Turn space seperated list into array.
         }
 
-        // build associative array holding whether each question
+        // Build associative array holding whether each question
         // type has answer choices or not and the table the answers are in
-        /// TO DO - FIX BELOW TO USE STANDARD FUNCTIONS
+        // TO DO - FIX BELOW TO USE STANDARD FUNCTIONS.
         $has_choices = array();
         $response_table = array();
-        if (!($types = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid,has_choices,response_table'))) {
+        if (!($types = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid, has_choices, response_table'))) {
             $errmsg = sprintf('%s [ %s: question_type ]',
                     get_string('errortable', 'questionnaire'), 'Table');
             return($errmsg);
@@ -2302,7 +2319,7 @@ class questionnaire {
             $response_table[$type->typeid]=$type->response_table;
         }
 
-        // load survey title (and other globals)
+        // Load survey title (and other globals).
         if (empty($this->survey)) {
             $errmsg = get_string('erroropening', 'questionnaire') ." [ ID:${sid} R:";
             return($errmsg);
@@ -2313,8 +2330,7 @@ class questionnaire {
             return($errmsg);
         }
 
-    // find total number of survey responses
-    // and relevant response ID's
+        // Find total number of survey responses and relevant response ID's.
         if (!empty($rid)) {
             $rids = $rid;
             if (is_array($rids)) {
@@ -2327,7 +2343,7 @@ class questionnaire {
             $navbar = false;
             $sql = "";
             $castsql = $DB->sql_cast_char2int('R.username');
-            if ($uid !== false) { // one participant only
+            if ($uid !== false) { // One participant only.
                 $sql = "SELECT r.id, r.survey_id
                           FROM {questionnaire_response} r
                          WHERE r.survey_id='{$this->survey->id}' AND
@@ -2335,15 +2351,15 @@ class questionnaire {
                                r.complete='y'
                          ORDER BY r.id";
 
-            // Changed the system for retrieval of respondents list for moodle 2.5 to avoid Duplicate values warning.
-            // All participants or all members of a group or non group members
+                // Changed the system for retrieval of respondents list for moodle 2.5 to avoid Duplicate values warning.
+                // All participants or all members of a group or non group members.
             } else if ($groupid < 0) {
                 $sql = "SELECT R.id, R.survey_id, R.username as userid
                           FROM {questionnaire_response} R
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y'
                          ORDER BY R.id";
-            } else { // members of a specific group
+            } else { // Members of a specific group.
                 $sql = "SELECT R.id, R.survey_id
                           FROM {questionnaire_response} R,
                                 {groups_members} GM
@@ -2354,31 +2370,31 @@ class questionnaire {
                          ORDER BY R.id";
             }
             if (!($rows = $DB->get_records_sql($sql))) {
-                echo (get_string('noresponses','questionnaire'));
+                echo (get_string('noresponses', 'questionnaire'));
                 $SESSION->questionnaire->noresponses = true;
                 return;
             }
 
             switch ($groupid) {
                 case -2:    // Remove non group members from list of all participants.
-                    foreach ($rows as $row=>$key) {
+                    foreach ($rows as $row => $key) {
                         if (!groups_has_membership($this->cm, $key->userid)) {
                             unset($rows[$row]);
                         }
                     }
                     break;
-                  case -3:    // Remove group members from list of all participants.
-                      foreach ($rows as $row=>$key) {
-                           if (groups_has_membership($this->cm, $key->userid)) {
-                               unset($rows[$row]);
-                           }
-                       }
-                       break;
+                case -3:    // Remove group members from list of all participants.
+                    foreach ($rows as $row => $key) {
+                        if (groups_has_membership($this->cm, $key->userid)) {
+                            unset($rows[$row]);
+                        }
+                    }
+                break;
             }
 
             $total = count($rows);
-            echo (' '.get_string('responses','questionnaire').": <strong>$total</strong>");
-            if(empty($rows)) {
+            echo (' '.get_string('responses', 'questionnaire').": <strong>$total</strong>");
+            if (empty($rows)) {
                 $errmsg = get_string('erroropening', 'questionnaire') .' '. get_string('noresponsedata', 'questionnaire');
                     return($errmsg);
             }
@@ -2427,28 +2443,28 @@ class questionnaire {
         return;
     }
 
-/* {{{ proto array survey_generate_csv(int survey_id)
+    /* {{{ proto array survey_generate_csv(int survey_id)
     Exports the results of a survey to an array.
     */
-    function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0) {
+    public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0) {
         global $SESSION, $DB;
 
         if (isset($SESSION->questionnaire->currentgroupid)) {
             $groupid = $SESSION->questionnaire->currentgroupid;
-        } else{
+        } else {
             $groupid = -1;
         }
         $output = array();
-        $nbinfocols = 9; // change this if you want more info columns
+        $nbinfocols = 9; // Change this if you want more info columns.
         $stringother = get_string('other', 'questionnaire');
         $columns = array(
-                get_string('response','questionnaire'),
-                get_string('submitted','questionnaire'),
+                get_string('response', 'questionnaire'),
+                get_string('submitted', 'questionnaire'),
                 get_string('institution'),
                 get_string('department'),
                 get_string('course'),
                 get_string('group'),
-                get_string('id','questionnaire'),
+                get_string('id', 'questionnaire'),
                 get_string('fullname'),
                 get_string('username')
             );
@@ -2466,7 +2482,7 @@ class questionnaire {
             );
 
         $arr = array();
-        // 0 = number; 1 = text
+
         $id_to_csv_map = array(
             '0',    // 0: unused
             '0',    // 1: bool -> boolean
@@ -2478,7 +2494,7 @@ class questionnaire {
             '0',    // 7: rating -> number
             '0',    // 8: rate -> number
             '1',    // 9: date -> string
-            '0'     // 10: numeric -> number
+            '0'     // 10: numeric -> number.
         );
 
         if (!$survey = $DB->get_record('questionnaire_survey', array('id' => $this->survey->id))) {
@@ -2486,18 +2502,16 @@ class questionnaire {
         }
 
         $select = 'survey_id = '.$this->survey->id.' AND deleted = \'n\' AND type_id < 50';
-        $fields = 'id,name,type_id,position';
+        $fields = 'id, name, type_id, position';
         if (!($records = $DB->get_records_select('questionnaire_question', $select, null, 'position', $fields))) {
             $records = array();
         }
 
         $num = 1;
         foreach ($records as $record) {
-            // establish the table's field names
+            // Establish the table's field names.
             $qid = $record->id;
             $qpos = $record->position;
-            if ($record->name == '') {
-            }
             $col = $record->name;
             $type = $record->type_id;
             if ($type == 4 || $type == 5 || $type == 8) {
@@ -2512,7 +2526,7 @@ class questionnaire {
                 $subqnum = 0;
                 switch ($type) {
 
-                    case 4: // single
+                    case 4: // Single.
                         $columns[][$qpos] = $col;
                         array_push($types, $id_to_csv_map[$type]);
                         $thisnum = 1;
@@ -2526,7 +2540,7 @@ class questionnaire {
                         }
                         break;
 
-                    case 5: // multiple
+                    case 5: // Multiple.
                         $thisnum = 1;
                         foreach ($records2 as $record2) {
                             $content = $record2->content;
@@ -2540,7 +2554,7 @@ class questionnaire {
                             $contents = questionnaire_choice_values($content);
                             if ($contents->modname) {
                                 $modality = $contents->modname;
-                            } elseif ($contents->title) {
+                            } else if ($contents->title) {
                                 $modality = $contents->title;
                             } else {
                                 $modality = strip_tags($contents->text);
@@ -2551,7 +2565,7 @@ class questionnaire {
                         }
                         break;
 
-                    case 8: // rate
+                    case 8: // Rate.
                         foreach ($records2 as $record2) {
                             $nameddegrees = 0;
                             $modality = '';
@@ -2560,7 +2574,7 @@ class questionnaire {
                             if ($record2->precise == 3) {
                                 $osgood = true;
                             }
-                            if (preg_match("/^[0-9]{1,3}=/", $content,$ndd)) {
+                            if (preg_match("/^[0-9]{1, 3}=/", $content, $ndd)) {
                                 $nameddegrees++;
                             } else {
                                 if ($osgood) {
@@ -2579,7 +2593,7 @@ class questionnaire {
                                     $contents = questionnaire_choice_values($content);
                                     if ($contents->modname) {
                                         $modality = $contents->modname;
-                                    } elseif ($contents->title) {
+                                    } else if ($contents->title) {
                                         $modality = $contents->title;
                                     } else {
                                         $modality = strip_tags($contents->text);
@@ -2602,13 +2616,13 @@ class questionnaire {
         array_push($output, $columns);
         $numcols = count($output[0]);
 
-        if ($rid) {         // send e-mail for a unique response ($rid)
+        if ($rid) {             // Send e-mail for a unique response ($rid).
             $select = 'survey_id = '.$this->survey->id.' AND complete=\'y\' AND id = '.$rid;
             $fields = 'id,submitted,username';
             if (!($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted', $fields))) {
                 $records = array();
             }
-        } else if ($userid) { // download CSV for one user's own responses'
+        } else if ($userid) {    // Download CSV for one user's own responses'.
                 $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
                           FROM {questionnaire_response} R
                          WHERE R.survey_id='{$this->survey->id}' AND
@@ -2619,15 +2633,15 @@ class questionnaire {
                 $records = array();
             }
 
-        } else { // download CSV for all participants (or groups if enabled)
+        } else { // Download CSV for all participants (or groups if enabled).
             $castsql = $DB->sql_cast_char2int('R.username');
-            if ($groupid == -1) { // all participants
+            if ($groupid == -1) { // All participants.
                 $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
                           FROM {questionnaire_response} R
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y'
                          ORDER BY R.id";
-            } else if ($groupid == -2) { // all members of any group
+            } else if ($groupid == -2) { // All members of any group.
                 $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
                           FROM {questionnaire_response} R,
                                 {groups_members} GM
@@ -2636,7 +2650,7 @@ class questionnaire {
                                GM.groupid>0 AND
                                ".$castsql."=GM.userid
                          ORDER BY R.id";
-            } else if ($groupid == -3) { // not members of any group
+            } else if ($groupid == -3) { // Not members of any group.
                 $sql = "SELECT R.id, R.survey_id, R.submitted,  U.id AS username
                           FROM {questionnaire_response} R,
                                 {user} U
@@ -2644,7 +2658,7 @@ class questionnaire {
                                R.complete='y' AND
                                ".$castsql."=U.id
                          ORDER BY username";
-            } else { // members of a specific group
+            } else {                 // Members of a specific group.
                 $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
                           FROM {questionnaire_response} R,
                                 {groups_members} GM
@@ -2657,8 +2671,8 @@ class questionnaire {
             if (!($records = $DB->get_records_sql($sql))) {
                 $records = array();
             }
-            if ($groupid == -3) { // members of no group
-                foreach ($records as $row=>$key) {
+            if ($groupid == -3) {     // Members of no group.
+                foreach ($records as $row => $key) {
                     $userid = $key->username;
                     if (groups_has_membership($this->cm, $userid)) {
                         unset($records[$row]);
@@ -2668,12 +2682,12 @@ class questionnaire {
         }
         $isanonymous = $this->respondenttype == 'anonymous';
         $format_options = new Object();
-        $format_options->filter = false;  // To prevent any filtering in CSV output...
+        $format_options->filter = false;  // To prevent any filtering in CSV output.
         foreach ($records as $record) {
-            // get the response
+            // Get the response.
             $response = $this->response_select_name($record->id, $choicecodes, $choicetext);
             $qid = $record->id;
-            //JR for better compabitility & readability with Excel
+            // For better compabitility & readability with Excel.
             $submitted = date(get_string('strfdateformatcsv', 'questionnaire'), $record->submitted);
             $institution = '';
             $department = '';
@@ -2683,13 +2697,13 @@ class questionnaire {
                 $department = $user->department;
             }
 
-            /// Moodle:
+            // Moodle:
             //  Get the course name that this questionnaire belongs to.
             if ($survey->realm != 'public') {
                 $courseid = $this->course->id;
                 $coursename = $this->course->fullname;
             } else {
-                /// For a public questionnaire, look for the course that used it.
+                // For a public questionnaire, look for the course that used it.
                 $sql = 'SELECT q.id, q.course, c.fullname '.
                        'FROM {questionnaire} q, {questionnaire_attempts} qa, {course} c '.
                        'WHERE qa.rid = ? AND q.id = qa.qid AND c.id = q.course';
@@ -2701,7 +2715,7 @@ class questionnaire {
                     $coursename = $this->course->fullname;
                 }
             }
-            /// Moodle:
+            // Moodle:
             //  If the username is numeric, try it as a Moodle user id.
             if (is_numeric($username)) {
                 if ($user = $DB->get_record('user', array('id' => $username))) {
@@ -2711,7 +2725,7 @@ class questionnaire {
                 }
             }
 
-            /// Moodle:
+            // Moodle:
             //  Determine if the user is a member of a group in this course or not.
             $groupname = '';
             if ($this->cm->groupmode > 0) {
@@ -2746,63 +2760,59 @@ class questionnaire {
             array_push($arr, $fullname);
             array_push($arr, $username);
 
-            // merge it
-            for($i = $nbinfocols; $i < $numcols; $i++) {
-                /*if (isset($response[$columns[$i]]) && is_array($response[$columns[$i]])) {
-                    $response[$columns[$i]] = join(',', $response[$columns[$i]]);
-                }*/
-
-            $qpos = key($columns[$i]);
-            $qname = current($columns[$i]);
-            if (isset($response[$qpos][$qname]) && $response[$qpos][$qname] != '') {
-                $thisresponse = $response[$qpos][$qname];
-            } else {
-                $thisresponse = '';
-            }
-
-            switch ($types[$i]) {
-                case 1:  //string
-                         // Excel seems to allow "\n" inside a quoted string, but
-                         // "\r\n" is used as a record separator and so "\r" may
-                         // not occur within a cell. So if one would like to preserve
-                         // new-lines in a response, remove the "\n" from the
-                         // regex below.
-
-                        // email format text is plain text for being displayed in Excel, etc. added by JR
-                        // but it must be stripped of carriage returns
-                    if ($thisresponse) {
-                        $thisresponse = format_text($thisresponse, FORMAT_HTML, $format_options);
-                        $thisresponse = preg_replace("/[\r\n\t]/", ' ', $thisresponse);
-                        $thisresponse = preg_replace('/"/', '""', $thisresponse);
-                    }
-                     // fall through
-                case 0:  //number
-                        //array_push($arr,$thisresponse);
-                break;
+            // Merge it.
+            for ($i = $nbinfocols; $i < $numcols; $i++) {
+                $qpos = key($columns[$i]);
+                $qname = current($columns[$i]);
+                if (isset($response[$qpos][$qname]) && $response[$qpos][$qname] != '') {
+                    $thisresponse = $response[$qpos][$qname];
+                } else {
+                    $thisresponse = '';
                 }
-                array_push($arr,$thisresponse);
+
+                switch ($types[$i]) {
+                    case 1:  // String
+                             // Excel seems to allow "\n" inside a quoted string, but
+                             // "\r\n" is used as a record separator and so "\r" may
+                             // not occur within a cell. So if one would like to preserve
+                             // new-lines in a response, remove the "\n" from the
+                             // regex below.
+
+                            // Email format text is plain text for being displayed in Excel, etc.
+                            // But it must be stripped of carriage returns.
+                        if ($thisresponse) {
+                            $thisresponse = format_text($thisresponse, FORMAT_HTML, $format_options);
+                            $thisresponse = preg_replace("/[\r\n\t]/", ' ', $thisresponse);
+                            $thisresponse = preg_replace('/"/', '""', $thisresponse);
+                        }
+                         // Fall through.
+                    case 0:  // Number.
+
+                    break;
+                }
+                array_push($arr, $thisresponse);
             }
             array_push($output, $arr);
         }
 
-        // change table headers to incorporate actual question numbers
+        // Change table headers to incorporate actual question numbers.
         $numcol = 0;
         $numquestion = 0;
         $out = '';
         $nbrespcols = count($output[0]);
         $oldkey = 0;
 
-        for ($i = $nbinfocols;$i < $nbrespcols; $i++) {
+        for ($i = $nbinfocols; $i < $nbrespcols; $i++) {
             $sep = '';
             $thisoutput = current($output[0][$i]);
             $thiskey =  key($output[0][$i]);
-            // case of unnamed rate single possible answer (full stop char is used for support)
-            if (strstr($thisoutput,'->.')) {
-                $thisoutput = str_replace('->.','',$thisoutput);
+            // Case of unnamed rate single possible answer (full stop char is used for support).
+            if (strstr($thisoutput, '->.')) {
+                $thisoutput = str_replace('->.', '', $thisoutput);
             }
-
-            // if variable is not named no separator needed between Question number and potential sub-variables
-            if ($thisoutput == '' || strstr($thisoutput,'->.') || substr($thisoutput,0,2) == '->' || substr($thisoutput,0,1) == '_') {
+            // If variable is not named no separator needed between Question number and potential sub-variables.
+            if ($thisoutput == '' || strstr($thisoutput, '->.') || substr($thisoutput, 0, 2) == '->'
+                    || substr($thisoutput, 0, 1) == '_') {
                 $sep = '';
             } else {
                 $sep = '_';
@@ -2811,9 +2821,9 @@ class questionnaire {
                 $oldkey = $thiskey;
                 $numquestion++;
             }
-            // abbreviated modality name in multiple or rate questions (COLORS->blue=the color of the sky...)
+            // Abbreviated modality name in multiple or rate questions (COLORS->blue=the color of the sky...).
             $pos = strpos($thisoutput, '=');
-            if($pos) {
+            if ($pos) {
                 $thisoutput = substr($thisoutput, 0, $pos);
             }
             $other = $sep.$stringother;
@@ -2827,17 +2837,19 @@ class questionnaire {
         Exports the results of a survey to a CSV file.
         Returns true on success.
         */
-    function export_csv($filename) {
+
+    private function export_csv($filename) {
         $umask = umask(0077);
         $fh = fopen($filename, 'w');
         umask($umask);
-        if(!$fh)
+        if (!$fh) {
             return 0;
+        }
 
         $data = survey_generate_csv($rid='', $userid='', $groupid='');
 
         foreach ($data as $row) {
-            fputs($fh, join(',', $row) . "\n");
+            fputs($fh, join(', ', $row) . "\n");
         }
 
         fflush($fh);
@@ -2853,11 +2865,11 @@ class questionnaire {
      * @param int $movetopos The position to move before, or zero if the end.
      *
      */
-    function move_question($moveqid, $movetopos) {
+    public function move_question($moveqid, $movetopos) {
         global $DB;
 
-        /// If its moving to the last position (moveto = 0), or its moving to a higher position
-        /// No point in moving it to where it already is...
+        // If its moving to the last position (moveto = 0), or its moving to a higher position
+        // No point in moving it to where it already is...
         if (($movetopos == 0) || (($movetopos-1) > $this->questions[$moveqid]->position)) {
             $found = false;
             foreach ($this->questions as $qid => $question) {

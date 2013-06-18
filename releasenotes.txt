@@ -1,5 +1,10 @@
 Release Notes:
 
+Version 2.5.3 Build - 2013062206
+- CONTRIB-4418 Make questionnaire more compliant with Moodle Coding style recommendations
+- Lots of changes in almost all files to make them compliant with the Coding style. 
+Success 100% on using Code checker. 
+
 Version 2.5.3 Build - 2013062205
 - CONTRIB-4058 Show non-respondents
 
@@ -29,7 +34,8 @@ Version 2.5.0
 
 Version 2.4.1 - Release date 20130519
 
-- In accordance with current Moodle languages policy, all language folders other than English have been removed from the lang folder. All translations are now available from AMOS.
+- In accordance with current Moodle languages policy, all language folders other than English have been removed 
+from the lang folder. All translations are now available from AMOS.
 
 
 Version 2.3.2 - Release date 20120820

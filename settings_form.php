@@ -15,36 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
-* print the form to add or edit a questionnaire-instance
-*
-* @author Mike Churchward
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package questionnaire
-*/
+ * print the form to add or edit a questionnaire-instance
+ *
+ * @author Mike Churchward
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package questionnaire
+ */
 
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
-// JR removed this require_once to solve course forced language pb in settings_form.php
-//require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
 class questionnaire_settings_form extends moodleform {
 
-    function definition() {
-        global $questionnaire, $QUESTIONNAIRE_REALMS;
+    public function definition() {
+        global $questionnaire, $questionnaire_realms;
 
         $mform    =& $this->_form;
 
-        //-------------------------------------------------------------------------------
         $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
 
         $capabilities = questionnaire_load_capabilities($questionnaire->cm->id);
         if (!$capabilities->createtemplates) {
-            unset($QUESTIONNAIRE_REALMS['template']);
+            unset($questionnaire_realms['template']);
         }
         if (!$capabilities->createpublic) {
-            unset($QUESTIONNAIRE_REALMS['public']);
+            unset($questionnaire_realms['public']);
         }
-        if (isset($QUESTIONNAIRE_REALMS['public']) || isset($QUESTIONNAIRE_REALMS['template'])) {
-            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $QUESTIONNAIRE_REALMS);
+        if (isset($questionnaire_realms['public']) || isset($questionnaire_realms['template'])) {
+            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $questionnaire_realms);
             $mform->setDefault('realm', $questionnaire->survey->realm);
             $mform->addHelpButton('realm', 'realm', 'questionnaire');
         } else {
@@ -69,7 +66,6 @@ class questionnaire_settings_form extends moodleform {
         $mform->setType('info', PARAM_RAW);
         $mform->addHelpButton('info', 'additionalinfo', 'questionnaire');
 
-        //-------------------------------------------------------------------------------
         $mform->addElement('header', 'submithdr', get_string('submitoptions', 'questionnaire'));
 
         $mform->addElement('text', 'thanks_page', get_string('url', 'questionnaire'), array('size'=>'60'));
@@ -94,8 +90,7 @@ class questionnaire_settings_form extends moodleform {
         $mform->setDefault('email', $questionnaire->survey->email);
         $mform->addHelpButton('email', 'sendemail', 'questionnaire');
 
-        //-------------------------------------------------------------------------------
-        // Hidden fields
+        // Hidden fields.
         $mform->addElement('hidden', 'id', 0);
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'sid', 0);
@@ -105,12 +100,12 @@ class questionnaire_settings_form extends moodleform {
         $mform->addElement('hidden', 'owner', '');
         $mform->setType('owner', PARAM_RAW);
 
-        //-------------------------------------------------------------------------------
-        // buttons
+        // Buttons.
         $mform->addElement('submit', 'submitbutton', get_string('savesettings', 'questionnaire'));
     }
 
-    function validation($data, $files){
-        return parent::validation($data, $files);
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        return $errors;
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -33,10 +32,10 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
     protected function define_structure() {
 
-        // To know if we are including userinfo
+        // To know if we are including userinfo.
         $userinfo = $this->get_setting_value('userinfo');
 
-        // Define each element separated
+        // Define each element separated.
         $questionnaire = new backup_nested_element('questionnaire', array('id'), array(
             'course', 'name', 'intro', 'introformat', 'qtype',
             'respondenttype', 'resp_eligible', 'resp_view', 'opendate',
@@ -104,7 +103,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $response_text = new backup_nested_element('response_text', array('id'), array(
             'response_id', 'question_id', 'response'));
 
-        // Build the tree
+        // Build the tree.
         $questionnaire->add_child($surveys);
         $surveys->add_child($survey);
 
@@ -141,7 +140,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $response->add_child($response_texts);
         $response_texts->add_child($response_text);
 
-        // Define sources
+        // Define sources.
         $questionnaire->set_source_table('questionnaire', array('id' => backup::VAR_ACTIVITYID));
 
         $survey->set_source_table('questionnaire_survey', array('id' => '../../sid'));
@@ -150,7 +149,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $quest_choice->set_source_table('questionnaire_quest_choice', array('question_id' => backup::VAR_PARENTID));
 
-        // All the rest of elements only happen if we are including user info
+        // All the rest of elements only happen if we are including user info.
         if ($userinfo) {
             $attempt->set_source_table('questionnaire_attempts', array('qid' => backup::VAR_PARENTID));
             $response->set_source_table('questionnaire_response', array('id' => '../../rid'));
@@ -163,18 +162,18 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             $response_text->set_source_table('questionnaire_response_text', array('response_id' => backup::VAR_PARENTID));
         }
 
-        // Define id annotations
+        // Define id annotations.
         $attempt->annotate_ids('user', 'userid');
 
         // Define file annotations
-        $questionnaire->annotate_files('mod_questionnaire', 'intro', null); // This file area hasn't itemid
+        $questionnaire->annotate_files('mod_questionnaire', 'intro', null); // This file area hasn't itemid.
 
         $survey->annotate_files('mod_questionnaire', 'info', 'id'); // By survey->id
-        $survey->annotate_files('mod_questionnaire', 'thankbody', 'id'); // By survey->id
+        $survey->annotate_files('mod_questionnaire', 'thankbody', 'id'); // By survey->id.
 
-        $question->annotate_files('mod_questionnaire', 'question', 'id'); // By question->id
+        $question->annotate_files('mod_questionnaire', 'question', 'id'); // By question->id.
 
-        // Return the root element, wrapped into standard activity structure
+        // Return the root element, wrapped into standard activity structure.
         return $this->prepare_activity_structure($questionnaire);
     }
 }

@@ -33,5 +33,3 @@ Version 2.4.1 - Release date 20130519
 
 In accordance with current Moodle languages policy, all language folders other than English have been
 removed from the lang folder. All translations are now available from AMOS.
-
-

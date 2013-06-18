@@ -24,7 +24,7 @@
 
 $messageproviders = array (
 
-/// Message to nonrespondents
+// Message to nonrespondents.
     'message' => array (
     )
 

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,7 +23,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/questionnaire/backup/moodle2/restore_questionnaire_stepslib.php'); // Because it exists (must)
+// Because it exists (must).
+require_once($CFG->dirroot . '/mod/questionnaire/backup/moodle2/restore_questionnaire_stepslib.php');
 
 /**
  * questionnaire restore task that provides all the settings and steps to perform one
@@ -36,14 +36,14 @@ class restore_questionnaire_activity_task extends restore_activity_task {
      * Define (add) particular settings this activity can have
      */
     protected function define_my_settings() {
-        // No particular settings for this activity
+        // No particular settings for this activity.
     }
 
     /**
      * Define (add) particular steps this activity can have
      */
     protected function define_my_steps() {
-        // Choice only has one structure step
+        // Choice only has one structure step.
         $this->add_step(new restore_questionnaire_activity_structure_step('questionnaire_structure', 'questionnaire.xml'));
     }
 
@@ -55,7 +55,8 @@ class restore_questionnaire_activity_task extends restore_activity_task {
         $contents = array();
 
         $contents[] = new restore_decode_content('questionnaire', array('intro'), 'questionnaire');
-        $contents[] = new restore_decode_content('questionnaire_survey', array('info', 'thank_head', 'thank_body'), 'questionnaire_survey');
+        $contents[] = new restore_decode_content('questionnaire_survey',
+                        array('info', 'thank_head', 'thank_body'), 'questionnaire_survey');
         $contents[] = new restore_decode_content('questionnaire_question', array('content'), 'questionnaire_question');
 
         return $contents;
@@ -107,7 +108,7 @@ class restore_questionnaire_activity_task extends restore_activity_task {
     static public function define_restore_log_rules_for_course() {
         $rules = array();
 
-        // Fix old wrong uses (missing extension)
+        // Fix old wrong uses (missing extension).
         $rules[] = new restore_log_rule('questionnaire', 'view all', 'index?id={course}', null,
                                         null, null, 'index.php?id={course}');
         $rules[] = new restore_log_rule('questionnaire', 'view all', 'index.php?id={course}', null);

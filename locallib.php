@@ -33,7 +33,7 @@
 
 require_once('questiontypes/questiontypes.class.php');
 
-/// Constants
+// Constants.
 
 define ('QUESTIONNAIREUNLIMITED', 0);
 define ('QUESTIONNAIREONCE', 1);
@@ -50,24 +50,24 @@ define('QUESTIONNAIRE_MAX_EVENT_LENGTH', 5*24*60*60);   // 5 days maximum.
 
 define('QUESTIONNAIRE_DEFAULT_PAGE_COUNT', 20);
 
-global $QUESTIONNAIRE_TYPES;
-$QUESTIONNAIRE_TYPES = array (QUESTIONNAIREUNLIMITED => get_string('qtypeunlimited', 'questionnaire'),
+global $questionnaire_types;
+$questionnaire_types = array (QUESTIONNAIREUNLIMITED => get_string('qtypeunlimited', 'questionnaire'),
                               QUESTIONNAIREONCE => get_string('qtypeonce', 'questionnaire'),
                               QUESTIONNAIREDAILY => get_string('qtypedaily', 'questionnaire'),
                               QUESTIONNAIREWEEKLY => get_string('qtypeweekly', 'questionnaire'),
                               QUESTIONNAIREMONTHLY => get_string('qtypemonthly', 'questionnaire'));
 
-global $QUESTIONNAIRE_RESPONDENTS;
-$QUESTIONNAIRE_RESPONDENTS = array ('fullname' => get_string('respondenttypefullname', 'questionnaire'),
+global $questionnaire_respondents;
+$questionnaire_respondents = array ('fullname' => get_string('respondenttypefullname', 'questionnaire'),
                                     'anonymous' => get_string('respondenttypeanonymous', 'questionnaire'));
 
-global $QUESTIONNAIRE_REALMS;
-$QUESTIONNAIRE_REALMS = array ('private' => get_string('private', 'questionnaire'),
+global $questionnaire_realms;
+$questionnaire_realms = array ('private' => get_string('private', 'questionnaire'),
                                'public' => get_string('public', 'questionnaire'),
                                'template' => get_string('template', 'questionnaire'));
 
-global $QUESTIONNAIRE_RESPONSEVIEWERS;
-$QUESTIONNAIRE_RESPONSEVIEWERS =
+global $questionnaire_responseviewers;
+$questionnaire_responseviewers =
     array ( QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER => get_string('responseviewstudentsnever', 'questionnaire'),
             QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
             QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED => get_string('responseviewstudentswhenclosed', 'questionnaire'),
@@ -85,55 +85,79 @@ function questionnaire_check_date ($thisdate, $insert=false) {
         $pattern = "/[^dmy]/i";
         $dateorder = strtolower(preg_replace($pattern, '', $dateformat));
         $countpieces = count($date_pieces);
-        if ($countpieces == 1) { // assume only year entered
+        if ($countpieces == 1) { // Assume only year entered.
             switch ($dateorder) {
-                case 'dmy': // most countries
-                case 'mdy': // USA
+                case 'dmy': // Most countries.
+                case 'mdy': // USA.
                     $date_pieces[2] = $date_pieces[0]; // year
-                    $date_pieces[0] = '1'; // assumed 1st month of year
-                    $date_pieces[1] = '1'; // assumed 1st day of month
+                    $date_pieces[0] = '1'; // Assumed 1st month of year.
+                    $date_pieces[1] = '1'; // Assumed 1st day of month.
                     break;
                 case 'ymd': // ISO 8601 standard
-                    $date_pieces[1] = '1'; // assumed 1st month of year
-                    $date_pieces[2] = '1'; // assumed 1st day of month
+                    $date_pieces[1] = '1'; // Assumed 1st month of year.
+                    $date_pieces[2] = '1'; // Assumed 1st day of month.
                     break;
             }
         }
-        if ($countpieces == 2) { // assume only month and year entered
+        if ($countpieces == 2) { // Assume only month and year entered.
             switch ($dateorder) {
-                case 'dmy': // most countries
-                    $date_pieces[2] = $date_pieces[1]; //year
-                    $date_pieces[1] = $date_pieces[0]; // month
-                    $date_pieces[0] = '1'; // assumed 1st day of month
+                case 'dmy': // Most countries.
+                    $date_pieces[2] = $date_pieces[1]; // Year.
+                    $date_pieces[1] = $date_pieces[0]; // Month.
+                    $date_pieces[0] = '1'; // Assumed 1st day of month.
                     break;
                 case 'mdy': // USA
-                    $date_pieces[2] = $date_pieces[1]; //year
-                    $date_pieces[0] = $date_pieces[0]; // month
-                    $date_pieces[1] = '1'; // assumed 1st day of month
+                    $date_pieces[2] = $date_pieces[1]; // Year.
+                    $date_pieces[0] = $date_pieces[0]; // Month.
+                    $date_pieces[1] = '1'; // Assumed 1st day of month.
                     break;
                 case 'ymd': // ISO 8601 standard
-                    $date_pieces[2] = '1'; // assumed 1st day of month
+                    $date_pieces[2] = '1'; // Assumed 1st day of month.
                     break;
             }
         }
         if (count($date_pieces) > 1) {
-            if ($matches[1] == '%m') $month = $date_pieces[0];
-            if ($matches[1] == '%d') $day = $date_pieces[0];
-            if ($matches[1] == '%y') $year = strftime('%C').$date_pieces[0];
-            if ($matches[1] == '%Y') $year = $date_pieces[0];
+            if ($matches[1] == '%m') {
+                $month = $date_pieces[0];
+            }
+            if ($matches[1] == '%d') {
+                $day = $date_pieces[0];
+            }
+            if ($matches[1] == '%y') {
+                $year = strftime('%C').$date_pieces[0];
+            }
+            if ($matches[1] == '%Y') {
+                $year = $date_pieces[0];
+            }
 
-            if ($matches[3] == '%m') $month = $date_pieces[1];
-            if ($matches[3] == '%d') $day = $date_pieces[1];
-            if ($matches[3] == '%y') $year = strftime('%C').$date_pieces[1];
-            if ($matches[3] == '%Y') $year = $date_pieces[1];
+            if ($matches[3] == '%m') {
+                $month = $date_pieces[1];
+            }
+            if ($matches[3] == '%d') {
+                $day = $date_pieces[1];
+            }
+            if ($matches[3] == '%y') {
+                $year = strftime('%C').$date_pieces[1];
+            }
+            if ($matches[3] == '%Y') {
+                $year = $date_pieces[1];
+            }
 
-            if ($matches[5] == '%m') $month = $date_pieces[2];
-            if ($matches[5] == '%d') $day = $date_pieces[2];
-            if ($matches[5] == '%y') $year = strftime('%C').$date_pieces[2];
-            if ($matches[5] == '%Y') $year = $date_pieces[2];
+            if ($matches[5] == '%m') {
+                $month = $date_pieces[2];
+            }
+            if ($matches[5] == '%d') {
+                $day = $date_pieces[2];
+            }
+            if ($matches[5] == '%y') {
+                $year = strftime('%C').$date_pieces[2];
+            }
+            if ($matches[5] == '%Y') {
+                $year = $date_pieces[2];
+            }
 
-            $month = min(12,$month);
-            $month = max(1,$month);
+            $month = min(12, $month);
+            $month = max(1, $month);
             if ($month == 2) {
                 $day = min(29, $day);
             } else if ($month == 4 || $month == 6 || $month == 9 || $month == 11) {
@@ -153,11 +177,13 @@ function questionnaire_check_date ($thisdate, $insert=false) {
             }
             return $thisdate;
         }
-    } else return ('wrongdateformat');
+    } else {
+        return ('wrongdateformat');
+    }
 }
 
-// .mform span.required .mform div.error
-// a variant of Moodle's notify function, with a different formatting
+
+// A variant of Moodle's notify function, with a different formatting.
 function questionnaire_notify($message) {
     $message = clean_text($message);
     $errorstart = '<div class="message">';
@@ -168,42 +194,42 @@ function questionnaire_notify($message) {
 
 function questionnaire_choice_values($content) {
 
-    /// If we run the content through format_text first, any filters we want to use (e.g. multilanguage) should work.
+    // If we run the content through format_text first, any filters we want to use (e.g. multilanguage) should work.
     // examines the content of a possible answer from radio button, check boxes or rate question
-    // returns ->text to be displayed, ->image if present, ->modname name of modality, image ->title
+    // returns ->text to be displayed, ->image if present, ->modname name of modality, image ->title.
     $contents = new stdClass();
     $contents->text = '';
     $contents->image = '';
     $contents->modname = '';
     $contents->title = '';
-    // has image
-    if ($count = preg_match('/(<img)\s .*(src="(.[^"]{1,})")/isxmU',$content,$matches)) {
+    // Has image.
+    if ($count = preg_match('/(<img)\s .*(src="(.[^"]{1,})")/isxmU', $content, $matches)) {
         $contents->image = $matches[0];
         $imageurl = $matches[3];
-        // image has a title or alt text: use one of them
-        if (preg_match('/(title=.)([^"]{1,})/',$content,$matches)
-             || preg_match('/(alt=.)([^"]{1,})/',$content,$matches) ) {
+        // Image has a title or alt text: use one of them.
+        if (preg_match('/(title=.)([^"]{1,})/', $content, $matches)
+             || preg_match('/(alt=.)([^"]{1,})/', $content, $matches) ) {
             $contents->title = $matches[2];
         } else {
-            // image has no title nor alt text: use its filename (without the extension)
+            // Image has no title nor alt text: use its filename (without the extension).
             preg_match("/.*\/(.*)\..*$/", $imageurl, $matches);
             $contents->title = $matches[1];
         }
-        // content has text or named modality plus an image
-        if (preg_match('/(.*)(<img.*)/',$content,$matches)) {
+        // Content has text or named modality plus an image.
+        if (preg_match('/(.*)(<img.*)/', $content, $matches)) {
             $content = $matches[1];
         } else {
-            // just an image
+            // Just an image.
             return $contents;
         }
     }
-    // look for named modalities
+    // Look for named modalities.
     $contents->text = $content;
-    // DEV JR from version 2.5, a double colon :: must be used here instead of the equal sign
+    // DEV JR from version 2.5, a double colon :: must be used here instead of the equal sign.
     if ($pos = strpos($content, '::')) {
         $contents->text = substr($content, $pos + 2);
         $contents->modname =substr($content, 0, $pos);
-     }
+    }
     return $contents;
 }
 
@@ -247,14 +273,16 @@ function questionnaire_get_user_responses($surveyid, $userid, $complete=true) {
 }
 
 /**
- *  get the capabilities for the questionnaire
- *  @param int $cmid
- *  @return object the available capabilities from current user
+ * get the capabilities for the questionnaire
+ * @param int $cmid
+ * @return object the available capabilities from current user
  */
 function questionnaire_load_capabilities($cmid) {
     static $cb;
 
-    if(isset($cb)) return $cb;
+    if (isset($cb)) {
+        return $cb;
+    }
 
     $context = questionnaire_get_context($cmid);
 
@@ -273,20 +301,22 @@ function questionnaire_load_capabilities($cmid) {
     $cb->readallresponseanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
     $cb->printblank = has_capability('mod/questionnaire:printblank', $context);
 
-    $cb->viewhiddenactivities   = has_capability('moodle/course:viewhiddenactivities', $context, NULL, false);
+    $cb->viewhiddenactivities   = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
 
     return $cb;
 }
 
 /**
- *  returns the context-id related to the given coursemodule-id
- *  @param int $cmid the coursemodule-id
- *  @return object $context
+ * returns the context-id related to the given coursemodule-id
+ * @param int $cmid the coursemodule-id
+ * @return object $context
  */
 function questionnaire_get_context($cmid) {
     static $context;
 
-    if(isset($context)) return $context;
+    if (isset($context)) {
+        return $context;
+    }
 
     if (!$context = get_context_instance(CONTEXT_MODULE, $cmid)) {
             print_error('badcontext');
@@ -294,12 +324,12 @@ function questionnaire_get_context($cmid) {
     return $context;
 }
 
-/// This function *really* shouldn't be needed, but since sometimes we can end up with
-/// orphaned surveys, this will clean them up.
+// This function *really* shouldn't be needed, but since sometimes we can end up with
+// orphaned surveys, this will clean them up.
 function questionnaire_cleanup() {
     global $DB;
 
-    /// Find surveys that don't have questionnaires associated with them.
+    // Find surveys that don't have questionnaires associated with them.
     $sql = 'SELECT qs.* FROM {questionnaire_survey} qs '.
            'LEFT JOIN {questionnaire} q ON q.sid = qs.id '.
            'WHERE q.sid IS NULL';
@@ -309,7 +339,7 @@ function questionnaire_cleanup() {
             questionnaire_delete_survey($survey->id, 0);
         }
     }
-    /// Find deleted questions and remove them from database (with their associated choices, etc. // TODO
+    // Find deleted questions and remove them from database (with their associated choices, etc.).
     return true;
 }
 
@@ -325,22 +355,22 @@ function questionnaire_record_submission(&$questionnaire, $userid, $rid=0) {
 
 function questionnaire_delete_survey($sid, $qid) {
     global $DB;
-/// Until backup is implemented, just mark the survey as archived.
+    // Until backup is implemented, just mark the survey as archived.
 
     $status = true;
 
-    /// Delete all responses for the survey:
+    // Delete all responses for the survey.
     if ($responses = $DB->get_records('questionnaire_response', array('survey_id' => $sid), 'id')) {
         foreach ($responses as $response) {
             $status = $status && questionnaire_delete_response($response->id);
         }
     }
 
-    /// There really shouldn't be any more, but just to make sure...
+    // There really shouldn't be any more, but just to make sure...
     $DB->delete_records('questionnaire_response', array('survey_id' => $sid));
     $DB->delete_records('questionnaire_attempts', array('qid' => $qid));
 
-    /// Delete all question data for the survey:
+    // Delete all question data for the survey.
     if ($questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid), 'id')) {
         foreach ($questions as $question) {
             $DB->delete_records('questionnaire_quest_choice', array('question_id' => $question->id));
@@ -358,7 +388,7 @@ function questionnaire_delete_response($rid) {
 
     $status = true;
 
-    /// Delete all of the survey response data:
+    // Delete all of the survey response data.
     $DB->delete_records('questionnaire_response_bool', array('response_id' => $rid));
     $DB->delete_records('questionnaire_response_date', array('response_id' => $rid));
     $DB->delete_records('questionnaire_resp_multiple', array('response_id' => $rid));
@@ -373,9 +403,9 @@ function questionnaire_delete_response($rid) {
     return $status;
 }
 
-/// Functions to call directly into phpESP.
-/// Make sure a "require_once('phpESP/admin/phpESP.ini.php')" line is included.
-/// Don't need to include this for all library functions, so don't.
+// Functions to call directly into phpESP.
+// Make sure a "require_once('phpESP/admin/phpESP.ini.php')" line is included.
+// Don't need to include this for all library functions, so don't.
 function questionnaire_get_survey_list($courseid=0, $type='') {
     global $DB;
 
@@ -397,7 +427,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
                    "WHERE realm = ? " .
                    "ORDER BY realm,name ";
             $params = array($type);
-    /// Any survey owned by the user or typed as 'template' can be copied.
+            // Any survey owned by the user or typed as 'template' can be copied.
         } else if ($type == 'template') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
                    "FROM {questionnaire} q " .
@@ -442,7 +472,7 @@ function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='
             } else {
                 $stat = $strunknown;
             }
-            // prevent creation of a new questionnaire using a public questionnaire IN THE SAME COURSE!
+            // Prevent creation of a new questionnaire using a public questionnaire IN THE SAME COURSE!
             if ($type == 'public' && $survey->owner == $courseid) {
                 continue;
             } else {
@@ -462,50 +492,50 @@ function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='
 
 function questionnaire_get_type ($id) {
     switch ($id) {
-    case 1:
-        return get_string('yesno', 'questionnaire');
-    case 2:
-        return get_string('textbox', 'questionnaire');
-    case 3:
-        return get_string('essaybox', 'questionnaire');
-    case 4:
-        return get_string('radiobuttons', 'questionnaire');
-    case 5:
-        return get_string('checkboxes', 'questionnaire');
-    case 6:
-        return get_string('dropdown', 'questionnaire');
-    case 8:
-        return get_string('ratescale', 'questionnaire');
-    case 9:
-        return get_string('date', 'questionnaire');
-    case 10:
-        return get_string('numeric', 'questionnaire');
-    case 100:
-        return get_string('sectiontext', 'questionnaire');
-    case 99:
-        return get_string('sectionbreak', 'questionnaire');
-    default:
+        case 1:
+            return get_string('yesno', 'questionnaire');
+        case 2:
+            return get_string('textbox', 'questionnaire');
+        case 3:
+            return get_string('essaybox', 'questionnaire');
+        case 4:
+            return get_string('radiobuttons', 'questionnaire');
+        case 5:
+            return get_string('checkboxes', 'questionnaire');
+        case 6:
+            return get_string('dropdown', 'questionnaire');
+        case 8:
+            return get_string('ratescale', 'questionnaire');
+        case 9:
+            return get_string('date', 'questionnaire');
+        case 10:
+            return get_string('numeric', 'questionnaire');
+        case 100:
+            return get_string('sectiontext', 'questionnaire');
+        case 99:
+            return get_string('sectionbreak', 'questionnaire');
+        default:
         return $id;
     }
 }
 
 /**
- *  This creates new events given as opendate and closedate by $questionnaire.
- *  @param object $questionnaire
- *  @return void
+ * This creates new events given as opendate and closedate by $questionnaire.
+ * @param object $questionnaire
+ * @return void
  */
  /* added by JR 16 march 2009 based on lesson_process_post_save script */
 
 function questionnaire_set_events($questionnaire) {
-    // adding the questionnaire to the eventtable
+    // Adding the questionnaire to the eventtable.
     global $DB;
     if ($events = $DB->get_records('event', array('modulename'=>'questionnaire', 'instance'=>$questionnaire->id))) {
-        foreach($events as $event) {
+        foreach ($events as $event) {
             delete_event($event->id);
         }
     }
 
-    // the open-event
+    // The open-event.
     $event = new stdClass;
     $event->description = $questionnaire->name;
     $event->courseid = $questionnaire->course;
