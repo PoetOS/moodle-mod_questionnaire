@@ -301,29 +301,6 @@ switch ($action) {
             return;
         }
 
-        if (empty($questionnaire->survey)) {
-            $id = $questionnaire->survey;
-            notify ("questionnaire->survey = /$id/");
-            print_error('surveynotexists', 'questionnaire');
-        } else if ($questionnaire->survey->owner != $course->id) {
-            print_error('surveyowner', 'questionnaire');
-        } else if (!$rid || !is_numeric($rid)) {
-            print_error('invalidresponse', 'questionnaire');
-        } else if (!($resp = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
-            print_error('invalidresponserecord', 'questionnaire');
-        }
-
-        $ruser = false;
-        if (is_numeric($resp->username)) {
-            if ($user = $DB->get_record('user', array('id' => $resp->username))) {
-                $ruser = fullname($user);
-            } else {
-                $ruser = '- '.get_string('unknown', 'questionnaire').' -';
-            }
-        } else {
-            $ruser = $resp->username;
-        }
-
         // Print the page header.
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));

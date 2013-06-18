@@ -1157,7 +1157,7 @@ class questionnaire {
                         // In case we have named degrees on the Likert scale, count them to substract from nbchoices.
                         $nameddegrees = 0;
                         $content = $choice->content;
-                        if (preg_match("/^[0-9]{1, 3}=/", $content, $ndd)) {
+                        if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
                             $nameddegrees++;
                         } else {
                             $str = 'q'."{$record->id}_$cid";
@@ -2574,7 +2574,7 @@ class questionnaire {
                             if ($record2->precise == 3) {
                                 $osgood = true;
                             }
-                            if (preg_match("/^[0-9]{1, 3}=/", $content, $ndd)) {
+                            if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
                                 $nameddegrees++;
                             } else {
                                 if ($osgood) {
