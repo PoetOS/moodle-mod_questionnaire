@@ -22,7 +22,7 @@
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- 
+
 $string['action'] = 'Action';
 $string['additionalinfo'] = 'Additional Info';
 $string['additionalinfo_help'] = 'Text to be displayed at the top of the first page of this questionnaire. (i.e. instructions, background info, etc.)';
@@ -240,6 +240,7 @@ $string['questionnaire:deleteresponses'] = 'Delete any response';
 $string['questionnaire:downloadresponses'] = 'Download responses in a CSV file';
 $string['questionnaire:editquestions'] = 'Create and edit questionnaire questions';
 $string['questionnaire:manage'] = 'Create and edit questionnaires';
+$string['questionnaire:preview'] = 'Preview questionnaires';
 $string['questionnaire:printblank'] = 'Print blank questionnaire';
 $string['questionnaire:readallresponseanytime'] = 'Read all responses any time';
 $string['questionnaire:readallresponses'] = 'Read response summaries, subject to open times';
