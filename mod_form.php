@@ -78,8 +78,12 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
 
-        $mform->addElement('modgrade', 'grade', get_string('grade', 'questionnaire'), false);
-        $mform->setDefault('grade', 0);
+        // Removed potential scales from list of grades. CONTRIB-3167.
+        $grades[0] = get_string('nograde');
+        for ($i=100; $i>=1; $i--) {
+            $grades[$i] = $i;
+        }
+        $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);
 
         if (empty($questionnaire->sid)) {
             if (!isset($questionnaire->id)) {
