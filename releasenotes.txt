@@ -1,6 +1,7 @@
 Release Notes:
 
 Version 2.5.3 Build - 2013062208
+CONTRIB-3167 Removed potential SCALES from list of grades to avoid potential problems.
 CONTRIB-4420 Added new "preview" questionnaire capability (e.g. for tutors etc).
 
 Version 2.5.3 Build - 2013062207
