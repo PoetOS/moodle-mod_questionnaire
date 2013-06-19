@@ -217,9 +217,12 @@
     if($questionnaire->capabilities->editquestions && $owner) {
         $row[] = new tabobject('questions', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
                                'id='.$questionnaire->cm->id), get_string('questions', 'questionnaire'));
+    }
+
+    if($questionnaire->capabilities->preview && $owner) {
         if (!empty($questionnaire->questions)) {
             $row[] = new tabobject('preview', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/preview.php?'.
-                               'id='.$questionnaire->cm->id), get_string('preview_label', 'questionnaire'));
+                            'id='.$questionnaire->cm->id), get_string('preview_label', 'questionnaire'));
         }
     }
 

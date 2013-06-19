@@ -79,8 +79,8 @@
     $owner = (trim($questionnaire->survey->owner) == trim($course->id));
 
     $canpreview = (!isset($questionnaire->capabilities) &&
-                   has_capability('mod/questionnaire:manage', get_context_instance(CONTEXT_COURSE, $course->id))) ||
-                  (isset($questionnaire->capabilities) && $questionnaire->capabilities->editquestions && $owner);
+                   has_capability('mod/questionnaire:preview', get_context_instance(CONTEXT_COURSE, $course->id))) ||
+                  (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview && $owner);
     if (!$canpreview) {
         /// Should never happen, unless called directly by a snoop...
         print_error('nopermissions', 'questionnaire', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
