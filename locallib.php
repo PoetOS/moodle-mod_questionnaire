@@ -299,7 +299,8 @@ function questionnaire_load_capabilities($cmid) {
     $cb->readownresponses       = has_capability('mod/questionnaire:readownresponses', $context);
     $cb->readallresponses       = has_capability('mod/questionnaire:readallresponses', $context);
     $cb->readallresponseanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
-    $cb->printblank = has_capability('mod/questionnaire:printblank', $context);
+    $cb->printblank             = has_capability('mod/questionnaire:printblank', $context);
+    $cb->preview                = has_capability('mod/questionnaire:preview', $context);
 
     $cb->viewhiddenactivities   = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
 

@@ -246,6 +246,7 @@ $string['questionnaire:deleteresponses'] = 'Delete any response';
 $string['questionnaire:downloadresponses'] = 'Download responses in a CSV file';
 $string['questionnaire:editquestions'] = 'Create and edit questionnaire questions';
 $string['questionnaire:manage'] = 'Create and edit questionnaires';
+$string['questionnaire:preview'] = 'Preview questionnaires';
 $string['questionnaire:printblank'] = 'Print blank questionnaire';
 $string['questionnaire:readallresponseanytime'] = 'Read all responses any time';
 $string['questionnaire:readallresponses'] = 'Read response summaries, subject to open times';

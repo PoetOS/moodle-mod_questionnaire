@@ -1,5 +1,8 @@
 Release Notes:
 
+Version 2.5.3 Build - 2013062208
+CONTRIB-4420 Added new "preview" questionnaire capability (e.g. for tutors etc).
+
 Version 2.5.3 Build - 2013062207
 CONTRIB-4343 Remove call to print_textarea() function in Essay question.
 

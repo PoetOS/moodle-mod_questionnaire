@@ -533,7 +533,9 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                 navigation_node::TYPE_SETTING, null, 'questions',
                 new pix_icon('t/edit', ''));
         $questionnairenode->add_node($node, $beforekey);
+    }
 
+    if (has_capability('mod/questionnaire:preview', $context) && $owner) {
         $url = '/mod/questionnaire/preview.php';
         $node = navigation_node::create(get_string('preview_label', 'questionnaire'),
                 new moodle_url($url, array('id' => $cmid)),

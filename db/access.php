@@ -194,7 +194,21 @@ $capabilities = array(
             'editingteacher' => CAP_ALLOW,
             'student' => CAP_ALLOW
         )
+    ),
+
+    // Ability to preview a questionnaire.
+    'mod/questionnaire:preview' => array(
+
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => array(
+                        'manager' => CAP_ALLOW,
+                        'coursecreator' => CAP_ALLOW,
+                        'teacher' => CAP_ALLOW,
+                        'editingteacher' => CAP_ALLOW
+        )
     )
+
 
 );
 
