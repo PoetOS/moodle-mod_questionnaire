@@ -570,7 +570,7 @@ function questionnaire_set_events($questionnaire) {
 }
 
 /**
- * count users which have not completed the questionnaire
+ * Count users who have not completed the questionnaire
  *
  * @global object
  * @uses CONTEXT_MODULE
@@ -627,7 +627,7 @@ function questionnaire_get_incomplete_users($cm, $sid,
 }
 
 /**
- * Count users which have not completed the questionnaire
+ * Count users who have not completed the questionnaire
  *
  * @global object
  * @param object $cm
@@ -639,4 +639,19 @@ function questionnaire_count_incomplete_users($cm, $sid, $group = false) {
         return count($allusers);
     }
     return 0;
+}
+
+/**
+ * Called by HTML editor in showrespondents and Essay question. Based on question/essay/renderer.
+ * Pending general solution to using the HTML editor outside of moodleforms in Moodle pages.
+ */
+function questionnaire_get_editor_options($context) {
+    return array(
+                    'subdirs' => 0,
+                    'maxbytes' => 0,
+                    'maxfiles' => -1,
+                    'context' => $context,
+                    'noclean' => 0,
+                    'trusttext'=>0
+    );
 }

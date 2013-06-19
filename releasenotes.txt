@@ -1,5 +1,8 @@
 Release Notes:
 
+Version 2.5.3 Build - 2013062207
+CONTRIB-4343 Remove call to print_textarea() function in Essay question.
+
 Version 2.5.3 Build - 2013062206
 - CONTRIB-4418 Make questionnaire more compliant with Moodle Coding style recommendations
 - Lots of changes in almost all files to make them compliant with the Coding style. 

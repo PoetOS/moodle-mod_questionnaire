@@ -348,7 +348,7 @@ if (!$students) {
         $format = '';
         if ($usehtmleditor) {
             $editor = editors_get_preferred_editor();
-            $editor->use_editor($id, get_editor_options($context));
+            $editor->use_editor($id, questionnaire_get_editor_options($context));
             $texteditor = html_writer::tag('div', html_writer::tag('textarea', '',
                             array('id' => $id, 'name' => "message", '', '')));
             echo '<input type="hidden" name="format" value="'.FORMAT_HTML.'" />';
@@ -395,14 +395,3 @@ echo $OUTPUT->box_end();
 // Finish the page.
 
 echo $OUTPUT->footer();
-
-function get_editor_options($context) {
-    return array(
-                    'subdirs' => 0,
-                    'maxbytes' => 0,
-                    'maxfiles' => -1,
-                    'context' => $context,
-                    'noclean' => 0,
-                    'trusttext'=>0
-    );
-}

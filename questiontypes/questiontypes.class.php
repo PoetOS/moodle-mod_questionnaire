@@ -985,7 +985,11 @@ class questionnaire_question {
             $value = '';
         }
         if ($canusehtmleditor) {
-            print_textarea($canusehtmleditor, '', '', $cols, $rows, $name, $value);
+            $editor = editors_get_preferred_editor();
+            $editor->use_editor($name, questionnaire_get_editor_options($this->context));
+            $texteditor = html_writer::tag('textarea', '',
+                            array('id' => $name, 'name' => $name, '', ''));
+            echo $texteditor;
         } else {
             $str .= '<textarea class="form-textarea" id="edit-'. $name .'" name="'. $name .'" rows="'.
                 $rows .'" cols="'. $cols .'">'.s($value).'</textarea>';
