@@ -395,7 +395,7 @@ function questionnaire_delete_response($rid) {
 /// Don't need to include this for all library functions, so don't.
 function questionnaire_get_survey_list($courseid=0, $type='') {
     global $DB;
-
+    $castsql = $DB->sql_cast_char2int('s.owner');
     if ($courseid == 0) {
         if (isadmin()) {
             $sql = "SELECT id,name,owner,realm,status " .
@@ -409,7 +409,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
         if ($type == 'public') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
                    "FROM {questionnaire} q " .
-                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.owner = q.course " .
+                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
                    "WHERE status != ? AND realm = ? " .
                    "ORDER BY realm,name ";
             $params = array(QUESTIONNAIRE_ARCHIVED, $type);
@@ -417,7 +417,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
         } else if ($type == 'template') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
                    "FROM {questionnaire} q " .
-                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.owner = q.course " .
+                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
                    "WHERE status != ? AND (realm = ? OR owner = ?) " .
                    "ORDER BY realm,name ";
             $params = array(QUESTIONNAIRE_ARCHIVED, $type, $courseid);
