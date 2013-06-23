@@ -211,6 +211,12 @@ class questionnaire {
                     questionnaire_update_grades($questionnaire, $quser);
                 }
 
+                // Update completion state.
+                $completion = new completion_info($this->course);
+                if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
+                    $completion->update_state($this->cm, COMPLETION_COMPLETE);
+                }
+
                 add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}",
                     $this->cm->id, $USER->id);
 

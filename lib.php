@@ -24,9 +24,9 @@ function questionnaire_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:
             return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
-            return true;
+            return false;
         case FEATURE_GRADE_HAS_GRADE:
-            return true;
+            return false;
         case FEATURE_GRADE_OUTCOMES:
             return false;
         case FEATURE_GROUPINGS:
@@ -165,9 +165,7 @@ function questionnaire_update_instance($questionnaire) {
     questionnaire_grade_item_update($questionnaire);
 
     questionnaire_set_events($questionnaire);
-    // JR removed line because triggers error in moodle 2.3 STRICT STANDARDS mode ???
-    // TODO check this please!
-    /* questionnaire_update_grades($questionnaire); */
+
     return $DB->update_record("questionnaire", $questionnaire);
 }
 
@@ -322,8 +320,6 @@ function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone
                         $grades[$v->userid]->rawgrade = $v->rawgrade;
                     }
                     $grades[$v->userid]->userid = $v->userid;
-                    /* $grades[$v->userid]->feedback = '';
-                    $grades[$v->userid]->format = ''; */
                 } else if (isset($grades[$v->userid]) && ($v->rawgrade > $grades[$v->userid]->rawgrade)) {
                     $grades[$v->userid]->rawgrade = $v->rawgrade;
                 }

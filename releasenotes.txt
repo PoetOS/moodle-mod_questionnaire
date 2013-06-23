@@ -1,5 +1,9 @@
 Release Notes:
 
+Version 2.5.4 Build - 2013062302
+- CONTRIB-4274 Changed Completion conditions from Viewed and Graded to Submitted.
+- Implies adding new "completionsubmit" field in "questionnaire" table.
+
 Version 2.5.4 Build - 2013062301
 - CONTRIB-926 Course reset now includes questionnaire instances. If graded, grades and feedback comments are deleted too.
 - This version also includes major work on making grades work properly for graded questionnaires,

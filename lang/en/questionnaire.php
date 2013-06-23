@@ -55,6 +55,7 @@ $string['closed'] = 'The questionnaire was closed on {$a}. Thanks.';
 $string['closedate'] = 'Use Close Date';
 $string['closedate_help'] = 'You can specify a date to close the questionnaire here. Check the check box, and select the date and time you want.
  Users will not be able to fill out the questionnaire after that date. If this is not selected, it will never be closed.';
+$string['completionsubmit'] = 'Student must submit this questionnaire to complete it';
 $string['confalts'] = '- OR - <br />Confirmation page';
 $string['confirmdelallresp'] = 'Are you sure you want to delete ALL the responses in this questionnaire?';
 $string['confirmdelgroupresp'] = 'Are you sure you want to delete ALL the responses of {$a}?';

@@ -353,6 +353,21 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2012100800, 'questionnaire');
     }
 
+    if ($oldversion < 2013062302) {
+        // Adding completionsubmit field to table questionnaire.
+
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('completionsubmit', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timemodified');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2013062302, 'questionnaire');
+    }
+
     return $result;
 }
 
