@@ -94,7 +94,7 @@ switch ($action) {
 
         echo $OUTPUT->heading($titletext);
         echo '<div class = "generalbox">';
-        $questionnaire->survey_results(1, 1, '', '', $rids, '', $USER->id);
+        $questionnaire->survey_results(1, 1, '', '', $rids, $USER->id);
         echo '</div>';
 
         // Finish the page.

@@ -25,7 +25,7 @@
 
 
 require_once("../../config.php");
-require_once("locallib.php");
+require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
 $id = required_param('id', PARAM_INT);
 $PAGE->set_url('/mod/questionnaire/index.php', array('id' => $id));

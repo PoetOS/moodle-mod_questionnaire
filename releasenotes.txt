@@ -1,5 +1,14 @@
 Release Notes:
 
+Version 2.5.4 Build - 2013062301
+- CONTRIB-926 Course reset now includes questionnaire instances. If graded, grades and feedback comments are deleted too.
+- This version also includes major work on making grades work properly for graded questionnaires,
+including a new grade.php file.
+- When creating a new questionnaire, the list of "Copy existing" questionnaires now displays the questionnaire names
+instead of the survey names, which used to be confusing.
+- ALL requires now include complete path to dirroot, e.g. require_once($CFG->dirroot.'/mod/questionnaire/...')
+
+
 Version 2.5.3 Build - 2013062208
 CONTRIB-3167 Removed potential SCALES from list of grades to avoid potential problems.
 CONTRIB-4420 Added new "preview" questionnaire capability (e.g. for tutors etc).

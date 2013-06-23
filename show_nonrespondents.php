@@ -24,7 +24,7 @@
  */
 
 require_once("../../config.php");
-require_once("locallib.php");
+require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->libdir.'/tablelib.php');
 

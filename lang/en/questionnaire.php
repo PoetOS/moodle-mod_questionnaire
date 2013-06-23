@@ -110,6 +110,7 @@ respondent.
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
 $string['firstrespondent'] = 'First Respondent';
 $string['grade'] = 'Submission grade';
+$string['gradesdeleted'] = 'Questionnaire grades deleted';
 $string['headingtext'] = 'Heading text';
 $string['horizontal'] = 'Horizontal';
 $string['id'] = 'ID';
@@ -285,6 +286,7 @@ until this question has been answered.';
 $string['required_link'] = 'mod/questionnaire/questions#Response_Required';
 $string['requiredparameter'] = 'A required parameter was missing.';
 $string['reset'] = 'Reset';
+$string['removeallquestionnaireattempts'] = 'Delete all questionnaire responses';
 $string['respeligiblerepl'] = '(replaced by role overrides)';
 $string['respondent'] = 'Respondent';
 $string['respondenteligibleall'] = 'all';

@@ -18,7 +18,7 @@
 
 require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
-require_once('questionnaire.class.php');
+require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();

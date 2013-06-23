@@ -31,8 +31,7 @@
  *
  */
 
-require_once('questiontypes/questiontypes.class.php');
-
+require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 // Constants.
 
 define ('QUESTIONNAIREUNLIMITED', 0);
@@ -404,9 +403,6 @@ function questionnaire_delete_response($rid) {
     return $status;
 }
 
-// Functions to call directly into phpESP.
-// Make sure a "require_once('phpESP/admin/phpESP.ini.php')" line is included.
-// Don't need to include this for all library functions, so don't.
 function questionnaire_get_survey_list($courseid=0, $type='') {
     global $DB;
 
@@ -422,7 +418,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
     } else if (!empty($type)) {
         $castsql = $DB->sql_cast_char2int('s.owner');
         if ($type == 'public') {
-            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
+            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
                    "FROM {questionnaire} q " .
                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
                    "WHERE realm = ? " .
@@ -430,7 +426,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
             $params = array($type);
             // Any survey owned by the user or typed as 'template' can be copied.
         } else if ($type == 'template') {
-            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid " .
+            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
                    "FROM {questionnaire} q " .
                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
                    "WHERE (realm = ? OR owner = ?) " .
@@ -438,7 +434,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
             $params = array($type, $courseid);
         }
     } else {
-        $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid " .
+        $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid,q.name as qname " .
                "FROM {questionnaire} q " .
                "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
                "WHERE owner = ? " .
@@ -483,7 +479,7 @@ function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='
                 }
                 $link = new moodle_url("/mod/questionnaire/preview.php?{$args}");
                 $action = new popup_action('click', $link);
-                $label = $OUTPUT->action_link($link, $survey->title, $action, array('title'=>$survey->title));
+                $label = $OUTPUT->action_link($link, $survey->qname, $action, array('title'=>$survey->title));
                 $surveylist[$type.'-'.$survey->id] = $label;
             }
         }

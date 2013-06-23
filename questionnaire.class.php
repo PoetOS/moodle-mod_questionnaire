@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-require_once('questiontypes/questiontypes.class.php');
+require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
 class questionnaire {
 
@@ -267,31 +267,37 @@ class questionnaire {
         global $qtypenames, $OUTPUT;
         $this->print_survey_start('', 1, 1, 0);
 
-        foreach ($resps as $resp) {
-            $data[$resp->id] = new Object();
-            $this->response_import_all($resp->id, $data[$resp->id]);
-        }
-
-        $i = 1;
-
-        foreach ($this->questions as $question) {
-
-            if ($question->type_id < QUESPAGEBREAK) {
-                $method = $qtypenames[$question->type_id].'_response_display';
-                if (method_exists($question, $method)) {
-                    echo $OUTPUT->box_start('individualresp');
-                    $question->questionstart_survey_display($i);
-                    foreach ($data as $respid => $respdata) {
-                        echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
-                        $question->$method($respdata);
-                    }
-                    $question->questionend_survey_display($i);
-                    echo $OUTPUT->box_end();
-                } else {
-                    print_error('displaymethod', 'questionnaire');
-                }
-                $i++;
+        // If a student's responses have been deleted by teacher while student was viewing the report,
+        // then responses may have become empty, hence this test is necessary.
+        if ($resps) {
+            foreach ($resps as $resp) {
+                $data[$resp->id] = new Object();
+                $this->response_import_all($resp->id, $data[$resp->id]);
             }
+
+            $i = 1;
+
+            foreach ($this->questions as $question) {
+
+                if ($question->type_id < QUESPAGEBREAK) {
+                    $method = $qtypenames[$question->type_id].'_response_display';
+                    if (method_exists($question, $method)) {
+                        echo $OUTPUT->box_start('individualresp');
+                        $question->questionstart_survey_display($i);
+                        foreach ($data as $respid => $respdata) {
+                            echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
+                            $question->$method($respdata);
+                        }
+                        $question->questionend_survey_display($i);
+                        echo $OUTPUT->box_end();
+                    } else {
+                        print_error('displaymethod', 'questionnaire');
+                    }
+                    $i++;
+                }
+            }
+        } else {
+            echo (get_string('noresponses', 'questionnaire'));
         }
 
         $this->print_survey_end(1, 1);
@@ -1289,6 +1295,7 @@ class questionnaire {
 
 
     private function response_import_all($rid, &$varr) {
+
         $vals = $this->response_select($rid, 'content');
         reset($vals);
         foreach ($vals as $id => $arr) {

@@ -16,6 +16,9 @@
 
 // Library of functions and constants for module questionnaire.
 
+define('QUESTIONNAIRE_RESETFORM_RESET', 'questionnaire_reset_data_');
+define('QUESTIONNAIRE_RESETFORM_DROP', 'questionnaire_drop_questionnaire_');
+
 function questionnaire_supports($feature) {
     switch($feature) {
         case FEATURE_BACKUP_MOODLE2:
@@ -54,9 +57,9 @@ function questionnaire_add_instance($questionnaire) {
     // (defined by the form in mod.html) this function
     // will create a new instance and return the id number
     // of the new instance.
-    global $COURSE, $DB;
-    require_once('questionnaire.class.php');
-    require_once('locallib.php');
+    global $COURSE, $DB, $CFG;
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
     // Check the realm and set it to the survey if it's set.
 
@@ -132,8 +135,8 @@ function questionnaire_add_instance($questionnaire) {
 // (defined by the form in mod.html) this function
 // will update an existing instance with new data.
 function questionnaire_update_instance($questionnaire) {
-    global $DB;
-    require_once('locallib.php');
+    global $DB, $CFG;
+    require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
     // Check the realm and set it to the survey if its set.
     if (!empty($questionnaire->sid) && !empty($questionnaire->realm)) {
@@ -163,7 +166,8 @@ function questionnaire_update_instance($questionnaire) {
 
     questionnaire_set_events($questionnaire);
     // JR removed line because triggers error in moodle 2.3 STRICT STANDARDS mode ???
-    // Removed line: questionnaire_update_grades($questionnaire);.
+    // TODO check this please!
+    /* questionnaire_update_grades($questionnaire); */
     return $DB->update_record("questionnaire", $questionnaire);
 }
 
@@ -171,8 +175,8 @@ function questionnaire_update_instance($questionnaire) {
 // this function will permanently delete the instance
 // and any data that depends on it.
 function questionnaire_delete_instance($id) {
-    global $DB;
-    require_once('locallib.php');
+    global $DB, $CFG;
+    require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
     if (! $questionnaire = $DB->get_record('questionnaire', array('id' => $id))) {
         return false;
@@ -206,7 +210,8 @@ function questionnaire_delete_instance($id) {
 // $return->time = the time they did it
 // $return->info = a short text description.
 function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
-    require_once('locallib.php');
+    global $CFG;
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $result = new stdClass();
     if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=true)) {
@@ -227,7 +232,8 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
 // Print a detailed representation of what a  user has done with
 // a given particular instance of this module, for user activity reports.
 function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
-    require_once('locallib.php');
+    global $CFG;
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=false)) {
         foreach ($responses as $response) {
@@ -249,7 +255,7 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
 // Return true if there was output, or false is there was none.
 function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
     global $CFG;
-
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
     return false;  //  True if anything was printed, otherwise false.
 }
 
@@ -257,8 +263,8 @@ function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
 // This function searches for things that need to be done, such
 // as sending out mail, toggling flags etc ...
 function questionnaire_cron () {
-    require_once('locallib.php');
     global $CFG;
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     return questionnaire_cleanup();
 }
@@ -288,7 +294,6 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
     $sql = "SELECT a.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
             FROM {user} u, {questionnaire_attempts} a, {questionnaire_response} r
             WHERE u.id = a.userid AND a.qid = $questionnaire->id AND r.id = a.rid $usersql";
-
     return $DB->get_records_sql($sql, $params);
 }
 
@@ -300,6 +305,7 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
  */
 function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone=true) {
     global $CFG, $DB;
+
     if (!function_exists('grade_update')) { // Workaround for buggy PHP versions.
         require_once($CFG->libdir.'/gradelib.php');
     }
@@ -316,8 +322,8 @@ function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone
                         $grades[$v->userid]->rawgrade = $v->rawgrade;
                     }
                     $grades[$v->userid]->userid = $v->userid;
-                    $grades[$v->userid]->feedback = '';
-                    $grades[$v->userid]->format = '';
+                    /* $grades[$v->userid]->feedback = '';
+                    $grades[$v->userid]->format = ''; */
                 } else if (isset($grades[$v->userid]) && ($v->rawgrade > $grades[$v->userid]->rawgrade)) {
                     $grades[$v->userid]->rawgrade = $v->rawgrade;
                 }
@@ -472,13 +478,13 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
  * Adds module specific settings to the settings block
  *
  * @param settings_navigation $settings The settings navigation object
- * @param navigation_node $feedbacknode The node to add module settings to
+ * @param navigation_node $questionnairenode The node to add module settings to
  */
 function questionnaire_extend_settings_navigation(settings_navigation $settings,
         navigation_node $questionnairenode) {
 
-    global $PAGE, $DB, $USER;
-    require_once('questionnaire.class.php');
+    global $PAGE, $DB, $USER, $CFG;
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     if (!$context = context_module::instance($PAGE->cm->id, IGNORE_MISSING)) {
         print_error('badcontext');
@@ -659,9 +665,8 @@ function questionnaire_get_post_actions() {
  *        -where, which this function adds its new html to.
  */
 function questionnaire_print_overview($courses, &$htmlarray) {
-    global $USER, $CFG;
-    global $DB;
-    require_once('locallib.php');
+    global $DB, $USER, $CFG;
+    require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
         return array();
@@ -714,7 +719,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
 
     // Go through the list of all questionnaires build previously, and check whether
     // they have had any activity.
-    require_once('questionnaire.class.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
     foreach ($questionnaires as $questionnaire) {
 
         if (array_key_exists($questionnaire->id, $new) && !empty($new[$questionnaire->id])) {
@@ -758,4 +763,79 @@ function questionnaire_print_overview($courses, &$htmlarray) {
             }
         }
     }
+}
+
+/**
+ * Implementation of the function for printing the form elements that control
+ * whether the course reset functionality affects the questionnaire.
+ *
+ * @param $mform the course reset form that is being built.
+ */
+function questionnaire_reset_course_form_definition($mform) {
+    $mform->addElement('header', 'questionnaireheader', get_string('modulenameplural', 'questionnaire'));
+    $mform->addElement('advcheckbox', 'reset_questionnaire_attempts',
+                    get_string('removeallquestionnaireattempts', 'questionnaire'));
+}
+
+/**
+ * Course reset form defaults.
+ * @return array the defaults.
+ */
+function questionnaire_reset_course_form_defaults($course) {
+    return array('reset_questionnaire_attempts' => 1);
+}
+
+/**
+ * Actual implementation of the reset course functionality, delete all the
+ * questionnaire responses for course $data->courseid, if $data->reset_questionnaire_attempts is
+ * set and true.
+ *
+ * @param object $data the data submitted from the reset course.
+ * @return array status array
+ */
+function questionnaire_reset_userdata($data) {
+    global $CFG, $DB;
+    require_once($CFG->libdir . '/questionlib.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+
+    $componentstr = get_string('modulenameplural', 'questionnaire');
+    $status = array();
+
+    $surveys = questionnaire_get_survey_list($data->courseid, $type='');
+
+    // Delete responses.
+    foreach ($surveys as $survey) {
+        // Get all responses for this questionnaire.
+        $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+             FROM {questionnaire_response} R
+             WHERE R.survey_id = ?
+             ORDER BY R.id";
+        $resps = $DB->get_records_sql($sql, array($survey->id));
+        if (!empty($resps)) {
+            foreach ($resps as $response) {
+                questionnaire_delete_response($response->id);
+            }
+            $status[] = array(
+                            'component' => $componentstr,
+                            'item' => $survey->qname.' : '.get_string('deletedallresp', 'questionnaire'),
+                            'error' => false);
+        } else {
+            $status[] = array(
+                            'component' => $componentstr,
+                            'item' => $survey->qname.' : '.get_string('noresponses', 'questionnaire'),
+                            'error' => false);
+        }
+        // Remove this questionnaire's grades (and feedback) from gradebook (if any).
+        $select = "itemmodule = 'questionnaire' AND iteminstance = ".$survey->qid;
+        $fields = 'id';
+        if ($itemid = $DB->get_record_select('grade_items', $select, null, $fields)) {
+            $itemid = $itemid->id;
+            $DB->delete_records_select('grade_grades', 'itemid = '.$itemid);
+            $status[] = array(
+                            'component' => $componentstr,
+                            'item' => $survey->qname.' : '.get_string('gradesdeleted', 'questionnaire'),
+                            'error' => false);
+        }
+    }
+    return $status;
 }
