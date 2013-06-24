@@ -2339,7 +2339,7 @@ class questionnaire {
         }
 
         if (empty($this->questions)) {
-            $errmsg = get_string('erroropening', 'questionnaire') .' '. 'No questions found.' ." [ ID:${sid} ]";
+            $errmsg = get_string('erroropening', 'questionnaire') .' '. 'No questions found.';
             return($errmsg);
         }
 

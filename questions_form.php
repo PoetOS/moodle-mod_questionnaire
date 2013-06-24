@@ -120,8 +120,9 @@ class questionnaire_questions_form extends moodleform {
                 $sec++;
                 $content .= '<b>'.get_string('sectionbreak', 'questionnaire').'</b>';
             } else {
-                // To take into account languages filter.
-                $content = (format_text($question->content, FORMAT_HTML));
+                // Needed to print potential media in question text.
+                $content = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
+                                $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
             }
 
             $quesgroup = 'quesgroup_'.$pos;
@@ -211,7 +212,7 @@ class questionnaire_questions_form extends moodleform {
 
             $mform->addGroup($$quesgroup, 'questgroup', '', '', false);
 
-            $mform->addElement('static', 'qcontent_'.$question->id, '', '<div class="qcontent">'.$content.'</div>');
+            $mform->addElement('static', 'qcontent_'.$question->id, '', '<div class="qn-question qcontent">'.$content.'</div>');
 
             $pos++;
         }

@@ -22,6 +22,7 @@ $id     = required_param('id', PARAM_INT);                 // Course module ID
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
 $qid    = optional_param('qid', 0, PARAM_INT);             // Question id.
 $moveq  = optional_param('moveq', 0, PARAM_INT);           // Question id to move.
+$delq   = optional_param('delq', 0, PARAM_INT);             // Question id to delete
 $qtype  = optional_param('type_id', 0, PARAM_INT);         // Question type.
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
@@ -64,6 +65,35 @@ if (!$questionnaire->capabilities->editquestions) {
 $SESSION->questionnaire->current_tab = 'questions';
 $reload = false;
 // Process form data.
+
+// Delete question button has been pressed in questions_form AND deletion has been confirmed on the confirmation page.
+if ($delq) {
+    $qid = $delq;
+    $sid = $questionnaire->survey->id;
+    $questionnaireid = $questionnaire->id;
+    // Need to reload questions before setting deleted question to 'y'.
+    $questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
+    $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $sid));
+    $select = 'survey_id = '.$sid.' AND deleted = \'n\' AND position > '.
+                    $questions[$qid]->position;
+    if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
+        foreach ($records as $record) {
+            $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
+        }
+    }
+
+    // Now delete responses to those deleted questions.
+    questionnaire_delete_responses($qid);
+
+    // If no questions left in this questionnaire, remove all attempts and responses.
+    if (!$questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id') ) {
+        $DB->delete_records('questionnaire_response', array('survey_id' => $sid));
+        $DB->delete_records('questionnaire_attempts', array('qid' => $questionnaireid));
+    }
+
+    $reload = true;
+}
+
 if ($action == 'main') {
     $questions_form = new questionnaire_questions_form('questions.php', $moveq);
     $sdata = clone($questionnaire->survey);
@@ -101,15 +131,14 @@ if ($action == 'main') {
             // Need to use the key, since IE returns the image position as the value rather than the specified
             // value in the <input> tag.
             $qid = key($qformdata->removebutton);
-            $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $qformdata->sid));
-            $select = 'survey_id = '.$qformdata->sid.' AND deleted = \'n\' AND position > '.
-                      $questionnaire->questions[$qid]->position;
-            if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
-                foreach ($records as $record) {
-                    $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
-                }
+            $qtype = $questionnaire->questions[$qid]->type_id;
+
+            // Delete section breaks without asking for confirmation.
+            if ($qtype == 99) {
+                redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.'&amp;delq='.$qid);
             }
-            $reload = true;
+            $action = "confirmdelquestion";
+
         } else if (isset($qformdata->editbutton)) {
             // Switch to edit question screen.
             $action = 'question';
@@ -497,5 +526,30 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add($streditquestion);
 echo $OUTPUT->header();
 require('tabs.php');
-$questions_form->display();
+
+if ($action == "confirmdelquestion") {
+
+    $qid = key($qformdata->removebutton);
+    $question = $questionnaire->questions[$qid];
+
+    // Needed to print potential media in question text.
+    $qcontent = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
+                    $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
+
+    $num = get_string('num', 'questionnaire');
+    $pos = $question->position;
+    $msg = '<div class="warning centerpara"><p>'.get_string('confirmdelquestion', 'questionnaire', $num.$pos).'</p></div>';
+    $msg .= '<div class="qn-question">'.$qcontent.'</div>';
+    $args = "id={$questionnaire->cm->id}";
+    $urlno = new moodle_url("/mod/questionnaire/questions.php?{$args}");
+    $args .= "&delq={$qid}";
+    $urlyes = new moodle_url("/mod/questionnaire/questions.php?{$args}");
+    $buttonyes = new single_button($urlyes, get_string('yes'));
+    $buttonno = new single_button($urlno, get_string('no'));
+
+    echo $OUTPUT->confirm($msg, $buttonyes, $buttonno);
+
+} else {
+    $questions_form->display();
+}
 echo $OUTPUT->footer();

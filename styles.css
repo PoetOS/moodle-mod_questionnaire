@@ -220,7 +220,8 @@ body#page-mod-questionnaire-myreport .generaltable {
 #page-mod-questionnaire-myreport .qn-question p,
 #page-mod-questionnaire-report .individualresp .qn-question p,
 #page-mod-questionnaire-print .qn-question p,
-#page-mod-questionnaire-report .qn-question p {
+#page-mod-questionnaire-report .qn-question p,
+#page-mod-questionnaire-questions .qn-question p {
 	margin-bottom: 0.6em;
 	margin-top: 0.5em;
 }
@@ -230,7 +231,8 @@ body#page-mod-questionnaire-myreport .generaltable {
 #page-mod-questionnaire-report .individualresp .qn-question,
 #page-mod-questionnaire-report .qn-question,
 #page-mod-questionnaire-myreport .qn-question,
-#page-mod-questionnaire-print .qn-question {
+#page-mod-questionnaire-print .qn-question,
+#page-mod-questionnaire-questions .qn-question {
     padding-left: 5px;
     padding-right: 5px;
     padding-bottom: 0.1em;

@@ -353,13 +353,13 @@ function questionnaire_record_submission(&$questionnaire, $userid, $rid=0) {
     return $DB->insert_record("questionnaire_attempts", (object)$attempt, false);
 }
 
-function questionnaire_delete_survey($sid, $qid) {
+function questionnaire_delete_survey($sid, $questionnaireid) {
     global $DB;
     // Until backup is implemented, just mark the survey as archived.
 
     $status = true;
 
-    // Delete all responses for the survey.
+    // Delete all survey attempts and responses.
     if ($responses = $DB->get_records('questionnaire_response', array('survey_id' => $sid), 'id')) {
         foreach ($responses as $response) {
             $status = $status && questionnaire_delete_response($response->id);
@@ -368,7 +368,7 @@ function questionnaire_delete_survey($sid, $qid) {
 
     // There really shouldn't be any more, but just to make sure...
     $DB->delete_records('questionnaire_response', array('survey_id' => $sid));
-    $DB->delete_records('questionnaire_attempts', array('qid' => $qid));
+    $DB->delete_records('questionnaire_attempts', array('qid' => $questionnaireid));
 
     // Delete all question data for the survey.
     if ($questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid), 'id')) {
@@ -388,7 +388,7 @@ function questionnaire_delete_response($rid) {
 
     $status = true;
 
-    // Delete all of the survey response data.
+    // Delete all of the response data for a response.
     $DB->delete_records('questionnaire_response_bool', array('response_id' => $rid));
     $DB->delete_records('questionnaire_response_date', array('response_id' => $rid));
     $DB->delete_records('questionnaire_resp_multiple', array('response_id' => $rid));
@@ -399,6 +399,26 @@ function questionnaire_delete_response($rid) {
 
     $status = $status && $DB->delete_records('questionnaire_response', array('id' => $rid));
     $status = $status && $DB->delete_records('questionnaire_attempts', array('rid' => $rid));
+
+    return $status;
+}
+
+function questionnaire_delete_responses($qid) {
+    global $DB;
+
+    $status = true;
+
+    // Delete all of the response data for a question.
+    $DB->delete_records('questionnaire_response_bool', array('question_id' => $qid));
+    $DB->delete_records('questionnaire_response_date', array('question_id' => $qid));
+    $DB->delete_records('questionnaire_resp_multiple', array('question_id' => $qid));
+    $DB->delete_records('questionnaire_response_other', array('question_id' => $qid));
+    $DB->delete_records('questionnaire_response_rank', array('question_id' => $qid));
+    $DB->delete_records('questionnaire_resp_single', array('question_id' => $qid));
+    $DB->delete_records('questionnaire_response_text', array('question_id' => $qid));
+
+    $status = $status && $DB->delete_records('questionnaire_response', array('id' => $qid));
+    $status = $status && $DB->delete_records('questionnaire_attempts', array('rid' => $qid));
 
     return $status;
 }

@@ -98,6 +98,7 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 
 // Tab setup.
+
 $SESSION->questionnaire->current_tab = 'allreport';
 
 $strdeleteallresponses = get_string('deleteallresponses', 'questionnaire');
@@ -247,7 +248,9 @@ if ($currentgroupid > 0) {
 }
 
 switch ($action) {
-    case 'dresp':
+
+    case 'dresp':  // Delete individual response? Ask for confirmation.
+
         require_capability('mod/questionnaire:deleteresponses', $context);
 
         if (empty($questionnaire->survey)) {
@@ -279,19 +282,33 @@ switch ($action) {
         $PAGE->set_heading(format_string($course->fullname));
         echo $OUTPUT->header();
 
+        // Print the tabs.
+        $SESSION->questionnaire->current_tab = 'individualresp';
+        include('tabs.php');
+
         if ($questionnaire->respondenttype == 'anonymous') {
                 $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
         }
-        echo $OUTPUT->confirm(get_string('confirmdelresp', 'questionnaire', $ruser),
-            $CFG->wwwroot.'/mod/questionnaire/report.php?action=dvresp&amp;sid='.$sid.'&amp;rid='.$rid,
-            $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$sid.'&amp;rid='.$rid.
-            '&amp;instance='.$instance.'&amp;byresponse=1');
+
+        // Print the confirmation.
+        echo '<p>&nbsp;</p>';
+        $msg = '<div class="warning centerpara">';
+        $msg .= get_string('confirmdelresp', 'questionnaire', $ruser);
+        $msg .= '</div>';
+        $args = "action=dvresp&sid={$sid}&rid={$rid}&individualresponse=1";
+        $urlyes = new moodle_url("/mod/questionnaire/report.php?{$args}");
+        $args = "action=vresp&sid={$sid}&rid={$rid}&individualresponse=1";
+        $urlno = new moodle_url("/mod/questionnaire/report.php?{$args}");
+        $buttonyes = new single_button($urlyes, get_string('yes'));
+        $buttonno = new single_button($urlno, get_string('no'));
+
+        echo $OUTPUT->confirm($msg, $buttonyes, $buttonno);
 
         // Finish the page.
         echo $OUTPUT->footer($course);
         break;
 
-    case 'delallresp': // Delete all responses.
+    case 'delallresp': // Delete all responses? Ask for confirmation.
 
         require_capability('mod/questionnaire:deleteresponses', $context);
 
@@ -310,21 +327,31 @@ switch ($action) {
         $SESSION->questionnaire->current_tab = 'deleteall';
         include('tabs.php');
 
+        // Print the confirmation.
+        echo '<p>&nbsp;</p>';
+        $msg = '<div class="warning centerpara">';
         if ($groupmode == 0) {   // No groups or visible groups.
-            $confirmdelstr = get_string('confirmdelallresp', 'questionnaire');
+            $msg .= get_string('confirmdelallresp', 'questionnaire');
         } else {                 // Separate groups.
-            $confirmdelstr = get_string('confirmdelgroupresp', 'questionnaire', $groupname);
+            $msg .= get_string('confirmdelgroupresp', 'questionnaire', $groupname);
         }
-        echo '<br /><br />';
-        echo $OUTPUT->confirm($confirmdelstr,
-                $CFG->wwwroot.'/mod/questionnaire/report.php?action=dvallresp&amp;sid='.$sid.'&amp;instance='.$instance,
-                $CFG->wwwroot.'/mod/questionnaire/report.php?action=vall&amp;sid='.$sid.'&amp;instance='.$instance);
+        $msg .= '</div>';
+
+        $args = "action=dvallresp&sid={$sid}&instance={$instance}";
+        $urlyes = new moodle_url("/mod/questionnaire/report.php?{$args}");
+        $args = "action=vall&sid={$sid}&instance={$instance}";
+        $urlno = new moodle_url("/mod/questionnaire/report.php?{$args}");
+        $buttonyes = new single_button($urlyes, get_string('yes'));
+        $buttonno = new single_button($urlno, get_string('no'));
+
+        echo $OUTPUT->confirm($msg, $buttonyes, $buttonno);
 
         // Finish the page.
         echo $OUTPUT->footer($course);
         break;
 
-    case 'dvresp':
+    case 'dvresp': // Delete single response. Do it!
+
         require_capability('mod/questionnaire:deleteresponses', $context);
 
         if (empty($questionnaire->survey)) {
@@ -373,7 +400,8 @@ switch ($action) {
         }
         break;
 
-    case 'dvallresp': // Delete all responses in questionnaire (or group).
+    case 'dvallresp': // Delete all responses in questionnaire (or group). Do it!
+
         require_capability('mod/questionnaire:deleteresponses', $context);
 
         if (empty($questionnaire->survey)) {
@@ -465,6 +493,7 @@ switch ($action) {
         break;
 
     case 'dwnpg': // Download page options.
+
         require_capability('mod/questionnaire:downloadresponses', $context);
 
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
@@ -521,7 +550,8 @@ switch ($action) {
         exit();
         break;
 
-    case 'dcsv': // Download as text (cvs) format.
+    case 'dcsv': // Download responses data as text (cvs) format.
+
         require_capability('mod/questionnaire:downloadresponses', $context);
 
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
@@ -623,6 +653,7 @@ switch ($action) {
         break;
 
     case 'vresp': // View by response.
+
     default:
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');

@@ -114,7 +114,7 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
             $argstr2 = $argstr.'&byresponse=1&action=vresp';
             $row2[] = new tabobject('vrespsummary', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('viewbyresponse', 'questionnaire'));
-            if ($current_tab == 'individualresp') {
+            if ($current_tab == 'individualresp' || $current_tab == 'deleteresp') {
                 $argstr2 = $argstr.'&byresponse=1&action=vresp';
                 $row2[] = new tabobject('vresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                         get_string('viewindividualresponse', 'questionnaire'));
@@ -153,7 +153,6 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
         $inactive[] = 'vresp';
         $activated[] = 'vresp';
         $inactive[] = 'printresp';
-
         $row3 = array();
 
         // New way to output popup print window for 2.0.
@@ -172,7 +171,7 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
         if ($questionnaire->capabilities->deleteresponses) {
             $argstr2 = $argstr.'&action=dresp&rid='.$rid;
             $row3[] = new tabobject('deleteresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
-                                    get_string('deleteresp', 'questionnaire'));
+                            get_string('deleteresp', 'questionnaire'));
         }
     }
 } else if ($questionnaire->capabilities->readallresponses && ($numresp > 0) &&

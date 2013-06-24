@@ -1,5 +1,12 @@
 Release Notes:
 
+Version 2.5.4 Build - 2013062401
+- CONTRIB-823 Add confirmation for deleting a question.
+- When a question is deleted, if it had already been answered, all responses are deleted too.
+- When the last question in a questionnaire is deleted, all that questionnaire's attempts and responses are deleted.
+- Changed all confirmation dialogues from Continue/Cancel to Yes/No.
+- CONTRIB-4075 Images in Question text are now displayed on the Questions editing page. As well as any other media.
+
 Version 2.5.4 Build - 2013062302
 - CONTRIB-4274 Changed Completion conditions from Viewed and Graded to Submitted.
 - Implies adding new "completionsubmit" field in "questionnaire" table.
