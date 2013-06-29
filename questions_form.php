@@ -232,8 +232,12 @@ class questionnaire_questions_form extends moodleform {
         //-------------------------------------------------------------------------------
         // Hidden fields
         $mform->addElement('hidden', 'id', 0);
+        $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'sid', 0);
+        $mform->setType('sid', PARAM_INT);
         $mform->addElement('hidden', 'action', 'main');
+        $mform->setType('action', PARAM_RAW);
+        $mform->setType('moveq', PARAM_RAW);
 
         //-------------------------------------------------------------------------------
         // buttons
@@ -383,6 +387,7 @@ class questionnaire_edit_question_form extends moodleform {
         if ($question->type_id == QUESYESNO || $question->type_id == QUESDROP || $question->type_id == QUESDATE ||
             $question->type_id == QUESSECTIONTEXT) {
             $mform->addElement('hidden', 'length', $deflength);
+            $mform->setType('length', PARAM_INT);
         } else if ($question->type_id == QUESRADIO) {
             $lengroup = array();
             $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('vertical', 'questionnaire'), '0');
@@ -392,6 +397,7 @@ class questionnaire_edit_question_form extends moodleform {
         } else { // QUESTEXT or QUESESSAY or QUESRATE
             $question->length = isset($question->length) ? $question->length : $deflength;
             $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
+            $mform->setType('length', PARAM_TEXT);
             $mform->addHelpButton('length', $lhelpname, 'questionnaire');
         }
 
@@ -411,6 +417,7 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
             //$mform->addHelpButton('precise', $phelpname, 'questionnaire');
         }
+        $mform->setType('precise', PARAM_INT);
 
         /// Content field:
         $modcontext    = $this->_customdata['modcontext'];
@@ -451,15 +458,21 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addElement('html', '</div>');
 
             $mform->addElement('hidden', 'num_choices', $num_choices);
+            $mform->setType('num_choices', PARAM_INT);
         }
 
         //-------------------------------------------------------------------------------
         // Hidden fields
         $mform->addElement('hidden', 'id', 0);
+        $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'qid', 0);
+        $mform->setType('qid', PARAM_INT);
         $mform->addElement('hidden', 'sid', 0);
+        $mform->setType('sid', PARAM_INT);
         $mform->addElement('hidden', 'type_id', $question->type_id);
+        $mform->setType('type_id', PARAM_INT);
         $mform->addElement('hidden', 'action', 'question');
+        $mform->setType('action', PARAM_RAW);
 
         //-------------------------------------------------------------------------------
         // buttons
