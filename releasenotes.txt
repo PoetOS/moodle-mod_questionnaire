@@ -1,5 +1,12 @@
 Release Notes:
 
+Version 2.5.5 - 2013062501
+- CONTRIB 3525 Added "skip logic"/"conditional branching" feature to Questionnaire.
+- Slightly modified method of displaying graph bars on statistics page for compliance
+with Clean theme, etc.
+- Significant changes to the "Manage questions" page ergonomy, including a button for
+switching from Required to Not required response.
+
 Version 2.5.4 Build - 2013062401
 - CONTRIB-823 Add confirmation for deleting a question.
 - When a question is deleted, if it had already been answered, all responses are deleted too.

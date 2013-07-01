@@ -51,7 +51,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $question = new backup_nested_element('question', array('id'), array(
             'survey_id', 'name', 'type_id', 'result_id', 'length', 'precise',
-            'position', 'content', 'required', 'deleted'));
+            'position', 'content', 'required', 'deleted', 'dependquestion', 'dependchoice'));
 
         $quest_choices = new backup_nested_element('quest_choices');
 

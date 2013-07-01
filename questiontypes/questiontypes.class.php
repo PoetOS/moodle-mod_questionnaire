@@ -171,6 +171,9 @@ class questionnaire_question {
             $this->id = $question->id;
             $this->survey_id = $question->survey_id;
             $this->name = $question->name;
+            // Added for skip feature.
+            $this->dependquestion = $question->dependquestion;
+            $this->dependchoice = $question->dependchoice;
             $this->length = $question->length;
             $this->precise = $question->precise;
             $this->position = $question->position;
@@ -841,6 +844,13 @@ class questionnaire_question {
 
     public function questionstart_survey_display($qnum, $data='') {
         global $OUTPUT;
+        $skippedquestion = false;
+        $skippedclass = '';
+        if (!array_key_exists('q'.$this->id, $data) && $this->dependquestion != 0) {
+            $skippedquestion = true;
+            $skippedclass = 'unselected';
+            $qnum = '<span class="'.$skippedclass.'">('.$qnum.')</span>';
+        }
         if ($this->type_id == QUESSECTIONTEXT) {
             $qnum = '';
         }
@@ -866,7 +876,7 @@ class questionnaire_question {
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('legend');
         echo html_writer::start_tag('div', array('class' => 'qn-content'));
-        echo html_writer::start_tag('div', array('class' => 'qn-question'));
+        echo html_writer::start_tag('div', array('class' => 'qn-question '.$skippedclass));
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
             $this->type_id == QUESDROP) {
             echo html_writer::start_tag('label', array('for' => $this->type . $this->id));
@@ -1733,13 +1743,14 @@ class questionnaire_question {
                     $percent = 100;
                 }
                 if ($num) {
-                    $out = '&nbsp;<img alt="'.$alt.'" src="'.$image_url.'hbar_l.gif" height="9" width="4" />'.
-                           sprintf('<img alt="'.$alt.'" src="'.$image_url.'hbar.gif" height="9" width="%d" />', $percent*4).
-                           '<img alt="'.$alt.'" src="'.$image_url.'hbar_r.gif" height="9" width="4" />'.
-                           sprintf('&nbsp;%.'.$precision.'f%%', $percent);
+                    $out = '&nbsp;<img alt="'.$alt.'" src="'.$image_url.'hbar_l.gif" />'.
+                               '<img style="height:9px; width:'.($percent*4).'px;" alt="'.$alt.'" src="'.
+                               $image_url.'hbar.gif" />'.'<img alt="'.$alt.'" src="'.$image_url.'hbar_r.gif" />'.
+                               sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 } else {
                     $out = '';
                 }
+
                 $tabledata = array();
                 $tabledata = array_merge($tabledata, array(format_text($content, FORMAT_HTML), $out, $num));
                 $table->data[] = $tabledata;
@@ -1757,10 +1768,10 @@ class questionnaire_question {
                     $percent = 100;
                 }
 
-                $out = '&nbsp;<img alt="'.$alt.'" src="'.$image_url.'thbar_l.gif" height="9" width="4" />'.
-                       sprintf('<img alt="'.$alt.'" src="'.$image_url.'thbar.gif" height="9" width="%d" />', $percent*4).
-                       '<img alt="'.$alt.'" src="'.$image_url.'thbar_r.gif" height="9" width="4" />'.
-                       sprintf('&nbsp;%.'.$precision.'f%%', $percent);
+                $out = '&nbsp;<img alt="'.$alt.'" src="'.$image_url.'thbar_l.gif" />'.
+                                '<img style="height:9px;  width:'.($percent*4).'px;" alt="'.$alt.'" src="'.
+                                $image_url.'thbar.gif" />'.'<img alt="'.$alt.'" src="'.$image_url.'thbar_r.gif" />'.
+                                sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 $table->data[] = 'hr';
                 $tabledata = array();
                 $tabledata = array_merge($tabledata, array($strtotal, $out, "$i/$total"));
@@ -1970,6 +1981,7 @@ class questionnaire_question {
                 $nameddegrees++;
             }
         }
+        $nbchoices = $this->length;
         $align = 'center';
         for ($j = 0; $j < $this->length; $j++) {
             if (isset($n[$j])) {
@@ -2007,6 +2019,7 @@ class questionnaire_question {
             while (list($content) = each($this->counts)) {
                 // Eliminate potential named degrees on Likert scale.
                 if (!preg_match("/^[0-9]{1,3}=/", $content)) {
+
                     if (isset($this->counts[$content]->avg)) {
                         $avg = $this->counts[$content]->avg;
                         if (isset($this->counts[$content]->avgvalue)) {
@@ -2018,15 +2031,13 @@ class questionnaire_question {
                         $avg = '';
                     }
                     $nbna = $this->counts[$content]->nbna;
-
                     if ($avg) {
                         $out = '';
                         if (($j = $avg * $width) > 0) {
-                            $interval = 50 / $length;
-                            $out .= sprintf('<img alt="" src="'.$image_url.
-                                'hbar.gif" height="0" width="%d%%" style="visibility:hidden" />', $j - $interval - 0.3);
+                            $marginposition = ($avg - 0.5 ) / ($this->length + $isrestricted) * 100;
                         }
-                        $out .= '<img alt="" src="'.$image_url.'hbar.gif" height="12" width="6" />';
+                        $out .= '<img style="height:12px; width: 6px; margin-left: '.$marginposition.
+                            '%;" alt="" src="'.$image_url.'hbar.gif" />';
                     } else {
                             $out = '';
                     }

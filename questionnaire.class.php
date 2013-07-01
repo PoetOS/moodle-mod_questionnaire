@@ -489,7 +489,7 @@ class questionnaire {
     // Display Methods.
 
     public function print_survey($userid=false, $quser) {
-        global $CFG;
+        global $SESSION, $DB, $CFG;
 
         $formdata = new stdClass();
         if (data_submitted() && confirm_sesskey()) {
@@ -512,7 +512,21 @@ class questionnaire {
         $action = $CFG->wwwroot.'/mod/questionnaire/complete.php?id='.$this->cm->id;
 
         // TODO - Need to rework this. Too much crossover with ->view method.
+
+        // Skip logic :: if this is page 1, it cannot be the end page with no questions on it!
+        if ($formdata->sec == 1) {
+            $SESSION->questionnaire->end = false;
+        }
+        // Skip logic: reset this just in case.
+        $SESSION->questionnaire->nbquestionsonpage = '';
+
         if (!empty($formdata->submit)) {
+
+            // Skip logic: we have reached the last page without any questions on it.
+            if ($SESSION->questionnaire->end) {
+                return;
+            }
+
             $msg = $this->response_check_format($formdata->sec, $formdata);
             if (empty($msg)) {
                 return;
@@ -525,7 +539,8 @@ class questionnaire {
             $this->response_goto_saved($action);
             return;
         }
-        // JR save each section 's $formdata somewhere in case user returns to that page when navigating the questionnaire...
+
+        // Save each section 's $formdata somewhere in case user returns to that page when navigating the questionnaire.
         if (!empty($formdata->next)) {
             $this->response_delete($formdata->rid, $formdata->sec);
             $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
@@ -533,17 +548,66 @@ class questionnaire {
             if ( $msg ) {
                 $formdata->next = '';
             } else {
+                // Skip logic.
                 $formdata->sec++;
+                if (questionnaire_has_dependencies($this->questions)) {
+                    $nbquestionsonpage = questionnaire_nb_questions_on_page($this->questions,
+                                    $this->questionsbysec[$formdata->sec], $formdata->rid);
+                    while (count($nbquestionsonpage) == 0) {
+                        $formdata->sec++;
+                        // We have reached the end of questionnaire on a page without any question left.
+                        if ($formdata->sec > $num_sections) {
+                            $SESSION->questionnaire->end = true; // End of questionnaire reached on a no questions page.
+                            break;
+                        }
+                        $nbquestionsonpage = questionnaire_nb_questions_on_page($this->questions,
+                                        $this->questionsbysec[$formdata->sec], $formdata->rid);
+                    }
+                    $SESSION->questionnaire->nbquestionsonpage = $nbquestionsonpage;
+                }
             }
         }
+
         if (!empty($formdata->prev) && ($this->navigate)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
-            $msg = $this->response_check_format($formdata->sec, $formdata);
+
+            // Skip logic: do not insert responses when going to previous page if current page contains dependquestions.
+            $caninsertresponse = true;
+
+            // If skip logic and this is last page reached with no questions,
+            // unlock questionnaire->end to allow navigate back to previous page.
+            if ($SESSION->questionnaire->end) {
+                $SESSION->questionnaire->end = false;
+                $formdata->sec --;
+            }
+
+            // If this page does contains child questions, allow navigating back without checking the responses.
+            foreach ($this->questionsbysec[$formdata->sec] as $question) {
+                if ($question->dependquestion != 0) {
+                    $caninsertresponse = false;
+                    break;
+                }
+            }
+            if ($caninsertresponse) {
+                $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
+                // Prevent navigation to previous page if required questions are empty or not correct (and NOT skip logic mode).
+                $msg = $this->response_check_format($formdata->sec, $formdata);
+            }
             if ( $msg ) {
                 $formdata->prev = '';
             } else {
                 $formdata->sec--;
+                // Skip logic.
+                if (questionnaire_has_dependencies($this->questions)) {
+                    $nbquestionsonpage = questionnaire_nb_questions_on_page($this->questions,
+                                    $this->questionsbysec[$formdata->sec], $formdata->rid);
+                    while (count($nbquestionsonpage) == 0) {
+                        $formdata->sec--;
+                        $nbquestionsonpage = questionnaire_nb_questions_on_page($this->questions,
+                                        $this->questionsbysec[$formdata->sec], $formdata->rid);
+                    }
+                    $SESSION->questionnaire->nbquestionsonpage = $nbquestionsonpage;
+                }
             }
         }
 
@@ -643,7 +707,7 @@ class questionnaire {
             $this->survey_render($formdata->sec, $msg, $formdata);
             echo '<div class="notice" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">';
             if (($this->navigate) && ($formdata->sec > 1)) {
-                echo '<input type="submit" name="prev" value="'.get_string('previouspage', 'questionnaire').'" />';
+                echo '<input type="submit" name="prev" value="<<&nbsp;'.get_string('previouspage', 'questionnaire').'" />';
             }
             if ($this->resume) {
                 echo '<input type="submit" name="resume" value="'.get_string('save', 'questionnaire').'" />';
@@ -656,7 +720,8 @@ class questionnaire {
                     <div><input type="hidden" name="submittype" value="Submit Survey" />
                     <input type="submit" name="submit" value="'.get_string('submitsurvey', 'questionnaire').'" /></div>';
             } else {
-                echo '<div><input type="submit" name="next" value="'.get_string('nextpage', 'questionnaire').'" /></div>';
+                    get_string('nextpage', 'questionnaire').'&nbsp;>>" /></div>';
+                echo '&nbsp;<div><input type="submit" name="next" value="'.
             }
             echo '</div></div>'; // Divs notice & buttons.
             echo '</form>';
@@ -678,8 +743,10 @@ class questionnaire {
             $section = 1;
         }
 
-        $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;    // Indexed by section.
+        $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
         if ($section > $num_sections) {
+            $formdata->sec = $num_sections;
+            echo '<div class=warning>'.get_string('finished', 'questionnaire').'</div>';
             return(false);  // Invalid section.
         }
 
@@ -995,8 +1062,12 @@ class questionnaire {
 
         // Make copies of all the questions.
         $pos=1;
+        // Skip logic: some changes needed here for dependencies down below.
+        $qid_array = array();
+        $cid_array = array();
         foreach ($this->questions as $question) {
             // Fix some fields first.
+            $old_id = $question->id;
             unset($question->id);
             $question->survey_id = $new_sid;
             $question->position = $pos++;
@@ -1007,14 +1078,31 @@ class questionnaire {
             if (!($new_qid = $DB->insert_record('questionnaire_question', $question))) {
                 return(false);
             }
-
-            foreach ($question->choices as $choice) {
+            $qid_array[$old_id] = $new_qid;
+            foreach ($question->choices as $key => $choice) {
+                $old_cid = $key;
                 unset($choice->id);
                 $choice->question_id = $new_qid;
                 $choice->content = addslashes($choice->content);
                 $choice->value = addslashes($choice->value);
-                if (!$DB->insert_record('questionnaire_quest_choice', $choice)) {
+                if (!$new_cid = $DB->insert_record('questionnaire_quest_choice', $choice)) {
                     return(false);
+                }
+                $cid_array[$old_cid] = $new_cid;
+            }
+        }
+        // Skip logic: now we need to set the new values for dependencies.
+        if ($newquestions = $DB->get_records('questionnaire_question', array('survey_id' => $new_sid), 'id')) {
+            foreach ($newquestions as $question) {
+                if ($question->dependquestion != 0) {
+                    $dependqtypeid = $this->questions[$question->dependquestion]->type_id;
+                    $record = new object;
+                    $record->id = $question->id;
+                    $record->dependquestion = $qid_array[$question->dependquestion];
+                    if ($dependqtypeid != 1) {
+                        $record->dependchoice = $cid_array[$question->dependchoice];
+                    }
+                    $DB->update_record('questionnaire_question', $record);
                 }
             }
         }
@@ -1254,6 +1342,10 @@ class questionnaire {
             if ($sec < 1) {
                 return;
             }
+
+            // Skip logic.
+            $num_sections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
+            $sec = min($num_sections , $sec);
 
             /* get question_id's in this section */
             $qids = '';
@@ -2435,13 +2527,18 @@ class questionnaire {
 
         $qnum = 0;
         foreach ($this->questions as $question) {
+            if ($question->type_id == QUESPAGEBREAK) {
+                continue;
+            }
             if ($question->type_id != QUESSECTIONTEXT) {
                 $qnum++;
             }
             echo html_writer::start_tag('div', array('class' => 'qn-container'));
             echo html_writer::start_tag('div', array('class' => 'qn-info'));
-            echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
-            echo html_writer::end_tag('h2'); // End qn-number.
+            if ($question->type_id != QUESSECTIONTEXT) {
+                echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
+                echo html_writer::end_tag('h2'); // End qn-number.
+            }
             echo html_writer::end_tag('div'); // End qn-info.
             echo html_writer::start_tag('div', array('class' => 'qn-content'));
             echo html_writer::start_tag('div', array('class' => 'qn-question'));

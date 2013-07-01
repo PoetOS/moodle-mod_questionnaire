@@ -1,13 +1,4 @@
-.questionnaire_qbut,
-.questionnaire_qbut_disabled  {
-    padding-right: 0.2em;
-    padding-left: 0.2em;
-}
-.questionnaire_qbut_disabled {
-    cursor: default;
-}
-
-/** Question editing formslib style changes: **/
+/** Question editing formslib **/
 
 #page-mod-questionnaire-questions div.qcontainer .fitemtitle {
     display: none;
@@ -21,32 +12,8 @@
 #page-mod-questionnaire-report div.qcontainer div.qnums {
     display: block;
     font-weight: bold;
-    width: 10%;
+    width: auto;
     float: left;
-}
-
-#page-mod-questionnaire-questions div.qcontainer div.qicons {
-    display: block;
-    width: 15%;
-    float: left;
-}
-
-#page-mod-questionnaire-questions div.qcontainer div.qtype {
-    display: block;
-    width: 19%;
-    float: left;
-}
-
-#page-mod-questionnaire-questions div.qcontainer div.qreq {
-    display: block;
-    width: 9%;
-    float: left;
-}
-
-#page-mod-questionnaire-questions div.qcontainer div.qname {
-    float: left;
-    display: block;
-    width: 45%;
 }
 
 #page-mod-questionnaire-questions div.qcontainer div.qheader {
@@ -59,7 +26,7 @@
 
 #page-mod-questionnaire-questions div.qcontainer div.fstatic {
     width: 97%;
-    border-bottom: solid #000000 1px;
+    /* border-bottom: solid #000000 1px; */
     margin-right: 1em;
     margin-left: 10px;
     background-color: #FFFFFF;
@@ -212,6 +179,7 @@ body#page-mod-questionnaire-myreport .generaltable {
 #page-mod-questionnaire-print .qn-legend,
 #page-mod-questionnaire-myreport .qn-legend {
      float: left;
+     width: auto;
 }
 
 /* format paragraph top and bottom margins for better vertical positioning in questions text */
@@ -275,13 +243,18 @@ body#page-mod-questionnaire-myreport .generaltable {
 	clear: left;
 	text-align: left;
 	margin: 0 auto 1.2em auto;
+	margin-bottom: 1em!important;
 }
+#page-mod-questionnaire-questions .qn-container {
+    border: dotted thin silver;
+}
+
 .dir-rtl .qn-container {
 	text-align: right;
 }
 .qn-info {
 	float: left;
-	width: 3em;
+	width: auto;
 	padding: 0.5em; 
 	background: #eee;
 }
@@ -298,4 +271,40 @@ body#page-mod-questionnaire-myreport .generaltable {
 }
 .req {
 	font-size: x-small;
+}
+.qdepend {
+    color: red;
+    padding-left:5px;
+    margin-bottom: 5px;
+}
+
+#page-mod-questionnaire-questions div.qcontainer div.fstatic {
+    margin-bottom: -15px !important;
+}
+
+#page-mod-questionnaire-questions .mform .fitem fieldset.felement {
+    margin-left: 0%;
+    padding-left: 1%;
+    margin-bottom: 0px;
+}
+
+#page-mod-questionnaire-questions .mform .fitem fieldset.felement {
+    margin-left: 0%;
+    padding-left: 1%;
+    margin-bottom: 0px;
+}
+
+#page-mod-questionnaire-questions .mform .fitem .fitemtitle {
+    text-align: left;
+    margin-left: 10px;
+    margin-bottom: 5px;
+}
+
+#page-mod-questionnaire-questions .questionnaire_pagebreak {
+    border-bottom: 5px dashed silver;
+    margin-top: 4px;    
+}
+
+#page-mod-questionnaire-questions .moving {
+    border: medium dotted maroon;
 }

@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * print the form to add or edit a questionnaire-instance
- *
- * @author Mike Churchward
+ * @authors Mike Churchward & Joseph Rézeau
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package questionnaire
  */
@@ -36,15 +34,14 @@ class questionnaire_questions_form extends moodleform {
         global $CFG, $questionnaire, $SESSION, $OUTPUT;
         global $DB;
 
+        $sid = $questionnaire->survey->id;
         $mform    =& $this->_form;
 
-        $mform->addElement('html', '<div class="qcontainer">');
-
         $mform->addElement('header', 'questionhdr', get_string('questions', 'questionnaire'));
-        $mform->addHelpButton('questionhdr', 'questiontypes', 'questionnaire');
 
         $stredit = get_string('edit', 'questionnaire');
         $strremove = get_string('remove', 'questionnaire');
+        $strmove = get_string('move');
         $stryes = get_string('yes');
         $strno = get_string('no');
 
@@ -81,140 +78,225 @@ class questionnaire_questions_form extends moodleform {
         }
 
         $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
-        $mform->addGroup($addqgroup, 'addqgroup', '', '', false);
 
-        $mform->addElement('html', '<div class="qheader">');
+        if (questionnaire_has_dependencies($questionnaire->questions)) {
+            $addqgroup[] =& $mform->createElement('submit', 'validate', get_string('validate', 'questionnaire'));
+        }
 
-        $quesgroup = array();
-        $quesgroup[] =& $mform->createElement('static', 'qnums', '', '<div class="qnums">'.
-                                              get_string('questionnum', 'questionnaire').'</div>');
-        $quesgroup[] =& $mform->createElement('static', 'opentagt', '', '<div class="qicons">'.
-                                              get_string('action', 'questionnaire').'</div>');
-        $quesgroup[] =& $mform->createElement('static', 'qnamet', '', '<div class="qtype">'.
-                                              get_string('questiontypes', 'questionnaire').'</div>');
-        $quesgroup[] =& $mform->createElement('static', 'qreqt', '', '<div class="qreq">'.
-                                              get_string('required').'</div>');
-        $quesgroup[] =& $mform->createElement('static', 'qtypet', '', '<div class="qname">'.
-                                              get_string('optionalname', 'questionnaire').'</div>');
-        $mform->addGroup($quesgroup, 'questgroupt', '', '', false);
+        $mform->addGroup($addqgroup, 'addqgroup', get_string('addquestions', 'questionnaire'), ' ', false);
+        $mform->addHelpButton('addqgroup', 'questiontypes', 'questionnaire');
 
-        $mform->addElement('html', '</div>');
+        if (isset($SESSION->questionnaire->validateresults) && $SESSION->questionnaire->validateresults != '') {
+            $mform->addElement('static', 'validateresult', '', '<div class="qdepend warning">'.
+                $SESSION->questionnaire->validateresults.'</div>');
+        }
 
         $qnum = 0;
+
+        // JR skip logic :: to prevent moving child higher than parent OR parent lower than child
+        // we must get now the parent and child positions.
+        $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
+        if ($questionnairehasdependencies) {
+            $parentpositions = questionnaire_get_parent_positions ($questionnaire->questions);
+            $childpositions = questionnaire_get_child_positions ($questionnaire->questions);
+        }
+
+        $mform->addElement('html', '<hr>');
+
+        $mform->addElement('static', 'manageq', get_string('managequestions', 'questionnaire'));
+        // TODO write specific help here.
+        $mform->addHelpButton('manageq', 'questiontypes', 'questionnaire');
+
+        $mform->addElement('html', '<div class="qcontainer">');
+
         foreach ($questionnaire->questions as $question) {
-            $required = '';
+
+            $manageqgroup = array();
+
             $qid = $question->id;
             $tid = $question->type_id;
             $qtype = $question->type;
             $required = $question->required;
+
+            // Does this questionnaire contain branching questions already?
+            $dependency = '';
+            if ($questionnairehasdependencies) {
+                if ($question->dependquestion != 0) {
+                    $parent = questionnaire_get_parent ($question);
+                    $dependency = '<strong>'.get_string('dependquestion', 'questionnaire').'</strong> : '.
+                        $parent[$qid]['parentposition'].' '.$parent[$qid]['parent'];
+                }
+            }
+
             $pos = $question->position;
             $qnum_txt = '&nbsp;';
-            if ($tid<99) {
-                $qnum++;
-                $qnum_txt = $qnum;
-            }
-            // Needed for non-English languages.
+            $qnum++;
+            $qnum_txt = $qnum;
+
+            // Needed for non-English languages JR.
             $qtype = '['.questionnaire_get_type($tid).']';
             $content = '';
-            if ($tid == 99) {
+            if ($tid == QUESPAGEBREAK) {
                 $sec++;
-                $content .= '<b>'.get_string('sectionbreak', 'questionnaire').'</b>';
+                $content = '<hr class="questionnaire_pagebreak">';
+
             } else {
                 // Needed to print potential media in question text.
                 $content = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
                                 $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
             }
 
-            $quesgroup = 'quesgroup_'.$pos;
-            $$quesgroup = array();
-            $butclass = array('class' => 'questionnaire_qbut');
-            $disabledclass = array('class' => 'questionnaire_qbut_disabled',
-                        'disabled' => 'disabled', 'style' => 'width: 11px;');
+            $moveqgroup = array();
+
             $spacer = $OUTPUT->pix_url('spacer');
+
             if (!$this->moveq) {
-                $uextra = array('value' => $question->id,
-                                'alt' => get_string('moveup', 'questionnaire'),
-                                'title' => get_string('moveup', 'questionnaire')) + $butclass;
-                $dextra = array('value' => $question->id,
-                                'alt' => get_string('movedn', 'questionnaire'),
-                                'title' => get_string('movedn', 'questionnaire')) + $butclass;
+                $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
                 $mextra = array('value' => $question->id,
-                                'alt' => get_string('move', 'questionnaire'),
-                                'title' => get_string('move', 'questionnaire')) + $butclass;
+                                'alt' => $strmove,
+                                'title' => $strmove);
                 $eextra = array('value' => $question->id,
                                 'alt' => get_string('edit', 'questionnaire'),
-                                'title' => get_string('edit', 'questionnaire')) + $butclass;
+                                'title' => get_string('edit', 'questionnaire'));
                 $rextra = array('value' => $question->id,
-                                'alt' => get_string('remove', 'questionnaire'),
-                                'title' => get_string('remove', 'questionnaire')) + $butclass;
-                if ($pos == 1) {
-                    $usrc = $spacer;
-                    $uextra = $disabledclass;
+                                'alt' => $strremove,
+                                'title' => $strremove);
+
+                if ($question->type_id == QUESPAGEBREAK) {
+                    $esrc = $CFG->wwwroot.'/mod/questionnaire/images/editd.gif';
+                    $eextra = array('disabled' => 'disabled');
                 } else {
-                    $usrc = $OUTPUT->pix_url('t/up');
+                    $esrc = $CFG->wwwroot.'/mod/questionnaire/images/edit.gif';
                 }
-                if ($pos == ($numq)) {
-                    $dsrc = $spacer;
-                    $dextra = $disabledclass;
-                } else {
-                    $dsrc = $OUTPUT->pix_url('t/down');
-                }
+
                 if ($question->type_id == QUESPAGEBREAK) {
                     $esrc = $spacer;
-                    $eextra  = $disabledclass;
+                    $eextra = array('disabled' => 'disabled');
                 } else {
                     $esrc = $OUTPUT->pix_url('t/edit');
                 }
                 $rsrc = $OUTPUT->pix_url('t/delete');
+                        $qreq = '';
 
                 // Question numbers.
-                ${$quesgroup}[] =& $mform->createElement('static', 'qnums', '', '<div class="qnums">'.$qnum_txt.'</div>');
+                $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '<div class="qnums">'.$qnum_txt.'</div>');
 
                 // Need to index by 'id' since IE doesn't return assigned 'values' for image inputs.
-                ${$quesgroup}[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '<div class="qicons">');
-                ${$quesgroup}[] =& $mform->createElement('image', 'moveupbutton['.$question->id.']', $usrc, $uextra);
-                ${$quesgroup}[] =& $mform->createElement('image', 'movednbutton['.$question->id.']', $dsrc, $dextra);
-                ${$quesgroup}[] =& $mform->createElement('image', 'movebutton['.$question->id.']',
-                                   $OUTPUT->pix_url('t/move'), $mextra);
-                ${$quesgroup}[] =& $mform->createElement('image', 'editbutton['.$question->id.']', $esrc, $eextra);
-                ${$quesgroup}[] =& $mform->createElement('image', 'removebutton['.$question->id.']', $rsrc, $rextra);
-                ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
+                $manageqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
+                $msrc = $OUTPUT->pix_url('t/move');
+
+                // Do not allow moving parent question at position #1 to be moved down if it has a child at position < 4.
+                if ($questionnairehasdependencies) {
+                    if ($pos == 1) {
+                        if (isset($childpositions[$qid])) {
+                            $maxdown = $childpositions[$qid];
+                            if ($maxdown < 4) {
+                                $strdisabled = get_string('disabled', 'questionnaire');
+                                $msrc = $OUTPUT->pix_url('t/block');
+                                $mextra = array('value' => $question->id,
+                                                'alt' => $strdisabled,
+                                                'title' => $strdisabled);
+                                $mextra += array('disabled' => 'disabled');
+                            }
+                        }
+                    }
+                }
+                $manageqgroup[] =& $mform->createElement('image', 'movebutton['.$question->id.']',
+                                $msrc, $mextra);
+                $manageqgroup[] =& $mform->createElement('image', 'editbutton['.$question->id.']', $esrc, $eextra);
+                $manageqgroup[] =& $mform->createElement('image', 'removebutton['.$question->id.']', $rsrc, $rextra);
+
+                if ($question->type_id != QUESPAGEBREAK && $question->type_id != QUESSECTIONTEXT) {
+                    if ($required == 'y') {
+                        $reqsrc = $OUTPUT->pix_url('t/stop');
+                        $strrequired = get_string('required', 'questionnaire');
+                    } else {
+                        $reqsrc = $OUTPUT->pix_url('t/go');
+                        $strrequired = get_string('notrequired', 'questionnaire');
+                    }
+                    $strrequired .= ' '.get_string('clicktoswitch', 'questionnaire');
+                    $reqextra = array('value' => $question->id,
+                                    'alt' => $strrequired,
+                                    'title' => $strrequired);
+                    $manageqgroup[] =& $mform->createElement('image', 'requiredbutton['.$question->id.']', $reqsrc, $reqextra);
+                }
+                $manageqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
+
             } else {
-                ${$quesgroup}[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$qnum_txt.'</div>');
-                if ($this->moveq != $question->id) {
-                    $mextra = array('value' => $question->id,
-                                'alt' => get_string('movehere', 'questionnaire'),
-                                'title' => get_string('movehere', 'questionnaire')) + $butclass;
-                    $msrc = $OUTPUT->pix_url('movehere');
-                    ${$quesgroup}[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '<div class="qicons">');
-                    $newposition = $max == $pos ? 0 : $pos;
-                    ${$quesgroup}[] =& $mform->createElement('image', 'moveherebutton['.$newposition.']', $msrc, $mextra);
-                    ${$quesgroup}[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '</div>');
+                $manageqgroup[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$qnum_txt.'</div>');
+                $moveqgroup[] =& $mform->createElement('static', 'qnum', '', '');
+
+                $display = true;
+                if ($questionnairehasdependencies) {
+                    // Prevent moving child to higher position than its parent.
+                    if (isset($parentpositions[$this->moveq])) {
+                        $maxup = $parentpositions[$this->moveq];
+                        if ($pos <= $maxup) {
+                            $display = false;
+                        }
+                    }
+                    // Prevent moving parent to lower position than its (first) child.
+                    if (isset($childpositions[$this->moveq])) {
+                        $maxdown = $childpositions[$this->moveq];
+                        if ($pos >= $maxdown) {
+                            $display = false;
+                        }
+                    }
+                }
+
+                if ($this->moveq != $question->id && $display) {
+                    // Do not move a page break to first position.
+                    if ($tid == QUESPAGEBREAK && $pos != 1) {
+                        $mextra = array('value' => $question->id,
+                                        'alt' => $strmove,
+                                        'title' => $strmove);
+                        $msrc = $OUTPUT->pix_url('movehere');
+                        $moveqgroup[] =& $mform->createElement('static', 'qnum2', '', '<div class="qnums unselected">'.
+                                        $qnum_txt.'</div>&nbsp;');
+                        $moveqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
+                        $newposition = $max == $pos ? 0 : $pos;
+                        $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$newposition.']', $msrc, $mextra);
+                        $moveqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
+                    }
+
+                } else if ($display) {
+                    $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '');
                 } else {
-                    ${$quesgroup}[] =& $mform->createElement('static', 'qnums', '', '<div class="qicons">Move From Here</div>');
+                    $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '');
+                    $moveqgroup[] =& $mform->createElement('static', 'qnums', '', '');
+                }
+            }
+            if ($question->name) {
+                $qname = '('.$question->name.')';
+            } else {
+                $qname = '';
+            }
+            if ($tid == QUESPAGEBREAK) {
+                $qtype .= '<div class="questionnaire_pagebreak" style="clear:left;"></div>';
+            }
+            $manageqgroup[] =& $mform->createElement('static', 'qtype_'.$question->id, '', $qtype);
+            $manageqgroup[] =& $mform->createElement('static', 'qname_'.$question->id, '', $qname);
+
+            if ($this->moveq) {
+                $mform->addGroup($moveqgroup, 'moveqgroup', '', '', false);
+                if ($this->moveq == $question->id && $display) {
+                    $mform->addElement('html', '<div class="qn-container moving">'); // Begin div qn-container.
+                } else {
+                    $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
                 }
             }
 
-            ${$quesgroup}[] =& $mform->createElement('static', 'qtype_'.$question->id, '', '<div class="qtype">'.$qtype.'</div>');
+            $mform->addGroup($manageqgroup, 'manageqgroup', '', '&nbsp;', false);
 
-            $qreq = '';
-            if ($question->type_id != QUESPAGEBREAK && $question->type_id != QUESSECTIONTEXT) {
-                if ($required == 'y') {
-                    $qreq = $stryes;
-                } else {
-                    $qreq = $strno;
-                }
+            if ($dependency) {
+                $mform->addElement('static', 'qdepend_'.$question->id, '', '<div class="qdepend">'.$dependency.'</div>');
             }
-            ${$quesgroup}[] =& $mform->createElement('static', 'qreq_'.$question->id, '', '<div class="qreq">'.$qreq.'</div>');
-
-            $qname = $question->name;
-            ${$quesgroup}[] =& $mform->createElement('static', 'qname_'.$question->id, '', '<div class="qname">'.$qname.'</div>');
-
-            $mform->addGroup($$quesgroup, 'questgroup', '', '', false);
-
-            $mform->addElement('static', 'qcontent_'.$question->id, '', '<div class="qn-question qcontent">'.$content.'</div>');
+            if ($tid != QUESPAGEBREAK) {
+                $mform->addElement('static', 'qcontent_'.$question->id, '', '<div class="qn-question">'.$content.'</div>');
+            }
 
             $pos++;
+            $mform->addElement('html', '</div>'); // End div qn-container.
         }
 
         // If we are moving a question, display one more line for the end.
@@ -232,6 +314,7 @@ class questionnaire_questions_form extends moodleform {
         $mform->setType('moveq', PARAM_RAW);
 
         // Buttons.
+
         $mform->addElement('html', '</div>');
     }
 
@@ -309,6 +392,10 @@ class questionnaire_edit_question_form extends moodleform {
                 $deflength = 0;
                 $defprecise = 0;
         }
+
+        $defdependquestion = 0;
+        $defdependchoice = 0;
+        $dlabelname = 'dependquestion';
 
         $mform    =& $this->_form;
 
@@ -406,6 +493,17 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
         }
         $mform->setType('precise', PARAM_INT);
+
+        // Dependence fields.
+        $position = isset($question->position) ? $question->position : count($questionnaire->questions) + 1;
+        $dependencies = questionnaire_get_dependencies($questionnaire->questions, $position);
+        if (count($dependencies) > 1) {
+            $question->dependquestion = isset($question->dependquestion) ? $question->dependquestion.','.
+                $question->dependchoice : '0,0';
+            $group = array($mform->createElement('selectgroups', 'dependquestion', '', $dependencies) );
+            $mform->addGroup($group, 'selectdependency', get_string('dependquestion', 'questionnaire'), '', false);
+            $mform->addHelpButton('selectdependency', 'dependquestion', 'questionnaire');
+        }
 
         // Content field.
         $modcontext    = $this->_customdata['modcontext'];

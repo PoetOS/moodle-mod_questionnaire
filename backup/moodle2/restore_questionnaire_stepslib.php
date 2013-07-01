@@ -102,6 +102,20 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $oldid = $data->id;
         $data->survey_id = $this->get_new_parentid('questionnaire_survey');
 
+        if (isset($data->dependquestion)) {
+            // Dependquestion.
+            $data->dependquestion = $this->get_mappingid('questionnaire_question', $data->dependquestion);
+
+            // Dependchoice.
+            // Only change mapping for RADIO and DROP question types, not for YESNO question.
+            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields='type_id');
+            if (is_object($dependquestion)) {
+                if ($dependquestion->type_id != 1) {
+                    $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);
+                }
+            }
+        }
+
         // Insert the questionnaire_question record.
         $newitemid = $DB->insert_record('questionnaire_question', $data);
         $this->set_mapping('questionnaire_question', $oldid, $newitemid, true);
@@ -113,6 +127,20 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $data = (object)$data;
         $oldid = $data->id;
         $data->question_id = $this->get_new_parentid('questionnaire_question');
+
+        if (isset($data->dependquestion)) {
+            // Dependquestion.
+            $data->dependquestion = $this->get_mappingid('questionnaire_question', $data->dependquestion);
+
+            // Dependchoice.
+            // Only change mapping for RADIO and DROP question types, not for YESNO question.
+            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields='type_id');
+            if (is_object($dependquestion)) {
+                if ($dependquestion->type_id != 1) {
+                    $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);
+                }
+            }
+        }
 
         // Insert the questionnaire_quest_choice record.
         $newitemid = $DB->insert_record('questionnaire_quest_choice', $data);
