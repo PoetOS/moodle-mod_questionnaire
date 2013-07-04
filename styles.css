@@ -26,7 +26,6 @@
 
 #page-mod-questionnaire-questions div.qcontainer div.fstatic {
     width: 97%;
-    /* border-bottom: solid #000000 1px; */
     margin-right: 1em;
     margin-left: 10px;
     background-color: #FFFFFF;
@@ -162,7 +161,8 @@ body#page-mod-questionnaire-complete .notice .buttons form {
 
 body#page-mod-questionnaire-report .generaltable,
 body#page-mod-questionnaire-myreport .generaltable {
-    width:100%;
+    width: 95%;
+    margin-left: 5%;
 }
 .floatprinticon {
     margin-top:-30px;
@@ -190,8 +190,8 @@ body#page-mod-questionnaire-myreport .generaltable {
 #page-mod-questionnaire-print .qn-question p,
 #page-mod-questionnaire-report .qn-question p,
 #page-mod-questionnaire-questions .qn-question p {
-	margin-bottom: 0.6em;
-	margin-top: 0.5em;
+    margin-bottom: 0.6em;
+    margin-top: 0.5em;
 }
 
 #page-mod-questionnaire-complete .qn-question,
@@ -230,48 +230,47 @@ body#page-mod-questionnaire-myreport .generaltable {
     margin-left:20px;
 }
 .respondentsnavbar {
-	text-align:center;
-	padding-bottom:5px;
-	padding-top:5px;
-	margin-bottom:5px;
-	background-color: #F2F2F2;
+    text-align:center;
+    padding-bottom:5px;
+    padding-top:5px;
+    margin-bottom:5px;
+    background-color: #F2F2F2;
 }
 
 /* new quiz-like formatting for 2.5 */
 
-.qn-container {
-	clear: left;
-	text-align: left;
-	margin: 0 auto 1.2em auto;
-	margin-bottom: 1em!important;
-}
 #page-mod-questionnaire-questions .qn-container {
     border: dotted thin silver;
+    margin-bottom: 1em;
 }
 
 .dir-rtl .qn-container {
-	text-align: right;
+    text-align: right;
 }
 .qn-info {
-	float: left;
-	width: auto;
-	padding: 0.5em; 
-	background: #eee;
+    float: left;
+    width: auto;
+    padding: 0.5em; 
+    background: #eee;
 }
 .qn-container h2.qn-number {
-	margin: 0;
-	font-weight:bold;
-}
-.qn-content {
-	margin: 0 0 0 4.5em;
+    margin: 0;
 }
 .qn-question {
-	padding: 0.5em;
-	margin: 0 0 0.5em;
+    padding: 0.5em;
+    margin: 0 0 0.5em;
+}
+
+.margin35 {
+    margin-left: 35px;
+}
+.margin45 {
+    margin-left: 45px;
 }
 .req {
-	font-size: x-small;
+    font-size: x-small;
 }
+
 .qdepend {
     color: red;
     padding-left:5px;

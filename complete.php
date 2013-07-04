@@ -66,9 +66,6 @@ if (isset($id)) {
 } else {
     $url->param('a', $a);
 }
-if (isset($sid)) {
-    $url->param('sid', $sid);
-}
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);

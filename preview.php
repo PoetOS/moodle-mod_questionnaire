@@ -62,7 +62,7 @@ if ($id) {
 require_login($course->id, false, $cm);
 $context = $cm ? get_context_instance(CONTEXT_MODULE, $cm->id) : false;
 
-    $url = new moodle_url('/mod/questionnaire/preview.php');
+$url = new moodle_url('/mod/questionnaire/preview.php');
 if ($id !== 0) {
     $url->param('id', $id);
 }
@@ -106,7 +106,7 @@ if (!$popup) {
 }
 echo $OUTPUT->header();
 
-$questionnaire->survey_print_render('', '', $course->id);
+$questionnaire->survey_print_render('', 'preview', $course->id);
 if ($popup) {
     echo $OUTPUT->close_window_button();
 }

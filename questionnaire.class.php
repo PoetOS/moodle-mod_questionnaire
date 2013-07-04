@@ -720,8 +720,8 @@ class questionnaire {
                     <div><input type="hidden" name="submittype" value="Submit Survey" />
                     <input type="submit" name="submit" value="'.get_string('submitsurvey', 'questionnaire').'" /></div>';
             } else {
-                    get_string('nextpage', 'questionnaire').'&nbsp;>>" /></div>';
                 echo '&nbsp;<div><input type="submit" name="next" value="'.
+                                get_string('nextpage', 'questionnaire').'&nbsp;>>" /></div>';
             }
             echo '</div></div>'; // Divs notice & buttons.
             echo '</form>';
@@ -901,14 +901,14 @@ class questionnaire {
     // Blankquestionnaire : if we are printing a blank questionnaire.
     public function survey_print_render($message = '', $referer='', $courseid, $blankquestionnaire=false) {
         global $USER, $DB, $OUTPUT;
-        $rid = optional_param('rid', 0, PARAM_INT);
 
         if (! $course = $DB->get_record("course", array("id" => $courseid))) {
             print_error('incorrectcourseid', 'questionnaire');
         }
+
         $this->course = $course;
 
-        if ($this->resume && empty($rid)) {
+        if ($referer != 'preview' && !$blankquestionnaire && $this->resume && empty($rid)) {
             $rid = $this->get_response($USER->id, $rid);
         }
 
@@ -2524,7 +2524,6 @@ class questionnaire {
                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
             echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
         }
-
         $qnum = 0;
         foreach ($this->questions as $question) {
             if ($question->type_id == QUESPAGEBREAK) {
@@ -2541,7 +2540,7 @@ class questionnaire {
             }
             echo html_writer::end_tag('div'); // End qn-info.
             echo html_writer::start_tag('div', array('class' => 'qn-content'));
-            echo html_writer::start_tag('div', array('class' => 'qn-question'));
+            echo html_writer::start_tag('div', array('class' => 'qn-question margin45'));
             echo format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
                     $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
             echo html_writer::end_tag('div'); // End qn-question.
@@ -2968,55 +2967,40 @@ class questionnaire {
         return 1;
     }
 
+
     /**
      * Function to move a question to a new position.
+     * Adapted from feedback plugin.
      *
      * @param int $moveqid The id of the question to be moved.
-     * @param int $movetopos The position to move before, or zero if the end.
+     * @param int $movetopos The position to move question to.
      *
      */
+
     public function move_question($moveqid, $movetopos) {
         global $DB;
 
-        // If its moving to the last position (moveto = 0), or its moving to a higher position
-        // No point in moving it to where it already is...
-        if (($movetopos == 0) || (($movetopos-1) > $this->questions[$moveqid]->position)) {
-            $found = false;
-            foreach ($this->questions as $qid => $question) {
-                if ($moveqid == $qid) {
-                    $found = true;
-                    continue;
-                }
-                if ($found) {
-                    $DB->set_field('questionnaire_question', 'position', $question->position-1, array('id' => $qid));
-                }
-                if ($question->position == ($movetopos-1)) {
-                    break;
-                }
-            }
-            if ($movetopos == 0) {
-                $movetopos = count($this->questions);
-            } else {
-                $movetopos--;
-            }
-            $DB->set_field('questionnaire_question', 'position', $movetopos, array('id' => $moveqid));
+        $questions = $this->questions;
+        $movequestion = $this->questions[$moveqid];
 
-        } else if ($movetopos < $this->questions[$moveqid]->position) {
-            $found = false;
-            foreach ($this->questions as $qid => $question) {
-                if ($movetopos == $question->position) {
-                    $found = true;
+        if (is_array($questions)) {
+            $index = 1;
+            foreach ($questions as $question) {
+                if ($index == $movetopos) {
+                    $index++;
                 }
-                if (!$found) {
+                if ($question->id == $movequestion->id) {
+                    $movequestion->position = $movetopos;
+                    $DB->update_record("questionnaire_question", $movequestion);
                     continue;
-                } else {
-                    $DB->set_field('questionnaire_question', 'position', $question->position+1, array('id' => $qid));
                 }
-                if ($question->position == ($this->questions[$moveqid]->position-1)) {
-                    break;
-                }
+                $question->position = $index;
+                $DB->update_record("questionnaire_question", $question);
+                $index++;
             }
-            $DB->set_field('questionnaire_question', 'position', $movetopos, array('id' => $moveqid));
+            return true;
         }
+        return false;
     }
+
 }

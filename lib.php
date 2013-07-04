@@ -567,7 +567,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                         array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
-        $byresponsenode = $myreportnode->add(get_string('responses', 'questionnaire'),
+        $byresponsenode = $myreportnode->add(get_string('viewbyresponse', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                         array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')));
         $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
@@ -769,7 +769,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
  */
 function questionnaire_reset_course_form_definition($mform) {
     $mform->addElement('header', 'questionnaireheader', get_string('modulenameplural', 'questionnaire'));
-    $mform->addElement('advcheckbox', 'reset_questionnaire_attempts',
+    $mform->addElement('advcheckbox', 'reset_questionnaire',
                     get_string('removeallquestionnaireattempts', 'questionnaire'));
 }
 
@@ -778,7 +778,7 @@ function questionnaire_reset_course_form_definition($mform) {
  * @return array the defaults.
  */
 function questionnaire_reset_course_form_defaults($course) {
-    return array('reset_questionnaire_attempts' => 1);
+    return array('reset_questionnaire' => 1);
 }
 
 /**
@@ -797,41 +797,40 @@ function questionnaire_reset_userdata($data) {
     $componentstr = get_string('modulenameplural', 'questionnaire');
     $status = array();
 
-    $surveys = questionnaire_get_survey_list($data->courseid, $type='');
+    if (!empty($data->reset_questionnaire)) {
+        $surveys = questionnaire_get_survey_list($data->courseid, $type='');
 
-    // Delete responses.
-    foreach ($surveys as $survey) {
-        // Get all responses for this questionnaire.
-        $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-             FROM {questionnaire_response} R
-             WHERE R.survey_id = ?
-             ORDER BY R.id";
-        $resps = $DB->get_records_sql($sql, array($survey->id));
-        if (!empty($resps)) {
-            foreach ($resps as $response) {
-                questionnaire_delete_response($response->id);
+        // Delete responses.
+        foreach ($surveys as $survey) {
+            // Get all responses for this questionnaire.
+            $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+                 FROM {questionnaire_response} R
+                 WHERE R.survey_id = ?
+                 ORDER BY R.id";
+            $resps = $DB->get_records_sql($sql, array($survey->id));
+            if (!empty($resps)) {
+                foreach ($resps as $response) {
+                    questionnaire_delete_response($response->id);
+                }
             }
-            $status[] = array(
-                            'component' => $componentstr,
-                            'item' => $survey->qname.' : '.get_string('deletedallresp', 'questionnaire'),
-                            'error' => false);
-        } else {
-            $status[] = array(
-                            'component' => $componentstr,
-                            'item' => $survey->qname.' : '.get_string('noresponses', 'questionnaire'),
-                            'error' => false);
+            // Remove this questionnaire's grades (and feedback) from gradebook (if any).
+            $select = "itemmodule = 'questionnaire' AND iteminstance = ".$survey->qid;
+            $fields = 'id';
+            if ($itemid = $DB->get_record_select('grade_items', $select, null, $fields)) {
+                $itemid = $itemid->id;
+                $DB->delete_records_select('grade_grades', 'itemid = '.$itemid);
+
+            }
         }
-        // Remove this questionnaire's grades (and feedback) from gradebook (if any).
-        $select = "itemmodule = 'questionnaire' AND iteminstance = ".$survey->qid;
-        $fields = 'id';
-        if ($itemid = $DB->get_record_select('grade_items', $select, null, $fields)) {
-            $itemid = $itemid->id;
-            $DB->delete_records_select('grade_grades', 'itemid = '.$itemid);
-            $status[] = array(
-                            'component' => $componentstr,
-                            'item' => $survey->qname.' : '.get_string('gradesdeleted', 'questionnaire'),
-                            'error' => false);
-        }
+        $status[] = array(
+                        'component' => $componentstr,
+                        'item' => get_string('deletedallresp', 'questionnaire'),
+                        'error' => false);
+
+        $status[] = array(
+                        'component' => $componentstr,
+                        'item' => get_string('gradesdeleted', 'questionnaire'),
+                        'error' => false);
     }
     return $status;
 }

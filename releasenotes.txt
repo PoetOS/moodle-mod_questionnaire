@@ -6,6 +6,8 @@ Version 2.5.5 - 2013062501
 with Clean theme, etc.
 - Significant changes to the "Manage questions" page ergonomy, including a button for
 switching from Required to Not required response.
+- Modified/simplified Course reset display, to make it similar to Quiz, Lesson, etc.
+- Plus a number of small fixes here and there.  
 
 Version 2.5.4 Build - 2013062401
 - CONTRIB-823 Add confirmation for deleting a question.

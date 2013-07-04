@@ -666,7 +666,7 @@ class questionnaire_question {
             }
             $this->mkrespercent(count($rids), $this->precise, $prtotal, $sort='');
         } else {
-            print_string('noresponsedata', 'questionnaire');
+            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
     }
 
@@ -693,7 +693,7 @@ class questionnaire_question {
                 $this->mkreslisttext($rows);
             }
         } else {
-            print_string('noresponsedata', 'questionnaire');
+            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
     }
 
@@ -716,7 +716,7 @@ class questionnaire_question {
             }
             $this->mkreslistdate(count($rids), $this->precise, $prtotal);
         } else {
-            print_string('noresponsedata', 'questionnaire');
+            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
     }
 
@@ -745,7 +745,7 @@ class questionnaire_question {
             }
             $this->mkrespercent(count($rids), $this->precise, $prtotal, $sort);
         } else {
-            print_string('noresponsedata', 'questionnaire');
+            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
     }
 
@@ -775,7 +775,7 @@ class questionnaire_question {
 
             $this->mkrespercent(count($rids), $this->precise, 0, $sort);
         } else {
-            print_string('noresponsedata', 'questionnaire');
+            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
     }
 
@@ -816,7 +816,7 @@ class questionnaire_question {
 
             $this->mkrescount($rids, $rows, $this->precise, $this->length, $sort);
         } else {
-            print_string('noresponsedata', 'questionnaire');
+            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
     }
 
@@ -843,14 +843,25 @@ class questionnaire_question {
     }
 
     public function questionstart_survey_display($qnum, $data='') {
-        global $OUTPUT;
+        global $OUTPUT, $SESSION;
+        $currenttab = $SESSION->questionnaire->current_tab;
         $skippedquestion = false;
         $skippedclass = '';
-        if (!array_key_exists('q'.$this->id, $data) && $this->dependquestion != 0) {
+        // If question number is one digit, display narrower margin than if 2 or more digits.
+        if ($qnum < 10) {
+            $margin = 'margin35';
+        } else {
+            $margin = 'margin45';
+        }
+        // If we are on report page and this questionnaire has dependquestions and this question was skipped.
+        if ( $currenttab != 'myvall' && $currenttab != 'preview' && $currenttab != 'view'
+                        && $this->dependquestion != 0 && !array_key_exists('q'.$this->id, $data)) {
             $skippedquestion = true;
-            $skippedclass = 'unselected';
+            $skippedclass = ' unselected';
             $qnum = '<span class="'.$skippedclass.'">('.$qnum.')</span>';
         }
+
+        // Do not display a question number for the label question type
         if ($this->type_id == QUESSECTIONTEXT) {
             $qnum = '';
         }
@@ -869,14 +880,14 @@ class questionnaire_question {
                             'alt' => get_string('required', 'questionnaire'),
                             'src' => $OUTPUT->pix_url('req')));
         }
-        echo html_writer::tag('h2', $qnum.' '.$required, array('class' => 'qn-number'));
+        echo html_writer::tag('h2', $qnum.$required, array('class' => 'qn-number'));
         echo html_writer::start_tag('div', array('class' => 'accesshide'));
         echo get_string('required', 'questionnaire');
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('legend');
         echo html_writer::start_tag('div', array('class' => 'qn-content'));
-        echo html_writer::start_tag('div', array('class' => 'qn-question '.$skippedclass));
+        echo html_writer::start_tag('div', array('class' => 'qn-question '.$margin.$skippedclass));
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
             $this->type_id == QUESDROP) {
             echo html_writer::start_tag('label', array('for' => $this->type . $this->id));
@@ -891,7 +902,7 @@ class questionnaire_question {
             echo html_writer::end_tag('label');
         }
         echo html_writer::end_tag('div');
-        echo html_writer::start_tag('div', array('class' => 'qn-answer'));
+        echo html_writer::start_tag('div', array('class' => 'qn-answer '.$margin));
     }
 
     public function questionend_survey_display() {

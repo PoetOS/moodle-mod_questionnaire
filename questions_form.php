@@ -42,6 +42,7 @@ class questionnaire_questions_form extends moodleform {
         $stredit = get_string('edit', 'questionnaire');
         $strremove = get_string('remove', 'questionnaire');
         $strmove = get_string('move');
+        $strmovehere = get_string('movehere');
         $stryes = get_string('yes');
         $strno = get_string('no');
 
@@ -79,23 +80,26 @@ class questionnaire_questions_form extends moodleform {
 
         $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
 
-        if (questionnaire_has_dependencies($questionnaire->questions)) {
+        $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
+
+        if ($questionnairehasdependencies) {
             $addqgroup[] =& $mform->createElement('submit', 'validate', get_string('validate', 'questionnaire'));
         }
 
         $mform->addGroup($addqgroup, 'addqgroup', get_string('addquestions', 'questionnaire'), ' ', false);
         $mform->addHelpButton('addqgroup', 'questiontypes', 'questionnaire');
 
-        if (isset($SESSION->questionnaire->validateresults) && $SESSION->questionnaire->validateresults != '') {
+        if (isset($SESSION->questionnaire->validateresults) &&  $SESSION->questionnaire->validateresults != '') {
             $mform->addElement('static', 'validateresult', '', '<div class="qdepend warning">'.
                 $SESSION->questionnaire->validateresults.'</div>');
+            $SESSION->questionnaire->validateresults = '';
         }
 
         $qnum = 0;
 
         // JR skip logic :: to prevent moving child higher than parent OR parent lower than child
         // we must get now the parent and child positions.
-        $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
+
         if ($questionnairehasdependencies) {
             $parentpositions = questionnaire_get_parent_positions ($questionnaire->questions);
             $childpositions = questionnaire_get_child_positions ($questionnaire->questions);
@@ -105,7 +109,7 @@ class questionnaire_questions_form extends moodleform {
 
         $mform->addElement('static', 'manageq', get_string('managequestions', 'questionnaire'));
         // TODO write specific help here.
-        $mform->addHelpButton('manageq', 'questiontypes', 'questionnaire');
+        $mform->addHelpButton('manageq', 'managequestions', 'questionnaire');
 
         $mform->addElement('html', '<div class="qcontainer">');
 
@@ -162,14 +166,14 @@ class questionnaire_questions_form extends moodleform {
                                 'alt' => $strremove,
                                 'title' => $strremove);
 
-                if ($question->type_id == QUESPAGEBREAK) {
+                if ($tid == QUESPAGEBREAK) {
                     $esrc = $CFG->wwwroot.'/mod/questionnaire/images/editd.gif';
                     $eextra = array('disabled' => 'disabled');
                 } else {
                     $esrc = $CFG->wwwroot.'/mod/questionnaire/images/edit.gif';
                 }
 
-                if ($question->type_id == QUESPAGEBREAK) {
+                if ($tid == QUESPAGEBREAK) {
                     $esrc = $spacer;
                     $eextra = array('disabled' => 'disabled');
                 } else {
@@ -185,18 +189,39 @@ class questionnaire_questions_form extends moodleform {
                 $manageqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
                 $msrc = $OUTPUT->pix_url('t/move');
 
-                // Do not allow moving parent question at position #1 to be moved down if it has a child at position < 4.
                 if ($questionnairehasdependencies) {
+                    // Do not allow moving parent question at position #1 to be moved down if it has a child at position < 4.
                     if ($pos == 1) {
                         if (isset($childpositions[$qid])) {
                             $maxdown = $childpositions[$qid];
                             if ($maxdown < 4) {
-                                $strdisabled = get_string('disabled', 'questionnaire');
+                                $strdisabled = get_string('movedisabled', 'questionnaire');
                                 $msrc = $OUTPUT->pix_url('t/block');
                                 $mextra = array('value' => $question->id,
                                                 'alt' => $strdisabled,
                                                 'title' => $strdisabled);
                                 $mextra += array('disabled' => 'disabled');
+                            }
+                        }
+                    }
+                    // Do not allow moving or deleting a page break if immediately followed by a child question.
+                    if ($tid == QUESPAGEBREAK) {
+                        if ($nextquestion = $DB->get_record('questionnaire_question', array('survey_id' => $sid,
+                                        'position' => $pos + 1, 'deleted' => 'n' ), $fields='dependquestion') ) {
+                            if ($nextquestion->dependquestion != 0) {
+                                $strdisabled = get_string('movedisabled', 'questionnaire');
+                                $msrc = $OUTPUT->pix_url('t/block');
+                                $mextra = array('value' => $question->id,
+                                                'alt' => $strdisabled,
+                                                'title' => $strdisabled);
+                                $mextra += array('disabled' => 'disabled');
+
+                                $rsrc = $msrc;
+                                $strdisabled = get_string('deletedisabled', 'questionnaire');
+                                $rextra = array('value' => $question->id,
+                                                'alt' => $strdisabled,
+                                                'title' => $strdisabled);
+                                $rextra += array('disabled' => 'disabled');
                             }
                         }
                     }
@@ -206,7 +231,7 @@ class questionnaire_questions_form extends moodleform {
                 $manageqgroup[] =& $mform->createElement('image', 'editbutton['.$question->id.']', $esrc, $eextra);
                 $manageqgroup[] =& $mform->createElement('image', 'removebutton['.$question->id.']', $rsrc, $rextra);
 
-                if ($question->type_id != QUESPAGEBREAK && $question->type_id != QUESSECTIONTEXT) {
+                if ($tid != QUESPAGEBREAK && $tid != QUESSECTIONTEXT) {
                     if ($required == 'y') {
                         $reqsrc = $OUTPUT->pix_url('t/stop');
                         $strrequired = get_string('required', 'questionnaire');
@@ -244,23 +269,23 @@ class questionnaire_questions_form extends moodleform {
                     }
                 }
 
-                if ($this->moveq != $question->id && $display) {
+                $typeid = $DB->get_field('questionnaire_question', 'type_id', array('id' => $this->moveq));
+
+                if ($display) {
                     // Do not move a page break to first position.
-                    if ($tid == QUESPAGEBREAK && $pos != 1) {
+                    if ($typeid == QUESPAGEBREAK && $pos == 1) {
+                        $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '');
+                    } else {
                         $mextra = array('value' => $question->id,
                                         'alt' => $strmove,
-                                        'title' => $strmove);
+                                        'title' => $strmovehere);
                         $msrc = $OUTPUT->pix_url('movehere');
                         $moveqgroup[] =& $mform->createElement('static', 'qnum2', '', '<div class="qnums unselected">'.
                                         $qnum_txt.'</div>&nbsp;');
                         $moveqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
-                        $newposition = $max == $pos ? 0 : $pos;
-                        $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$newposition.']', $msrc, $mextra);
+                        $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$pos.']', $msrc, $mextra);
                         $moveqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
                     }
-
-                } else if ($display) {
-                    $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '');
                 } else {
                     $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '');
                     $moveqgroup[] =& $mform->createElement('static', 'qnums', '', '');
@@ -280,7 +305,7 @@ class questionnaire_questions_form extends moodleform {
             if ($this->moveq) {
                 $mform->addGroup($moveqgroup, 'moveqgroup', '', '', false);
                 if ($this->moveq == $question->id && $display) {
-                    $mform->addElement('html', '<div class="qn-container moving">'); // Begin div qn-container.
+                    $mform->addElement('html', '<div class="qn-container moving" title="'.$strmove.'">'); // Begin div qn-container.
                 } else {
                     $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
                 }

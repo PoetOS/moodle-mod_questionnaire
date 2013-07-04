@@ -58,7 +58,6 @@ if (!$questionnaire->capabilities->editquestions) {
 $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
 $haschildren = array();
 $SESSION->questionnaire->current_tab = 'questions';
-$SESSION->questionnaire->validateresults = '';
 $reload = false;
 $sid = $questionnaire->survey->id;
 // Process form data.
@@ -77,41 +76,56 @@ if ($delq) {
     // Need to reload questions before setting deleted question to 'y'.
     $questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
     $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $sid));
-    $select = 'survey_id = '.$sid.' AND deleted = \'n\' AND position > '.
-                    $questions[$qid]->position;
+
+    // Just in case the page is refreshed (F5) after a question has been deleted.
+    if (isset($questions[$qid])) {
+        $select = 'survey_id = '.$sid.' AND deleted = \'n\' AND position > '.
+                        $questions[$qid]->position;
+    } else {
+        redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
+    }
+
     if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
         foreach ($records as $record) {
             $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
         }
     }
+    // Delete section breaks without asking for confirmation.
+    $qtype = $questionnaire->questions[$qid]->type_id;
+    if ($qtype == QUESPAGEBREAK && $questionnairehasdependencies) {
+            $SESSION->questionnaire->validateresults = questionnaire_check_page_breaks($questionnaire);
+    }
+    // No need to delete responses to those "question types" which are not real questions.
+    if ($qtype == QUESPAGEBREAK || $qtype == QUESSECTIONTEXT) {
+        $reload = true;
+    } else {
+        // Delete responses to that deleted question.
+        questionnaire_delete_responses($qid);
 
-    // Delete responses to that deleted question.
-    questionnaire_delete_responses($qid);
-
-    // The deleted question was a parent, so now we must delete its child question(s).
-    if (count($haschildren) !== 0) {
-        foreach ($haschildren as $qid => $child) {
-            // Need to reload questions first.
-            $questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
-            $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $sid));
-            $select = 'survey_id = '.$sid.' AND deleted = \'n\' AND position > '.
-                            $questions[$qid]->position;
-            if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
-                foreach ($records as $record) {
-                    $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
+        // The deleted question was a parent, so now we must delete its child question(s).
+        if (count($haschildren) !== 0) {
+            foreach ($haschildren as $qid => $child) {
+                // Need to reload questions first.
+                $questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
+                $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $sid));
+                $select = 'survey_id = '.$sid.' AND deleted = \'n\' AND position > '.
+                                $questions[$qid]->position;
+                if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
+                    foreach ($records as $record) {
+                        $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
+                    }
                 }
+                // Delete responses to that deleted question.
+                questionnaire_delete_responses($qid);
             }
-            // Delete responses to that deleted question.
-            questionnaire_delete_responses($qid);
+        }
+
+        // If no questions left in this questionnaire, remove all attempts and responses.
+        if (!$questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id') ) {
+            $DB->delete_records('questionnaire_response', array('survey_id' => $sid));
+            $DB->delete_records('questionnaire_attempts', array('qid' => $questionnaireid));
         }
     }
-
-    // If no questions left in this questionnaire, remove all attempts and responses.
-    if (!$questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id') ) {
-        $DB->delete_records('questionnaire_response', array('survey_id' => $sid));
-        $DB->delete_records('questionnaire_attempts', array('qid' => $questionnaireid));
-    }
-
     $reload = true;
 }
 
@@ -133,11 +147,8 @@ if ($action == 'main') {
         // Quickforms doesn't return values for 'image' input types using 'exportValue', so we need to grab
         // it from the raw submitted data.
         $exformdata = data_submitted();
-        if (isset($exformdata->moveupbutton)) {
-            $qformdata->moveupbutton = $exformdata->moveupbutton;
-        } else if (isset($exformdata->movednbutton)) {
-            $qformdata->movednbutton = $exformdata->movednbutton;
-        } else if (isset($exformdata->movebutton)) {
+
+        if (isset($exformdata->movebutton)) {
             $qformdata->movebutton = $exformdata->movebutton;
         } else if (isset($exformdata->moveherebutton)) {
             $qformdata->moveherebutton = $exformdata->moveherebutton;
@@ -157,7 +168,7 @@ if ($action == 'main') {
             $qtype = $questionnaire->questions[$qid]->type_id;
 
             // Delete section breaks without asking for confirmation.
-            if ($qtype == 99) {
+            if ($qtype == QUESPAGEBREAK) {
                 redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.'&amp;delq='.$qid);
             }
             if ($questionnairehasdependencies) {
@@ -215,31 +226,6 @@ if ($action == 'main') {
                 $reload = true;
             }
 
-        } else if (isset($qformdata->moveupbutton)) {
-            // Need to use the key, since IE returns the image position as the value rather than the specified
-            // value in the <input> tag.
-            $qid = key($qformdata->moveupbutton);
-            $DB->set_field('questionnaire_question', 'position', $questionnaire->questions[$qid]->position,
-                      array('survey_id' => $questionnaire->sid, 'position' => ($questionnaire->questions[$qid]->position-1)));
-            $DB->set_field('questionnaire_question', 'position', ($questionnaire->questions[$qid]->position-1),
-                      array('id' => $qid));
-            // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
-            redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
-            $reload = true;
-
-        } else if (isset($qformdata->movednbutton)) {
-            // Need to use the key, since IE returns the image position as the value rather than the specified
-            // value in the <input> tag.
-            $qid = key($qformdata->movednbutton);
-            $DB->set_field('questionnaire_question', 'position', $questionnaire->questions[$qid]->position,
-                      array('survey_id' => $questionnaire->sid, 'position' => ($questionnaire->questions[$qid]->position + 1),
-                            'deleted' => 'n'));
-            $DB->set_field('questionnaire_question', 'position', ($questionnaire->questions[$qid]->position+1),
-                           array('id' => $qid));
-            // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
-            redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
-            $reload = true;
-
         } else if (isset($qformdata->movebutton)) {
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
             redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.
@@ -249,61 +235,25 @@ if ($action == 'main') {
         } else if (isset($qformdata->moveherebutton)) {
             // Need to use the key, since IE returns the image position as the value rather than the specified
             // value in the <input> tag.
+
+            // No need to move question if new position = old position!
             $qpos = key($qformdata->moveherebutton);
-            $questionnaire->move_question($qformdata->moveq, $qpos);
-            // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
-            redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
-            $reload = true;
-
-        } else if (isset($qformdata->pos)) {
-            // Must be a position change...
-            foreach ($qformdata->pos as $qidx => $position) {
-                $newpos = $position;
-                if (($questionnaire->questions[$qidx]->position) != $newpos) {
-                    $DB->set_field('questionnaire_question', 'position', $newpos, array('id' => $qidx));
-                    $oldpos = $questionnaire->questions[$qidx]->position;
-                    break;
-                }
+            if ($qformdata->moveq != $qpos) {
+                $questionnaire->move_question($qformdata->moveq, $qpos);
             }
-
-            if ($newpos < $oldpos) {
-                $curpos = 1;
-                reset($questionnaire->questions);
-                foreach ($questionnaire->questions as $qidx => $ques) {
-                    if ($curpos < $newpos) {
-                        break;
-                    } else if ($curpos < $oldpos) {
-                        $DB->set_field('questionnaire_question', 'position', ($curpos+1), array('id' => $qidx));
-                    } else if ($curpos == $oldpos) {
-                        $DB->set_field('questionnaire_question', 'position', $newpos, array('id' => $qidx));
-                    } else {
-                        break;
-                    }
-                    $curpos++;
-                }
-            } else if ($newpos > $oldpos) {
-                $curpos = 1;
-                foreach ($questionnaire->questions as $qidx => $ques) {
-                    if ($curpos < $oldpos) {
-                        break;
-                    } else if ($curpos == $oldpos) {
-                        $DB->set_field('questionnaire_question', 'position', $newpos, array('id' => $qidx));
-                    } else if ($curpos <= $newpos) {
-                        $DB->set_field('questionnaire_question', 'position', ($curpos-1), array('id' => $qidx));
-                    } else {
-                        break;
-                    }
-                    $curpos++;
-                }
+            if ($questionnairehasdependencies) {
+                $SESSION->questionnaire->validateresults = questionnaire_check_page_breaks($questionnaire);
             }
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
             redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
             $reload = true;
 
         } else if (isset($qformdata->validate)) {
+            // Validates page breaks for depend questions.
             $SESSION->questionnaire->validateresults = questionnaire_check_page_breaks($questionnaire);
             $reload = true;
         }
+
     }
 
 } else if ($action == 'question') {
@@ -462,7 +412,6 @@ if ($action == 'main') {
                                                              $qformdata->qid, array('subdirs'=>true), $qformdata->content);
             $result = $DB->set_field('questionnaire_question', 'content', $content, array('id' => $qformdata->qid));
             if ($dependency) {
-                echo"new dependency+-+-";
                 questionnaire_check_page_breaks($questionnaire);
             }
         }
@@ -599,6 +548,17 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
 
     $qid = key($qformdata->removebutton);
     $question = $questionnaire->questions[$qid];
+    $qtype = $question->type_id;
+
+    // Count responses already saved for that question.
+    $countresps = 0;
+    if ($qtype != QUESSECTIONTEXT) {
+        $sql = 'SELECT response_table FROM {questionnaire_question_type} WHERE typeid = '.$qtype;
+        if ($resptable = $DB->get_record_sql($sql)) {
+            $sql = 'SELECT COUNT(id) FROM {questionnaire_'.$resptable->response_table.'} WHERE question_id ='.$qid;
+            $countresps = $DB->count_records_sql($sql);
+        }
+    }
 
     // Needed to print potential media in question text.
     $qcontent = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
@@ -606,7 +566,11 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
 
     $num = get_string('num', 'questionnaire');
     $pos = $question->position;
-    $msg = '<div class="warning centerpara"><p>'.get_string('confirmdelquestion', 'questionnaire', $num.$pos).'</p></div>';
+    $msg = '<div class="warning centerpara"><p>'.get_string('confirmdelquestion', 'questionnaire', $num.$pos).'</p>';
+    if ($countresps !== 0) {
+        $msg .= '<p>'.get_string('confirmdelquestionresps', 'questionnaire', $countresps).'</p>';
+    }
+    $msg .= '</div>';
     $msg .= $num.$pos.'<div class="qn-question">'.$qcontent.'</div>';
     $args = "id={$questionnaire->cm->id}";
     $urlno = new moodle_url("/mod/questionnaire/questions.php?{$args}");
