@@ -8,8 +8,8 @@
     width: 100%; 
 }
 
-#page-mod-questionnaire-questions div.qcontainer div.qnums,
-#page-mod-questionnaire-report div.qcontainer div.qnums {
+#page-mod-questionnaire-questions div.qcontainer div.qnums/* ,
+#page-mod-questionnaire-report div.qcontainer div.qnums */ {
     display: block;
     font-weight: bold;
     width: auto;
@@ -111,13 +111,6 @@ body#page-mod-questionnaire-complete .surveyPage {
     margin-bottom: 5px;
 }
 
-.questionNumber {
-    vertical-align: top;
-    font-family:"Courier New", Courier, monospace;
-    font-size:1.2em;
-    font-weight:bold;
-}
-
 /* alternate columns formattting */
 
 body#page-mod-questionnaire-complete .c0,
@@ -161,8 +154,7 @@ body#page-mod-questionnaire-complete .notice .buttons form {
 
 body#page-mod-questionnaire-report .generaltable,
 body#page-mod-questionnaire-myreport .generaltable {
-    width: 95%;
-    margin-left: 5%;
+    margin-left: 45px;
 }
 .floatprinticon {
     margin-top:-30px;
@@ -179,6 +171,7 @@ body#page-mod-questionnaire-myreport .generaltable {
 #page-mod-questionnaire-print .qn-legend,
 #page-mod-questionnaire-myreport .qn-legend {
      float: left;
+     font-size:inherit;
      width: auto;
 }
 
@@ -253,19 +246,24 @@ body#page-mod-questionnaire-myreport .generaltable {
     padding: 0.5em; 
     background: #eee;
 }
-.qn-container h2.qn-number {
+
+#page-mod-questionnaire-complete .qn-info h2.qn-number,
+#page-mod-questionnaire-report .qn-info h2.qn-number {
     margin: 0;
-}
-.qn-question {
-    padding: 0.5em;
-    margin: 0 0 0.5em;
+    font-size: 1.2em;
+    line-height: 1.4em;
 }
 
-.margin35 {
-    margin-left: 35px;
-}
-.margin45 {
+
+body#page-mod-questionnaire-complete .qn-question,
+body#page-mod-questionnaire-report .qn-question,
+body#page-mod-questionnaire-complete .qn-answer {
+    margin: 0 0 0.5em;
     margin-left: 45px;
+}
+
+.widthauto {
+    width: auto!important;
 }
 .req {
     font-size: x-small;
@@ -306,4 +304,8 @@ body#page-mod-questionnaire-myreport .generaltable {
 
 #page-mod-questionnaire-questions .moving {
     border: medium dotted maroon;
+}
+
+.qn-content {
+    margin-bottom: 10px;
 }

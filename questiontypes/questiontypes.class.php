@@ -844,15 +844,10 @@ class questionnaire_question {
 
     public function questionstart_survey_display($qnum, $data='') {
         global $OUTPUT, $SESSION;
+        $qnum +=10; // TODO
         $currenttab = $SESSION->questionnaire->current_tab;
         $skippedquestion = false;
         $skippedclass = '';
-        // If question number is one digit, display narrower margin than if 2 or more digits.
-        if ($qnum < 10) {
-            $margin = 'margin35';
-        } else {
-            $margin = 'margin45';
-        }
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
         if ( $currenttab != 'myvall' && $currenttab != 'preview' && $currenttab != 'view'
                         && $this->dependquestion != 0 && !array_key_exists('q'.$this->id, $data)) {
@@ -887,7 +882,7 @@ class questionnaire_question {
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('legend');
         echo html_writer::start_tag('div', array('class' => 'qn-content'));
-        echo html_writer::start_tag('div', array('class' => 'qn-question '.$margin.$skippedclass));
+        echo html_writer::start_tag('div', array('class' => 'qn-question '.$skippedclass));
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
             $this->type_id == QUESDROP) {
             echo html_writer::start_tag('label', array('for' => $this->type . $this->id));
@@ -902,7 +897,7 @@ class questionnaire_question {
             echo html_writer::end_tag('label');
         }
         echo html_writer::end_tag('div');
-        echo html_writer::start_tag('div', array('class' => 'qn-answer '.$margin));
+        echo html_writer::start_tag('div', array('class' => 'qn-answer'));
     }
 
     public function questionend_survey_display() {
@@ -1641,7 +1636,7 @@ class questionnaire_question {
                 if ($osgood) {
                     list($content, $contentright) = preg_split('/[|]/', $content);
                 }
-                echo '<td align="left">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
+                echo '<td style="text-align:left">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
                 $bg = 'c0';
                 for ($j = 0; $j < $this->length; $j++) {
                     $checked = ((isset($data->$str) && ($j == $data->$str)) ? ' checked="checked"' : '');
@@ -1720,6 +1715,7 @@ class questionnaire_question {
         $strtotal = get_string('total', 'questionnaire');
         $table = new html_table();
         $table->size = array();
+
         $table->align = array();
         $table->head = array();
         $table->wrap = array();
@@ -1880,8 +1876,9 @@ class questionnaire_question {
         $strnum = get_string('num', 'questionnaire');
         $table = new html_table();
         $table->align = array('left', 'right');
-        $table->head = array($strnum, $strresponse, '');
-        $table->size = array('10%', '15%', '*');
+        $table->head = array($strnum, $strresponse);
+        $table->size = array('*', '*');
+        $table->attributes['class'] = 'generaltable widthauto';
 
         if (!empty($this->counts) && is_array($this->counts)) {
             ksort ($this->counts); // Sort dates into chronological order.
@@ -1910,8 +1907,9 @@ class questionnaire_question {
         $straverage = get_string('average', 'questionnaire');
         $table = new html_table();
         $table->align = array('left', 'right');
-        $table->head = array($strnum, $strresponse, '');
-        $table->size = array('10%', '15%', '*');
+        $table->head = array($strnum, $strresponse);
+        $table->size = array('*', '*');
+        $table->attributes['class'] = 'generaltable widthauto';
 
         if (!empty($this->counts) && is_array($this->counts)) {
             ksort ($this->counts);
@@ -1921,7 +1919,7 @@ class questionnaire_question {
                 $sum += $text * $num;
             }
             $table->data[] = 'hr';
-               $table->data[] = array($strtotal , $sum);
+            $table->data[] = array($strtotal , $sum);
             $avg = $sum/$nbresponses;
                $table->data[] = array($straverage , sprintf('%.'.$precision.'f', $avg));
         } else {
@@ -1955,24 +1953,23 @@ class questionnaire_question {
         $table = new html_table();
 
         $table->align = array('', '', 'center', 'right');
+
         if ($isna) {
-            $table->head = array('', $stravg, '⇓', $isnahead);
+            $table->head = array('', $stravg, '&dArr;', $isnahead);
         } else {
             if ($osgood) {
                 $stravg = '<div style="text-align:center">'.$stravgrank.'</div>';
-                $table->head = array('', $stravg, '', '');
+                $table->head = array('', $stravg, '');
             } else {
-                $table->head = array('', $stravg, '⇓');
+                $table->head = array('', $stravg, '&dArr;');
             }
         }
         if (!$osgood) {
             $rightcolwidth = '5%';
-            $avgcolwidth = '5%';
         } else {
             $rightcolwidth = '30%';
-            $avgcolwidth = '0%';
         }
-        $table->size = array('*', '40%', $rightcolwidth, $avgcolwidth);
+        $table->size = array('*', '40%', $rightcolwidth);
 
         $image_url = $CFG->wwwroot.'/mod/questionnaire/images/';
         if (!$length) {
@@ -1993,7 +1990,6 @@ class questionnaire_question {
             }
         }
         $nbchoices = $this->length;
-        $align = 'center';
         for ($j = 0; $j < $this->length; $j++) {
             if (isset($n[$j])) {
                 $str = $n[$j];
@@ -2011,7 +2007,7 @@ class questionnaire_question {
             if ($isrestricted && $i == $length - 1) {
                 $str = "...";
             }
-            $out .= '<td align = "center" style="width:'.$width.'%" >'.$str.'</td>';
+            $out .= '<td style="text-align: center; width:'.$width.'%" >'.$str.'</td>';
         }
         $out .= '</tr></table>';
         $table->data[] = array('', $out, '');
@@ -2221,11 +2217,11 @@ class questionnaire_question {
             array_push($headings, $na);
             array_push($align, 'center');
         }
-
+// TODO JR align Osgood right, center, center, etc. left
         $table = new html_table();
         $table->head = $headings;
         $table->align = $align;
-
+        $table->attributes['class'] = 'generaltable widthauto';
         // Now display the responses.
         foreach ($ranks as $content => $rank) {
             $data = array();

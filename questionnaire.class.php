@@ -2524,7 +2524,7 @@ class questionnaire {
                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
             echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
         }
-        $qnum = 0;
+        $qnum = 10; // TODO
         foreach ($this->questions as $question) {
             if ($question->type_id == QUESPAGEBREAK) {
                 continue;
@@ -2536,11 +2536,10 @@ class questionnaire {
             echo html_writer::start_tag('div', array('class' => 'qn-info'));
             if ($question->type_id != QUESSECTIONTEXT) {
                 echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
-                echo html_writer::end_tag('h2'); // End qn-number.
             }
             echo html_writer::end_tag('div'); // End qn-info.
             echo html_writer::start_tag('div', array('class' => 'qn-content'));
-            echo html_writer::start_tag('div', array('class' => 'qn-question margin45'));
+            echo html_writer::start_tag('div', array('class' => 'qn-question'));
             echo format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
                     $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
             echo html_writer::end_tag('div'); // End qn-question.
