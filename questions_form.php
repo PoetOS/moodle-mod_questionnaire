@@ -37,7 +37,8 @@ class questionnaire_questions_form extends moodleform {
         $sid = $questionnaire->survey->id;
         $mform    =& $this->_form;
 
-        $mform->addElement('header', 'questionhdr', get_string('questions', 'questionnaire'));
+        $mform->addElement('header', 'questionhdr', get_string('addquestions', 'questionnaire'));
+        $mform->addHelpButton('questionhdr', 'questiontypes', 'questionnaire');
 
         $stredit = get_string('edit', 'questionnaire');
         $strremove = get_string('remove', 'questionnaire');
@@ -82,12 +83,13 @@ class questionnaire_questions_form extends moodleform {
 
         $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
 
+        // TODO maybe this check can be removed if all needed page breaks are correctly inserted
+        // when questions are created/edited/moved/deleted.
         if ($questionnairehasdependencies) {
             $addqgroup[] =& $mform->createElement('submit', 'validate', get_string('validate', 'questionnaire'));
         }
 
-        $mform->addGroup($addqgroup, 'addqgroup', get_string('addquestions', 'questionnaire'), ' ', false);
-        $mform->addHelpButton('addqgroup', 'questiontypes', 'questionnaire');
+        $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
 
         if (isset($SESSION->questionnaire->validateresults) &&  $SESSION->questionnaire->validateresults != '') {
             $mform->addElement('static', 'validateresult', '', '<div class="qdepend warning">'.
@@ -105,9 +107,7 @@ class questionnaire_questions_form extends moodleform {
             $childpositions = questionnaire_get_child_positions ($questionnaire->questions);
         }
 
-        $mform->addElement('html', '<hr>');
-
-        $mform->addElement('static', 'manageq', get_string('managequestions', 'questionnaire'));
+        $mform->addElement('header', 'manageq', get_string('managequestions', 'questionnaire'));
         // TODO write specific help here.
         $mform->addHelpButton('manageq', 'managequestions', 'questionnaire');
 
@@ -133,9 +133,9 @@ class questionnaire_questions_form extends moodleform {
             }
 
             $pos = $question->position;
-            $qnum_txt = '&nbsp;';
+            $qnumtxt = '&nbsp;';
             $qnum++;
-            $qnum_txt = $qnum;
+            $qnumtxt = $qnum;
 
             // Needed for non-English languages JR.
             $qtype = '['.questionnaire_get_type($tid).']';
@@ -183,7 +183,7 @@ class questionnaire_questions_form extends moodleform {
                         $qreq = '';
 
                 // Question numbers.
-                $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '<div class="qnums">'.$qnum_txt.'</div>');
+                $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '<div class="qnums">'.$qnumtxt.'</div>');
 
                 // Need to index by 'id' since IE doesn't return assigned 'values' for image inputs.
                 $manageqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
@@ -204,24 +204,30 @@ class questionnaire_questions_form extends moodleform {
                             }
                         }
                     }
-                    // Do not allow moving or deleting a page break if immediately followed by a child question.
+                    // Do not allow moving or deleting a page break if immediately followed by a child question
+                    // or immediately preceded by a question with a dependency and followed by a non-dependent question.
                     if ($tid == QUESPAGEBREAK) {
                         if ($nextquestion = $DB->get_record('questionnaire_question', array('survey_id' => $sid,
-                                        'position' => $pos + 1, 'deleted' => 'n' ), $fields='dependquestion') ) {
-                            if ($nextquestion->dependquestion != 0) {
-                                $strdisabled = get_string('movedisabled', 'questionnaire');
-                                $msrc = $OUTPUT->pix_url('t/block');
-                                $mextra = array('value' => $question->id,
-                                                'alt' => $strdisabled,
-                                                'title' => $strdisabled);
-                                $mextra += array('disabled' => 'disabled');
+                                        'position' => $pos + 1, 'deleted' => 'n' ), $fields='dependquestion, name, content') ) {
+                            if ($previousquestion = $DB->get_record('questionnaire_question', array('survey_id' => $sid,
+                                            'position' => $pos - 1, 'deleted' => 'n' ), $fields='dependquestion, name, content')) {
+                                if ($nextquestion->dependquestion != 0
+                                                || ($previousquestion->dependquestion != 0
+                                                    && $nextquestion->dependquestion == 0) ) {
+                                    $strdisabled = get_string('movedisabled', 'questionnaire');
+                                    $msrc = $OUTPUT->pix_url('t/block');
+                                    $mextra = array('value' => $question->id,
+                                                    'alt' => $strdisabled,
+                                                    'title' => $strdisabled);
+                                    $mextra += array('disabled' => 'disabled');
 
-                                $rsrc = $msrc;
-                                $strdisabled = get_string('deletedisabled', 'questionnaire');
-                                $rextra = array('value' => $question->id,
-                                                'alt' => $strdisabled,
-                                                'title' => $strdisabled);
-                                $rextra += array('disabled' => 'disabled');
+                                    $rsrc = $msrc;
+                                    $strdisabled = get_string('deletedisabled', 'questionnaire');
+                                    $rextra = array('value' => $question->id,
+                                                    'alt' => $strdisabled,
+                                                    'title' => $strdisabled);
+                                    $rextra += array('disabled' => 'disabled');
+                                }
                             }
                         }
                     }
@@ -248,7 +254,7 @@ class questionnaire_questions_form extends moodleform {
                 $manageqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
 
             } else {
-                $manageqgroup[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$qnum_txt.'</div>');
+                $manageqgroup[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$qnumtxt.'</div>');
                 $moveqgroup[] =& $mform->createElement('static', 'qnum', '', '');
 
                 $display = true;
@@ -281,7 +287,7 @@ class questionnaire_questions_form extends moodleform {
                                         'title' => $strmovehere);
                         $msrc = $OUTPUT->pix_url('movehere');
                         $moveqgroup[] =& $mform->createElement('static', 'qnum2', '', '<div class="qnums unselected">'.
-                                        $qnum_txt.'</div>&nbsp;');
+                                        $qnumtxt.'</div>&nbsp;');
                         $moveqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
                         $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$pos.']', $msrc, $mextra);
                         $moveqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
@@ -305,7 +311,7 @@ class questionnaire_questions_form extends moodleform {
             if ($this->moveq) {
                 $mform->addGroup($moveqgroup, 'moveqgroup', '', '', false);
                 if ($this->moveq == $question->id && $display) {
-                    $mform->addElement('html', '<div class="qn-container moving" title="'.$strmove.'">'); // Begin div qn-container.
+                    $mform->addElement('html', '<div class="moving" title="'.$strmove.'">'); // Begin div qn-container.
                 } else {
                     $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
                 }
@@ -353,7 +359,7 @@ class questionnaire_questions_form extends moodleform {
 class questionnaire_edit_question_form extends moodleform {
 
     public function definition() {
-        global $CFG, $COURSE, $questionnaire, $question, $questionnaire_realms, $SESSION;
+        global $CFG, $COURSE, $questionnaire, $question, $questionnairerealms, $SESSION;
         global $DB;
 
         // The 'sticky' required response value for further new questions.
@@ -465,8 +471,8 @@ class questionnaire_edit_question_form extends moodleform {
 		        $qtype='sectionbreak';
 		}
 
-        $mform->addElement('header', 'questionhdr', $streditquestion);
-        $mform->addHelpButton('questionhdr', $qtype, 'questionnaire');
+        $mform->addElement('header', 'questionhdredit', $streditquestion);
+        $mform->addHelpButton('questionhdredit', $qtype, 'questionnaire');
 
         // Name and required fields.
         if ($question->type_id != QUESSECTIONTEXT && $question->type_id != '') {
@@ -520,14 +526,27 @@ class questionnaire_edit_question_form extends moodleform {
         $mform->setType('precise', PARAM_INT);
 
         // Dependence fields.
-        $position = isset($question->position) ? $question->position : count($questionnaire->questions) + 1;
-        $dependencies = questionnaire_get_dependencies($questionnaire->questions, $position);
-        if (count($dependencies) > 1) {
-            $question->dependquestion = isset($question->dependquestion) ? $question->dependquestion.','.
-                $question->dependchoice : '0,0';
-            $group = array($mform->createElement('selectgroups', 'dependquestion', '', $dependencies) );
-            $mform->addGroup($group, 'selectdependency', get_string('dependquestion', 'questionnaire'), '', false);
-            $mform->addHelpButton('selectdependency', 'dependquestion', 'questionnaire');
+
+        if ($questionnaire->navigate) {
+            $position = isset($question->position) ? $question->position : count($questionnaire->questions) + 1;
+            $dependencies = questionnaire_get_dependencies($questionnaire->questions, $position);
+            if (count($dependencies) > 1) {
+                $mform->addElement('hidden', 'cannotchangeparentifchildren');
+                $mform->setType('cannotchangeparentifchildren', PARAM_INT);
+                $mform->setDefault('cannotchangeparentifchildren', false);
+                if (isset($question->qid)) {
+                    $haschildren = questionnaire_get_descendants ($questionnaire->questions, $question->qid);
+                    if (count($haschildren) !== 0) {
+                        $mform->setDefault('cannotchangeparentifchildren', true);
+                    }
+                }
+                $question->dependquestion = isset($question->dependquestion) ? $question->dependquestion.','.
+                                $question->dependchoice : '0,0';
+                $group = array($mform->createElement('selectgroups', 'dependquestion', '', $dependencies) );
+                $mform->addGroup($group, 'selectdependency', get_string('dependquestion', 'questionnaire'), '', false);
+                $mform->addHelpButton('selectdependency', 'dependquestion', 'questionnaire');
+                $mform->disabledIf('selectdependency', 'cannotchangeparentifchildren', 'eq', 1);
+            }
         }
 
         // Content field.
@@ -541,9 +560,9 @@ class questionnaire_edit_question_form extends moodleform {
         // has answer options ... so show that part of the form.
         if ($DB->get_field('questionnaire_question_type', 'has_choices', array('typeid' => $question->type_id)) == 'y' ) {
             if (!empty($question->choices)) {
-                $num_choices = count($question->choices);
+                $numchoices = count($question->choices);
             } else {
-                $num_choices = 0;
+                $numchoices = 0;
             }
 
             if (!empty($question->choices)) {
@@ -567,7 +586,7 @@ class questionnaire_edit_question_form extends moodleform {
 
             $mform->addElement('html', '</div>');
 
-            $mform->addElement('hidden', 'num_choices', $num_choices);
+            $mform->addElement('hidden', 'num_choices', $numchoices);
             $mform->setType('num_choices', PARAM_INT);
         }
 

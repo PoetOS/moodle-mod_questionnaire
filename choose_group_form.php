@@ -56,7 +56,7 @@ class questionnaire_choose_group_form extends moodleform {
         $mform->addElement('hidden', 'id');
         $mform->addElement('hidden', 'do_show');
         // Visible elements.
-        $groups_options = array();
+        $groupsoptions = array();
         if (isset($this->questionnairedata->currentgroupid)) {
             $currentgroupid = $this->questionnairedata->currentgroupid;
         }
@@ -64,7 +64,7 @@ class questionnaire_choose_group_form extends moodleform {
             $canviewallgroups =  $this->questionnairedata->canviewallgroups;
             $groupmode =  $this->questionnairedata->groupmode;
             if ($canviewallgroups) {
-                $groups_options['-1'] = get_string('allparticipants');
+                $groupsoptions['-1'] = get_string('allparticipants');
             }
             // Count number of responses in each group.
             $castsql = $DB->sql_cast_char2int('R.username');
@@ -82,18 +82,18 @@ class questionnaire_choose_group_form extends moodleform {
                 } else {
                     $respscount = 0;
                 }
-                $groups_options[$group->id] = get_string('group').': '.$group->name.' ('.$respscount.')';
+                $groupsoptions[$group->id] = get_string('group').': '.$group->name.' ('.$respscount.')';
             }
             if ($canviewallgroups) {
-                $groups_options['-2'] = '---'.get_string('membersofselectedgroup', 'group').' '.get_string('allgroups').'---';
-                $groups_options['-3'] = '---'.get_string('groupnonmembers').'---';
+                $groupsoptions['-2'] = '---'.get_string('membersofselectedgroup', 'group').' '.get_string('allgroups').'---';
+                $groupsoptions['-3'] = '---'.get_string('groupnonmembers').'---';
             }
 			if ($groupmode == 2) {
-				$groups_options['-2'] = '---'.get_string('membersofselectedgroup', 'group').' '.get_string('allgroups').'---';
+				$groupsoptions['-2'] = '---'.get_string('membersofselectedgroup', 'group').' '.get_string('allgroups').'---';
 			}
         }
         $attributes = 'onChange="M.core_formchangechecker.set_form_submitted(); this.form.submit()"';
-        $elementgroup[] =& $mform->createElement('select', 'currentgroupid', '', $groups_options, $attributes);
+        $elementgroup[] =& $mform->createElement('select', 'currentgroupid', '', $groupsoptions, $attributes);
         // Buttons.
 		$mform->setDefault('currentgroupid', $currentgroupid);
         $mform->addGroup($elementgroup, 'elementgroup', '', array(' '), false);

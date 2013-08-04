@@ -402,17 +402,17 @@ function questionnaire_upgrade_2007120101() {
     $status = true;
 
     // Shorten table names to bring them in accordance with the XML DB schema.
-    $q_table = new xmldb_table('questionnaire_question_choice');
-    $dbman->rename_table($q_table, 'questionnaire_quest_choice', false);
-    unset($q_table);
+    $qtable = new xmldb_table('questionnaire_question_choice');
+    $dbman->rename_table($qtable, 'questionnaire_quest_choice', false);
+    unset($qtable);
 
-    $q_table = new xmldb_table('questionnaire_response_multiple');
-    $dbman->rename_table($q_table, 'questionnaire_resp_multiple', false);
-    unset($q_table);
+    $qtable = new xmldb_table('questionnaire_response_multiple');
+    $dbman->rename_table($qtable, 'questionnaire_resp_multiple', false);
+    unset($qtable);
 
-    $q_table = new xmldb_table('questionnaire_response_single');
-    $dbman->rename_table($q_table, 'questionnaire_resp_single', false);
-    unset($q_table);
+    $qtable = new xmldb_table('questionnaire_response_single');
+    $dbman->rename_table($qtable, 'questionnaire_resp_single', false);
+    unset($qtable);
 
     // Upgrade the questionnaire_question_type table to use typeid.
     $table = new xmldb_table('questionnaire_question_type');

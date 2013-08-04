@@ -29,7 +29,7 @@ $inactive = array();
 $activated = array();
 
 $courseid = optional_param('courseid', false, PARAM_INT);
-$current_tab = $SESSION->questionnaire->current_tab;
+$currenttab = $SESSION->questionnaire->current_tab;
 
 // If this questionnaire has a survey, get the survey and owner.
 // In a questionnaire instance created "using" a PUBLIC questionnaire, prevent anyone from editing settings, editing questions,
@@ -66,7 +66,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
     $row[] = new tabobject('myreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
                            $argstr), get_string('yourresponses', 'questionnaire'));
 
-    if (in_array($current_tab, array('mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'))) {
+    if (in_array($currenttab, array('mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'))) {
         $inactive[] = 'myreport';
         $activated[] = 'myreport';
         $row2 = array();
@@ -99,11 +99,11 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
     $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                            $argstr.'&action=vall'), get_string('viewresponses', 'questionnaire', $numresp));
-    if (in_array($current_tab, array('vall', 'vresp', 'valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv',
+    if (in_array($currenttab, array('vall', 'vresp', 'valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv',
                                      'vrespsummary', 'individualresp', 'printresp', 'deleteresp'))) {
         $inactive[] = 'allreport';
         $activated[] = 'allreport';
-        if ($current_tab == 'vrespsummary' || $current_tab == 'valldefault') {
+        if ($currenttab == 'vrespsummary' || $currenttab == 'valldefault') {
             $inactive[] = 'vresp';
         }
         $row2 = array();
@@ -114,21 +114,21 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
             $argstr2 = $argstr.'&byresponse=1&action=vresp';
             $row2[] = new tabobject('vrespsummary', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('viewbyresponse', 'questionnaire'));
-            if ($current_tab == 'individualresp' || $current_tab == 'deleteresp') {
+            if ($currenttab == 'individualresp' || $currenttab == 'deleteresp') {
                 $argstr2 = $argstr.'&byresponse=1&action=vresp';
                 $row2[] = new tabobject('vresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                         get_string('viewindividualresponse', 'questionnaire'));
             }
         }
     }
-    if (in_array($current_tab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
+    if (in_array($currenttab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
         $activated[] = 'vall';
         $row3 = array();
 
         $argstr2 = $argstr.'&action=vall';
         $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('order_default', 'questionnaire'));
-        if ($current_tab != 'downloadcsv' && $current_tab != 'deleteall') {
+        if ($currenttab != 'downloadcsv' && $currenttab != 'deleteall') {
             $argstr2 = $argstr.'&action=vallasort&currentgroupid='.$currentgroupid;
             $row3[] = new tabobject('vallasort', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('order_ascending', 'questionnaire'));
@@ -149,7 +149,7 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
         }
     }
 
-    if (in_array($current_tab, array('individualresp', 'printresp', 'deleteresp'))) {
+    if (in_array($currenttab, array('individualresp', 'printresp', 'deleteresp'))) {
         $inactive[] = 'vresp';
         $activated[] = 'vresp';
         $inactive[] = 'printresp';
@@ -184,15 +184,15 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
     $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                            $argstr.'&action=vall'), get_string('viewresponses', 'questionnaire', $numresp));
-    if (in_array($current_tab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
+    if (in_array($currenttab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
         $inactive[] = 'vall';
         $activated[] = 'vall';
         $row2 = array();
         $argstr2 = $argstr.'&action=vall';
         $row2[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('summary', 'questionnaire'));
-		$inactive[] = $current_tab;
-		$activated[] = $current_tab;
+		$inactive[] = $currenttab;
+		$activated[] = $currenttab;
         $row3 = array();
         $argstr2 = $argstr.'&action=vall';
         $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
@@ -215,7 +215,7 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
             $row2[] = new tabobject('downloadcsv', $link, get_string('downloadtext'));
         }
         if (count($row2) <= 1) {
-            $current_tab = 'allreport';
+            $currenttab = 'allreport';
         }
     }
 }
@@ -238,6 +238,6 @@ if ((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {
         $tabs[] = $row3;
     }
 
-    print_tabs($tabs, $current_tab, $inactive, $activated);
+    print_tabs($tabs, $currenttab, $inactive, $activated);
 
 }

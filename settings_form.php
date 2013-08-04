@@ -27,7 +27,7 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
 class questionnaire_settings_form extends moodleform {
 
     public function definition() {
-        global $questionnaire, $questionnaire_realms;
+        global $questionnaire, $questionnairerealms;
 
         $mform    =& $this->_form;
 
@@ -35,13 +35,13 @@ class questionnaire_settings_form extends moodleform {
 
         $capabilities = questionnaire_load_capabilities($questionnaire->cm->id);
         if (!$capabilities->createtemplates) {
-            unset($questionnaire_realms['template']);
+            unset($questionnairerealms['template']);
         }
         if (!$capabilities->createpublic) {
-            unset($questionnaire_realms['public']);
+            unset($questionnairerealms['public']);
         }
-        if (isset($questionnaire_realms['public']) || isset($questionnaire_realms['template'])) {
-            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $questionnaire_realms);
+        if (isset($questionnairerealms['public']) || isset($questionnairerealms['template'])) {
+            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $questionnairerealms);
             $mform->setDefault('realm', $questionnaire->survey->realm);
             $mform->addHelpButton('realm', 'realm', 'questionnaire');
         } else {
@@ -101,7 +101,7 @@ class questionnaire_settings_form extends moodleform {
         $mform->setType('owner', PARAM_RAW);
 
         // Buttons.
-        $mform->addElement('submit', 'submitbutton', get_string('savesettings', 'questionnaire'));
+        $this->add_action_buttons();
     }
 
     public function validation($data, $files) {

@@ -21,6 +21,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/settings_form.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
+$cancel = optional_param('cancel', '', PARAM_ALPHA);
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
     print_error('invalidcoursemodule');
@@ -49,24 +50,24 @@ if (!$questionnaire->capabilities->manage) {
     print_error('nopermissions', 'error', 'mod:questionnaire:manage');
 }
 
-$settings_form = new questionnaire_settings_form('qsettings.php');
+$settingsform = new questionnaire_settings_form('qsettings.php');
 $sdata = clone($questionnaire->survey);
 $sdata->sid = $questionnaire->survey->id;
 $sdata->id = $cm->id;
 
-$draftid_editor = file_get_submitted_draft_itemid('info');
-$currentinfo = file_prepare_draft_area($draftid_editor, $context->id, 'mod_questionnaire', 'info',
+$draftideditor = file_get_submitted_draft_itemid('info');
+$currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'info',
                 $sdata->sid, array('subdirs'=>true), $questionnaire->survey->info);
-$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftid_editor);
+$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
 
-$draftid_editor = file_get_submitted_draft_itemid('thankbody');
-$currentinfo = file_prepare_draft_area($draftid_editor, $context->id, 'mod_questionnaire', 'thankbody',
+$draftideditor = file_get_submitted_draft_itemid('thankbody');
+$currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'thankbody',
                 $sdata->sid, array('subdirs'=>true), $questionnaire->survey->thank_body);
-$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftid_editor);
+$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
 
-$settings_form->set_data($sdata);
+$settingsform->set_data($sdata);
 
-if ($settings = $settings_form->get_data()) {
+if ($settings = $settingsform->get_data()) {
     $sdata = new Object();
     $sdata->id = $settings->sid;
     $sdata->name = $settings->name;
@@ -98,6 +99,8 @@ if ($settings = $settings_form->get_data()) {
         redirect ($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id,
                   get_string('settingssaved', 'questionnaire'));
     }
+} else if ($cancel) {
+    redirect($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id);
 }
 
 // Print the page header.
@@ -106,5 +109,5 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(get_string('editingquestionnaire', 'questionnaire'));
 echo $OUTPUT->header();
 require('tabs.php');
-$settings_form->display();
+$settingsform->display();
 echo $OUTPUT->footer($course);

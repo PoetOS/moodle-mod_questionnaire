@@ -18,7 +18,7 @@
                 <FIELD NAME="opendate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp to open access" PREVIOUS="resp_view" NEXT="closedate"/>
                 <FIELD NAME="closedate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp to close access on" PREVIOUS="opendate" NEXT="resume"/>
                 <FIELD NAME="resume" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can be saved and resumed." PREVIOUS="closedate" NEXT="navigate"/>
-                <FIELD NAME="navigate" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can have page navigation." PREVIOUS="resume" NEXT="grade"/>
+                <FIELD NAME="navigate" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can have page branching." PREVIOUS="resume" NEXT="grade"/>
                 <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="Assign a grade to be received on submission." PREVIOUS="navigate" NEXT="sid"/>
                 <FIELD NAME="sid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id entry in the questionnaire_survey field." PREVIOUS="grade" NEXT="timemodified"/>
                 <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The timestamp record last modified." PREVIOUS="sid" NEXT="completionsubmit"/>

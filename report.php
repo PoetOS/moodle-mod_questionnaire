@@ -613,11 +613,11 @@ switch ($action) {
         $SESSION->questionnaire->currentgroupid = $currentgroupid;
         if (is_array($questionnairegroups) && $groupmode > 0 && $groupscount > 1 - $questionnaire->canviewallgroups) {
             require_once($CFG->dirroot.'/mod/questionnaire/choose_group_form.php');
-            $choose_group_form = new questionnaire_choose_group_form();
-            $choose_group_form->set_questionnairedata(array('groups'=>$questionnairegroups,
+            $choosegroupform = new questionnaire_choose_group_form();
+            $choosegroupform->set_questionnairedata(array('groups'=>$questionnairegroups,
                  'currentgroupid'=>$currentgroupid, 'groupmode'=>$groupmode, 'canviewallgroups'=>$questionnaire->canviewallgroups));
-            $choose_group_form->set_form_elements();
-            $choose_group_form->display();
+            $choosegroupform->set_form_elements();
+            $choosegroupform->display();
         } else {
             echo ('<br />');
         }

@@ -105,9 +105,75 @@ if (!$popup) {
     $PAGE->set_heading(format_string($course->fullname));
 }
 echo $OUTPUT->header();
-
+echo $OUTPUT->heading($pq);
 $questionnaire->survey_print_render('', 'preview', $course->id);
 if ($popup) {
     echo $OUTPUT->close_window_button();
 }
 echo $OUTPUT->footer($course);
+// TODO Move this script to module.js (and rewrite it a la YUI sauce.
+echo "
+    <script type=\"text/javascript\">
+        // Rate questions.
+        function dependdrop(qId, children) {
+        	var e = document.getElementById(qId);
+        	var choice = e.options[e.selectedIndex].value;
+        	depend (children, choice);
+        }
+
+        function depend (children, choices) {
+        	children = children.split(',');
+        	choices = choices.split(',');
+        	var childrenlength = children.length;
+        	var choiceslength = choices.length;
+            child = null;
+        	choice = null;
+        	for (var i = 0; i < childrenlength; i++) {
+        		child = children[i];
+        		var q = document.getElementById(child);
+        		if (q) {
+        			var radios = q.getElementsByTagName('input');
+        			var radiolength = radios.length;
+         			var droplists = q.getElementsByTagName('select');
+        			var droplistlength = droplists.length;
+                    var textareas = q.getElementsByTagName('textarea');
+        			var textarealength = textareas.length;
+        			for (var k = 0; k < choiceslength; k++) {
+        	            choice = choices[k];
+        				if (child == choice) {
+        					q.classList.add('qn-container');
+        					for (var j = 0; j < radiolength; j++) {
+        						radio = radios[j];
+        						radio.disabled=false ;
+        					}
+        					for (var m = 0; m < droplistlength; m++) {
+        						droplist = droplists[m];
+        						droplist.disabled=false ;
+        					}
+        					delete children[i];
+        				} else if (children[i]){
+        					q.classList.remove('qn-container');
+                            q.classList.add('hidedependquestion');
+        					for (var j = 0; j < radiolength; j++) {
+        						radio = radios[j];
+        						radio.disabled=true;
+        						radio.checked=false;
+                                /* radio.value = ''; */
+        					}
+        					for (var m = 0; m < droplistlength; m++) {
+        						droplist = droplists[m];
+                                droplist.selectedIndex = 0;
+        						droplist.disabled=true;
+                                droplist.checked=false;
+        					}
+                            for (var n = 0; n < textarealength; n++) {
+        						textarea = textareas[n];
+                                textarea.value = '';
+        					}
+        				}
+        			}
+        		}
+        	}
+        }
+    </script>
+";

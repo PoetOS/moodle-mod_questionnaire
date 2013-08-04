@@ -272,8 +272,8 @@ if (!$students) {
         foreach ($students as $student) {
             $user = $DB->get_record('user', array('id'=>$student));
             // Userpicture and link to the profilepage.
-            $profile_url = $CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id;
-            $profilelink = '<strong><a href="'.$profile_url.'">'.fullname($user).'</a></strong>';
+            $profileurl = $CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id;
+            $profilelink = '<strong><a href="'.$profileurl.'">'.fullname($user).'</a></strong>';
             $data = array ($OUTPUT->user_picture($user, array('courseid'=>$course->id)), $profilelink);
             if ($user->maildisplay == 1 or ($user->maildisplay == 2 and ($course->id != SITEID) and !isguestuser()) or
                             has_capability('moodle/course:viewhiddenuserfields', $context) or

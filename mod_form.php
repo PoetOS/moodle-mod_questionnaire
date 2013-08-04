@@ -59,24 +59,28 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addHelpButton('enableclosegroup', 'closedate', 'questionnaire');
         $mform->disabledIf('enableclosegroup', 'useclosedate', 'notchecked');
 
-        global $questionnaire_types, $questionnaire_respondents, $questionnaire_responseviewers, $questionnaire_realms;
+        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $questionnairerealms;
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
-        $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnaire_types);
+        $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnairetypes);
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
 
         $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->setType('cannotchangerespondenttype', PARAM_INT);
-        $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $questionnaire_respondents);
+        $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $questionnairerespondents);
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
 
-        $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaire_responseviewers);
+        $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
         $options = array('0'=>get_string('no'), '1'=>get_string('yes'));
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
+
+        $options = array('0'=>get_string('no'), '1'=>get_string('yes'));
+        $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
+        $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
 
         // Removed potential scales from list of grades. CONTRIB-3167.
         $grades[0] = get_string('nograde');
@@ -128,26 +132,26 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $this->add_action_buttons();
     }
 
-    public function data_preprocessing(&$default_values) {
+    public function data_preprocessing(&$defaultvalues) {
         global $DB;
-        if (empty($default_values['opendate'])) {
-            $default_values['useopendate'] = 0;
+        if (empty($defaultvalues['opendate'])) {
+            $defaultvalues['useopendate'] = 0;
         } else {
-            $default_values['useopendate'] = 1;
+            $defaultvalues['useopendate'] = 1;
         }
-        if (empty($default_values['closedate'])) {
-            $default_values['useclosedate'] = 0;
+        if (empty($defaultvalues['closedate'])) {
+            $defaultvalues['useclosedate'] = 0;
         } else {
-            $default_values['useclosedate'] = 1;
+            $defaultvalues['useclosedate'] = 1;
         }
         // Prevent questionnaire set to "anonymous" to be reverted to "full name".
-        $default_values['cannotchangerespondenttype'] = 0;
-        if (!empty($default_values['respondenttype']) && $default_values['respondenttype'] == "anonymous") {
+        $defaultvalues['cannotchangerespondenttype'] = 0;
+        if (!empty($defaultvalues['respondenttype']) && $defaultvalues['respondenttype'] == "anonymous") {
             // If this questionnaire has responses.
             $numresp = $DB->count_records('questionnaire_response',
-                            array('survey_id' => $default_values['sid'], 'complete' => 'y'));
+                            array('survey_id' => $defaultvalues['sid'], 'complete' => 'y'));
             if ($numresp) {
-                $default_values['cannotchangerespondenttype'] = 1;
+                $defaultvalues['cannotchangerespondenttype'] = 1;
             }
         }
     }
