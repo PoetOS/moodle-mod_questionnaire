@@ -1,13 +1,16 @@
 Release Notes:
 
 Version 2.5.5 - 2013062501
-- CONTRIB 3525 Added "skip logic"/"conditional branching" feature to Questionnaire.
+- CONTRIB 3525 Added "conditional branching" feature to Questionnaire.
+- Modified the Preview display page to make it display/hide child questions of Conditional
+branching questionnaires.
 - Slightly modified method of displaying graph bars on statistics page for compliance
 with Bootstrap based themes such as Clean theme, etc.
 - Significant changes to the "Manage questions" page ergonomy, including a button for
-switching from Required to Not required response.
+switching from Required to Not required response and question deletion confirmation.
 - Modified/simplified Course reset display, to make it similar to Quiz, Lesson, etc.
 - Removed all underscores in variable names, in compliance with Moodle Coding style.
+- Moved all Javascript scripts to questionnaire/module.js
 - Plus a number of small fixes here and there.  
 
 Version 2.5.4 Build - 2013062401

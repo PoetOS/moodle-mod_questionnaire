@@ -156,8 +156,8 @@ value to its default **0** value. If you set **Min.** or **Max.** to values othe
 respondent does not comply with your requirements. Obviously you should make any requirements clear to the respondent either in the general instructions of
 your Questionnaire or in the text of relevant questions.';
 $string['misconfigured'] = 'Course is misconfigured';
-$string['missingquestion'] = 'Error, please answer question ';
-$string['missingquestions'] = 'Error, please answer questions: ';
+$string['missingquestion'] = 'Please answer Required question ';
+$string['missingquestions'] = 'Please answer Required questions: ';
 $string['modulename'] = 'Questionnaire';
 $string['modulename_help'] = 'The questionnaire module allows you to construct surveys using a variety of question types, for the purpose of gathering data from users.';
 $string['modulenameplural'] = 'Questionnaires';
