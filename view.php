@@ -137,7 +137,7 @@ if (!$questionnaire->questions) {
 }
 if ($questionnaire->capabilities->editquestions && !$questionnaire->questions) { // Sanity check.
     echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
-                'id='.$questionnaire->cm->id).'">'.'<strong>'.get_string('questions', 'questionnaire').'</strong></a>';
+                'id='.$questionnaire->cm->id).'">'.'<strong>'.get_string('addquestions', 'questionnaire').'</strong></a>';
 }
 echo $OUTPUT->box_end();
 if (isguestuser()) {

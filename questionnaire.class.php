@@ -701,9 +701,9 @@ class questionnaire {
             // Process each question.
         }
         // End of questions.
-        echo ('<div class="surveyPage">');
+
         $this->print_survey_end($section, $numsections);
-        echo '</div>';
+
         return;
     }
 
@@ -799,16 +799,12 @@ class questionnaire {
                 echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
             }
         }
-        if ($numsections>1) {
-            $a = new stdClass();
-            $a->page = $section;
-            $a->totpages = $numsections;
-            echo '<div class="surveyPage">&nbsp;'.get_string('pageof', 'questionnaire', $a).'</div>';
-        }
+
         if ($message) {
             echo '<div class="notifyproblem">'.$message.'</div>';
         }
 
+        $this->print_survey_end($section, $numsections);
     }
 
     private function print_survey_end($section, $numsections) {
@@ -816,7 +812,9 @@ class questionnaire {
             $a = new stdClass();
             $a->page = $section;
             $a->totpages = $numsections;
+            echo ('<div class="surveyPage">');
             echo get_string('pageof', 'questionnaire', $a).'&nbsp;&nbsp;';
+            echo '</div>';
         }
     }
 
@@ -870,12 +868,16 @@ class questionnaire {
         $errors = 1;
         if (data_submitted()) {
             $formdata = data_submitted();
+            $pageerror = '';
             $s = 1;
             $errors = 0;
             foreach ($this->questionsbysec as $section) {
                 $errormessage = $this->response_check_format($s, $formdata);
                 if ($errormessage) {
-                    echo '<div class="notifyproblem">'.get_string('page', 'questionnaire').' '.$s.' : '.$errormessage.'</div>';
+                    if ($numsections) {
+                        $pageerror = get_string('page', 'questionnaire').' '.$s.' : ';
+                    }
+                    echo '<div class="notifyproblem">'.$pageerror.$errormessage.'</div>';
                     $errors++;
                 }
                 $s ++;
@@ -897,8 +899,10 @@ class questionnaire {
 
         $page = 1;
         foreach ($this->questionsbysec as $section) {
-            echo ('<div class="surveyPage">'.get_string('page', 'questionnaire').' '.$page.'</div>');
-            $page++;
+            if ($numsections) {
+                echo ('<div class="surveyPage">'.get_string('page', 'questionnaire').' '.$page.'</div>');
+                $page++;
+            }
             foreach ($section as $question) {
                 $descendantsdata = array();
                 if ($question->type_id == QUESSECTIONTEXT) {
@@ -911,7 +915,6 @@ class questionnaire {
                         $descendantsdata['choices'] = $descendantsandchoices['choices'][$question->id];
                     }
                 }
-
                 $question->survey_display($formdata, $descendantsdata, $i++, $usehtmleditor=null, $blankquestionnaire);
             }
         }
@@ -1114,19 +1117,20 @@ class questionnaire {
             // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED.
             foreach ($this->questionsbysec[$j-1] as $sectionrecord) {
                 $tid = $sectionrecord->type_id;
-                if ($tid < 99) {
+                if ($tid < QUESPAGEBREAK) {
                     $i++;
                 }
             }
         }
         $qnum = $i - 1;
+
         foreach ($this->questionsbysec[$section] as $question) {
 
             $qid = $question->id;
             $tid = $question->type_id;
             $lid = $question->length;
             $pid = $question->precise;
-            if ($tid != 100) {
+            if ($tid != QUESSECTIONTEXT) {
                 $qnum++;
             }
             if ( ($question->required == 'y') && ($question->deleted == 'n') && ((isset($formdata->{'q'.$qid})
@@ -1135,11 +1139,21 @@ class questionnaire {
                 if ($PAGE->pagetype != 'mod-questionnaire-preview') {
                     $missing++;
                     $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                } else if ($question->dependquestion == 0 || ($question->dependquestion != 0
-                                && isset($formdata->{'q'.$question->dependquestion})
-                                && $formdata->{'q'.$question->dependquestion})) {
+                } else if ($question->dependquestion == 0) {
                     $missing++;
                     $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+                } else if ($question->dependquestion != 0) { // For yes/no questions, convert 0 and 1 to yes and no.
+                    if ($question->dependchoice == 0) {
+                        $dependchoice = 'y';
+                    } else if ($question->dependchoice == 1) {
+                        $dependchoice = 'n';
+                    } else {
+                        $dependchoice = $question->dependchoice;
+                    }
+                    if (isset($formdata->{'q'.$question->dependquestion}) && $formdata->{'q'.$question->dependquestion} == $dependchoice) {
+                        $missing++;
+                        $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+                    }
                 }
             }
             switch ($tid) {
@@ -1216,10 +1230,10 @@ class questionnaire {
                         break;
                     }
                     $resp = $formdata->{'q'.$qid};
-                    if (!$resp && $question->required == 'y') {
+                    /* if (!$resp && $question->required == 'y') {
                         $missing++;
                         $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                    }
+                    } */
                     break;
 
                 case QUESRATE: // Rate.
@@ -1244,6 +1258,7 @@ class questionnaire {
                         }
                         $nbchoices -= $nameddegrees;
                     }
+
                     if ( $num == 0 && $question->required == 'y') {
                         $missing++;
                         $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';

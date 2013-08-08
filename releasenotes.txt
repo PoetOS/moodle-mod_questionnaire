@@ -11,6 +11,8 @@ switching from Required to Not required response and question deletion confirmat
 - Modified/simplified Course reset display, to make it similar to Quiz, Lesson, etc.
 - Removed all underscores in variable names, in compliance with Moodle Coding style.
 - Moved all Javascript scripts to questionnaire/module.js
+- In Radio buttons and Rate questions, the separator between "short label" and "options text"
+has been replaced from the equal sign (=) to two consecutive colons (::).
 - Plus a number of small fixes here and there.  
 
 Version 2.5.4 Build - 2013062401

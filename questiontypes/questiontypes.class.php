@@ -876,11 +876,11 @@ class questionnaire_question {
                         }
                     }
                 }
-                if ($this->type_id == QUESSECTIONTEXT) {
-                    if (isset($formdata->$dependquestion) && $formdata->$dependquestion == $dependchoice) {
-                        $displayclass = 'qn-container';
-                    }
+
+                if (isset($formdata->$dependquestion) && $formdata->$dependquestion == $dependchoice) {
+                    $displayclass = 'qn-container';
                 }
+
                 if ($parenttype == QUESDROP) {
                     $qnid = 'qn-'.$this->id;
                     if (isset($formdata->$dependquestion) && preg_match("/$qnid/", $formdata->$dependquestion)) {
@@ -988,8 +988,8 @@ class questionnaire_question {
         $val2 = 'n';
 
         $options = array($val1 => $stryes, $val2 => $strno);
-        $name =  'q'.$this->id;
-        $checked=(isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
+        $name = 'q'.$this->id;
+        $checked = (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
 
         $output = '';
         $currentradio = 0;
@@ -1073,6 +1073,7 @@ class questionnaire_question {
 
     private function radio_survey_display($data, $descendantsdata, $blankquestionnaire=false) { // Radio buttons
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
+
         $currentradio = 0;
         $otherempty = false;
         $output = '';
@@ -1110,6 +1111,7 @@ class questionnaire_question {
                     // In case this dependchoice is not used by any child question.
                     $onclick = ' onclick="depend(\''.$descendants.'\', \'\')"';
                 }
+
             } else {
                 $onclick = ' onclick="other_check_empty(name, value)"';
             } // End dependents.
@@ -1313,9 +1315,10 @@ class questionnaire_question {
                 if ($pos = strpos($choice->content, '=')) {
                     $choice->content = substr($choice->content, $pos + 1);
                 }
-                $value = '0';
                 if (isset($choices[$key])) {
                     $value = $choices[$key];
+                } else {
+                    $value = $key;
                 }
                 $options[$value] = $choice->content;
             }
@@ -1592,7 +1595,7 @@ class questionnaire_question {
     public function radio_response_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
         $horizontal = $this->length;
-        $currentradio = 0;
+        $currentradio = 0; // TODO JR what are those currentradio vars ???
         $checked = (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
         foreach ($this->choices as $id => $choice) {
             if ($horizontal) {

@@ -8,21 +8,20 @@
 #page-mod-questionnaire-questions .qcontainer .qnums {
     font-weight: bold;
     float: left;
+    color: gray;
 }
 
 #page-mod-questionnaire-questions .qcontainer .fstatic {
     width: 97%;
     margin-right: 1em;
-    margin-left: 10px;
+    margin-left: 5px;
+    /* Set a negative margin-bottom to save some vertical space! */
+    margin-bottom: -10px;
 }
 
 #page-mod-questionnaire-questions .qcontainer .qcontent,
 #page-mod-questionnaire-report div.qcontainer div.qcontent {
     margin-bottom:-1em;
-}
-
-#page-mod-questionnaire-questions .qcontainer .fstatic {
-    margin-bottom: -15px !important;
 }
 
 #page-mod-questionnaire-questions .mform .fitem fieldset.felement {
@@ -41,11 +40,6 @@
     text-align: left;
     margin-left: 10px;
     margin-bottom: 5px;
-}
-
-#page-mod-questionnaire-questions .questionnaire_pagebreak {
-    border-bottom: 5px dashed silver;
-    margin-top: 4px;    
 }
 
 #page-mod-questionnaire-questions .moving {
@@ -211,8 +205,7 @@ td.selected {
 }
 
 #page-mod-questionnaire-questions .qn-question {
-    margin-bottom: 5px;
-    width: 100%;
+    margin-left: 40px;
 }
 
 .unselected {
@@ -236,7 +229,7 @@ td.selected {
 /* new quiz-like formatting for 2.5 */
 
 #page-mod-questionnaire-questions .qn-container {
-    border: solid 1px silver;
+    border: 1px dotted gray;
     margin-bottom: 1em;
 }
 

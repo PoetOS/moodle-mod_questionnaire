@@ -574,15 +574,15 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
         $qname = ' ('.$question->name.')';
     }
 
-    $num = get_string('num', 'questionnaire');
+    $num = get_string('position', 'questionnaire');
     $pos = $question->position.$qname;
 
-    $msg = '<div class="warning centerpara"><p>'.get_string('confirmdelquestion', 'questionnaire', $num.$pos).'</p>';
+    $msg = '<div class="warning centerpara"><p>'.get_string('confirmdelquestion', 'questionnaire', $pos).'</p>';
     if ($countresps !== 0) {
         $msg .= '<p>'.get_string('confirmdelquestionresps', 'questionnaire', $countresps).'</p>';
     }
     $msg .= '</div>';
-    $msg .= $num.$pos.'<div class="qn-question">'.$qcontent.'</div>';
+    $msg .= '<div class = "qn-container">'.$num.' '.$pos.'<div class="qn-question">'.$qcontent.'</div></div>';
     $args = "id={$questionnaire->cm->id}";
     $urlno = new moodle_url("/mod/questionnaire/questions.php?{$args}");
     $args .= "&delq={$qid}";
@@ -590,7 +590,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
     if ($action == "confirmdelquestionparent") {
-        $strnum = get_string('num', 'questionnaire');
+        $strnum = get_string('position', 'questionnaire');
         $qid = key($qformdata->removebutton);
         $msg .= '<div class="warning">'.get_string('confirmdelchildren', 'questionnaire').'</div><br />';
         foreach ($haschildren as $child) {
@@ -598,13 +598,13 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
             if ($child['name']) {
                 $childname = ' ('.$child['name'].')';
             }
-            $msg .= $strnum.$child['position'].$childname.'<span class="qdepend"><strong>'.
+            $msg .= '<div class = "qn-container">'.$strnum.' '.$child['position'].$childname.'<span class="qdepend"><strong>'.
                             get_string('dependquestion', 'questionnaire').'</strong>'.
-                            ' ('.$strnum.$child['parentposition'].') '.
+                            ' ('.$strnum.' '.$child['parentposition'].') '.
                             '&nbsp;:&nbsp;'.$child['parent'].'</span>'.
                             '<div class="qn-question">'.
                             $child['content'].
-                            '</div>';
+                            '</div></div>';
         }
     }
     echo $OUTPUT->confirm($msg, $buttonyes, $buttonno);

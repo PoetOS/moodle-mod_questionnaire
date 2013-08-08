@@ -46,6 +46,7 @@ class questionnaire_questions_form extends moodleform {
         $strmovehere = get_string('movehere');
         $stryes = get_string('yes');
         $strno = get_string('no');
+        $strposition = get_string('position', 'questionnaire');
 
         // Set up question positions.
         if (!isset($questionnaire->questions)) {
@@ -84,10 +85,10 @@ class questionnaire_questions_form extends moodleform {
         $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
 
         // TODO maybe this check can be removed if all needed page breaks are correctly inserted
-        // when questions are created/edited/moved/deleted.
-        if ($questionnairehasdependencies) {
+        // when questions are created/edited/moved/deleted. Just keeping it available until further tests.
+        /* if ($questionnairehasdependencies) {
             $addqgroup[] =& $mform->createElement('submit', 'validate', get_string('validate', 'questionnaire'));
-        }
+        } */
 
         $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
 
@@ -128,21 +129,22 @@ class questionnaire_questions_form extends moodleform {
                 if ($question->dependquestion != 0) {
                     $parent = questionnaire_get_parent ($question);
                     $dependency = '<strong>'.get_string('dependquestion', 'questionnaire').'</strong> : '.
-                        $parent[$qid]['parentposition'].' '.$parent[$qid]['parent'];
+                        $strposition.' '.$parent[$qid]['parentposition'].' ('.$parent[$qid]['parent'].')';
                 }
             }
 
             $pos = $question->position;
-            $qnumtxt = '&nbsp;';
-            $qnum++;
-            $qnumtxt = $qnum;
+            if ($tid != QUESPAGEBREAK && $tid != QUESSECTIONTEXT) {
+                $qnum++;
+            }
+
 
             // Needed for non-English languages JR.
             $qtype = '['.questionnaire_get_type($tid).']';
             $content = '';
             if ($tid == QUESPAGEBREAK) {
                 $sec++;
-                $content = '<hr class="questionnaire_pagebreak">';
+                //$content = '<hr class="questionnaire_pagebreak">';
 
             } else {
                 // Needed to print potential media in question text.
@@ -183,7 +185,8 @@ class questionnaire_questions_form extends moodleform {
                         $qreq = '';
 
                 // Question numbers.
-                $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '<div class="qnums">'.$qnumtxt.'</div>');
+                $manageqgroup[] =& $mform->createElement('static', 'qnums', '',
+                                '<div class="qnums">'.$strposition.' '.$pos.'</div>');
 
                 // Need to index by 'id' since IE doesn't return assigned 'values' for image inputs.
                 $manageqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
@@ -254,7 +257,7 @@ class questionnaire_questions_form extends moodleform {
                 $manageqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
 
             } else {
-                $manageqgroup[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$qnumtxt.'</div>');
+                $manageqgroup[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$strposition.' '.$pos.'</div>');
                 $moveqgroup[] =& $mform->createElement('static', 'qnum', '', '');
 
                 $display = true;
@@ -286,8 +289,6 @@ class questionnaire_questions_form extends moodleform {
                                         'alt' => $strmove,
                                         'title' => $strmovehere);
                         $msrc = $OUTPUT->pix_url('movehere');
-                        $moveqgroup[] =& $mform->createElement('static', 'qnum2', '', '<div class="qnums unselected">'.
-                                        $qnumtxt.'</div>&nbsp;');
                         $moveqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
                         $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$pos.']', $msrc, $mextra);
                         $moveqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
@@ -301,9 +302,6 @@ class questionnaire_questions_form extends moodleform {
                 $qname = '('.$question->name.')';
             } else {
                 $qname = '';
-            }
-            if ($tid == QUESPAGEBREAK) {
-                $qtype .= '<div class="questionnaire_pagebreak" style="clear:left;"></div>';
             }
             $manageqgroup[] =& $mform->createElement('static', 'qtype_'.$question->id, '', $qtype);
             $manageqgroup[] =& $mform->createElement('static', 'qname_'.$question->id, '', $qname);
@@ -323,7 +321,14 @@ class questionnaire_questions_form extends moodleform {
                 $mform->addElement('static', 'qdepend_'.$question->id, '', '<div class="qdepend">'.$dependency.'</div>');
             }
             if ($tid != QUESPAGEBREAK) {
-                $mform->addElement('static', 'qcontent_'.$question->id, '', '<div class="qn-question">'.$content.'</div>');
+                if ($tid == QUESSECTIONTEXT) {
+                    $qnumtxt = '';
+                } else {
+                    $qnumtxt = $qnum;
+                }
+                $mform->addElement('static', 'qcontent_'.$question->id, '',
+                                '<div class="qn-info"><h2 class="qn-number">'.$qnumtxt.'</div></h2>'.
+                                '<div class="qn-question">'.$content.'</div>');
             }
 
             $pos++;
