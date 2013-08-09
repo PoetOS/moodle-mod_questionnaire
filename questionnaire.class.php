@@ -255,11 +255,14 @@ class questionnaire {
         $this->print_survey_start('', 1, 1, 0, $rid, false);
 
         $data = new Object();
-        $i = 1;
+        $i = 0;
         $this->response_import_all($rid, $data);
         foreach ($this->questions as $question) {
             if ($question->type_id < QUESPAGEBREAK) {
-                $question->response_display($data, $i++);
+                $i++;
+            }
+            if ($question->type_id != QUESPAGEBREAK) {
+                $question->response_display($data, $i);
             }
         }
     }
@@ -280,11 +283,13 @@ class questionnaire {
                 $this->response_import_all($resp->id, $data[$resp->id]);
             }
 
-            $i = 1;
+            $i = 0;
 
             foreach ($this->questions as $question) {
-
                 if ($question->type_id < QUESPAGEBREAK) {
+                    $i++;
+                }
+                if ($question->type_id != QUESPAGEBREAK) {
                     $method = $qtypenames[$question->type_id].'_response_display';
                     if (method_exists($question, $method)) {
                         echo $OUTPUT->box_start('individualresp');
@@ -298,7 +303,6 @@ class questionnaire {
                     } else {
                         print_error('displaymethod', 'questionnaire');
                     }
-                    $i++;
                 }
             }
         } else {
@@ -808,7 +812,7 @@ class questionnaire {
     }
 
     private function print_survey_end($section, $numsections) {
-        if ($numsections>1) {
+        if ($numsections > 1) {
             $a = new stdClass();
             $a->page = $section;
             $a->totpages = $numsections;
@@ -874,7 +878,7 @@ class questionnaire {
             foreach ($this->questionsbysec as $section) {
                 $errormessage = $this->response_check_format($s, $formdata);
                 if ($errormessage) {
-                    if ($numsections) {
+                    if ($numsections > 1) {
                         $pageerror = get_string('page', 'questionnaire').' '.$s.' : ';
                     }
                     echo '<div class="notifyproblem">'.$pageerror.$errormessage.'</div>';
@@ -886,7 +890,7 @@ class questionnaire {
 
         echo $OUTPUT->box_start();
 
-        $this->print_survey_start($message, $section = 1, $numsections = 1, $hasrequired, $rid='');
+        $this->print_survey_start($message, $section = 1, 1, $hasrequired, $rid='');
 
         $descendantsandchoices = array();
 
@@ -899,7 +903,7 @@ class questionnaire {
 
         $page = 1;
         foreach ($this->questionsbysec as $section) {
-            if ($numsections) {
+            if ($numsections > 1) {
                 echo ('<div class="surveyPage">'.get_string('page', 'questionnaire').' '.$page.'</div>');
                 $page++;
             }
@@ -1133,16 +1137,21 @@ class questionnaire {
             if ($tid != QUESSECTIONTEXT) {
                 $qnum++;
             }
+            $missingresp = false;
+
+            // Note: The "missing response" detection is carried out differently in Rate questions (see below).
+
             if ( ($question->required == 'y') && ($question->deleted == 'n') && ((isset($formdata->{'q'.$qid})
-                    && $formdata->{'q'.$qid} == '')
-                    || (!isset($formdata->{'q'.$qid}))) && $tid != 8 && $tid != 100 ) {
+                        && $formdata->{'q'.$qid} == '')
+                    || (!isset($formdata->{'q'.$qid}))) && $tid != QUESSECTIONTEXT && $tid != QUESRATE) {
+
                 if ($PAGE->pagetype != 'mod-questionnaire-preview') {
-                    $missing++;
-                    $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+                    $missingresp = true;
+
                 } else if ($question->dependquestion == 0) {
-                    $missing++;
-                    $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                } else if ($question->dependquestion != 0) { // For yes/no questions, convert 0 and 1 to yes and no.
+                    $missingresp = true;
+
+                } else { // For yes/no questions, convert 0 and 1 to y(es) and n(o).
                     if ($question->dependchoice == 0) {
                         $dependchoice = 'y';
                     } else if ($question->dependchoice == 1) {
@@ -1150,12 +1159,18 @@ class questionnaire {
                     } else {
                         $dependchoice = $question->dependchoice;
                     }
-                    if (isset($formdata->{'q'.$question->dependquestion}) && $formdata->{'q'.$question->dependquestion} == $dependchoice) {
-                        $missing++;
-                        $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+                    if (isset($formdata->{'q'.$question->dependquestion})
+                            && $formdata->{'q'.$question->dependquestion} == $dependchoice) {
+                        $missingresp = true;
                     }
                 }
             }
+
+            if ($missingresp) {
+                $missing++;
+                $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+            }
+
             switch ($tid) {
 
                 case QUESRADIO: // Radio Buttons with !other field.
@@ -1225,17 +1240,6 @@ class questionnaire {
                     }
                     break;
 
-                case QUESDROP: // Drop.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    $resp = $formdata->{'q'.$qid};
-                    /* if (!$resp && $question->required == 'y') {
-                        $missing++;
-                        $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                    } */
-                    break;
-
                 case QUESRATE: // Rate.
                     $num = 0;
                     $nbchoices = count($question->choices);
@@ -1259,10 +1263,22 @@ class questionnaire {
                         $nbchoices -= $nameddegrees;
                     }
 
-                    if ( $num == 0 && $question->required == 'y') {
-                        $missing++;
-                        $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                        break;
+                    if ($num == 0) {
+                        $missingresp = false;
+                        if ($PAGE->pagetype != 'mod-questionnaire-preview' || $question->dependquestion == 0) {
+                            if ($question->required == 'y') {
+                                $missingresp = true;
+                            }
+                        } else {
+                            if (isset($formdata->{'q'.$question->dependquestion})
+                                    && $formdata->{'q'.$question->dependquestion} == $question->dependchoice) {
+                                $missingresp = true;
+                            }
+                        }
+                        if ($missingresp) {
+                            $missing++;
+                            $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+                        }
                     }
                     // If nodupes and nb choice restricted, nbchoices may be > actual choices, so limit it to $question->length.
                     $isrestricted = ($question->length < count($question->choices)) && $question->precise == 2;
@@ -2525,15 +2541,15 @@ class questionnaire {
             if ($question->type_id == QUESPAGEBREAK) {
                 continue;
             }
+            echo html_writer::start_tag('div', array('class' => 'qn-container'));
             if ($question->type_id != QUESSECTIONTEXT) {
                 $qnum++;
+                echo html_writer::start_tag('div', array('class' => 'qn-info'));
+                if ($question->type_id != QUESSECTIONTEXT) {
+                    echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
+                }
+                echo html_writer::end_tag('div'); // End qn-info.
             }
-            echo html_writer::start_tag('div', array('class' => 'qn-container'));
-            echo html_writer::start_tag('div', array('class' => 'qn-info'));
-            if ($question->type_id != QUESSECTIONTEXT) {
-                echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
-            }
-            echo html_writer::end_tag('div'); // End qn-info.
             echo html_writer::start_tag('div', array('class' => 'qn-content'));
             echo html_writer::start_tag('div', array('class' => 'qn-question'));
             echo format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',

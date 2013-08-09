@@ -890,30 +890,29 @@ class questionnaire_question {
             }
         }
 
-        // Do not display a question number for the label question type.
-        if ($this->type_id == QUESSECTIONTEXT) {
-            $qnum = '';
-        }
-
         echo html_writer::start_tag('fieldset', array('class' => $displayclass, 'id' => 'qn-'.$this->id));
         echo html_writer::start_tag('legend', array('class' => 'qn-legend'));
-        echo html_writer::start_tag('div', array('class' => 'qn-info'));
-        echo html_writer::start_tag('div', array('class' => 'accesshide'));
-        echo get_string('questionnum', 'questionnaire');
-        echo html_writer::end_tag('div');
-        $required = '';
-        if ($this->required == 'y') {
-            $required = html_writer::empty_tag('img',
-                    array('class' => 'req',
-                            'title' => get_string('required', 'questionnaire'),
-                            'alt' => get_string('required', 'questionnaire'),
-                            'src' => $OUTPUT->pix_url('req')));
+
+        // Do not display the info box for the label question type.
+        if ($this->type_id != QUESSECTIONTEXT) {
+            echo html_writer::start_tag('div', array('class' => 'qn-info'));
+            echo html_writer::start_tag('div', array('class' => 'accesshide'));
+            echo get_string('questionnum', 'questionnaire');
+            echo html_writer::end_tag('div');
+            $required = '';
+            if ($this->required == 'y') {
+                $required = html_writer::empty_tag('img',
+                        array('class' => 'req',
+                                'title' => get_string('required', 'questionnaire'),
+                                'alt' => get_string('required', 'questionnaire'),
+                                'src' => $OUTPUT->pix_url('req')));
+            }
+            echo html_writer::tag('h2', $qnum.$required, array('class' => 'qn-number'));
+            echo html_writer::start_tag('div', array('class' => 'accesshide'));
+            echo get_string('required', 'questionnaire');
+            echo html_writer::end_tag('div');
+            echo html_writer::end_tag('div');
         }
-        echo html_writer::tag('h2', $qnum.$required, array('class' => 'qn-number'));
-        echo html_writer::start_tag('div', array('class' => 'accesshide'));
-        echo get_string('required', 'questionnaire');
-        echo html_writer::end_tag('div');
-        echo html_writer::end_tag('div');
         echo html_writer::end_tag('legend');
         echo html_writer::start_tag('div', array('class' => 'qn-content'));
         echo html_writer::start_tag('div', array('class' => 'qn-question '.$skippedclass));
@@ -990,10 +989,9 @@ class questionnaire_question {
         $options = array($val1 => $stryes, $val2 => $strno);
         $name = 'q'.$this->id;
         $checked = (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
-
         $output = '';
-        $currentradio = 0;
         $ischecked = false;
+
         foreach ($options as $value => $label) {
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             $output .= '<input name="'.$name.'" id="'.$htmlid.'" type="radio" value="'.$value.'"';
@@ -1005,7 +1003,6 @@ class questionnaire_question {
                 $output .= $onclickdepend[$value];
             }
             $output .= ' /><label for="'.$htmlid.'">'. $label .'</label>' . "\n";
-            $currentradio = ($currentradio + 1) % 2;
         }
         // CONTRIB-846.
         if ($this->required == 'n') {
@@ -1021,7 +1018,6 @@ class questionnaire_question {
             $content = get_string('noanswer', 'questionnaire');
             $output .= ' /><label for="'.$htmlid.'" >'.
                 format_text($content, FORMAT_HTML).'</label>';
-            $currentradio = ($currentradio + 1) % 2;
         }
         // End CONTRIB-846.
 
@@ -1074,7 +1070,6 @@ class questionnaire_question {
     private function radio_survey_display($data, $descendantsdata, $blankquestionnaire=false) { // Radio buttons
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
-        $currentradio = 0;
         $otherempty = false;
         $output = '';
         // Find out which radio button is checked (if any); yields choice ID.
@@ -1129,7 +1124,6 @@ class questionnaire_question {
                 $contents = questionnaire_choice_values($choice->content);
                 $output .= ' /><label for="'.$htmlid.'" >'.
                     format_text($contents->text, FORMAT_HTML).$contents->image.'</label>';
-                $currentradio = ($currentradio + 1) % 2;
             } else {             // Radio button with associated !other text field.
                 $othertext = preg_replace(
                         array("/^!other=/", "/^!other/"),
@@ -1152,7 +1146,6 @@ class questionnaire_question {
                     }
                 }
                 $output .= ' /><label for="'.$htmlid.'" >'.format_text($othertext, FORMAT_HTML).'</label>';
-                $currentradio = ($currentradio + 1) % 2;
 
                 $choices['other_'.$cid] = $othertext;
                 $output .= '<input type="text" size="25" name="'.$cid.'" onclick="other_check(name)"';
@@ -1191,7 +1184,7 @@ class questionnaire_question {
             $content = get_string('noanswer', 'questionnaire');
             $output .= ' /><label for="'.$htmlid.'" >'.
                 format_text($content, FORMAT_HTML).'</label>';
-            $currentradio = ($currentradio + 1) % 2;
+
             if ($horizontal) {
                 $output .= '</span>&nbsp;&nbsp;';
             } else {
@@ -1595,7 +1588,6 @@ class questionnaire_question {
     public function radio_response_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
         $horizontal = $this->length;
-        $currentradio = 0; // TODO JR what are those currentradio vars ???
         $checked = (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
         foreach ($this->choices as $id => $choice) {
             if ($horizontal) {
@@ -1613,7 +1605,6 @@ class questionnaire_question {
                          '<input type="radio" disabled="disabled" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
                          ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
                 }
-                $currentradio = ($currentradio + 1) % 2;
 
             } else {
                 $othertext = preg_replace(
@@ -1981,7 +1972,7 @@ class questionnaire_question {
             $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$questionnaire->survey->id.
             '&currentgroupid='.$currentgroupid;
             $table->head = array($strrespondent, $strresponse);
-            $table->size = array('15%', '*');
+            $table->size = array('*', '*');
         } else {
             $table->align = array('left', 'left');
             $table->head = array('', $strresponse);

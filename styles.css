@@ -120,7 +120,6 @@ td.selected {
     padding:3px;
     margin-bottom:5px;
     margin-top:0px;
-    margin-left:-10px;
 }
 
 /* alternate columns formatting */
@@ -273,7 +272,7 @@ td.selected {
     margin-bottom: 10px;
 }
 
-/* move horizontal radio buttons closer to labels */
+/* move horizontal radio buttons closer to their labels */
 .qn-answer input[type="radio"],
 .qn-answer input[type="checkbox"] {
     margin-right: 3px;
@@ -290,4 +289,5 @@ td.selected {
 .qn-container {
     color:black;
     display: inherit;
+    margin-left: 10px;
 }

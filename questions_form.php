@@ -84,12 +84,6 @@ class questionnaire_questions_form extends moodleform {
 
         $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
 
-        // TODO maybe this check can be removed if all needed page breaks are correctly inserted
-        // when questions are created/edited/moved/deleted. Just keeping it available until further tests.
-        /* if ($questionnairehasdependencies) {
-            $addqgroup[] =& $mform->createElement('submit', 'validate', get_string('validate', 'questionnaire'));
-        } */
-
         $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
 
         if (isset($SESSION->questionnaire->validateresults) &&  $SESSION->questionnaire->validateresults != '') {
@@ -138,13 +132,11 @@ class questionnaire_questions_form extends moodleform {
                 $qnum++;
             }
 
-
             // Needed for non-English languages JR.
             $qtype = '['.questionnaire_get_type($tid).']';
             $content = '';
             if ($tid == QUESPAGEBREAK) {
                 $sec++;
-                //$content = '<hr class="questionnaire_pagebreak">';
 
             } else {
                 // Needed to print potential media in question text.
@@ -257,7 +249,8 @@ class questionnaire_questions_form extends moodleform {
                 $manageqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
 
             } else {
-                $manageqgroup[] =& $mform->createElement('static', 'qnum', '', '<div class="qnums">'.$strposition.' '.$pos.'</div>');
+                $manageqgroup[] =& $mform->createElement('static', 'qnum', '',
+                                '<div class="qnums">'.$strposition.' '.$pos.'</div>');
                 $moveqgroup[] =& $mform->createElement('static', 'qnum', '', '');
 
                 $display = true;
@@ -321,14 +314,13 @@ class questionnaire_questions_form extends moodleform {
                 $mform->addElement('static', 'qdepend_'.$question->id, '', '<div class="qdepend">'.$dependency.'</div>');
             }
             if ($tid != QUESPAGEBREAK) {
-                if ($tid == QUESSECTIONTEXT) {
-                    $qnumtxt = '';
+                if ($tid != QUESSECTIONTEXT) {
+                    $qnumber = '<div class="qn-info"><h2 class="qn-number">'.$qnum.'</h2></div>';
                 } else {
-                    $qnumtxt = $qnum;
+                    $qnumber = '';
                 }
                 $mform->addElement('static', 'qcontent_'.$question->id, '',
-                                '<div class="qn-info"><h2 class="qn-number">'.$qnumtxt.'</div></h2>'.
-                                '<div class="qn-question">'.$content.'</div>');
+                                $qnumber.'<div class="qn-question">'.$content.'</div>');
             }
 
             $pos++;
