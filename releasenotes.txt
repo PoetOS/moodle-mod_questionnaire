@@ -1,6 +1,6 @@
 Release Notes:
 
-Version 2.5.5 - 2013062501
+Version 2.5.5 - 2013080901
 - CONTRIB 3525 Added "conditional branching" feature to Questionnaire.
 - Modified the Preview display page to make it display/hide child questions of Conditional
 branching questionnaires.
