@@ -187,7 +187,7 @@ td.selected {
      font-size:inherit;
      width: auto;
 }
- 
+
 /* format paragraph top and bottom margins for better vertical positioning in questions text */
 .qn-question p {
     margin-bottom: 0.6em;
@@ -238,7 +238,7 @@ td.selected {
 .qn-info {
     float: left;
     width: auto;
-    padding: 7px; 
+    padding: 7px;
     background: #eee;
     font-weight: bold;
 }
@@ -277,7 +277,7 @@ td.selected {
 .qn-answer input[type="checkbox"] {
     margin-right: 3px;
 }
-    
+
 .qn-answer label {
     margin-right: 0.6em;
 }

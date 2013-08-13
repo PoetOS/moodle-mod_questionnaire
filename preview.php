@@ -60,7 +60,7 @@ if ($id) {
 
 // Check login and get context.
 require_login($course->id, false, $cm);
-$context = $cm ? get_context_instance(CONTEXT_MODULE, $cm->id) : false;
+$context = $cm ? context_module::instance($cm->id) : false;
 
 $url = new moodle_url('/mod/questionnaire/preview.php');
 if ($id !== 0) {
@@ -79,7 +79,7 @@ $questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
 $owner = (trim($questionnaire->survey->owner) == trim($course->id));
 
 $canpreview = (!isset($questionnaire->capabilities) &&
-               has_capability('mod/questionnaire:preview', get_context_instance(CONTEXT_COURSE, $course->id))) ||
+               has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
               (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview && $owner);
 if (!$canpreview) {
     // Should never happen, unless called directly by a snoop...
@@ -94,10 +94,7 @@ $qp = get_string('preview_questionnaire', 'questionnaire');
 $pq = get_string('previewing', 'questionnaire');
 
 // Print the page header.
-if (!$popup) {
-    $navigation = build_navigation($pq, $cm);
-} else {
-    $navigation = '';
+if ($popup) {
     $PAGE->set_pagelayout('popup');
 }
 $PAGE->set_title(format_string($qp));

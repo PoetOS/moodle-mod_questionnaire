@@ -13,7 +13,7 @@ switching from Required to Not required response and question deletion confirmat
 - Moved all Javascript scripts to questionnaire/module.js
 - In Radio buttons and Rate questions, the separator between "short label" and "options text"
 has been replaced from the equal sign (=) to two consecutive colons (::).
-- Plus a number of small fixes here and there.  
+- Plus a number of small fixes here and there.
 
 Version 2.5.4 Build - 2013062401
 - CONTRIB-823 Add confirmation for deleting a question.
@@ -44,8 +44,8 @@ CONTRIB-4343 Remove call to print_textarea() function in Essay question.
 
 Version 2.5.3 Build - 2013062206
 - CONTRIB-4418 Make questionnaire more compliant with Moodle Coding style recommendations
-- Lots of changes in almost all files to make them compliant with the Coding style. 
-Success 100% on using Code checker. 
+- Lots of changes in almost all files to make them compliant with the Coding style.
+Success 100% on using Code checker.
 
 Version 2.5.3 Build - 2013062205
 - CONTRIB-4058 Show non-respondents
@@ -58,25 +58,25 @@ Version 2.5.2 Build - 2013062204
 - Started work on making code more Moodle-compliant.
 
 Version 2.5.1 Build - 2013062203
-- CONTRIB-4038 Display respondents' names in front of their answers in the Essay Box question type. 
+- CONTRIB-4038 Display respondents' names in front of their answers in the Essay Box question type.
 
 Version 2.5.1 Build - 2013062202
 - CONTRIB-3163 Display number of responses to rate questions
 - plus various minor changes to the display of responses
 
 Version 2.5.1 Build - 2013062201
-- CONTRIB-4281 Improve navigation in Questionnaire 
+- CONTRIB-4281 Improve navigation in Questionnaire
 
 Version 2.5.0
 - removed many no longer used items: css folder; lots of unused images in images folder; crosstab.inc, resultslib.php
-- CONTRIB-4304 removed from locallib.php all unused functions: questionnaire_response_key_cmp, questionnaire_preview, 
+- CONTRIB-4304 removed from locallib.php all unused functions: questionnaire_response_key_cmp, questionnaire_preview,
   questionnaire_get_active_surveys_menu, questionnaire_get_surveys_menu, questionnaire_survey_has_questions,
   questionnaire_survey_exists
-- removed all references to cross analysis from all files   
+- removed all references to cross analysis from all files
 
 Version 2.4.1 - Release date 20130519
 
-- In accordance with current Moodle languages policy, all language folders other than English have been removed 
+- In accordance with current Moodle languages policy, all language folders other than English have been removed
 from the lang folder. All translations are now available from AMOS.
 
 

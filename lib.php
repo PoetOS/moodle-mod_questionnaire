@@ -494,18 +494,10 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     global $PAGE, $DB, $USER, $CFG;
     require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
-    if (!$context = context_module::instance($PAGE->cm->id, IGNORE_MISSING)) {
-        print_error('badcontext');
-    }
+    $context = $PAGE->cm->context;
     $cmid = $PAGE->cm->id;
-
-    if (! $cm = get_coursemodule_from_id('questionnaire', $cmid)) {
-        print_error('invalidcoursemodule');
-    }
-
-    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-        print_error('coursemisconf');
-    }
+    $cm = $PAGE->cm;
+    $course = $PAGE->course;
 
     if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
         print_error('invalidcoursemodule');
@@ -733,7 +725,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
         if (array_key_exists($questionnaire->id, $new) && !empty($new[$questionnaire->id])) {
 
             $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-            $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+            $context = context_module::instance($cm->id);
             $qobject = new questionnaire($questionnaire->id, $questionnaire, $questionnaire->course, $cm);
             $isclosed = $qobject->is_closed();
             $answered =  !$qobject->user_can_take($USER->id);

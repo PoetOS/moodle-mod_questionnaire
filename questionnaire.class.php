@@ -53,7 +53,7 @@ class questionnaire {
         $this->cm = $cm;
         // When we are creating a brand new questionnaire, we will not yet have a context.
         if (!empty($cm) && !empty($this->id)) {
-            $this->context = get_context_instance(CONTEXT_MODULE, $cm->id);
+            $this->context = context_module::instance($cm->id);
         } else {
             $this->context = null;
         }

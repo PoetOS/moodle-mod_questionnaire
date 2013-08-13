@@ -65,12 +65,12 @@ $url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>
 
 $PAGE->set_url($url);
 
-if (!$context = get_context_instance(CONTEXT_MODULE, $cm->id)) {
+if (!$context = context_module::instance($cm->id)) {
         print_error('badcontext');
 }
 
 // We need the coursecontext to allow sending of mass mails.
-if (!$coursecontext = get_context_instance(CONTEXT_COURSE, $course->id)) {
+if (!$coursecontext = context_course::instance($course->id)) {
         print_error('badcontext');
 }
 
@@ -86,7 +86,7 @@ if ($action == 'sendmessage') {
 
     $shortname = format_string($course->shortname,
                             true,
-                            array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
+                            array('context' => context_course::instance($course->id)));
     $strquestionnaires = get_string("modulenameplural", "questionnaire");
 
     $htmlmessage = "<body id=\"email\">";
@@ -283,7 +283,7 @@ if (!$students) {
                 $data[] = $user->city;
             }
             if (!isset($hiddenfields['country'])) {
-                $data[] = $countries[$user->country];
+                $data[] = (!empty($user->country)) ? $countries[$user->country] : '';
             }
             if ($user->lastaccess) {
                 $lastaccess = format_time(time() - $user->lastaccess, $datestring);

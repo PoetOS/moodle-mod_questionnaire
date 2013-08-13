@@ -18,14 +18,14 @@
  *
  * @package    mod
  * @subpackage questionnaire
- * @copyright  
+ * @copyright
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
 /**
- * Javascript for hiding/displaying children questions on preview page of 
- * questionnaire with conditional branching. 
+ * Javascript for hiding/displaying children questions on preview page of
+ * questionnaire with conditional branching.
  */
 
 function dependdrop(qId, children) {
@@ -47,7 +47,7 @@ function depend (children, choices) {
 		if (q) {
 			var radios = q.getElementsByTagName('input');
 			var radiolength = radios.length;
- 			var droplists = q.getElementsByTagName('select');
+			var droplists = q.getElementsByTagName('select');
 			var droplistlength = droplists.length;
             var textareas = q.getElementsByTagName('textarea');
 			var textarealength = textareas.length;
@@ -57,11 +57,11 @@ function depend (children, choices) {
 					q.classList.add('qn-container');
 					for (var j = 0; j < radiolength; j++) {
 						radio = radios[j];
-						radio.disabled=false ;
+						radio.disabled=false;
 					}
 					for (var m = 0; m < droplistlength; m++) {
 						droplist = droplists[m];
-						droplist.disabled=false ;
+						droplist.disabled=false;
 					}
 					delete children[i];
 				} else if (children[i]){
@@ -89,7 +89,7 @@ function depend (children, choices) {
 }
 // End conditional branching functions.
 
-// When respondent enters text in !other field, corresponding 
+// When respondent enters text in !other field, corresponding
 // radio button OR check box is automatically checked.
 function other_check(name) {
   other = name.split("_");
@@ -184,7 +184,7 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
             if (this.get('alt') == 0) {
                 this.set('checked', 'checked');
             } else {
-            	this.set('checked', '');
+                this.set('checked', '');
             }
         });
     }, '#checknotstarted');
@@ -194,10 +194,9 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
             if (this.get('alt') == 1) {
                 this.set('checked', 'checked');
             } else {
-            	this.set('checked', '');
+                this.set('checked', '');
             }
         });
     }, '#checkstarted');
 
 };
-

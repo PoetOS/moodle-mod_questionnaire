@@ -55,7 +55,7 @@ if ($id) {
 
 // Check login and get context.
 require_course_login($course, true, $cm);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/view.php');
 if (isset($id)) {
