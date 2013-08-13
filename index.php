@@ -102,7 +102,7 @@ foreach ($questionnaires as $questionnaire) {
 
     $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->sid));
     // Template surveys should NOT be displayed as an activity to students.
-    if (!($realm == 'template' && !has_capability('mod/questionnaire:manage', get_context_instance(CONTEXT_MODULE, $cmid)))) {
+    if (!($realm == 'template' && !has_capability('mod/questionnaire:manage', context_module::instance($cmid)))) {
         // Section number if necessary.
         $strsection = '';
         if ($questionnaire->section != $currentsection) {

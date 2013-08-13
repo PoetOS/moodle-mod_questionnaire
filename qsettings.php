@@ -37,7 +37,7 @@ if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->insta
 
 // Needed here for forced language courses.
 require_course_login($course, true, $cm);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/qsettings.php', array('id' => $id));
 $PAGE->set_url($url);

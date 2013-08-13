@@ -318,7 +318,7 @@ function questionnaire_get_context($cmid) {
         return $context;
     }
 
-    if (!$context = get_context_instance(CONTEXT_MODULE, $cmid)) {
+    if (!$context = context_module::instance($cmid)) {
             print_error('badcontext');
     }
     return $context;
@@ -606,7 +606,7 @@ function questionnaire_get_incomplete_users($cm, $sid,
 
     global $DB;
 
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     // First get all users who can complete this questionnaire.
     $cap = 'mod/questionnaire:submit';

@@ -44,7 +44,7 @@ if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, 
 }
 
 require_course_login($course, true, $cm);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 // Should never happen, unless called directly by a snoop...
 if ( !has_capability('mod/questionnaire:readownresponses', $context)
     || $userid != $USER->id) {
