@@ -71,6 +71,7 @@ function depend (children, choices) {
 						radio = radios[j];
 						radio.disabled=true;
 						radio.checked=false;
+						radio.value='';
 					}
 					for (var m = 0; m < droplistlength; m++) {
 						droplist = droplists[m];

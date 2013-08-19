@@ -142,7 +142,12 @@ if ($action == 'main') {
         }
     }
     $questionsform->set_data($sdata);
-
+    if ($questionsform->is_cancelled()) {
+        // Switch to main screen.
+        $action = 'main';
+        redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
+        $reload = true;
+    }
     if ($qformdata = $questionsform->get_data()) {
         // Quickforms doesn't return values for 'image' input types using 'exportValue', so we need to grab
         // it from the raw submitted data.
@@ -231,6 +236,8 @@ if ($action == 'main') {
             redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.
                      '&moveq='.key($qformdata->movebutton));
             $reload = true;
+
+
 
         } else if (isset($qformdata->moveherebutton)) {
             // Need to use the key, since IE returns the image position as the value rather than the specified

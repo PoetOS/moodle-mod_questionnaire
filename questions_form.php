@@ -48,21 +48,14 @@ class questionnaire_questions_form extends moodleform {
         $strno = get_string('no');
         $strposition = get_string('position', 'questionnaire');
 
-        // Set up question positions.
         if (!isset($questionnaire->questions)) {
             $questionnaire->questions = array();
         }
-        $quespos = array();
-        $max = count($questionnaire->questions);
-        $sec = 0;
-        for ($i = 1; $i <= $max; $i++) {
-            $quespos[$i] = "$i";
+        if ($this->moveq) {
+            $moveqposition = $questionnaire->questions[$this->moveq]->position;
         }
 
         $pos = 0;
-        $numq = count($questionnaire->questions);
-        $attributes = 'onChange="this.form.submit()"';
-
         $select = '';
         if (!($qtypes = $DB->get_records_select_menu('questionnaire_question_type', $select, null, '', 'typeid,type'))) {
             $qtypes = array();
@@ -135,10 +128,7 @@ class questionnaire_questions_form extends moodleform {
             // Needed for non-English languages JR.
             $qtype = '['.questionnaire_get_type($tid).']';
             $content = '';
-            if ($tid == QUESPAGEBREAK) {
-                $sec++;
-
-            } else {
+            if ($tid != QUESPAGEBREAK) {
                 // Needed to print potential media in question text.
                 $content = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
                                 $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
@@ -278,13 +268,17 @@ class questionnaire_questions_form extends moodleform {
                     if ($typeid == QUESPAGEBREAK && $pos == 1) {
                         $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '');
                     } else {
-                        $mextra = array('value' => $question->id,
-                                        'alt' => $strmove,
-                                        'title' => $strmovehere);
-                        $msrc = $OUTPUT->pix_url('movehere');
-                        $moveqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
-                        $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$pos.']', $msrc, $mextra);
-                        $moveqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
+                        if ($this->moveq == $question->id) {
+                            $moveqgroup[] =& $mform->createElement('cancel', 'cancelbutton', get_string('cancel'));
+                        } else {
+                            $mextra = array('value' => $question->id,
+                                            'alt' => $strmove,
+                                            'title' => $strmovehere.' (position '.$pos.')');
+                            $msrc = $OUTPUT->pix_url('movehere');
+                            $moveqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
+                            $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$pos.']', $msrc, $mextra);
+                            $moveqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
+                        }
                     }
                 } else {
                     $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '');
@@ -299,17 +293,6 @@ class questionnaire_questions_form extends moodleform {
             $manageqgroup[] =& $mform->createElement('static', 'qtype_'.$question->id, '', $qtype);
             $manageqgroup[] =& $mform->createElement('static', 'qname_'.$question->id, '', $qname);
 
-            if ($this->moveq) {
-                $mform->addGroup($moveqgroup, 'moveqgroup', '', '', false);
-                if ($this->moveq == $question->id && $display) {
-                    $mform->addElement('html', '<div class="moving" title="'.$strmove.'">'); // Begin div qn-container.
-                } else {
-                    $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
-                }
-            }
-
-            $mform->addGroup($manageqgroup, 'manageqgroup', '', '&nbsp;', false);
-
             if ($dependency) {
                 $mform->addElement('static', 'qdepend_'.$question->id, '', '<div class="qdepend">'.$dependency.'</div>');
             }
@@ -319,15 +302,30 @@ class questionnaire_questions_form extends moodleform {
                 } else {
                     $qnumber = '';
                 }
-                $mform->addElement('static', 'qcontent_'.$question->id, '',
-                                $qnumber.'<div class="qn-question">'.$content.'</div>');
             }
 
-            $pos++;
+            if ($this->moveq && $pos < $moveqposition) {
+                $mform->addGroup($moveqgroup, 'moveqgroup', '', '', false);
+            }
+            if ($this->moveq) {
+                if ($this->moveq == $question->id && $display) {
+                    $mform->addElement('html', '<div class="moving" title="'.$strmove.'">'); // Begin div qn-container.
+                } else {
+                    $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
+                }
+            }
+            $mform->addGroup($manageqgroup, 'manageqgroup', '', '&nbsp;', false);
+            if ($tid != QUESPAGEBREAK) {
+                $mform->addElement('static', 'qcontent_'.$question->id, '',
+                    $qnumber.'<div class="qn-question">'.$content.'</div>');
+            }
             $mform->addElement('html', '</div>'); // End div qn-container.
+
+            if ($this->moveq && $pos >= $moveqposition) {
+                $mform->addGroup($moveqgroup, 'moveqgroup', '', '', false);
+            }
         }
 
-        // If we are moving a question, display one more line for the end.
         if ($this->moveq) {
             $mform->addElement('hidden', 'moveq', $this->moveq);
         }
@@ -340,8 +338,6 @@ class questionnaire_questions_form extends moodleform {
         $mform->addElement('hidden', 'action', 'main');
         $mform->setType('action', PARAM_RAW);
         $mform->setType('moveq', PARAM_RAW);
-
-        // Buttons.
 
         $mform->addElement('html', '</div>');
     }
