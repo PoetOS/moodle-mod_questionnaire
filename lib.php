@@ -198,7 +198,8 @@ function questionnaire_delete_instance($id) {
 /// $return->time = the time they did it
 /// $return->info = a short text description
 function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
-    require_once('questionnaire.class.php');
+    global $CFG;
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $result = new stdClass();
     if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=true)) {
@@ -219,7 +220,8 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
 /// Print a detailed representation of what a  user has done with
 /// a given particular instance of this module, for user activity reports.
 function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
-    require_once('questionnaire.class.php');
+    global $CFG;
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=false)) {
         foreach ($responses as $response) {
