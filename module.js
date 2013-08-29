@@ -25,6 +25,5 @@
 M.mod_questionnaire = M.mod_questionnaire || {};
 
 M.mod_questionnaire.init_attempt_form = function(Y) {
-    M.core_question_engine.init_form(Y, '#phpesp_response');
     M.core_formchangechecker.init({formid: 'phpesp_response'});
 };
