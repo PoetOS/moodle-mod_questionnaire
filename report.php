@@ -578,7 +578,6 @@
     case 'vall': // view all responses
     case 'vallasort': // view all responses sorted in ascending order
     case 'vallarsort': // view all responses sorted in descending order
-        require_capability('mod/questionnaire:readallresponseanytime', $context);
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
         $PAGE->navbar->add(get_string('questionnairereport', 'questionnaire'));

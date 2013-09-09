@@ -48,6 +48,7 @@
                                'id='.$questionnaire->cm->id), get_string('view', 'questionnaire'));
     }
     $numresp = $questionnaire->count_submissions($USER->id);
+    $usernumresp = $questionnaire->count_submissions($USER->id);
 
     if ($questionnaire->capabilities->readownresponses && ($numresp > 0)) {
         $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
@@ -168,7 +169,7 @@
                 ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
                     && $questionnaire->is_closed()) ||
                 ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
-                    && !$questionnaire->user_can_take($USER->id))) &&
+                    && $usernumresp > 0)) &&
                $questionnaire->is_survey_owner()) {
         $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
         $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
