@@ -1057,7 +1057,7 @@ class questionnaire_question {
         if ($canusehtmleditor) {
             $editor = editors_get_preferred_editor();
             $editor->use_editor($name, questionnaire_get_editor_options($this->context));
-            $texteditor = html_writer::tag('textarea', '',
+            $texteditor = html_writer::tag('textarea', $value,
                             array('id' => $name, 'name' => $name, '', ''));
             echo $texteditor;
         } else {
