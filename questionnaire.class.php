@@ -570,7 +570,7 @@ class questionnaire {
             }
         }
 
-        if (!empty($formdata->prev) && ($this->navigate)) {
+        if (!empty($formdata->prev)) {
             $this->response_delete($formdata->rid, $formdata->sec);
 
             // Skip logic: do not insert responses when going to previous page if current page contains dependquestions.
@@ -634,7 +634,7 @@ class questionnaire {
         if (isset($this->questions) && $numsections) { // Sanity check.
             $this->survey_render($formdata->sec, $msg, $formdata);
             echo '<div class="notice" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">';
-            if (($this->navigate) && ($formdata->sec > 1)) {
+            if ($formdata->sec > 1) {
                 echo '<input type="submit" name="prev" value="<<&nbsp;'.get_string('previouspage', 'questionnaire').'" />';
             }
             if ($this->resume) {
