@@ -1975,9 +1975,9 @@ class questionnaire_question {
             $table->head = array($strrespondent, $strresponse);
             $table->size = array('*', '*');
         } else {
-            $table->align = array('left', 'left');
-            $table->head = array('', $strresponse);
-            $table->size = array('2%', '*');
+            $table->align = array('left');
+            $table->head = array($strresponse);
+            $table->size = array('*');
         }
         $username = '';
         foreach ($rows as $row) {
@@ -1992,7 +1992,7 @@ class questionnaire_question {
                 $rusername = '<a href="'.$rurl.'" title="'.$title.'">'.fullname($user).'</a>';
                 $table->data[] = array($rusername, $text);
             } else {
-                $table->data[] = array('&#8226;', $text);
+                $table->data[] = array($text);
             }
         }
         echo html_writer::table($table);

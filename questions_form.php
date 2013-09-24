@@ -523,22 +523,27 @@ class questionnaire_edit_question_form extends moodleform {
         if ($questionnaire->navigate) {
             $position = isset($question->position) ? $question->position : count($questionnaire->questions) + 1;
             $dependencies = questionnaire_get_dependencies($questionnaire->questions, $position);
+            $canchangeparent = true;
             if (count($dependencies) > 1) {
-                $mform->addElement('hidden', 'cannotchangeparentifchildren');
-                $mform->setType('cannotchangeparentifchildren', PARAM_INT);
-                $mform->setDefault('cannotchangeparentifchildren', false);
                 if (isset($question->qid)) {
                     $haschildren = questionnaire_get_descendants ($questionnaire->questions, $question->qid);
                     if (count($haschildren) !== 0) {
-                        $mform->setDefault('cannotchangeparentifchildren', true);
+                        $canchangeparent = false;
+                        $parent = questionnaire_get_parent ($question);
+                        $fixeddependency = $parent [$question->id]['parent'];
                     }
                 }
-                $question->dependquestion = isset($question->dependquestion) ? $question->dependquestion.','.
-                                $question->dependchoice : '0,0';
-                $group = array($mform->createElement('selectgroups', 'dependquestion', '', $dependencies) );
-                $mform->addGroup($group, 'selectdependency', get_string('dependquestion', 'questionnaire'), '', false);
+                if ($canchangeparent) {
+                    $question->dependquestion = isset($question->dependquestion) ? $question->dependquestion.','.
+                                    $question->dependchoice : '0,0';
+                    $group = array($mform->createElement('selectgroups', 'dependquestion', '', $dependencies) );
+                    $mform->addGroup($group, 'selectdependency', get_string('dependquestion', 'questionnaire'), '', false);
+                    $mform->addHelpButton('selectdependency', 'dependquestion', 'questionnaire');
+                } else {
+                    $mform->addElement('static', 'selectdependency', get_string('dependquestion', 'questionnaire'),
+                                    '<div class="dimmed_text">'.$fixeddependency.'</div>');
+                }
                 $mform->addHelpButton('selectdependency', 'dependquestion', 'questionnaire');
-                $mform->disabledIf('selectdependency', 'cannotchangeparentifchildren', 'eq', 1);
             }
         }
 
