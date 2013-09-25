@@ -387,6 +387,21 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
+        // Replace the = separator to :: separator in quest_choice content.
+        if ($choices = $DB->get_records('questionnaire_quest_choice', $conditions=null)) {
+            foreach ($choices as $choice) {
+                if ($choice->value == null || $choice->value == 'NULL') {
+                    $content = questionnaire_choice_values($choice->content);
+                    if ($pos = strpos($content->text, '=')) {
+                        $newcontent = str_replace('=', '::', $content->text);
+                        echo"$content->text => $newcontent<br>";
+                        $choice->content = $newcontent;
+                        $DB->update_record('questionnaire_quest_choice', $choice);
+                    }
+                }
+            }
+        }
+
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2013062501, 'questionnaire');
     }
