@@ -108,7 +108,8 @@ switch ($action) {
         }
         $SESSION->questionnaire->current_tab = 'myvall';
         $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
-        $resps = $DB->get_records_select('questionnaire_response', $select);
+        $sort = 'submitted ASC';
+        $resps = $DB->get_records_select('questionnaire_response', $select, $params=null, $sort);
         $titletext = get_string('myresponses', 'questionnaire');
 
         // Print the page header.
@@ -131,7 +132,8 @@ switch ($action) {
         }
         $SESSION->questionnaire->current_tab = 'mybyresponse';
         $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
-        $resps = $DB->get_records_select('questionnaire_response', $select);
+        $sort = 'submitted ASC';
+        $resps = $DB->get_records_select('questionnaire_response', $select, $params=null, $sort);
         $rids = array_keys($resps);
         if (!$rid) {
             $rid = $rids[0];
