@@ -389,18 +389,22 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Replace the = separator to :: separator in quest_choice content.
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-        if ($choices = $DB->get_records('questionnaire_quest_choice', $conditions=null)) {
+        $choices = $DB->get_records('questionnaire_quest_choice', $conditions=null);
+        $total = count($choices);
+        if ($total > 0) {
+            $pbar = new progress_bar('convertchoicevalues', 500, true);
+            $i=1;
             foreach ($choices as $choice) {
                 if ($choice->value == null || $choice->value == 'NULL') {
                     $content = questionnaire_choice_values($choice->content);
                     if ($pos = strpos($content->text, '=')) {
                         $newcontent = str_replace('=', '::', $content->text);
-                        // Display the old and new content fields if separator has been changed in database.
-                        echo"$content->text => $newcontent<br>";
                         $choice->content = $newcontent;
                         $DB->update_record('questionnaire_quest_choice', $choice);
                     }
                 }
+                $pbar->update($i, $total,"Convert questionnaire choice value separator - $i/$total.");
+                $i++;
             }
         }
 
