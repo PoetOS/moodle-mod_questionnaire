@@ -387,7 +387,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        // Replace the = separator to :: separator in quest_choice content.
+        // Replace the = separator with :: separator in quest_choice content.
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
         $choices = $DB->get_records('questionnaire_quest_choice', $conditions=null);
         $total = count($choices);
