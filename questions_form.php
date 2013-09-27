@@ -429,40 +429,40 @@ class questionnaire_edit_question_form extends moodleform {
         } else {
             $streditquestion = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($question->type_id));
         }
-		switch ($question->type_id) {
-		    case 1:
-		        $qtype='yesno';
-		        break;
-		    case 2:
-		        $qtype='textbox';
+        switch ($question->type_id) {
+            case QUESYESNO:
+                $qtype='yesno';
                 break;
-	        case 3:
-		        $qtype='essaybox';
+            case QUESTEXT:
+                $qtype='textbox';
                 break;
-		    case 4:
-		        $qtype='radiobuttons';
-		        break;
-            case 5:
-		        $qtype='checkboxes';
+            case QUESESSAY:
+                $qtype='essaybox';
                 break;
-		    case 6:
-		        $qtype='dropdown';
+            case QUESRADIO:
+                $qtype='radiobuttons';
                 break;
-		    case 8:
-		        $qtype='ratescale';
+            case QUESCHECK:
+                $qtype='checkboxes';
                 break;
-		    case 9:
-		        $qtype='date';
-		        break;
-		    case 10:
-		        $qtype='numeric';
-		        break;
-		    case 100:
-		        $qtype='sectiontext';
-		        break;
-            case 99:
-		        $qtype='sectionbreak';
-		}
+            case QUESDROP:
+                $qtype='dropdown';
+                break;
+            case QUESRATE:
+                $qtype='ratescale';
+                break;
+            case QUESDATE:
+                $qtype='date';
+                break;
+            case QUESNUMERIC:
+                $qtype='numeric';
+                break;
+            case QUESSECTIONTEXT:
+                $qtype='sectiontext';
+                break;
+            case QUESPAGEBREAK:
+                $qtype='sectionbreak';
+        }
 
         $mform->addElement('header', 'questionhdredit', $streditquestion);
         $mform->addHelpButton('questionhdredit', $qtype, 'questionnaire');

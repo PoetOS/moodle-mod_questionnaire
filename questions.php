@@ -208,7 +208,7 @@ if ($action == 'main') {
             $reload = true;
 
         } else if (isset($qformdata->addqbutton)) {
-            if ($qformdata->type_id == 99) { // Adding section break is handled right away....
+            if ($qformdata->type_id == QUESPAGEBREAK) { // Adding section break is handled right away....
                 $sql = 'SELECT MAX(position) as maxpos FROM {questionnaire_question} '.
                        'WHERE survey_id = '.$qformdata->sid.' AND deleted = \'n\'';
                 if ($record = $DB->get_record_sql($sql)) {
@@ -218,7 +218,7 @@ if ($action == 'main') {
                 }
                 $question = new Object();
                 $question->survey_id = $qformdata->sid;
-                $question->type_id = 99;
+                $question->type_id = QUESPAGEBREAK;
                 $question->position = $pos;
                 $question->content = 'break';
                 $DB->insert_record('questionnaire_question', $question);
@@ -305,13 +305,13 @@ if ($action == 'main') {
             // Trim to eliminate potential trailing carriage return.
             $qformdata->allchoices = trim($qformdata->allchoices);
             if (empty($qformdata->allchoices)) {
-                if ($qformdata->type_id != 8) {
+                if ($qformdata->type_id != QUESRATE) {
                     error (get_string('enterpossibleanswers', 'questionnaire'));
                 } else {
                     // Add dummy blank space character for empty value.
                     $qformdata->allchoices = " ";
                 }
-            } else if ($qformdata->type_id == 8) {    // Rate.
+            } else if ($qformdata->type_id == QUESRATE) {    // Rate.
                 $allchoices = $qformdata->allchoices;
                 $allchoices = explode("\n", $allchoices);
                 $ispossibleanswer = false;

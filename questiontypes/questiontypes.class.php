@@ -236,7 +236,7 @@ class questionnaire_question {
         global $DB;
         $val = optional_param('q'.$this->id, '', PARAM_CLEAN);
         // Only insert if non-empty content.
-        if ($this->type_id == 10) { // Numeric.
+        if ($this->type_id == QUESNUMERIC) {
             $val = preg_replace("/[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
         }
 
@@ -367,7 +367,7 @@ class questionnaire_question {
     private function insert_response_rank($rid) {
         global $DB;
         $val = optional_param('q'.$this->id, null, PARAM_CLEAN);
-        if ($this->type_id == 8) { // Rank.
+        if ($this->type_id == QUESRATE) {
             $resid = false;
             foreach ($this->choices as $cid => $choice) {
                 $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
@@ -543,7 +543,7 @@ class questionnaire_question {
             $ridstr = ' AND response_id = '.$rids.' ';
         }
 
-        if ($this->type_id  == 8) { // Rank.
+        if ($this->type_id  == QUESRATE) {
             // JR there can't be an !other field in rating questions ???
             $rankvalue = array();
             $select = 'question_id='.$this->id.' AND content NOT LIKE \'!other%\' ORDER BY id ASC';
@@ -686,7 +686,7 @@ class questionnaire_question {
                     $this->userid[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            $isnumeric = $this->type_id == 10;
+            $isnumeric = $this->type_id == QUESNUMERIC;
             if ($isnumeric) {
                 $this->mkreslistnumeric(count($rids), $this->precise);
             } else {
@@ -939,7 +939,7 @@ class questionnaire_question {
     }
 
     private function response_check_required ($data) { // JR check all question types
-        if ($this->type_id == 8) { // Rate is a special case.
+        if ($this->type_id == QUESRATE) { // Rate is a special case.
             foreach ($this->choices as $cid => $choice) {
                 $str = 'q'."{$this->id}_$cid";
                 if (isset($data->$str)) {

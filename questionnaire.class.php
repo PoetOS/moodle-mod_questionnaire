@@ -105,7 +105,7 @@ class questionnaire {
             $isbreak = false;
             foreach ($records as $record) {
                 $this->questions[$record->id] = new questionnaire_question(0, $record, $this->context);
-                if ($record->type_id != 99) {
+                if ($record->type_id != QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][$record->id] = &$this->questions[$record->id];
                     $isbreak = false;
                 } else {
@@ -685,7 +685,7 @@ class questionnaire {
         if ($section > 1) {
             for ($j = 2; $j<=$section; $j++) {
                 foreach ($this->questionsbysec[$j-1] as $question) {
-                    if ($question->type_id < 99) {
+                    if ($question->type_id < QUESPAGEBREAK) {
                         $i++;
                     }
                 }
@@ -694,7 +694,7 @@ class questionnaire {
 
         $this->print_survey_start($message, $section, $numsections, $hasrequired, '', 1);
         foreach ($this->questionsbysec[$section] as $question) {
-            if ($question->type === 'Essay Box') {
+            if ($question->type_id == QUESESSAY) {
                 $this->usehtmleditor = can_use_html_editor();
             }
             if ($question->type_id != QUESSECTIONTEXT) {
@@ -1524,7 +1524,7 @@ class questionnaire {
                 $q4 = $arr[4];
             }
             if (strstr($qid, '_')) {
-                if ($qtype == 4) {     // Single.
+                if ($qtype == QUESRADIO) {     // Single.
                     $nam[$qpos][$qname.'_'.get_string('other', 'questionnaire')] = $q4;
                     continue;
                 }
@@ -1535,7 +1535,7 @@ class questionnaire {
                 } else {
                         $subqnum++;
                 }
-                if ($qtype == 8) {     // Rate.
+                if ($qtype == QUESRATE) {     // Rate.
                     $qname .= "->$qchoice";
                     if ($q4 == -1) {
                         // Here $q4 = get_string('notapplicable', 'questionnaire'); DEV JR choose one solution please.
@@ -2634,7 +2634,7 @@ class questionnaire {
             $qpos = $record->position;
             $col = $record->name;
             $type = $record->type_id;
-            if ($type == 4 || $type == 5 || $type == 8) {
+            if ($type == QUESRADIO || $type == QUESCHECK || $type == QUESRATE) {
                 /* single or multiple or rate */
                 $sql = "SELECT c.id as cid, q.id as qid, q.precise AS precise, q.name, c.content
                 FROM {questionnaire_question} q ".
@@ -2646,7 +2646,7 @@ class questionnaire {
                 $subqnum = 0;
                 switch ($type) {
 
-                    case 4: // Single.
+                    case QUESRADIO: // Single.
                         $columns[][$qpos] = $col;
                         array_push($types, $idtocsvmap[$type]);
                         $thisnum = 1;
@@ -2660,7 +2660,7 @@ class questionnaire {
                         }
                         break;
 
-                    case 5: // Multiple.
+                    case QUESCHECK: // Multiple.
                         $thisnum = 1;
                         foreach ($records2 as $record2) {
                             $content = $record2->content;
@@ -2685,7 +2685,7 @@ class questionnaire {
                         }
                         break;
 
-                    case 8: // Rate.
+                    case QUESRATE: // Rate.
                         foreach ($records2 as $record2) {
                             $nameddegrees = 0;
                             $modality = '';
