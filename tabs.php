@@ -133,7 +133,7 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
             $row3[] = new tabobject('vallasort', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('order_ascending', 'questionnaire'));
             $argstr2 = $argstr.'&action=vallarsort&currentgroupid='.$currentgroupid;
-			$row3[] = new tabobject('vallarsort', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
+            $row3[] = new tabobject('vallarsort', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('order_descending', 'questionnaire'));
         }
         if ($questionnaire->capabilities->deleteresponses) {
@@ -191,8 +191,8 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
         $argstr2 = $argstr.'&action=vall';
         $row2[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('summary', 'questionnaire'));
-		$inactive[] = $currenttab;
-		$activated[] = $currenttab;
+        $inactive[] = $currenttab;
+        $activated[] = $currenttab;
         $row3 = array();
         $argstr2 = $argstr.'&action=vall';
         $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
@@ -201,9 +201,9 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
         $row3[] = new tabobject('vallasort', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('order_ascending', 'questionnaire'));
         $argstr2 = $argstr.'&action=vallarsort&currentgroupid='.$currentgroupid;
-		$row3[] = new tabobject('vallarsort', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
+        $row3[] = new tabobject('vallarsort', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('order_descending', 'questionnaire'));
-		if ($questionnaire->capabilities->deleteresponses) {
+        if ($questionnaire->capabilities->deleteresponses) {
             $argstr2 = $argstr.'&action=delallresp';
             $row2[] = new tabobject('deleteall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                     get_string('deleteallresponses', 'questionnaire'));

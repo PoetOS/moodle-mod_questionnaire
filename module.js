@@ -63,11 +63,11 @@ function depend (children, choices) {
 					}
 					for (var j = 0; j < radiolength; j++) {
 						radio = radios[j];
-						radio.disabled=false ;
+						radio.disabled=false;
 					}
 					for (var m = 0; m < droplistlength; m++) {
 						droplist = droplists[m];
-						droplist.disabled=false ;
+						droplist.disabled=false;
 					}
 					delete children[i];
 				} else if (children[i]){
@@ -104,10 +104,10 @@ function depend (children, choices) {
 /*
  * A workaround for MSIE versions < 10 which do not recognize classList. Answer by Paulpro at:
  * http://stackoverflow.com/questions/6787383/what-is-the-solution-to-remove-add-a-class-in-pure-javascript.
- * */ 
+ * */
 
 function addClass(el, aclass){
-    el.className += ' '+aclass;   
+    el.className += ' '+aclass;
 }
 
 function removeClass(el, aclass){
@@ -118,7 +118,7 @@ function removeClass(el, aclass){
 }
 // End classList workaround.
 
-// When respondent enters text in !other field, corresponding 
+// When respondent enters text in !other field, corresponding
 // radio button OR check box is automatically checked.
 function other_check(name) {
   other = name.split("_");
@@ -228,4 +228,3 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
     }, '#checkstarted');
 
 };
-

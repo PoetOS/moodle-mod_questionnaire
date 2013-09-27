@@ -88,14 +88,14 @@ class questionnaire_choose_group_form extends moodleform {
                 $groupsoptions['-2'] = '---'.get_string('membersofselectedgroup', 'group').' '.get_string('allgroups').'---';
                 $groupsoptions['-3'] = '---'.get_string('groupnonmembers').'---';
             }
-			if ($groupmode == 2) {
-				$groupsoptions['-2'] = '---'.get_string('membersofselectedgroup', 'group').' '.get_string('allgroups').'---';
-			}
+            if ($groupmode == 2) {
+                $groupsoptions['-2'] = '---'.get_string('membersofselectedgroup', 'group').' '.get_string('allgroups').'---';
+            }
         }
         $attributes = 'onChange="M.core_formchangechecker.set_form_submitted(); this.form.submit()"';
         $elementgroup[] =& $mform->createElement('select', 'currentgroupid', '', $groupsoptions, $attributes);
         // Buttons.
-		$mform->setDefault('currentgroupid', $currentgroupid);
+        $mform->setDefault('currentgroupid', $currentgroupid);
         $mform->addGroup($elementgroup, 'elementgroup', '', array(' '), false);
         $mform->addHelpButton('elementgroup', 'viewallresponses', 'questionnaire');
     }

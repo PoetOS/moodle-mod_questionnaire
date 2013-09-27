@@ -403,7 +403,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
                         $DB->update_record('questionnaire_quest_choice', $choice);
                     }
                 }
-                $pbar->update($i, $total,"Convert questionnaire choice value separator - $i/$total.");
+                $pbar->update($i, $total, "Convert questionnaire choice value separator - $i/$total.");
                 $i++;
             }
         }
