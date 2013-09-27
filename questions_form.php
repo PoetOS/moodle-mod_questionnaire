@@ -611,6 +611,29 @@ class questionnaire_edit_question_form extends moodleform {
 
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+
+        // If this is a rate question.
+        if ($data['type_id'] == QUESRATE) {
+            if ($data['length'] < 2) {
+                $errors["length"] = get_string('notenoughscaleitems', 'questionnaire');
+            }
+            // If this is a rate question with no duplicates option.
+            if ($data['precise'] == 2 ) {
+                $allchoices = $data['allchoices'];
+                $allchoices = explode("\n", $allchoices);
+                $nbnameddegrees = 0;
+                $nbvalues = 0;
+                foreach ($allchoices as $choice) {
+                    if ($choice && !preg_match("/^[0-9]{1,3}=/", $choice)) {
+                            $nbvalues++;
+                    }
+                }
+                if ($nbvalues < 2) {
+                    $errors["allchoices"] = get_string('noduplicateschoiceserror', 'questionnaire');
+                }
+            }
+        }
+
         return $errors;
     }
 }
