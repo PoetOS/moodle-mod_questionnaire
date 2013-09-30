@@ -96,7 +96,6 @@ class questionnaire_questions_form extends moodleform {
         }
 
         $mform->addElement('header', 'manageq', get_string('managequestions', 'questionnaire'));
-        // TODO write specific help here.
         $mform->addHelpButton('manageq', 'managequestions', 'questionnaire');
 
         $mform->addElement('html', '<div class="qcontainer">');

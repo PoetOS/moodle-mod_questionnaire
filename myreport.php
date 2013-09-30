@@ -148,6 +148,8 @@ switch ($action) {
 
         // Print the tabs.
         include('tabs.php');
+        echo $OUTPUT->box_start();
+
         echo $OUTPUT->heading($titletext);
 
         if (count($resps) > 1) {
@@ -161,7 +163,7 @@ switch ($action) {
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps);
             echo '</div>';
         }
-
+        echo $OUTPUT->box_end();
         // Finish the page.
         echo $OUTPUT->footer($course);
         break;

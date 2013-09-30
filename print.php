@@ -44,7 +44,10 @@ if (!($questionnaire->capabilities->view && (($rid == 0) || $questionnaire->can_
     // Should never happen, unless called directly by a snoop...
     print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
 }
-
+$blankquestionnaire=true;
+if ($rid != 0) {
+    $blankquestionnaire=false;
+}
 $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/print.php');
 $url->param('qid', $qid);
 $url->param('rid', $rid);
@@ -54,6 +57,6 @@ $PAGE->set_url($url);
 $PAGE->set_title($questionnaire->survey->title);
 $PAGE->set_pagelayout('popup');
 echo $OUTPUT->header();
-$questionnaire->survey_print_render($message='', $referer='print', $courseid, $blankquestionnaire=true);
+$questionnaire->survey_print_render($message='', $referer='print', $courseid, $rid, $blankquestionnaire);
 echo $OUTPUT->close_window_button();
 echo $OUTPUT->footer();

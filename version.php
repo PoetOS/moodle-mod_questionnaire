@@ -22,10 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$module->version  = 2013080901;  // The current module version (Date: YYYYMMDDXX)
+$module->version  = 2013093001;  // The current module version (Date: YYYYMMDDXX)
 $module->requires = 2013051400;  // Requires this Moodle version.
 $module->component = 'mod_questionnaire';
 $module->cron     = 60*60*12;    // Period for cron to check this module (secs).
 
-$module->release  = '2.5.5 (Build - 2013080901)';
+$module->release  = '2.5.5 (Build - 2013093001)';
 $module->maturity = 'BETA';

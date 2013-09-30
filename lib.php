@@ -492,6 +492,10 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         navigation_node $questionnairenode) {
 
     global $PAGE, $DB, $USER, $CFG;
+    $individualresponse = optional_param('individualresponse', false, PARAM_INT);
+    $rid = optional_param('rid', false, PARAM_INT); // Response id.
+    $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
+
     require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     $context = $PAGE->cm->context;
@@ -505,6 +509,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 
     $courseid = $course->id;
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+
     if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
         $owner = (trim($survey->owner) == trim($courseid));
     } else {
@@ -577,6 +582,9 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                         array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'vall')));
+        $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
+                new moodle_url('/mod/questionnaire/report.php',
+                    array('instance' => $questionnaire->id, 'user' => $USER->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
     }
 
     $numresp = $questionnaire->count_submissions();
@@ -587,8 +595,16 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $numselectedresps = $numresp;
     }
 
+    // If questionnaire is set to separate groups, prevent user who is not member of any group
+    // to view All responses.
+    $canviewgroups = true;
+    $groupmode = groups_get_activity_groupmode($cm, $course);
+    if ($groupmode == 1) {
+        $canviewgroups = groups_has_membership($cm, $USER->id);;
+    }
+
     if (($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) ||
-            $questionnaire->capabilities->readallresponses && ($numresp > 0) &&
+            $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
             ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                     ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
                             && $questionnaire->is_closed()) ||
@@ -611,29 +627,40 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         }
         $defaultordernode = $summarynode->add(get_string('order_default', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
-                        array('instance' => $questionnaire->id, 'action' => 'vall')));
+                        array('instance' => $questionnaire->id, 'action' => 'vall', 'group' => $currentgroupid)));
         $ascendingordernode = $summarynode->add(get_string('order_ascending', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
-                        array('instance' => $questionnaire->id, 'action' => 'vallasort')));
+                        array('instance' => $questionnaire->id, 'action' => 'vallasort', 'group' => $currentgroupid)));
         $descendingordernode = $summarynode->add(get_string('order_descending', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
-                        array('instance' => $questionnaire->id, 'action' => 'vallarsort')));
+                        array('instance' => $questionnaire->id, 'action' => 'vallarsort', 'group' => $currentgroupid)));
 
         if ($questionnaire->capabilities->deleteresponses) {
             $deleteallnode = $summarynode->add(get_string('deleteallresponses', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
-                            array('instance' => $questionnaire->id, 'action' => 'delallresp')));
+                            array('instance' => $questionnaire->id, 'action' => 'delallresp', 'group' => $currentgroupid)));
         }
 
         if ($questionnaire->capabilities->downloadresponses) {
             $downloadresponsesnode = $summarynode->add(get_string('downloadtextformat', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
-                            array('instance' => $questionnaire->id, 'action' => 'dwnpg')));
+                            array('instance' => $questionnaire->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
         }
         if ($questionnaire->capabilities->viewsingleresponse && $questionnaire->respondenttype != 'anonymous') {
             $byresponsenode = $reportnode->add(get_string('viewbyresponse', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/report.php',
+                    array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
+
+            $viewindividualresponsenode = $byresponsenode->add(get_string('view', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/report.php',
+                    array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
+
+            if ($individualresponse) {
+                $deleteindividualresponsenode = $byresponsenode->add(get_string('deleteresp', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
-                            array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1)));
+                        array('instance' => $questionnaire->id, 'action' => 'dresp', 'byresponse' => 1,
+                            'rid' => $rid, 'group' => $currentgroupid, 'individualresponse' => 1)));
+            }
         }
     }
     if ($questionnaire->capabilities->viewsingleresponse) {

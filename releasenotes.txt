@@ -13,7 +13,14 @@ switching from Required to Not required response and question deletion confirmat
 - Moved all Javascript scripts to questionnaire/module.js
 - In Radio buttons and Rate questions, the separator between "short label" and "options text"
 has been replaced from the equal sign (=) to two consecutive colons (::).
-- Plus a number of small fixes here and there.  
+An automatic replacement for existing questions has been added to the upgrade.php script.
+- All navigation links in the tabs area have been duplicated in the Questionnaire administration block,
+so that complete removal of the tabs navigation system will be possible in further versions (2.6?).
+- When groups (separate or visible) are enabled for a questionnaire instance, it is possible to select
+which group to view responses from, in a simplified interface.
+The choose_group_form.php script is no longer needed and has been removed from the questionnaire files.
+The groups selection system has been made compliant with other moodle core modules, and the "members of all groups"
+and the "members of no group" options are no longer available.
 
 Version 2.5.4 Build - 2013062401
 - CONTRIB-823 Add confirmation for deleting a question.
