@@ -582,9 +582,11 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                         array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'vall')));
-        $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
-                new moodle_url('/mod/questionnaire/report.php',
-                    array('instance' => $questionnaire->id, 'user' => $USER->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
+        if ($questionnaire->capabilities->downloadresponses) {
+            $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
+                    new moodle_url('/mod/questionnaire/report.php',
+                        array('instance' => $questionnaire->id, 'user' => $USER->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
+        }
     }
 
     $numresp = $questionnaire->count_submissions();
