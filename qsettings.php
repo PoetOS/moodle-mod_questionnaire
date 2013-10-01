@@ -22,6 +22,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $cancel = optional_param('cancel', '', PARAM_ALPHA);
+$submitbutton2 = optional_param('submitbutton2', '', PARAM_ALPHA);
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
     print_error('invalidcoursemodule');
@@ -96,8 +97,12 @@ if ($settings = $settingsform->get_data()) {
     if (!($sid = $questionnaire->survey_update($sdata))) {
         print_error('couldnotcreatenewsurvey', 'questionnaire');
     } else {
-        redirect ($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id,
-                  get_string('settingssaved', 'questionnaire'));
+        if ($submitbutton2) {
+            $redirecturl = course_get_url($cm->course);
+        } else {
+            $redirecturl = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id;
+        }
+        redirect ($redirecturl);
     }
 } else if ($cancel) {
     redirect($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id);

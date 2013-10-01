@@ -101,7 +101,22 @@ class questionnaire_settings_form extends moodleform {
         $mform->setType('owner', PARAM_RAW);
 
         // Buttons.
-        $this->add_action_buttons();
+        //$this->add_action_buttons();
+
+        $submitlabel = get_string('savechangesanddisplay');
+        $submit2label = get_string('savechangesandreturntocourse');
+        $mform = $this->_form;
+
+        // elements in a row need a group
+        $buttonarray = array();
+        $buttonarray[] = &$mform->createElement('submit', 'submitbutton2', $submit2label);
+        $buttonarray[] = &$mform->createElement('submit', 'submitbutton', $submitlabel);
+        $buttonarray[] = &$mform->createElement('cancel');
+
+        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $mform->setType('buttonar', PARAM_RAW);
+        $mform->closeHeaderBefore('buttonar');
+
     }
 
     public function validation($data, $files) {
