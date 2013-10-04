@@ -907,11 +907,12 @@ class questionnaire_question {
                                 'alt' => get_string('required', 'questionnaire'),
                                 'src' => $OUTPUT->pix_url('req')));
             }
-            echo html_writer::tag('h2', $qnum.$required, array('class' => 'qn-number'));
+            echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
             echo html_writer::start_tag('div', array('class' => 'accesshide'));
             echo get_string('required', 'questionnaire');
             echo html_writer::end_tag('div');
             echo html_writer::end_tag('div');
+            echo $required;
         }
         echo html_writer::end_tag('legend');
         echo html_writer::start_tag('div', array('class' => 'qn-content'));
@@ -1852,7 +1853,7 @@ class questionnaire_question {
         $table->align = array();
         $table->head = array();
         $table->wrap = array();
-        $table->size = array_merge($table->size, array('*', '50%', '7%'));
+        $table->size = array_merge($table->size, array('50%', '40%', '10%'));
         $table->align = array_merge($table->align, array('left', 'left', 'right'));
         $table->wrap = array_merge($table->wrap, array('', 'nowrap', ''));
         $table->head = array_merge($table->head, array(get_string('response', 'questionnaire'),
@@ -1884,7 +1885,7 @@ class questionnaire_question {
                 }
                 if ($num) {
                     $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'hbar_l.gif" />'.
-                               '<img style="height:9px; width:'.($percent*4).'px;" alt="'.$alt.'" src="'.
+                               '<img style="height:9px; width:'.($percent*1.4).'px;" alt="'.$alt.'" src="'.
                                $imageurl.'hbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'hbar_r.gif" />'.
                                sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 } else {
@@ -1909,7 +1910,7 @@ class questionnaire_question {
                 }
 
                 $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'thbar_l.gif" />'.
-                                '<img style="height:9px;  width:'.($percent*4).'px;" alt="'.$alt.'" src="'.
+                                '<img style="height:9px;  width:'.($percent*1.4).'px;" alt="'.$alt.'" src="'.
                                 $imageurl.'thbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'thbar_r.gif" />'.
                                 sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 $table->data[] = 'hr';

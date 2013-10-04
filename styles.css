@@ -173,10 +173,6 @@ td.selected {
     display:inline;
 }
 
-#page-mod-questionnaire-report .generaltable,
-#page-mod-questionnaire-myreport .generaltable {
-    margin-left: 45px;
-}
 .floatprinticon {
     margin-top:-30px;
     float:right;
@@ -245,12 +241,13 @@ td.selected {
 
 .qn-info h2.qn-number {
     margin: 0px;
+    font-size: 1.5em;
+    line-height: 1.2em;
 }
 
 .qn-question,
 .qn-answer {
     margin: 0 0 0.5em;
-    margin-left: 45px;
     overflow:auto;
 }
 
@@ -270,6 +267,7 @@ td.selected {
 
 .qn-content {
     margin-bottom: 10px;
+    margin-left: 55px;
 }
 
 /* move horizontal radio buttons closer to their labels */
