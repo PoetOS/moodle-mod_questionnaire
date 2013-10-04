@@ -81,6 +81,9 @@ echo $OUTPUT->heading(format_text($questionnaire->name));
 
 // Print the main part of the page.
 echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
+if ($questionnaire->intro) {
+    echo $questionnaire->intro;
+}
 
 if (!$questionnaire->is_active()) {
     echo '<div class="message">'
