@@ -1,226 +1,227 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/questionnaire/db" VERSION="2012100800" COMMENT="XMLDB file for Moodle mod/questionnaire"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
-        >
-    <TABLES>
-        <TABLE NAME="questionnaire" COMMENT="Main questionnaire table." NEXT="questionnaire_survey">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
-                <FIELD NAME="course" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Id of course" PREVIOUS="id" NEXT="name"/>
-                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name for questionnaire." PREVIOUS="course" NEXT="intro"/>
-                <FIELD NAME="intro" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" COMMENT="Description text." PREVIOUS="name" NEXT="introformat"/>
-                <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="text format of intro field" PREVIOUS="intro" NEXT="qtype"/>
-                <FIELD NAME="qtype" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire type code." PREVIOUS="introformat" NEXT="respondenttype"/>
-                <FIELD NAME="respondenttype" TYPE="char" LENGTH="9" NOTNULL="true" DEFAULT="fullname" SEQUENCE="false" COMMENT="Eligible respondents" PREVIOUS="qtype" NEXT="resp_eligible"/>
-                <FIELD NAME="resp_eligible" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="all" SEQUENCE="false" COMMENT="Eligible respondents." PREVIOUS="respondenttype" NEXT="resp_view"/>
-                <FIELD NAME="resp_view" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire viewed?" PREVIOUS="resp_eligible" NEXT="opendate"/>
-                <FIELD NAME="opendate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp to open access" PREVIOUS="resp_view" NEXT="closedate"/>
-                <FIELD NAME="closedate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp to close access on" PREVIOUS="opendate" NEXT="resume"/>
-                <FIELD NAME="resume" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can be saved and resumed." PREVIOUS="closedate" NEXT="navigate"/>
-                <FIELD NAME="navigate" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can have page branching." PREVIOUS="resume" NEXT="grade"/>
-                <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="Assign a grade to be received on submission." PREVIOUS="navigate" NEXT="sid"/>
-                <FIELD NAME="sid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id entry in the questionnaire_survey field." PREVIOUS="grade" NEXT="timemodified"/>
-                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The timestamp record last modified." PREVIOUS="sid" NEXT="completionsubmit"/>
-                <FIELD NAME="completionsubmit" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire marked as 'complete' when submitted." PREVIOUS="timemodified"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="sid"/>
-                <KEY NAME="sid" TYPE="foreign" FIELDS="sid" REFTABLE="questionnaire_survey" REFFIELDS="id" PREVIOUS="primary"/>
-            </KEYS>
-        </TABLE>
-        <TABLE NAME="questionnaire_survey" COMMENT="questionnaire_survey table retrofitted from MySQL" PREVIOUS="questionnaire" NEXT="questionnaire_attempts">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
-                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="owner"/>
-                <FIELD NAME="owner" TYPE="char" LENGTH="16" NOTNULL="true" SEQUENCE="false" PREVIOUS="name" NEXT="realm"/>
-                <FIELD NAME="realm" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="owner" NEXT="status"/>
-                <FIELD NAME="status" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="realm" NEXT="title"/>
-                <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="status" NEXT="email"/>
-                <FIELD NAME="email" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="title" NEXT="subtitle"/>
-                <FIELD NAME="subtitle" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="email" NEXT="info"/>
-                <FIELD NAME="info" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="subtitle" NEXT="theme"/>
-                <FIELD NAME="theme" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" PREVIOUS="info" NEXT="thanks_page"/>
-                <FIELD NAME="thanks_page" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="theme" NEXT="thank_head"/>
-                <FIELD NAME="thank_head" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="thanks_page" NEXT="thank_body"/>
-                <FIELD NAME="thank_body" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="thank_head"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="name" UNIQUE="false" FIELDS="name" NEXT="owner"/>
-                <INDEX NAME="owner" UNIQUE="false" FIELDS="owner" PREVIOUS="name"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="questionnaire_attempts" COMMENT="questionnaire_attempts table retrofitted from MySQL" PREVIOUS="questionnaire_survey" NEXT="questionnaire_question">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="qid"/>
-                <FIELD NAME="qid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
-                <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="qid" NEXT="rid"/>
-                <FIELD NAME="rid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="timemodified"/>
-                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="rid"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-        </TABLE>
-        <TABLE NAME="questionnaire_question" COMMENT="questionnaire_question table retrofitted from MySQL" PREVIOUS="questionnaire_attempts" NEXT="questionnaire_quest_choice">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="survey_id"/>
-                <FIELD NAME="survey_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="name"/>
-                <FIELD NAME="name" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" PREVIOUS="survey_id" NEXT="type_id"/>
-                <FIELD NAME="type_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="name" NEXT="result_id"/>
-                <FIELD NAME="result_id" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="type_id" NEXT="length"/>
-                <FIELD NAME="length" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="result_id" NEXT="precise"/>
-                <FIELD NAME="precise" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="length" NEXT="position"/>
-                <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="precise" NEXT="content"/>
-                <FIELD NAME="content" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="position" NEXT="required"/>
-                <FIELD NAME="required" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" PREVIOUS="content" NEXT="deleted"/>
-                <FIELD NAME="deleted" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" PREVIOUS="required" NEXT="dependquestion"/>
-                <FIELD NAME="dependquestion" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="deleted" NEXT="dependchoice"/>
-                <FIELD NAME="dependchoice" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="dependquestion"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-        </TABLE>
-        <TABLE NAME="questionnaire_quest_choice" COMMENT="questionnaire_quest_choice table retrofitted from MySQL" PREVIOUS="questionnaire_question" NEXT="questionnaire_question_type">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="question_id"/>
-                <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="content"/>
-                <FIELD NAME="content" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="question_id" NEXT="value"/>
-                <FIELD NAME="value" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="content"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-        </TABLE>
-        <TABLE NAME="questionnaire_question_type" COMMENT="questionnaire_question_type table retrofitted from MySQL" PREVIOUS="questionnaire_quest_choice" NEXT="questionnaire_response">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="typeid"/>
-                <FIELD NAME="typeid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The code for the type." PREVIOUS="id" NEXT="type"/>
-                <FIELD NAME="type" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" PREVIOUS="typeid" NEXT="has_choices"/>
-                <FIELD NAME="has_choices" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false" PREVIOUS="type" NEXT="response_table"/>
-                <FIELD NAME="response_table" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" PREVIOUS="has_choices"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="typeid"/>
-                <KEY NAME="typeid" TYPE="unique" FIELDS="typeid" PREVIOUS="primary"/>
-            </KEYS>
-        </TABLE>
-        <TABLE NAME="questionnaire_response" COMMENT="questionnaire_response table retrofitted from MySQL" PREVIOUS="questionnaire_question_type" NEXT="questionnaire_response_bool">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="survey_id"/>
-                <FIELD NAME="survey_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="submitted"/>
-                <FIELD NAME="submitted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="survey_id" NEXT="complete"/>
-                <FIELD NAME="complete" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false" PREVIOUS="submitted" NEXT="grade"/>
-                <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="Grade awarded" PREVIOUS="complete" NEXT="username"/>
-                <FIELD NAME="username" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" PREVIOUS="grade"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-        </TABLE>
-        <TABLE NAME="questionnaire_response_bool" COMMENT="questionnaire_response_bool table retrofitted from MySQL" PREVIOUS="questionnaire_response" NEXT="questionnaire_response_date">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="response_id"/>
-                <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="question_id"/>
-                <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="response_id" NEXT="choice_id"/>
-                <FIELD NAME="choice_id" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false" PREVIOUS="question_id"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="questionnaire_response_date" COMMENT="questionnaire_response_date table retrofitted from MySQL" PREVIOUS="questionnaire_response_bool" NEXT="questionnaire_resp_multiple">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="response_id"/>
-                <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="question_id"/>
-                <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="response_id" NEXT="response"/>
-                <FIELD NAME="response" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="question_id"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="questionnaire_resp_multiple" COMMENT="questionnaire_resp_multiple table retrofitted from MySQL" PREVIOUS="questionnaire_response_date" NEXT="questionnaire_response_other">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="response_id"/>
-                <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="question_id"/>
-                <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="response_id" NEXT="choice_id"/>
-                <FIELD NAME="choice_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="question_id"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id, choice_id"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="questionnaire_response_other" COMMENT="questionnaire_response_other table retrofitted from MySQL" PREVIOUS="questionnaire_resp_multiple" NEXT="questionnaire_response_rank">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="response_id"/>
-                <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="question_id"/>
-                <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="response_id" NEXT="choice_id"/>
-                <FIELD NAME="choice_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="question_id" NEXT="response"/>
-                <FIELD NAME="response" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="choice_id"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id, choice_id"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="questionnaire_response_rank" COMMENT="questionnaire_response_rank table retrofitted from MySQL" PREVIOUS="questionnaire_response_other" NEXT="questionnaire_resp_single">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="response_id"/>
-                <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="question_id"/>
-                <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="response_id" NEXT="choice_id"/>
-                <FIELD NAME="choice_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="question_id" NEXT="rank"/>
-                <FIELD NAME="rank" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="choice_id"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id, choice_id"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="questionnaire_resp_single" COMMENT="questionnaire_resp_single table retrofitted from MySQL" PREVIOUS="questionnaire_response_rank" NEXT="questionnaire_response_text">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="response_id"/>
-                <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="question_id"/>
-                <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="response_id" NEXT="choice_id"/>
-                <FIELD NAME="choice_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="question_id"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="questionnaire_response_text" COMMENT="questionnaire_response_text table retrofitted from MySQL" PREVIOUS="questionnaire_resp_single">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="response_id"/>
-                <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="question_id"/>
-                <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="response_id" NEXT="response"/>
-                <FIELD NAME="response" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="question_id"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
-            </INDEXES>
-        </TABLE>
-    </TABLES>
+<XMLDB PATH="mod/questionnaire/db" VERSION="20131005" COMMENT="XMLDB file for Moodle mod/questionnaire"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="questionnaire" COMMENT="Main questionnaire table.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Id of course"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name for questionnaire."/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Description text."/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="text format of intro field"/>
+        <FIELD NAME="qtype" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire type code."/>
+        <FIELD NAME="respondenttype" TYPE="char" LENGTH="9" NOTNULL="true" DEFAULT="fullname" SEQUENCE="false" COMMENT="Eligible respondents"/>
+        <FIELD NAME="resp_eligible" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="all" SEQUENCE="false" COMMENT="Eligible respondents."/>
+        <FIELD NAME="resp_view" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire viewed?"/>
+        <FIELD NAME="opendate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp to open access"/>
+        <FIELD NAME="closedate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp to close access on"/>
+        <FIELD NAME="resume" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can be saved and resumed."/>
+        <FIELD NAME="navigate" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can have page branching."/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Assign a grade to be received on submission."/>
+        <FIELD NAME="sid" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id entry in the questionnaire_survey field."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The timestamp record last modified."/>
+        <FIELD NAME="completionsubmit" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire marked as 'complete' when submitted."/>
+        <FIELD NAME="autonum" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="3" SEQUENCE="false" COMMENT="option for auto numbering questions and pages (both selected by default)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="sid" TYPE="foreign" FIELDS="sid" REFTABLE="questionnaire_survey" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="questionnaire_survey" COMMENT="questionnaire_survey table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="owner" TYPE="char" LENGTH="16" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="realm" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="email" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="subtitle" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="info" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="theme" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="thanks_page" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="thank_head" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="thank_body" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="name" UNIQUE="false" FIELDS="name"/>
+        <INDEX NAME="owner" UNIQUE="false" FIELDS="owner"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="questionnaire_attempts" COMMENT="questionnaire_attempts table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="qid" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="rid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="questionnaire_question" COMMENT="questionnaire_question table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="survey_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="type_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="result_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="length" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="precise" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="required" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false"/>
+        <FIELD NAME="deleted" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false"/>
+        <FIELD NAME="dependquestion" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="dependchoice" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="questionnaire_quest_choice" COMMENT="questionnaire_quest_choice table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="value" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="questionnaire_question_type" COMMENT="questionnaire_question_type table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="typeid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The code for the type."/>
+        <FIELD NAME="type" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="has_choices" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false"/>
+        <FIELD NAME="response_table" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="typeid" TYPE="unique" FIELDS="typeid"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="questionnaire_response" COMMENT="questionnaire_response table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="survey_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="submitted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="complete" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false"/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Grade awarded"/>
+        <FIELD NAME="username" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="questionnaire_response_bool" COMMENT="questionnaire_response_bool table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="choice_id" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="questionnaire_response_date" COMMENT="questionnaire_response_date table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="response" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="questionnaire_resp_multiple" COMMENT="questionnaire_resp_multiple table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="choice_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id, choice_id"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="questionnaire_response_other" COMMENT="questionnaire_response_other table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="choice_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="response" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id, choice_id"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="questionnaire_response_rank" COMMENT="questionnaire_response_rank table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="choice_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="rank" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id, choice_id"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="questionnaire_resp_single" COMMENT="questionnaire_resp_single table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="choice_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="questionnaire_response_text" COMMENT="questionnaire_response_text table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="response" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
 </XMLDB>

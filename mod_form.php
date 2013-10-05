@@ -59,7 +59,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addHelpButton('enableclosegroup', 'closedate', 'questionnaire');
         $mform->disabledIf('enableclosegroup', 'useclosedate', 'notchecked');
 
-        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $questionnairerealms;
+        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $questionnairerealms, $autonumbering;
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
         $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnairetypes);
@@ -81,6 +81,11 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $options = array('0'=>get_string('no'), '1'=>get_string('yes'));
         $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
         $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
+
+        $mform->addElement('select', 'autonum', get_string('autonumbering', 'questionnaire'), $autonumbering);
+        $mform->addHelpButton('autonum', 'autonumbering', 'questionnaire');
+        // Default = autonumber both questions and pages.
+        $mform->setDefault('autonum', 3);
 
         // Removed potential scales from list of grades. CONTRIB-3167.
         $grades[0] = get_string('nograde');

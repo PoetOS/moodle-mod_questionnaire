@@ -289,14 +289,18 @@ class questionnaire {
                 if ($question->type_id < QUESPAGEBREAK) {
                     $i++;
                 }
+                $qid = 'q'.$question->id;
                 if ($question->type_id != QUESPAGEBREAK) {
                     $method = $qtypenames[$question->type_id].'_response_display';
                     if (method_exists($question, $method)) {
                         echo $OUTPUT->box_start('individualresp');
                         $question->questionstart_survey_display($i);
                         foreach ($data as $respid => $respdata) {
-                            echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
-                            $question->$method($respdata);
+                            // Do not display empty responses.
+                            if (isset($respdata->$qid)) {
+                                echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
+                                $question->$method($respdata);
+                            }
                         }
                         $question->questionend_survey_display($i);
                         echo $OUTPUT->box_end();
@@ -807,11 +811,14 @@ class questionnaire {
         if ($message) {
             echo '<div class="notifyproblem">'.$message.'</div>';
         }
-
-        $this->print_survey_end($section, $numsections);
     }
 
     private function print_survey_end($section, $numsections) {
+        $autonum = $this->autonum;
+        // If no questions autonumbering.
+        if ($autonum < 3) {
+            return;
+        }
         if ($numsections > 1) {
             $a = new stdClass();
             $a->page = $section;
@@ -1110,7 +1117,7 @@ class questionnaire {
     // RESPONSE LIBRARY.
 
     private function response_check_format($section, &$formdata, $qnum='') {
-        global $PAGE;
+        global $PAGE, $OUTPUT;
         $missing = 0;
         $strmissing = '';     // Missing questions.
         $wrongformat = 0;
@@ -1319,7 +1326,16 @@ class questionnaire {
             }
         }
         $message ='';
+        $nonumbering = false;
+        $autonum = $this->autonum;
+        // If no questions autonumbering do not display missing question(s) number(s).
+        if ($autonum != 1 && $autonum != 3) {
+            $nonumbering = true;
+        }
         if ($missing) {
+            if ($nonumbering) {
+                $strmissing = '';
+            }
             if ($missing == 1) {
                 $message = get_string('missingquestion', 'questionnaire').$strmissing;
             } else {
@@ -1330,15 +1346,18 @@ class questionnaire {
             }
         }
         if ($wrongformat) {
-            if ($wrongformat == 1) {
-                $message .= get_string('wrongformat', 'questionnaire').$strwrongformat;
+            if ($nonumbering) {
+                $message .= get_string('wronganswers', 'questionnaire');
             } else {
-                $message .= get_string('wrongformats', 'questionnaire').$strwrongformat;
+                if ($wrongformat == 1) {
+                    $message .= get_string('wrongformat', 'questionnaire').$strwrongformat;
+                } else {
+                    $message .= get_string('wrongformats', 'questionnaire').$strwrongformat;
+                }
             }
         }
         return ($message);
     }
-
 
     private function response_delete($rid, $sec = null) {
         global $DB;

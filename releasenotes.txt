@@ -1,5 +1,16 @@
 Release Notes:
 
+Version 2.5.6 - 2013100500
+- Added autonumbering option for questions and pages in questionnaire settings. This may be especially
+useful for "conditional branching" questionnaires, in order to avoid confusing the student with 
+non-sequential questions or pages numbering!
+- Changed Description field label from Summary to Description in Edit settings form (after Quiz).
+- Added display of Description/Intro text on View page.
+- Minor changes to CSS and report display for better display in bootstrap-based themes. This may need
+further refining in future version 2.6.
+- Added "return to course" button to advanced settings form.
+- Modified (simplified) the viewallresponses capability setting.
+ 
 Version 2.5.5 - 2013093001
 - All navigation links in the tabs area have been duplicated in the Questionnaire administration block,
 so that complete removal of the tabs navigation system will be possible in further versions (2.6?).

@@ -844,20 +844,32 @@ class questionnaire_question {
     }
 
     public function questionstart_survey_display($qnum, $formdata='') {
-        global $OUTPUT, $SESSION;
+        global $OUTPUT, $SESSION, $questionnaire, $PAGE;
         $currenttab = $SESSION->questionnaire->current_tab;
+        $pagetype = $PAGE->pagetype;
         $skippedquestion = false;
         $skippedclass = '';
+        $autonum = $questionnaire->autonum;
+        // If no questions autonumbering.
+        $nonumbering = false;
+        if ($autonum != 1 && $autonum != 3) {
+            $qnum = '';
+            $nonumbering = true;
+        }
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
-        if ( $currenttab != 'myvall' && $currenttab != 'preview' && $currenttab != 'view'
+        if ( ($pagetype ==  'mod-questionnaire-myreport' || $pagetype ==  'mod-questionnaire-report')
+                        && $nonumbering == false
                         && $this->dependquestion != 0 && !array_key_exists('q'.$this->id, $formdata)) {
             $skippedquestion = true;
             $skippedclass = ' unselected';
             $qnum = '<span class="'.$skippedclass.'">('.$qnum.')</span>';
         }
         // In preview mode, hide children questions that have not been answered.
+        // In report mode, If questionnaire is set to no numbering,
+        // also hide answers to questions that have not been answered.
         $displayclass = 'qn-container';
-        if ($currenttab == 'preview') {
+        if ($pagetype == 'mod-questionnaire-preview' || ($nonumbering
+                        && ($currenttab == 'mybyresponse' || $currenttab == 'individualresp'))) {
             $parent = questionnaire_get_parent ($this);
             if ($parent) {
                 $dependquestion = $parent[$this->id]['qdependquestion'];
