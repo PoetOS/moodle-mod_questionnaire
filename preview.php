@@ -109,7 +109,7 @@ $PAGE->requires->js('/mod/questionnaire/module.js');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($pq);
-$questionnaire->survey_print_render('', 'preview', $course->id);
+$questionnaire->survey_print_render('', 'preview', $course->id, $rid=0, $popup);
 if ($popup) {
     echo $OUTPUT->close_window_button();
 }

@@ -927,7 +927,7 @@ class questionnaire {
             }
         }
         // End of questions.
-        if ($referer == 'preview') {
+        if ($referer == 'preview' && !$blankquestionnaire) {
             $url = $CFG->wwwroot.'/mod/questionnaire/preview.php?id='.$this->cm->id;
             echo '
                     <div>
