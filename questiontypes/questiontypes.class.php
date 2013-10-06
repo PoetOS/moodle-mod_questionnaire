@@ -1353,15 +1353,26 @@ class questionnaire_question {
         if ($this->precise == 3) { // Osgood's semantic differential.
             $osgood = true;
         }
+        // Check if rate question has one line only to display full width columns of choices.
+        $nocontent = false;
+        foreach ($this->choices as $cid => $choice) {
+            if ($choice->content == '') {
+                $nocontent = true;
+                break;
+            }
+        }
         // The 0.1% right margin is needed to avoid the horizontal scrollbar in Chrome!
         echo '<table style="width:99.9%">';
         echo '<tbody>';
         echo '<tr>';
         if ($osgood) {
-            echo '<td style="width: 19%;"></td>';
+            $width = '19%';
+        } else if ($nocontent) {
+            $width = '0%';
         } else {
-            echo '<td style="width: 29%"></td>';
+            $width = '29%';
         }
+        echo '<td style="width: '.$width.'"></td>';
 
         if ($this->precise == 1) {
             $na = get_string('notapplicable', 'questionnaire');
@@ -1397,6 +1408,9 @@ class questionnaire_question {
         if ($osgood) {
             $colwidth = (60 / $this->length).'%';
             $textalign = 'right';
+        } else if ($nocontent) {
+            $colwidth = (100 / $this->length).'%';
+            $textalign = 'left';
         } else {
             $colwidth = (70 / $this->length).'%';
             $textalign = 'left';
