@@ -1039,7 +1039,7 @@ class questionnaire_question {
     }
 
     private function text_survey_display($data) { // Text Box.
-        echo '<input type="text" size="'.$this->length.'" name="q'.$this->id.'"'.
+        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'"'.
              ($this->precise > 0 ? ' maxlength="'.$this->precise.'"' : '').' value="'.
              (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '').
              '" id="' . $this->type . $this->id . '" />';
@@ -1510,7 +1510,7 @@ class questionnaire_question {
         }
         echo $datemess;
         echo html_writer::start_tag('div', array('class' => 'qn-date'));
-        echo '<input type="text" size="12" name="q'.$this->id.'" maxlength="10" value="'.
+        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="12" name="q'.$this->id.'" maxlength="10" value="'.
              (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').'" />';
         echo html_writer::end_tag('div');
     }
@@ -1549,7 +1549,7 @@ class questionnaire_question {
             }
         }
 
-        echo '<input type="text" size="'.$this->length.'" name="q'.$this->id.'" maxlength="'.$this->length.
+        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'" maxlength="'.$this->length.
              '" value="'.(isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').
             '" id="' . $this->type . $this->id . '" />';
     }
