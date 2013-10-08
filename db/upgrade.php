@@ -395,7 +395,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             $pbar = new progress_bar('convertchoicevalues', 500, true);
             $i=1;
             foreach ($choices as $choice) {
-                if ($choice->value == null || $choice->value == 'NULL') {
+                if (($choice->value == null || $choice->value == 'NULL') && !preg_match("/^([0-9]{1,3})=(.*)$/", $choice->content)) {
                     $content = questionnaire_choice_values($choice->content);
                     if ($pos = strpos($content->text, '=')) {
                         $newcontent = str_replace('=', '::', $content->text);
