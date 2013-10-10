@@ -26,8 +26,6 @@ $tabs = array();
 $row  = array();
 $inactive = array();
 $activated = array();
-$courseid = optional_param('courseid', false, PARAM_INT);
-$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $currenttab = $SESSION->questionnaire->current_tab;
 
 // If this questionnaire has a survey, get the survey and owner.
@@ -99,13 +97,14 @@ if (isset($SESSION->questionnaire->numselectedresps)) {
 $canviewgroups = true;
 $groupmode = groups_get_activity_groupmode($cm, $course);
 if ($groupmode == 1) {
-    $canviewgroups = groups_has_membership($cm, $USER->id);;
+    $canviewgroups = groups_has_membership($cm, $USER->id);
 }
+$canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
 
-if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) {
+if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->readallresponseanytime)) && $numresp > 0 && $owner && $numselectedresps > 0) {
     $argstr = 'instance='.$questionnaire->id;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
-                           $argstr.'&action=vall'), get_string('viewresponses', 'questionnaire', $numresp));
+                           $argstr.'&action=vall'), get_string('viewallresponses', 'questionnaire'));
     if (in_array($currenttab, array('vall', 'vresp', 'valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv',
                                      'vrespsummary', 'individualresp', 'printresp', 'deleteresp'))) {
         $inactive[] = 'allreport';
@@ -182,7 +181,7 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
                             get_string('deleteresp', 'questionnaire'));
         }
     }
-} else if ($questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
+} else if ($canviewgroups && $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
             ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
                 && $questionnaire->is_closed()) ||
@@ -228,7 +227,7 @@ if ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $own
     }
 }
 
-if ($questionnaire->capabilities->viewsingleresponse) {
+if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
     $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>$questionnaire->cm->id));
     $row[] = new tabobject('nonrespondents',
                     $nonrespondenturl->out(),

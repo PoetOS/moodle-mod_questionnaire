@@ -32,6 +32,7 @@ $userid = optional_param('user', $USER->id, PARAM_INT);
 $rid = optional_param('rid', null, PARAM_INT);
 $byresponse = optional_param('byresponse', 0, PARAM_INT);
 $action = optional_param('action', 'summary', PARAM_RAW);
+$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
     print_error('incorrectquestionnaire', 'questionnaire');

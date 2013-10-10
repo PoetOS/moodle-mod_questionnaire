@@ -610,7 +610,7 @@ switch ($action) {
             }
         }
         $rids = array_keys($resps);
-        if (!$rid) {
+        if (!$rid && !$noresponses) {
             $rid = $rids[0];
         }
 

@@ -185,18 +185,24 @@ if ($groupmode == 1) {
     $canviewgroups = groups_has_membership($cm, $USER->id);;
 }
 
-if ( ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) ||
-        $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
-           ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
-                && $questionnaire->is_closed()) ||
-            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
-                && $usernumresp > 0)) &&
-           $questionnaire->is_survey_owner()) {
+$canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
+    if (( (
+            // Teacher or non-editing teacher (if can view all groups).
+            $canviewallgroups ||
+            // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
+            ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
+            && $numresp > 0 && $owner && $numselectedresps > 0) ||
+            $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
+            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
+                            && $questionnaire->is_closed()) ||
+                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
+                            && $usernumresp > 0)) &&
+            $questionnaire->is_survey_owner()) {
     echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
     $argstr = 'instance='.$questionnaire->id;
     echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
-            $argstr).'">'.get_string('viewresponses', 'questionnaire', $numresp).'</a>';
+            $argstr).'">'.get_string('viewallresponses', 'questionnaire').'</a>';
     echo $OUTPUT->box_end();
 }
 

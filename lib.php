@@ -598,14 +598,19 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     }
 
     // If questionnaire is set to separate groups, prevent user who is not member of any group
-    // to view All responses.
+    // and is not a non-editing teacher to view All responses.
     $canviewgroups = true;
     $groupmode = groups_get_activity_groupmode($cm, $course);
     if ($groupmode == 1) {
-        $canviewgroups = groups_has_membership($cm, $USER->id);;
+        $canviewgroups = groups_has_membership($cm, $USER->id);
     }
-
-    if (($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) ||
+    $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
+    if (( (
+            // Teacher or non-editing teacher (if can view all groups).
+            $canviewallgroups ||
+            // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
+            ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
+            && $numresp > 0 && $owner && $numselectedresps > 0) ||
             $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
             ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                     ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
@@ -665,7 +670,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
             }
         }
     }
-    if ($questionnaire->capabilities->viewsingleresponse) {
+    if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
         $url = '/mod/questionnaire/show_nonrespondents.php';
         $node = navigation_node::create(get_string('show_nonrespondents', 'questionnaire'),
                 new moodle_url($url, array('id' => $cmid)),
