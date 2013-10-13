@@ -1,5 +1,15 @@
 Release Notes:
 
+Version 2.5.6 - 2013100502 (to be released)
+- If current questionnaire is based on a public one, do not include survey nor 
+questions in backup. See https://moodle.org/mod/forum/discuss.php?d=241748
+- Non-editing teachers without the "accessallgroups" capability can only see students members of their own group (if questionnaire instance set to Separate Groups) in the Reports and Show non respondents pages.
+See https://moodle.org/mod/forum/discuss.php?d=241714
+- Issue relevant warnings for questionnaires dependent on Public questionnaire when Public "parent" has been deleted.
+
+Version 2.5.6 - 2013100501
+- Fixed wrong change from = to :: separator in Rate questions with named degree during upgrade.
+
 Version 2.5.6 - 2013100500
 - Added autonumbering option for questions and pages in questionnaire settings. This may be especially
 useful for "conditional branching" questionnaires, in order to avoid confusing the student with 
