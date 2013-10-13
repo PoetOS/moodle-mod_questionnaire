@@ -86,9 +86,15 @@ if ($questionnaire->intro) {
 }
 
 if (!$questionnaire->is_active()) {
+    if ($questionnaire->capabilities->manage) {
+        $msg = 'removenotinuse';
+    } else {
+        $msg = 'notavail';
+    }
     echo '<div class="message">'
-    .get_string('notavail', 'questionnaire')
+    .get_string($msg, 'questionnaire')
     .'</div>';
+
 } else if (!$questionnaire->is_open()) {
     echo '<div class="message">'
     .get_string('notopen', 'questionnaire', userdate($questionnaire->opendate))
@@ -135,10 +141,10 @@ if (!$questionnaire->is_active()) {
         'id='.$questionnaire->cm->id).'">'.$complete.'</a>';
     }
 }
-if (!$questionnaire->questions) {
+if ($questionnaire->is_active() && !$questionnaire->questions) {
     echo '<p>'.get_string('noneinuse', 'questionnaire').'</p>';
 }
-if ($questionnaire->capabilities->editquestions && !$questionnaire->questions) { // Sanity check.
+if ($questionnaire->is_active() && $questionnaire->capabilities->editquestions && !$questionnaire->questions) { // Sanity check.
     echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
                 'id='.$questionnaire->cm->id).'">'.'<strong>'.get_string('addquestions', 'questionnaire').'</strong></a>';
 }
