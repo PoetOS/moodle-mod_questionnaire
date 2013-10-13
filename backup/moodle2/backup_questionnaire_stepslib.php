@@ -31,7 +31,7 @@
 class backup_questionnaire_activity_structure_step extends backup_activity_structure_step {
 
     protected function define_structure() {
-
+        global $DB;
         // To know if we are including userinfo.
         $userinfo = $this->get_setting_value('userinfo');
 
@@ -143,28 +143,39 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         // Define sources.
         $questionnaire->set_source_table('questionnaire', array('id' => backup::VAR_ACTIVITYID));
 
-        $survey->set_source_table('questionnaire_survey', array('id' => '../../sid'));
-
-        $question->set_source_table('questionnaire_question', array('survey_id' => backup::VAR_PARENTID));
-
-        $questchoice->set_source_table('questionnaire_quest_choice', array('question_id' => backup::VAR_PARENTID));
-
-        // All the rest of elements only happen if we are including user info.
-        if ($userinfo) {
-            $attempt->set_source_table('questionnaire_attempts', array('qid' => backup::VAR_PARENTID));
-            $response->set_source_table('questionnaire_response', array('id' => '../../rid'));
-            $responsebool->set_source_table('questionnaire_response_bool', array('response_id' => backup::VAR_PARENTID));
-            $responsedate->set_source_table('questionnaire_response_date', array('response_id' => backup::VAR_PARENTID));
-            $responsemultiple->set_source_table('questionnaire_resp_multiple', array('response_id' => backup::VAR_PARENTID));
-            $responseother->set_source_table('questionnaire_response_other', array('response_id' => backup::VAR_PARENTID));
-            $responserank->set_source_table('questionnaire_response_rank', array('response_id' => backup::VAR_PARENTID));
-            $responsesingle->set_source_table('questionnaire_resp_single', array('response_id' => backup::VAR_PARENTID));
-            $responsetext->set_source_table('questionnaire_response_text', array('response_id' => backup::VAR_PARENTID));
+        // Is current questionnaire based on a public questionnaire?
+        $qid = $this->task->get_activityid();
+        $currentquestionnaire = $DB->get_record("questionnaire", array ("id" => $qid));
+        $currentsurvey = $DB->get_record("questionnaire_survey", array ("id" => $currentquestionnaire->sid));
+        $haspublic = false;
+        if ($currentsurvey->realm == 'public' && $currentsurvey->owner != $currentquestionnaire->course) {
+            $haspublic = true;
         }
 
-        // Define id annotations.
-        $attempt->annotate_ids('user', 'userid');
+        // If current questionnaire is based on a public one, do not include survey nor questions in backup.
+        if (!$haspublic) {
+            $survey->set_source_table('questionnaire_survey', array('id' => '../../sid'));
 
+            $question->set_source_table('questionnaire_question', array('survey_id' => backup::VAR_PARENTID));
+
+            $questchoice->set_source_table('questionnaire_quest_choice', array('question_id' => backup::VAR_PARENTID));
+
+            // All the rest of elements only happen if we are including user info.
+            if ($userinfo) {
+                $attempt->set_source_table('questionnaire_attempts', array('qid' => backup::VAR_PARENTID));
+                $response->set_source_table('questionnaire_response', array('id' => '../../rid'));
+                $responsebool->set_source_table('questionnaire_response_bool', array('response_id' => backup::VAR_PARENTID));
+                $responsedate->set_source_table('questionnaire_response_date', array('response_id' => backup::VAR_PARENTID));
+                $responsemultiple->set_source_table('questionnaire_resp_multiple', array('response_id' => backup::VAR_PARENTID));
+                $responseother->set_source_table('questionnaire_response_other', array('response_id' => backup::VAR_PARENTID));
+                $responserank->set_source_table('questionnaire_response_rank', array('response_id' => backup::VAR_PARENTID));
+                $responsesingle->set_source_table('questionnaire_resp_single', array('response_id' => backup::VAR_PARENTID));
+                $responsetext->set_source_table('questionnaire_response_text', array('response_id' => backup::VAR_PARENTID));
+            }
+
+            // Define id annotations.
+            $attempt->annotate_ids('user', 'userid');
+        }
         // Define file annotations
         $questionnaire->annotate_files('mod_questionnaire', 'intro', null); // This file area hasn't itemid.
 
