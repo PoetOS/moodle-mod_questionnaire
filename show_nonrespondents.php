@@ -338,35 +338,23 @@ if (!$students) {
 
         // Message editor.
         // Prepare data.
-        $usehtmleditor = can_use_html_editor();
         echo '<fieldset class="clearfix">';
         echo '<legend class="ftoggler">'.get_string('send_message', 'questionnaire').'</legend>';
         $id = 'message' . '_id';
         $subjecteditor = '&nbsp;&nbsp;&nbsp;<input type="text" id="questionnaire_subject" size="65"
             maxlength="255" name="subject" value="'.$subject.'" />';
         $format = '';
-        if ($usehtmleditor) {
-            $editor = editors_get_preferred_editor();
-            $editor->use_editor($id, questionnaire_get_editor_options($context));
-            $texteditor = html_writer::tag('div', html_writer::tag('textarea', '',
-                            array('id' => $id, 'name' => "message", '', '')));
-            echo '<input type="hidden" name="format" value="'.FORMAT_HTML.'" />';
-        } else {
-            $texteditor = html_writer::tag('div', html_writer::tag('textarea', '',
-                            array('id' => $id, 'name' => "message", 'rows' => 10, 'cols' => 65)));
-            $formatlabel = '<label for="menuformat" class="accesshide">'. get_string('format') .'</label>';
-            $format = '&nbsp;&nbsp;&nbsp;'.html_writer::select(format_text_menu(), "format", $format, "");
-        }
+        $editor = editors_get_preferred_editor();
+        $editor->use_editor($id, questionnaire_get_editor_options($context));
+        $texteditor = html_writer::tag('div', html_writer::tag('textarea', '',
+                        array('id' => $id, 'name' => "message", '', '')));
+        echo '<input type="hidden" name="format" value="'.FORMAT_HTML.'" />';
 
         // Print editor.
         $table = new html_table();
         $table->align = array('left', 'left');
         $table->data[] = array( '<strong>'.get_string('subject', 'questionnaire').'</strong>', $subjecteditor);
         $table->data[] = array('<strong>'.get_string('messagebody').'</strong>', $texteditor);
-
-        if (!$usehtmleditor) {
-            $table->data[] = array($formatlabel, $format);
-        }
 
         echo html_writer::table($table);
 

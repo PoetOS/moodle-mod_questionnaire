@@ -450,8 +450,10 @@ class questionnaire_question {
         } else if (is_int($rids)) {
             $ridstr = ' AND response_id = '.$rids.' ';
         }
-        $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, U.id AS user, '.
-                'U.lastname, U.firstname, R.survey_id, R.id AS rid '.
+        $allnames = get_all_user_name_fields(true, 'u');
+        $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, U.id AS muser, '.
+                $allnames.', '.
+                'R.survey_id, R.id AS rid '.
                 'FROM {questionnaire_'.$this->response_table.'} T, '.
                 '{questionnaire_response} R, '.
                 '{user} U '.
@@ -833,13 +835,7 @@ class questionnaire_question {
         }
     }
 
-    public function survey_display($formdata, $descendantsdata, $qnum='', $usehtmleditor=null, $blankquestionnaire=false) {
-        if (!is_null($usehtmleditor)) {
-            $this->usehtmleditor = can_use_html_editor();
-        } else {
-            $this->usehtmleditor = $usehtmleditor;
-        }
-
+    public function survey_display($formdata, $descendantsdata, $qnum='', $blankquestionnaire=false) {
         $this->question_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
     }
 
@@ -1053,12 +1049,12 @@ class questionnaire_question {
         if (!$cols || !$rows) {
             $cols = 60;
             $rows = 5;
-            $canusehtmleditor = $this->usehtmleditor;
+
 
             // If cols & rows specified, do not use HTML editor but plain text box
             // use default (60 cols and 5 rows) OR user-specified values.
         } else {
-            $canusehtmleditor = false;
+            //$canusehtmleditor = false;
         }
 
         $name = 'q'.$this->id;
@@ -1067,17 +1063,13 @@ class questionnaire_question {
         } else {
             $value = '';
         }
-        if ($canusehtmleditor) {
+
             $editor = editors_get_preferred_editor();
             $editor->use_editor($name, questionnaire_get_editor_options($this->context));
             $texteditor = html_writer::tag('textarea', $value,
                             array('id' => $name, 'name' => $name, '', ''));
             echo $texteditor;
-        } else {
-            $str .= '<textarea class="form-textarea" id="edit-'. $name .'" name="'. $name .'" rows="'.
-                $rows .'" cols="'. $cols .'">'.s($value).'</textarea>';
-            echo $str;
-        }
+
     }
 
     private function radio_survey_display($data, $descendantsdata, $blankquestionnaire=false) { // Radio buttons
@@ -1985,7 +1977,7 @@ class questionnaire_question {
     }
 
     private function mkreslisttext($rows) {
-        global $CFG, $SESSION, $questionnaire, $OUTPUT;
+        global $CFG, $SESSION, $questionnaire, $OUTPUT, $DB;
         $strresponse = get_string('response', 'questionnaire');
         $viewsingleresponse = $questionnaire->capabilities->viewsingleresponse;
         $nonanonymous = $questionnaire->respondenttype != 'anonymous';
@@ -2006,16 +1998,12 @@ class questionnaire_question {
             $table->head = array($strresponse);
             $table->size = array('*');
         }
-        $username = '';
         foreach ($rows as $row) {
             $text = format_text($row->response, FORMAT_HTML);
             if ($viewsingleresponse && $nonanonymous) {
                 $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
                 $title = userdate($row->submitted);
-                $username = $row->username;
-                $user = new stdClass();
-                $user->firstname = $row->firstname;
-                $user->lastname = $row->lastname;
+                $user = $DB->get_record('user', array('id' => $row->muser));
                 $rusername = '<a href="'.$rurl.'" title="'.$title.'">'.fullname($user).'</a>';
                 $table->data[] = array($rusername, $text);
             } else {

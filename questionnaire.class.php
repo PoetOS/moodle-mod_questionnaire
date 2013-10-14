@@ -62,8 +62,6 @@ class questionnaire {
             $this->add_questions($this->sid);
         }
 
-        $this->usehtmleditor = can_use_html_editor();
-
         // Load the capabilities for this user and questionnaire, if not creating a new one.
         if (!empty($this->cm->id)) {
             $this->capabilities = questionnaire_load_capabilities($this->cm->id);
@@ -698,9 +696,6 @@ class questionnaire {
 
         $this->print_survey_start($message, $section, $numsections, $hasrequired, '', 1);
         foreach ($this->questionsbysec[$section] as $question) {
-            if ($question->type_id == QUESESSAY) {
-                $this->usehtmleditor = can_use_html_editor();
-            }
             if ($question->type_id != QUESSECTIONTEXT) {
                 $i++;
             }
