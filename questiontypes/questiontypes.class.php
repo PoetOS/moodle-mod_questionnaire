@@ -451,7 +451,7 @@ class questionnaire_question {
             $ridstr = ' AND response_id = '.$rids.' ';
         }
         $allnames = get_all_user_name_fields(true, 'u');
-        $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, U.id AS muser, '.
+        $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, '.
                 $allnames.', '.
                 'R.survey_id, R.id AS rid '.
                 'FROM {questionnaire_'.$this->response_table.'} T, '.
