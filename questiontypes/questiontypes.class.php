@@ -450,7 +450,7 @@ class questionnaire_question {
         } else if (is_int($rids)) {
             $ridstr = ' AND response_id = '.$rids.' ';
         }
-        $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, U.id AS user, '.
+        $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, '.
                 'U.lastname, U.firstname, R.survey_id, R.id AS rid '.
                 'FROM {questionnaire_'.$this->response_table.'} T, '.
                 '{questionnaire_response} R, '.

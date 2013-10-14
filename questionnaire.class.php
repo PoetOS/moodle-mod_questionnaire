@@ -2197,7 +2197,7 @@ class questionnaire {
         }
         $castsql = $DB->sql_cast_char2int('R.username');
         $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username,
-                        U.id AS user, U.lastname, U.firstname '.$gmuserid.
+                        U.lastname, U.firstname '.$gmuserid.
         'FROM '.$CFG->prefix.'questionnaire_response R,
         '.$CFG->prefix.'user U
         '.$groupmembers.
