@@ -450,9 +450,8 @@ class questionnaire_question {
         } else if (is_int($rids)) {
             $ridstr = ' AND response_id = '.$rids.' ';
         }
-        $allnames = get_all_user_name_fields(true, 'u');
         $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, '.
-                $allnames.', '.
+                'U.id as userid, '.
                 'R.survey_id, R.id AS rid '.
                 'FROM {questionnaire_'.$this->response_table.'} T, '.
                 '{questionnaire_response} R, '.
@@ -2003,7 +2002,7 @@ class questionnaire_question {
             if ($viewsingleresponse && $nonanonymous) {
                 $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
                 $title = userdate($row->submitted);
-                $user = $DB->get_record('user', array('id' => $row->muser));
+                $user = $DB->get_record('user', array('id' => $row->userid));
                 $rusername = '<a href="'.$rurl.'" title="'.$title.'">'.fullname($user).'</a>';
                 $table->data[] = array($rusername, $text);
             } else {

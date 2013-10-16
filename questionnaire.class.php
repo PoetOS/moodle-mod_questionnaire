@@ -2192,7 +2192,7 @@ class questionnaire {
         }
         $castsql = $DB->sql_cast_char2int('R.username');
         $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username,
-                        U.lastname, U.firstname '.$gmuserid.
+                        U.id as userid '.$gmuserid.
         'FROM '.$CFG->prefix.'questionnaire_response R,
         '.$CFG->prefix.'user U
         '.$groupmembers.
@@ -2210,17 +2210,17 @@ class questionnaire {
         }
         $rids = array();
         $ridssub = array();
-        $ridsusername = array();
-        $ridsfirstname = array();
-        $ridslastname = array();
+        $ridsuserfullname = array();
+        $ridsuserid = array();
         $i = 0;
         $currpos = -1;
         foreach ($responses as $response) {
             array_push($rids, $response->responseid);
             array_push($ridssub, $response->submitted);
-            array_push($ridsusername, $response->username);
-            array_push($ridsfirstname, $response->firstname);
-            array_push($ridslastname, $response->lastname);
+            $user = $DB->get_record('user', array('id' => $response->userid));
+            $userfullname = fullname($user);
+            array_push($ridsuserfullname, fullname($user));
+            array_push($ridsuserid, $response->userid);
             if ($response->responseid == $currrid) {
                 $currpos = $i;
             }
@@ -2239,14 +2239,13 @@ class questionnaire {
             $displaypos = 1;
             if ($prevrid != null) {
                 $pos = $currpos - 1;
-                $userfullname = $ridsfirstname[$pos].' '.$ridslastname[$pos];
                 $responsedate = userdate($ridssub[$pos]);
-                $title = $userfullname;
+                $title = $ridsuserfullname[$pos];
                 // Only add date if more than one response by a student.
-                if ($ridsusername[$pos] == $ridsusername[$currpos]) {
+                if ($ridsuserid[$pos] == $ridsuserid[$currpos]) {
                     $title .= ' | '.$responsedate;
                 }
-                $firstuserfullname = $ridsfirstname[0].' '.$ridslastname[0];
+                $firstuserfullname = $ridsuserfullname[0];
                 array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$firstrid.'&amp;individualresponse=1" title="'.
                                 $firstuserfullname.'">'.
                                 get_string('firstrespondent', 'questionnaire').'</a>');
@@ -2256,14 +2255,13 @@ class questionnaire {
             array_push($linkarr, '<b>'.($currpos + 1).' / '.$total.'</b>');
             if ($nextrid != null) {
                 $pos = $currpos + 1;
-                $userfullname = $ridsfirstname[$pos].' '.$ridslastname[$pos];
                 $responsedate = userdate($ridssub[$pos]);
-                $title = $userfullname;
+                $title = $ridsuserfullname[$pos];
                 // Only add date if more than one response by a student.
-                if ($ridsusername[$pos] == $ridsusername[$currpos]) {
+                if ($ridsuserid[$pos] == $ridsuserid[$currpos]) {
                     $title .= ' | '.$responsedate;
                 }
-                $lastuserfullname = $ridsfirstname[$total - 1].' '.$ridslastname[$total - 1];
+                $lastuserfullname = $ridsuserfullname[$total - 1];
                 array_push($linkarr, '<a href="'.$url.'&amp;rid='.$nextrid.'&amp;individualresponse=1"
                                 title="'.$title.'">'.get_string('next').'</a>&nbsp;<b>></b>');
                 array_push($linkarr, '<a href="'.$url.'&amp;rid='.$lastrid.'&amp;individualresponse=1"
@@ -2294,12 +2292,10 @@ class questionnaire {
             echo $OUTPUT->box_end();
 
         } else { // Display respondents list.
-            $userfullname = '';
             for ($i = 0; $i < $total; $i++) {
-                $userfullname = $ridsfirstname[$i].' '.$ridslastname[$i];
                 $responsedate = userdate($ridssub[$i]);
                 array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
-                    $rids[$i].'&amp;individualresponse=1" >'.$userfullname.'</a>'.'&nbsp;');
+                    $rids[$i].'&amp;individualresponse=1" >'.$ridsuserfullname[$i].'</a>'.'&nbsp;');
             }
             // Table formatting from http://wikkawiki.org/PageAndCategoryDivisionInACategory.
             $total = count($linkarr);
