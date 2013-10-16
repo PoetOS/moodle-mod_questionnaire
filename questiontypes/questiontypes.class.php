@@ -1469,14 +1469,7 @@ class questionnaire_question {
                     }
                 }
                 if ($na) {
-                    if ( (in_array($na, $data->{'q'.$this->id})) ||
-                            (isset($data->$str) && $data->$str == -1) ||
-                            $this->required == 'n' && !$blankquestionnaire) {
-                        // Automatically check N/A buttons if rate question is not required except if we are printing questionnaire.
-                        $checked = ' checked="checked"';
-                    } else {
-                        $checked = '';
-                    }
+                    $checked = '';
                     echo '<td style="width:auto; text-align:center" class="'.$bg.'">';
                     echo '<input name="'.$str.'" type="radio" value="'.$na.'"'.$checked.' /></td>';
                 }
