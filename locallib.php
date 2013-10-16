@@ -553,7 +553,8 @@ function questionnaire_set_events($questionnaire) {
     global $DB;
     if ($events = $DB->get_records('event', array('modulename'=>'questionnaire', 'instance'=>$questionnaire->id))) {
         foreach ($events as $event) {
-            delete_event($event->id);
+            $event = calendar_event::load($event);
+            $event->delete();
         }
     }
 
@@ -573,20 +574,20 @@ function questionnaire_set_events($questionnaire) {
     if ($questionnaire->closedate and $questionnaire->opendate and $event->timeduration <= QUESTIONNAIRE_MAX_EVENT_LENGTH) {
         // Single event for the whole questionnaire.
         $event->name = $questionnaire->name;
-        add_event($event);
+        calendar_event::create($event);
     } else {
         // Separate start and end events.
         $event->timeduration  = 0;
         if ($questionnaire->opendate) {
             $event->name = $questionnaire->name.' ('.get_string('questionnaireopens', 'questionnaire').')';
-            add_event($event);
+            calendar_event::create($event);
             unset($event->id); // So we can use the same object for the close event.
         }
         if ($questionnaire->closedate) {
             $event->name = $questionnaire->name.' ('.get_string('questionnairecloses', 'questionnaire').')';
             $event->timestart = $questionnaire->closedate;
             $event->eventtype = 'close';
-            add_event($event);
+            calendar_event::create($event);
         }
     }
 }

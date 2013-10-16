@@ -207,7 +207,8 @@ function questionnaire_delete_instance($id) {
 
     if ($events = $DB->get_records('event', array("modulename"=>'questionnaire', "instance"=>$questionnaire->id))) {
         foreach ($events as $event) {
-            delete_event($event->id);
+            $event = calendar_event::load($event);
+            $event->delete();
         }
     }
 
