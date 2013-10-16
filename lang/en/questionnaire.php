@@ -131,6 +131,8 @@ respondent.
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
 $string['finished'] = 'You have answered all the questions in this questionnaire!';
 $string['firstrespondent'] = 'First Respondent';
+$string['formateditor'] = 'HTML editor';
+$string['formatplain'] = 'Plain text';
 $string['grade'] = 'Submission grade';
 $string['gradesdeleted'] = 'Questionnaire grades deleted';
 $string['headingtext'] = 'Heading text';
@@ -181,6 +183,7 @@ $string['navigate_help'] = 'Enable Yes/No and Radio Buttons questions to have Ch
 $string['navigate_link'] = 'mod/questionnaire/conditional_branching';
 $string['next'] = 'Next';
 $string['nextpage'] = 'Next Page';
+$string['nlines'] = '{$a} lines';
 $string['noanswer'] = 'No answer';
 $string['nodata'] = 'No data posted.';
 $string['noduplicates'] = 'No duplicate choices';
@@ -331,6 +334,8 @@ $string['respondenttype_link'] = 'mod/questionnaire/mod#Respondent_Type';
 $string['respondenttypeanonymous'] = 'anonymous';
 $string['respondenttypefullname'] = 'fullname';
 $string['response'] = 'Response';
+$string['responsefieldlines'] = 'Input box size';
+$string['responseformat'] = 'Response format';
 $string['responseoptions'] = 'Response options';
 $string['responses'] = 'Responses';
 $string['responseview'] = 'Students can view ALL responses';

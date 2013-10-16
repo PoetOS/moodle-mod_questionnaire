@@ -493,11 +493,16 @@ class questionnaire_edit_question_form extends moodleform {
             $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('horizontal', 'questionnaire'), '1');
             $mform->addGroup($lengroup, 'lengroup', get_string($lhelpname, 'questionnaire'), ' ', false);
             $mform->addHelpButton('lengroup', $lhelpname, 'questionnaire');
-        } else { // QUESTEXT or QUESESSAY or QUESRATE.
+        } else if ($question->type_id == QUESTEXT || $question->type_id == QUESRATE) {
             $question->length = isset($question->length) ? $question->length : $deflength;
             $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
             $mform->setType('length', PARAM_TEXT);
             $mform->addHelpButton('length', $lhelpname, 'questionnaire');
+        } else {
+            $responseformats = array(
+                            "0" => get_string('formateditor', 'questionnaire'),
+                            "1" => get_string('formatplain', 'questionnaire'));
+            $mform->addElement('select', 'precise', get_string('responseformat', 'questionnaire'), $responseformats);
         }
 
         // Precision field.
@@ -512,8 +517,12 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addElement('select', 'precise', get_string($phelpname, 'questionnaire'), $precoptions);
             $mform->addHelpButton('precise', $phelpname, 'questionnaire');
         } else {
-            $question->precise = isset($question->precise) ? $question->precise : $defprecise;
-            $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
+            $choices = array();
+            for ($lines = 5; $lines <= 40; $lines += 5) {
+                $choices[$lines] = get_string('nlines', 'questionnaire', $lines);
+            }
+            $mform->addElement('select', 'length', get_string('responsefieldlines', 'questionnaire'), $choices);
+
         }
         $mform->setType('precise', PARAM_INT);
 
