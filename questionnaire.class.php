@@ -296,8 +296,15 @@ class questionnaire {
                         echo $OUTPUT->box_start('individualresp');
                         $question->questionstart_survey_display($i);
                         foreach ($data as $respid => $respdata) {
+                            $hasresp = false;
+                            foreach ($respdata as $key => $value) {
+                                $pos = strpos($key, $qid);
+                                if ($hasresp = preg_match("/$qid(_|$)/", $key)) {
+                                    break;
+                                }
+                            }
                             // Do not display empty responses.
-                            if (isset($respdata->$qid)) {
+                            if ($hasresp) {
                                 echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
                                 $question->$method($respdata);
                             }
