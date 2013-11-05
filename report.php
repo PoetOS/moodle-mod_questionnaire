@@ -286,22 +286,22 @@ switch ($action) {
             print_error('surveyowner', 'questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             print_error('invalidresponse', 'questionnaire');
-        } else if (!($resp = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
+        } else if (!($response = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
             print_error('invalidresponserecord', 'questionnaire');
         }
 
         $ruser = false;
-        if (is_numeric($resp->username)) {
-            if ($user = $DB->get_record('user', array('id' => $resp->username))) {
+        if (is_numeric($response->username)) {
+            if ($user = $DB->get_record('user', array('id' => $response->username))) {
                 $ruser = fullname($user);
             } else {
                 $ruser = '- '.get_string('unknown', 'questionnaire').' -';
             }
         } else {
-            $ruser = $resp->username;
+            $ruser = $response->username;
         }
 
-        if (questionnaire_delete_response($rid)) {
+        if (questionnaire_delete_response($response, $questionnaire)) {
             if ($questionnaire->respondenttype == 'anonymous') {
                     $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
             }
@@ -314,9 +314,6 @@ switch ($action) {
             if (empty($resps)) {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
             } else {
-                /* $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$sid.
-                    '&amp;instance='.$instance.'&amp;byresponse=1'; */
-
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='.$instance.'&amp;byresponse=1';
             }
             redirect($redirection);
@@ -380,7 +377,7 @@ switch ($action) {
 
         if (!empty($resps)) {
             foreach ($resps as $response) {
-                questionnaire_delete_response($response->id);
+                questionnaire_delete_response($response, $questionnaire);
             }
             $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
                      FROM {questionnaire_response} R

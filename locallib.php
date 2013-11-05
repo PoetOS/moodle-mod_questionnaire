@@ -360,14 +360,11 @@ function questionnaire_record_submission(&$questionnaire, $userid, $rid=0) {
 
 function questionnaire_delete_survey($sid, $questionnaireid) {
     global $DB;
-    // Until backup is implemented, just mark the survey as archived.
-
     $status = true;
-
     // Delete all survey attempts and responses.
     if ($responses = $DB->get_records('questionnaire_response', array('survey_id' => $sid), 'id')) {
         foreach ($responses as $response) {
-            $status = $status && questionnaire_delete_response($response->id);
+            $status = $status && questionnaire_delete_response($response);
         }
     }
 
@@ -388,10 +385,15 @@ function questionnaire_delete_survey($sid, $questionnaireid) {
     return $status;
 }
 
-function questionnaire_delete_response($rid) {
+function questionnaire_delete_response($response, $questionnaire='') {
     global $DB;
-
     $status = true;
+    $cm = '';
+    $rid = $response->id;
+    // The questionnaire_delete_survey function does not send the questionnaire array.
+    if ($questionnaire != '') {
+        $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $questionnaire->course->id);
+    }
 
     // Delete all of the response data for a response.
     $DB->delete_records('questionnaire_response_bool', array('response_id' => $rid));
@@ -404,6 +406,14 @@ function questionnaire_delete_response($rid) {
 
     $status = $status && $DB->delete_records('questionnaire_response', array('id' => $rid));
     $status = $status && $DB->delete_records('questionnaire_attempts', array('rid' => $rid));
+
+    if ($status && $cm) {
+        // Update completion state if necessary.
+        $completion = new completion_info($questionnaire->course);
+        if ($completion->is_enabled($cm) == COMPLETION_TRACKING_AUTOMATIC && $questionnaire->completionsubmit) {
+            $completion->update_state($cm, COMPLETION_INCOMPLETE, $response->username);
+        }
+    }
 
     return $status;
 }

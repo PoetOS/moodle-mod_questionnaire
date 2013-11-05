@@ -25,6 +25,8 @@ function questionnaire_supports($feature) {
             return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return false;
+        case FEATURE_COMPLETION_HAS_RULES:
+            return true;
         case FEATURE_GRADE_HAS_GRADE:
             return false;
         case FEATURE_GRADE_OUTCOMES:
@@ -847,8 +849,10 @@ function questionnaire_reset_userdata($data) {
                  ORDER BY R.id";
             $resps = $DB->get_records_sql($sql, array($survey->id));
             if (!empty($resps)) {
+                $questionnaire = $DB->get_record("questionnaire", array("sid" => $survey->id));
+                $questionnaire->course = $DB->get_record("course", array("id" => $questionnaire->course));
                 foreach ($resps as $response) {
-                    questionnaire_delete_response($response->id);
+                    questionnaire_delete_response($response, $questionnaire);
                 }
             }
             // Remove this questionnaire's grades (and feedback) from gradebook (if any).
@@ -871,4 +875,30 @@ function questionnaire_reset_userdata($data) {
                         'error' => false);
     }
     return $status;
+}
+
+/**
+ * Obtains the automatic completion state for this questionnaire based on the condition
+ * in questionnaire settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function questionnaire_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG, $DB;
+
+    // Get questionnaire details
+    $questionnaire = $DB->get_record('questionnaire', array('id'=>$cm->instance), '*', MUST_EXIST);
+
+    // If completion option is enabled, evaluate it and return true/false
+    if ($questionnaire->completionsubmit) {
+        $params = array('userid'=>$userid, 'qid'=>$questionnaire->id);
+        return $DB->record_exists('questionnaire_attempts', $params);
+    } else {
+        // Completion option is not enabled so just return $type
+        return $type;
+    }
 }
