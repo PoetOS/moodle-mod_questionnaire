@@ -80,10 +80,11 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(format_text($questionnaire->name));
 
 // Print the main part of the page.
-echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
 if ($questionnaire->intro) {
-    echo $questionnaire->intro;
+    echo $OUTPUT->box(format_module_intro('questionnaire', $questionnaire, $cm->id), 'generalbox', 'intro');
 }
+
+echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
 
 if (!$questionnaire->is_active()) {
     if ($questionnaire->capabilities->manage) {

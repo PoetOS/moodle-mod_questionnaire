@@ -2071,7 +2071,7 @@ class questionnaire {
             $thankhead = get_string('thank_head', 'questionnaire');
         }
         $message =  '<h3>'.$thankhead.'</h3>'.file_rewrite_pluginfile_urls(format_text($thankbody, FORMAT_HTML), 'pluginfile.php',
-                $this->context->id, 'mod_questionnaire', 'thankbody', $this->id);
+                $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id);
         echo ($message);
         if ($this->capabilities->readownresponses) {
             echo('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
