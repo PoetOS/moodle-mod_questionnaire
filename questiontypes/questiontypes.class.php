@@ -854,6 +854,7 @@ class questionnaire_question {
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
         if ( ($pagetype ==  'mod-questionnaire-myreport' || $pagetype ==  'mod-questionnaire-report')
                         && $nonumbering == false
+                        && $formdata
                         && $this->dependquestion != 0 && !array_key_exists('q'.$this->id, $formdata)) {
             $skippedquestion = true;
             $skippedclass = ' unselected';
