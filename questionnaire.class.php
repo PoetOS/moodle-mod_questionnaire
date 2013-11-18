@@ -2070,9 +2070,10 @@ class questionnaire {
         if (empty($thankhead)) {
             $thankhead = get_string('thank_head', 'questionnaire');
         }
-        $message =  '<h3>'.$thankhead.'</h3>'.file_rewrite_pluginfile_urls(format_text($thankbody, FORMAT_HTML), 'pluginfile.php',
-                $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id);
+        $message =  '<h3>'.$thankhead.'</h3>'.format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
+                        $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML);
         echo ($message);
+
         if ($this->capabilities->readownresponses) {
             echo('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
             $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'">'.
