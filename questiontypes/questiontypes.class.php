@@ -458,7 +458,7 @@ class questionnaire_question {
                 'WHERE question_id='.$this->id.$ridstr.
                 ' AND T.response_id = R.id'.
                 ' AND U.id = ' . $DB->sql_cast_char2int('R.username') .
-                'ORDER BY U.lastname, U.firstname';
+                'ORDER BY U.lastname, U.firstname, R.submitted';
         return $DB->get_records_sql($sql);
     }
 
