@@ -361,7 +361,6 @@ function questionnaire_record_submission(&$questionnaire, $userid, $rid=0) {
 function questionnaire_delete_survey($sid, $questionnaireid) {
     global $DB;
     $status = true;
-
     // Delete all survey attempts and responses.
     if ($responses = $DB->get_records('questionnaire_response', array('survey_id' => $sid), 'id')) {
         foreach ($responses as $response) {

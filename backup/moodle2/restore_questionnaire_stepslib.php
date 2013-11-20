@@ -122,7 +122,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
     }
 
     protected function process_questionnaire_quest_choice($data) {
-            global $CFG, $DB;
+        global $CFG, $DB;
 
         $data = (object)$data;
 

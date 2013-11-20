@@ -95,6 +95,7 @@ if (!$questionnaire->is_active()) {
     echo '<div class="message">'
     .get_string($msg, 'questionnaire')
     .'</div>';
+
 } else if (!$questionnaire->is_open()) {
     echo '<div class="message">'
     .get_string('notopen', 'questionnaire', userdate($questionnaire->opendate))
