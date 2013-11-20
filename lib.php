@@ -725,24 +725,22 @@ function questionnaire_print_overview($courses, &$htmlarray) {
         return;
     }
 
-    // Get all questionnaire logs in ONE query (much better!).
     $params = array();
-    $sql = "SELECT instance,cmid,l.course,COUNT(l.id) as count FROM {log} l "
-        ." JOIN {course_modules} cm ON cm.id = cmid "
-        ." JOIN {questionnaire} q ON cm.instance = q.id "
-        ." WHERE (";
+    $coursesql = array();
     foreach ($courses as $course) {
-        $sql .= '(l.course = ? AND l.time > ?) OR ';
+        $coursesql[] = '(q.course = ? AND qa.timemodified > ?)';
         $params[] = $course->id;
         $params[] = $course->lastaccess;
     }
 
-    $sql = substr($sql, 0, -3); // Take off the last OR.
-
-    $sql .= ") AND l.module = 'questionnaire' AND action = 'submit' "
-        ." AND userid != ?"
-        ." AND q.resp_view <> ?"
-        ." GROUP BY cmid,l.course,instance";
+    // Get all questionnaire submissions in ONE query (much better!).
+    $sql = 'SELECT q.id, COUNT(qa.id) as count
+              FROM {questionnaire} q
+              JOIN {questionnaire_attempts} qa ON qa.qid = q.id
+             WHERE ('.implode(' OR ', $coursesql).")
+               AND qa.userid != ?
+               AND q.resp_view <> ?
+          GROUP BY q.course, q.id";
 
     $params[] = $USER->id;
     $params[] = QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED;
@@ -750,7 +748,6 @@ function questionnaire_print_overview($courses, &$htmlarray) {
     if (!$new = $DB->get_records_sql($sql, $params)) {
         $new = array(); // Avoid warnings.
     }
-
     $strquestionnaires = get_string('modulename', 'questionnaire');
 
     $site = get_site();
@@ -787,7 +784,6 @@ function questionnaire_print_overview($courses, &$htmlarray) {
                     ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $isclosed) ||
                     ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && $answered)
                 )))) {
-
                 if ($count == 1) {
                     $strresp = $strnumrespsince1;
                 } else {
