@@ -60,10 +60,16 @@ $usernumresp = $questionnaire->count_submissions($USER->id);
 
 if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
     $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
+    if ($usernumresp == 1) {
+        $argstr .= '&byresponse=1&action=vresp';
+        $yourrespstring = get_string('yourresponse', 'questionnaire');
+    } else {
+        $yourrespstring = get_string('yourresponses', 'questionnaire');
+    }
     $row[] = new tabobject('myreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
-                           $argstr), get_string('yourresponses', 'questionnaire'));
+                           $argstr), $yourrespstring);
 
-    if (in_array($currenttab, array('mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'))) {
+    if ($usernumresp > 1 && in_array($currenttab, array('mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'))) {
         $inactive[] = 'myreport';
         $activated[] = 'myreport';
         $row2 = array();
@@ -81,6 +87,9 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
             $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
             $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtext'));
         }
+    } else if (in_array($currenttab, array('mybyresponse', 'mysummary'))) {
+        $inactive[] = 'myreport';
+        $activated[] = 'myreport';
     }
 }
 
@@ -190,7 +199,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
            $questionnaire->is_survey_owner()) {
     $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
-                           $argstr.'&action=vall'), get_string('viewresponses', 'questionnaire', $numresp));
+                           $argstr.'&action=vall'), get_string('viewallresponses', 'questionnaire'));
     if (in_array($currenttab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
         $inactive[] = 'vall';
         $activated[] = 'vall';

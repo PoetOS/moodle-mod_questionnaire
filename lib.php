@@ -569,25 +569,34 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 
     if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         $url = '/mod/questionnaire/myreport.php';
-        $node = navigation_node::create(get_string('yourresponses', 'questionnaire'),
-                new moodle_url($url, array('instance' => $questionnaire->id,
-                                'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')),
-                navigation_node::TYPE_SETTING, null, 'yourresponses');
-        $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
-        $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/myreport.php',
-                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
-        $byresponsenode = $myreportnode->add(get_string('viewbyresponse', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/myreport.php',
-                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')));
-        $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/myreport.php',
-                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'vall')));
-        if ($questionnaire->capabilities->downloadresponses) {
-            $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
-                    new moodle_url('/mod/questionnaire/report.php',
-                        array('instance' => $questionnaire->id, 'user' => $USER->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
+        if ($usernumresp > 1) {
+            $node = navigation_node::create(get_string('yourresponses', 'questionnaire'),
+                    new moodle_url($url, array('instance' => $questionnaire->id,
+                                    'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')),
+                    navigation_node::TYPE_SETTING, null, 'yourresponses');
+            $myreportnode = $questionnairenode->add_node($node, $beforekey);
+
+            $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/myreport.php',
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
+            $byresponsenode = $myreportnode->add(get_string('viewbyresponse', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/myreport.php',
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')));
+            $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/myreport.php',
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'vall')));
+            if ($questionnaire->capabilities->downloadresponses) {
+                $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
+                        new moodle_url('/mod/questionnaire/report.php',
+                            array('instance' => $questionnaire->id, 'user' => $USER->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
+            }
+        } else {
+            $node = navigation_node::create(get_string('yourresponse', 'questionnaire'),
+                            new moodle_url($url, array('instance' => $questionnaire->id,
+                                            'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')),
+                            navigation_node::TYPE_SETTING, null, 'yourresponse');
+            $myreportnode = $questionnairenode->add_node($node, $beforekey);
         }
     }
 

@@ -433,4 +433,5 @@ $string['wrongformat'] = 'There is something wrong with your answer to question:
 $string['wrongformats'] = 'There is something wrong with your answer to questions:&nbsp;';
 $string['yesno'] = 'Yes/No';
 $string['yesno_help'] = 'Simple Yes/No question.';
+$string['yourresponse'] = 'Your response';
 $string['yourresponses'] = 'Your responses';

@@ -164,8 +164,15 @@ $usernumresp = $questionnaire->count_submissions($USER->id);
 if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
     echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
     $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
+    if ($usernumresp > 1) {
+        $titletext = get_string('viewyourresponses', 'questionnaire', $usernumresp);
+    } else {
+        $titletext = get_string('yourresponse', 'questionnaire');
+        $argstr .= '&byresponse=1&action=vresp';
+    }
+
     echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
-        $argstr).'">'.get_string('viewyourresponses', 'questionnaire', $usernumresp).'</a>';
+        $argstr).'">'.$titletext.'</a>';
     echo $OUTPUT->box_end();
 }
 
