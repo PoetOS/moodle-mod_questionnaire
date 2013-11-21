@@ -2075,7 +2075,7 @@ class questionnaire {
         echo ($message);
         if ($this->capabilities->readownresponses) {
             echo('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
-            $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'">'.
+            $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'&byresponse=0&action=vresp">'.
             get_string("continue").'</a>');
         } else {
             echo('<a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
@@ -2098,85 +2098,6 @@ class questionnaire {
     }
 
     // Survey Results Methods.
-
-    public function survey_results_navbar($currrid, $userid=false) {
-        global $CFG, $DB;
-
-        $stranonymous = get_string('anonymous', 'questionnaire');
-
-        $select = 'survey_id='.$this->survey->id.' AND complete = \'y\'';
-        if ($userid !== false) {
-            $select .= ' AND username = \''.$userid.'\'';
-        }
-        if (!($responses = $DB->get_records_select('questionnaire_response', $select, null,
-                'id', 'id, survey_id, submitted, username'))) {
-            return;
-        }
-        $total = count($responses);
-        if ($total == 1) {
-            return;
-        }
-        $rids = array();
-        $ridssub = array();
-        $ridsusername = array();
-        $i = 0;
-        $currpos = -1;
-        foreach ($responses as $response) {
-            array_push($rids, $response->id);
-            array_push($ridssub, $response->submitted);
-            array_push($ridsusername, $response->username);
-            if ($response->id == $currrid) {
-                $currpos = $i;
-            }
-            $i++;
-        }
-
-        $prevrid = ($currpos > 0) ? $rids[$currpos - 1] : null;
-        $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
-        $rowsperpage = 1;
-
-        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='.$this->id;
-
-        $mlink = create_function('$i,$r', 'return "<a href=\"'.$url.'&amp;rid=$r\">$i</a>";');
-
-        $linkarr = array();
-
-        $displaypos = 1;
-        if ($prevrid != null) {
-            array_push($linkarr, "<a href=\"$url&amp;rid=$prevrid\">".get_string('previous').'</a>');
-        }
-        $ruser = '';
-        for ($i = 0; $i < $currpos; $i++) {
-            if ($this->respondenttype != 'anonymous') {
-                if ($user = $DB->get_record('user', array('id' => $ridsusername[$i]))) {
-                    $ruser = fullname($user);
-                }
-            } else {
-                $ruser = $stranonymous;
-            }
-            $title = userdate($ridssub[$i]).' | ' .$ruser;
-            array_push($linkarr, '<a href="'.$url.'&amp;rid='.$rids[$i].'" title="'.$title.'">'.$displaypos.'</a>');
-            $displaypos++;
-        }
-        array_push($linkarr, '<b>'.$displaypos.'</b>');
-        for (++$i; $i < $total; $i++) {
-            if ($this->respondenttype != 'anonymous') {
-                if ($user = $DB->get_record('user', array('id' => $ridsusername[$i]))) {
-                    $ruser = fullname($user);
-                }
-            } else {
-                $ruser = $stranonymous;
-            }
-            $title = userdate($ridssub[$i]).' | ' .$ruser;
-            $displaypos++;
-            array_push($linkarr, '<a href="'.$url.'&amp;rid='.$rids[$i].'" title="'.$title.'">'.$displaypos.'</a>');
-
-        }
-        if ($nextrid != null) {
-            array_push($linkarr, "<a href=\"$url&amp;rid=$nextrid\">".get_string('next').'</a>');
-        }
-        echo implode(' | ', $linkarr);
-    }
 
     public function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
         global $CFG, $DB, $OUTPUT;
@@ -2228,7 +2149,6 @@ class questionnaire {
             $i++;
         }
 
-        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.'&group='.$currentgroupid;
         $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;group='.$currentgroupid;
         $linkarr = array();
         if (!$byresponse) {     // Display navbar.
@@ -2376,7 +2296,7 @@ class questionnaire {
         $rowsperpage = 1;
 
         if ($reporttype == 'myreport') {
-            $url = 'myreport.php?instance='.$instance.'&amp;user='.$userid.'&amp;action=vresp';
+            $url = 'myreport.php?instance='.$instance.'&amp;user='.$userid.'&amp;action=vresp&amp;byresponse=1';
         } else {
             $url = 'report.php?instance='.$instance.'&amp;user='.$userid.'&amp;action=vresp&amp;byresponse=1&amp;sid='.$sid;
         }

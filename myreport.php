@@ -85,7 +85,11 @@ switch ($action) {
             $resps = array();
         }
         $rids = array_keys($resps);
-        $titletext = get_string('myresponsetitle', 'questionnaire', count($resps));
+        if (count($resps) > 1) {
+            $titletext = get_string('myresponsetitle', 'questionnaire', count($resps));
+        } else {
+            $titletext = get_string('yourresponse', 'questionnaire');
+        }
 
         // Print the page header.
         echo $OUTPUT->header();
@@ -136,12 +140,16 @@ switch ($action) {
         $sort = 'submitted ASC';
         $resps = $DB->get_records_select('questionnaire_response', $select, $params=null, $sort);
         $rids = array_keys($resps);
+
+        // If more than one response for this respondent, display most recent response.
         if (!$rid) {
-            $rid = $rids[0];
+            $rid = end($rids);
         }
-        if ($rid) {
-            $numresp = $questionnaire->count_submissions($USER->id);
+        $numresp = count($rids);
+        if ($numresp > 1) {
             $titletext = get_string('myresponsetitle', 'questionnaire', $numresp);
+        } else {
+            $titletext = get_string('yourresponse', 'questionnaire');
         }
 
         // Print the page header.
