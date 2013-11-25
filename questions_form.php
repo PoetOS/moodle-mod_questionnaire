@@ -484,9 +484,9 @@ class questionnaire_edit_question_form extends moodleform {
 
         // Length field.
         if ($question->type_id == QUESYESNO || $question->type_id == QUESDROP || $question->type_id == QUESDATE ||
-            $question->type_id == QUESSECTIONTEXT) {
+                $question->type_id == QUESSECTIONTEXT) {
             $mform->addElement('hidden', 'length', $deflength);
-            $mform->setType('length', PARAM_INT);
+
         } else if ($question->type_id == QUESRADIO) {
             $lengroup = array();
             $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('vertical', 'questionnaire'), '0');
@@ -498,16 +498,21 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
             $mform->setType('length', PARAM_TEXT);
             $mform->addHelpButton('length', $lhelpname, 'questionnaire');
-        } else {
+        } else if ($question->type_id == QUESESSAY) {
             $responseformats = array(
                             "0" => get_string('formateditor', 'questionnaire'),
                             "1" => get_string('formatplain', 'questionnaire'));
             $mform->addElement('select', 'precise', get_string('responseformat', 'questionnaire'), $responseformats);
+        } else if ($question->type_id == QUESCHECK) {
+            $question->length = isset($question->length) ? $question->length : $deflength;
+            $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
         }
+
+        $mform->setType('length', PARAM_INT);
 
         // Precision field.
         if ($question->type_id == QUESYESNO || $question->type_id == QUESDROP || $question->type_id == QUESDATE ||
-            $question->type_id == QUESSECTIONTEXT || $question->type_id == QUESRADIO) {
+                $question->type_id == QUESSECTIONTEXT || $question->type_id == QUESRADIO) {
             $mform->addElement('hidden', 'precise', $defprecise);
         } else if ($question->type_id == QUESRATE) {
             $precoptions = array("0" => get_string('normal', 'questionnaire'),
@@ -516,14 +521,17 @@ class questionnaire_edit_question_form extends moodleform {
                                  "3" => get_string('osgood', 'questionnaire'));
             $mform->addElement('select', 'precise', get_string($phelpname, 'questionnaire'), $precoptions);
             $mform->addHelpButton('precise', $phelpname, 'questionnaire');
-        } else {
+        } else if ($question->type_id == QUESESSAY) {
             $choices = array();
             for ($lines = 5; $lines <= 40; $lines += 5) {
                 $choices[$lines] = get_string('nlines', 'questionnaire', $lines);
             }
             $mform->addElement('select', 'length', get_string('responsefieldlines', 'questionnaire'), $choices);
-
+        } else if ($question->type_id == QUESCHECK) {
+            $question->precise = isset($question->precise) ? $question->precise : $defprecise;
+            $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
         }
+
         $mform->setType('precise', PARAM_INT);
 
         // Dependence fields.

@@ -108,6 +108,10 @@ if (!$popup) {
 $PAGE->requires->js('/mod/questionnaire/module.js');
 
 echo $OUTPUT->header();
+
+// Print the tabs.
+require('tabs.php');
+
 echo $OUTPUT->heading($pq);
 $questionnaire->survey_print_render('', 'preview', $course->id, $rid=0, $popup);
 if ($popup) {
