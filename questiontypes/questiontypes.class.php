@@ -2230,9 +2230,9 @@ class questionnaire_question {
                                 $table->data[] = array(format_text($content, FORMAT_HTML), $out, sprintf('%.1f', $avg).
                                         '&nbsp;'.$stravgval);
                             }
-                        } else {
-                            $table->data[] = array(format_text($content, FORMAT_HTML), $out,
-                                            get_string('notapplicable', 'questionnaire'));
+                        } else if ($nbna != 0) {
+                            $table->data[] = array(format_text($content, FORMAT_HTML), $out, sprintf('%.1f', $avg).
+                                        '&nbsp;'.$stravgval, $nbna);
                         }
                     }
                 } // End if named degrees.
