@@ -503,7 +503,7 @@ class questionnaire_edit_question_form extends moodleform {
                             "0" => get_string('formateditor', 'questionnaire'),
                             "1" => get_string('formatplain', 'questionnaire'));
             $mform->addElement('select', 'precise', get_string('responseformat', 'questionnaire'), $responseformats);
-        } else if ($question->type_id == QUESCHECK) {
+        } else if ($question->type_id == QUESCHECK || $question->type_id == QUESNUMERIC) {
             $question->length = isset($question->length) ? $question->length : $deflength;
             $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
         }
@@ -527,7 +527,7 @@ class questionnaire_edit_question_form extends moodleform {
                 $choices[$lines] = get_string('nlines', 'questionnaire', $lines);
             }
             $mform->addElement('select', 'length', get_string('responsefieldlines', 'questionnaire'), $choices);
-        } else if ($question->type_id == QUESCHECK) {
+        } else if ($question->type_id == QUESCHECK || $question->type_id == QUESNUMERIC) {
             $question->precise = isset($question->precise) ? $question->precise : $defprecise;
             $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
         }
