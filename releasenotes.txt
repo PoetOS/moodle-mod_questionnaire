@@ -1,6 +1,18 @@
 Release Notes:
 
-Version 2.5.6 - 2013100502 (to be released)
+Version 2.5.7 - 2013120200
+- Fixed CONTRIB-4764 :: When deleting a question, number of existing responses to that question is sometimes wrong.
+- Fixed CONTRIB-4760 :: N/A column report display is incorrect for Rate questions with N/A option selected.
+- Fixed CONTRIB-4757 :: Remove the report "summary" stats page for questionnaires with only one response.
+- Fixed CONTRIB-4750 Postgres needs to be told to order responses by submitted time ASC.
+- Fixed small display bug on "all your responses" report page using branching feature.
+- Fixed CONTRIB-4745 :: Images and media not correctly displayed on some pages.
+- Fixed CONTRIB-4741 :: Error with shortlabels when restoring old backups.
+- Fixed CONTRIB-4734 :: Improve processing of Activity completion.
+- Fixed CONTRIB-4732 :: "All your responses" page not displaying correctly Rate questions.
+- Fixed CONTRIB-4706 :: Remove all addslashes.
+- Fixed CONTRIB-4699 :: No reason to automatically check N/A buttons if rate question is not required.
+- Fixed CONTRIB-4683 :: In MSSQL "user" is a keyword and therefore cannot be used as an alias.
 - If current questionnaire is based on a public one, do not include survey nor 
 questions in backup. See https://moodle.org/mod/forum/discuss.php?d=241748
 - Non-editing teachers without the "accessallgroups" capability can only see students members of their own group (if questionnaire instance set to Separate Groups) in the Reports and Show non respondents pages.
@@ -8,7 +20,7 @@ See https://moodle.org/mod/forum/discuss.php?d=241714
 - Issue relevant warnings for questionnaires dependent on Public questionnaire when Public "parent" has been deleted.
 
 Version 2.5.6 - 2013100501
-- Fixed wrong change from = to :: separator in Rate questions with named degree during upgrade.
+- Fixed CONTRIB-4677 :: wrong change from = to :: separator in Rate questions with named degree during upgrade.
 
 Version 2.5.6 - 2013100500
 - Added autonumbering option for questions and pages in questionnaire settings. This may be especially
