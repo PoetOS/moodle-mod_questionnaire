@@ -108,7 +108,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
             // Dependchoice.
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields='type_id');
+            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields = 'type_id');
             if (is_object($dependquestion)) {
                 if ($dependquestion->type_id != 1) {
                     $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);
@@ -145,7 +145,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
             // Dependchoice.
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields='type_id');
+            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields = 'type_id');
             if (is_object($dependquestion)) {
                 if ($dependquestion->type_id != 1) {
                     $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);

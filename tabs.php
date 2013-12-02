@@ -110,7 +110,8 @@ if ($groupmode == 1) {
 }
 $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
 
-if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->readallresponseanytime)) && $numresp > 0 && $owner && $numselectedresps > 0) {
+if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
+                && $numresp > 0 && $owner && $numselectedresps > 0) {
     $argstr = 'instance='.$questionnaire->id;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                            $argstr.'&action=vall'), get_string('viewallresponses', 'questionnaire'));
@@ -176,12 +177,12 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         $url = '/mod/questionnaire/print.php?qid='.$questionnaire->id.'&amp;rid='.$rid.
                '&amp;courseid='.$course->id.'&amp;sec=1';
         $title = get_string('printtooltip', 'questionnaire');
-        $options= array('menubar' => true, 'location' => false, 'scrollbars' => true,
+        $options = array('menubar' => true, 'location' => false, 'scrollbars' => true,
                         'resizable' => true, 'height' => 600, 'width' => 800);
         $name = 'popup';
         $link = new moodle_url($url);
         $action = new popup_action('click', $link, $name, $options);
-        $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title'=>$title));
+        $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title));
         $row3[] = new tabobject('printresp', '', $actionlink);
 
         if ($questionnaire->capabilities->deleteresponses) {
@@ -237,7 +238,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
 }
 
 if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
-    $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>$questionnaire->cm->id));
+    $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id' => $questionnaire->cm->id));
     $row[] = new tabobject('nonrespondents',
                     $nonrespondenturl->out(),
                     get_string('show_nonrespondents', 'questionnaire'));

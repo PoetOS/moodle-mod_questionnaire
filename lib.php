@@ -207,7 +207,7 @@ function questionnaire_delete_instance($id) {
         }
     }
 
-    if ($events = $DB->get_records('event', array("modulename"=>'questionnaire', "instance"=>$questionnaire->id))) {
+    if ($events = $DB->get_records('event', array("modulename" => 'questionnaire', "instance" => $questionnaire->id))) {
         foreach ($events as $event) {
             delete_event($event->id);
         }
@@ -226,7 +226,7 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $result = new stdClass();
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=true)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete = true)) {
         $n = count($responses);
         if ($n == 1) {
             $result->info = $n.' '.get_string("response", "questionnaire");
@@ -247,7 +247,7 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=false)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete = false)) {
         foreach ($responses as $response) {
             if ($response->complete == 'y') {
                 echo get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
@@ -378,9 +378,9 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
     }
 
     if ($questionnaire->cmidnumber != '') {
-        $params = array('itemname'=>$questionnaire->name, 'idnumber'=>$questionnaire->cmidnumber);
+        $params = array('itemname' => $questionnaire->name, 'idnumber' => $questionnaire->cmidnumber);
     } else {
-        $params = array('itemname'=>$questionnaire->name);
+        $params = array('itemname' => $questionnaire->name);
     }
 
     if ($questionnaire->grade > 0) {
@@ -400,7 +400,7 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
         $params = null; // Allow text comments only.
     }
 
-    if ($grades  === 'reset') {
+    if ($grades === 'reset') {
         $params['reset'] = true;
         $grades = null;
     }
@@ -461,16 +461,16 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
     $componentid = (int)array_shift($args);
 
     if ($filearea != 'question') {
-        if (!$survey = $DB->get_record('questionnaire_survey', array('id'=>$componentid))) {
+        if (!$survey = $DB->get_record('questionnaire_survey', array('id' => $componentid))) {
             return false;
         }
     } else {
-        if (!$question = $DB->get_record('questionnaire_question', array('id'=>$componentid))) {
+        if (!$question = $DB->get_record('questionnaire_question', array('id' => $componentid))) {
             return false;
         }
     }
 
-    if (!$questionnaire = $DB->get_record('questionnaire', array('id'=>$cm->instance))) {
+    if (!$questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance))) {
         return false;
     }
 
@@ -579,17 +579,21 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 
             $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/myreport.php',
-                            array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id,
+                                            'byresponse' => 0, 'action' => 'summary')));
             $byresponsenode = $myreportnode->add(get_string('viewbyresponse', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/myreport.php',
-                            array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')));
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id,
+                                            'byresponse' => 1, 'action' => 'vresp')));
             $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/myreport.php',
-                            array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'vall')));
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id,
+                                            'byresponse' => 0, 'action' => 'vall')));
             if ($questionnaire->capabilities->downloadresponses) {
                 $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
                         new moodle_url('/mod/questionnaire/report.php',
-                            array('instance' => $questionnaire->id, 'user' => $USER->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
+                            array('instance' => $questionnaire->id, 'user' => $USER->id,
+                                            'action' => 'dwnpg', 'group' => $currentgroupid)));
             }
         } else {
             $node = navigation_node::create(get_string('yourresponse', 'questionnaire'),
@@ -773,7 +777,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
             $context = context_module::instance($cm->id);
             $qobject = new questionnaire($questionnaire->id, $questionnaire, $questionnaire->course, $cm);
             $isclosed = $qobject->is_closed();
-            $answered =  !$qobject->user_can_take($USER->id);
+            $answered = !$qobject->user_can_take($USER->id);
             $count = $new[$questionnaire->id]->count;
 
             if ($count > 0  &&
@@ -847,7 +851,7 @@ function questionnaire_reset_userdata($data) {
     $status = array();
 
     if (!empty($data->reset_questionnaire)) {
-        $surveys = questionnaire_get_survey_list($data->courseid, $type='');
+        $surveys = questionnaire_get_survey_list($data->courseid, $type = '');
 
         // Delete responses.
         foreach ($surveys as $survey) {
@@ -899,15 +903,15 @@ function questionnaire_reset_userdata($data) {
 function questionnaire_get_completion_state($course, $cm, $userid, $type) {
     global $CFG, $DB;
 
-    // Get questionnaire details
-    $questionnaire = $DB->get_record('questionnaire', array('id'=>$cm->instance), '*', MUST_EXIST);
+    // Get questionnaire details.
+    $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance), '*', MUST_EXIST);
 
-    // If completion option is enabled, evaluate it and return true/false
+    // If completion option is enabled, evaluate it and return true/false.
     if ($questionnaire->completionsubmit) {
-        $params = array('userid'=>$userid, 'qid'=>$questionnaire->id);
+        $params = array('userid' => $userid, 'qid' => $questionnaire->id);
         return $DB->record_exists('questionnaire_attempts', $params);
     } else {
-        // Completion option is not enabled so just return $type
+        // Completion option is not enabled so just return $type.
         return $type;
     }
 }

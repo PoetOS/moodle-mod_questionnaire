@@ -35,7 +35,7 @@ if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->insta
 }
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 require_login($course, false, $cm);
-$PAGE->set_url('/mod/questionnaire/grade.php', array('id'=>$cm->id));
+$PAGE->set_url('/mod/questionnaire/grade.php', array('id' => $cm->id));
 
 if (has_capability('mod/questionnaire:readallresponseanytime', context_module::instance($cm->id))) {
     redirect('report.php?instance='.$questionnaire->id);

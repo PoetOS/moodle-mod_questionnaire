@@ -192,9 +192,10 @@ class questionnaire_questions_form extends moodleform {
                     // or immediately preceded by a question with a dependency and followed by a non-dependent question.
                     if ($tid == QUESPAGEBREAK) {
                         if ($nextquestion = $DB->get_record('questionnaire_question', array('survey_id' => $sid,
-                                        'position' => $pos + 1, 'deleted' => 'n' ), $fields='dependquestion, name, content') ) {
+                                        'position' => $pos + 1, 'deleted' => 'n' ), $fields = 'dependquestion, name, content') ) {
                             if ($previousquestion = $DB->get_record('questionnaire_question', array('survey_id' => $sid,
-                                            'position' => $pos - 1, 'deleted' => 'n' ), $fields='dependquestion, name, content')) {
+                                            'position' => $pos - 1, 'deleted' => 'n' ),
+                                            $fields = 'dependquestion, name, content')) {
                                 if ($nextquestion->dependquestion != 0
                                                 || ($previousquestion->dependquestion != 0
                                                     && $nextquestion->dependquestion == 0) ) {
@@ -430,37 +431,37 @@ class questionnaire_edit_question_form extends moodleform {
         }
         switch ($question->type_id) {
             case QUESYESNO:
-                $qtype='yesno';
+                $qtype = 'yesno';
                 break;
             case QUESTEXT:
-                $qtype='textbox';
+                $qtype = 'textbox';
                 break;
             case QUESESSAY:
-                $qtype='essaybox';
+                $qtype = 'essaybox';
                 break;
             case QUESRADIO:
-                $qtype='radiobuttons';
+                $qtype = 'radiobuttons';
                 break;
             case QUESCHECK:
-                $qtype='checkboxes';
+                $qtype = 'checkboxes';
                 break;
             case QUESDROP:
-                $qtype='dropdown';
+                $qtype = 'dropdown';
                 break;
             case QUESRATE:
-                $qtype='ratescale';
+                $qtype = 'ratescale';
                 break;
             case QUESDATE:
-                $qtype='date';
+                $qtype = 'date';
                 break;
             case QUESNUMERIC:
-                $qtype='numeric';
+                $qtype = 'numeric';
                 break;
             case QUESSECTIONTEXT:
-                $qtype='sectiontext';
+                $qtype = 'sectiontext';
                 break;
             case QUESPAGEBREAK:
-                $qtype='sectionbreak';
+                $qtype = 'sectionbreak';
         }
 
         $mform->addElement('header', 'questionhdredit', $streditquestion);
@@ -471,7 +472,8 @@ class questionnaire_edit_question_form extends moodleform {
             $stryes = get_string('yes');
             $strno  = get_string('no');
 
-            $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'), array('size'=>'30', 'maxlength'=>'30'));
+            $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'),
+                            array('size' => '30', 'maxlength' => '30'));
             $mform->setType('name', PARAM_TEXT);
             $mform->addHelpButton('name', 'optionalname', 'questionnaire');
 
@@ -495,7 +497,7 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addHelpButton('lengroup', $lhelpname, 'questionnaire');
         } else { // QUESTEXT or QUESESSAY or QUESRATE.
             $question->length = isset($question->length) ? $question->length : $deflength;
-            $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
+            $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size' => '1'));
             $mform->setType('length', PARAM_TEXT);
             $mform->addHelpButton('length', $lhelpname, 'questionnaire');
         }
@@ -513,7 +515,7 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addHelpButton('precise', $phelpname, 'questionnaire');
         } else {
             $question->precise = isset($question->precise) ? $question->precise : $defprecise;
-            $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
+            $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size' => '1'));
         }
         $mform->setType('precise', PARAM_INT);
 
@@ -548,7 +550,7 @@ class questionnaire_edit_question_form extends moodleform {
 
         // Content field.
         $modcontext    = $this->_customdata['modcontext'];
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext'=>true, 'context'=>$modcontext);
+        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true, 'context' => $modcontext);
         $mform->addElement('editor', 'content', get_string('text', 'questionnaire'), null, $editoroptions);
         $mform->setType('content', PARAM_RAW);
         $mform->addRule('content', null, 'required', null, 'client');

@@ -49,18 +49,18 @@ class questionnaire_settings_form extends moodleform {
         }
         $mform->setType('realm', PARAM_RAW);
 
-        $mform->addElement('text', 'title', get_string('title', 'questionnaire'), array('size'=>'60'));
+        $mform->addElement('text', 'title', get_string('title', 'questionnaire'), array('size' => '60'));
         $mform->setDefault('title', $questionnaire->survey->title);
         $mform->setType('title', PARAM_TEXT);
         $mform->addRule('title', null, 'required', null, 'client');
         $mform->addHelpButton('title', 'title', 'questionnaire');
 
-        $mform->addElement('text', 'subtitle', get_string('subtitle', 'questionnaire'), array('size'=>'60'));
+        $mform->addElement('text', 'subtitle', get_string('subtitle', 'questionnaire'), array('size' => '60'));
         $mform->setDefault('subtitle', $questionnaire->survey->subtitle);
         $mform->setType('subtitle', PARAM_TEXT);
         $mform->addHelpButton('subtitle', 'subtitle', 'questionnaire');
 
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext'=>true);
+        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true);
         $mform->addElement('editor', 'info', get_string('additionalinfo', 'questionnaire'), null, $editoroptions);
         $mform->setDefault('info', $questionnaire->survey->info);
         $mform->setType('info', PARAM_RAW);
@@ -68,7 +68,7 @@ class questionnaire_settings_form extends moodleform {
 
         $mform->addElement('header', 'submithdr', get_string('submitoptions', 'questionnaire'));
 
-        $mform->addElement('text', 'thanks_page', get_string('url', 'questionnaire'), array('size'=>'60'));
+        $mform->addElement('text', 'thanks_page', get_string('url', 'questionnaire'), array('size' => '60'));
         $mform->setType('thanks_page', PARAM_TEXT);
         $mform->setDefault('thanks_page', $questionnaire->survey->thanks_page);
         $mform->addHelpButton('thanks_page', 'url', 'questionnaire');
@@ -76,16 +76,16 @@ class questionnaire_settings_form extends moodleform {
         $mform->addElement('static', 'confmes', get_string('confalts', 'questionnaire'));
         $mform->addHelpButton('confmes', 'confpage', 'questionnaire');
 
-        $mform->addElement('text', 'thank_head', get_string('headingtext', 'questionnaire'), array('size'=>'30'));
+        $mform->addElement('text', 'thank_head', get_string('headingtext', 'questionnaire'), array('size' => '30'));
         $mform->setType('thank_head', PARAM_TEXT);
         $mform->setDefault('thank_head', $questionnaire->survey->thank_head);
 
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext'=>true);
+        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true);
         $mform->addElement('editor', 'thank_body', get_string('bodytext', 'questionnaire'), null, $editoroptions);
         $mform->setType('thank_body', PARAM_RAW);
         $mform->setDefault('thank_body', $questionnaire->survey->thank_body);
 
-        $mform->addElement('text', 'email', get_string('email', 'questionnaire'), array('size'=>'75'));
+        $mform->addElement('text', 'email', get_string('email', 'questionnaire'), array('size' => '75'));
         $mform->setType('email', PARAM_TEXT);
         $mform->setDefault('email', $questionnaire->survey->email);
         $mform->addHelpButton('email', 'sendemail', 'questionnaire');
@@ -101,13 +101,12 @@ class questionnaire_settings_form extends moodleform {
         $mform->setType('owner', PARAM_RAW);
 
         // Buttons.
-        //$this->add_action_buttons();
 
         $submitlabel = get_string('savechangesanddisplay');
         $submit2label = get_string('savechangesandreturntocourse');
         $mform = $this->_form;
 
-        // elements in a row need a group
+        // Elements in a row need a group.
         $buttonarray = array();
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton2', $submit2label);
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton', $submitlabel);

@@ -45,17 +45,17 @@ define('QUESSECTIONTEXT', 100);
 
 GLOBAL $qtypenames;
 $qtypenames = array(
-        QUESYESNO =>        'yesno',
-        QUESTEXT =>         'text',
-        QUESESSAY    =>     'essay',
-        QUESRADIO =>        'radio',
-        QUESCHECK =>        'check',
-        QUESDROP =>         'drop',
-        QUESRATE =>         'rate',
-        QUESDATE =>         'date',
-        QUESNUMERIC =>      'numeric',
-        QUESPAGEBREAK =>    'pagebreak',
-        QUESSECTIONTEXT =>  'sectiontext'
+        QUESYESNO => 'yesno',
+        QUESTEXT => 'text',
+        QUESESSAY => 'essay',
+        QUESRADIO => 'radio',
+        QUESCHECK => 'check',
+        QUESDROP => 'drop',
+        QUESRATE => 'rate',
+        QUESDATE => 'date',
+        QUESNUMERIC => 'numeric',
+        QUESPAGEBREAK => 'pagebreak',
+        QUESSECTIONTEXT => 'sectiontext'
         );
 GLOBAL $idcounter, $CFG;
 $idcounter = 0;
@@ -260,7 +260,7 @@ class questionnaire_question {
             return false;
         }
         // Now use ISO date formatting.
-        $checkdateresult = questionnaire_check_date($thisdate, $insert=true);
+        $checkdateresult = questionnaire_check_date($thisdate, $insert = true);
         $record = new Object();
         $record->response_id = $rid;
         $record->question_id = $this->id;
@@ -292,7 +292,7 @@ class questionnaire_question {
             }
         }
         if (preg_match("/other_q([0-9]+)/", (isset($val)?$val:''), $regs)) {
-            $cid=$regs[1];
+            $cid = $regs[1];
             $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
             if (!isset($other)) {
                 break; // Out of the case.
@@ -515,7 +515,7 @@ class questionnaire_question {
         if ($recs = $DB->get_records_sql($sql, array($this->id))) {
             $i = 1;
             foreach ($recs as $rec) {
-                $rows['other'.$i]= new stdClass();
+                $rows['other'.$i] = new stdClass();
                 $rows['other'.$i]->content = $rec->content;
                 $rows['other'.$i]->response = $rec->response;
                 $i++;
@@ -543,7 +543,7 @@ class questionnaire_question {
             $ridstr = ' AND response_id = '.$rids.' ';
         }
 
-        if ($this->type_id  == QUESRATE) {
+        if ($this->type_id == QUESRATE) {
             // JR there can't be an !other field in rating questions ???
             $rankvalue = array();
             $select = 'question_id='.$this->id.' AND content NOT LIKE \'!other%\' ORDER BY id ASC';
@@ -664,7 +664,7 @@ class questionnaire_question {
                 }
                 $this->counts[$this->choice] = $count;
             }
-            $this->mkrespercent(count($rids), $this->precise, $prtotal, $sort='');
+            $this->mkrespercent(count($rids), $this->precise, $prtotal, $sort = '');
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
@@ -857,7 +857,7 @@ class questionnaire_question {
             $nonumbering = true;
         }
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
-        if ( ($pagetype ==  'mod-questionnaire-myreport' || $pagetype ==  'mod-questionnaire-report')
+        if ( ($pagetype == 'mod-questionnaire-myreport' || $pagetype == 'mod-questionnaire-report')
                         && $nonumbering == false
                         && $formdata
                         && $this->dependquestion != 0 && !array_key_exists('q'.$this->id, $formdata)) {
@@ -1020,7 +1020,7 @@ class questionnaire_question {
         }
         // CONTRIB-846.
         if ($this->required == 'n') {
-            $id='';
+            $id = '';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="'.$id.'"';
             if (!$ischecked && !$blankquestionnaire) {
@@ -1178,7 +1178,7 @@ class questionnaire_question {
 
         // CONTRIB-846.
         if ($this->required == 'n') {
-            $id='';
+            $id = '';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             if ($horizontal) {
                 $output .= ' <span style="white-space:nowrap;">';
@@ -1331,7 +1331,7 @@ class questionnaire_question {
             }
             $dependdrop = "dependdrop('$qdropid', '$descendants')";
             echo html_writer::select($options, $qdropid, (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:''),
-                            array(''=>'choosedots'), array('id' => $qdropid, 'onchange' => $dependdrop));
+                            array('' => 'choosedots'), array('id' => $qdropid, 'onchange' => $dependdrop));
             // End dependents.
         } else {
             foreach ($this->choices as $key => $choice) {
@@ -1342,7 +1342,7 @@ class questionnaire_question {
             }
             echo html_writer::select($options, 'q'.$this->id,
                 (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:''),
-                array(''=>'choosedots'), array('id' => $this->type . $this->id));
+                array('' => 'choosedots'), array('id' => $this->type . $this->id));
         }
     }
 
@@ -1420,7 +1420,7 @@ class questionnaire_question {
             if (isset($n[$j])) {
                 $str = $n[$j];
             } else {
-                $str = $j+1;
+                $str = $j + 1;
             }
             echo '<td style="width:'.$colwidth.'; text-align:center;" >'.$str.'</td>';
         }
@@ -1443,7 +1443,7 @@ class questionnaire_question {
             }
             $num += (($na != '') && isset($data->$str) && ($data->$str == -1));
         }
-        if ( ($num != $nbchoices) && ($num!=0) ) {
+        if ( ($num != $nbchoices) && ($num != 0) ) {
             questionnaire_notify(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
         }
         foreach ($this->choices as $cid => $choice) {
@@ -1459,7 +1459,7 @@ class questionnaire_question {
                 for ($j = 0; $j < $this->length; $j++) {
                     $checked = ((isset($data->$str) && ($j == $data->$str)) ? ' checked="checked"' : '');
                     echo '<td style="text-align:center" class="'.$bg.'">';
-                    $i = $j+1;
+                    $i = $j + 1;
                     echo html_writer::tag('span', get_string('option', 'questionnaire', $i),
                         array('class' => 'accesshide'));
                     echo '<input name="'.$str.'" type="radio" value="'.$j .'"'.$checked.$order.' /></td>';
@@ -1543,7 +1543,8 @@ class questionnaire_question {
             }
         }
 
-        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'" maxlength="'.$this->length.
+        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.
+                $this->length.'" name="q'.$this->id.'" maxlength="'.$this->length.
              '" value="'.(isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').
             '" id="' . $this->type . $this->id . '" />';
     }
@@ -1760,7 +1761,7 @@ class questionnaire_question {
             if (isset($n[$j])) {
                 $str = $n[$j];
             } else {
-                $str = $j+1;
+                $str = $j + 1;
             }
             echo '<td style="width:'.$colwidth.'; text-align:center" class="'.$bg.'">'.$str.'</td>';
             if ($bg == 'c0') {
@@ -1862,9 +1863,9 @@ class questionnaire_question {
     private function mkrespercent($total, $precision, $showtotals, $sort) {
         global $CFG, $OUTPUT;
         $precision = 0;
-        $i=0;
+        $i = 0;
         $alt = '';
-        $bg='';
+        $bg = '';
         $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
         $strtotal = get_string('total', 'questionnaire');
         $table = new html_table();
@@ -1895,8 +1896,8 @@ class questionnaire_question {
             }
             reset ($this->counts);
             while (list($content, $num) = each($this->counts)) {
-                if ($num>0) {
-                    $percent = $num/$numresponses*100.0;
+                if ($num > 0) {
+                    $percent = $num / $numresponses * 100.0;
                 } else {
                     $percent = 0;
                 }
@@ -1905,7 +1906,7 @@ class questionnaire_question {
                 }
                 if ($num) {
                     $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'hbar_l.gif" />'.
-                               '<img style="height:9px; width:'.($percent*1.4).'px;" alt="'.$alt.'" src="'.
+                               '<img style="height:9px; width:'.($percent * 1.4).'px;" alt = "'.$alt.'" src = "'.
                                $imageurl.'hbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'hbar_r.gif" />'.
                                sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 } else {
@@ -1920,8 +1921,8 @@ class questionnaire_question {
             } // End while.
 
             if ($showtotals) {
-                if ($i>0) {
-                    $percent = $i/$total*100.0;
+                if ($i > 0) {
+                    $percent = $i / $total * 100.0;
                 } else {
                     $percent = 0;
                 }
@@ -1930,7 +1931,7 @@ class questionnaire_question {
                 }
 
                 $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'thbar_l.gif" />'.
-                                '<img style="height:9px;  width:'.($percent*1.4).'px;" alt="'.$alt.'" src="'.
+                                '<img style="height:9px;  width:'.($percent * 1.4).'px;" alt = "'.$alt.'" src = "'.
                                 $imageurl.'thbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'thbar_r.gif" />'.
                                 sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 $table->data[] = 'hr';
@@ -2074,7 +2075,7 @@ class questionnaire_question {
             }
             $table->data[] = 'hr';
             $table->data[] = array($strtotal , $sum);
-            $avg = $sum/$nbresponses;
+            $avg = $sum / $nbresponses;
                $table->data[] = array($straverage , sprintf('%.'.$precision.'f', $avg));
         } else {
             $table->data[] = array('', $strnoresponsedata);
@@ -2150,7 +2151,7 @@ class questionnaire_question {
             if (isset($n[$j])) {
                 $str = $n[$j];
             } else {
-                $str = $j+1;
+                $str = $j + 1;
             }
         }
         $out = '<table style="width:100%" cellpadding="2" cellspacing="0" border="1"><tr>';
@@ -2297,7 +2298,7 @@ class questionnaire_question {
             foreach ($choices as $choice) {
                 if ($choice->choiceid == $choiceid) {
                     $n = 0;
-                    for ($i=0; $i<$nbranks; $i++) {
+                    for ($i = 0; $i < $nbranks; $i++) {
                         if ($choice->rank == $i) {
                             $n++;
                             if (!isset($ranks[$choice->content][$i])) {
@@ -2328,7 +2329,7 @@ class questionnaire_question {
         } else {
             $na = '';
         }
-        $colspan = $length + 1 + ($na !='') + $osgood;
+        $colspan = $length + 1 + ($na != '') + $osgood;
         $nameddegrees = 0;
         $n = array();
         $mods = array();
@@ -2358,7 +2359,7 @@ class questionnaire_question {
             if (isset($n[$j])) {
                 $str = $n[$j];
             } else {
-                $str = $j+1;
+                $str = $j + 1;
             }
             array_push($headings, $str);
             array_push($align, 'center');
@@ -2410,7 +2411,7 @@ class questionnaire_question {
                     $percent = '';
                     if (isset($rank[$i])) {
                         $str = $rank[$i];
-                        if ($total !== 0 && $str !==0) {
+                        if ($total !== 0 && $str !== 0) {
                             $percent = ' (<span class="percent">'.number_format(($str * 100) / $total).'%</span>)';
                         }
                         // Emphasize responses with max rank value.

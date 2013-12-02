@@ -314,7 +314,8 @@ switch ($action) {
             if (empty($resps)) {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
             } else {
-                $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='.$instance.'&amp;byresponse=1';
+                $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='
+                                .$instance.'&amp;byresponse=1';
             }
             redirect($redirection);
         } else {
@@ -546,7 +547,7 @@ switch ($action) {
         echo $strsort;
         echo $OUTPUT->help_icon('orderresponses', 'questionnaire');
 
-        $ret = $questionnaire->survey_results(1, 1, '', '', '', $uid=false, $currentgroupid, $sort);
+        $ret = $questionnaire->survey_results(1, 1, '', '', '', $uid = false, $currentgroupid, $sort);
         echo '</div>';
 
         // Finish the page.

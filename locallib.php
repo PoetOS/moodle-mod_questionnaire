@@ -45,7 +45,7 @@ define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED', 1);
 define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED', 2);
 define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS', 3);
 
-define('QUESTIONNAIRE_MAX_EVENT_LENGTH', 5*24*60*60);   // 5 days maximum.
+define('QUESTIONNAIRE_MAX_EVENT_LENGTH', 5 * 24 * 60 * 60);   // 5 days maximum.
 
 define('QUESTIONNAIRE_DEFAULT_PAGE_COUNT', 20);
 
@@ -232,7 +232,7 @@ function questionnaire_choice_values($content) {
     // DEV JR from version 2.5, a double colon :: must be used here instead of the equal sign.
     if ($pos = strpos($content, '::')) {
         $contents->text = substr($content, $pos + 2);
-        $contents->modname =substr($content, 0, $pos);
+        $contents->modname = substr($content, 0, $pos);
     }
     return $contents;
 }
@@ -514,7 +514,7 @@ function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='
                 }
                 $link = new moodle_url("/mod/questionnaire/preview.php?{$args}");
                 $action = new popup_action('click', $link);
-                $label = $OUTPUT->action_link($link, $survey->qname, $action, array('title'=>$survey->title));
+                $label = $OUTPUT->action_link($link, $survey->qname, $action, array('title' => $survey->title));
                 $surveylist[$type.'-'.$survey->id] = $label;
             }
         }
@@ -561,7 +561,7 @@ function questionnaire_get_type ($id) {
 function questionnaire_set_events($questionnaire) {
     // Adding the questionnaire to the eventtable.
     global $DB;
-    if ($events = $DB->get_records('event', array('modulename'=>'questionnaire', 'instance'=>$questionnaire->id))) {
+    if ($events = $DB->get_records('event', array('modulename' => 'questionnaire', 'instance' => $questionnaire->id))) {
         foreach ($events as $event) {
             delete_event($event->id);
         }
@@ -640,7 +640,7 @@ function questionnaire_get_incomplete_users($cm, $sid,
     $allusers = array_keys($allusers);
 
     // Nnow get all completed questionnaires.
-    $params = array('survey_id'=>$sid, 'complete'=>'y');
+    $params = array('survey_id' => $sid, 'complete' => 'y');
     $sql = "SELECT username FROM {questionnaire_response} "
                     . "WHERE survey_id = $sid AND complete = 'y' "
     . "GROUP BY username ";
@@ -684,7 +684,7 @@ function questionnaire_get_editor_options($context) {
                     'maxfiles' => -1,
                     'context' => $context,
                     'noclean' => 0,
-                    'trusttext'=>0
+                    'trusttext' => 0
     );
 }
 
@@ -754,14 +754,14 @@ function questionnaire_get_parent ($question) {
     $qid = $question->id;
     $parent = array();
     $dependquestion = $DB->get_record('questionnaire_question', array('id' => $question->dependquestion),
-                    $fields='id,position,name,type_id');
+                    $fields = 'id, position, name, type_id');
     if (is_object($dependquestion)) {
         $qdependchoice = '';
         switch ($dependquestion->type_id) {
             case QUESRADIO:
             case QUESDROP:
                 $dependchoice = $DB->get_record('questionnaire_quest_choice', array('id' => $question->dependchoice),
-                    $fields='id,content');
+                    $fields = 'id, content');
                 $qdependchoice = $dependchoice->id;
                 $dependchoice = $dependchoice->content;
 
@@ -861,7 +861,7 @@ function questionnaire_check_page_breaks($questionnaire) {
     }
     $count = count($positions);
 
-    for ($i=$count; $i > 0; $i--) {
+    for ($i = $count; $i > 0; $i--) {
         $qu = $positions[$i];
         $questionnb = $i;
         if ($qu['type_id'] == QUESPAGEBREAK) {
@@ -870,7 +870,7 @@ function questionnaire_check_page_breaks($questionnaire) {
             $prevqu = null;
             $prevtypeid = null;
             if ($i > 1) {
-                $prevqu = $positions[$i-1];
+                $prevqu = $positions[$i - 1];
                 $prevtypeid = $prevqu['type_id'];
             }
             // If $i == $count then remove that extra page break in last position.
@@ -885,7 +885,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                                 $questions[$qid]->position;
                 if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
                     foreach ($records as $record) {
-                        $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
+                        $DB->set_field('questionnaire_question', 'position', $record->position - 1, array('id' => $record->id));
                     }
                 }
             }
@@ -893,7 +893,7 @@ function questionnaire_check_page_breaks($questionnaire) {
         // Add pagebreak between question child and not dependent question that follows.
         if ($qu['type_id'] != QUESPAGEBREAK) {
             $qname = $positions[$i]['qname'];
-            $j = $i-1;
+            $j = $i - 1;
             if ($j != 0) {
                 $prevtypeid = $positions[$j]['type_id'];
                 $prevdependquestion = $positions[$j]['dependquestion'];

@@ -54,8 +54,8 @@ if (!$questionnaires = get_all_instances_in_course("questionnaire", $course)) {
 // Check if we need the closing date header.
 $showclosingheader = false;
 foreach ($questionnaires as $questionnaire) {
-    if ($questionnaire->closedate!=0) {
-        $showclosingheader=true;
+    if ($questionnaire->closedate != 0) {
+        $showclosingheader = true;
     }
     if ($showclosingheader) {
         break;
@@ -126,7 +126,7 @@ foreach ($questionnaires as $questionnaire) {
 
         if ($showing == 'responses') {
             $status = '';
-            if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete=false)) {
+            if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete = false)) {
                 foreach ($responses as $response) {
                     if ($response->complete == 'y') {
                         $status .= get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';

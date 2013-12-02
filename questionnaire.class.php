@@ -163,7 +163,7 @@ class questionnaire {
             .get_string('noteligible', 'questionnaire')
             .'</div>';
         } else if ($this->user_can_take($USER->id)) {
-            $sid=$this->sid;
+            $sid = $this->sid;
             $quser = $USER->id;
 
             if ($this->survey->realm == 'template') {
@@ -548,7 +548,7 @@ class questionnaire {
 
         if (!empty($formdata->resume) && ($this->resume)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume=true);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume = true);
             $this->response_goto_saved($action);
             return;
         }
@@ -694,8 +694,8 @@ class questionnaire {
         // Find out what question number we are on $i New fix for question numbering.
         $i = 0;
         if ($section > 1) {
-            for ($j = 2; $j<=$section; $j++) {
-                foreach ($this->questionsbysec[$j-1] as $question) {
+            for ($j = 2; $j <= $section; $j++) {
+                foreach ($this->questionsbysec[$j - 1] as $question) {
                     if ($question->type_id < QUESPAGEBREAK) {
                         $i++;
                     }
@@ -711,7 +711,7 @@ class questionnaire {
             if ($question->type_id != QUESSECTIONTEXT) {
                 $i++;
             }
-            $question->survey_display($formdata, $descendantsdata='', $i, $this->usehtmleditor);
+            $question->survey_display($formdata, $descendantsdata = '', $i, $this->usehtmleditor);
             // Bug MDL-7292 - Don't count section text as a question number.
             // Process each question.
         }
@@ -744,9 +744,9 @@ class questionnaire {
                             } else {
                                 $groupname = ' ('.get_string('groups').': ';
                                 foreach ($groups as $group) {
-                                    $groupname.= $group->name.', ';
+                                    $groupname .= $group->name.', ';
                                 }
-                                $groupname = substr($groupname, 0, strlen($groupname) -2).')';
+                                $groupname = substr($groupname, 0, strlen($groupname) - 2).')';
                             }
                         } else {
                             $groupname = ' ('.get_string('groupnonmembers').')';
@@ -797,12 +797,12 @@ class questionnaire {
             $title = get_string('printblanktooltip', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
             $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                    'height' => 600, 'width' => 800, 'title'=>$title);
+                    'height' => 600, 'width' => 800, 'title' => $title);
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
             $class = "floatprinticon";
-            echo $OUTPUT->action_link($link, $linkname, $action, array('class'=>$class, 'title'=>$title));
+            echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title));
         }
         if ($section == 1) {
             if ($this->survey->subtitle) {
@@ -870,8 +870,8 @@ class questionnaire {
 
         // Find out what question number we are on $i.
         $i = 1;
-        for ($j = 2; $j<=$section; $j++) {
-            $i += count($this->questionsbysec[$j-1]);
+        for ($j = 2; $j <= $section; $j++) {
+            $i += count($this->questionsbysec[$j - 1]);
         }
 
         $action = $CFG->wwwroot.'/mod/questionnaire/preview.php?id='.$this->cm->id;
@@ -900,7 +900,7 @@ class questionnaire {
 
         echo $OUTPUT->box_start();
 
-        $this->print_survey_start($message, $section = 1, 1, $hasrequired, $rid='');
+        $this->print_survey_start($message, $section = 1, 1, $hasrequired, $rid = '');
 
         $descendantsandchoices = array();
 
@@ -930,7 +930,7 @@ class questionnaire {
                     }
                 }
 
-                $question->survey_display($formdata, $descendantsdata, $i++, $usehtmleditor=null, $blankquestionnaire, $referer);
+                $question->survey_display($formdata, $descendantsdata, $i++, $usehtmleditor = null, $blankquestionnaire, $referer);
             }
         }
         // End of questions.
@@ -1022,13 +1022,13 @@ class questionnaire {
         unset($survey->id);
         $survey->owner = $owner;
         // Make sure that the survey name is not larger than the field size (CONTRIB-2999). Leave room for extra chars.
-        $survey->name = textlib::substr($survey->name, 0, (64-10));
+        $survey->name = textlib::substr($survey->name, 0, (64 - 10));
 
         $survey->name .= '_copy';
         $survey->status = 0;
 
         // Check for 'name' conflict, and resolve.
-        $i=0;
+        $i = 0;
         $name = $survey->name;
         while ($DB->count_records('questionnaire_survey', array('name' => $name)) > 0) {
             $name = $survey->name.(++$i);
@@ -1043,7 +1043,7 @@ class questionnaire {
         }
 
         // Make copies of all the questions.
-        $pos=1;
+        $pos = 1;
         // Skip logic: some changes needed here for dependencies down below.
         $qidarray = array();
         $cidarray = array();
@@ -1096,9 +1096,9 @@ class questionnaire {
         if ($records = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid, has_choices')) {
             foreach ($records as $record) {
                 if ($record->has_choices == 'y') {
-                    $haschoices[$record->typeid]=1;
+                    $haschoices[$record->typeid] = 1;
                 } else {
-                    $haschoices[$record->typeid]=0;
+                    $haschoices[$record->typeid] = 0;
                 }
             }
         } else {
@@ -1124,9 +1124,9 @@ class questionnaire {
         $wrongformat = 0;
         $strwrongformat = ''; // Wrongly formatted questions (Numeric, 5:Check Boxes, Date).
         $i = 1;
-        for ($j = 2; $j<=$section; $j++) {
+        for ($j = 2; $j <= $section; $j++) {
             // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED.
-            foreach ($this->questionsbysec[$j-1] as $sectionrecord) {
+            foreach ($this->questionsbysec[$j - 1] as $sectionrecord) {
                 $tid = $sectionrecord->type_id;
                 if ($tid < QUESPAGEBREAK) {
                     $i++;
@@ -1292,7 +1292,7 @@ class questionnaire {
                     if ($isrestricted) {
                         $nbchoices = min ($nbchoices, $question->length);
                     }
-                    if ( $num != $nbchoices && $num!=0 ) {
+                    if ( $num != $nbchoices && $num != 0 ) {
                         $wrongformat++;
                         $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
                     }
@@ -1326,7 +1326,7 @@ class questionnaire {
                 break;
             }
         }
-        $message ='';
+        $message = '';
         $nonumbering = false;
         $autonum = $this->autonum;
         // If no questions autonumbering do not display missing question(s) number(s).
@@ -1591,7 +1591,7 @@ class questionnaire {
         if (empty($email)) {
             return(false);
         }
-        $answers = $this->generate_csv($rid, $userid='', null, 1, $groupid=0);
+        $answers = $this->generate_csv($rid, $userid = '', null, 1, $groupid = 0);
 
         // Line endings for html and plaintext emails.
         $endhtml = "\r\n<br>";
@@ -1631,7 +1631,7 @@ class questionnaire {
         }
 
         // Use plaintext version for altbody.
-        $altbody =  "\n$bodyplaintext\n";
+        $altbody = "\n$bodyplaintext\n";
 
         $return = true;
         $mailaddresses = preg_split('/,|;/', $email);
@@ -1842,7 +1842,7 @@ class questionnaire {
                             $newrow2[] = '['.get_string('other', 'questionnaire').']';
                             $newrow2[] = $selected;
                             $tmp2 = $qid2.'_other';
-                            $values["$tmp2"]=$newrow2;
+                            $values["$tmp2"] = $newrow2;
                         }
                         $newrow[] = $question->pos;
                         $newrow[] = $type1;
@@ -1850,7 +1850,7 @@ class questionnaire {
                         $newrow[] = $c2;
                         $newrow[] = $selected;
                         $tmp = $qid2.'_'.$cid2;
-                        $values["$tmp"]=$newrow;
+                        $values["$tmp"] = $newrow;
                     }
                 }
             }
@@ -1884,14 +1884,14 @@ class questionnaire {
                         continue;
                     }
                     if ($tmp != null) {
-                        $values["$tmp"]=$arr;
+                        $values["$tmp"] = $arr;
                     }
                     $tmp = $qid;
                     $arr = array($newrow);
                 }
             }
             if ($tmp != null) {
-                $values["$tmp"]=$arr;
+                $values["$tmp"] = $arr;
             }
             unset($arr);
             unset($tmp);
@@ -2002,7 +2002,7 @@ class questionnaire {
                         $newrow[] = $val;
                     }
                 }
-                $values["$qid"]=$newrow;
+                $values["$qid"] = $newrow;
                 $val = array_pop($values["$qid"]);
                 array_push($values["$qid"], $val, $val);
             }
@@ -2031,7 +2031,7 @@ class questionnaire {
                         }
                     }
                 }
-                $values["$qid"]=$newrow;
+                $values["$qid"] = $newrow;
                 $val = array_pop($values["$qid"]);
                 array_push($values["$qid"], '', '', $val);
             }
@@ -2075,7 +2075,7 @@ class questionnaire {
         if (empty($thankhead)) {
             $thankhead = get_string('thank_head', 'questionnaire');
         }
-        $message =  '<h3>'.$thankhead.'</h3>'.format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
+        $message = '<h3>'.$thankhead.'</h3>'.format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
                         $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML);
         echo ($message);
         if ($this->capabilities->readownresponses) {
@@ -2091,7 +2091,7 @@ class questionnaire {
 
     private function response_goto_saved($url) {
         global $CFG;
-        $resumesurvey =  get_string('resumesurvey', 'questionnaire');
+        $resumesurvey = get_string('resumesurvey', 'questionnaire');
         $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>'.$resumesurvey.'</strong>');
 
         echo '
@@ -2106,7 +2106,7 @@ class questionnaire {
 
     public function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
         global $CFG, $DB, $OUTPUT;
-        $selectgroupid ='';
+        $selectgroupid = '';
         $gmuserid = ', GM.userid ';
         $groupmembers = ', '.$CFG->prefix.'groups_members GM ';
         switch ($currentgroupid) {
@@ -2209,12 +2209,12 @@ class questionnaire {
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid='.$currrid.
             '&amp;courseid='.$this->course->id.'&amp;sec=1';
             $title = get_string('printtooltip', 'questionnaire');
-            $options= array('menubar' => true, 'location' => false, 'scrollbars' => true,
+            $options = array('menubar' => true, 'location' => false, 'scrollbars' => true,
                             'resizable' => true, 'height' => 600, 'width' => 800);
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
-            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title'=>$title));
+            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title));
             echo '&nbsp;|&nbsp;'.$actionlink;
 
             echo $OUTPUT->box_end();
@@ -2248,9 +2248,9 @@ class questionnaire {
                 $entries = $entries - $colnumber;
             }
             // Prepare output.
-            for ($i=0; $i<$colnumber; $i++) {
+            for ($i = 0; $i < $colnumber; $i++) {
                 $str .= '<div id="respondentscolumn">'."\n";
-                for ($j=0; $j<$lines; $j++) {
+                for ($j = 0; $j < $lines; $j++) {
                     $str .= $linkarr[$a].'<br />'."\n";
                     $a++;
                 }
@@ -2374,8 +2374,8 @@ class questionnaire {
             return($errmsg);
         }
         foreach ($types as $type) {
-            $haschoices[$type->typeid]=$type->has_choices; // TODO is that variable actually used?
-            $responsetable[$type->typeid]=$type->response_table;
+            $haschoices[$type->typeid] = $type->has_choices; // TODO is that variable actually used?
+            $responsetable[$type->typeid] = $type->response_table;
         }
 
         // Load survey title (and other globals).
@@ -2749,9 +2749,9 @@ class questionnaire {
                     if ($uid) {
                         if ($groups = groups_get_all_groups($courseid, $uid)) {
                             foreach ($groups as $group) {
-                                $groupname.= $group->name.', ';
+                                $groupname .= $group->name.', ';
                             }
-                            $groupname = substr($groupname, 0, strlen($groupname) -2);
+                            $groupname = substr($groupname, 0, strlen($groupname) - 2);
                         } else {
                             $groupname = ' ('.get_string('groupnonmembers').')';
                         }
@@ -2759,7 +2759,7 @@ class questionnaire {
                 }
             }
             if ($isanonymous) {
-                $fullname =  get_string('anonymous', 'questionnaire');
+                $fullname = get_string('anonymous', 'questionnaire');
                 $username = '';
                 $uid = '';
             }
@@ -2819,7 +2819,7 @@ class questionnaire {
         for ($i = $nbinfocols; $i < $nbrespcols; $i++) {
             $sep = '';
             $thisoutput = current($output[0][$i]);
-            $thiskey =  key($output[0][$i]);
+            $thiskey = key($output[0][$i]);
             // Case of unnamed rate single possible answer (full stop char is used for support).
             if (strstr($thisoutput, '->.')) {
                 $thisoutput = str_replace('->.', '', $thisoutput);
@@ -2860,7 +2860,7 @@ class questionnaire {
             return 0;
         }
 
-        $data = survey_generate_csv($rid='', $userid='', $currentgroupid='');
+        $data = survey_generate_csv($rid = '', $userid = '', $currentgroupid = '');
 
         foreach ($data as $row) {
             fputs($fh, join(', ', $row) . "\n");

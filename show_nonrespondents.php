@@ -61,7 +61,7 @@ if ($id) {
 $questionnaire = new questionnaire($sid, $questionnaire, $course, $cm);
 $resume = $questionnaire->resume;
 $sid = $questionnaire->sid;
-$url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>$cm->id));
+$url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id' => $cm->id));
 
 $PAGE->set_url($url);
 
@@ -104,7 +104,7 @@ if ($action == 'sendmessage') {
 
     if (is_array($messageuser)) {
         foreach ($messageuser as $userid) {
-            $senduser = $DB->get_record('user', array('id'=>$userid));
+            $senduser = $DB->get_record('user', array('id' => $userid));
             $eventdata = new stdClass();
             $eventdata->name             = 'message';
             $eventdata->component        = 'mod_questionnaire';
@@ -123,7 +123,7 @@ if ($action == 'sendmessage') {
             $msg = $OUTPUT->heading(get_string('messagedselectedusersfailed'));
         }
 
-        $url = new moodle_url('/mod/questionnaire/view.php', array('id'=>$cm->id));
+        $url = new moodle_url('/mod/questionnaire/view.php', array('id' => $cm->id));
         redirect($url, $msg, 4);
         exit;
     }
@@ -142,7 +142,7 @@ require('tabs.php');
 // Print the users with no responses
 // Get the effective groupmode of this course and module.
 if (isset($cm->groupmode) && empty($course->groupmodeforce)) {
-    $groupmode =  $cm->groupmode;
+    $groupmode = $cm->groupmode;
 } else {
     $groupmode = $course->groupmode;
 }
@@ -152,7 +152,7 @@ $mygroupid = groups_get_activity_group($cm);
 
 // Preparing the table for output.
 $baseurl = new moodle_url('/mod/questionnaire/show_nonrespondents.php');
-$baseurl->params(array('id'=>$cm->id, 'showall'=>$showall));
+$baseurl->params(array('id' => $cm->id, 'showall' => $showall));
 
 $tablecolumns = array('userpic', 'fullname');
 
@@ -271,11 +271,11 @@ if (!$students) {
     if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
         echo '<form class="mform" action="show_nonrespondents.php" method="post" id="questionnaire_sendmessageform">';
         foreach ($students as $student) {
-            $user = $DB->get_record('user', array('id'=>$student));
+            $user = $DB->get_record('user', array('id' => $student));
             // Userpicture and link to the profilepage.
             $profileurl = $CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id;
             $profilelink = '<strong><a href="'.$profileurl.'">'.fullname($user).'</a></strong>';
-            $data = array ($OUTPUT->user_picture($user, array('courseid'=>$course->id)), $profilelink);
+            $data = array ($OUTPUT->user_picture($user, array('courseid' => $course->id)), $profilelink);
             if (in_array('email', $tablecolumns)) {
                 $data[] = $user->email;
             }
@@ -296,7 +296,8 @@ if (!$students) {
             // we use the alt attribute of the checkboxes to store the started/not started value!
             $checkboxaltvalue = '';
             if ($resume) {
-                if ($DB->get_record('questionnaire_response', array('survey_id'=>$sid, 'username'=>$student, 'complete'=>'n')) ) {
+                if ($DB->get_record('questionnaire_response', array('survey_id' => $sid,
+                                'username' => $student, 'complete' => 'n')) ) {
                     $data[] = get_string('started', 'questionnaire');
                     $checkboxaltvalue = 1;
                 } else {
@@ -385,7 +386,7 @@ if (!$students) {
         echo '</form>';
 
         // Include the needed js.
-        $module = array('name'=>'mod_questionnaire', 'fullpath'=>'/mod/questionnaire/module.js');
+        $module = array('name' => 'mod_questionnaire', 'fullpath' => '/mod/questionnaire/module.js');
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_sendmessage', null, false, $module);
     }
 }

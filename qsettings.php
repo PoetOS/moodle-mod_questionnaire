@@ -58,13 +58,13 @@ $sdata->id = $cm->id;
 
 $draftideditor = file_get_submitted_draft_itemid('info');
 $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'info',
-                $sdata->sid, array('subdirs'=>true), $questionnaire->survey->info);
-$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                $sdata->sid, array('subdirs' => true), $questionnaire->survey->info);
+$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
 
 $draftideditor = file_get_submitted_draft_itemid('thankbody');
 $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'thankbody',
-                $sdata->sid, array('subdirs'=>true), $questionnaire->survey->thank_body);
-$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                $sdata->sid, array('subdirs' => true), $questionnaire->survey->thank_body);
+$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
 
 $settingsform->set_data($sdata);
 
@@ -80,7 +80,7 @@ if ($settings = $settingsform->get_data()) {
     $sdata->infoformat = $settings->info['format'];
     $sdata->info       = $settings->info['text'];
     $sdata->info       = file_save_draft_area_files($sdata->infoitemid, $context->id, 'mod_questionnaire', 'info',
-                                                    $sdata->id, array('subdirs'=>true), $sdata->info);
+                                                    $sdata->id, array('subdirs' => true), $sdata->info);
 
     $sdata->theme = ''; // Deprecated theme field.
     $sdata->thanks_page = $settings->thanks_page;
@@ -90,7 +90,7 @@ if ($settings = $settingsform->get_data()) {
     $sdata->thankformat = $settings->thank_body['format'];
     $sdata->thank_body  = $settings->thank_body['text'];
     $sdata->thank_body  = file_save_draft_area_files($sdata->thankitemid, $context->id, 'mod_questionnaire', 'thankbody',
-                                                     $sdata->id, array('subdirs'=>true), $sdata->thank_body);
+                                                     $sdata->id, array('subdirs' => true), $sdata->thank_body);
 
     $sdata->email = $settings->email;
     $sdata->owner = $settings->owner;

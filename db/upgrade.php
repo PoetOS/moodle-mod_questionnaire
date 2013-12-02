@@ -389,13 +389,14 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Replace the = separator with :: separator in quest_choice content.
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-        $choices = $DB->get_records('questionnaire_quest_choice', $conditions=null);
+        $choices = $DB->get_records('questionnaire_quest_choice', $conditions = null);
         $total = count($choices);
         if ($total > 0) {
             $pbar = new progress_bar('convertchoicevalues', 500, true);
-            $i=1;
+            $i = 1;
             foreach ($choices as $choice) {
-                if (($choice->value == null || $choice->value == 'NULL') && !preg_match("/^([0-9]{1,3})=(.*)$/", $choice->content)) {
+                if (($choice->value == null || $choice->value == 'NULL') &&
+                                !preg_match("/^([0-9]{1,3})=(.*)$/", $choice->content)) {
                     $content = questionnaire_choice_values($choice->content);
                     if ($pos = strpos($content->text, '=')) {
                         $newcontent = str_replace('=', '::', $content->text);
