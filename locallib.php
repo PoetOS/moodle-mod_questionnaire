@@ -586,7 +586,6 @@ function questionnaire_set_events($questionnaire) {
     if ($questionnaire->closedate and $questionnaire->opendate and $event->timeduration <= QUESTIONNAIRE_MAX_EVENT_LENGTH) {
         // Single event for the whole questionnaire.
         $event->name = $questionnaire->name;
-        echo"+-+- 587<br>";
         calendar_event::create($event);
     } else {
         // Separate start and end events.
