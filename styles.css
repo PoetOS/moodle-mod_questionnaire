@@ -1,8 +1,9 @@
 /** Question editing **/
 
+/* !important is needed in moodle 2.6 to override the display block when window width is reduced. */
 #page-mod-questionnaire-questions .qcontainer .fitemtitle,
-#page-mod-questionnaire-questions #id_questionhdr .fitemtitle{
-    display: none;
+#page-mod-questionnaire-questions #id_questionhdr .fitemtitle {
+    display: none!important;
 }
 
 #page-mod-questionnaire-questions .qcontainer .qnums {
@@ -19,27 +20,16 @@
     margin-bottom: -10px;
 }
 
-#page-mod-questionnaire-questions .qcontainer .qcontent,
-#page-mod-questionnaire-report div.qcontainer div.qcontent {
-    margin-bottom:-1em;
-}
-
 #page-mod-questionnaire-questions .mform .fitem fieldset.felement {
     margin-left: 0%;
     padding-left: 1%;
-    margin-bottom: 0px;
-}
-
-#page-mod-questionnaire-questions .mform .fitem fieldset.felement {
-    margin-left: 0%;
-    padding-left: 1%;
-    margin-bottom: 0px;
+    margin-bottom: 0px!important;
 }
 
 #page-mod-questionnaire-questions .mform .fitem .fitemtitle {
     text-align: left;
     margin-left: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 0px!important;
 }
 
 #page-mod-questionnaire-questions .moving {
@@ -143,6 +133,18 @@ td.selected {
 #page-mod-questionnaire-complete td.raterow:hover,
 #page-mod-questionnaire-preview td.raterow:hover {
     border: 1px solid navy;
+}
+
+#page-mod-questionnaire-complete td.notanswered,
+#page-mod-questionnaire-preview td.notanswered {
+    /* border: none; */
+    background-color: #fafafa;;
+}
+
+#page-mod-questionnaire-complete td.notcompleted,
+#page-mod-questionnaire-preview td.notcompleted {
+    border: 2px solid red;
+    background-color: #fafafa;
 }
 
 #page-mod-questionnaire-complete .c1,
@@ -288,4 +290,48 @@ td.selected {
     color:black;
     display: inherit;
     margin-left: 10px;
+}
+
+#page-mod-questionnaire-fbsections .c0,
+#page-mod-questionnaire-fbsections .c1 {
+    border: 1px solid silver;
+    padding-left:4px;
+    padding-right: 4px;
+}
+
+#page-mod-questionnaire-fbsections .c0 {
+    background-color: #fafafa;
+}
+
+#page-mod-questionnaire-fbsections .c1 {
+    background-color: #eee;
+}
+
+#page-mod-questionnaire-fbsections input[type="radio"] {
+    margin-right: 0px;
+}
+
+#page-mod-questionnaire-fbsections .qn-legend {
+    padding-left: 8px;
+}
+
+#page-mod-questionnaire-fbsections .qcontainer.qcontent {
+    margin-bottom:-5em;
+}
+#page-mod-questionnaire-report div.chart {
+    overflow: auto;
+    margin-left: -40px;
+}
+
+#page-mod-questionnaire-report .generaltable.questionnairereport td {
+    border: 1px solid silver;
+}
+
+.qn-container .smalltext {font-size: 0.75em;}
+
+/* !important is needed in moodle 2.6 to override the display block when window width is reduced. */
+#page-mod-questionnaire-questions #region-main .mform .fitem .felement {
+    margin-bottom: 0px;
+    margin-left: 5px;
+    width: 97%;
 }

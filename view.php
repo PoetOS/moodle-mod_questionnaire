@@ -86,6 +86,12 @@ if ($questionnaire->intro) {
 
 echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
 
+$cm = $questionnaire->cm;
+$currentgroupid = groups_get_activity_group($cm);
+if (!groups_is_member($currentgroupid, $USER->id)) {
+    $currentgroupid = 0;
+}
+
 if (!$questionnaire->is_active()) {
     if ($questionnaire->capabilities->manage) {
         $msg = 'removenotinuse';
@@ -200,7 +206,7 @@ if ($groupmode == 1) {
 }
 
 $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
-    if (( (
+if (( (
             // Teacher or non-editing teacher (if can view all groups).
             $canviewallgroups ||
             // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
@@ -214,7 +220,7 @@ $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
                             && $usernumresp > 0)) &&
             $questionnaire->is_survey_owner()) {
     echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
-    $argstr = 'instance='.$questionnaire->id;
+    $argstr = 'instance='.$questionnaire->id.'&group='.$currentgroupid;
     echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
             $argstr).'">'.get_string('viewallresponses', 'questionnaire').'</a>';
     echo $OUTPUT->box_end();

@@ -37,7 +37,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('name', 'questionnaire'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('name', 'questionnaire'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
@@ -74,11 +74,11 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
-        $options = array('0'=>get_string('no'), '1'=>get_string('yes'));
+        $options = array('0' => get_string('no'), '1' => get_string('yes'));
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
 
-        $options = array('0'=>get_string('no'), '1'=>get_string('yes'));
+        $options = array('0' => get_string('no'), '1' => get_string('yes'));
         $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
         $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
 
@@ -89,7 +89,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         // Removed potential scales from list of grades. CONTRIB-3167.
         $grades[0] = get_string('nograde');
-        for ($i=100; $i>=1; $i--) {
+        for ($i = 100; $i >= 1; $i--) {
             $grades[$i] = $i;
         }
         $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);

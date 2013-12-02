@@ -29,75 +29,75 @@
  */
 
 function dependdrop(qId, children) {
-	var e = document.getElementById(qId);
-	var choice = e.options[e.selectedIndex].value;
-	depend (children, choice);
+    var e = document.getElementById(qId);
+    var choice = e.options[e.selectedIndex].value;
+    depend (children, choice);
 }
 
 function depend (children, choices) {
-	children = children.split(',');
-	choices = choices.split(',');
-	var childrenlength = children.length;
-	var choiceslength = choices.length;
+    children = children.split(',');
+    choices = choices.split(',');
+    var childrenlength = children.length;
+    var choiceslength = choices.length;
     child = null;
-	choice = null;
-	for (var i = 0; i < childrenlength; i++) {
-		child = children[i];
-		var q = document.getElementById(child);
-		if (q) {
-			var radios = q.getElementsByTagName('input');
-			var radiolength = radios.length;
- 			var droplists = q.getElementsByTagName('select');
-			var droplistlength = droplists.length;
+    choice = null;
+    for (var i = 0; i < childrenlength; i++) {
+        child = children[i];
+        var q = document.getElementById(child);
+        if (q) {
+            var radios = q.getElementsByTagName('input');
+            var radiolength = radios.length;
+             var droplists = q.getElementsByTagName('select');
+            var droplistlength = droplists.length;
             var textareas = q.getElementsByTagName('textarea');
-			var textarealength = textareas.length;
-			for (var k = 0; k < choiceslength; k++) {
-	            choice = choices[k];
-				if (child == choice) {
-					// If this browser version accepts classList.
-					if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
-						q.classList.add('qn-container');
+            var textarealength = textareas.length;
+            for (var k = 0; k < choiceslength; k++) {
+                choice = choices[k];
+                if (child == choice) {
+                    // If this browser version accepts classList.
+                    if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
+                        q.classList.add('qn-container');
                     // If this browser version DOES NOT accept classList (e.g. MSIE < 10)
-					} else {
-						addClass(q, 'qn-container');
-					}
-					for (var j = 0; j < radiolength; j++) {
-						radio = radios[j];
-						radio.disabled=false;
-					}
-					for (var m = 0; m < droplistlength; m++) {
-						droplist = droplists[m];
-						droplist.disabled=false;
-					}
-					delete children[i];
-				} else if (children[i]){
-					if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
-					    q.classList.remove('qn-container');
+                    } else {
+                        addClass(q, 'qn-container');
+                    }
+                    for (var j = 0; j < radiolength; j++) {
+                        radio = radios[j];
+                        radio.disabled = false;
+                    }
+                    for (var m = 0; m < droplistlength; m++) {
+                        droplist = droplists[m];
+                        droplist.disabled = false;
+                    }
+                    delete children[i];
+                } else if (children[i]){
+                    if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
+                        q.classList.remove('qn-container');
                         q.classList.add('hidedependquestion');
-					} else {
-						removeClass(q, 'qn-container');
-					}
+                    } else {
+                        removeClass(q, 'qn-container');
+                    }
                     addClass(q, 'hidedependquestion');
-					for (var j = 0; j < radiolength; j++) {
-						radio = radios[j];
-						radio.disabled=true;
-						radio.checked=false;
-						radio.value='';
-					}
-					for (var m = 0; m < droplistlength; m++) {
-						droplist = droplists[m];
+                    for (var j = 0; j < radiolength; j++) {
+                        radio = radios[j];
+                        radio.disabled = true;
+                        radio.checked = false;
+                        radio.value = '';
+                    }
+                    for (var m = 0; m < droplistlength; m++) {
+                        droplist = droplists[m];
                         droplist.selectedIndex = 0;
-						droplist.disabled=true;
-                        droplist.checked=false;
-					}
+                        droplist.disabled = true;
+                        droplist.checked = false;
+                    }
                     for (var n = 0; n < textarealength; n++) {
-						textarea = textareas[n];
+                        textarea = textareas[n];
                         textarea.value = '';
-					}
-				}
-			}
-		}
-	}
+                    }
+                }
+            }
+        }
+    }
 }
 // End conditional branching functions.
 
@@ -107,13 +107,14 @@ function depend (children, choices) {
  * */
 
 function addClass(el, aclass){
-    el.className += ' '+aclass;
+    el.className += ' ' + aclass;
 }
 
 function removeClass(el, aclass){
-    var elClass = ' '+el.className+' ';
-    while(elClass.indexOf(' '+aclass+' ') != -1)
-         elClass = elClass.replace(' '+aclass+' ', '');
+    var elClass = ' ' + el.className + ' ';
+    while(elClass.indexOf(' ' + aclass + ' ') != - 1) {
+         elClass = elClass.replace(' ' + aclass + ' ', '');
+    }
     el.className = elClass;
 }
 // End classList workaround.
@@ -123,9 +124,9 @@ function removeClass(el, aclass){
 function other_check(name) {
   other = name.split("_");
   var f = document.getElementById("phpesp_response");
-  for (var i=0; i<=f.elements.length; i++) {
-    if (f.elements[i].value == "other_"+other[1]) {
-      f.elements[i].checked=true;
+  for (var i = 0; i <= f.elements.length; i++) {
+    if (f.elements[i].value == "other_" + other[1]) {
+      f.elements[i].checked = true;
       break;
     }
   }
@@ -134,9 +135,9 @@ function other_check(name) {
 // Automatically empty an !other text input field if another Radio button is clicked.
 function other_check_empty(name, value) {
   var f = document.getElementById("phpesp_response");
-  for (var i=0; i<f.elements.length; i++) {
+  for (var i = 0; i < f.elements.length; i++) {
     if ((f.elements[i].name == name) && f.elements[i].value.substr(0,6) == "other_") {
-        f.elements[i].checked=true;
+        f.elements[i].checked = true;
         var otherid = f.elements[i].name + "_" + f.elements[i].value.substring(6);
         var other = document.getElementsByName (otherid);
         if (value.substr(0,6) != "other_") {
@@ -145,9 +146,9 @@ function other_check_empty(name, value) {
             other[0].focus();
         }
         var actualbuttons = document.getElementsByName (name);
-          for (var i=0; i<=actualbuttons.length; i++) {
+          for (var i = 0; i <= actualbuttons.length; i++) {
             if (actualbuttons[i].value == value) {
-                actualbuttons[i].checked=true;
+                actualbuttons[i].checked = true;
                 break;
             }
         }
@@ -161,7 +162,7 @@ function other_check_empty(name, value) {
 function other_rate_uncheck(name, value) {
     col_name = name.substr(0, name.indexOf("_"));
     var inputbuttons = document.getElementsByTagName("input");
-    for (var i=0; i<=inputbuttons.length - 1; i++) {
+    for (var i = 0; i <= inputbuttons.length - 1; i++) {
         button = inputbuttons[i];
         if (button.type == "radio" && button.name != name && button.value == value
                     && button.name.substr(0, name.indexOf("_")) == col_name) {
@@ -173,9 +174,9 @@ function other_rate_uncheck(name, value) {
 // Empty an !other text input when corresponding Check Box is clicked (supposedly to empty it).
 function checkbox_empty(name) {
     var actualbuttons = document.getElementsByName (name);
-    for (var i=0; i<=actualbuttons.length; i++) {
+    for (var i = 0; i <= actualbuttons.length; i++) {
         if (actualbuttons[i].value.substr(0,6) == "other_") {
-            name = name.substring(0,name.length-2) + actualbuttons[i].value.substring(5);
+            name = name.substring(0,name.length - 2) + actualbuttons[i].value.substring(5);
             var othertext = document.getElementsByName (name);
             if (othertext[0].value == "" && actualbuttons[i].checked == true) {
                 othertext[0].focus();
@@ -212,7 +213,7 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
             if (this.get('alt') == 0) {
                 this.set('checked', 'checked');
             } else {
-            	this.set('checked', '');
+                this.set('checked', '');
             }
         });
     }, '#checknotstarted');
@@ -222,7 +223,7 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
             if (this.get('alt') == 1) {
                 this.set('checked', 'checked');
             } else {
-            	this.set('checked', '');
+                this.set('checked', '');
             }
         });
     }, '#checkstarted');

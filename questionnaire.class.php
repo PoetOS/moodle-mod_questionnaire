@@ -161,7 +161,7 @@ class questionnaire {
             .get_string('noteligible', 'questionnaire')
             .'</div>';
         } else if ($this->user_can_take($USER->id)) {
-            $sid=$this->sid;
+            $sid = $this->sid;
             $quser = $USER->id;
 
             if ($this->survey->realm == 'template') {
@@ -247,7 +247,8 @@ class questionnaire {
     * Function to view an entire responses data.
     *
     */
-    public function view_response($rid, $blankquestionnaire=false) {
+    public function view_response($rid, $referer= '', $blankquestionnaire = false, $resps = '', $compare = false,
+                        $isgroupmember = false, $allresponses = false, $currentgroupid = 0) {
         global $OUTPUT;
 
         $this->print_survey_start('', 1, 1, 0, $rid, false);
@@ -255,6 +256,24 @@ class questionnaire {
         $data = new Object();
         $i = 0;
         $this->response_import_all($rid, $data);
+        if ($referer != 'print') {
+            $feedbackmessages = $this->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
+
+            if ($feedbackmessages) {
+                echo $OUTPUT->heading(get_string('feedbackreport', 'questionnaire'), 3);
+                foreach ($feedbackmessages as $msg) {
+                    echo $msg;
+                }
+            }
+
+            if ($this->survey->feedbacknotes) {
+                $text = file_rewrite_pluginfile_urls($this->survey->feedbacknotes, 'pluginfile.php',
+                                $this->context->id, 'mod_questionnaire', 'feedbacknotes', $this->survey->id);
+                echo $OUTPUT->box_start();
+                echo format_text($text, FORMAT_HTML);
+                echo $OUTPUT->box_end();
+            }
+        }
         foreach ($this->questions as $question) {
             if ($question->type_id < QUESPAGEBREAK) {
                 $i++;
@@ -546,7 +565,7 @@ class questionnaire {
 
         if (!empty($formdata->resume) && ($this->resume)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume=true);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume = true);
             $this->response_goto_saved($action);
             return;
         }
@@ -692,8 +711,8 @@ class questionnaire {
         // Find out what question number we are on $i New fix for question numbering.
         $i = 0;
         if ($section > 1) {
-            for ($j = 2; $j<=$section; $j++) {
-                foreach ($this->questionsbysec[$j-1] as $question) {
+            for ($j = 2; $j <= $section; $j++) {
+                foreach ($this->questionsbysec[$j - 1] as $question) {
                     if ($question->type_id < QUESPAGEBREAK) {
                         $i++;
                     }
@@ -706,7 +725,7 @@ class questionnaire {
             if ($question->type_id != QUESSECTIONTEXT) {
                 $i++;
             }
-            $question->survey_display($formdata, $descendantsdata='', $i, $this->usehtmleditor);
+            $question->survey_display($formdata, $descendantsdata = '', $i, $this->usehtmleditor);
             // Bug MDL-7292 - Don't count section text as a question number.
             // Process each question.
         }
@@ -739,9 +758,9 @@ class questionnaire {
                             } else {
                                 $groupname = ' ('.get_string('groups').': ';
                                 foreach ($groups as $group) {
-                                    $groupname.= $group->name.', ';
+                                    $groupname .= $group->name.', ';
                                 }
-                                $groupname = substr($groupname, 0, strlen($groupname) -2).')';
+                                $groupname = substr($groupname, 0, strlen($groupname) - 2).')';
                             }
                         } else {
                             $groupname = ' ('.get_string('groupnonmembers').')';
@@ -792,12 +811,12 @@ class questionnaire {
             $title = get_string('printblanktooltip', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
             $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                    'height' => 600, 'width' => 800, 'title'=>$title);
+                    'height' => 600, 'width' => 800, 'title' => $title);
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
             $class = "floatprinticon";
-            echo $OUTPUT->action_link($link, $linkname, $action, array('class'=>$class, 'title'=>$title));
+            echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title));
         }
         if ($section == 1) {
             if ($this->survey->subtitle) {
@@ -843,7 +862,7 @@ class questionnaire {
 
         if (!empty($rid)) {
             // If we're viewing a response, use this method.
-            $this->view_response($rid, $blankquestionnaire);
+            $this->view_response($rid, $referer, $blankquestionnaire);
             return;
         }
 
@@ -865,8 +884,8 @@ class questionnaire {
 
         // Find out what question number we are on $i.
         $i = 1;
-        for ($j = 2; $j<=$section; $j++) {
-            $i += count($this->questionsbysec[$j-1]);
+        for ($j = 2; $j <= $section; $j++) {
+            $i += count($this->questionsbysec[$j - 1]);
         }
 
         $action = $CFG->wwwroot.'/mod/questionnaire/preview.php?id='.$this->cm->id;
@@ -895,7 +914,7 @@ class questionnaire {
 
         echo $OUTPUT->box_start();
 
-        $this->print_survey_start($message, $section = 1, 1, $hasrequired, $rid='');
+        $this->print_survey_start($message, $section = 1, 1, $hasrequired, $rid = '');
 
         $descendantsandchoices = array();
 
@@ -925,7 +944,7 @@ class questionnaire {
                     }
                 }
 
-                $question->survey_display($formdata, $descendantsdata, $i++, $usehtmleditor=null, $blankquestionnaire, $referer);
+                $question->survey_display($formdata, $descendantsdata, $i++, $usehtmleditor = null, $blankquestionnaire, $referer);
             }
         }
         // End of questions.
@@ -951,7 +970,7 @@ class questionnaire {
         if (empty($this->survey->id)) {
             // Create a new survey in the database.
             $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page', 'thank_head',
-                            'thank_body', 'info');
+                            'thank_body', 'feedbacknotes', 'info', 'feedbacksections');
             // Theme field deprecated.
             $record = new Object();
             $record->id = 0;
@@ -976,9 +995,8 @@ class questionnaire {
                 return(false);
             }
 
-            $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page', 'thank_head',
-                            'thank_body', 'info');  // Theme field deprecated.
-
+            $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page',
+                    'thank_head', 'thank_body', 'feedbacknotes', 'info', 'feedbacksections');
             $name = $DB->get_field('questionnaire_survey', 'name', array('id' => $this->survey->id));
 
             // Trying to change survey name.
@@ -1017,13 +1035,13 @@ class questionnaire {
         unset($survey->id);
         $survey->owner = $owner;
         // Make sure that the survey name is not larger than the field size (CONTRIB-2999). Leave room for extra chars.
-        $survey->name = core_text::substr($survey->name, 0, (64-10));
+        $survey->name = core_text::substr($survey->name, 0, (64 - 10));
 
         $survey->name .= '_copy';
         $survey->status = 0;
 
         // Check for 'name' conflict, and resolve.
-        $i=0;
+        $i = 0;
         $name = $survey->name;
         while ($DB->count_records('questionnaire_survey', array('name' => $name)) > 0) {
             $name = $survey->name.(++$i);
@@ -1038,7 +1056,7 @@ class questionnaire {
         }
 
         // Make copies of all the questions.
-        $pos=1;
+        $pos = 1;
         // Skip logic: some changes needed here for dependencies down below.
         $qidarray = array();
         $cidarray = array();
@@ -1091,9 +1109,9 @@ class questionnaire {
         if ($records = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid, has_choices')) {
             foreach ($records as $record) {
                 if ($record->has_choices == 'y') {
-                    $haschoices[$record->typeid]=1;
+                    $haschoices[$record->typeid] = 1;
                 } else {
-                    $haschoices[$record->typeid]=0;
+                    $haschoices[$record->typeid] = 0;
                 }
             }
         } else {
@@ -1119,9 +1137,9 @@ class questionnaire {
         $wrongformat = 0;
         $strwrongformat = ''; // Wrongly formatted questions (Numeric, 5:Check Boxes, Date).
         $i = 1;
-        for ($j = 2; $j<=$section; $j++) {
+        for ($j = 2; $j <= $section; $j++) {
             // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED.
-            foreach ($this->questionsbysec[$j-1] as $sectionrecord) {
+            foreach ($this->questionsbysec[$j - 1] as $sectionrecord) {
                 $tid = $sectionrecord->type_id;
                 if ($tid < QUESPAGEBREAK) {
                     $i++;
@@ -1257,10 +1275,8 @@ class questionnaire {
                             if (isset($formdata->$str) && $formdata->$str == $na) {
                                 $formdata->$str = -1;
                             }
-                            for ($j = 0; $j < $question->length; $j++) {
-                                $num += (isset($formdata->$str) && ($j == $formdata->$str));
-                            }
-                            $num += (($question->precise) && isset($formdata->$str) && ($formdata->$str == -1));
+                            // If choice value == -999 this is a not yet answered choice.
+                            $num += (isset($formdata->$str) && ($formdata->$str != -999));
                         }
                         $nbchoices -= $nameddegrees;
                     }
@@ -1287,7 +1303,7 @@ class questionnaire {
                     if ($isrestricted) {
                         $nbchoices = min ($nbchoices, $question->length);
                     }
-                    if ( $num != $nbchoices && $num!=0 ) {
+                    if ( $num != $nbchoices && $num != 0 ) {
                         $wrongformat++;
                         $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
                     }
@@ -1321,7 +1337,7 @@ class questionnaire {
                 break;
             }
         }
-        $message ='';
+        $message = '';
         $nonumbering = false;
         $autonum = $this->autonum;
         // If no questions autonumbering do not display missing question(s) number(s).
@@ -1586,7 +1602,7 @@ class questionnaire {
         if (empty($email)) {
             return(false);
         }
-        $answers = $this->generate_csv($rid, $userid='', null, 1, $groupid=0);
+        $answers = $this->generate_csv($rid, $userid = '', null, 1, $groupid = 0);
 
         // Line endings for html and plaintext emails.
         $endhtml = "\r\n<br>";
@@ -1626,7 +1642,7 @@ class questionnaire {
         }
 
         // Use plaintext version for altbody.
-        $altbody =  "\n$bodyplaintext\n";
+        $altbody = "\n$bodyplaintext\n";
 
         $return = true;
         $mailaddresses = preg_split('/,|;/', $email);
@@ -1837,7 +1853,7 @@ class questionnaire {
                             $newrow2[] = '['.get_string('other', 'questionnaire').']';
                             $newrow2[] = $selected;
                             $tmp2 = $qid2.'_other';
-                            $values["$tmp2"]=$newrow2;
+                            $values["$tmp2"] = $newrow2;
                         }
                         $newrow[] = $question->pos;
                         $newrow[] = $type1;
@@ -1845,7 +1861,7 @@ class questionnaire {
                         $newrow[] = $c2;
                         $newrow[] = $selected;
                         $tmp = $qid2.'_'.$cid2;
-                        $values["$tmp"]=$newrow;
+                        $values["$tmp"] = $newrow;
                     }
                 }
             }
@@ -1879,14 +1895,14 @@ class questionnaire {
                         continue;
                     }
                     if ($tmp != null) {
-                        $values["$tmp"]=$arr;
+                        $values["$tmp"] = $arr;
                     }
                     $tmp = $qid;
                     $arr = array($newrow);
                 }
             }
             if ($tmp != null) {
-                $values["$tmp"]=$arr;
+                $values["$tmp"] = $arr;
             }
             unset($arr);
             unset($tmp);
@@ -1997,7 +2013,7 @@ class questionnaire {
                         $newrow[] = $val;
                     }
                 }
-                $values["$qid"]=$newrow;
+                $values["$qid"] = $newrow;
                 $val = array_pop($values["$qid"]);
                 array_push($values["$qid"], $val, $val);
             }
@@ -2026,7 +2042,7 @@ class questionnaire {
                         }
                     }
                 }
-                $values["$qid"]=$newrow;
+                $values["$qid"] = $newrow;
                 $val = array_pop($values["$qid"]);
                 array_push($values["$qid"], '', '', $val);
             }
@@ -2070,9 +2086,16 @@ class questionnaire {
         if (empty($thankhead)) {
             $thankhead = get_string('thank_head', 'questionnaire');
         }
-        $message =  '<h3>'.$thankhead.'</h3>'.format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
+        $message = '<h3>'.$thankhead.'</h3>'.format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
                         $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML);
         echo ($message);
+        // Default set currentgroup to view all participants.
+        // TODO why not set to current respondent's groupid (if any)?
+        $currentgroupid = 0;
+        $currentgroupid = groups_get_activity_group($this->cm);
+        if (!groups_is_member($currentgroupid, $USER->id)) {
+            $currentgroupid = 0;
+        }
         if ($this->capabilities->readownresponses) {
             echo('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
             $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'&byresponse=0&action=vresp">'.
@@ -2086,7 +2109,7 @@ class questionnaire {
 
     private function response_goto_saved($url) {
         global $CFG;
-        $resumesurvey =  get_string('resumesurvey', 'questionnaire');
+        $resumesurvey = get_string('resumesurvey', 'questionnaire');
         $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>'.$resumesurvey.'</strong>');
 
         echo '
@@ -2101,7 +2124,7 @@ class questionnaire {
 
     public function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
         global $CFG, $DB, $OUTPUT;
-        $selectgroupid ='';
+        $selectgroupid = '';
         $gmuserid = ', GM.userid ';
         $groupmembers = ', '.$CFG->prefix.'groups_members GM ';
         switch ($currentgroupid) {
@@ -2202,12 +2225,12 @@ class questionnaire {
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid='.$currrid.
             '&amp;courseid='.$this->course->id.'&amp;sec=1';
             $title = get_string('printtooltip', 'questionnaire');
-            $options= array('menubar' => true, 'location' => false, 'scrollbars' => true,
+            $options = array('menubar' => true, 'location' => false, 'scrollbars' => true,
                             'resizable' => true, 'height' => 600, 'width' => 800);
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
-            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title'=>$title));
+            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title));
             echo '&nbsp;|&nbsp;'.$actionlink;
 
             echo $OUTPUT->box_end();
@@ -2239,9 +2262,9 @@ class questionnaire {
                 $entries = $entries - $colnumber;
             }
             // Prepare output.
-            for ($i=0; $i<$colnumber; $i++) {
+            for ($i = 0; $i < $colnumber; $i++) {
                 $str .= '<div id="respondentscolumn">'."\n";
-                for ($j=0; $j<$lines; $j++) {
+                for ($j = 0; $j < $lines; $j++) {
                     $str .= $linkarr[$a].'<br />'."\n";
                     $a++;
                 }
@@ -2365,8 +2388,8 @@ class questionnaire {
             return($errmsg);
         }
         foreach ($types as $type) {
-            $haschoices[$type->typeid]=$type->has_choices; // TODO is that variable actually used?
-            $responsetable[$type->typeid]=$type->response_table;
+            $haschoices[$type->typeid] = $type->has_choices; // TODO is that variable actually used?
+            $responsetable[$type->typeid] = $type->response_table;
         }
 
         // Load survey title (and other globals).
@@ -2466,12 +2489,18 @@ class questionnaire {
                 echo html_writer::end_tag('div'); // End qn-info.
             }
             echo html_writer::start_tag('div', array('class' => 'qn-content'));
+            // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
+            if ($question->content == '<p>  </p>') {
+                $question->content = '';
+            }
             echo html_writer::start_tag('div', array('class' => 'qn-question'));
             echo format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
-                    $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
+                $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
             echo html_writer::end_tag('div'); // End qn-question.
+
             $question->display_results($rids, $sort);
             echo html_writer::end_tag('div'); // End qn-content.
+
             echo html_writer::end_tag('div'); // End qn-container.
         }
 
@@ -2740,9 +2769,9 @@ class questionnaire {
                     if ($uid) {
                         if ($groups = groups_get_all_groups($courseid, $uid)) {
                             foreach ($groups as $group) {
-                                $groupname.= $group->name.', ';
+                                $groupname .= $group->name.', ';
                             }
-                            $groupname = substr($groupname, 0, strlen($groupname) -2);
+                            $groupname = substr($groupname, 0, strlen($groupname) - 2);
                         } else {
                             $groupname = ' ('.get_string('groupnonmembers').')';
                         }
@@ -2750,7 +2779,7 @@ class questionnaire {
                 }
             }
             if ($isanonymous) {
-                $fullname =  get_string('anonymous', 'questionnaire');
+                $fullname = get_string('anonymous', 'questionnaire');
                 $username = '';
                 $uid = '';
             }
@@ -2810,7 +2839,7 @@ class questionnaire {
         for ($i = $nbinfocols; $i < $nbrespcols; $i++) {
             $sep = '';
             $thisoutput = current($output[0][$i]);
-            $thiskey =  key($output[0][$i]);
+            $thiskey = key($output[0][$i]);
             // Case of unnamed rate single possible answer (full stop char is used for support).
             if (strstr($thisoutput, '->.')) {
                 $thisoutput = str_replace('->.', '', $thisoutput);
@@ -2851,7 +2880,7 @@ class questionnaire {
             return 0;
         }
 
-        $data = survey_generate_csv($rid='', $userid='', $currentgroupid='');
+        $data = survey_generate_csv($rid = '', $userid = '', $currentgroupid = '');
 
         foreach ($data as $row) {
             fputs($fh, join(', ', $row) . "\n");
@@ -2897,6 +2926,376 @@ class questionnaire {
             return true;
         }
         return false;
+    }
+
+    public function response_analysis ($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid) {
+        global $DB, $CFG, $OUTPUT, $SESSION, $USER;
+        $action = optional_param('action', 'vall', PARAM_ALPHA);
+
+        require_once($CFG->libdir.'/tablelib.php');
+        if ($resp = $DB->get_record('questionnaire_response', array('id' => $rid)) ) {
+            $userid = $resp->username;
+            if ($user = $DB->get_record('user', array('id' => $userid))) {
+                $ruser = fullname($user);
+            }
+        }
+        // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
+        $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
+        $groupname = get_string('allparticipants');
+        if ($groupmode > 0) {
+            if ($currentgroupid > 0) {
+                $groupname = groups_get_group_name($currentgroupid);
+            } else {
+                $groupname = get_string('allparticipants');
+            }
+        }
+        $table = new html_table();
+        $table->size = array(null, null);
+        $table->align = array('left', 'right', 'right');
+        $table->head = array();
+        $table->wrap = array();
+        if ($compare) {
+            $table->head = array(get_string('feedbacksection', 'questionnaire'), $ruser, $groupname);
+        } else {
+            $table->head = array(get_string('feedbacksection', 'questionnaire'), $groupname);
+        }
+
+        $feedbacksections = $this->survey->feedbacksections;
+        $sid = $this->survey->id;
+        $questions = $this->questions;
+
+        // Find if there are any feedbacks in this questionnaire.
+        $sql = "SELECT * FROM {questionnaire_fb_sections} WHERE survey_id = $sid AND section IS NOT NULL";
+        if (!$fbsections = $DB->get_records_sql($sql)) {
+            return null;
+        }
+
+        $fbsectionsnb = array_keys($fbsections);
+        // Calculate max score per question in questionnaire.
+        $qmax = array();
+        $totalscore = 0;
+        $maxtotalscore = 0;
+        foreach ($questions as $question) {
+            $qid = $question->id;
+            $qtype = $question->type_id;
+            $required = $question->required;
+            if (($qtype == QUESRADIO || $qtype == QUESDROP || $qtype == QUESRATE) and $required == 'y') {
+                if (!isset($qmax[$qid])) {
+                    $qmax[$qid] = 0;
+                }
+                $nbchoices = 1;
+                if ($qtype == QUESRATE) {
+                    $nbchoices = 0;
+                }
+                foreach ($question->choices as $choice) {
+                    // Testing NULL and 'NULL' because I changed the automatic null value, must be fixed later... TODO.
+                    if (isset($choice->value) && $choice->value != null && $choice->value != 'NULL') {
+                        if ($choice->value > $qmax[$qid]) {
+                            $qmax[$qid] = $choice->value;
+                        }
+                    } else {
+                        $nbchoices ++;
+                    }
+                }
+                $qmax[$qid] = $qmax[$qid] * $nbchoices;
+                $maxtotalscore += $qmax[$qid];
+            }
+            if ($qtype == QUESYESNO and $required == 'y') {
+                $qmax[$qid] = 1;
+                $maxtotalscore += 1;
+            }
+        }
+        // Just in case no values have been entered in the various questions possible answers field.
+        if ($maxtotalscore === 0) {
+            return;
+        }
+        $feedbackmessages = array();
+
+        // Get individual scores for each question in this responses set.
+        $qscore = array();
+        $allqscore = array();
+
+        // Get all response ids for all respondents.
+        $castsql = $DB->sql_cast_char2int('R.username');
+
+        $rids = array();
+        foreach ($resps as $key => $resp) {
+            $rids[] = $key;
+        }
+        $nbparticipants = count($rids);
+
+        if (!$allresponses && $groupmode != 0) {
+            $nbparticipants = $nbparticipants - !$isgroupmember;
+        }
+
+        foreach ($rids as $rrid) {
+            // Get responses for bool (Yes/No).
+            $sql = 'SELECT q.id, q.type_id as q_type, a.choice_id as cid '.
+                            'FROM {questionnaire_response_bool} a, {questionnaire_question} q '.
+                            'WHERE a.response_id = ? AND a.question_id=q.id ';
+            if ($responses = $DB->get_records_sql($sql, array($rrid))) {
+                foreach ($responses as $qid => $response) {
+                    $responsescore = ($response->cid == 'y' ? 1 : 0);
+                    // Individual score.
+                    // If this is current user's response OR if current user is viewing another group's results.
+                    if ($rrid == $rid || $allresponses) {
+                        if (!isset($qscore[$qid])) {
+                            $qscore[$qid] = 0;
+                        }
+                        $qscore[$qid] = $responsescore;
+                    }
+                    // Course score.
+                    if (!isset($allqscore[$qid])) {
+                        $allqscore[$qid] = 0;
+                    }
+                    // Only add current score if conditions below are met.
+                    if ($groupmode == 0 || $isgroupmember || (!$isgroupmember && $rrid != $rid) || $allresponses) {
+                        $allqscore[$qid] += $responsescore;
+                    }
+                }
+            }
+
+            // Get responses for single (Radio or Dropbox).
+            $sql = 'SELECT q.id, q.type_id as q_type, c.content as ccontent,c.id as cid, c.value as score  '.
+                            'FROM {questionnaire_resp_single} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
+                            'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id ';
+            if ($responses = $DB->get_records_sql($sql, array($rrid))) {
+                foreach ($responses as $qid => $response) {
+                    // Individual score.
+                    // If this is current user's response OR if current user is viewing another group's results.
+                    if ($rrid == $rid || $allresponses) {
+                        if (!isset($qscore[$qid])) {
+                            $qscore[$qid] = 0;
+                        }
+                        $qscore[$qid] = $response->score;
+                    }
+                    // Course score.
+                    if (!isset($allqscore[$qid])) {
+                        $allqscore[$qid] = 0;
+                    }
+                    // Only add current score if conditions below are met.
+                    if ($groupmode == 0 || $isgroupmember || (!$isgroupmember && $rrid != $rid) || $allresponses) {
+                        $allqscore[$qid] += $response->score;
+                    }
+                }
+            }
+
+            // Get responses for response_rank (Rate).
+            $sql = 'SELECT a.id as aid, q.id AS qid, c.id AS cid, a.rank as arank '.
+                            'FROM {questionnaire_response_rank} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
+                            'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
+                            'ORDER BY aid, a.question_id,c.id';
+            if ($responses = $DB->get_records_sql($sql, array($rrid))) {
+                // We need to store the number of sub-questions for each rate questions.
+                $rank = array();
+                $firstcid = array();
+                foreach ($responses as $response) {
+                    $qid = $response->qid;
+                    $rank = $response->arank;
+                    if (!isset($qscore[$qid])) {
+                        $qscore[$qid] = 0;
+                        $allqscore[$qid] = 0;
+                    }
+                    $firstcid[$qid] = $DB->get_record('questionnaire_quest_choice',
+                                    array('question_id' => $qid), 'id', IGNORE_MULTIPLE);
+                    $firstcidid = $firstcid[$qid]->id;
+                    $cidvalue = $firstcidid + $rank;
+                    $sql = "SELECT * FROM {questionnaire_quest_choice} WHERE id = $cidvalue";
+
+                    if ($value = $DB->get_record_sql($sql)) {
+                        // Individual score.
+                        // If this is current user's response OR if current user is viewing another group's results.
+                        if ($rrid == $rid || $allresponses) {
+                            $qscore[$qid] += $value->value;
+                        }
+                        // Only add current score if conditions below are met.
+                        if ($groupmode == 0 || $isgroupmember || (!$isgroupmember && $rrid != $rid) || $allresponses) {
+                            $allqscore[$qid] += $value->value;
+                        }
+                    }
+                }
+            }
+        }
+        $totalscore = array_sum($qscore);
+        $scorepercent = round($totalscore / $maxtotalscore * 100);
+        $oppositescorepercent = 100 - $scorepercent;
+        $alltotalscore = array_sum($allqscore);
+        $allscorepercent = round($alltotalscore / $nbparticipants / $maxtotalscore * 100);
+
+        // No need to go further if feedback is global, i.e. only relying on total score.
+        if ($feedbacksections == 1) {
+            $sectionid = $fbsectionsnb[0];
+            $sectionlabel = $fbsections[$sectionid]->sectionlabel;
+
+            $sectionheading = $fbsections[$sectionid]->sectionheading;
+            $feedbacks = $DB->get_records('questionnaire_feedback', array('section_id' => $sectionid));
+            $labels = array();
+            foreach ($feedbacks as $feedback) {
+                if ($feedback->feedbacklabel != '') {
+                    $labels[] = $feedback->feedbacklabel;
+                }
+            }
+            $feedback = $DB->get_record_select('questionnaire_feedback',
+                            'section_id = ? AND minscore <= ? AND ? < maxscore', array($sectionid, $scorepercent, $scorepercent));
+
+            // To eliminate all potential % chars in heading text (might interfere with the sprintf function).
+            $sectionheading = str_replace('%', '', $sectionheading);
+            // Replace section heading placeholders with their actual value (if any).
+            $original = array('$scorepercent', '$oppositescorepercent');
+            $result = array('%s%%', '%s%%');
+            $sectionheading = str_replace($original, $result, $sectionheading);
+            $sectionheading = sprintf($sectionheading , $scorepercent, $oppositescorepercent);
+            $sectionheading = file_rewrite_pluginfile_urls($sectionheading, 'pluginfile.php',
+                            $this->context->id, 'mod_questionnaire', 'sectionheading', $sectionid);
+            $feedbackmessages[] = $OUTPUT->box_start();
+            $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML);
+            $feedbackmessages[] = $OUTPUT->box_end();
+
+            if (!empty($feedback->feedbacktext)) {
+                // Clean the text, ready for display.
+                $formatoptions = new stdClass();
+                $formatoptions->noclean = true;
+                $feedbacktext = file_rewrite_pluginfile_urls($feedback->feedbacktext, 'pluginfile.php',
+                                $this->context->id, 'mod_questionnaire', 'feedback', $feedback->id);
+                $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, $formatoptions);
+                $feedbackmessages[] = $OUTPUT->box_start();
+                $feedbackmessages[] = $feedbacktext;
+                $feedbackmessages[] = $OUTPUT->box_end();
+            }
+            $score = array($scorepercent, 100 - $scorepercent);
+            $allscore = null;
+            if ($compare  || $allresponses) {
+                $allscore = array($allscorepercent, 100 - $allscorepercent);
+            }
+
+            // Display class or group score. Pending chart library decision to display?
+            // Find out if this feedback sectionlabel has a pipe separator.
+            $lb = explode("|", $sectionlabel);
+            $oppositescore = '';
+            $oppositeallscore = '';
+            if (count($lb) > 1) {
+                $sectionlabel = $lb[0].' | '.$lb[1];
+                $oppositescore = ' | '.$score[1].'%';
+                $oppositeallscore = ' | '.$allscore[1].'%';
+            }
+            if ($compare) {
+                $table->data[] = array($sectionlabel, $score[0].'%'.$oppositescore, $allscore[0].'%'.$oppositeallscore);
+            } else {
+                $table->data[] = array($sectionlabel, $allscore[0].'%'.$oppositeallscore);
+            }
+
+            echo html_writer::table($table);
+
+            return $feedbackmessages;
+        }
+
+        // Now process scores for more than one section.
+
+        // Initialize scores and maxscores to 0.
+        $score = array(); $allscore = array(); $maxscore = array(); $scorepercent = array();
+        $allscorepercent = array(); $oppositescorepercent = array(); $alloppositescorepercent = array();
+        $chartlabels = array(); $chartscore = array();
+        for ($i = 1; $i <= $feedbacksections; $i++) {
+            $score[$i] = 0; $allscore[$i] = 0; $maxscore[$i] = 0; $scorepercent[$i] = 0;
+        }
+
+        for ($section = 1; $section <= $feedbacksections; $section++) {
+            foreach ($fbsections as $key => $fbsection) {
+                if ($fbsection->section == $section) {
+                    $feedbacksectionid = $key;
+                    $scorecalculation = unserialize($fbsection->scorecalculation);
+                    $sectionheading = $fbsection->sectionheading;
+                    $imageid = $fbsection->id;
+                    $chartlabels [$section] = $fbsection->sectionlabel;
+                }
+            }
+            foreach ($scorecalculation as $qid => $key) {
+                // Just in case a question pertaining to a section has been deleted or made not required
+                // after being included in scorecalculation.
+                if (isset($qscore[$qid])) {
+                    $score[$section] += $qscore[$qid];
+                    $maxscore[$section] += $qmax[$qid];
+                    if ($compare  || $allresponses) {
+                        $allscore[$section] += $allqscore[$qid];
+                    }
+                }
+            }
+
+            $scorepercent[$section] = round($score[$section] / $maxscore[$section] * 100);
+            $oppositescorepercent[$section] = 100 - $scorepercent[$section];
+
+            if (($compare || $allresponses) && $nbparticipants != 0) {
+                $allscorepercent[$section] = round( ($allscore[$section] / $nbparticipants) / $maxscore[$section] * 100);
+                $alloppositescorepercent[$section] = 100 - $allscorepercent[$section];
+            }
+
+            if (!$allresponses) {
+                // To eliminate all potential % chars in heading text (might interfere with the sprintf function).
+                $sectionheading = str_replace('%', '', $sectionheading);
+
+                // Replace section heading placeholders with their actual value (if any).
+                $original = array('$scorepercent', '$oppositescorepercent');
+                $result = array("$scorepercent[$section]%", "$oppositescorepercent[$section]%");
+                $sectionheading = str_replace($original, $result, $sectionheading);
+                $formatoptions = new stdClass();
+                $formatoptions->noclean = true;
+                $sectionheading = file_rewrite_pluginfile_urls($sectionheading, 'pluginfile.php',
+                                $this->context->id, 'mod_questionnaire', 'sectionheading', $imageid);
+                $sectionheading = format_text($sectionheading, 1, $formatoptions);
+                $feedbackmessages[] = $OUTPUT->box_start('reportQuestionTitle');
+                $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML);
+                $feedback = $DB->get_record_select('questionnaire_feedback',
+                                'section_id = ? AND minscore <= ? AND ? < maxscore',
+                                array($feedbacksectionid, $scorepercent[$section], $scorepercent[$section]),
+                                'id,feedbacktext,feedbacktextformat');
+                $feedbackmessages[] = $OUTPUT->box_end();
+                if (!empty($feedback->feedbacktext)) {
+                    // Clean the text, ready for display.
+                    $formatoptions = new stdClass();
+                    $formatoptions->noclean = true;
+                    $feedbacktext = file_rewrite_pluginfile_urls($feedback->feedbacktext, 'pluginfile.php',
+                                    $this->context->id, 'mod_questionnaire', 'feedback', $feedback->id);
+                    $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, $formatoptions);
+                    $feedbackmessages[] = $OUTPUT->box_start('feedbacktext');
+                    $feedbackmessages[] = $feedbacktext;
+                    $feedbackmessages[] = $OUTPUT->box_end();
+                }
+            }
+        }
+
+        // Display class or group score. Pending chart library decision to display?
+        switch ($action) {
+            case 'vallasort':
+                asort($allscore);
+                break;
+            case 'vallarsort':
+                arsort($allscore);
+                break;
+            default:
+        }
+
+        foreach ($allscore as $key => $sc) {
+            $lb = explode("|", $chartlabels[$key]);
+            $oppositescore = '';
+            $oppositeallscore = '';
+            if (count($lb) > 1) {
+                $sectionlabel = $lb[0].' | '.$lb[1];
+                $oppositescore = ' | '.$oppositescorepercent[$key].'%';
+                $oppositeallscore = ' | '.$alloppositescorepercent[$key].'%';
+            } else {
+                $sectionlabel = $chartlabels[$key];
+            }
+            if ($compare) {
+                $table->data[] = array($sectionlabel, $scorepercent[$key].'%'.$oppositescore,
+                                $allscorepercent[$key].'%'.$oppositeallscore);
+            } else {
+                $table->data[] = array($sectionlabel, $sc.'%'.$oppositeallscore);
+            }
+        }
+
+        echo html_writer::table($table);
+
+        return $feedbackmessages;
     }
 
 }

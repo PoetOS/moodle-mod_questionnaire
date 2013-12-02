@@ -24,6 +24,7 @@ $qid    = optional_param('qid', 0, PARAM_INT);             // Question id.
 $moveq  = optional_param('moveq', 0, PARAM_INT);           // Question id to move.
 $delq   = optional_param('delq', 0, PARAM_INT);             // Question id to delete
 $qtype  = optional_param('type_id', 0, PARAM_INT);         // Question type.
+$currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
     print_error('invalidcoursemodule');
@@ -87,7 +88,7 @@ if ($delq) {
 
     if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
         foreach ($records as $record) {
-            $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
+            $DB->set_field('questionnaire_question', 'position', $record->position - 1, array('id' => $record->id));
         }
     }
     // Delete section breaks without asking for confirmation.
@@ -109,7 +110,7 @@ if ($delq) {
                                 $questions[$qid]->position;
                 if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
                     foreach ($records as $record) {
-                        $DB->set_field('questionnaire_question', 'position', $record->position-1, array('id' => $record->id));
+                        $DB->set_field('questionnaire_question', 'position', $record->position - 1, array('id' => $record->id));
                     }
                 }
                 // Delete responses to that deleted question.
@@ -271,8 +272,8 @@ if ($action == 'main') {
         $question->id = $cm->id;
         $draftideditor = file_get_submitted_draft_itemid('question');
         $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                           $qid, array('subdirs'=>true), $question->content);
-        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                                           $qid, array('subdirs' => true), $question->content);
+        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
     } else {
         $question = new Object();
         $question->sid = $questionnaire->survey->id;
@@ -281,8 +282,8 @@ if ($action == 'main') {
         $question->type = '';
         $draftideditor = file_get_submitted_draft_itemid('question');
         $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                           null, array('subdirs'=>true), '');
-        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                                           null, array('subdirs' => true), '');
+        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
     }
     $questionsform = new questionnaire_edit_question_form('questions.php');
     $questionsform->set_data($question);
@@ -301,7 +302,7 @@ if ($action == 'main') {
         // THIS SECTION NEEDS TO BE MOVED OUT OF HERE - SHOULD CREATE QUESTION-SPECIFIC UPDATE FUNCTIONS.
         if ($haschoices[$qformdata->type_id]) {
             // Eliminate trailing blank lines.
-            $qformdata->allchoices =  preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $qformdata->allchoices);
+            $qformdata->allchoices = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $qformdata->allchoices);
             // Trim to eliminate potential trailing carriage return.
             $qformdata->allchoices = trim($qformdata->allchoices);
             if (empty($qformdata->allchoices)) {
@@ -330,7 +331,7 @@ if ($action == 'main') {
                 }
                 // Add carriage return and dummy blank space character for empty value.
                 if (!$ispossibleanswer) {
-                    $qformdata->allchoices.= "\n ";
+                    $qformdata->allchoices .= "\n ";
                 }
 
                 // Sanity checks for correct number of values in $qformdata->length.
@@ -374,7 +375,7 @@ if ($action == 'main') {
             $qformdata->format  = $qformdata->content['format'];
             $qformdata->content = $qformdata->content['text'];
             $qformdata->content = file_save_draft_area_files($qformdata->itemid, $context->id, 'mod_questionnaire', 'question',
-                                                             $qformdata->qid, array('subdirs'=>true), $qformdata->content);
+                                                             $qformdata->qid, array('subdirs' => true), $qformdata->content);
 
             $fields = array('name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice');
             $questionrecord = new Object();
@@ -418,7 +419,7 @@ if ($action == 'main') {
             $qformdata->format  = $qformdata->content['format'];
             $qformdata->content = $qformdata->content['text'];
             $content            = file_save_draft_area_files($qformdata->itemid, $context->id, 'mod_questionnaire', 'question',
-                                                             $qformdata->qid, array('subdirs'=>true), $qformdata->content);
+                                                             $qformdata->qid, array('subdirs' => true), $qformdata->content);
             $result = $DB->set_field('questionnaire_question', 'content', $content, array('id' => $qformdata->qid));
         }
 
@@ -487,8 +488,8 @@ if ($action == 'main') {
         if (questionnaire_has_dependencies($questions)) {
             questionnaire_check_page_breaks($questionnaire);
         }
-        $SESSION->questionnaire->required =  $qformdata->required;
-        $SESSION->questionnaire->type_id =  $qformdata->type_id;
+        $SESSION->questionnaire->required = $qformdata->required;
+        $SESSION->questionnaire->type_id = $qformdata->type_id;
         // Switch to main screen.
         $action = 'main';
         $reload = true;
@@ -522,8 +523,8 @@ if ($reload) {
             $question->id = $cm->id;
             $draftideditor = file_get_submitted_draft_itemid('question');
             $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                               $qid, array('subdirs'=>true), $question->content);
-            $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                                               $qid, array('subdirs' => true), $question->content);
+            $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
         } else {
             $question = new Object();
             $question->sid = $questionnaire->survey->id;
@@ -532,8 +533,8 @@ if ($reload) {
             $question->type = $DB->get_field('questionnaire_question_type', 'type', array('id' => $qtype));
             $draftideditor = file_get_submitted_draft_itemid('question');
             $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                               null, array('subdirs'=>true), '');
-            $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                                               null, array('subdirs' => true), '');
+            $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
         }
         $questionsform = new questionnaire_edit_question_form('questions.php');
         $questionsform->set_data($question);
@@ -568,14 +569,24 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     if ($qtype != QUESSECTIONTEXT) {
         $sql = 'SELECT response_table FROM {questionnaire_question_type} WHERE typeid = '.$qtype;
         if ($resptable = $DB->get_record_sql($sql)) {
-            $sql = 'SELECT COUNT(id) FROM {questionnaire_'.$resptable->response_table.'} WHERE question_id ='.$qid;
-            $countresps = $DB->count_records_sql($sql);
+            $sql = 'SELECT *
+                FROM {questionnaire_'.$resptable->response_table.'}
+                WHERE question_id ='.$qid.'
+                GROUP BY response_id';
+            if ($resps = $DB->get_records_sql($sql) ) {
+                $countresps = count($resps);
+            }
         }
     }
 
     // Needed to print potential media in question text.
-    $qcontent = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
-                    $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
+
+    // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
+
+    if ($question->content == '<p>  </p>') {
+        $question->content = '';
+    }
+
     $qname = '';
     if ($question->name) {
         $qname = ' ('.$question->name.')';
@@ -589,7 +600,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
         $msg .= '<p>'.get_string('confirmdelquestionresps', 'questionnaire', $countresps).'</p>';
     }
     $msg .= '</div>';
-    $msg .= '<div class = "qn-container">'.$num.' '.$pos.'<div class="qn-question">'.$qcontent.'</div></div>';
+    $msg .= '<div class = "qn-container">'.$num.' '.$pos.'<div class="qn-question">'.$question->content.'</div></div>';
     $args = "id={$questionnaire->cm->id}";
     $urlno = new moodle_url("/mod/questionnaire/questions.php?{$args}");
     $args .= "&delq={$qid}";

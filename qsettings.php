@@ -21,6 +21,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/settings_form.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
+$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $cancel = optional_param('cancel', '', PARAM_ALPHA);
 $submitbutton2 = optional_param('submitbutton2', '', PARAM_ALPHA);
 
@@ -58,15 +59,24 @@ $sdata->id = $cm->id;
 
 $draftideditor = file_get_submitted_draft_itemid('info');
 $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'info',
-                $sdata->sid, array('subdirs'=>true), $questionnaire->survey->info);
-$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                $sdata->sid, array('subdirs' => true), $questionnaire->survey->info);
+$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
 
 $draftideditor = file_get_submitted_draft_itemid('thankbody');
 $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'thankbody',
-                $sdata->sid, array('subdirs'=>true), $questionnaire->survey->thank_body);
-$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                $sdata->sid, array('subdirs' => true), $questionnaire->survey->thank_body);
+$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
+
+$draftideditor = file_get_submitted_draft_itemid('feedbacknotes');
+$currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'feedbacknotes',
+        $sdata->sid, array('subdirs' => true), $questionnaire->survey->feedbacknotes);
+$sdata->feedbacknotes = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
 
 $settingsform->set_data($sdata);
+
+if ($settingsform->is_cancelled()) {
+    redirect ($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id, '');
+}
 
 if ($settings = $settingsform->get_data()) {
     $sdata = new Object();
@@ -80,7 +90,7 @@ if ($settings = $settingsform->get_data()) {
     $sdata->infoformat = $settings->info['format'];
     $sdata->info       = $settings->info['text'];
     $sdata->info       = file_save_draft_area_files($sdata->infoitemid, $context->id, 'mod_questionnaire', 'info',
-                                                    $sdata->id, array('subdirs'=>true), $sdata->info);
+                                                    $sdata->id, array('subdirs' => true), $sdata->info);
 
     $sdata->theme = ''; // Deprecated theme field.
     $sdata->thanks_page = $settings->thanks_page;
@@ -90,9 +100,25 @@ if ($settings = $settingsform->get_data()) {
     $sdata->thankformat = $settings->thank_body['format'];
     $sdata->thank_body  = $settings->thank_body['text'];
     $sdata->thank_body  = file_save_draft_area_files($sdata->thankitemid, $context->id, 'mod_questionnaire', 'thankbody',
-                                                     $sdata->id, array('subdirs'=>true), $sdata->thank_body);
-
+                                                     $sdata->id, array('subdirs' => true), $sdata->thank_body);
     $sdata->email = $settings->email;
+
+    if (isset ($settings->feedbacknotes)) {
+        $sdata->fbnotesitemid = $settings->feedbacknotes['itemid'];
+        $sdata->fbnotesformat = $settings->feedbacknotes['format'];
+        $sdata->feedbacknotes  = $settings->feedbacknotes['text'];
+        $sdata->feedbacknotes  = file_save_draft_area_files($sdata->fbnotesitemid,
+                        $context->id, 'mod_questionnaire', 'feedbacknotes',
+                        $sdata->id, array('subdirs' => true), $sdata->feedbacknotes);
+    } else {
+        $sdata->feedbacknotes = '';
+    }
+
+    if (isset ($settings->feedbacksections)) {
+        $sdata->feedbacksections = $settings->feedbacksections;
+    } else {
+        $sdata->feedbacksections = '';
+    }
     $sdata->owner = $settings->owner;
     if (!($sid = $questionnaire->survey_update($sdata))) {
         print_error('couldnotcreatenewsurvey', 'questionnaire');
@@ -102,10 +128,38 @@ if ($settings = $settingsform->get_data()) {
         } else {
             $redirecturl = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id;
         }
-        redirect ($redirecturl);
+
+        // Delete existing section and feedback records for this questionnaire if any were previously set and None are wanted now
+        // or Global feedback is now wanted.
+        if ($sdata->feedbacksections == 0 || ($questionnaire->survey->feedbacksections > 1 && $sdata->feedbacksections == 1)) {
+            if ($feedbacksections = $DB->get_records('questionnaire_fb_sections',
+                    array('survey_id' => $sid), '', 'id') ) {
+                foreach ($feedbacksections as $key => $feedbacksection) {
+                    $DB->delete_records('questionnaire_feedback', array('section_id' => $key));
+                }
+                $DB->delete_records('questionnaire_fb_sections', array('survey_id' => $sid));
+            }
+        }
+
+        // Save current advanced settings only.
+        if (isset($settings->submitbutton)) {
+            redirect ($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id,
+                  get_string('settingssaved', 'questionnaire'));
+        }
+        // Save current advanced settings and go to edit feedback page(s).
+        $SESSION->questionnaire->currentfbsection = 1;
+        switch ($settings->feedbacksections) {
+            case 9:
+                redirect ($CFG->wwwroot.'/mod/questionnaire/fbsettings.php?id='.$questionnaire->cm->id,
+                        get_string('settingssaved', 'questionnaire'), 0);
+                break;
+            default:
+                // This questionnaire has more than one feedback sections, so needs to set sections questions first
+                // before setting feedback messages.
+                redirect ($CFG->wwwroot.'/mod/questionnaire/fbsections.php?id='.$questionnaire->cm->id, '', 0);
+                break;
+        }
     }
-} else if ($cancel) {
-    redirect($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id);
 }
 
 // Print the page header.

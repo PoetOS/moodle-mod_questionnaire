@@ -59,7 +59,7 @@ if ($questionnaire->capabilities->preview && $owner) {
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
 if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
-    $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
+    $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id.'&group='.$currentgroupid;
     if ($usernumresp == 1) {
         $argstr .= '&byresponse=1&action=vresp';
         $yourrespstring = get_string('yourresponse', 'questionnaire');
@@ -78,7 +78,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
                                 get_string('summary', 'questionnaire'));
         $argstr2 = $argstr.'&byresponse=1&action=vresp';
         $row2[] = new tabobject('mybyresponse', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr2),
-                                get_string('viewbyresponse', 'questionnaire'));
+                                get_string('viewindividualresponse', 'questionnaire'));
         $argstr2 = $argstr.'&byresponse=0&action=vall&group='.$currentgroupid;
         $row2[] = new tabobject('myvall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr2),
                                 get_string('myresponses', 'questionnaire'));
@@ -110,7 +110,8 @@ if ($groupmode == 1) {
 }
 $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
 
-if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->readallresponseanytime)) && $numresp > 0 && $owner && $numselectedresps > 0) {
+if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
+                && $numresp > 0 && $owner && $numselectedresps > 0) {
     $argstr = 'instance='.$questionnaire->id;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                            $argstr.'&action=vall'), get_string('viewallresponses', 'questionnaire'));
@@ -176,12 +177,12 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         $url = '/mod/questionnaire/print.php?qid='.$questionnaire->id.'&amp;rid='.$rid.
                '&amp;courseid='.$course->id.'&amp;sec=1';
         $title = get_string('printtooltip', 'questionnaire');
-        $options= array('menubar' => true, 'location' => false, 'scrollbars' => true,
+        $options = array('menubar' => true, 'location' => false, 'scrollbars' => true,
                         'resizable' => true, 'height' => 600, 'width' => 800);
         $name = 'popup';
         $link = new moodle_url($url);
         $action = new popup_action('click', $link, $name, $options);
-        $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title'=>$title));
+        $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title));
         $row3[] = new tabobject('printresp', '', $actionlink);
 
         if ($questionnaire->capabilities->deleteresponses) {
@@ -199,7 +200,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
            $questionnaire->is_survey_owner()) {
     $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
-                           $argstr.'&action=vall'), get_string('viewallresponses', 'questionnaire'));
+                           $argstr.'&action=vall&group='.$currentgroupid), get_string('viewallresponses', 'questionnaire'));
     if (in_array($currenttab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
         $inactive[] = 'vall';
         $activated[] = 'vall';
@@ -210,7 +211,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         $inactive[] = $currenttab;
         $activated[] = $currenttab;
         $row3 = array();
-        $argstr2 = $argstr.'&action=vall';
+        $argstr2 = $argstr.'&action=vall&group='.$currentgroupid;
         $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('order_default', 'questionnaire'));
         $argstr2 = $argstr.'&action=vallasort&group='.$currentgroupid;
@@ -237,7 +238,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
 }
 
 if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
-    $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>$questionnaire->cm->id));
+    $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id' => $questionnaire->cm->id));
     $row[] = new tabobject('nonrespondents',
                     $nonrespondenturl->out(),
                     get_string('show_nonrespondents', 'questionnaire'));

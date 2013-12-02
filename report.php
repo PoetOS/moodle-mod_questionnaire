@@ -314,7 +314,8 @@ switch ($action) {
             if (empty($resps)) {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
             } else {
-                $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='.$instance.'&amp;byresponse=1';
+                $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='.
+                    $instance.'&amp;byresponse=1';
             }
             redirect($redirection);
         } else {
@@ -506,11 +507,12 @@ switch ($action) {
         include('tabs.php');
         echo ('<br />');
 
+        $resps = array();
         // Enable choose_group if there are questionnaire groups and groupmode is not set to "no groups"
         // and if there are more goups than 1 (or if user can view all groups).
-        if (is_array($questionnairegroups) && $groupmode > 0 && $groupscount > 1 - $questionnaire->canviewallgroups) {
+        // TODO JR
+        if (is_array($questionnairegroups) && $groupmode > 0 /* && $groupscount > 1 - $questionnaire->canviewallgroups */) {
             $groupselect = groups_print_activity_menu($cm, $url->out(), true);
-
             // Count number of responses in each group.
             $castsql = $DB->sql_cast_char2int('R.username');
             foreach ($questionnairegroups as $group) {
@@ -524,11 +526,12 @@ switch ($action) {
                 }
                 if (!empty ($resps)) {
                     $respscount = count($resps);
+                    $groupresps [$group->id] = $resps;
                 } else {
                     $respscount = 0;
                 }
-                $groupname = groups_get_group_name($group->id);
-                $groupselect = str_replace($groupname, $groupname.' ('.$respscount.')', $groupselect);
+                $thisgroupname = groups_get_group_name($group->id);
+                $groupselect = str_replace($thisgroupname, $thisgroupname.' ('.$respscount.')', $groupselect);
             }
             echo isset($groupselect) ? $groupselect : '';
             $currentgroupid = groups_get_activity_group($cm);
@@ -536,17 +539,42 @@ switch ($action) {
             echo ('<br />');
         }
         if ($currentgroupid > 0) {
-            $groupname = get_string('group').': <strong>'.groups_get_group_name($currentgroupid).'</strong>';
+             $groupname = get_string('group').': <strong>'.groups_get_group_name($currentgroupid).'</strong>';
         } else {
             $groupname = '<strong>'.get_string('allparticipants').'</strong>';
         }
+
+        // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
+        if ($groupmode > 0) {
+            switch ($currentgroupid) {
+                case 0:     // All participants.
+                    $resps = $respsallparticipants;
+                    break;
+                default:     // Members of a specific group.
+                    if (isset($groupresps [$currentgroupid])) {
+                        $resps = $groupresps [$currentgroupid];
+                    } else {
+                        $resps = '';
+                    }
+            }
+            if (empty($resps)) {
+                $noresponses = true;
+            }
+        } else {
+            $resps = $respsallparticipants;
+        }
+        if (!empty($resps)) {
+            $ret = $questionnaire->response_analysis($rid = 0, $resps, $compare = false,
+                            $isgroupmember = false, $allresponses = true, $currentgroupid);
+        }
+
         echo'<div class = "generalbox">';
         echo (get_string('viewallresponses', 'questionnaire').'. '.$groupname.'. ');
         $strsort = get_string('order_'.$sort, 'questionnaire');
         echo $strsort;
         echo $OUTPUT->help_icon('orderresponses', 'questionnaire');
 
-        $ret = $questionnaire->survey_results(1, 1, '', '', '', $uid=false, $currentgroupid, $sort);
+        $ret = $questionnaire->survey_results(1, 1, '', '', '', $uid = false, $currentgroupid, $sort);
         echo '</div>';
 
         // Finish the page.
@@ -648,7 +676,8 @@ switch ($action) {
                 }
                 $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
                 if (!$byresponse) { // Show respondents individual responses.
-                    $questionnaire->view_response($rid);
+                    $questionnaire->view_response($rid, $referer = '', $blankquestionnaire = false, $resps, $compare = true,
+                        $isgroupmember = true, $allresponses = false, $currentgroupid);
                 }
             }
         }

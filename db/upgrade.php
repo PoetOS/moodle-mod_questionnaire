@@ -389,13 +389,14 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Replace the = separator with :: separator in quest_choice content.
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-        $choices = $DB->get_records('questionnaire_quest_choice', $conditions=null);
+        $choices = $DB->get_records('questionnaire_quest_choice', $conditions = null);
         $total = count($choices);
         if ($total > 0) {
             $pbar = new progress_bar('convertchoicevalues', 500, true);
-            $i=1;
+            $i = 1;
             foreach ($choices as $choice) {
-                if (($choice->value == null || $choice->value == 'NULL') && !preg_match("/^([0-9]{1,3})=(.*)$/", $choice->content)) {
+                if (($choice->value == null || $choice->value == 'NULL')
+                                && !preg_match("/^([0-9]{1,3})=(.*)$/", $choice->content)) {
                     $content = questionnaire_choice_values($choice->content);
                     if ($pos = strpos($content->text, '=')) {
                         $newcontent = str_replace('=', '::', $content->text);
@@ -424,6 +425,67 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2013100500, 'questionnaire');
+    }
+
+    if ($oldversion < 2013112100) {
+        // Personality test feature.
+
+        $table = new xmldb_table('questionnaire_survey');
+        $field = new xmldb_field('feedbacksections', XMLDB_TYPE_INTEGER, '2', null, null, null, null, null);
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        unset($field);
+        $field = new xmldb_field('feedbacknotes', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        unset($table);
+        unset($field);
+
+        // Define table questionnaire_fb_sections to be created.
+        $table = new xmldb_table('questionnaire_fb_sections');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('survey_id', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('section', XMLDB_TYPE_INTEGER, '2', null, null, null, null);
+        $table->add_field('scorecalculation', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('sectionlabel', XMLDB_TYPE_CHAR, '50', null, null, null, null);
+        $table->add_field('sectionheading', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('sectionheadingformat', XMLDB_TYPE_INTEGER, '2', null, null, null, '1');
+
+        // Adding keys to table questionnaire_fb_sections.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for assign_user_mapping.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        unset($table);
+
+        // Define table questionnaire_feedback to be created.
+        $table = new xmldb_table('questionnaire_feedback');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('section_id', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('feedbacklabel', XMLDB_TYPE_CHAR, '30', null, null, null, null);
+        $table->add_field('feedbacktext', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('feedbacktextformat', XMLDB_TYPE_INTEGER, '2', null, null, null, '1');
+        $table->add_field('minscore', XMLDB_TYPE_NUMBER, '10,5', null, null, null, '0.00000');
+        $table->add_field('maxscore', XMLDB_TYPE_NUMBER, '10,5', null, null, null, '101.00000');
+
+        // Adding keys to table questionnaire_fb_sections.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for assign_user_mapping.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2013112100, 'questionnaire');
     }
 
     return $result;

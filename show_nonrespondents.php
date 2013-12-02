@@ -39,6 +39,7 @@ $perpage = optional_param('perpage', QUESTIONNAIRE_DEFAULT_PAGE_COUNT, PARAM_INT
 $showall = optional_param('showall', false, PARAM_INT);  // Should we show all users?
 $sid    = optional_param('sid', 0, PARAM_INT);
 $qid    = optional_param('qid', 0, PARAM_INT);
+$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 $SESSION->questionnaire->current_tab = 'nonrespondents';
 
@@ -61,7 +62,7 @@ if ($id) {
 $questionnaire = new questionnaire($sid, $questionnaire, $course, $cm);
 $resume = $questionnaire->resume;
 $sid = $questionnaire->sid;
-$url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>$cm->id));
+$url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id' => $cm->id));
 
 $PAGE->set_url($url);
 
@@ -104,7 +105,7 @@ if ($action == 'sendmessage') {
 
     if (is_array($messageuser)) {
         foreach ($messageuser as $userid) {
-            $senduser = $DB->get_record('user', array('id'=>$userid));
+            $senduser = $DB->get_record('user', array('id' => $userid));
             $eventdata = new stdClass();
             $eventdata->name             = 'message';
             $eventdata->component        = 'mod_questionnaire';
@@ -123,7 +124,7 @@ if ($action == 'sendmessage') {
             $msg = $OUTPUT->heading(get_string('messagedselectedusersfailed'));
         }
 
-        $url = new moodle_url('/mod/questionnaire/view.php', array('id'=>$cm->id));
+        $url = new moodle_url('/mod/questionnaire/view.php', array('id' => $cm->id));
         redirect($url, $msg, 4);
         exit;
     }
@@ -136,13 +137,14 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_title(format_string($questionnaire->name));
 echo $OUTPUT->header();
 
+// Print the tabs.
 require('tabs.php');
 
 // Print the main part of the page.
 // Print the users with no responses
 // Get the effective groupmode of this course and module.
 if (isset($cm->groupmode) && empty($course->groupmodeforce)) {
-    $groupmode =  $cm->groupmode;
+    $groupmode = $cm->groupmode;
 } else {
     $groupmode = $course->groupmode;
 }
@@ -152,7 +154,7 @@ $mygroupid = groups_get_activity_group($cm);
 
 // Preparing the table for output.
 $baseurl = new moodle_url('/mod/questionnaire/show_nonrespondents.php');
-$baseurl->params(array('id'=>$cm->id, 'showall'=>$showall));
+$baseurl->params(array('id' => $cm->id, 'showall' => $showall));
 
 $tablecolumns = array('userpic', 'fullname');
 
@@ -268,35 +270,38 @@ if (!$students) {
 } else {
     echo print_string('non_respondents', 'questionnaire');
     echo ' ('.$matchcount.')<hr />';
-    if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
-        echo '<form class="mform" action="show_nonrespondents.php" method="post" id="questionnaire_sendmessageform">';
-        foreach ($students as $student) {
-            $user = $DB->get_record('user', array('id'=>$student));
-            // Userpicture and link to the profilepage.
-            $profileurl = $CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id;
-            $profilelink = '<strong><a href="'.$profileurl.'">'.fullname($user).'</a></strong>';
-            $data = array ($OUTPUT->user_picture($user, array('courseid'=>$course->id)), $profilelink);
-            if (in_array('email', $tablecolumns)) {
-                $data[] = $user->email;
-            }
-            if (!isset($hiddenfields['city'])) {
-                $data[] = $user->city;
-            }
-            if (!isset($hiddenfields['country'])) {
-                $data[] = (!empty($user->country)) ? $countries[$user->country] : '';
-            }
-            if ($user->lastaccess) {
-                $lastaccess = format_time(time() - $user->lastaccess, $datestring);
-            } else {
-                $lastaccess = get_string('never');
-            }
-            $data[] = $lastaccess;
+    echo '<form class="mform" action="show_nonrespondents.php" method="post" id="questionnaire_sendmessageform">';
+    foreach ($students as $student) {
+        $user = $DB->get_record('user', array('id' => $student));
+        // Userpicture and link to the profilepage.
+        $profileurl = $CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id;
+        $profilelink = '<strong><a href="'.$profileurl.'">'.fullname($user).'</a></strong>';
+        $data = array ($OUTPUT->user_picture($user, array('courseid' => $course->id)), $profilelink);
+        if (in_array('email', $tablecolumns)) {
+            $data[] = $user->email;
+        }
+        if (!isset($hiddenfields['city'])) {
+            $data[] = $user->city;
+        }
+        if (!isset($hiddenfields['country'])) {
+            $data[] = (!empty($user->country)) ? $countries[$user->country] : '';
+        }
+        if ($user->lastaccess) {
+            $lastaccess = format_time(time() - $user->lastaccess, $datestring);
+        } else {
+            $lastaccess = get_string('never');
+        }
+        $data[] = $lastaccess;
 
+        // Teachers are allowed to select non-respondents to send them a reminder message
+        // but e.g. non-editing teachers are not allowed to do that.
+        if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
             // If questionnaire is set to "resume", look for saved (not completed) responses
             // we use the alt attribute of the checkboxes to store the started/not started value!
             $checkboxaltvalue = '';
             if ($resume) {
-                if ($DB->get_record('questionnaire_response', array('survey_id'=>$sid, 'username'=>$student, 'complete'=>'n')) ) {
+                if ($DB->get_record('questionnaire_response', array('survey_id' => $sid,
+                                'username' => $student, 'complete' => 'n')) ) {
                     $data[] = get_string('started', 'questionnaire');
                     $checkboxaltvalue = 1;
                 } else {
@@ -306,11 +311,14 @@ if (!$students) {
             }
             $data[] = '<input type="checkbox" class="usercheckbox" name="messageuser[]" value="'.
                 $user->id.'" alt="'.$checkboxaltvalue.'" />';
-            $table->add_data($data);
         }
+        $table->add_data($data);
+    }
+    $table->print_html();
 
-        $table->print_html();
-
+    // Teachers are allowed to select non-respondents and send them a reminder message
+    // but e.g. non-editing teachers are not allowed.
+    if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
         $allurl = new moodle_url($baseurl);
 
         if ($showall) {
@@ -373,7 +381,7 @@ if (!$students) {
         echo '</form>';
 
         // Include the needed js.
-        $module = array('name'=>'mod_questionnaire', 'fullpath'=>'/mod/questionnaire/module.js');
+        $module = array('name' => 'mod_questionnaire', 'fullpath' => '/mod/questionnaire/module.js');
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_sendmessage', null, false, $module);
     }
 }

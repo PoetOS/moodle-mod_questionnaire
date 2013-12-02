@@ -127,12 +127,15 @@ class questionnaire_questions_form extends moodleform {
             // Needed for non-English languages JR.
             $qtype = '['.questionnaire_get_type($tid).']';
             $content = '';
+            // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
+            if ($question->content == '<p>  </p>') {
+                $question->content = '';
+            }
             if ($tid != QUESPAGEBREAK) {
                 // Needed to print potential media in question text.
                 $content = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
                                 $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
             }
-
             $moveqgroup = array();
 
             $spacer = $OUTPUT->pix_url('spacer');
@@ -192,9 +195,10 @@ class questionnaire_questions_form extends moodleform {
                     // or immediately preceded by a question with a dependency and followed by a non-dependent question.
                     if ($tid == QUESPAGEBREAK) {
                         if ($nextquestion = $DB->get_record('questionnaire_question', array('survey_id' => $sid,
-                                        'position' => $pos + 1, 'deleted' => 'n' ), $fields='dependquestion, name, content') ) {
+                                        'position' => $pos + 1, 'deleted' => 'n' ), $fields = 'dependquestion, name, content') ) {
                             if ($previousquestion = $DB->get_record('questionnaire_question', array('survey_id' => $sid,
-                                            'position' => $pos - 1, 'deleted' => 'n' ), $fields='dependquestion, name, content')) {
+                                            'position' => $pos - 1, 'deleted' => 'n' ),
+                                            $fields = 'dependquestion, name, content')) {
                                 if ($nextquestion->dependquestion != 0
                                                 || ($previousquestion->dependquestion != 0
                                                     && $nextquestion->dependquestion == 0) ) {
@@ -430,37 +434,37 @@ class questionnaire_edit_question_form extends moodleform {
         }
         switch ($question->type_id) {
             case QUESYESNO:
-                $qtype='yesno';
+                $qtype = 'yesno';
                 break;
             case QUESTEXT:
-                $qtype='textbox';
+                $qtype = 'textbox';
                 break;
             case QUESESSAY:
-                $qtype='essaybox';
+                $qtype = 'essaybox';
                 break;
             case QUESRADIO:
-                $qtype='radiobuttons';
+                $qtype = 'radiobuttons';
                 break;
             case QUESCHECK:
-                $qtype='checkboxes';
+                $qtype = 'checkboxes';
                 break;
             case QUESDROP:
-                $qtype='dropdown';
+                $qtype = 'dropdown';
                 break;
             case QUESRATE:
-                $qtype='ratescale';
+                $qtype = 'ratescale';
                 break;
             case QUESDATE:
-                $qtype='date';
+                $qtype = 'date';
                 break;
             case QUESNUMERIC:
-                $qtype='numeric';
+                $qtype = 'numeric';
                 break;
             case QUESSECTIONTEXT:
-                $qtype='sectiontext';
+                $qtype = 'sectiontext';
                 break;
             case QUESPAGEBREAK:
-                $qtype='sectionbreak';
+                $qtype = 'sectionbreak';
         }
 
         $mform->addElement('header', 'questionhdredit', $streditquestion);
@@ -471,7 +475,8 @@ class questionnaire_edit_question_form extends moodleform {
             $stryes = get_string('yes');
             $strno  = get_string('no');
 
-            $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'), array('size'=>'30', 'maxlength'=>'30'));
+            $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'),
+                            array('size' => '30', 'maxlength' => '30'));
             $mform->setType('name', PARAM_TEXT);
             $mform->addHelpButton('name', 'optionalname', 'questionnaire');
 
@@ -484,9 +489,8 @@ class questionnaire_edit_question_form extends moodleform {
 
         // Length field.
         if ($question->type_id == QUESYESNO || $question->type_id == QUESDROP || $question->type_id == QUESDATE ||
-                $question->type_id == QUESSECTIONTEXT) {
+            $question->type_id == QUESSECTIONTEXT) {
             $mform->addElement('hidden', 'length', $deflength);
-
         } else if ($question->type_id == QUESRADIO) {
             $lengroup = array();
             $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('vertical', 'questionnaire'), '0');
@@ -495,7 +499,7 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addHelpButton('lengroup', $lhelpname, 'questionnaire');
         } else if ($question->type_id == QUESTEXT || $question->type_id == QUESRATE) {
             $question->length = isset($question->length) ? $question->length : $deflength;
-            $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
+            $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size' => '1'));
             $mform->setType('length', PARAM_TEXT);
             $mform->addHelpButton('length', $lhelpname, 'questionnaire');
         } else if ($question->type_id == QUESESSAY) {
@@ -503,16 +507,16 @@ class questionnaire_edit_question_form extends moodleform {
                             "0" => get_string('formateditor', 'questionnaire'),
                             "1" => get_string('formatplain', 'questionnaire'));
             $mform->addElement('select', 'precise', get_string('responseformat', 'questionnaire'), $responseformats);
-        } else if ($question->type_id == QUESCHECK) {
+        } else if ($question->type_id == QUESCHECK || $question->type_id == QUESNUMERIC) {
             $question->length = isset($question->length) ? $question->length : $deflength;
-            $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size'=>'1'));
+            $mform->addElement('text', 'length', get_string($lhelpname, 'questionnaire'), array('size' => '1'));
         }
 
         $mform->setType('length', PARAM_INT);
 
         // Precision field.
         if ($question->type_id == QUESYESNO || $question->type_id == QUESDROP || $question->type_id == QUESDATE ||
-                $question->type_id == QUESSECTIONTEXT || $question->type_id == QUESRADIO) {
+            $question->type_id == QUESSECTIONTEXT || $question->type_id == QUESRADIO) {
             $mform->addElement('hidden', 'precise', $defprecise);
         } else if ($question->type_id == QUESRATE) {
             $precoptions = array("0" => get_string('normal', 'questionnaire'),
@@ -527,9 +531,9 @@ class questionnaire_edit_question_form extends moodleform {
                 $choices[$lines] = get_string('nlines', 'questionnaire', $lines);
             }
             $mform->addElement('select', 'length', get_string('responsefieldlines', 'questionnaire'), $choices);
-        } else if ($question->type_id == QUESCHECK) {
+        } else if ($question->type_id == QUESCHECK || $question->type_id == QUESNUMERIC) {
             $question->precise = isset($question->precise) ? $question->precise : $defprecise;
-            $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size'=>'1'));
+            $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size' => '1'));
         }
 
         $mform->setType('precise', PARAM_INT);
@@ -565,7 +569,7 @@ class questionnaire_edit_question_form extends moodleform {
 
         // Content field.
         $modcontext    = $this->_customdata['modcontext'];
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext'=>true, 'context'=>$modcontext);
+        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true, 'context' => $modcontext);
         $mform->addElement('editor', 'content', get_string('text', 'questionnaire'), null, $editoroptions);
         $mform->setType('content', PARAM_RAW);
         $mform->addRule('content', null, 'required', null, 'client');

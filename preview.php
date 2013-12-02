@@ -23,6 +23,7 @@ $id     = optional_param('id', 0, PARAM_INT);
 $sid    = optional_param('sid', 0, PARAM_INT);
 $popup  = optional_param('popup', 0, PARAM_INT);
 $qid    = optional_param('qid', 0, PARAM_INT);
+$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if ($id) {
     if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
@@ -106,14 +107,13 @@ if (!$popup) {
 
 
 $PAGE->requires->js('/mod/questionnaire/module.js');
+// Print the tabs.
+
 
 echo $OUTPUT->header();
-
-// Print the tabs.
 require('tabs.php');
-
 echo $OUTPUT->heading($pq);
-$questionnaire->survey_print_render('', 'preview', $course->id, $rid=0, $popup);
+$questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup);
 if ($popup) {
     echo $OUTPUT->close_window_button();
 }

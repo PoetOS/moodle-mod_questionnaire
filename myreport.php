@@ -19,14 +19,6 @@
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
-$strsummary = get_string('summary', 'questionnaire');
-$strall = get_string('myresponses', 'questionnaire');
-$strviewbyresponse = get_string('viewbyresponse', 'questionnaire');
-$strmodname = get_string('modulename', 'questionnaire');
-$strmodnameplural = get_string('modulenameplural', 'questionnaire');
-$strmyresults = get_string('myresults', 'questionnaire');
-$strquestionnaires = get_string('modulenameplural', 'questionnaire');
-
 $instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $userid = optional_param('user', $USER->id, PARAM_INT);
 $rid = optional_param('rid', null, PARAM_INT);
@@ -46,18 +38,24 @@ if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, 
 
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
+$questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
 // Should never happen, unless called directly by a snoop...
 if ( !has_capability('mod/questionnaire:readownresponses', $context)
     || $userid != $USER->id) {
     print_error('Permission denied');
 }
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance'=>$instance));
+$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance' => $instance));
 if (isset($userid)) {
     $url->param('userid', $userid);
 }
 if (isset($byresponse)) {
     $url->param('byresponse', $byresponse);
 }
+
+if (isset($currentgroupid)) {
+    $url->param('group', $currentgroupid);
+}
+
 if (isset($action)) {
     $url->param('action', $action);
 }
@@ -68,12 +66,13 @@ $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$sid = $questionnaire->survey->id;
+$courseid = $course->id;
 
 // Tab setup.
 $SESSION->questionnaire->current_tab = 'myreport';
 
 switch ($action) {
-    case $strsummary:
     case 'summary':
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');
@@ -106,7 +105,6 @@ switch ($action) {
         echo $OUTPUT->footer($course);
         break;
 
-    case $strall:
     case 'vall':
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');
@@ -114,7 +112,7 @@ switch ($action) {
         $SESSION->questionnaire->current_tab = 'myvall';
         $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
         $sort = 'submitted ASC';
-        $resps = $DB->get_records_select('questionnaire_response', $select, $params=null, $sort);
+        $resps = $DB->get_records_select('questionnaire_response', $select, $params = null, $sort);
         $titletext = get_string('myresponses', 'questionnaire');
 
         // Print the page header.
@@ -130,7 +128,6 @@ switch ($action) {
         echo $OUTPUT->footer($course);
         break;
 
-    case $strviewbyresponse:
     case 'vresp':
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');
@@ -138,11 +135,87 @@ switch ($action) {
         $SESSION->questionnaire->current_tab = 'mybyresponse';
         $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
         $sort = 'submitted ASC';
-        $resps = $DB->get_records_select('questionnaire_response', $select, $params=null, $sort);
-        $rids = array_keys($resps);
+        $resps = $DB->get_records_select('questionnaire_response', $select, $params = null, $sort);
+        // All participants.
+        $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+         FROM {questionnaire_response} R
+         WHERE R.survey_id = ? AND
+               R.complete='y'
+         ORDER BY R.id";
+        if (!($respsallparticipants = $DB->get_records_sql($sql, array($sid)))) {
+            $respsallparticipants = array();
+        }
+        $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
+        $fields = "id,survey_id,submitted,username";
+        $params = array();
+        $respsuser = $DB->get_records_select('questionnaire_response', $select, $params, $sort = '', $fields);
+        $SESSION->questionnaire->numrespsallparticipants = count ($respsallparticipants);
+        $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
+        $iscurrentgroupmember = false;
 
-        // If more than one response for this respondent, display most recent response.
+        // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
+        $groupmode = groups_get_activity_groupmode($cm, $course);
+        if ($groupmode > 0) {
+            // Check if current user is member of any group.
+            $usergroups = groups_get_user_groups($courseid, $userid);
+            $isgroupmember = count($usergroups[0]) > 0;
+            // Check if current user is member of current group.
+            $iscurrentgroupmember = groups_is_member($currentgroupid, $userid);
+
+            if ($groupmode == 1) {
+                $questionnairegroups = groups_get_all_groups($course->id, $userid);
+            }
+            if ($groupmode == 2 || $questionnaire->canviewallgroups) {
+                $questionnairegroups = groups_get_all_groups($course->id);
+            }
+
+            if (!empty($questionnairegroups)) {
+                $groupscount = count($questionnairegroups);
+                foreach ($questionnairegroups as $key) {
+                    $firstgroupid = $key->id;
+                    break;
+                }
+                if ($groupscount === 0 && $groupmode == 1) {
+                    $currentgroupid = 0;
+                }
+                if ($groupmode == 1 && !$questionnaire->canviewallgroups && $currentgroupid == 0) {
+                    $currentgroupid = $firstgroupid;
+                }
+                // If currentgroup is All Participants, current user is of course member of that "group"!
+                if ($currentgroupid == 0) {
+                    $iscurrentgroupmember = true;
+                }
+                // Current group members.
+                $castsql = $DB->sql_cast_char2int('R.username');
+                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+            FROM {questionnaire_response} R,
+                {groups_members} GM
+             WHERE R.survey_id= ? AND
+               R.complete='y' AND
+               GM.groupid = ? AND " . $castsql . "=GM.userid
+            ORDER BY R.id";
+                if (!($currentgroupresps = $DB->get_records_sql($sql, array($sid, $currentgroupid)))) {
+                    $currentgroupresps = array();
+                }
+
+            } else {
+                // Groupmode = separate groups but user is not member of any group
+                // and does not have moodle/site:accessallgroups capability -> refuse view responses.
+                if (!$questionnaire->canviewallgroups) {
+                    $currentgroupid = 0;
+                }
+            }
+
+            if ($currentgroupid > 0) {
+                $groupname = get_string('group').' <strong>'.groups_get_group_name($currentgroupid).'</strong>';
+            } else {
+                $groupname = '<strong>'.get_string('allparticipants').'</strong>';
+            }
+        }
+
+        $rids = array_keys($resps);
         if (!$rid) {
+            // If more than one response for this respondent, display most recent response.
             $rid = end($rids);
         }
         $numresp = count($rids);
@@ -152,6 +225,7 @@ switch ($action) {
             $titletext = get_string('yourresponse', 'questionnaire');
         }
 
+        $compare = false;
         // Print the page header.
         echo $OUTPUT->header();
 
@@ -166,7 +240,25 @@ switch ($action) {
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps);
             echo '</div>';
         }
-        $questionnaire->view_response($rid);
+        $resps = array();
+        // Determine here which "global" responses should get displayed for comparison with current user.
+        // Current user is viewing his own group's results.
+        if (isset($currentgroupresps)) {
+            $resps = $currentgroupresps;
+        }
+
+        // Current user is viewing another group's results so we must add their own results to that group's results.
+
+        if (!$iscurrentgroupmember) {
+            $resps += $respsuser;
+        }
+        // No groups.
+        if ($groupmode == 0 || $currentgroupid == 0) {
+            $resps = $respsallparticipants;
+        }
+        $compare = true;
+        $questionnaire->view_response($rid, null, null, $resps, $compare, $iscurrentgroupmember,
+                        $allresponses = false, $currentgroupid);
         if (count($resps) > 1) {
             echo '<div style="text-align:center; padding-bottom:5px;">';
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps);

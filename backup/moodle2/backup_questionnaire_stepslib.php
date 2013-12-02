@@ -45,7 +45,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $survey = new backup_nested_element('survey', array('id'), array(
             'name', 'owner', 'realm', 'status', 'title', 'email', 'subtitle',
-            'info', 'theme', 'thanks_page', 'thank_head', 'thank_body'));
+            'info', 'theme', 'thanks_page', 'thank_head', 'thank_body', 'feedbacksections', 'feedbacknotes'));
 
         $questions = new backup_nested_element('questions');
 
@@ -57,6 +57,16 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $questchoice = new backup_nested_element('quest_choice', array('id'), array(
             'question_id', 'content', 'value'));
+
+        $fbsections = new backup_nested_element('fb_sections');
+
+        $fbsection = new backup_nested_element('fb_section', array('id'), array(
+                'survey_id', 'section', 'scorecalculation', 'sectionlabel', 'sectionheading', 'sectionheadingformat'));
+
+        $feedbacks = new backup_nested_element('feedbacks');
+
+        $feedback = new backup_nested_element('feedback', array('id'), array(
+                'section_id', 'feedbacklabel', 'feedbacktext', 'feedbacktextformat', 'minscore', 'maxscore'));
 
         $attempts = new backup_nested_element('attempts');
 
@@ -112,6 +122,11 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $question->add_child($questchoices);
         $questchoices->add_child($questchoice);
+        $survey->add_child($fbsections);
+        $fbsections->add_child($fbsection);
+
+        $fbsection->add_child($feedbacks);
+        $feedbacks->add_child($feedback);
 
         $questionnaire->add_child($attempts);
         $attempts->add_child($attempt);
@@ -154,27 +169,27 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         // If current questionnaire is based on a public one, do not include survey nor questions in backup.
         if (!$haspublic) {
-        $survey->set_source_table('questionnaire_survey', array('id' => '../../sid'));
+            $survey->set_source_table('questionnaire_survey', array('id' => '../../sid'));
+            $question->set_source_table('questionnaire_question', array('survey_id' => backup::VAR_PARENTID));
+            $fbsection->set_source_table('questionnaire_fb_sections', array('survey_id' => backup::VAR_PARENTID));
+            $feedback->set_source_table('questionnaire_feedback', array('section_id' => backup::VAR_PARENTID));
+            $questchoice->set_source_table('questionnaire_quest_choice', array('question_id' => backup::VAR_PARENTID));
 
-        $question->set_source_table('questionnaire_question', array('survey_id' => backup::VAR_PARENTID));
+            // All the rest of elements only happen if we are including user info.
+            if ($userinfo) {
+                $attempt->set_source_table('questionnaire_attempts', array('qid' => backup::VAR_PARENTID));
+                $response->set_source_table('questionnaire_response', array('id' => '../../rid'));
+                $responsebool->set_source_table('questionnaire_response_bool', array('response_id' => backup::VAR_PARENTID));
+                $responsedate->set_source_table('questionnaire_response_date', array('response_id' => backup::VAR_PARENTID));
+                $responsemultiple->set_source_table('questionnaire_resp_multiple', array('response_id' => backup::VAR_PARENTID));
+                $responseother->set_source_table('questionnaire_response_other', array('response_id' => backup::VAR_PARENTID));
+                $responserank->set_source_table('questionnaire_response_rank', array('response_id' => backup::VAR_PARENTID));
+                $responsesingle->set_source_table('questionnaire_resp_single', array('response_id' => backup::VAR_PARENTID));
+                $responsetext->set_source_table('questionnaire_response_text', array('response_id' => backup::VAR_PARENTID));
+            }
 
-        $questchoice->set_source_table('questionnaire_quest_choice', array('question_id' => backup::VAR_PARENTID));
-
-        // All the rest of elements only happen if we are including user info.
-        if ($userinfo) {
-            $attempt->set_source_table('questionnaire_attempts', array('qid' => backup::VAR_PARENTID));
-            $response->set_source_table('questionnaire_response', array('id' => '../../rid'));
-            $responsebool->set_source_table('questionnaire_response_bool', array('response_id' => backup::VAR_PARENTID));
-            $responsedate->set_source_table('questionnaire_response_date', array('response_id' => backup::VAR_PARENTID));
-            $responsemultiple->set_source_table('questionnaire_resp_multiple', array('response_id' => backup::VAR_PARENTID));
-            $responseother->set_source_table('questionnaire_response_other', array('response_id' => backup::VAR_PARENTID));
-            $responserank->set_source_table('questionnaire_response_rank', array('response_id' => backup::VAR_PARENTID));
-            $responsesingle->set_source_table('questionnaire_resp_single', array('response_id' => backup::VAR_PARENTID));
-            $responsetext->set_source_table('questionnaire_response_text', array('response_id' => backup::VAR_PARENTID));
-        }
-
-        // Define id annotations.
-        $attempt->annotate_ids('user', 'userid');
+            // Define id annotations.
+            $attempt->annotate_ids('user', 'userid');
         }
         // Define file annotations
         $questionnaire->annotate_files('mod_questionnaire', 'intro', null); // This file area hasn't itemid.
@@ -183,6 +198,9 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $survey->annotate_files('mod_questionnaire', 'thankbody', 'id'); // By survey->id.
 
         $question->annotate_files('mod_questionnaire', 'question', 'id'); // By question->id.
+
+        $fbsection->annotate_files('mod_questionnaire', 'sectionheading', 'id'); // By feedback->id.
+        $feedback->annotate_files('mod_questionnaire', 'feedback', 'id'); // By feedback->id.
 
         // Return the root element, wrapped into standard activity structure.
         return $this->prepare_activity_structure($questionnaire);

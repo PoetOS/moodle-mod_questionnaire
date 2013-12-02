@@ -37,7 +37,12 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $paths[] = new restore_path_element('questionnaire', '/activity/questionnaire');
         $paths[] = new restore_path_element('questionnaire_survey', '/activity/questionnaire/surveys/survey');
-        $paths[] = new restore_path_element('questionnaire_question', '/activity/questionnaire/surveys/survey/questions/question');
+        $paths[] = new restore_path_element('questionnaire_fb_sections',
+                        '/activity/questionnaire/surveys/survey/fb_sections/fb_section');
+        $paths[] = new restore_path_element('questionnaire_feedback',
+                        '/activity/questionnaire/surveys/survey/fb_sections/fb_section/feedbacks/feedback');
+        $paths[] = new restore_path_element('questionnaire_question',
+                        '/activity/questionnaire/surveys/survey/questions/question');
         $paths[] = new restore_path_element('questionnaire_quest_choice',
                         '/activity/questionnaire/surveys/survey/questions/question/quest_choices/quest_choice');
 
@@ -108,7 +113,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
             // Dependchoice.
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields='type_id');
+            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields = 'type_id');
             if (is_object($dependquestion)) {
                 if ($dependquestion->type_id != 1) {
                     $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);
@@ -119,6 +124,41 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         // Insert the questionnaire_question record.
         $newitemid = $DB->insert_record('questionnaire_question', $data);
         $this->set_mapping('questionnaire_question', $oldid, $newitemid, true);
+    }
+
+    protected function process_questionnaire_fb_sections($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->survey_id = $this->get_new_parentid('questionnaire_survey');
+
+        // If this questionnaire has separate sections feedbacks.
+        if (isset($data->scorecalculation)) {
+            $scorecalculation = unserialize($data->scorecalculation);
+            $newscorecalculation = array();
+            foreach ($scorecalculation as $key => $qid) {
+                $newqid = $this->get_mappingid('questionnaire_question', $key);
+                $newscorecalculation[$newqid] = null;
+            }
+            $data->scorecalculation = serialize($newscorecalculation);
+        }
+
+        // Insert the questionnaire_fb_sections record.
+        $newitemid = $DB->insert_record('questionnaire_fb_sections', $data);
+        $this->set_mapping('questionnaire_fb_sections', $oldid, $newitemid, true);
+    }
+
+    protected function process_questionnaire_feedback($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->section_id = $this->get_new_parentid('questionnaire_fb_sections');
+
+        // Insert the questionnaire_feedback record.
+        $newitemid = $DB->insert_record('questionnaire_feedback', $data);
+        $this->set_mapping('questionnaire_feedback', $oldid, $newitemid, true);
     }
 
     protected function process_questionnaire_quest_choice($data) {
@@ -145,7 +185,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
             // Dependchoice.
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields='type_id');
+            $dependquestion = $DB->get_record('questionnaire_question',
+                            array('id' => $data->dependquestion), $fields = 'type_id');
             if (is_object($dependquestion)) {
                 if ($dependquestion->type_id != 1) {
                     $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);
@@ -281,6 +322,9 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->add_related_files('mod_questionnaire', 'intro', null);
         $this->add_related_files('mod_questionnaire', 'info', 'questionnaire_survey');
         $this->add_related_files('mod_questionnaire', 'thankbody', 'questionnaire_survey');
+        $this->add_related_files('mod_questionnaire', 'feedbacknotes', 'questionnaire_survey');
         $this->add_related_files('mod_questionnaire', 'question', 'questionnaire_question');
+        $this->add_related_files('mod_questionnaire', 'sectionheading', 'questionnaire_fb_sections');
+        $this->add_related_files('mod_questionnaire', 'feedback', 'questionnaire_feedback');
     }
 }
