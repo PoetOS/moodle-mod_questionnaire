@@ -593,7 +593,6 @@ function questionnaire_set_events($questionnaire) {
         $event->timeduration  = 0;
         if ($questionnaire->opendate) {
             $event->name = $questionnaire->name.' ('.get_string('questionnaireopens', 'questionnaire').')';
-            echo"+-+- 59<br>";
             calendar_event::create($event);
             unset($event->id); // So we can use the same object for the close event.
         }
