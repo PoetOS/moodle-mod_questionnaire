@@ -124,7 +124,8 @@ $string['essaybox_help'] = 'This question will display a plain text box with x T
 If you leave both x and y to their default 0 value (or if you set it to 0), then moodle\'s HTML editor will be displayed
  with standard height and width (if available in the course/user context & user profile). ';
 $string['feedback'] = 'Feedback';
-$string['feedback_help'] = 'Feedback Help TODO';
+$string['feedback_help'] = 'Feedback Help';
+$string['feedback_link'] = 'mod/questionnaire/personality_test#Editing_Questionnaire_Feedback_Messages';
 $string['feedbackaddmorefeedbacks'] = 'Add {no} more feedback fields';
 $string['feedbackbysection'] = 'Sections Feedback';
 $string['feedbackeditingglobal'] = 'Editing Questionnaire Global Feedback';
@@ -146,10 +147,11 @@ $string['feedbackmessages'] = 'Feedback messages for section {$a}';
 $string['feedbacknextsection'] = 'Next section {$a}';
 $string['feedbacknone'] = 'No Feedback messages';
 $string['feedbacknotes'] = 'Feedback notes';
-$string['feedbacknotes_help'] = 'TODO Feedback notes';
+$string['feedbacknotes_help'] = 'Text entered here will be displayed to the respondents at the end of their Feedback Report';
 $string['feedbackoptions'] = 'Feedback options';
 $string['feedbackoptions_help'] = 'Feedback options are available if your questionnaire contains the following question types and question settings:
 Radio buttons; Dropdown box or Rate. Those questions must be set as Required, their Question Name field must NOT be empty and the Possible answers choices must contain a value.';
+$string['feedbackoptions_link'] = 'mod/questionnaire/personality_test';
 $string['feedbackremovequestionfromsection'] = 'This question is part of feedback section [{$a}]';
 $string['feedbackremovesection'] = 'Removing this question will completely remove feedback section [{$a}]';
 $string['feedbackreport'] = 'Feedback Report';
@@ -165,6 +167,7 @@ $string['feedbacksection'] = 'Section';
 $string['feedbacksections'] = '{$a} Feedback sections';
 $string['feedbacksectionsselect'] = 'Sections';
 $string['feedbacksectionsselect_help'] = 'Place your questions into those Sections';
+$string['feedbacksectionsselect_link'] = 'mod/questionnaire/personality_test#Editing_Questionnaire_Feedback_Sections_2';
 $string['feedbacksettingssaved'] = 'Feedback settings saved';
 $string['feedbacktype'] = 'Feedback type';
 $string['field'] = 'Question {$a}';
