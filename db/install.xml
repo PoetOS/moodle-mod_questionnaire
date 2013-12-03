@@ -29,6 +29,10 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="sid" TYPE="foreign" FIELDS="sid" REFTABLE="questionnaire_survey" REFFIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+        <INDEX NAME="resp_view" UNIQUE="false" FIELDS="resp_view"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="questionnaire_survey" COMMENT="questionnaire_survey table retrofitted from MySQL">
       <FIELDS>
@@ -65,6 +69,10 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="qid" UNIQUE="false" FIELDS="qid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="questionnaire_question" COMMENT="questionnaire_question table retrofitted from MySQL">
       <FIELDS>

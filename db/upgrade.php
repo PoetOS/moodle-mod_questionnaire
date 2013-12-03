@@ -427,6 +427,37 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013100500, 'questionnaire');
     }
 
+    if ($oldversion < 2013100501) {
+        $table = new xmldb_table('questionnaire');
+        $index = new xmldb_index('course');
+        $index->set_attributes(XMLDB_INDEX_NOTUNIQUE, array('course'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $index = new xmldb_index('resp_view');
+        $index->set_attributes(XMLDB_INDEX_NOTUNIQUE, array('resp_view'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $table = new xmldb_table('questionnaire_attempts');
+        $index = new xmldb_index('userid');
+        $index->set_attributes(XMLDB_INDEX_NOTUNIQUE, array('userid'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $index = new xmldb_index('qid');
+        $index->set_attributes(XMLDB_INDEX_NOTUNIQUE, array('qid'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2013062402, 'questionnaire');
+    }
+
     return $result;
 }
 
