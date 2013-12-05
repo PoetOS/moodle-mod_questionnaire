@@ -108,7 +108,7 @@ class questionnaire_settings_form extends moodleform {
                     }
                 }
             }
-            if ($qtype == QUESYESNO) {
+            if ($qtype == QUESYESNO && $required == 'y' && $qname != '') {
                 $nbquestions ++;
             }
         }
