@@ -126,7 +126,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         $argstr2 = $argstr.'&action=vall&group='.$currentgroupid;
         $row2[] = new tabobject('vall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('summary', 'questionnaire'));
-        if ($questionnaire->capabilities->viewsingleresponse && $questionnaire->respondenttype != 'anonymous') {
+        if ($questionnaire->capabilities->viewsingleresponse) {
             $argstr2 = $argstr.'&byresponse=1&action=vresp&group='.$currentgroupid;
             $row2[] = new tabobject('vrespsummary', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('viewbyresponse', 'questionnaire'));

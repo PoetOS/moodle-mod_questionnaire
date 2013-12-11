@@ -666,19 +666,16 @@ switch ($action) {
             if ($currentgroupid == 0 ) {
                 $groupname = get_string('allparticipants');
             }
-            // No need to display names list if questionnaire is anonymous!
-            if ($questionnaire->respondenttype != 'anonymous') {
-                if ($byresponse) {
-                    echo $OUTPUT->box_start();
-                    echo $OUTPUT->help_icon('viewindividualresponse', 'questionnaire').'&nbsp;';
-                    echo (get_string('viewindividualresponse', 'questionnaire').' <strong> : '.$groupname.'</strong>');
-                    echo $OUTPUT->box_end();
-                }
-                $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
-                if (!$byresponse) { // Show respondents individual responses.
-                    $questionnaire->view_response($rid, $referer = '', $blankquestionnaire = false, $resps, $compare = true,
-                        $isgroupmember = true, $allresponses = false, $currentgroupid);
-                }
+            if ($byresponse) {
+                echo $OUTPUT->box_start();
+                echo $OUTPUT->help_icon('viewindividualresponse', 'questionnaire').'&nbsp;';
+                echo (get_string('viewindividualresponse', 'questionnaire').' <strong> : '.$groupname.'</strong>');
+                echo $OUTPUT->box_end();
+            }
+            $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
+            if (!$byresponse) { // Show respondents individual responses.
+                $questionnaire->view_response($rid, $referer = '', $blankquestionnaire = false, $resps, $compare = true,
+                    $isgroupmember = true, $allresponses = false, $currentgroupid);
             }
         }
         echo $OUTPUT->box_end();

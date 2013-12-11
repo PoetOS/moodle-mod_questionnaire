@@ -2113,29 +2113,39 @@ class questionnaire {
 
     public function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
         global $CFG, $DB, $OUTPUT;
-        $selectgroupid = '';
-        $gmuserid = ', GM.userid ';
-        $groupmembers = ', '.$CFG->prefix.'groups_members GM ';
-        switch ($currentgroupid) {
-            case 0:     // All participants.
-                $gmuserid = '';
-                $groupmembers = '';
-                break;
-            default:     // Members of a specific group.
-                $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND R.username = GM.userid ';
+        // Is this questionnaire set to fullname or anonymous?
+        $isfullname = $this->respondenttype != 'anonymous';
+        if ($isfullname) {
+            $selectgroupid = '';
+            $gmuserid = ', GM.userid ';
+            $groupmembers = ', '.$CFG->prefix.'groups_members GM ';
+            switch ($currentgroupid) {
+                case 0:     // All participants.
+                    $gmuserid = '';
+                    $groupmembers = '';
+                    break;
+                default:     // Members of a specific group.
+                    $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND R.username = GM.userid ';
+            }
+            $castsql = $DB->sql_cast_char2int('R.username');
+            $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username,
+                            U.id as userid '.$gmuserid.
+            'FROM '.$CFG->prefix.'questionnaire_response R,
+            '.$CFG->prefix.'user U
+            '.$groupmembers.
+            'WHERE R.survey_id='.$this->survey->id.
+            ' AND complete = \'y\''.
+            ' AND U.id = '.$castsql.
+            $selectgroupid.
+            'ORDER BY U.lastname, U.firstname, R.submitted DESC';
+        } else {
+            $sql = 'SELECT R.id AS responseid, R.submitted
+                   FROM {questionnaire_response} R
+                   WHERE R.survey_id = ?
+                   AND complete = ?
+                   ORDER BY R.submitted DESC';
         }
-        $castsql = $DB->sql_cast_char2int('R.username');
-        $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username,
-                        U.id as userid '.$gmuserid.
-        'FROM '.$CFG->prefix.'questionnaire_response R,
-        '.$CFG->prefix.'user U
-        '.$groupmembers.
-        'WHERE R.survey_id='.$this->survey->id.
-        ' AND complete = \'y\''.
-        ' AND U.id = '.$castsql.
-        $selectgroupid.
-        'ORDER BY U.lastname, U.firstname, R.submitted DESC';
-        if (!$responses = $DB->get_records_sql($sql)) {
+        if (!$responses = $DB->get_records_sql ($sql, array('survey_id' => $this->survey->id, 'complete' => 'y'))) {
             return;
         }
         $total = count($responses);
@@ -2143,18 +2153,22 @@ class questionnaire {
             return;
         }
         $rids = array();
-        $ridssub = array();
-        $ridsuserfullname = array();
-        $ridsuserid = array();
+        if ($isfullname) {
+            $ridssub = array();
+            $ridsuserfullname = array();
+            $ridsuserid = array();
+        }
         $i = 0;
         $currpos = -1;
         foreach ($responses as $response) {
             array_push($rids, $response->responseid);
             array_push($ridssub, $response->submitted);
-            $user = $DB->get_record('user', array('id' => $response->userid));
-            $userfullname = fullname($user);
-            array_push($ridsuserfullname, fullname($user));
-            array_push($ridsuserid, $response->userid);
+            if ($isfullname) {
+                $user = $DB->get_record('user', array('id' => $response->userid));
+                $userfullname = fullname($user);
+                array_push($ridsuserfullname, fullname($user));
+                array_push($ridsuserid, $response->userid);
+            }
             if ($response->responseid == $currrid) {
                 $currpos = $i;
             }
@@ -2172,29 +2186,42 @@ class questionnaire {
             $displaypos = 1;
             if ($prevrid != null) {
                 $pos = $currpos - 1;
-                $responsedate = userdate($ridssub[$pos]);
-                $title = $ridsuserfullname[$pos];
-                // Only add date if more than one response by a student.
-                if ($ridsuserid[$pos] == $ridsuserid[$currpos]) {
-                    $title .= ' | '.$responsedate;
-                }
-                $firstuserfullname = $ridsuserfullname[0];
-                array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$firstrid.'&amp;individualresponse=1" title="'.
-                                $firstuserfullname.'">'.
-                                get_string('firstrespondent', 'questionnaire').'</a>');
-                array_push($linkarr, '<b><&nbsp;</b><a href="'.$url.'&amp;rid='.$prevrid.'&amp;individualresponse=1"
+                if ($isfullname) {
+                    $responsedate = userdate($ridssub[$pos]);
+                    $title = $ridsuserfullname[$pos];
+                    // Only add date if more than one response by a student.
+                    if ($ridsuserid[$pos] == $ridsuserid[$currpos]) {
+                        $title .= ' | '.$responsedate;
+                    }
+                    $firstuserfullname = $ridsuserfullname[0];
+                    array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$firstrid.'&amp;individualresponse=1" title="'.
+                                    $firstuserfullname.'">'.
+                                    get_string('firstrespondent', 'questionnaire').'</a>');
+                    array_push($linkarr, '<b><&nbsp;</b><a href="'.$url.'&amp;rid='.$prevrid.'&amp;individualresponse=1"
+                                    title="'.$title.'">'.get_string('previous').'</a>');
+                } else {
+                    $title = '';
+                    array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$firstrid.'&amp;individualresponse=1" title="'.
+                        $title.'">'.get_string('firstrespondent', 'questionnaire').'</a>');
+                    array_push($linkarr, '<b><&nbsp;</b><a href="'.$url.'&amp;rid='.$prevrid.'&amp;individualresponse=1"
                                 title="'.$title.'">'.get_string('previous').'</a>');
+                }
             }
             array_push($linkarr, '<b>'.($currpos + 1).' / '.$total.'</b>');
             if ($nextrid != null) {
                 $pos = $currpos + 1;
-                $responsedate = userdate($ridssub[$pos]);
-                $title = $ridsuserfullname[$pos];
-                // Only add date if more than one response by a student.
-                if ($ridsuserid[$pos] == $ridsuserid[$currpos]) {
-                    $title .= ' | '.$responsedate;
+                $responsedate = '';
+                $title = '';
+                $lastuserfullname = '';
+                if ($isfullname) {
+                    $responsedate = userdate($ridssub[$pos]);
+                    $title = $ridsuserfullname[$pos];
+                    // Only add date if more than one response by a student.
+                    if ($ridsuserid[$pos] == $ridsuserid[$currpos]) {
+                        $title .= ' | '.$responsedate;
+                    }
+                    $lastuserfullname = $ridsuserfullname[$total - 1];
                 }
-                $lastuserfullname = $ridsuserfullname[$total - 1];
                 array_push($linkarr, '<a href="'.$url.'&amp;rid='.$nextrid.'&amp;individualresponse=1"
                                 title="'.$title.'">'.get_string('next').'</a>&nbsp;<b>></b>');
                 array_push($linkarr, '<a href="'.$url.'&amp;rid='.$lastrid.'&amp;individualresponse=1"
@@ -2226,9 +2253,15 @@ class questionnaire {
 
         } else { // Display respondents list.
             for ($i = 0; $i < $total; $i++) {
-                $responsedate = userdate($ridssub[$i]);
-                array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
-                    $rids[$i].'&amp;individualresponse=1" >'.$ridsuserfullname[$i].'</a>'.'&nbsp;');
+                if ($isfullname) {
+                    $responsedate = userdate($ridssub[$i]);
+                    array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
+                        $rids[$i].'&amp;individualresponse=1" >'.$ridsuserfullname[$i].'</a>'.'&nbsp;');
+                } else {
+                    array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
+                        $rids[$i].'&amp;individualresponse=1" >'.
+                        get_string('response', 'questionnaire').($i + 1).'</a>'.'&nbsp;');
+                }
             }
             // Table formatting from http://wikkawiki.org/PageAndCategoryDivisionInACategory.
             $total = count($linkarr);
