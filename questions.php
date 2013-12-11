@@ -570,8 +570,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
         if ($resptable = $DB->get_record_sql($sql)) {
             $sql = 'SELECT *
                 FROM {questionnaire_'.$resptable->response_table.'}
-                WHERE question_id ='.$qid.'
-                GROUP BY response_id';
+                WHERE question_id ='.$qid;
             if ($resps = $DB->get_records_sql($sql) ) {
                 $countresps = count($resps);
             }
