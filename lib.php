@@ -668,7 +668,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                     new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
         }
-        if ($questionnaire->capabilities->viewsingleresponse && $questionnaire->respondenttype != 'anonymous') {
+        if ($questionnaire->capabilities->viewsingleresponse) {
             $byresponsenode = $reportnode->add(get_string('viewbyresponse', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                     array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
