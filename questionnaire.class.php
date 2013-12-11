@@ -584,6 +584,7 @@ class questionnaire {
                     $nbquestionsonpage = questionnaire_nb_questions_on_page($this->questions,
                                     $this->questionsbysec[$formdata->sec], $formdata->rid);
                     while (count($nbquestionsonpage) == 0) {
+                        $this->response_delete($formdata->rid, $formdata->sec);
                         $formdata->sec++;
                         // We have reached the end of questionnaire on a page without any question left.
                         if ($formdata->sec > $numsections) {
@@ -601,9 +602,6 @@ class questionnaire {
         if (!empty($formdata->prev)) {
             $this->response_delete($formdata->rid, $formdata->sec);
 
-            // Skip logic: do not insert responses when going to previous page if current page contains dependquestions.
-            $caninsertresponse = true;
-
             // If skip logic and this is last page reached with no questions,
             // unlock questionnaire->end to allow navigate back to previous page.
             if (isset($SESSION->questionnaire->end) && $SESSION->questionnaire->end == true) {
@@ -611,18 +609,9 @@ class questionnaire {
                 $formdata->sec --;
             }
 
-            // If this page does contains child questions, allow navigating back without checking the responses.
-            foreach ($this->questionsbysec[$formdata->sec] as $question) {
-                if ($question->dependquestion != 0) {
-                    $caninsertresponse = false;
-                    break;
-                }
-            }
-            if ($caninsertresponse) {
                 $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
-                // Prevent navigation to previous page if required questions are empty or not correct (and NOT skip logic mode).
-                $msg = $this->response_check_format($formdata->sec, $formdata);
-            }
+            // Prevent navigation to previous page if wrong format in answered questions).
+            $msg = $this->response_check_format($formdata->sec, $formdata, $checkmissing = false, $checkwrongformat = true);
             if ( $msg ) {
                 $formdata->prev = '';
             } else {
@@ -1130,7 +1119,7 @@ class questionnaire {
 
     // RESPONSE LIBRARY.
 
-    private function response_check_format($section, &$formdata, $qnum='') {
+    private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
         global $PAGE, $OUTPUT;
         $missing = 0;
         $strmissing = '';     // Missing questions.
@@ -1344,7 +1333,7 @@ class questionnaire {
         if ($autonum != 1 && $autonum != 3) {
             $nonumbering = true;
         }
-        if ($missing) {
+        if ($checkmissing && $missing) {
             if ($nonumbering) {
                 $strmissing = '';
             }
@@ -1357,7 +1346,7 @@ class questionnaire {
                 $message .= '<br />';
             }
         }
-        if ($wrongformat) {
+        if ($checkwrongformat && $wrongformat) {
             if ($nonumbering) {
                 $message .= get_string('wronganswers', 'questionnaire');
             } else {
