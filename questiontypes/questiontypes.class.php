@@ -908,23 +908,25 @@ class questionnaire_question {
 
         // Do not display the info box for the label question type.
         if ($this->type_id != QUESSECTIONTEXT) {
-            echo html_writer::start_tag('div', array('class' => 'qn-info'));
-            echo html_writer::start_tag('div', array('class' => 'accesshide'));
-            echo get_string('questionnum', 'questionnaire');
-            echo html_writer::end_tag('div');
+            if (!$nonumbering) {
+                echo html_writer::start_tag('div', array('class' => 'qn-info'));
+                echo html_writer::start_tag('div', array('class' => 'accesshide'));
+                echo get_string('questionnum', 'questionnaire');
+                echo html_writer::end_tag('div');
+                echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
+                echo html_writer::end_tag('div');
+            }
             $required = '';
             if ($this->required == 'y') {
-                $required = html_writer::empty_tag('img',
+                $required = html_writer::start_tag('div', array('class' => 'accesshide'));
+                $required .= get_string('required', 'questionnaire');
+                $required .= html_writer::end_tag('div');
+                $required .= html_writer::empty_tag('img',
                         array('class' => 'req',
                                 'title' => get_string('required', 'questionnaire'),
                                 'alt' => get_string('required', 'questionnaire'),
                                 'src' => $OUTPUT->pix_url('req')));
             }
-            echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
-            echo html_writer::start_tag('div', array('class' => 'accesshide'));
-            echo get_string('required', 'questionnaire');
-            echo html_writer::end_tag('div');
-            echo html_writer::end_tag('div');
             echo $required;
         }
         echo html_writer::end_tag('legend');
