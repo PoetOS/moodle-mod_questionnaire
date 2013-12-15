@@ -276,7 +276,12 @@ td.selected {
     margin-right: 3px;
 }
 
-.qn-answer label {
+#page-mod-questionnaire-show_nonrespondents input[type="radio"] {
+    margin-right: 1px;
+}
+
+.qn-answer label,
+#page-mod-questionnaire-show_nonrespondents label {
     margin-right: 0.6em;
 }
 
