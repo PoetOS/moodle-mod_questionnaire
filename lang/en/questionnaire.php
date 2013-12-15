@@ -251,6 +251,7 @@ $string['notemplatesurveys'] = 'No template questionnaires.';
 $string['notopen'] = 'This questionnaire will not open until {$a}.';
 $string['notrequired'] = 'Response is not required';
 $string['not_started'] = 'not started';
+$string['nousersselected'] = 'No users selected';
 $string['num'] = '#';
 $string['numberfloat'] = 'The number you entered <strong>{$a->number}</strong> has been reformatted/rounded with <strong>{$a->precision}</strong> decimal place(s).';
 $string['numberofdecimaldigits'] = 'Nb of decimal digits';
@@ -417,12 +418,13 @@ $string['selecttheme'] = 'Select a theme (css) to use with this questionnaire.';
 $string['send'] = 'Send';
 $string['sendemail'] = 'Send email';
 $string['send_message'] = 'Send message to selected users';
+$string['send_message_to'] = 'Send message to:';
 $string['sendemail_help'] = 'Sends a copy of each submission to the specified address or addresses.
 You can provide more than one address by separating them with commas.
 Leave blank for no email backup.';
 $string['settings'] = 'Settings';
 $string['settingssaved'] = 'Settings saved';
-$string['show_nonrespondents'] = 'Show nonrespondents';
+$string['show_nonrespondents'] = 'Non-respondents';
 $string['started'] = 'started';
 $string['strfdate'] = '%d/%m/%Y';
 $string['strfdateformatcsv'] = 'd/m/Y H:i:s';

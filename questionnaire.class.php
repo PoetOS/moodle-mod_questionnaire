@@ -2162,10 +2162,10 @@ class questionnaire {
         $currpos = -1;
         foreach ($responses as $response) {
             array_push($rids, $response->responseid);
-            array_push($ridssub, $response->submitted);
             if ($isfullname) {
                 $user = $DB->get_record('user', array('id' => $response->userid));
                 $userfullname = fullname($user);
+                array_push($ridssub, $response->submitted);
                 array_push($ridsuserfullname, fullname($user));
                 array_push($ridsuserid, $response->userid);
             }
@@ -2258,6 +2258,7 @@ class questionnaire {
                     array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
                         $rids[$i].'&amp;individualresponse=1" >'.$ridsuserfullname[$i].'</a>'.'&nbsp;');
                 } else {
+                    $responsedate = '';
                     array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
                         $rids[$i].'&amp;individualresponse=1" >'.
                         get_string('response', 'questionnaire').($i + 1).'</a>'.'&nbsp;');

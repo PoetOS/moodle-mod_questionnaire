@@ -631,7 +631,7 @@ function questionnaire_set_events($questionnaire) {
 }
 
 /**
- * Count users who have not completed the questionnaire
+ * Get users who have not completed the questionnaire
  *
  * @global object
  * @uses CONTEXT_MODULE
@@ -685,21 +685,6 @@ function questionnaire_get_incomplete_users($cm, $sid,
         $allusers = array_slice($allusers, $startpage, $pagecount);
     }
     return $allusers;
-}
-
-/**
- * Count users who have not completed the questionnaire
- *
- * @global object
- * @param object $cm
- * @param int $group single groupid
- * @return int count of userrecords
- */
-function questionnaire_count_incomplete_users($cm, $sid, $group = false) {
-    if ($allusers = questionnaire_get_incomplete_users($cm, $sid, $group)) {
-        return count($allusers);
-    }
-    return 0;
 }
 
 /**

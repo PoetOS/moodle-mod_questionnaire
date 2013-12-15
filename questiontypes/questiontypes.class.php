@@ -905,10 +905,10 @@ class questionnaire_question {
         // Do not display the info box for the label question type.
         if ($this->type_id != QUESSECTIONTEXT) {
             if (!$nonumbering) {
-            echo html_writer::start_tag('div', array('class' => 'qn-info'));
-            echo html_writer::start_tag('div', array('class' => 'accesshide'));
-            echo get_string('questionnum', 'questionnaire');
-            echo html_writer::end_tag('div');
+                echo html_writer::start_tag('div', array('class' => 'qn-info'));
+                echo html_writer::start_tag('div', array('class' => 'accesshide'));
+                echo get_string('questionnum', 'questionnaire');
+                echo html_writer::end_tag('div');
                 echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
                 echo html_writer::end_tag('div');
             }
