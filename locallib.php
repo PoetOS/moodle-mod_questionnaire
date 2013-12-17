@@ -510,17 +510,6 @@ function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='
         $strviewresp = get_string('viewresponses', 'questionnaire');
 
         foreach ($surveys as $survey) {
-
-            // Do not display an existing survey in the Copy from list
-            // if current user does not have capability to view it (might be a non-editing teacher).
-            if (! $cm = get_coursemodule_from_instance("questionnaire", $survey->qid, $courseid)) {
-                print_error('invalidcoursemodule');
-            }
-            $context = context_module::instance($cm->id);
-            if (!has_capability('mod/questionnaire:view', $context)) {
-                continue;
-            }
-
             if (empty($survey->realm)) {
                 $stat = $strunknown;
             } else if ($survey->realm == 'public') {
