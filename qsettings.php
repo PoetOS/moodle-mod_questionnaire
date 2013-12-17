@@ -129,6 +129,11 @@ if ($settings = $settingsform->get_data()) {
             $redirecturl = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id;
         }
 
+        // Save current advanced settings only.
+        if (isset($settings->submitbutton) || isset($settings->submitbutton2)) {
+            redirect ($redirecturl, get_string('settingssaved', 'questionnaire'));
+        }
+
         // Delete existing section and feedback records for this questionnaire if any were previously set and None are wanted now
         // or Global feedback is now wanted.
         if ($sdata->feedbacksections == 0 || ($questionnaire->survey->feedbacksections > 1 && $sdata->feedbacksections == 1)) {
@@ -141,11 +146,6 @@ if ($settings = $settingsform->get_data()) {
             }
         }
 
-        // Save current advanced settings only.
-        if (isset($settings->submitbutton)) {
-            redirect ($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id,
-                  get_string('settingssaved', 'questionnaire'));
-        }
         // Save current advanced settings and go to edit feedback page(s).
         $SESSION->questionnaire->currentfbsection = 1;
         switch ($settings->feedbacksections) {
