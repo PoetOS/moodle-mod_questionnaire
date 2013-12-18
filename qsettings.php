@@ -149,10 +149,12 @@ if ($settings = $settingsform->get_data()) {
         // Save current advanced settings and go to edit feedback page(s).
         $SESSION->questionnaire->currentfbsection = 1;
         switch ($settings->feedbacksections) {
-            case 9:
+            // 1 fbsection means Global feedback, redirect immediately to the fb settings page.
+            case 1:
                 redirect ($CFG->wwwroot.'/mod/questionnaire/fbsettings.php?id='.$questionnaire->cm->id,
                         get_string('settingssaved', 'questionnaire'), 0);
                 break;
+            // More than 1 section, go to fb sections page for user to put questions inside sections.
             default:
                 // This questionnaire has more than one feedback sections, so needs to set sections questions first
                 // before setting feedback messages.
