@@ -59,7 +59,11 @@ if ($id) {
 }
 
 // Check login and get context.
-require_login($course->id, false, $cm);
+// Do not require login if this questionnaire is viewed from the Add questionnaire page
+// to enable teachers to view template or public questionnaires located in a course where they are not enroled.
+if (!$popup) {
+    require_login($course->id, false, $cm);
+}
 $context = $cm ? context_module::instance($cm->id) : false;
 
 $url = new moodle_url('/mod/questionnaire/preview.php');
@@ -71,9 +75,7 @@ if ($sid) {
 }
 $PAGE->set_url($url);
 
-if (!$popup) {
-    $PAGE->set_context($context);
-}
+$PAGE->set_context($context);
 
 $questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
 $owner = (trim($questionnaire->survey->owner) == trim($course->id));
@@ -81,7 +83,7 @@ $owner = (trim($questionnaire->survey->owner) == trim($course->id));
 $canpreview = (!isset($questionnaire->capabilities) &&
                has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
               (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview && $owner);
-if (!$canpreview) {
+if (!$canpreview && !$popup) {
     // Should never happen, unless called directly by a snoop...
     print_error('nopermissions', 'questionnaire', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
 }
