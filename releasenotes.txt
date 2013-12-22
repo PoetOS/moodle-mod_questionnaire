@@ -1,4 +1,8 @@
-Release Notes:
+Release Notes
+
+Version 2.6.2 (Build - 2013122200) BETA released to the Moodle Plugins Directory
+All recent bug fixes in version 2.5.x have been carried over to this 2.6.2 version.
+Plus a number of bug fixes and improvements since version 2.6.1.
 
 Version 2.6.1 (Build - 2013120200) (BETA to be released)
 - Major new feature : "Personality Test".
@@ -7,13 +11,11 @@ Version 2.6.1 (Build - 2013120200) (BETA to be released)
 - Roles without the moodle/course:bulkmessaging capability can still view list of non-respondents, 
 but not select users for bulk messaging.
 - Fixed CONTRIB-4764 :: When deleting a question, number of existing responses to that question is sometimes wrong.
--  
 
 Version 2.6.0 2013101300 (not released)
 - Slightly modified call to fullname version to take into account new user naming convention in Moodle 2.6.
 - Removed all calls to canusehtmleditor (deprecated). Pending solution, Essay questions are displayed
 with the full HTML TinyMCE editor.
-
 
 Version 2.5.6 - 2013100502 (to be released)
 - If current questionnaire is based on a public one, do not include survey nor 
