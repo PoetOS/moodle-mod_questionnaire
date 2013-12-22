@@ -1,5 +1,14 @@
 Release Notes:
 
+Version 2.5.8 - 2013122200
+- Fixed CONTRIB-4778 :: In Conditional branching questionnaire, back navigation deletes previous answers.
+- Fixed CONTRIB-4779 :: Do not prevent from navigating to previous page when required questions on page are left unanswered.
+- Improvement CONTRIB-4785 :: Make List of individual anonymous responses available to the teacher (again).
+- Improvement CONTRIB-4787 :: Email non-respondents in an anonymous questionnaire.   
+- Fixed CONTRIB-4788 :: SQL error on deleting a question.
+- Fixed CONTRIB-4789 :: Questions have required flag when they are not required.
+- Fixed CONTRIB-4800 :: Enable teachers to preview template or public questionnaires located in courses where they are not enrolled.  
+
 Version 2.5.7 - 2013120200
 - Fixed CONTRIB-4764 :: When deleting a question, number of existing responses to that question is sometimes wrong.
 - Fixed CONTRIB-4760 :: N/A column report display is incorrect for Rate questions with N/A option selected.
