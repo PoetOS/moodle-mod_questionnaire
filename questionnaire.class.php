@@ -1419,8 +1419,6 @@ class questionnaire {
         }
     }
 
-
-
     private function response_import_all($rid, &$varr) {
 
         $vals = $this->response_select($rid, 'content');

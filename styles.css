@@ -26,6 +26,11 @@
     margin-bottom: 0px!important;
 }
 
+#page-mod-questionnaire-preview fieldset,
+#page-mod-questionnaire-complete fieldset {
+    margin-bottom: 0px!important;
+}
+
 #page-mod-questionnaire-questions .mform .fitem .fitemtitle {
     text-align: left;
     margin-left: 10px;
