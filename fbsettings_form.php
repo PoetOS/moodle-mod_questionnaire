@@ -73,8 +73,7 @@ class questionnaire_feedback_form extends moodleform {
         $mform->addElement('editor', 'sectionheading', get_string('feedbacksectionheadingtext', 'questionnaire'),
                         null, $editoroptions);
         $mform->setType('info', PARAM_RAW);
-        // TODO Check whether section headings need to be required.
-        // $mform->addRule('sectionheading', get_string('feedbacksectionheadingmissing', 'questionnaire'), 'required', null, 'client');
+
         $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
 
         // FEEDBACK FIELDS.

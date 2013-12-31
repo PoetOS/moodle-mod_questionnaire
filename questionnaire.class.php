@@ -959,7 +959,7 @@ class questionnaire {
         if (empty($this->survey->id)) {
             // Create a new survey in the database.
             $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page', 'thank_head',
-                            'thank_body', 'feedbacknotes', 'info', 'feedbacksections');
+                            'thank_body', 'feedbacknotes', 'info', 'feedbacksections', 'feedbackscores', 'chart_type');
             // Theme field deprecated.
             $record = new Object();
             $record->id = 0;
@@ -983,9 +983,12 @@ class questionnaire {
                     || empty($sdata->realm)) {
                 return(false);
             }
+            if (!isset($sdata->chart_type)) {
+                $sdata->chart_type = '';
+            }
 
             $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page',
-                    'thank_head', 'thank_body', 'feedbacknotes', 'info', 'feedbacksections');
+                    'thank_head', 'thank_body', 'feedbacknotes', 'info', 'feedbacksections', 'feedbackscores', 'chart_type');
             $name = $DB->get_field('questionnaire_survey', 'name', array('id' => $this->survey->id));
 
             // Trying to change survey name.
@@ -2954,6 +2957,7 @@ class questionnaire {
         $action = optional_param('action', 'vall', PARAM_ALPHA);
 
         require_once($CFG->libdir.'/tablelib.php');
+        require_once($CFG->dirroot.'/mod/questionnaire/drawchart.php');
         if ($resp = $DB->get_record('questionnaire_response', array('id' => $rid)) ) {
             $userid = $resp->username;
             if ($user = $DB->get_record('user', array('id' => $userid))) {
@@ -2970,18 +2974,21 @@ class questionnaire {
                 $groupname = get_string('allparticipants');
             }
         }
-        $table = new html_table();
-        $table->size = array(null, null);
-        $table->align = array('left', 'right', 'right');
-        $table->head = array();
-        $table->wrap = array();
-        if ($compare) {
-            $table->head = array(get_string('feedbacksection', 'questionnaire'), $ruser, $groupname);
-        } else {
-            $table->head = array(get_string('feedbacksection', 'questionnaire'), $groupname);
+        if ($this->survey->feedbackscores) {
+            $table = new html_table();
+            $table->size = array(null, null);
+            $table->align = array('left', 'right', 'right');
+            $table->head = array();
+            $table->wrap = array();
+            if ($compare) {
+                $table->head = array(get_string('feedbacksection', 'questionnaire'), $ruser, $groupname);
+            } else {
+                $table->head = array(get_string('feedbacksection', 'questionnaire'), $groupname);
+            }
         }
 
         $feedbacksections = $this->survey->feedbacksections;
+        $feedbackscores = $this->survey->feedbackscores;
         $sid = $this->survey->id;
         $questions = $this->questions;
 
@@ -3188,7 +3195,10 @@ class questionnaire {
             if ($compare  || $allresponses) {
                 $allscore = array($allscorepercent, 100 - $allscorepercent);
             }
-
+            if ($CFG->questionnaire_usergraph && $this->survey->chart_type) {
+                draw_chart ($feedbacktype = 'global', $this->survey->chart_type, $labels,
+                                    $score, $allscore, $sectionlabel, $groupname, $allresponses);
+            }
             // Display class or group score. Pending chart library decision to display?
             // Find out if this feedback sectionlabel has a pipe separator.
             $lb = explode("|", $sectionlabel);
@@ -3199,13 +3209,15 @@ class questionnaire {
                 $oppositescore = ' | '.$score[1].'%';
                 $oppositeallscore = ' | '.$allscore[1].'%';
             }
-            if ($compare) {
-                $table->data[] = array($sectionlabel, $score[0].'%'.$oppositescore, $allscore[0].'%'.$oppositeallscore);
-            } else {
-                $table->data[] = array($sectionlabel, $allscore[0].'%'.$oppositeallscore);
-            }
+            if ($this->survey->feedbackscores) {
+                if ($compare) {
+                    $table->data[] = array($sectionlabel, $score[0].'%'.$oppositescore, $allscore[0].'%'.$oppositeallscore);
+                } else {
+                    $table->data[] = array($sectionlabel, $allscore[0].'%'.$oppositeallscore);
+                }
 
-            echo html_writer::table($table);
+                echo html_writer::table($table);
+            }
 
             return $feedbackmessages;
         }
@@ -3284,7 +3296,7 @@ class questionnaire {
             }
         }
 
-        // Display class or group score. Pending chart library decision to display?
+        // Display class or group score.
         switch ($action) {
             case 'vallasort':
                 asort($allscore);
@@ -3312,6 +3324,10 @@ class questionnaire {
             } else {
                 $table->data[] = array($sectionlabel, $sc.'%'.$oppositeallscore);
             }
+        }
+        if (isset($CFG->questionnaire_usergraph) && $CFG->questionnaire_usergraph && $this->survey->chart_type) {
+            draw_chart($feedbacktype = 'sections', $this->survey->chart_type, array_values($chartlabels),
+                array_values($scorepercent), array_values($allscorepercent), $sectionlabel, $groupname, $allresponses);
         }
 
         echo html_writer::table($table);

@@ -27,7 +27,7 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
 class questionnaire_settings_form extends moodleform {
 
     public function definition() {
-        global $questionnaire, $questionnairerealms;
+        global $questionnaire, $questionnairerealms, $CFG;
 
         $mform    =& $this->_form;
 
@@ -126,6 +126,57 @@ class questionnaire_settings_form extends moodleform {
             $mform->addElement('select', 'feedbacksections', get_string('feedbackoptions', 'questionnaire'), $feedbackoptions);
             $mform->setDefault('feedbacksections', $questionnaire->survey->feedbacksections);
             $mform->addHelpButton('feedbacksections', 'feedbackoptions', 'questionnaire');
+
+            $options = array('0' => get_string('no'), '1' => get_string('yes'));
+            $mform->addElement('select', 'feedbackscores', get_string('feedbackscores', 'questionnaire'), $options);
+            $mform->addHelpButton('feedbackscores', 'feedbackscores', 'questionnaire');
+
+            // Is the RGraph library enabled at level site?
+            if ($CFG->questionnaire_usergraph) {
+                $chartgroup = array();
+                $charttypes = array (null => get_string('none'),
+                        'bipolar' => get_string('chart:bipolar', 'questionnaire'),
+                        'vprogress' => get_string('chart:vprogress', 'questionnaire'));
+                $chartgroup[] = $mform->createElement('select', 'chart_type_global',
+                        get_string('chart:type', 'questionnaire').' ('.
+                                get_string('feedbackglobal', 'questionnaire').')', $charttypes);
+                if ($questionnaire->survey->feedbacksections == 1) {
+                    $mform->setDefault('chart_type_global', $questionnaire->survey->chart_type);
+                }
+                $mform->disabledIf('chart_type_global', 'feedbacksections', 'eq', 0);
+                $mform->disabledIf('chart_type_global', 'feedbacksections', 'neq', 1);
+
+                $charttypes = array (null => get_string('none'),
+                        'bipolar' => get_string('chart:bipolar', 'questionnaire'),
+                        'hbar' => get_string('chart:hbar', 'questionnaire'),
+                        'rose' => get_string('chart:rose', 'questionnaire'));
+                $chartgroup[] = $mform->createElement('select', 'chart_type_two_sections',
+                        get_string('chart:type', 'questionnaire').' ('.
+                                get_string('feedbackbysection', 'questionnaire').')', $charttypes);
+                if ($questionnaire->survey->feedbacksections > 1) {
+                    $mform->setDefault('chart_type_two_sections', $questionnaire->survey->chart_type);
+                }
+                $mform->disabledIf('chart_type_two_sections', 'feedbacksections', 'neq', 2);
+
+                $charttypes = array (null => get_string('none'),
+                        'bipolar' => get_string('chart:bipolar', 'questionnaire'),
+                        'hbar' => get_string('chart:hbar', 'questionnaire'),
+                        'radar' => get_string('chart:radar', 'questionnaire'),
+                        'rose' => get_string('chart:rose', 'questionnaire'));
+                $chartgroup[] = $mform->createElement('select', 'chart_type_sections',
+                        get_string('chart:type', 'questionnaire').' ('.
+                                get_string('feedbackbysection', 'questionnaire').')', $charttypes);
+                if ($questionnaire->survey->feedbacksections > 1) {
+                    $mform->setDefault('chart_type_sections', $questionnaire->survey->chart_type);
+                }
+                $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 0);
+                $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 1);
+                $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 2);
+
+                $mform->addGroup($chartgroup, 'chartgroup',
+                        get_string('chart:type', 'questionnaire'), null, false);
+                $mform->addHelpButton('chartgroup', 'chart:type', 'questionnaire');
+            }
             $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true);
             $mform->addElement('editor', 'feedbacknotes', get_string('feedbacknotes', 'questionnaire'), null, $editoroptions);
             $mform->setType('feedbacknotes', PARAM_RAW);

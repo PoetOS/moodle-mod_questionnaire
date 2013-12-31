@@ -133,6 +133,30 @@ switch ($action) {
             print_error('surveynotexists', 'questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'mybyresponse';
+        if ($CFG->questionnaire_usergraph) {
+            $charttype = $questionnaire->survey->chart_type;
+            if ($charttype) {
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
+
+                switch ($charttype) {
+                    case 'bipolar':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
+                        break;
+                    case 'hbar':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
+                        break;
+                    case 'radar':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
+                        break;
+                    case 'rose':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
+                        break;
+                    case 'vprogress':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
+                        break;
+                }
+            }
+        }
         $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
         $sort = 'submitted ASC';
         $resps = $DB->get_records_select('questionnaire_response', $select, $params = null, $sort);

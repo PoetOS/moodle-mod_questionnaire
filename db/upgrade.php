@@ -488,6 +488,27 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013112100, 'questionnaire');
     }
 
+    if ($oldversion < 2013123100) {
+        // Personality test with chart.
+        $table = new xmldb_table('questionnaire_survey');
+        $field = new xmldb_field('chart_type', XMLDB_TYPE_CHAR, '64', null, null, null, null, null);
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('feedbackscores', XMLDB_TYPE_INTEGER, '1', null, null, null, '1');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Questionnaire savepoint reached.
+         upgrade_mod_savepoint(true, 2013123100, 'questionnaire');
+    }
+
     return $result;
 }
 

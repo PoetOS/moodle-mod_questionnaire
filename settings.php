@@ -14,19 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * scorm version information.
- *
- * @package    mod
- * @subpackage questionnaire
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+defined('MOODLE_INTERNAL') || die;
 
-$module->version  = 2013123100;  // The current module version (Date: YYYYMMDDXX)
-$module->requires = 2013111800; // Moodle version.
-
-$module->component = 'mod_questionnaire';
-$module->cron     = 60 * 60 * 12;    // Period for cron to check this module (secs).
-
-$module->release  = '2.6.3 (Build - 2013123100)';
-$module->maturity  = MATURITY_BETA;
+if ($ADMIN->fulltree) {
+    $options = array(0 => get_string('no'), 1 => get_string('yes'));
+    $str = get_string('configusergraphlong', 'questionnaire');
+    $settings->add(new admin_setting_configselect('questionnaire_usergraph',
+                                    get_string('configusergraph', 'questionnaire'),
+                                    $str, 0, $options));
+}

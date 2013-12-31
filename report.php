@@ -175,6 +175,30 @@ if ($groupmode > 0) {
         $groupname = '<strong>'.get_string('allparticipants').'</strong>';
     }
 }
+if ($CFG->questionnaire_usergraph) {
+    $charttype = $questionnaire->survey->chart_type;
+    if ($charttype) {
+        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
+
+        switch ($charttype) {
+            case 'bipolar':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
+                break;
+            case 'hbar':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
+                break;
+            case 'radar':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
+                break;
+            case 'rose':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
+                break;
+            case 'vprogress':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
+                break;
+        }
+    }
+}
 
 switch ($action) {
 
@@ -505,13 +529,11 @@ switch ($action) {
                 $SESSION->questionnaire->current_tab = 'valldefault';
         }
         include('tabs.php');
-        echo ('<br />');
 
         $resps = array();
         // Enable choose_group if there are questionnaire groups and groupmode is not set to "no groups"
         // and if there are more goups than 1 (or if user can view all groups).
-        // TODO JR
-        if (is_array($questionnairegroups) && $groupmode > 0 /* && $groupscount > 1 - $questionnaire->canviewallgroups */) {
+        if (is_array($questionnairegroups) && $groupmode > 0) {
             $groupselect = groups_print_activity_menu($cm, $url->out(), true);
             // Count number of responses in each group.
             $castsql = $DB->sql_cast_char2int('R.username');
@@ -591,6 +613,30 @@ switch ($action) {
         }
         $ruser = false;
         $noresponses = false;
+        if ($CFG->questionnaire_usergraph) {
+            $charttype = $questionnaire->survey->chart_type;
+            if ($charttype) {
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
+
+                switch ($charttype) {
+                    case 'bipolar':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
+                        break;
+                    case 'hbar':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
+                        break;
+                    case 'radar':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
+                        break;
+                    case 'rose':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
+                        break;
+                    case 'vprogress':
+                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
+                        break;
+                }
+            }
+        }
 
         if ($byresponse || $rid) {
             // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).

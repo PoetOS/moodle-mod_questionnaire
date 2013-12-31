@@ -103,6 +103,8 @@ if ($settings = $settingsform->get_data()) {
                                                      $sdata->id, array('subdirs' => true), $sdata->thank_body);
     $sdata->email = $settings->email;
 
+    $sdata->feedbackscores = $settings->feedbackscores;
+
     if (isset ($settings->feedbacknotes)) {
         $sdata->fbnotesitemid = $settings->feedbacknotes['itemid'];
         $sdata->fbnotesformat = $settings->feedbacknotes['format'];
@@ -116,6 +118,15 @@ if ($settings = $settingsform->get_data()) {
 
     if (isset ($settings->feedbacksections)) {
         $sdata->feedbacksections = $settings->feedbacksections;
+        if ($CFG->questionnaire_usergraph) {
+            if ($settings->feedbacksections == 1) {
+                $sdata->chart_type = $settings->chart_type_global;
+            } else if ($settings->feedbacksections == 2) {
+                $sdata->chart_type = $settings->chart_type_two_sections;
+            } else if ($settings->feedbacksections > 2) {
+                $sdata->chart_type = $settings->chart_type_sections;
+            }
+        }
     } else {
         $sdata->feedbacksections = '';
     }
