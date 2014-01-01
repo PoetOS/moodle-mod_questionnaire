@@ -296,6 +296,7 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
                             chart.Set("chart.title", "'.$charttitle.'");
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize.'");
+                            chart.Set("chart.title.x", 400);
                             chart.Set("gutter.left", "'.$gutterleft.'");
                             chart.Set("gutter.right", 2);
                             chart.Set("chart.text.font", "'.$charttextfont.'");
@@ -312,6 +313,7 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
                             chart.Set("chart.title", "'.$charttitle2.'");
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize.'");
+                            chart.Set("chart.title.x", 400);
                             chart.Set("gutter.left", "'.$gutterleft.'");
                             chart.Set("gutter.right", 2);
                             chart.Set("chart.text.font", "'.$charttextfont.'");
