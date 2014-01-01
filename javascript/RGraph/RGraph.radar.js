@@ -1000,7 +1000,7 @@ angle -= HALFPI;
                                 'size':size,
                                 'x':centerx,
                                 'y':centery,
-                                'text':RG.number_format(this, (0).toFixed(decimals), units_pre, units_post),
+                                'text':typeof(prop['chart.ymin']) == 'number' ? RG.number_format(this, Number(prop['chart.ymin']).toFixed(prop['chart.scale.decimals']), units_pre, units_post) : '0',
                                 'valign':'center',
                                 'halign':'center',
                                 'bounding':prop['chart.labels.axes.boxed.zero'],

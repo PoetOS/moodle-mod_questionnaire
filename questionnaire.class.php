@@ -3329,8 +3329,9 @@ class questionnaire {
             draw_chart($feedbacktype = 'sections', $this->survey->chart_type, array_values($chartlabels),
                 array_values($scorepercent), array_values($allscorepercent), $sectionlabel, $groupname, $allresponses);
         }
-
-        echo html_writer::table($table);
+        if ($this->survey->feedbackscores) {
+            echo html_writer::table($table);
+        }
 
         return $feedbackmessages;
     }
