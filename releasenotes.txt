@@ -1,5 +1,9 @@
 Release Notes
 
+Version 2.6.3 (Build - 2014010300) BETA released to the Moodle plugins repository in replacement for 2.6.2.
+- Fixed incorrect upgrade $oldversion date in previous version.
+- Fixed RGraph bug with the Radar chart.
+
 Version 2.6.3 (Build - 2013123100) BETA
 - Added chart support for Personality Test feature.
 - This uses the RGraph JS libraries under MIT license. See http://www.rgraph.net/
@@ -12,7 +16,7 @@ Plus a number of bug fixes and improvements since version 2.6.1.
 - Fixed CONTRIB-4800 :: Enable teachers to preview template or public questionnaires located in courses where they are not enrolled.
 - Fixed CONTRIB-4789 :: Questions have required flag when they are not required 
 
-Version 2.6.1 (Build - 2013120200)
+Version 2.6.1 (Build - 2013120200) (not released)
 - Major new feature : "Personality Test".
 - Compliant with Moodle Coding style recommendations
 - Rate questions choices display a "not yet answered" radio button.
