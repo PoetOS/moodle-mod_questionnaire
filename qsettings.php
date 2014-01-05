@@ -103,7 +103,11 @@ if ($settings = $settingsform->get_data()) {
                                                      $sdata->id, array('subdirs' => true), $sdata->thank_body);
     $sdata->email = $settings->email;
 
-    $sdata->feedbackscores = $settings->feedbackscores;
+    if (isset ($settings->feedbackscores)) {
+        $sdata->feedbackscores = $settings->feedbackscores;
+    } else {
+        $sdata->feedbackscores = 0;
+    }
 
     if (isset ($settings->feedbacknotes)) {
         $sdata->fbnotesitemid = $settings->feedbacknotes['itemid'];
