@@ -557,104 +557,6 @@ class questionnaire {
             $this->response_goto_saved($action);
             return;
         }
- // JR save each section 's $formdata somewhere in case user returns to that page when navigating the questionnaire...
-        if(!empty($formdata->next)) {
-            $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
-            $msg = $this->response_check_format($formdata->sec, $formdata);
-            if ( $msg ) {
-                $formdata->next = '';
-            } else {
-                $formdata->sec++;
-            }
-        }
-        if (!empty($formdata->prev) && ($this->navigate)) {
-            $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
-            $msg = $this->response_check_format($formdata->sec, $formdata);
-            if ( $msg ) {
-                $formdata->prev = '';
-            } else {
-                $formdata->sec--;
-            }
-        }
-
-        if (!empty($formdata->rid)) {
-            $this->response_import_sec($formdata->rid, $formdata->sec, $formdata);
-        }
-        echo '
-    <script type="text/javascript">
-    <!-- // Begin
-    // when respondent enters text in !other field, corresponding radio button OR check box is automatically checked
-    function other_check(name) {
-      other = name.split("_");
-      var f = document.getElementById("phpesp_response");
-      for (var i=0; i<=f.elements.length; i++) {
-        if (f.elements[i].value == "other_"+other[1]) {
-          f.elements[i].checked=true;
-          break;
-        }
-      }
-    }
-
-    // function added by JR to automatically empty an !other text input field if another Radio button is clicked
-    function other_check_empty(name, value) {
-      var f = document.getElementById("phpesp_response");
-      for (var i=0; i<f.elements.length; i++) {
-        if ((f.elements[i].name == name) && f.elements[i].value.substr(0,6) == "other_") {
-            f.elements[i].checked=true;
-            var otherid = f.elements[i].name + "_" + f.elements[i].value.substring(6);
-            var other = document.getElementsByName (otherid);
-            if (value.substr(0,6) != "other_") {
-               other[0].value = "";
-            } else {
-                other[0].focus();
-            }
-            var actualbuttons = document.getElementsByName (name);
-              for (var i=0; i<=actualbuttons.length; i++) {
-                if (actualbuttons[i].value == value) {
-                    actualbuttons[i].checked=true;
-                    break;
-                }
-            }
-        break;
-        }
-      }
-    }
-
-    // function added by JR in a Rate question type of sub-type Order to automatically uncheck a Radio button
-    // when another radio button in the same column is clicked
-    function other_rate_uncheck(name, value) {
-        col_name = name.substr(0, name.indexOf("_"));
-        var inputbuttons = document.getElementsByTagName("input");
-        for (var i=0; i<=inputbuttons.length - 1; i++) {
-            button = inputbuttons[i];
-            if (button.type == "radio" && button.name != name && button.value == value && button.name.substr(0, name.indexOf("_")) == col_name) {
-                button.checked = false;
-            }
-        }
-    }
-
-    // function added by JR to empty an !other text input when corresponding Check Box is clicked (supposedly to empty it)
-    function checkbox_empty(name) {
-        var actualbuttons = document.getElementsByName (name);
-        for (var i=0; i<=actualbuttons.length; i++) {
-            if (actualbuttons[i].value.substr(0,6) == "other_") {
-                name = name.substring(0,name.length-2) + actualbuttons[i].value.substring(5);
-                var othertext = document.getElementsByName (name);
-                if (othertext[0].value == "" && actualbuttons[i].checked == true) {
-                    othertext[0].focus();
-                } else {
-                    othertext[0].value = "";
-                }
-                break;
-            }
-        }
-    }
-    // End -->
-    </script>
-            ';
-
         echo '<div class="generalbox">';
 
     ?>
@@ -750,6 +652,105 @@ class questionnaire {
         global $CFG;
         global $DB;
         require_once($CFG->libdir.'/filelib.php');
+
+		// JR save each section 's $formdata somewhere in case user returns to that page when navigating the questionnaire...
+        if(!empty($formdata->next)) {
+            $this->response_delete($formdata->rid, $formdata->sec);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
+            $msg = $this->response_check_format($formdata->sec, $formdata);
+            if ( $msg ) {
+                $formdata->next = '';
+            } else {
+                $formdata->sec++;
+            }
+        }
+        if (!empty($formdata->prev) && ($this->navigate)) {
+            $this->response_delete($formdata->rid, $formdata->sec);
+            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
+            $msg = $this->response_check_format($formdata->sec, $formdata);
+            if ( $msg ) {
+                $formdata->prev = '';
+            } else {
+                $formdata->sec--;
+            }
+        }
+
+        if (!empty($formdata->rid)) {
+            $this->response_import_sec($formdata->rid, $formdata->sec, $formdata);
+        }
+
+		echo '
+    <script type="text/javascript">
+    <!-- // Begin
+    // when respondent enters text in !other field, corresponding radio button OR check box is automatically checked
+    function other_check(name) {
+      other = name.split("_");
+      var f = document.getElementById("phpesp_response");
+      for (var i=0; i<=f.elements.length; i++) {
+        if (f.elements[i].value == "other_"+other[1]) {
+          f.elements[i].checked=true;
+          break;
+        }
+      }
+    }
+
+    // function added by JR to automatically empty an !other text input field if another Radio button is clicked
+    function other_check_empty(name, value) {
+      var f = document.getElementById("phpesp_response");
+      for (var i=0; i<f.elements.length; i++) {
+        if ((f.elements[i].name == name) && f.elements[i].value.substr(0,6) == "other_") {
+            f.elements[i].checked=true;
+            var otherid = f.elements[i].name + "_" + f.elements[i].value.substring(6);
+            var other = document.getElementsByName (otherid);
+            if (value.substr(0,6) != "other_") {
+               other[0].value = "";
+            } else {
+                other[0].focus();
+            }
+            var actualbuttons = document.getElementsByName (name);
+              for (var i=0; i<=actualbuttons.length; i++) {
+                if (actualbuttons[i].value == value) {
+                    actualbuttons[i].checked=true;
+                    break;
+                }
+            }
+        break;
+        }
+      }
+    }
+
+    // function added by JR in a Rate question type of sub-type Order to automatically uncheck a Radio button
+    // when another radio button in the same column is clicked
+    function other_rate_uncheck(name, value) {
+        col_name = name.substr(0, name.indexOf("_"));
+        var inputbuttons = document.getElementsByTagName("input");
+        for (var i=0; i<=inputbuttons.length - 1; i++) {
+            button = inputbuttons[i];
+            if (button.type == "radio" && button.name != name && button.value == value && button.name.substr(0, name.indexOf("_")) == col_name) {
+                button.checked = false;
+            }
+        }
+    }
+
+    // function added by JR to empty an !other text input when corresponding Check Box is clicked (supposedly to empty it)
+    function checkbox_empty(name) {
+        var actualbuttons = document.getElementsByName (name);
+        for (var i=0; i<=actualbuttons.length; i++) {
+            if (actualbuttons[i].value.substr(0,6) == "other_") {
+                name = name.substring(0,name.length-2) + actualbuttons[i].value.substring(5);
+                var othertext = document.getElementsByName (name);
+                if (othertext[0].value == "" && actualbuttons[i].checked == true) {
+                    othertext[0].focus();
+                } else {
+                    othertext[0].value = "";
+                }
+                break;
+            }
+        }
+    }
+    // End -->
+    </script>
+            ';
 
         $userid = '';
         $resp = '';
