@@ -58,6 +58,9 @@ if (!$questionnaire->capabilities->editquestions) {
 
 $questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
 $haschildren = array();
+if (!isset($SESSION->questionnaire)) {
+    $SESSION->questionnaire = new stdClass();
+}
 $SESSION->questionnaire->current_tab = 'questions';
 $reload = false;
 $sid = $questionnaire->survey->id;

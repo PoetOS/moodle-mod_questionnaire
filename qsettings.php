@@ -44,7 +44,9 @@ $context = context_module::instance($cm->id);
 $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/qsettings.php', array('id' => $id));
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-
+if (!isset($SESSION->questionnaire)) {
+    $SESSION->questionnaire = new stdClass();
+}
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 $SESSION->questionnaire->current_tab = 'settings';
 

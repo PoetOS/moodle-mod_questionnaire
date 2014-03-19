@@ -42,6 +42,10 @@ $sid    = optional_param('sid', 0, PARAM_INT);
 $qid    = optional_param('qid', 0, PARAM_INT);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
+if (!isset($SESSION->questionnaire)) {
+    $SESSION->questionnaire = new stdClass();
+}
+
 $SESSION->questionnaire->current_tab = 'nonrespondents';
 
 // Get the objects.

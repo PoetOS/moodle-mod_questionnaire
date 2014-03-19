@@ -26,6 +26,9 @@ $tabs = array();
 $row  = array();
 $inactive = array();
 $activated = array();
+if (!isset($SESSION->questionnaire)) {
+    $SESSION->questionnaire = new stdClass();
+}
 $currenttab = $SESSION->questionnaire->current_tab;
 
 // If this questionnaire has a survey, get the survey and owner.
