@@ -24,6 +24,7 @@
  */
 
 $string['action'] = 'Action';
+$string['activityoverview'] = 'You have questionnaires that are due';
 $string['additionalinfo'] = 'Additional Info';
 $string['additionalinfo_help'] = 'Text to be displayed at the top of the first page of this questionnaire. (i.e. instructions, background info, etc.)';
 $string['addnewquestion'] = 'Adding {$a} question';
@@ -37,6 +38,8 @@ $string['alreadyfilled'] = 'You have already filled out this questionnaire for u
 $string['andaveragevalues'] = 'and average values';
 $string['anonymous'] = 'Anonymous';
 $string['answerquestions'] = 'Answer the questions...';
+$string['attempted'] = 'This questionnaire has been submitted.';
+$string['attemptstillinprogress'] = 'In progress. Saved on:';
 $string['autonumbering'] = 'Auto numbering';
 $string['autonumbering_help'] = 'Automatic numbering of questions and pages. You might want to disable automatic numbering
  for questionnaires with conditional branching.';
@@ -72,6 +75,7 @@ $string['checkstarted'] = 'Select started';
 $string['clicktoswitch'] = '(click to switch)';
 $string['closed'] = 'The questionnaire was closed on {$a}. Thanks.';
 $string['closedate'] = 'Use Close Date';
+$string['closeson'] = 'Questionnaire closes on {$a}';
 $string['closedate_help'] = 'You can specify a date to close the questionnaire here. Check the check box, and select the date and time you want.
  Users will not be able to fill out the questionnaire after that date. If this is not selected, it will never be closed.';
 $string['completionsubmit'] = 'Student must submit this questionnaire to complete it';
@@ -201,7 +205,6 @@ $string['includechoicetext'] = 'Include choice text';
 $string['incorrectcourseid'] = 'Course ID is incorrect';
 $string['incorrectmodule'] = 'Course Module ID was incorrect';
 $string['incorrectquestionnaire'] = 'Questionnaire is incorrect';
-$string['attemptstillinprogress'] = 'In progress. Saved on:';
 $string['invalidresponse'] = 'Invalid response specified.';
 $string['invalidresponserecord'] = 'Invalid response record specified.';
 $string['invalidsurveyid'] = 'Invalid questionnaire ID.';
@@ -243,6 +246,7 @@ $string['next'] = 'Next';
 $string['nextpage'] = 'Next Page';
 $string['nlines'] = '{$a} lines';
 $string['noanswer'] = 'No answer';
+$string['noattempts'] = 'No attempts have been made on this questionnaire';
 $string['nodata'] = 'No data posted.';
 $string['noduplicates'] = 'No duplicate choices';
 $string['noduplicateschoiceserror'] = 'You must enter at least 2 Possible answers for the "No duplicate choices" option!';
@@ -264,6 +268,7 @@ $string['notrequired'] = 'Response is not required';
 $string['not_started'] = 'not started';
 $string['nousersselected'] = 'No users selected';
 $string['num'] = '#';
+$string['numattemptsmade'] = '{$a} attempts made on this questionnaire';
 $string['numberfloat'] = 'The number you entered <strong>{$a->number}</strong> has been reformatted/rounded with <strong>{$a->precision}</strong> decimal place(s).';
 $string['numberofdecimaldigits'] = 'Nb of decimal digits';
 $string['numberscaleitems'] = 'Nb of scale items';
@@ -416,6 +421,7 @@ $string['resumesurvey'] = 'Resume questionnaire';
 $string['return'] = 'Return';
 $string['save'] = 'Save';
 $string['saveasnew'] = 'Save as New Question';
+$string['savedbutnotsubmitted'] = 'This questionnaire has been saved but not yet submitted.';
 $string['savedprogress'] = 'Your progress has been saved.  You may return at any time to complete this questionnaire.';
 $string['saveeditedquestion'] = 'Save question {$a}';
 $string['savesettings'] = 'Save settings';

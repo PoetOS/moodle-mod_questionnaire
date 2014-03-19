@@ -718,113 +718,290 @@ function questionnaire_get_post_actions() {
     return array('submit', 'update');
 }
 
+function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart,
+                $courseid, $cmid, $userid = 0, $groupid = 0) {
+
+    global $CFG, $COURSE, $USER, $DB;
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
+
+    if ($COURSE->id == $courseid) {
+        $course = $COURSE;
+    } else {
+        $course = $DB->get_record('course', array('id' => $courseid));
+    }
+
+    $modinfo = get_fast_modinfo($course);
+
+    $cm = $modinfo->cms[$cmid];
+    $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance));
+
+    if ($userid) {
+        $userselect = "AND u.id = :userid";
+        $params['userid'] = $userid;
+    } else {
+        $userselect = '';
+    }
+
+    if ($groupid) {
+        $groupselect = 'AND gm.groupid = :groupid';
+        $groupjoin   = 'JOIN {groups_members} gm ON  gm.userid=u.id';
+        $params['groupid'] = $groupid;
+    } else {
+        $groupselect = '';
+        $groupjoin   = '';
+    }
+
+    $params['timestart'] = $timestart;
+    $params['questionnaireid'] = $questionnaire->sid;
+
+    $ufields = user_picture::fields('u', null, 'useridagain');
+    if (!$attempts = $DB->get_records_sql("
+                    SELECT qr.*,
+                    {$ufields}
+                    FROM {questionnaire_response} qr
+                    JOIN {user} u ON u.id = qr.username
+                    $groupjoin
+                    WHERE qr.submitted > :timestart
+                    AND qr.survey_id = :questionnaireid
+                    $userselect
+                    $groupselect
+                    ORDER BY qr.submitted ASC", $params)) {
+                    return;
+    }
+
+    $context         = context_module::instance($cm->id);
+    $accessallgroups = has_capability('moodle/site:accessallgroups', $context);
+    $viewfullnames   = has_capability('moodle/site:viewfullnames', $context);
+    $grader          = has_capability('mod/questionnaire:viewsingleresponse', $context);
+    $groupmode       = groups_get_activity_groupmode($cm, $course);
+
+    if (is_null($modinfo->groups)) {
+        // Load all my groups and cache it in modinfo.
+        $modinfo->groups = groups_get_user_groups($course->id);
+    }
+
+    $usersgroups = null;
+    $aname = format_string($cm->name, true);
+    $userattempts = array();
+    foreach ($attempts as $attempt) {
+        if ($questionnaire->respondenttype != 'anonymous') {
+            if (!isset($userattempts[$attempt->lastname])) {
+                $userattempts[$attempt->lastname] = 1;
+            } else {
+                $userattempts[$attempt->lastname]++;
+            }
+        }
+        // TODO flag user attempts to count them...
+        if ($attempt->username != $USER->id) {
+            if (!$grader) {
+                // View complete individual responses permission required.
+                continue;
+            }
+
+            if ($groupmode == SEPARATEGROUPS and !$accessallgroups) {
+                if (is_null($usersgroups)) {
+                    $usersgroups = groups_get_all_groups($course->id,
+                    $attempt->userid, $cm->groupingid);
+                    if (is_array($usersgroups)) {
+                        $usersgroups = array_keys($usersgroups);
+                    } else {
+                         $usersgroups = array();
+                    }
+                }
+                if (!array_intersect($usersgroups, $modinfo->groups[$cm->id])) {
+                    continue;
+                }
+            }
+        }
+
+        $tmpactivity = new stdClass();
+
+        $tmpactivity->type       = 'questionnaire';
+        $tmpactivity->cmid       = $cm->id;
+        $tmpactivity->cminstance = $cm->instance;
+        $tmpactivity->name       = $aname;
+        $tmpactivity->sectionnum = $cm->sectionnum;
+        $tmpactivity->timestamp  = $attempt->submitted;
+        $tmpactivity->groupid = $groupid;
+        if (isset($userattempts[$attempt->lastname])) {
+            $tmpactivity->nbattempts = $userattempts[$attempt->lastname];
+        }
+
+        $tmpactivity->content = new stdClass();
+        $tmpactivity->content->attemptid = $attempt->id;
+
+        $userfields = explode(',', user_picture::fields());
+        $tmpactivity->user = new stdClass();
+        foreach ($userfields as $userfield) {
+            if ($userfield == 'id') {
+                $tmpactivity->user->{$userfield} = $attempt->username;
+            } else {
+                if (!empty($attempt->{$userfield})) {
+                    $tmpactivity->user->{$userfield} = $attempt->{$userfield};
+                } else {
+                    $tmpactivity->user->{$userfield} = null;
+                }
+            }
+        }
+        if ($questionnaire->respondenttype != 'anonymous') {
+            $tmpactivity->user->fullname  = fullname($attempt, $viewfullnames);
+        } else {
+            $tmpactivity->user = '';
+            unset ($tmpactivity->user);
+        }
+        $activities[$index++] = $tmpactivity;
+    }
+}
+
 /**
- * This function prints the recent activity (since current user's last login)
- * for specified courses.
- * @param array $courses Array of courses to print activity for.
- * @param string by reference $htmlarray Array of html snippets for display some
- *        -where, which this function adds its new html to.
+ * Prints all users who have completed a specified questionnaire since a given time
+ *
+ * @global object
+ * @param object $activity
+ * @param int $courseid
+ * @param string $detail not used but needed for compability
+ * @param array $modnames
+ * @return void Output is echo'd
+ */
+function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, $modnames) {
+    global $CFG, $OUTPUT;
+
+    // If the questionnaire is "anonymous", then $activity->user won't have been set, so do not display respondent info.
+    if (isset($activity->user)) {
+        $stranonymous = '';
+    } else {
+        $stranonymous = ' ('.get_string('anonymous', 'questionnaire').')';
+        $activity->nbattempts = '';
+    }
+    echo html_writer::start_tag('div');
+    echo html_writer::start_tag('span', array('class' => 'clearfix',
+                    'style' => 'margin-top:0px; background-color: white; display: inline-block;'));
+
+    if (!$stranonymous) {
+        echo html_writer::tag('div', $OUTPUT->user_picture($activity->user, array('courseid' => $courseid)),
+                        array('style' => 'float: left; padding-right: 10px;'));
+    }
+    echo html_writer::start_tag('div');
+    echo html_writer::start_tag('div');
+
+    $urlparams = array('action' => 'vresp', 'instance' => $activity->cminstance,
+                    'group' => $activity->groupid, 'rid' => $activity->content->attemptid, 'individualresponse' => 1);
+
+    $context = context_module::instance($activity->cmid);
+    if (has_capability('mod/questionnaire:viewsingleresponse', $context)) {
+        $report = 'report.php';
+    } else {
+        $report = 'myreport.php';
+    }
+    echo html_writer::tag('a', get_string('response', 'questionnaire').' '.$activity->nbattempts.$stranonymous,
+                    array('href' => new moodle_url('/mod/questionnaire/'.$report, $urlparams)));
+    echo html_writer::end_tag('div');
+
+    if (!$stranonymous) {
+        $url = new moodle_url('/user/view.php', array('course' => $courseid, 'id' => $activity->user->id));
+        $name = $activity->user->fullname;
+        $link = html_writer::link($url, $name);
+        echo html_writer::start_tag('div', array('class' => 'user'));
+        echo $link .' - '. userdate($activity->timestamp);
+        echo html_writer::end_tag('div');
+    }
+
+    echo html_writer::end_tag('div');
+    echo html_writer::end_tag('span');
+    echo html_writer::end_tag('div');
+
+    return;
+}
+
+/**
+ * Prints questionnaire summaries on 'My home' page
+ *
+ * Prints questionnaire name, due date and attempt information on
+ * questionnaires that have a deadline that has not already passed
+ * and it is available for taking.
+ *
+ * @global object
+ * @global stdClass
+ * @global object
+ * @uses CONTEXT_MODULE
+ * @param array $courses An array of course objects to get questionnaire instances from
+ * @param array $htmlarray Store overview output array( course ID => 'questionnaire' => HTML output )
+ * @return void
  */
 function questionnaire_print_overview($courses, &$htmlarray) {
-    global $DB, $USER, $CFG;
-    require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+    global $USER, $CFG, $DB, $OUTPUT;
 
-    if (empty($courses) || !is_array($courses) || count($courses) == 0) {
-        return array();
-    }
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     if (!$questionnaires = get_all_instances_in_courses('questionnaire', $courses)) {
         return;
     }
 
-    // Get all questionnaire logs in ONE query (much better!).
-    $params = array();
-    $sql = "SELECT instance,cmid,l.course,COUNT(l.id) as count FROM {log} l "
-        ." JOIN {course_modules} cm ON cm.id = cmid "
-        ." JOIN {questionnaire} q ON cm.instance = q.id "
-        ." WHERE (";
-    foreach ($courses as $course) {
-        $sql .= '(l.course = ? AND l.time > ?) OR ';
-        $params[] = $course->id;
-        $params[] = $course->lastaccess;
-    }
+    // Get Necessary Strings.
+    $strquestionnaire       = get_string('modulename', 'questionnaire');
+    $strnotattempted = get_string('noattempts', 'questionnaire');
+    $strattempted    = get_string('attempted', 'questionnaire');
+    $strsavedbutnotsubmitted = get_string('savedbutnotsubmitted', 'questionnaire');
 
-    $sql = substr($sql, 0, -3); // Take off the last OR.
-
-    $sql .= ") AND l.module = 'questionnaire' AND action = 'submit' "
-        ." AND userid != ?"
-        ." AND q.resp_view <> ?"
-        ." GROUP BY cmid,l.course,instance";
-
-    $params[] = $USER->id;
-    $params[] = QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED;
-
-    if (!$new = $DB->get_records_sql($sql, $params)) {
-        $new = array(); // Avoid warnings.
-    }
-
-    $strquestionnaires = get_string('modulename', 'questionnaire');
-
-    $site = get_site();
-    if (count( $courses ) == 1 && isset( $courses[$site->id])) {
-
-        $strnumrespsince1 = get_string('overviewnumresplog1', 'questionnaire');
-        $strnumrespsince = get_string('overviewnumresplog', 'questionnaire');
-
-    } else {
-
-        $strnumrespsince1 = get_string('overviewnumrespvw1', 'questionnaire');
-        $strnumrespsince = get_string('overviewnumrespvw', 'questionnaire');
-
-    }
-
-    // Go through the list of all questionnaires build previously, and check whether
-    // they have had any activity.
-    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+    $now = time();
     foreach ($questionnaires as $questionnaire) {
 
-        if (array_key_exists($questionnaire->id, $new) && !empty($new[$questionnaire->id])) {
+        // The questionnaire has a deadline.
+        if ($questionnaire->closedate != 0
+                        // And it is before the deadline has been met.
+                        and $questionnaire->closedate >= $now
+                        // And the questionnaire is available.
+                        and ($questionnaire->opendate == 0 or $questionnaire->opendate <= $now)) {
+            if (!$questionnaire->visible) {
+                $class = ' class="dimmed"';
+            } else {
+                $class = '';
+            }
+            $str = $OUTPUT->box("$strquestionnaire:
+                            <a$class href=\"$CFG->wwwroot/mod/questionnaire/view.php?id=$questionnaire->coursemodule\">".
+                            format_string($questionnaire->name).'</a>', 'name');
 
-            $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-            $context = context_module::instance($cm->id);
-            $qobject = new questionnaire($questionnaire->id, $questionnaire, $questionnaire->course, $cm);
-            $isclosed = $qobject->is_closed();
-            $answered = !$qobject->user_can_take($USER->id);
-            $count = $new[$questionnaire->id]->count;
+            // Deadline.
+            $str .= $OUTPUT->box(get_string('closeson', 'questionnaire', userdate($questionnaire->closedate)), 'info');
+            $select = 'qid = '.$questionnaire->id.' AND userid = '.$USER->id;
+            $attempts = $DB->get_records_select('questionnaire_attempts', $select);
+            $nbattempts = count($attempts);
 
-            if ($count > 0  &&
-                (has_capability('mod/questionnaire:readallresponseanytime', $context) ||
-                (has_capability('mod/questionnaire:readallresponses', $context) && (
-                    $questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $isclosed) ||
-                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && $answered)
-                )))) {
+            // Do not display a questionnaire as due if it can only be sumbitted once and it has already been submitted!
+            if ($nbattempts != 0 && $questionnaire->qtype == QUESTIONNAIREONCE) {
+                continue;
+            }
 
-                if ($count == 1) {
-                    $strresp = $strnumrespsince1;
+            // Attempt information.
+            if (has_capability('mod/questionnaire:manage', context_module::instance($questionnaire->coursemodule))) {
+                // Number of user attempts.
+                $attempts = $DB->count_records('questionnaire_attempts', array('id' => $questionnaire->id));
+                $str .= $OUTPUT->box(get_string('numattemptsmade', 'questionnaire', $attempts), 'info');
+            } else {
+                if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete = false)) {
+                    foreach ($responses as $response) {
+                        if ($response->complete == 'y') {
+                            $str .= $OUTPUT->box($strattempted, 'info');
+                            break;
+                        } else {
+                            $str .= $OUTPUT->box($strsavedbutnotsubmitted, 'info');
+                        }
+                    }
                 } else {
-                    $strresp = $strnumrespsince;
+                    $str .= $OUTPUT->box($strnotattempted, 'info');
                 }
+            }
+            $str = $OUTPUT->box($str, 'questionnaire overview');
 
-                $str = '<div class="overview questionnaire"><div class="name">'.
-                    $strquestionnaires.': <a title="'.$strquestionnaires.'" href="'.
-                    $CFG->wwwroot.'/mod/questionnaire/view.php?a='.$questionnaire->id.'">'.
-                    $questionnaire->name.'</a></div>';
-                $str .= '<div class="info">';
-                $str .= $count.' '.$strresp;
-                $str .= '</div></div>';
-
-                if (!array_key_exists($questionnaire->course, $htmlarray)) {
-                    $htmlarray[$questionnaire->course] = array();
-                }
-                if (!array_key_exists('questionnaire', $htmlarray[$questionnaire->course])) {
-                    $htmlarray[$questionnaire->course]['questionnaire'] = ''; // Initialize, avoid warnings.
-                }
+            if (empty($htmlarray[$questionnaire->course]['questionnaire'])) {
+                $htmlarray[$questionnaire->course]['questionnaire'] = $str;
+            } else {
                 $htmlarray[$questionnaire->course]['questionnaire'] .= $str;
             }
         }
     }
 }
+
 
 /**
  * Implementation of the function for printing the form elements that control

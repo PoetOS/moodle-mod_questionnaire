@@ -70,6 +70,9 @@ $sid = $questionnaire->survey->id;
 $courseid = $course->id;
 
 // Tab setup.
+if (!isset($SESSION->questionnaire)) {
+    $SESSION->questionnaire = new stdClass(); // instantiate $object explicitely
+}
 $SESSION->questionnaire->current_tab = 'myreport';
 
 switch ($action) {
