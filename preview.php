@@ -79,11 +79,10 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 
 $questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
-$owner = (trim($questionnaire->survey->owner) == trim($course->id));
 
 $canpreview = (!isset($questionnaire->capabilities) &&
                has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
-              (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview && $owner);
+              (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
 if (!$canpreview && !$popup) {
     // Should never happen, unless called directly by a snoop...
     print_error('nopermissions', 'questionnaire', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
