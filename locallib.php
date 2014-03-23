@@ -476,52 +476,36 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
                    "WHERE realm = ? " .
                    "ORDER BY realm,name ";
             $params = array($type);
-            // Any survey owned by the user or typed as 'template' can be copied.
         } else if ($type == 'template') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
                    "FROM {questionnaire} q " .
                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
-                   "WHERE (realm = ? OR owner = ?) " .
+                   "WHERE (realm = ?) " .
                    "ORDER BY realm,name ";
-            $params = array($type, $courseid);
-        }
-    } else {
-        $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid,q.name as qname " .
-               "FROM {questionnaire} q " .
-               "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
-               "WHERE owner = ? " .
+            $params = array($type);
+        } else if ($type == 'private') {
+            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid,q.name as qname " .
+                "FROM {questionnaire} q " .
+                "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
+               "WHERE owner = ? and realm = ?" .
                "ORDER BY realm,name ";
-        $params = array($courseid);
+            $params = array($courseid, $type);
+        }
     }
     return $DB->get_records_sql($sql, $params);
 }
 
 function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='') {
-    global $OUTPUT;
+    global $OUTPUT, $DB;
 
     $surveylist = array();
+
     if ($surveys = questionnaire_get_survey_list($courseid, $type)) {
-
-        $strpreview = get_string('preview');
-        $strunknown = get_string('unknown', 'questionnaire');
-        $strpublic = get_string('public', 'questionnaire');
-        $strprivate = get_string('private', 'questionnaire');
-        $strtemplate = get_string('template', 'questionnaire');
-        $strviewresp = get_string('viewresponses', 'questionnaire');
-
+        $strpreview = get_string('preview_questionnaire', 'questionnaire');
         foreach ($surveys as $survey) {
-            if (empty($survey->realm)) {
-                $stat = $strunknown;
-            } else if ($survey->realm == 'public') {
-                $stat = $strpublic;
-            } else if ($survey->realm == 'private') {
-                $stat = $strprivate;
-            } else if ($survey->realm == 'template') {
-                $stat = $strtemplate;
-            } else {
-                $stat = $strunknown;
-            }
-            // Prevent creation of a new questionnaire using a public questionnaire IN THE SAME COURSE!
+            $originalcourse = $DB->get_record('course', array('id' => $survey->owner));
+
+            // Prevent creating a copy of a public questionnaire IN THE SAME COURSE as the original.
             if ($type == 'public' && $survey->owner == $courseid) {
                 continue;
             } else {
@@ -531,7 +515,8 @@ function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='
                 }
                 $link = new moodle_url("/mod/questionnaire/preview.php?{$args}");
                 $action = new popup_action('click', $link);
-                $label = $OUTPUT->action_link($link, $survey->qname, $action, array('title' => $survey->title));
+                $label = $OUTPUT->action_link($link, $survey->qname.' ['.$originalcourse->fullname.']',
+                    $action, array('title' => $strpreview));
                 $surveylist[$type.'-'.$survey->id] = $label;
             }
         }
