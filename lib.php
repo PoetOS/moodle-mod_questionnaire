@@ -735,9 +735,12 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     $cm = $modinfo->cms[$cmid];
     $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance));
 
+    $context = context_module::instance($cm->id);
+    $grader = has_capability('mod/questionnaire:viewsingleresponse', $context);
+
     // If this is a copy of a public questionnaire whose original is located in another course,
-    // current user (teacher) cannot view responses in current course.
-    if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
+    // current user (teacher) cannot view responses.
+    if ($grader && $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
         // For a public questionnaire, look for the original public questionnaire that it is based on.
         if ($survey->realm == 'public' && $survey->owner != $course->id) {
             // For a public questionnaire, look for the original public questionnaire that it is based on.
@@ -791,10 +794,8 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
         return;
     }
 
-    $context         = context_module::instance($cm->id);
     $accessallgroups = has_capability('moodle/site:accessallgroups', $context);
     $viewfullnames   = has_capability('moodle/site:viewfullnames', $context);
-    $grader          = has_capability('mod/questionnaire:viewsingleresponse', $context);
     $groupmode       = groups_get_activity_groupmode($cm, $course);
 
     if (is_null($modinfo->groups)) {
@@ -840,6 +841,10 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
         $tmpactivity->type       = 'questionnaire';
         $tmpactivity->cmid       = $cm->id;
         $tmpactivity->cminstance = $cm->instance;
+        // Current user is admin - or teacher enrolled in original public course.
+        if (isset($cmoriginal)) {
+            $tmpactivity->cminstance = $cmoriginal->instance;
+        }
         $tmpactivity->cannotview = false;
         $tmpactivity->anonymous  = false;
         $tmpactivity->name       = $aname;
