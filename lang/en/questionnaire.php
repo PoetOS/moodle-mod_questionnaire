@@ -56,6 +56,7 @@ $string['boxesnbmax'] = 'a maximum of {$a} box(es).';
 $string['boxesnbmin'] = 'a minimum of {$a} box(es).';
 $string['boxesnbreq'] = 'For this question you must tick ';
 $string['by'] = ' by ';
+$string['cannotviewpublicresponses'] = 'You cannot view responses to this public questionnaire.';
 $string['chart:bipolar'] = 'Bipolar bars';
 $string['chart:hbar'] = 'Horizontal bars';
 $string['chart:radar'] = 'Radar';
