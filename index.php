@@ -99,6 +99,7 @@ $currentsection = '';
 foreach ($questionnaires as $questionnaire) {
     $cmid = $questionnaire->coursemodule;
     $data = array();
+    $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->sid));
 
     $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->sid));
     // Template surveys should NOT be displayed as an activity to students.
@@ -155,9 +156,9 @@ foreach ($questionnaires as $questionnaire) {
                         // If current user can view questionnaires in original course,
                         // provide a link to the original public questionnaire.
                         if ($canvieworiginal) {
-                            $publicoriginal = '<br />'.get_string('publicoriginal', 'questionnaire').
-                                '<a href="'.$CFG->wwwroot.'/mod/questionnaire/view.php?id='.
-                                $cm->id.'" title="'.$strpreview.']">&nbsp;'.$originalquestionnaire->name.' ['.
+                            $publicoriginal = '<br />'.get_string('publicoriginal', 'questionnaire').'&nbsp;'.
+                                '<a href="'.$CFG->wwwroot.'/mod/questionnaire/preview.php?id='.
+                                $cm->id.'" title="'.$strpreview.']">'.$originalquestionnaire->name.' ['.
                                 $originalcourse->fullname.']</a>';
                         } else {
                             // If current user is not enrolled as teacher in original course,
@@ -169,26 +170,28 @@ foreach ($questionnaires as $questionnaire) {
                     } else {
                         // Original public questionnaire was created in current course.
                         // Find which courses it is used in.
-                        $publiccopy = '<br />';
+                        $publiccopy = '';
                         $select = 'course != '.$course->id.' AND sid = '.$questionnaire->sid;
-                        if ($copies = $DB->get_records_select('questionnaire', $select, null)) {
+                        if ($copies = $DB->get_records_select('questionnaire', $select, null,
+                                $sort = 'course ASC', $fields = 'id, course, name')) {
                             foreach ($copies as $copy) {
                                 $copycourse = $DB->get_record('course', array('id' => $copy->course));
+                                $select = 'course = '.$copycourse->id.' AND sid = '.$questionnaire->sid;
                                 $copyquestionnaire = $DB->get_record('questionnaire',
-                                                array('sid' => $survey->id, 'course' => $copycourse->id));
+                                    array('id' => $copy->id, 'sid' => $survey->id, 'course' => $copycourse->id));
                                 $cm = get_coursemodule_from_instance("questionnaire", $copyquestionnaire->id, $copycourse->id);
                                 $context = context_course::instance($copycourse->id, MUST_EXIST);
                                 $canviewcopy = has_capability('mod/questionnaire:view', $context, $USER->id, true);
                                 if ($canviewcopy) {
-                                    $publiccopy .= get_string('publiccopy', 'questionnaire').'&nbsp;:&nbsp;'.
-                                                    '<a href = "'.$CFG->wwwroot.'/mod/questionnaire/preview.php?id='.
-                                                    $cm->id.'" title = "'.$strpreview.'">'.
-                                                    $copyquestionnaire->name.' ['.$copycourse->fullname.']</a>';
+                                    $publiccopy .= '<br />'.get_string('publiccopy', 'questionnaire').'&nbsp;:&nbsp;'.
+                                        '<a href = "'.$CFG->wwwroot.'/mod/questionnaire/preview.php?id='.
+                                        $cm->id.'" title = "'.$strpreview.'">'.
+                                        $copyquestionnaire->name.' ['.$copycourse->fullname.']</a>';
                                 } else {
                                     // If current user does not have "view" capability in copy course,
                                     // only display the copied public questionnaire's name and course name.
                                     $publiccopy .= '<br />'.get_string('publiccopy', 'questionnaire').'&nbsp;:&nbsp;'.
-                                                    $copyquestionnaire->name.' ['.$copycourse->fullname.']';
+                                        $copyquestionnaire->name.' ['.$copycourse->fullname.']';
                                 }
                             }
                         }
@@ -197,6 +200,9 @@ foreach ($questionnaires as $questionnaire) {
                 } else {
                     $data[] = get_string($realm, 'questionnaire');
                 }
+            } else {
+                // If a questionnaire is a copy of a public questionnaire which has been deleted.
+                $data[] = get_string('removenotinuse', 'questionnaire');
             }
         }
     }

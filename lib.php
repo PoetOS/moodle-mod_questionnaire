@@ -735,6 +735,31 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     $cm = $modinfo->cms[$cmid];
     $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance));
 
+    $context = context_module::instance($cm->id);
+    $grader = has_capability('mod/questionnaire:viewsingleresponse', $context);
+
+    // If this is a copy of a public questionnaire whose original is located in another course,
+    // current user (teacher) cannot view responses.
+    if ($grader && $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
+        // For a public questionnaire, look for the original public questionnaire that it is based on.
+        if ($survey->realm == 'public' && $survey->owner != $course->id) {
+            // For a public questionnaire, look for the original public questionnaire that it is based on.
+            $originalquestionnaire = $DB->get_record('questionnaire',
+                            array('sid' => $survey->id, 'course' => $survey->owner));
+            $cmoriginal = get_coursemodule_from_instance("questionnaire", $originalquestionnaire->id, $survey->owner);
+            $contextoriginal = context_course::instance($survey->owner, MUST_EXIST);
+            if (!has_capability('mod/questionnaire:viewsingleresponse', $contextoriginal)) {
+                $tmpactivity = new stdClass();
+                $tmpactivity->type = 'questionnaire';
+                $tmpactivity->cmid = $cm->id;
+                $tmpactivity->cannotview = true;
+                $tmpactivity->anonymous = false;
+                $activities[$index++] = $tmpactivity;
+                return $activities;
+            }
+        }
+    }
+
     if ($userid) {
         $userselect = "AND u.id = :userid";
         $params['userid'] = $userid;
@@ -766,13 +791,11 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
                     $userselect
                     $groupselect
                     ORDER BY qr.submitted ASC", $params)) {
-                    return;
+        return;
     }
 
-    $context         = context_module::instance($cm->id);
     $accessallgroups = has_capability('moodle/site:accessallgroups', $context);
     $viewfullnames   = has_capability('moodle/site:viewfullnames', $context);
-    $grader          = has_capability('mod/questionnaire:viewsingleresponse', $context);
     $groupmode       = groups_get_activity_groupmode($cm, $course);
 
     if (is_null($modinfo->groups)) {
@@ -791,7 +814,6 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
                 $userattempts[$attempt->lastname]++;
             }
         }
-        // TODO flag user attempts to count them...
         if ($attempt->username != $USER->id) {
             if (!$grader) {
                 // View complete individual responses permission required.
@@ -819,10 +841,16 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
         $tmpactivity->type       = 'questionnaire';
         $tmpactivity->cmid       = $cm->id;
         $tmpactivity->cminstance = $cm->instance;
+        // Current user is admin - or teacher enrolled in original public course.
+        if (isset($cmoriginal)) {
+            $tmpactivity->cminstance = $cmoriginal->instance;
+        }
+        $tmpactivity->cannotview = false;
+        $tmpactivity->anonymous  = false;
         $tmpactivity->name       = $aname;
         $tmpactivity->sectionnum = $cm->sectionnum;
         $tmpactivity->timestamp  = $attempt->submitted;
-        $tmpactivity->groupid = $groupid;
+        $tmpactivity->groupid    = $groupid;
         if (isset($userattempts[$attempt->lastname])) {
             $tmpactivity->nbattempts = $userattempts[$attempt->lastname];
         }
@@ -848,6 +876,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
         } else {
             $tmpactivity->user = '';
             unset ($tmpactivity->user);
+            $tmpactivity->anonymous = true;
         }
         $activities[$index++] = $tmpactivity;
     }
@@ -867,37 +896,47 @@ function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, 
     global $CFG, $OUTPUT;
 
     // If the questionnaire is "anonymous", then $activity->user won't have been set, so do not display respondent info.
-    if (isset($activity->user)) {
-        $stranonymous = '';
-    } else {
+    if ($activity->anonymous) {
         $stranonymous = ' ('.get_string('anonymous', 'questionnaire').')';
         $activity->nbattempts = '';
+    } else {
+        $stranonymous = '';
+    }
+    // Current user cannot view responses to public questionnaire.
+    if ($activity->cannotview) {
+        $strcannotview = get_string('cannotviewpublicresponses', 'questionnaire');
     }
     echo html_writer::start_tag('div');
     echo html_writer::start_tag('span', array('class' => 'clearfix',
                     'style' => 'margin-top:0px; background-color: white; display: inline-block;'));
 
-    if (!$stranonymous) {
+    if (!$activity->anonymous && !$activity->cannotview) {
         echo html_writer::tag('div', $OUTPUT->user_picture($activity->user, array('courseid' => $courseid)),
                         array('style' => 'float: left; padding-right: 10px;'));
     }
-    echo html_writer::start_tag('div');
-    echo html_writer::start_tag('div');
+    if (!$activity->cannotview) {
+        echo html_writer::start_tag('div');
+        echo html_writer::start_tag('div');
 
-    $urlparams = array('action' => 'vresp', 'instance' => $activity->cminstance,
-                    'group' => $activity->groupid, 'rid' => $activity->content->attemptid, 'individualresponse' => 1);
+        $urlparams = array('action' => 'vresp', 'instance' => $activity->cminstance,
+                        'group' => $activity->groupid, 'rid' => $activity->content->attemptid, 'individualresponse' => 1);
 
-    $context = context_module::instance($activity->cmid);
-    if (has_capability('mod/questionnaire:viewsingleresponse', $context)) {
-        $report = 'report.php';
+        $context = context_module::instance($activity->cmid);
+        if (has_capability('mod/questionnaire:viewsingleresponse', $context)) {
+            $report = 'report.php';
+        } else {
+            $report = 'myreport.php';
+        }
+        echo html_writer::tag('a', get_string('response', 'questionnaire').' '.$activity->nbattempts.$stranonymous,
+                        array('href' => new moodle_url('/mod/questionnaire/'.$report, $urlparams)));
+        echo html_writer::end_tag('div');
     } else {
-        $report = 'myreport.php';
+        echo html_writer::start_tag('div');
+        echo html_writer::start_tag('div');
+        echo html_writer::tag('div', $strcannotview);
+        echo html_writer::end_tag('div');
     }
-    echo html_writer::tag('a', get_string('response', 'questionnaire').' '.$activity->nbattempts.$stranonymous,
-                    array('href' => new moodle_url('/mod/questionnaire/'.$report, $urlparams)));
-    echo html_writer::end_tag('div');
-
-    if (!$stranonymous) {
+    if (!$activity->anonymous  && !$activity->cannotview) {
         $url = new moodle_url('/user/view.php', array('course' => $courseid, 'id' => $activity->user->id));
         $name = $activity->user->fullname;
         $link = html_writer::link($url, $name);
