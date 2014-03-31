@@ -175,62 +175,86 @@ foreach ($questionnaire->questions as $question) {
 
     // Questions to be included in feedback sections must be required, have a name
     // and must not be child of a parent question.
-    if ($qtype != QUESSECTIONTEXT
-                    && ($qtype != QUESYESNO && $qtype != QUESRADIO && $qtype != QUESRATE
-                    || $required != 'y' || $qname == '' || $question->dependquestion != 0)) {
-        continue;
-    }
-
     if ($qtype != QUESPAGEBREAK && $qtype != QUESSECTIONTEXT) {
         $n++;
     }
+
+    $cannotuse = false;
+    $strcannotuse = '';
+    if ($qtype != QUESSECTIONTEXT && $qtype != QUESPAGEBREAK
+                    && ($qtype != QUESYESNO && $qtype != QUESRADIO && $qtype != QUESRATE
+                    || $required != 'y' || $qname == '' || $question->dependquestion != 0)) {
+        $cannotuse = true;
+        $qn = '<strong>'.$n.'</strong>';
+        if ($qname == '') {
+            $strcannotuse = get_string('missingname', 'questionnaire', $qn);
+        }
+        if ($required != 'y') {
+            if ($qname == '') {
+                $strcannotuse = get_string('missingnameandrequired', 'questionnaire', $qn);
+            } else {
+                $strcannotuse = get_string('missingrequired', 'questionnaire', $qn);
+            }
+        }
+        if ($question->dependquestion != 0) {
+            continue;
+        }
+    }
+
     $qhasvalues = false;
-    if ($qtype == QUESRADIO || $qtype == QUESDROP) {
-        if ($choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid = $question->id))) {
-            foreach ($choices as $choice) {
-                if ($choice->value != null) {
-                    $qhasvalues = true;
-                    break;
+    if (!$cannotuse) {
+        if ($qtype == QUESRADIO || $qtype == QUESDROP) {
+            if ($choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid = $question->id))) {
+                foreach ($choices as $choice) {
+                    if ($choice->value != null) {
+                        $qhasvalues = true;
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    // Valid questions in feedback sections can be of QUESNO type
-    // or of QUESRATE "normal" option type (i.e. not N/A nor nodupes).
-    if ($qtype == QUESYESNO || ($qtype == QUESRATE && ($qprecise == 0 || $qprecise == 3)) ) {
-        $qhasvalues = true;
-    }
+        // Valid questions in feedback sections can be of QUESNO type
+        // or of QUESRATE "normal" option type (i.e. not N/A nor nodupes).
+        if ($qtype == QUESYESNO || ($qtype == QUESRATE && ($qprecise == 0 || $qprecise == 3)) ) {
+            $qhasvalues = true;
+        }
 
-    if ($qhasvalues) {
-        $emptyisglobalfeedback = $questionnaire->survey->feedbacksections == 1 && empty($questionsinsections);
-        echo '<div style="margin-bottom:5px;">['.$qname.']</div>';
-        for ($i = 0; $i < $feedbacksections; $i++) {
-            $output = '<div style="float:left; padding-right:5px;">';
-            if ($i != 0) {
-                $output .= '<div class="'.$bg.'"><input type="radio" name="'.$n.'" id="'.$qid.'_'.$i.'" value="'.$i.'_'.$qid.'"';
-            } else {
-                $output .= '<div class="'.$bg.'"><input type="radio" name="'.$n.'" id="'.$i.'" value="'.$i.'"';
-            }
-            if ($i == 0) {
-                $output .= ' checked="checked"';
-            }
-            // Question already present in this section OR this is a Global feedback and questions are not set yet.
-            if ((isset($vf[$qid]) && $vf[$qid] == $i) || $emptyisglobalfeedback) {
-                $output .= ' checked="checked"';
-            }
-            $output .= ' />';
-            $output .= '<label for="'.$qid.'_'.$i.'">'.'<div style="padding-left: 2px;">'.$i.'</div>'.'</label></div></div>';
-            echo $output;
-            if ($bg == 'c0') {
-                $bg = 'c1';
-            } else {
-                $bg = 'c0';
+        if ($qhasvalues) {
+            $emptyisglobalfeedback = $questionnaire->survey->feedbacksections == 1 && empty($questionsinsections);
+            echo '<div style="margin-bottom:5px;">['.$qname.']</div>';
+            for ($i = 0; $i < $feedbacksections; $i++) {
+                $output = '<div style="float:left; padding-right:5px;">';
+                if ($i != 0) {
+                    $output .= '<div class="'.$bg.'"><input type="radio" name="'.$n.'" id="'.$qid.'_'.$i.'" value="'.$i.'_'.$qid.'"';
+                } else {
+                    $output .= '<div class="'.$bg.'"><input type="radio" name="'.$n.'" id="'.$i.'" value="'.$i.'"';
+                }
+                if ($i == 0) {
+                    $output .= ' checked="checked"';
+                }
+                // Question already present in this section OR this is a Global feedback and questions are not set yet.
+                if ((isset($vf[$qid]) && $vf[$qid] == $i) || $emptyisglobalfeedback) {
+                    $output .= ' checked="checked"';
+                }
+                $output .= ' />';
+                $output .= '<label for="'.$qid.'_'.$i.'">'.'<div style="padding-left: 2px;">'.$i.'</div>'.'</label></div></div>';
+                echo $output;
+                if ($bg == 'c0') {
+                    $bg = 'c1';
+                } else {
+                    $bg = 'c0';
+                }
             }
         }
-    }
-    if ($qhasvalues || $qtype == QUESSECTIONTEXT) {
-        $question->survey_display($formdata, $descendantsdata = '', $qnum = $n, $blankquestionnaire = true);
+        if ($qhasvalues || $qtype == QUESSECTIONTEXT) {
+            $question->survey_display($formdata, $descendantsdata = '', $qnum = $n, $blankquestionnaire = true);
+        }
+    } else {
+        echo '<div class="notifyproblem">';
+        echo $strcannotuse;
+        echo '</div>';
+        echo '<div class="qn-question">'.$question->content.'</div>';
     }
 }
 // Submit/Cancel buttons.

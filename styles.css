@@ -90,6 +90,11 @@ td.selected {
     border-color: red;
 }
 
+#page-mod-questionnaire-fbsections .notifyproblem {
+    text-align: left;
+    padding: 0px;
+}
+
 #page-mod-questionnaire-complete .message,
 #page-mod-questionnaire-preview .message,
 #page-mod-questionnaire-complete .thankbody,
