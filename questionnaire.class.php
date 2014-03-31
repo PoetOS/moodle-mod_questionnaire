@@ -2122,15 +2122,15 @@ class questionnaire {
             $selectgroupid = '';
             $gmuserid = ', GM.userid ';
             $groupmembers = ', '.$CFG->prefix.'groups_members GM ';
+            $castsql = $DB->sql_cast_char2int('R.username');
             switch ($currentgroupid) {
                 case 0:     // All participants.
                     $gmuserid = '';
                     $groupmembers = '';
                     break;
                 default:     // Members of a specific group.
-                    $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND R.username = GM.userid ';
+                    $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND '.$castsql.' = GM.userid ';
             }
-            $castsql = $DB->sql_cast_char2int('R.username');
             $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username,
                             U.id as userid '.$gmuserid.
             'FROM '.$CFG->prefix.'questionnaire_response R,
@@ -3324,7 +3324,7 @@ class questionnaire {
                 $table->data[] = array($sectionlabel, $scorepercent[$key].'%'.$oppositescore,
                                 $allscorepercent[$key].'%'.$oppositeallscore);
             } else {
-                $table->data[] = array($sectionlabel, $allscorepercent[$key].'%'.$oppositeallscore);
+                $table->data[] = array($sectionlabel, $sc.'%'.$oppositeallscore);
             }
         }
         if (isset($CFG->questionnaire_usergraph) && $CFG->questionnaire_usergraph && $this->survey->chart_type) {
