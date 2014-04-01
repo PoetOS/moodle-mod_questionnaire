@@ -225,7 +225,7 @@ if ($fullname) {
         $tablecolumns[] = 'status';
         $tableheaders[] = get_string('status');
     }
-    if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
+    if (has_capability('mod/questionnaire:message', $context)) {
         $tablecolumns[] = 'select';
         $tableheaders[] = get_string('select');
     }
@@ -339,7 +339,7 @@ if (!$nonrespondents) {
                 $lastaccess = get_string('never');
             }
             $data[] = $lastaccess;
-            if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
+            if (has_capability('mod/questionnaire:message', $context)) {
                 // If questionnaire is set to "resume", look for saved (not completed) responses
                 // we use the alt attribute of the checkboxes to store the started/not started value!
                 $checkboxaltvalue = '';
@@ -372,7 +372,7 @@ if (!$nonrespondents) {
             echo $OUTPUT->container(html_writer::link($allurl,
                             get_string('showall', '', $countnonrespondents)), array(), 'showall');
         }
-        if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
+        if (has_capability('mod/questionnaire:message', $context)) {
             echo $OUTPUT->box_start('mdl-align'); // Selection buttons container.
             echo '<div class="buttons">';
             echo '<input type="button" id="checkall" value="'.get_string('selectall').'" /> ';
@@ -391,7 +391,7 @@ if (!$nonrespondents) {
             }
         }
     } else {// Anonymous questionnaire.
-        if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
+        if (has_capability('mod/questionnaire:message', $context)) {
             echo '<fieldset>';
             echo '<legend>'.get_string('send_message_to', 'questionnaire').'</legend>';
                 $checked = ($selectedanonymous == '' || $selectedanonymous == 'none') ? 'checked = "checked"' : '';
@@ -425,7 +425,7 @@ if (!$nonrespondents) {
             echo '</fieldset>';
         }
     }
-    if (has_capability('moodle/course:bulkmessaging', $coursecontext)) {
+    if (has_capability('mod/questionnaire:message', $context)) {
         // Message editor.
         // Prepare data.
         echo '<fieldset class="clearfix">';
@@ -449,7 +449,6 @@ if (!$nonrespondents) {
         $table->align = array('left', 'left');
         $table->data[] = array( '<strong>'.get_string('subject', 'questionnaire').'</strong>', $subjecteditor);
         $table->data[] = array('<strong>'.get_string('messagebody').'</strong>', $texteditor);
-
 
         echo html_writer::table($table);
 
