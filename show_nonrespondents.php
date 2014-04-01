@@ -268,7 +268,7 @@ if ($fullname) {
     } else {
         $usedgroupid = false;
     }
-    $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid, $sort, $startpage, $pagecount);
+    $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid);
     $countnonrespondents = count($nonrespondents);
 
     $table->initialbars(false);
@@ -282,6 +282,8 @@ if ($fullname) {
         $pagecount = $table->get_page_size();
     }
 }
+
+$nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid, $sort, $startpage, $pagecount);
 
 // Viewreports-start.
 // Print the list of students.
