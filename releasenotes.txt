@@ -1,5 +1,17 @@
 Release Notes
 
+Version 2.6.4 (Build - 2014033100) STABLE
+- New capability to allow use of messaging on non-respondents screen, separate to moodle/course:bulkmessaging.
+- fixed CONTRIB-4965 :: Another cast problem with Username 
+- fixed CONTRIB-4957 :: Feedback sections display skips a question 
+- fixed CONTRIB-4948 :: Inconsistent reports from personality test feature 
+- fixed CONTRIB-4943 :: Allow roles with preview capability to preview a questionnaire, even if it's a copy of a public one. 
+- fixed CONTRIB-4942 :: In Activities block, display names (and links to) public questionnaires original and copies 
+- fixed CONTRIB-4938 :: Recent activity block should display questionnaire activity
+- fixed CONTRIB-4871 :: questionnaire_print_overview is broken 
+- fixed CONTRIB-4856 :: Session variable can be empty when accessed causing PHP warning 
+- fixed CONTRIB-4846 // Individual responses navbar linking to ALL students' individual responses 
+
 Version 2.6.3 (Build - 2014010300) BETA released to the Moodle plugins repository in replacement for 2.6.2.
 - Fixed incorrect upgrade $oldversion date in previous version.
 - Fixed RGraph bug with the Radar chart.

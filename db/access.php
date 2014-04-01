@@ -208,8 +208,20 @@ $capabilities = array(
                         'teacher' => CAP_ALLOW,
                         'editingteacher' => CAP_ALLOW
         )
-    )
+    ),
 
+    // Ability to message students from a questionnaire.
+    'mod/questionnaire:message' => array(
+
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+                            'manager' => CAP_ALLOW,
+                            'teacher' => CAP_ALLOW,
+                            'editingteacher' => CAP_ALLOW
+        )
+    )
 
 );
 
