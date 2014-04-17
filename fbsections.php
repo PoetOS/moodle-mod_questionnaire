@@ -226,7 +226,8 @@ foreach ($questionnaire->questions as $question) {
             for ($i = 0; $i < $feedbacksections; $i++) {
                 $output = '<div style="float:left; padding-right:5px;">';
                 if ($i != 0) {
-                    $output .= '<div class="'.$bg.'"><input type="radio" name="'.$n.'" id="'.$qid.'_'.$i.'" value="'.$i.'_'.$qid.'"';
+                    $output .= '<div class="'.$bg.'"><input type="radio" name="'.$n.'" id="'.$qid.'_'.$i.'" value="'.$i.'_'.
+                        $qid.'"';
                 } else {
                     $output .= '<div class="'.$bg.'"><input type="radio" name="'.$n.'" id="'.$i.'" value="'.$i.'"';
                 }

@@ -559,6 +559,5 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
             break;
     }
 
-    // echo '<br />Charts powered by <a href="http://www.rgraph.net/">Rgraph</a>';
     echo $OUTPUT->box_end();
 }
