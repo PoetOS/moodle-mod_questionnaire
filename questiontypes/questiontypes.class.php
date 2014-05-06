@@ -2295,8 +2295,7 @@ class questionnaire_question {
                                         '&nbsp;'.$stravgval);
                             }
                         } else if ($nbna != 0) {
-                            $table->data[] = array(format_text($content, FORMAT_HTML), $out, sprintf('%.1f', $avg).
-                                        '&nbsp;'.$stravgval, $nbna);
+                            $table->data[] = array(format_text($content, FORMAT_HTML), $out, '', $nbna);
                         }
                     }
                 } // End if named degrees.
