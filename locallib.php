@@ -487,8 +487,10 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid,q.name as qname " .
                 "FROM {questionnaire} q " .
                 "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
-               "WHERE owner = ? and realm = ?" .
+               "WHERE owner = ? and realm = ? " .
                "ORDER BY realm,name ";
+            echo "<br>$sql<br>";
+            echo "courseid = $courseid; type = $type";
             $params = array($courseid, $type);
         }
     }
