@@ -1090,7 +1090,7 @@ function questionnaire_reset_userdata($data) {
                  ORDER BY R.id";
             $resps = $DB->get_records_sql($sql, array($survey->id));
             if (!empty($resps)) {
-                $questionnaire = $DB->get_record("questionnaire", array("sid" => $survey->id));
+                $questionnaire = $DB->get_record("questionnaire", array("sid" => $survey->id, "course" => $survey->owner));
                 $questionnaire->course = $DB->get_record("course", array("id" => $questionnaire->course));
                 foreach ($resps as $response) {
                     questionnaire_delete_response($response, $questionnaire);

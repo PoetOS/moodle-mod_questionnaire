@@ -467,7 +467,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
         } else {
             return false;
         }
-    } else if (!empty($type)) {
+    } else {
         $castsql = $DB->sql_cast_char2int('s.owner');
         if ($type == 'public') {
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
@@ -490,6 +490,16 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
                 "WHERE owner = ? and realm = ? " .
                 "ORDER BY realm,name ";
             $params = array($courseid, $type);
+        
+        } else {
+            // Current get_survey_list is called from function questionnaire_reset_userdata so we need to get a 
+            // complete list of all questionnaires in current course to reset them.
+            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid,q.name as qname " .
+                   "FROM {questionnaire} q " .
+                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
+                   "WHERE owner = ? " .
+                   "ORDER BY realm,name ";
+            $params = array($courseid);
         }
     }
     return $DB->get_records_sql($sql, $params);
