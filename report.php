@@ -548,14 +548,17 @@ switch ($action) {
                 if (!($resps = $DB->get_records_sql($sql, array($sid, $group->id)))) {
                     $resps = array();
                 }
+                $thisgroupname = groups_get_group_name($group->id);
                 if (!empty ($resps)) {
+                    // Add number of responses to name of group in the groups select list.
                     $respscount = count($resps);
                     $groupresps [$group->id] = $resps;
+                    $groupselect = preg_replace('/\<option value="'.$group->id.'">'.$thisgroupname.'<\/option>/',
+                                    '<option value="'.$group->id.'">'.$thisgroupname.' ('.$respscount.')</option>', $groupselect);
                 } else {
-                    $respscount = 0;
+                    // Remove groups with no responses from the groups select list.
+                    $groupselect = preg_replace('/\<option value="'.$group->id.'">'.$thisgroupname.'<\/option>/', '', $groupselect);
                 }
-                $thisgroupname = groups_get_group_name($group->id);
-                $groupselect = str_replace($thisgroupname, $thisgroupname.' ('.$respscount.')', $groupselect);
             }
             echo isset($groupselect) ? $groupselect : '';
             $currentgroupid = groups_get_activity_group($cm);
