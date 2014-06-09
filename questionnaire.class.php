@@ -3055,9 +3055,8 @@ class questionnaire {
         $nbparticipants = count($rids);
 
         if (!$allresponses && $groupmode != 0) {
-            $nbparticipants = $nbparticipants - !$isgroupmember;
+            $nbparticipants = max(1, $nbparticipants - !$isgroupmember);
         }
-
         foreach ($rids as $rrid) {
             // Get responses for bool (Yes/No).
             $sql = 'SELECT q.id, q.type_id as q_type, a.choice_id as cid '.
