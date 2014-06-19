@@ -15,18 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * scorm version information.
+ * Questionnaire version information.
  *
- * @package    mod
- * @subpackage questionnaire
+ * @package    mod_questionnaire
+ * @author Mike Churchward
+ * @author Joseph Rézeau 
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$module->version  = 2014041800;  // The current module version (Date: YYYYMMDDXX)
-$module->requires = 2013111800; // Moodle version.
+defined('MOODLE_INTERNAL') || die();
 
-$module->component = 'mod_questionnaire';
-$module->cron     = 60 * 60 * 12;    // Period for cron to check this module (secs).
+$plugin->version  = 2014061900;  // The current module version (Date: YYYYMMDDXX)
+$plugin->requires = 2014050800; // Moodle version.
 
-$module->release  = '2.6.4 (Build - 2014041800)';
-$module->maturity  = MATURITY_STABLE;
+$plugin->component = 'mod_questionnaire';
+$plugin->cron     = 60 * 60 * 12;    // Period for cron to check this module (secs).
+
+$plugin->release  = '2.7.0 (Build - 2014061900)';
+$plugin->maturity  = MATURITY_STABLE;
