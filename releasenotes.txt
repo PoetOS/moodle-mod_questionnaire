@@ -1,5 +1,12 @@
 Release Notes
 
+Version 2.6.5 (Build - 2014041801) STABLE
+- Fixed CONTRIB-5074 :: Questionnaire: divide by zero warning.
+- Fixed CONTRIB-5078 :: Course Reset for Questionnaire does not work.
+- Fixed CONTRIB-5050 :: Small bug with Oracle.
+- Fixed CONTRIB-5034 Average rank (and average values) incorrect in N/A rate questions.
+- Fixed CONTRIB-4967 Show nonrespondents list doesn't paginate properly.
+
 Version 2.6.4 (Build - 2014033100) STABLE
 - New capability to allow use of messaging on non-respondents screen, separate to moodle/course:bulkmessaging.
 - fixed CONTRIB-4965 :: Another cast problem with Username 
