@@ -145,7 +145,7 @@ if (!$questionnaire->is_active()) {
     }
     if ($questionnaire->questions) { // Sanity check.
         echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
-        'id='.$questionnaire->cm->id).'">'.$complete.'</a>';
+        'id='.$questionnaire->cm->id.'&resume='.$resume).'">'.$complete.'</a>';
     }
 }
 if ($questionnaire->is_active() && !$questionnaire->questions) {
@@ -158,12 +158,24 @@ if ($questionnaire->is_active() && $questionnaire->capabilities->editquestions &
 echo $OUTPUT->box_end();
 if (isguestuser()) {
     $output = '';
-    $guestno = html_writer::tag('p', get_string('guestsno', 'questionnaire'));
+    $guestno = html_writer::tag('p', get_string('noteligible', 'questionnaire'));
     $liketologin = html_writer::tag('p', get_string('liketologin'));
     $output .= $OUTPUT->confirm($guestno."\n\n".$liketologin."\n", get_login_url(),
             get_referer(false));
     echo $output;
 }
+
+// Log this course module view.
+// Needed for the event logging.
+$context = context_module::instance($questionnaire->cm->id);
+$anonymous = $questionnaire->respondenttype == 'anonymous';
+
+$event = \mod_questionnaire\event\course_module_viewed::create(array(
+                'objectid' => $questionnaire->id,
+                'anonymous' => $anonymous,
+                'context' => $context
+));
+$event->trigger();
 
 $usernumresp = $questionnaire->count_submissions($USER->id);
 

@@ -29,6 +29,7 @@ $id = optional_param('id', null, PARAM_INT);    // Course Module ID.
 $a = optional_param('a', null, PARAM_INT);      // questionnaire ID.
 
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
+$resume = optional_param('resume', null, PARAM_INT);    // Is this attempt a resume of a saved attempt?
 
 if ($id) {
     if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
@@ -70,11 +71,24 @@ if (isset($id)) {
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
-add_to_log($course->id, "questionnaire", "view", "view.php?id=$cm->id", "$questionnaire->name", $cm->id, $USER->id);
+
 $questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
 $questionnaire->strquestionnaire  = get_string("modulename", "questionnaire");
 
 // Mark as viewed.
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
+
+if ($resume) {
+    $context = context_module::instance($questionnaire->cm->id);
+    $anonymous = $questionnaire->respondenttype == 'anonymous';
+
+    $event = \mod_questionnaire\event\attempt_resumed::create(array(
+                    'objectid' => $questionnaire->id,
+                    'anonymous' => $anonymous,
+                    'context' => $context
+    ));
+    $event->trigger();
+}
+
 $questionnaire->view();

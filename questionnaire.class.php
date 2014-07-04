@@ -136,7 +136,7 @@ class questionnaire {
 
         if (!$this->capabilities->view) {
             echo('<br/>');
-            questionnaire_notify(get_string("guestsno", "questionnaire", $this->name));
+            questionnaire_notify(get_string("noteligible", "questionnaire", $this->name));
             echo('<div><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
                 get_string("continue").'</a></div>');
             exit;
@@ -172,7 +172,7 @@ class questionnaire {
 
             $msg = $this->print_survey($USER->id, $quser);
 
-            // If Survey was submitted with all required fields completed ($msg is empty),
+            // If Questionnaire was submitted with all required fields completed ($msg is empty),
             // then record the submittal.
             $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/complete.php");
             if (!empty($viewform->rid)) {
@@ -214,8 +214,18 @@ class questionnaire {
                     $completion->update_state($this->cm, COMPLETION_COMPLETE);
                 }
 
-                add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}",
-                    $this->cm->id, $USER->id);
+                // Log this submitted response.
+                $context = context_module::instance($this->cm->id);
+                $anonymous = $this->respondenttype == 'anonymous';
+                $params = array(
+                                'context' => $context,
+                                'courseid' => $this->course->id,
+                                'relateduserid' => $USER->id,
+                                'anonymous' => $anonymous,
+                                'other' => array('questionnaireid' => $questionnaire->id)
+                );
+                $event = \mod_questionnaire\event\attempt_submitted::create($params);
+                $event->trigger();
 
                 $this->response_send_email($this->rid);
                 $this->response_goto_thankyou();
@@ -731,6 +741,7 @@ class questionnaire {
         $userid = '';
         $resp = '';
         $groupname = '';
+        $currentgroupid = 0;
         $timesubmitted = '';
         // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
         if ($rid) {
@@ -743,6 +754,7 @@ class questionnaire {
                         if ($groups = groups_get_all_groups($courseid, $resp->username)) {
                             if (count($groups) == 1) {
                                 $group = current($groups);
+                                $currentgroupid = $group->id;
                                 $groupname = ' ('.get_string('group').': '.$group->name.')';
                             } else {
                                 $groupname = ' ('.get_string('groups').': ';
@@ -755,6 +767,16 @@ class questionnaire {
                             $groupname = ' ('.get_string('groupnonmembers').')';
                         }
                     }
+
+                    $params = array(
+                                    'objectid' => $this->survey->id,
+                                    'context' => $this->context,
+                                    'courseid' => $this->course->id,
+                                    'relateduserid' => $userid,
+                                    'other' => array('action' => 'vresp', 'currentgroupid' => $currentgroupid, 'rid' => $rid)
+                    );
+                    $event = \mod_questionnaire\event\response_viewed::create($params);
+                    $event->trigger();
                 }
             }
         }
@@ -1668,8 +1690,19 @@ class questionnaire {
             $DB->update_record('questionnaire_response', $record);
         }
         if ($resume) {
-            add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}",
-                "{$this->name}", $this->cm->id, $USER->id);
+            // Log this saved response.
+            // Needed for the event logging.
+            $context = context_module::instance($this->cm->id);
+            $anonymous = $this->respondenttype == 'anonymous';
+            $params = array(
+                            'context' => $context,
+                            'courseid' => $this->course->id,
+                            'relateduserid' => $userid,
+                            'anonymous' => $anonymous,
+                            'other' => array('questionnaireid' => $this->id)
+            );
+            $event = \mod_questionnaire\event\attempt_saved::create($params);
+            $event->trigger();
         }
 
         if (!empty($this->questionsbysec[$section])) {

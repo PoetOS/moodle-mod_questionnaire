@@ -476,3 +476,14 @@ echo $OUTPUT->box_end();
 // Finish the page.
 
 echo $OUTPUT->footer();
+
+// Log this questionnaire show non-respondents action.
+$context = context_module::instance($questionnaire->cm->id);
+$anonymous = $questionnaire->respondenttype == 'anonymous';
+
+$event = \mod_questionnaire\event\non_respondents_viewed::create(array(
+                'objectid' => $questionnaire->id,
+                'anonymous' => $anonymous,
+                'context' => $context
+));
+$event->trigger();

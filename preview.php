@@ -123,3 +123,14 @@ if ($popup) {
     echo $OUTPUT->close_window_button();
 }
 echo $OUTPUT->footer($course);
+
+// Log this questionnaire preview.
+$context = context_module::instance($questionnaire->cm->id);
+$anonymous = $questionnaire->respondenttype == 'anonymous';
+
+$event = \mod_questionnaire\event\questionnaire_previewed::create(array(
+                'objectid' => $questionnaire->id,
+                'anonymous' => $anonymous,
+                'context' => $context
+));
+$event->trigger();

@@ -36,7 +36,9 @@ $coursecontext = context_course::instance($id);
 require_login($course->id);
 $PAGE->set_pagelayout('incourse');
 
-add_to_log($course->id, "questionnaire", "view all", "index.php?id=$course->id", "");
+$event = \mod_questionnaire\event\course_module_instance_list_viewed::create(array(
+                'context' => context_course::instance($course->id)));
+$event->trigger();
 
 // Print the header.
 $strquestionnaires = get_string("modulenameplural", "questionnaire");

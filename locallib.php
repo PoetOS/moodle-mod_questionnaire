@@ -490,7 +490,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
                 "WHERE owner = ? and realm = ? " .
                 "ORDER BY realm,name ";
             $params = array($courseid, $type);
-        
+
         } else {
             // Current get_survey_list is called from function questionnaire_reset_userdata so we need to get a 
             // complete list of all questionnaires in current course to reset them.

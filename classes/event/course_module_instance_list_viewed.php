@@ -15,21 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Questionnaire version information.
+ * The mod_questionnaire instance list viewed event.
  *
  * @package    mod_questionnaire
- * @author Mike Churchward
- * @author Joseph Rézeau
+ * @copyright  2013 Ankit Agarwal
+ * @copyright  2014 Joseph Rézeau <moodle@rezeau.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_questionnaire\event;
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2014070400;  // The current module version (Date: YYYYMMDDXX)
-$plugin->requires = 2014050800; // Moodle version.
-
-$plugin->component = 'mod_questionnaire';
-$plugin->cron     = 60 * 60 * 12;    // Period for cron to check this module (secs).
-
-$plugin->release  = '2.7.0 (Build - 2014070400)';
-$plugin->maturity  = MATURITY_BETA;
+/**
+ * The mod_questionnaire instance list viewed event class.
+ *
+ * @package    mod_questionnaire
+ * @since      Moodle 2.7
+ * @copyright  2013 onwards Ankit Agarwal
+ * @copyright  2014 Joseph Rézeau <moodle@rezeau.org>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
+    // No code required here as the parent class handles it all.
+}

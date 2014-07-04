@@ -291,11 +291,11 @@ class questionnaire_question {
                 }
             }
         }
-        if (preg_match("/other_q([0-9]+)/", (isset($val)?$val:''), $regs)) {
+        if (preg_match("/other_q([0-9]+)/", (isset($val) ? $val : ''), $regs)) {
             $cid = $regs[1];
-            $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
             if (!isset($other)) {
                 break; // Out of the case.
+                $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
             }
             if (preg_match("/[^ \t\n]/", $other)) {
                 $record = new object;
@@ -1005,7 +1005,7 @@ class questionnaire_question {
 
         $options = array($val1 => $stryes, $val2 => $strno);
         $name = 'q'.$this->id;
-        $checked = (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
+        $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
         $output = '';
         $ischecked = false;
 
@@ -1337,7 +1337,7 @@ class questionnaire_question {
                 $options[$value] = $choice->content;
             }
             $dependdrop = "dependdrop('$qdropid', '$descendants')";
-            echo html_writer::select($options, $qdropid, (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:''),
+            echo html_writer::select($options, $qdropid, (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''),
                             array('' => 'choosedots'), array('id' => $qdropid, 'onchange' => $dependdrop));
             // End dependents.
         } else {
@@ -1348,7 +1348,7 @@ class questionnaire_question {
                 $options[$key] = $choice->content;
             }
             echo html_writer::select($options, 'q'.$this->id,
-                (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:''),
+                (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''),
                 array('' => 'choosedots'), array('id' => $this->type . $this->id));
         }
     }
@@ -1501,8 +1501,8 @@ class questionnaire_question {
                         $str.'" type="radio" value="-999" '.$checked.$order.' /></td>';
                 }
                 for ($j = 0; $j < $this->length + $isna; $j++) {
-                    $checked = ((isset($data->$str) && ($j == $data->$str || $j == $this->length && $data->$str == -1))
-                                     ? ' checked="checked"' : '');
+                    $checked = ((isset($data->$str) && ($j == $data->$str || $j ==
+                                    $this->length && $data->$str == -1)) ? ' checked="checked"' : '');
                     $checked = '';
                     if (isset($data->$str) && ($j == $data->$str || $j == $this->length && $data->$str == -1)) {
                         $checked = ' checked="checked"';
@@ -1657,7 +1657,7 @@ class questionnaire_question {
     public function radio_response_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
         $horizontal = $this->length;
-        $checked = (isset($data->{'q'.$this->id})?$data->{'q'.$this->id}:'');
+        $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
         foreach ($this->choices as $id => $choice) {
             if ($horizontal) {
                 echo ' <span style="white-space:nowrap;">';
@@ -1759,7 +1759,7 @@ class questionnaire_question {
         }
         echo '<div class="response drop">';
         echo html_writer::select($options, 'q'.$this->id.$uniquetag++,
-                        (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} :''));
+                        (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''));
         if (isset($data->{'q'.$this->id}) ) {
             echo ': <span class="selected">'.$options[$data->{'q'.$this->id}].'</span></div>';
         }

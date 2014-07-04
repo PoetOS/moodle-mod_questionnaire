@@ -343,6 +343,19 @@ switch ($action) {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='.
                     $instance.'&amp;byresponse=1';
             }
+
+            // Log this questionnaire delete single response action.
+            $anonymous = $questionnaire->respondenttype == 'anonymous';
+
+            $params = array(
+                            'objectid' => $questionnaire->survey->id,
+                            'context' => $questionnaire->context,
+                            'courseid' => $questionnaire->course->id,
+                            'relateduserid' => $user->id
+            );
+            $event = \mod_questionnaire\event\response_deleted::create($params);
+            $event->trigger();
+
             redirect($redirection);
         } else {
             error (get_string('couldnotdelresp', 'questionnaire').$rid.get_string('by', 'questionnaire').$ruser.'?',
@@ -419,6 +432,18 @@ switch ($action) {
             } else {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vall&amp;sid='.$sid.'&amp;instance='.$instance;
             }
+
+            // Log this questionnaire delete all responses action.
+            $context = context_module::instance($questionnaire->cm->id);
+            $anonymous = $questionnaire->respondenttype == 'anonymous';
+
+            $event = \mod_questionnaire\event\all_responses_deleted::create(array(
+                            'objectid' => $questionnaire->id,
+                            'anonymous' => $anonymous,
+                            'context' => $context
+            ));
+            $event->trigger();
+
             redirect($redirection);
         } else {
             error (get_string('couldnotdelresp', 'questionnaire'),
@@ -476,6 +501,17 @@ switch ($action) {
         echo $OUTPUT->box_end();
 
         echo $OUTPUT->footer('none');
+
+        // Log saved as text action.
+        $params = array(
+                        'objectid' => $questionnaire->id,
+                        'context' => $questionnaire->context,
+                        'courseid' => $course->id,
+                        'other' => array('action' => $action, 'instance' => $instance, 'currentgroupid' => $currentgroupid)
+        );
+        $event = \mod_questionnaire\event\all_responses_saved_as_text::create($params);
+        $event->trigger();
+
         exit();
         break;
 
@@ -554,7 +590,7 @@ switch ($action) {
                     $respscount = count($resps);
                     $groupresps [$group->id] = $resps;
                     $groupselect = preg_replace('/\<option value="'.$group->id.'">'.$thisgroupname.'<\/option>/',
-                                    '<option value="'.$group->id.'">'.$thisgroupname.' ('.$respscount.')</option>', $groupselect);
+                        '<option value="'.$group->id.'">'.$thisgroupname.' ('.$respscount.')</option>', $groupselect);
                 } else {
                     // Remove groups with no responses from the groups select list.
                     $groupselect = preg_replace('/\<option value="'.$group->id.'">'.$thisgroupname.'<\/option>/', '', $groupselect);
@@ -594,6 +630,15 @@ switch ($action) {
             $ret = $questionnaire->response_analysis($rid = 0, $resps, $compare = false,
                             $isgroupmember = false, $allresponses = true, $currentgroupid);
         }
+
+        $params = array(
+                        'objectid' => $questionnaire->id,
+                        'context' => $context,
+                        'courseid' => $course->id,
+                        'other' => array('action' => $action, 'instance' => $instance, 'groupid' => $currentgroupid)
+        );
+        $event = \mod_questionnaire\event\all_responses_viewed::create($params);
+        $event->trigger();
 
         echo'<div class = "generalbox">';
         echo (get_string('viewallresponses', 'questionnaire').'. '.$groupname.'. ');

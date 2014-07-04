@@ -116,12 +116,9 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
                 }
             }
 
-            // The $labels = json_encode($labels, JSON_UNESCAPED_UNICODE);
-            // if not php 5.4 we cannot use JSON_UNESCAPED_UNICODE to correctly treat French accents etc.
-            foreach ($labels as $value) {
-                $output[] = '"'.$value.'"';
-            }
-            $labels = '[' . implode(',', $output) . ']';
+            $labels = json_encode($labels, JSON_UNESCAPED_UNICODE);
+            // JSON_UNESCAPED_UNICODE available since php 5.4, used to correctly treat French accents etc.
+
             // The bar colors :: use green for "positive" (left column) and pink for "negative" (right column).
             $chartcolors = array();
             $chartcolors2 = array();
