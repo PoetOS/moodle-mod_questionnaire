@@ -91,10 +91,10 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
                 if (count($lb) > 1) {
                     $left = $lb[0];
                     $right = $lb[1];
-                    // Textlib and diff needed for non-ascii characters.
-                    $lenleft = textlib::strlen($left);
+                    // core_text and diff needed for non-ascii characters.
+                    $lenleft = core_text::strlen($left);
                     $diffleft = strlen($left) - $lenleft;
-                    $lenright = textlib::strlen($right);
+                    $lenright = core_text::strlen($right);
                     $diffright = strlen($right) - $lenright;
                     if ($lenleft < $lenright) {
                         $padlength = $lenright + $diffleft;
@@ -110,7 +110,7 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
             // Find length of longest label.
             $maxlen = 0;
             foreach ($labels as $label) {
-                $labellen = textlib::strlen($label);
+                $labellen = core_text::strlen($label);
                 if ($labellen > $maxlen) {
                     $maxlen = $labellen;
                 }
@@ -231,8 +231,8 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
                     $labels = '';
                     $left = $lb[0];
                     $right = $lb[1];
-                    $lenleft = textlib::strlen($left);
-                    $lenright = textlib::strlen($right);
+                    $lenleft = core_text::strlen($left);
+                    $lenright = core_text::strlen($right);
                     if ($lenleft < $lenright) {
                         $padlength = $lenright;
                         $left = str_pad($left, $padlength, ' ', STR_PAD_LEFT);
@@ -261,7 +261,7 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
             // Find length of longest label.
             $maxlen = 0;
             foreach ($labels as $label) {
-                $labellen = textlib::strlen($label);
+                $labellen = core_text::strlen($label);
                 if ($labellen > $maxlen) {
                     $maxlen = $labellen;
                 }
@@ -482,7 +482,7 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
                 // Find length of longest label.
                 $maxlen = 0;
                 foreach ($labels as $label) {
-                    $labellen = textlib::strlen($label);
+                    $labellen = core_text::strlen($label);
                     if ($labellen > $maxlen) {
                         $maxlen = $labellen;
                     }
