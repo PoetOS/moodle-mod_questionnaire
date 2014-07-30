@@ -32,4 +32,4 @@ $plugin->component = 'mod_questionnaire';
 $plugin->cron     = 60 * 60 * 12;    // Period for cron to check this module (secs).
 
 $plugin->release  = '2.7.0 (Build - 2014070401)';
-$plugin->maturity  = MATURITY_BETA;
+$plugin->maturity  = MATURITY_STABLE;
