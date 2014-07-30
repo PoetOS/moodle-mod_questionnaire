@@ -427,7 +427,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013100500, 'questionnaire');
     }
 
-    if ($oldversion < 2013122201) {
+    if ($oldversion < 2013122202) {
         // Personality test feature.
 
         $table = new xmldb_table('questionnaire_survey');
@@ -485,7 +485,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         }
 
         // Questionnaire savepoint reached.
-        upgrade_mod_savepoint(true, 2013122201, 'questionnaire');
+        upgrade_mod_savepoint(true, 2013122202, 'questionnaire');
     }
 
     if ($oldversion < 2014010300) {
