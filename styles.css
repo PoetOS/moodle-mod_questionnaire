@@ -350,3 +350,7 @@ td.selected {
     margin-left: 5px;
     width: 97%;
 }
+
+.dir-rtl.path-mod-questionnaire .qn-content {margin-right:55px; margin-left: 0;}
+.dir-rtl.path-mod-questionnaire .qn-legend {float: right;}
+.dir-rtl.path-mod-questionnaire .floatprinticon {float: left;}
