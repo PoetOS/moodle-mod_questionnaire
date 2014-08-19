@@ -2453,7 +2453,7 @@ class questionnaire {
 
         // Load survey title (and other globals).
         if (empty($this->survey)) {
-            $errmsg = get_string('erroropening', 'questionnaire') ." [ ID:${sid} R:";
+            $errmsg = get_string('erroropening', 'questionnaire') ." [ ID:${$this->survey->id} R:";
             return($errmsg);
         }
 
