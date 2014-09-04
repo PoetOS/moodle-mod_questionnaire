@@ -589,7 +589,8 @@ class questionnaire_question {
                              (SELECT c2.id, AVG(a2.rank+1) AS average, COUNT(a2.response_id) AS num
                               FROM {questionnaire_quest_choice} c2, {$CFG->prefix}questionnaire_{$this->response_table} a2
                               WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rank >= 0{$ridstr}
-                              GROUP BY c2.id) a ON a.id = c.id";
+                              GROUP BY c2.id) a ON a.id = c.id
+                              order by c.id";
                 $results = $DB->get_records_sql($sql, array($this->id, $this->id));
                 if (!empty ($rankvalue)) {
                     foreach ($results as $key => $result) {
