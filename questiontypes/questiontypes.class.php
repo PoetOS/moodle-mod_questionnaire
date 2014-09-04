@@ -682,7 +682,7 @@ class questionnaire_question {
         if ($rows = $this->get_response_text_results($rids)) {
             // Count identical answers (numeric questions only).
             foreach ($rows as $row) {
-                if (!empty($row->response)) {
+                if (!empty($row->response) || $row->response === "0") {
                     $this->text = $row->response;
                     $textidx = clean_text($this->text);
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
