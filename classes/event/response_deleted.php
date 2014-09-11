@@ -51,7 +51,7 @@ class response_deleted extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event__response_deleted', 'mod_questionnaire');
+        return get_string('event_response_deleted', 'mod_questionnaire');
     }
 
     /**

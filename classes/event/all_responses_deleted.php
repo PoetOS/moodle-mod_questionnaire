@@ -40,6 +40,7 @@ class all_responses_deleted extends \core\event\base {
      * Init method.
      */
     protected function init() {
+        $this->data['objecttable'] = 'questionnaire';
         $this->data['crud'] = 'd';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }

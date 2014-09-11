@@ -40,6 +40,7 @@ class all_responses_saved_as_text extends \core\event\base {
      * Init method.
      */
     protected function init() {
+        $this->data['objecttable'] = 'questionnaire';
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
