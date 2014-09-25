@@ -118,6 +118,21 @@ if (!$popup) {
     require('tabs.php');
 }
 echo $OUTPUT->heading($pq);
+
+if ($questionnaire->capabilities->printblank) {
+    // Open print friendly as popup window.
+
+    $linkname = '&nbsp;'.get_string('printblank', 'questionnaire');
+    $title = get_string('printblanktooltip', 'questionnaire');
+    $url = '/mod/questionnaire/print.php?qid='.$questionnaire->id.'&amp;rid=0&amp;'.'courseid='.$questionnaire->course->id.'&amp;sec=1';
+    $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
+                    'height' => 600, 'width' => 800, 'title' => $title);
+    $name = 'popup';
+    $link = new moodle_url($url);
+    $action = new popup_action('click', $link, $name, $options);
+    $class = "floatprinticon";
+    echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title), new pix_icon('t/print', $title));
+}
 $questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup);
 if ($popup) {
     echo $OUTPUT->close_window_button();

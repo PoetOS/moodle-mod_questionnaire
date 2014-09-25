@@ -816,9 +816,8 @@ class questionnaire {
 
         // We don't want to display the print icon in the print popup window itself!
         if ($this->capabilities->printblank && $blankquestionnaire && $section == 1) {
-            // Open print friendly as popup window.
-            $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
-            $linkname = '<img src="'.$imageurl.'print.gif" alt="Printer-friendly version" />';
+            // Open print friendly as popup window
+            $linkname = '&nbsp;'.get_string('printblank', 'questionnaire');
             $title = get_string('printblanktooltip', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
             $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
@@ -827,7 +826,7 @@ class questionnaire {
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
             $class = "floatprinticon";
-            echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title));
+            echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title), new pix_icon('t/print', $title));
         }
         if ($section == 1) {
             if ($this->survey->subtitle) {
@@ -2271,9 +2270,7 @@ class questionnaire {
             echo '<br /><b><<< <a href="'.$url.'">'.get_string('viewbyresponse', 'questionnaire').'</a></b>';
 
             // Display a "print this response" icon here in prevision of total removal of tabs in version 2.6.
-            $linkname = get_string('print', 'questionnaire');
-            $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
-            $linkname = '<img src="'.$imageurl.'print.gif" alt="Printer-friendly version" />';
+            $linkname = '&nbsp;'.get_string('print', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid='.$currrid.
             '&amp;courseid='.$this->course->id.'&amp;sec=1';
             $title = get_string('printtooltip', 'questionnaire');
@@ -2282,7 +2279,7 @@ class questionnaire {
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
-            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title));
+            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title), new pix_icon('t/print', $title));
             echo '&nbsp;|&nbsp;'.$actionlink;
 
             echo $OUTPUT->box_end();

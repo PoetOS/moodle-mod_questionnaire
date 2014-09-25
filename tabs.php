@@ -168,31 +168,17 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         }
     }
 
-    if (in_array($currenttab, array('individualresp', 'printresp', 'deleteresp'))) {
+    if (in_array($currenttab, array('individualresp', 'deleteresp'))) {
         $inactive[] = 'vresp';
-        $activated[] = 'vresp';
-        $inactive[] = 'printresp';
-
-        $row3 = array();
-
-        // New way to output popup print window for 2.0.
-        $linkname = get_string('print', 'questionnaire');
-        $url = '/mod/questionnaire/print.php?qid='.$questionnaire->id.'&amp;rid='.$rid.
-               '&amp;courseid='.$course->id.'&amp;sec=1';
-        $title = get_string('printtooltip', 'questionnaire');
-        $options = array('menubar' => true, 'location' => false, 'scrollbars' => true,
-                        'resizable' => true, 'height' => 600, 'width' => 800);
-        $name = 'popup';
-        $link = new moodle_url($url);
-        $action = new popup_action('click', $link, $name, $options);
-        $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title));
-        $row3[] = new tabobject('printresp', '', $actionlink);
-
+        if ($currenttab != 'deleteresp') {
+            $activated[] = 'vresp';
+        }        
         if ($questionnaire->capabilities->deleteresponses) {
             $argstr2 = $argstr.'&action=dresp&rid='.$rid.'&individualresponse=1';
-            $row3[] = new tabobject('deleteresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
+            $row2[] = new tabobject('deleteresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                             get_string('deleteresp', 'questionnaire'));
         }
+
     }
 } else if ($canviewgroups && $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||

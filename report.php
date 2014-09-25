@@ -239,15 +239,17 @@ switch ($action) {
         // Print the tabs.
         $SESSION->questionnaire->current_tab = 'deleteresp';
         include('tabs.php');
-
+        
+        $timesubmitted = '<br />'.get_string('submitted', 'questionnaire').'&nbsp;'.userdate($resp->submitted);
         if ($questionnaire->respondenttype == 'anonymous') {
                 $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
+                $timesubmitted = '';
         }
-
+        
         // Print the confirmation.
         echo '<p>&nbsp;</p>';
         $msg = '<div class="warning centerpara">';
-        $msg .= get_string('confirmdelresp', 'questionnaire', $ruser);
+        $msg .= get_string('confirmdelresp', 'questionnaire', $ruser.$timesubmitted);
         $msg .= '</div>';
         $urlyes = new moodle_url('report.php', array('action' => 'dvresp',
                 'rid' => $rid, 'individualresponse' => 1, 'instance' => $instance, 'group' => $currentgroupid));
