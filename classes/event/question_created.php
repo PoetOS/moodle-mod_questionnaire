@@ -61,7 +61,7 @@ class question_created extends \core\event\base {
      */
     public function get_description() {
         $questiontype = $this->other['questiontype'];
-        return "The user with id '$this->userid' has created a question of type '$questiontype' for
+        return "The user with id '$this->userid' has created or modified a question of type '$questiontype' for
             the questionnaire with course module id '$this->contextinstanceid'.";
     }
 }
