@@ -3353,7 +3353,7 @@ class questionnaire {
                 $table->data[] = array($sectionlabel, $scorepercent[$key].'%'.$oppositescore,
                                 $allscorepercent[$key].'%'.$oppositeallscore);
             } else {
-                $table->data[] = array($sectionlabel, $sc.'%'.$oppositeallscore);
+                $table->data[] = array($sectionlabel, $allscorepercent[$key].'%'.$oppositeallscore);
             }
         }
         if (isset($CFG->questionnaire_usergraph) && $CFG->questionnaire_usergraph && $this->survey->chart_type) {
