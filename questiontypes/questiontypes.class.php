@@ -892,7 +892,7 @@ class questionnaire_question {
                 }
 
                 if ($parenttype == QUESDROP) {
-                    $qnid = 'qn-'.$this->id;
+                    $qnid = preg_quote('qn-'.$this->id, '/');
                     if (isset($formdata->$dependquestion) && preg_match("/$qnid/", $formdata->$dependquestion)) {
                         $displayclass = 'qn-container';
                     }
@@ -1727,7 +1727,7 @@ class questionnaire_question {
                 }
             } else {
                 $othertext = preg_replace(
-                        array("/^!other=/", "/^!other/U"),
+                        array("/^!other=/", "/^!other/"),
                         array('', get_string('other', 'questionnaire')),
                         $choice->content);
                 $cid = 'q'.$this->id.'_'.$id;

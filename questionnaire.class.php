@@ -316,7 +316,7 @@ class questionnaire {
                 if ($question->type_id < QUESPAGEBREAK) {
                     $i++;
                 }
-                $qid = 'q'.$question->id;
+                $qid = qreg_quote('q'.$question->id, '/');
                 if ($question->type_id != QUESPAGEBREAK) {
                     $method = $qtypenames[$question->type_id].'_response_display';
                     if (method_exists($question, $method)) {
@@ -325,7 +325,6 @@ class questionnaire {
                         foreach ($data as $respid => $respdata) {
                             $hasresp = false;
                             foreach ($respdata as $key => $value) {
-                                $pos = strpos($key, $qid);
                                 if ($hasresp = preg_match("/$qid(_|$)/", $key)) {
                                     break;
                                 }
