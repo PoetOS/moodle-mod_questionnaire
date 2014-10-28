@@ -1503,6 +1503,7 @@ class questionnaire {
         $altbody =  "\n$body_plaintext\n";
 
         $return = true;
+        $mailaddresses = trim($mailaddresses);
         $mailaddresses = preg_split('/,|;/', $email);
         foreach ($mailaddresses as $email) {
             $userto = new Object();
