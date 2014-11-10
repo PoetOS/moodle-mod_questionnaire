@@ -514,6 +514,13 @@ function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='
         $strpreview = get_string('preview_questionnaire', 'questionnaire');
         foreach ($surveys as $survey) {
             $originalcourse = $DB->get_record('course', array('id' => $survey->owner));
+            if (!$originalcourse) {
+                // This should not happen, but we found a case where a public survey
+                // still existed in a course that had been deleted, and so this
+                // code lead to a notice, and a broken link. Since that is useless
+                // we just skip surveys like this.
+                continue;
+            }
 
             // Prevent creating a copy of a public questionnaire IN THE SAME COURSE as the original.
             if ($type == 'public' && $survey->owner == $courseid) {
