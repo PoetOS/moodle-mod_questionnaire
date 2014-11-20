@@ -17,19 +17,19 @@
 /**
  * Questionnaire version information.
  *
- * @package    mod_questionnaire
- * @author Mike Churchward
- * @author Joseph Rézeau
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package mod_questionnaire
+ * @author  Mike Churchward
+ * @author  Joseph Rézeau
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2014070401;  // The current module version (Date: YYYYMMDDXX)
-$plugin->requires = 2014050800; // Moodle version.
+$plugin->version  = 2014111000;  // The current module version (Date: YYYYMMDDXX)
+$plugin->requires = 2014111000; // Moodle version.
 
 $plugin->component = 'mod_questionnaire';
 $plugin->cron     = 60 * 60 * 12;    // Period for cron to check this module (secs).
 
-$plugin->release  = '2.7.0 (Build - 2014070401)';
+$plugin->release  = '2.8.0 (Build - 2014112000)';
 $plugin->maturity  = MATURITY_STABLE;
