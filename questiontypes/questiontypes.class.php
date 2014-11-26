@@ -433,9 +433,9 @@ class questionnaire_question {
         }
 
         $sql = 'SELECT choice_id, COUNT(response_id) AS num '.
-               'FROM {questionnaire_'.$this->response_table.'} '.
-               'WHERE question_id= ? '.$ridstr.' AND choice_id != \'\' '.
-               'GROUP BY choice_id';
+                'FROM {questionnaire_'.$this->response_table.'} '.
+               'WHERE question_id= ? '.$ridstr.' AND '.$DB->sql_isnotempty('questionnaire_'.$this->response_table,'choice_id', false, false) .
+                'GROUP BY choice_id';
         return $DB->get_records_sql($sql, array($this->id));
     }
 
