@@ -531,7 +531,7 @@ class questionnaire_edit_question_form extends moodleform {
                 $choices[$lines] = get_string('nlines', 'questionnaire', $lines);
             }
             $mform->addElement('select', 'length', get_string('responsefieldlines', 'questionnaire'), $choices);
-        } else if ($question->type_id == QUESCHECK || $question->type_id == QUESNUMERIC) {
+        } else if ($question->type_id == QUESCHECK || $question->type_id == QUESNUMERIC || $question->type_id == QUESTEXT) {
             $question->precise = isset($question->precise) ? $question->precise : $defprecise;
             $mform->addElement('text', 'precise', get_string($phelpname, 'questionnaire'), array('size' => '1'));
         }
