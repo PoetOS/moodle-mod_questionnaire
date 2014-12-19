@@ -1133,13 +1133,6 @@ class questionnaire {
         return($haschoices);
     }
 
-    private function array_to_insql($array) {
-        if (count($array)) {
-            return("IN (".preg_replace("/([^,]+)/", "'\\1'", join(",", $array)).")");
-        }
-        return 'IS NULL';
-    }
-
     // RESPONSE LIBRARY.
 
     private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
@@ -1400,29 +1393,28 @@ class questionnaire {
             $sec = min($numsections , $sec);
 
             /* get question_id's in this section */
-            $qids = '';
+            $qids = array();
             foreach ($this->questionsbysec[$sec] as $question) {
-                if (empty($qids)) {
-                    $qids .= ' AND question_id IN ('.$question->id;
-                } else {
-                    $qids .= ','.$question->id;
-                }
+                $qids[] = $question->id;
             }
-            if (!empty($qids)) {
-                $qids .= ')';
-            } else {
+            if (empty($qids)) {
                 return;
+            } else {
+                list($qsql, $params) = $DB->get_in_or_equal($qids);
+                $qsql = ' AND question_id ' . $qsql;
             }
+
         } else {
             /* delete all */
-            $qids = '';
+            $qsql = '';
+            $params = array();
         }
 
         /* delete values */
-        $select = 'response_id = \''.$rid.'\' '.$qids;
+        $select = 'response_id = \'' . $rid . '\' ' . $qsql;
         foreach (array('response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
                        'response_other', 'response_date') as $tbl) {
-            $DB->delete_records_select('questionnaire_'.$tbl, $select);
+            $DB->delete_records_select('questionnaire_'.$tbl, $select, $params);
         }
     }
 
@@ -1824,14 +1816,9 @@ class questionnaire {
                         $oldqid = $row->qid;
                     }
                 }
-                if (is_array($qids2)) {
-                    $qids2 = 'question_id ' . $this->array_to_insql($qids2);
-                } else {
-                    $qids2 = 'question_id= ' . $qids2;
-                }
-                $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE '.$qids2.
-                    'ORDER BY id';
-                if ($records2 = $DB->get_records_sql($sql)) {
+                list($qsql, $params) = $DB->get_in_or_equal($qids2);
+                $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE question_id ' . $qsql . 'ORDER BY id';
+                if ($records2 = $DB->get_records_sql($sql, $params)) {
                     foreach ($records2 as $qid => $row2) {
                         $selected = '0';
                         $qid2 = $row2->question_id;
