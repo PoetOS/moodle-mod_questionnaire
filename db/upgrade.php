@@ -389,8 +389,8 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Replace the = separator with :: separator in quest_choice content.
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-        $choices = $DB->get_records('questionnaire_quest_choice', $conditions = null);
-        $total = count($choices);
+        $choices = $DB->get_recordset('questionnaire_quest_choice', $conditions = null);
+        $total = $DB->count_records('questionnaire_quest_choice');
         if ($total > 0) {
             $pbar = new progress_bar('convertchoicevalues', 500, true);
             $i = 1;
