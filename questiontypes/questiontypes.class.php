@@ -429,10 +429,11 @@ class questionnaire_question {
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
+        $params[] = '';
 
         $sql = 'SELECT choice_id, COUNT(response_id) AS num ' .
                'FROM {questionnaire_' . $this->response_table . '} ' .
-               'WHERE question_id= ? ' . $rsql . ' AND choice_id != \'\' ' .
+               'WHERE question_id= ? ' . $rsql . ' AND choice_id != ? ' .
                'GROUP BY choice_id';
         return $DB->get_records_sql($sql, $params);
     }
