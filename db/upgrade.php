@@ -387,7 +387,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        // Replace the = separator with :: separator in quest_choice content.
+        // Replace the = separator with :: separator in quest_choice content. This fixes radio button options using old "value"="display" formats. 
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
         $choices = $DB->get_recordset('questionnaire_quest_choice', $conditions = null);
         $total = $DB->count_records('questionnaire_quest_choice');
@@ -396,7 +396,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             $i = 1;
             foreach ($choices as $choice) {
                 if (($choice->value == null || $choice->value == 'NULL')
-                                && !preg_match("/^([0-9]{1,3})=(.*)$/", $choice->content)) {
+                                && !preg_match("/^([0-9]{1,3}=.*|!other=.*)$/", $choice->content)) {
                     $content = questionnaire_choice_values($choice->content);
                     if ($pos = strpos($content->text, '=')) {
                         $newcontent = str_replace('=', '::', $content->text);
