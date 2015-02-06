@@ -1,5 +1,28 @@
 Release Notes
 
+Version 2.7.1 (Build - 2015020601)
+CONTRIB-5530 - Fixed code to correctly ignore '\!other=' when fixing value/display pairs in radio buttons.
+CONTRIB-4891 - Changed use of empty string to db param based.
+Merge pull request #23 from davosmith/patch-3
+CONTRIB-4643 - replaced all db 'IN' usage with get_in_or_equal().
+CONTRIB-5435 - Put back precision setting for text box questions.
+CONTRIB-5403 fix errors from orphaned surveys.
+CONTRIB-5351 fix preg usage
+CONTRIB-5320 :: Wrong display of score for personality test questionnaires
+CONTRIB-5319 :: Editing question throws log event error if editing is cancelled Plus : modified notice string in classes/event/question_created.php to add "modified".
+CONTRIB-5263 :: The message body in non-respondents is inappropriately sized for certain text editors
+CONTRIB-5311 :: Remove "submit" capability from manager role
+CONTRIB-5304 :: Tabs Misaligned When Viewing Individual Responses + Added print popup to Preview page.
+CONTRIB-5315 :: Do not allow page breaks in first position in a questionnaire.
+CONTRIB-5298 :: Small bugs in new events system
+CONTRIB-5288 :: Issue with zero in numeric question
+CONTRIB-5284 :: order of subquestions in report of ranked question varies (using postgres)
+2.7 MATURITY_STABLE for the moodle repository
+CONTRIB-5199 :: Fixed upgrade problem from version 2.5 and updated build number.
+Let the upgrade work from MOODLE_25 to MOODLE_27. Thanks to Didier Raboud [OdyX]
+CONTRIB-5195 :: Replace deprecated textlib:: with core_text
+Added the new loggin/report/event system.
+
 Version 2.7.0 (Build - 2014070400) BETA (github only)
 - Added the new loggin/report/event system for the following events:
 all_responses_deleted
