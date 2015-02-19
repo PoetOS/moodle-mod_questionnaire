@@ -19,6 +19,13 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 
+    // CONTRIB-4914: workaround for missing "drop_enum_from_field()" method
+    if (method_exists($dbman, 'drop_enum_from_field')) {
+        $drop_enum_from_field = 'drop_enum_from_field'; // Moodle <= 2.2
+    } else {
+        $drop_enum_from_field = 'change_field_type'; // Moodle >= 2.3
+    }
+
     $result = true;
 
     if ($oldversion < 2007120101) {
@@ -287,7 +294,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $field = new xmldb_field('has_choices', XMLDB_TYPE_CHAR, '1', null, XMLDB_NOTNULL, null, 'y', 'type');
 
         // Launch drop of list of values from field has_choices.
-        $dbman->drop_enum_from_field($table, $field);
+        $dbman->$drop_enum_from_field($table, $field);
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2010110100, 'questionnaire');
@@ -298,33 +305,33 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $table = new xmldb_table('questionnaire');
         $field = new xmldb_field('respondenttype', XMLDB_TYPE_CHAR, '9', null, XMLDB_NOTNULL, null, 'fullname', 'qtype');
         // Launch drop of list of values from field respondenttype.
-        $dbman->drop_enum_from_field($table, $field);
+        $dbman->$drop_enum_from_field($table, $field);
         // Drop list of values (enum) from field resp_eligible on table questionnaire.
         $field = new xmldb_field('resp_eligible', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'all', 'respondenttype');
         // Launch drop of list of values from field resp_eligible.
-        $dbman->drop_enum_from_field($table, $field);
+        $dbman->$drop_enum_from_field($table, $field);
 
         // Drop list of values (enum) from field required on table questionnaire_question.
         $table = new xmldb_table('questionnaire_question');
         $field = new xmldb_field('required', XMLDB_TYPE_CHAR, '1', null, XMLDB_NOTNULL, null, 'n', 'content');
         // Launch drop of list of values from field required.
-        $dbman->drop_enum_from_field($table, $field);
+        $dbman->$drop_enum_from_field($table, $field);
         // Drop list of values (enum) from field deleted on table questionnaire_question.
         $field = new xmldb_field('deleted', XMLDB_TYPE_CHAR, '1', null, XMLDB_NOTNULL, null, 'n', 'required');
         // Launch drop of list of values from field deleted.
-        $dbman->drop_enum_from_field($table, $field);
+        $dbman->$drop_enum_from_field($table, $field);
 
         // Drop list of values (enum) from field complete on table questionnaire_response.
         $table = new xmldb_table('questionnaire_response');
         $field = new xmldb_field('complete', XMLDB_TYPE_CHAR, '1', null, XMLDB_NOTNULL, null, 'n', 'submitted');
         // Launch drop of list of values from field complete.
-        $dbman->drop_enum_from_field($table, $field);
+        $dbman->$drop_enum_from_field($table, $field);
 
         // Drop list of values (enum) from field choice_id on table questionnaire_response_bool.
         $table = new xmldb_table('questionnaire_response_bool');
         $field = new xmldb_field('choice_id', XMLDB_TYPE_CHAR, '1', null, XMLDB_NOTNULL, null, 'y', 'question_id');
         // Launch drop of list of values from field choice_id.
-        $dbman->drop_enum_from_field($table, $field);
+        $dbman->$drop_enum_from_field($table, $field);
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2010110101, 'questionnaire');
@@ -387,7 +394,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        // Replace the = separator with :: separator in quest_choice content. This fixes radio button options using old "value"="display" formats. 
+        // Replace the = separator with :: separator in quest_choice content. This fixes radio button options using old "value"="display" formats.
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
         $choices = $DB->get_recordset('questionnaire_quest_choice', $conditions = null);
         $total = $DB->count_records('questionnaire_quest_choice');
