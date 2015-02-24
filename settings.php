@@ -31,15 +31,15 @@ if ($ADMIN->fulltree) {
                                     get_string('configusergraph', 'questionnaire'),
                                     $str, 0, $options));
     $choices = array(
-    	'response' => get_string('response', 'questionnaire'),
-    	'submitted' => preg_replace('/\W/', '', get_string('submitted', 'questionnaire')), //dirty hack
-    	'institution' => get_string('institution'),
-    	'department' => get_string('department'),
-    	'course' => get_string('course'),
-    	'group' => get_string('group'),
-    	'id' => get_string('id', 'questionnaire'),
-    	'fullname' => get_string('fullname'),
-    	'username' => get_string('username')
+        'response' => get_string('response', 'questionnaire'),
+        'submitted' => preg_replace('/\W/', '', get_string('submitted', 'questionnaire')), //dirty hack
+        'institution' => get_string('institution'),
+        'department' => get_string('department'),
+        'course' => get_string('course'),
+        'group' => get_string('group'),
+        'id' => get_string('id', 'questionnaire'),
+        'fullname' => get_string('fullname'),
+        'username' => get_string('username')
     );
 
     $settings->add(new admin_setting_configmultiselect('questionnaire/downloadoptions', get_string('textdownloadoptions', 'questionnaire'), '', array_keys($choices), $choices));

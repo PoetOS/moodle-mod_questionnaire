@@ -2547,13 +2547,13 @@ class questionnaire {
         $coulumns = array();
         $types = array();
         foreach ($options as $option) {
-        	if (in_array($option, array('response', 'submitted', 'id'))) {
-        		$columns[] = get_string($option, 'questionnaire');
-        		$types[] = 0;
-        	} else {
-        		$columns[] = get_string($option);
-        		$types[] = 1;
-        	}
+            if (in_array($option, array('response', 'submitted', 'id'))) {
+                $columns[] = get_string($option, 'questionnaire');
+                $types[] = 0;
+            } else {
+                $columns[] = get_string($option);
+                $types[] = 1;
+            }
         }
         $nbinfocols = count($columns);
 
