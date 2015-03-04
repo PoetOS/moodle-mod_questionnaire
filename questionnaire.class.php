@@ -306,7 +306,7 @@ class questionnaire {
                 if ($question->type_id < QUESPAGEBREAK) {
                     $i++;
                 }
-                $qid = qreg_quote('q'.$question->id, '/');
+                $qid = preg_quote('q'.$question->id, '/');
                 if ($question->type_id != QUESPAGEBREAK) {
                     $method = $qtypenames[$question->type_id].'_response_display';
                     if (method_exists($question, $method)) {
