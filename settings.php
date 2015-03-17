@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Setting page for questionaire module
+ *
+ * @package    mod
+ * @subpackage questionnaire
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
@@ -22,4 +30,17 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('questionnaire_usergraph',
                                     get_string('configusergraph', 'questionnaire'),
                                     $str, 0, $options));
+    $choices = array(
+        'response' => get_string('response', 'questionnaire'),
+        'submitted' => get_string('submitted', 'questionnaire'),
+        'institution' => get_string('institution'),
+        'department' => get_string('department'),
+        'course' => get_string('course'),
+        'group' => get_string('group'),
+        'id' => get_string('id', 'questionnaire'),
+        'fullname' => get_string('fullname'),
+        'username' => get_string('username')
+    );
+
+    $settings->add(new admin_setting_configmultiselect('questionnaire/downloadoptions', get_string('textdownloadoptions', 'questionnaire'), '', array_keys($choices), $choices));
 }
