@@ -2539,33 +2539,23 @@ class questionnaire {
         global $SESSION, $DB;
 
         $output = array();
-        $nbinfocols = 9; // Change this if you want more info columns.
         $stringother = get_string('other', 'questionnaire');
-        $columns = array(
-                get_string('response', 'questionnaire'),
-                get_string('submitted', 'questionnaire'),
-                get_string('institution'),
-                get_string('department'),
-                get_string('course'),
-                get_string('group'),
-                get_string('id', 'questionnaire'),
-                get_string('fullname'),
-                get_string('username')
-            );
-
-        $types = array(
-                0,
-                0,
-                1,
-                1,
-                1,
-                1,
-                0,
-                1,
-                1,
-            );
-
         $arr = array();
+
+        $config = get_config('questionnaire', 'downloadoptions');
+        $options = empty($config) ? array() : explode(',', $config);
+        $columns = array();
+        $types = array();
+        foreach ($options as $option) {
+            if (in_array($option, array('response', 'submitted', 'id'))) {
+                $columns[] = get_string($option, 'questionnaire');
+                $types[] = 0;
+            } else {
+                $columns[] = get_string($option);
+                $types[] = 1;
+            }
+        }
+        $nbinfocols = count($columns);
 
         $idtocsvmap = array(
             '0',    // 0: unused
@@ -2808,16 +2798,16 @@ class questionnaire {
                 $username = '';
                 $uid = '';
             }
-            $arr = array();
-            array_push($arr, $qid);
-            array_push($arr, $submitted);
-            array_push($arr, $institution);
-            array_push($arr, $department);
-            array_push($arr, $coursename);
-            array_push($arr, $groupname);
-            array_push($arr, $uid);
-            array_push($arr, $fullname);
-            array_push($arr, $username);
+            $arr = array(); // fill $arr only with fields selected in the mod settings
+            if (in_array('response', $options)) array_push($arr, $qid);
+            if (in_array('submitted', $options)) array_push($arr, $submitted);
+            if (in_array('institution', $options)) array_push($arr, $institution);
+            if (in_array('department', $options)) array_push($arr, $department);
+            if (in_array('course', $options)) array_push($arr, $coursename);
+            if (in_array('group', $options)) array_push($arr, $groupname);
+            if (in_array('id', $options)) array_push($arr, $uid);
+            if (in_array('fullname', $options)) array_push($arr, $fullname);
+            if (in_array('username', $options)) array_push($arr, $username);
 
             // Merge it.
             for ($i = $nbinfocols; $i < $numcols; $i++) {
