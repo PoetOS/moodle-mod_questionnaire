@@ -2544,7 +2544,7 @@ class questionnaire {
 
         $config = get_config('questionnaire', 'downloadoptions');
         $options = empty($config) ? array() : explode(',', $config);
-        $coulumns = array();
+        $columns = array();
         $types = array();
         foreach ($options as $option) {
             if (in_array($option, array('response', 'submitted', 'id'))) {
@@ -2800,7 +2800,7 @@ class questionnaire {
             }
             $arr = array(); // fill $arr only with fields selected in the mod settings
             if (in_array('response', $options)) array_push($arr, $qid);
-            if (in_array('subbmitted', $options)) array_push($arr, $submitted);
+            if (in_array('submitted', $options)) array_push($arr, $submitted);
             if (in_array('institution', $options)) array_push($arr, $institution);
             if (in_array('department', $options)) array_push($arr, $department);
             if (in_array('course', $options)) array_push($arr, $coursename);

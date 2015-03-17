@@ -32,7 +32,7 @@ if ($ADMIN->fulltree) {
                                     $str, 0, $options));
     $choices = array(
         'response' => get_string('response', 'questionnaire'),
-        'submitted' => preg_replace('/\W/', '', get_string('submitted', 'questionnaire')), //dirty hack
+        'submitted' => get_string('submitted', 'questionnaire'),
         'institution' => get_string('institution'),
         'department' => get_string('department'),
         'course' => get_string('course'),
