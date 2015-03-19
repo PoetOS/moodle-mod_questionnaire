@@ -1,4 +1,7 @@
 Release Notes
+Version 2.6.7 (Build - 2015031901)
+CONTRIB-4838 - allow configuration of allowed fields for CSV download - security issue.
+CONTRIB-5616 fix type qreg_quote
 
 Version 2.6.6 (Build - 2015020601)
 CONTRIB-5530 - Fixed code to correctly ignore '\!other=' when fixing value/display pairs in radio buttons.
