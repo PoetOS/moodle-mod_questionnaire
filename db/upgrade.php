@@ -149,7 +149,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
     if ($oldversion < 2008031904) {
         $sql = "SELECT q.id, q.resp_eligible, q.resp_view, cm.id as cmid
-                FROM {$CFG->prefix}questionnaire q, {course_modules} cm, {modules} m
+                FROM {questionnaire} q, {course_modules} cm, {modules} m
                 WHERE m.name='questionnaire' AND m.id=cm.module AND cm.instance=q.id";
         if ($rs = $DB->get_recordset_sql($sql)) {
             $studentroleid = $DB->get_field('role', 'id', array('shortname' => 'student'));
