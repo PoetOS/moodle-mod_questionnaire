@@ -555,7 +555,7 @@ class questionnaire_question {
             if (!$isrestricted) {
                 if (!empty ($rankvalue)) {
                     $sql = "SELECT r.id, c.content, r.rank, c.id AS choiceid
-                    FROM {$CFG->prefix}questionnaire_quest_choice c, {$CFG->prefix}questionnaire_{$this->response_table} r
+                    FROM {questionnaire_quest_choice} c, {questionnaire_{$this->response_table}} r
                     WHERE r.choice_id = c.id
                     AND c.question_id = " . $this->id . "
                     AND r.rank >= 0{$rsql}
@@ -575,7 +575,7 @@ class questionnaire_question {
                         FROM {questionnaire_quest_choice} c
                         INNER JOIN
                              (SELECT c2.id, AVG(a2.rank+1) AS average, COUNT(a2.response_id) AS num
-                              FROM {questionnaire_quest_choice} c2, {$CFG->prefix}questionnaire_{$this->response_table} a2
+                              FROM {questionnaire_quest_choice} c2, {questionnaire_{$this->response_table}} a2
                               WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rank >= 0{$rsql}
                               GROUP BY c2.id) a ON a.id = c.id
                               order by c.id";
@@ -597,7 +597,7 @@ class questionnaire_question {
                         FROM {questionnaire_quest_choice} c
                         INNER JOIN
                              (SELECT c2.id, SUM(a2.rank+1) AS sum, COUNT(a2.response_id) AS num
-                              FROM {questionnaire_quest_choice} c2, {$CFG->prefix}questionnaire_{$this->response_table} a2
+                              FROM {questionnaire_quest_choice} c2, {questionnaire_{$this->response_table}} a2
                               WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rank >= 0{$rsql}
                               GROUP BY c2.id) a ON a.id = c.id";
                 $results = $DB->get_records_sql($sql, array_merge(array($this->id, $this->id), $params));
@@ -2309,11 +2309,11 @@ class questionnaire_question {
             $rsql = ' AND response_id ' . $rsql;
         }
 
-        $questionid = $this->id;
+        array_unshift($params, $this->id); // This is question_id.
         $sql = 'SELECT r.id, c.content, r.rank, c.id AS choiceid ' .
-                'FROM ' . $CFG->prefix . 'questionnaire_quest_choice c , ' .
-                $CFG->prefix . 'questionnaire_response_rank r ' .
-                'WHERE c.question_id = ' . $questionid .
+                'FROM {questionnaire_quest_choice} c , ' .
+                     '{questionnaire_response_rank} r ' .
+                'WHERE c.question_id = ?' .
                 ' AND r.question_id = c.question_id' .
                 ' AND r.choice_id = c.id ' .
                 $rsql .

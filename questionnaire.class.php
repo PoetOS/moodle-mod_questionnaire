@@ -2139,7 +2139,7 @@ class questionnaire {
         if ($isfullname) {
             $selectgroupid = '';
             $gmuserid = ', GM.userid ';
-            $groupmembers = ', '.$CFG->prefix.'groups_members GM ';
+            $groupmembers = ', {groups_members} GM ';
             $castsql = $DB->sql_cast_char2int('R.username');
             switch ($currentgroupid) {
                 case 0:     // All participants.
@@ -2151,9 +2151,9 @@ class questionnaire {
             }
             $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username,
                             U.id as userid '.$gmuserid.
-            'FROM '.$CFG->prefix.'questionnaire_response R,
-            '.$CFG->prefix.'user U
-            '.$groupmembers.
+            'FROM {questionnaire_response} R,
+                  {user} U
+                '.$groupmembers.
             'WHERE R.survey_id='.$this->survey->id.
             ' AND complete = \'y\''.
             ' AND U.id = '.$castsql.
