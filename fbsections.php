@@ -252,7 +252,7 @@ foreach ($questionnaire->questions as $question) {
             $question->survey_display($formdata, $descendantsdata = '', $qnum = $n, $blankquestionnaire = true);
         }
     } else {
-        echo '<div class="notifyproblem">';
+        echo '<div class="alert alert-error">';
         echo $strcannotuse;
         echo '</div>';
         echo '<div class="qn-question">'.$question->content.'</div>';

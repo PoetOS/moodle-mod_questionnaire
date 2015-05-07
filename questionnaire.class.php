@@ -145,19 +145,19 @@ class questionnaire {
         // Print the main part of the page.
 
         if (!$this->is_active()) {
-            echo '<div class="notifyproblem">'
+            echo '<div class="alert alert-error">'
             .get_string('notavail', 'questionnaire')
             .'</div>';
         } else if (!$this->is_open()) {
-                echo '<div class="notifyproblem">'
+                echo '<div class="alert alert-error">'
                 .get_string('notopen', 'questionnaire', userdate($this->opendate))
                 .'</div>';
         } else if ($this->is_closed()) {
-            echo '<div class="notifyproblem">'
+            echo '<div class="alert alert-error">'
             .get_string('closed', 'questionnaire', userdate($this->closedate))
             .'</div>';
         } else if (!$this->user_is_eligible($USER->id)) {
-            echo '<div class="notifyproblem">'
+            echo '<div class="alert alert-error">'
             .get_string('noteligible', 'questionnaire')
             .'</div>';
         } else if ($this->user_can_take($USER->id)) {
@@ -246,7 +246,7 @@ class questionnaire {
                     $msgstring = '';
                     break;
             }
-            echo ('<div class="notifyproblem">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
+            echo ('<div class="alert alert-error">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
         }
 
         // Finish the page.
@@ -659,7 +659,7 @@ class questionnaire {
             ';
         if (isset($this->questions) && $numsections) { // Sanity check.
             $this->survey_render($formdata->sec, $msg, $formdata);
-            echo '<div class="notice" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">';
+            echo '<div class="alert alert-warning" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">';
             if ($formdata->sec > 1) {
                 echo '<input type="submit" name="prev" value="<<&nbsp;'.get_string('previouspage', 'questionnaire').'" />';
             }
@@ -683,7 +683,7 @@ class questionnaire {
 
             return $msg;
         } else {
-            echo '<p>'.get_string('noneinuse', 'questionnaire').'</p>';
+            echo '<div class="alert alert-warning">'.get_string('noneinuse', 'questionnaire').'</div>';
             echo '</form>';
             echo '</div>';
         }
@@ -699,7 +699,7 @@ class questionnaire {
         $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
         if ($section > $numsections) {
             $formdata->sec = $numsections;
-            echo '<div class=warning>'.get_string('finished', 'questionnaire').'</div>';
+            echo '<div class="alert alert-error">'.get_string('finished', 'questionnaire').'</div>';
             return(false);  // Invalid section.
         }
 
@@ -839,7 +839,7 @@ class questionnaire {
         }
 
         if ($message) {
-            echo '<div class="notifyproblem">'.$message.'</div>';
+            echo '<div class="alert alert-error">'.$message.'</div>';
         }
     }
 
@@ -914,7 +914,7 @@ class questionnaire {
                     if ($numsections > 1) {
                         $pageerror = get_string('page', 'questionnaire').' '.$s.' : ';
                     }
-                    echo '<div class="notifyproblem">'.$pageerror.$errormessage.'</div>';
+                    echo '<div class="alert alert-error">'.$pageerror.$errormessage.'</div>';
                     $errors++;
                 }
                 $s ++;
@@ -931,7 +931,7 @@ class questionnaire {
                 $descendantsandchoices = questionnaire_get_descendants_and_choices($this->questions);
         }
         if ($errors == 0) {
-            echo '<div class="message">'.get_string('submitpreviewcorrect', 'questionnaire').'</div>';
+            echo '<div class="alert alert-success">'.get_string('submitpreviewcorrect', 'questionnaire').'</div>';
         }
 
         $page = 1;

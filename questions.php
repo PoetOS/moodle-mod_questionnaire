@@ -622,7 +622,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $num = get_string('position', 'questionnaire');
     $pos = $question->position.$qname;
 
-    $msg = '<div class="warning centerpara"><p>'.get_string('confirmdelquestion', 'questionnaire', $pos).'</p>';
+    $msg = '<div class="alert alert-warning centerpara"><p>'.get_string('confirmdelquestion', 'questionnaire', $pos).'</p>';
     if ($countresps !== 0) {
         $msg .= '<p>'.get_string('confirmdelquestionresps', 'questionnaire', $countresps).'</p>';
     }
@@ -637,7 +637,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     if ($action == "confirmdelquestionparent") {
         $strnum = get_string('position', 'questionnaire');
         $qid = key($qformdata->removebutton);
-        $msg .= '<div class="warning">'.get_string('confirmdelchildren', 'questionnaire').'</div><br />';
+        $msg .= '<div class="alert alert-warning">'.get_string('confirmdelchildren', 'questionnaire').'</div><br />';
         foreach ($haschildren as $child) {
             $childname = '';
             if ($child['name']) {

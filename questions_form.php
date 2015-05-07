@@ -85,7 +85,7 @@ class questionnaire_questions_form extends moodleform {
         $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
 
         if (isset($SESSION->questionnaire->validateresults) &&  $SESSION->questionnaire->validateresults != '') {
-            $mform->addElement('static', 'validateresult', '', '<div class="qdepend warning">'.
+            $mform->addElement('static', 'validateresult', '', '<div class="qdepend alert alert-warning">'.
                 $SESSION->questionnaire->validateresults.'</div>');
             $SESSION->questionnaire->validateresults = '';
         }
