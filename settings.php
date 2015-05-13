@@ -30,6 +30,9 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('questionnaire_usergraph',
                                     get_string('configusergraph', 'questionnaire'),
                                     $str, 0, $options));
+    $settings->add(new admin_setting_configtext('questionnaire_maxsections',
+                                    get_string('configmaxsections', 'questionnaire'),
+                                    '', 10, PARAM_INT));
     $choices = array(
         'response' => get_string('response', 'questionnaire'),
         'submitted' => get_string('submitted', 'questionnaire'),
