@@ -62,7 +62,7 @@ class questionnaire_questions_form extends moodleform {
         }
         // Get the names of each question type in the appropriate language.
         foreach ($qtypes as $key => $qtype) {
-            // Do not allow "Page Break" to be selected as first element of a Questionnaire. 
+            // Do not allow "Page Break" to be selected as first element of a Questionnaire.
             if (empty($questionnaire->questions) && ($qtype == 'Page Break')) {
                 unset($qtypes[$key]);
             } else {
@@ -136,7 +136,7 @@ class questionnaire_questions_form extends moodleform {
                 }
                 redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
             }
-            
+
             if ($tid != QUESPAGEBREAK && $tid != QUESSECTIONTEXT) {
                 $qnum++;
             }

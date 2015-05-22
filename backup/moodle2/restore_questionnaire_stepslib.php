@@ -166,7 +166,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $data = (object)$data;
 
-        // Replace the = separator with :: separator in quest_choice content. This fixes radio button options using old "value"="display" formats.
+        // Replace the = separator with :: separator in quest_choice content.
+        // This fixes radio button options using old "value"="display" formats.
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
         if (($data->value == null || $data->value == 'NULL') && !preg_match("/^([0-9]{1,3}=.*|!other=.*)$/", $data->content)) {
