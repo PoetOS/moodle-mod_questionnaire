@@ -440,7 +440,7 @@ if (!$nonrespondents) {
             $editor = editors_get_preferred_editor();
             $editor->use_editor($id, questionnaire_get_editor_options($context));
             $texteditor = html_writer::tag('div', html_writer::tag('textarea', $message,
-                            array('id' => $id, 'name' => "message", 'rows'=>'10', 'cols'=>'60')));
+                    array('id' => $id, 'name' => "message", 'rows' => '10', 'cols' => '60')));
             echo '<input type="hidden" name="format" value="'.FORMAT_HTML.'" />';
 
 
