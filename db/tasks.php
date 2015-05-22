@@ -15,20 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Questionnaire version information.
+ * Definition of Questionnaire scheduled tasks.
+ * Default is to run once every 12 hours.
  *
  * @package mod_questionnaire
- * @author  Mike Churchward
- * @author  Joseph Rézeau
+ * @category task
+ * @copyright 2015 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2015052200;  // The current module version (Date: YYYYMMDDXX)
-$plugin->requires = 2014111000; // Moodle version.
-
-$plugin->component = 'mod_questionnaire';
-
-$plugin->release  = '2.8.2 (Build - 2015031901)';
-$plugin->maturity  = MATURITY_STABLE;
+$tasks = array(
+    array(
+        'classname' => 'mod_questionnaire\task\cleanup',
+        'blocking' => 0,
+        'minute' => 'R',
+        'hour' => '*/12',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+    )
+);

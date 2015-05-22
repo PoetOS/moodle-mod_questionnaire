@@ -273,16 +273,6 @@ function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
     return false;  //  True if anything was printed, otherwise false.
 }
 
-// Function to be run periodically according to the moodle cron
-// This function searches for things that need to be done, such
-// as sending out mail, toggling flags etc ...
-function questionnaire_cron () {
-    global $CFG;
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
-    return questionnaire_cleanup();
-}
-
 // Must return an array of grades for a given instance of this module,
 // indexed by user.  It also returns a maximum allowed grade.
 function questionnaire_grades($questionnaireid) {

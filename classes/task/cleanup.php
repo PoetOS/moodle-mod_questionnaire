@@ -15,20 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Questionnaire version information.
+ * A scheduled task for Questionnaire.
  *
  * @package mod_questionnaire
- * @author  Mike Churchward
- * @author  Joseph Rézeau
+ * @copyright 2015 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_questionnaire\task;
 
-defined('MOODLE_INTERNAL') || die();
+class cleanup extends \core\task\scheduled_task {
 
-$plugin->version  = 2015052200;  // The current module version (Date: YYYYMMDDXX)
-$plugin->requires = 2014111000; // Moodle version.
+    /**
+     * Get a descriptive name for this task (shown to admins).
+     *
+     * @return string
+     */
+    public function get_name() {
+        return get_string('crontask', 'mod_questionnaire');
+    }
 
-$plugin->component = 'mod_questionnaire';
+    public function execute() {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-$plugin->release  = '2.8.2 (Build - 2015031901)';
-$plugin->maturity  = MATURITY_STABLE;
+        questionnaire_cleanup();
+    }
+}
