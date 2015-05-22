@@ -492,7 +492,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
             $params = array($courseid, $type);
 
         } else {
-            // Current get_survey_list is called from function questionnaire_reset_userdata so we need to get a 
+            // Current get_survey_list is called from function questionnaire_reset_userdata so we need to get a
             // complete list of all questionnaires in current course to reset them.
             $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid,q.name as qname " .
                    "FROM {questionnaire} q " .

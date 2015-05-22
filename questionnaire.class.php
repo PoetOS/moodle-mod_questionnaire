@@ -815,7 +815,7 @@ class questionnaire {
 
         // We don't want to display the print icon in the print popup window itself!
         if ($this->capabilities->printblank && $blankquestionnaire && $section == 1) {
-            // Open print friendly as popup window
+            // Open print friendly as popup window.
             $linkname = '&nbsp;'.get_string('printblank', 'questionnaire');
             $title = get_string('printblanktooltip', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
@@ -825,7 +825,8 @@ class questionnaire {
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
             $class = "floatprinticon";
-            echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title), new pix_icon('t/print', $title));
+            echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
+                    new pix_icon('t/print', $title));
         }
         if ($section == 1) {
             if ($this->survey->subtitle) {
@@ -2265,7 +2266,8 @@ class questionnaire {
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
-            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title), new pix_icon('t/print', $title));
+            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title),
+                    new pix_icon('t/print', $title));
             echo '&nbsp;|&nbsp;'.$actionlink;
 
             echo $OUTPUT->box_end();
@@ -2815,16 +2817,34 @@ class questionnaire {
                 $username = '';
                 $uid = '';
             }
-            $arr = array(); // fill $arr only with fields selected in the mod settings
-            if (in_array('response', $options)) array_push($arr, $qid);
-            if (in_array('submitted', $options)) array_push($arr, $submitted);
-            if (in_array('institution', $options)) array_push($arr, $institution);
-            if (in_array('department', $options)) array_push($arr, $department);
-            if (in_array('course', $options)) array_push($arr, $coursename);
-            if (in_array('group', $options)) array_push($arr, $groupname);
-            if (in_array('id', $options)) array_push($arr, $uid);
-            if (in_array('fullname', $options)) array_push($arr, $fullname);
-            if (in_array('username', $options)) array_push($arr, $username);
+            $arr = array(); // Fill $arr only with fields selected in the mod settings.
+            if (in_array('response', $options)) {
+                array_push($arr, $qid);
+            }
+            if (in_array('submitted', $options)) {
+                array_push($arr, $submitted);
+            }
+            if (in_array('institution', $options)) {
+                array_push($arr, $institution);
+            }
+            if (in_array('department', $options)) {
+                array_push($arr, $department);
+            }
+            if (in_array('course', $options)) {
+                array_push($arr, $coursename);
+            }
+            if (in_array('group', $options)) {
+                array_push($arr, $groupname);
+            }
+            if (in_array('id', $options)) {
+                array_push($arr, $uid);
+            }
+            if (in_array('fullname', $options)) {
+                array_push($arr, $fullname);
+            }
+            if (in_array('username', $options)) {
+                array_push($arr, $username);
+            }
 
             // Merge it.
             for ($i = $nbinfocols; $i < $numcols; $i++) {

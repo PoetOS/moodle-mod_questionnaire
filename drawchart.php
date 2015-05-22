@@ -91,7 +91,7 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
                 if (count($lb) > 1) {
                     $left = $lb[0];
                     $right = $lb[1];
-                    // core_text and diff needed for non-ascii characters.
+                    // Lib core_text and diff needed for non-ascii characters.
                     $lenleft = core_text::strlen($left);
                     $diffleft = strlen($left) - $lenleft;
                     $lenright = core_text::strlen($right);
