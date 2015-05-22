@@ -239,13 +239,13 @@ switch ($action) {
         // Print the tabs.
         $SESSION->questionnaire->current_tab = 'deleteresp';
         include('tabs.php');
-        
+
         $timesubmitted = '<br />'.get_string('submitted', 'questionnaire').'&nbsp;'.userdate($resp->submitted);
         if ($questionnaire->respondenttype == 'anonymous') {
                 $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
                 $timesubmitted = '';
         }
-        
+
         // Print the confirmation.
         echo '<p>&nbsp;</p>';
         $msg = '<div class="warning centerpara">';
@@ -596,7 +596,8 @@ switch ($action) {
                         '<option value="'.$group->id.'">'.$thisgroupname.' ('.$respscount.')</option>', $groupselect);
                 } else {
                     // Remove groups with no responses from the groups select list.
-                    $groupselect = preg_replace('/\<option value="'.$group->id.'">'.$escapedgroupname.'<\/option>/', '', $groupselect);
+                    $groupselect = preg_replace('/\<option value="'.$group->id.'">'.$escapedgroupname.
+                            '<\/option>/', '', $groupselect);
                 }
             }
             echo isset($groupselect) ? $groupselect : '';
