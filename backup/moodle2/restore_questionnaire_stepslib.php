@@ -29,6 +29,9 @@
  * Structure step to restore one questionnaire activity
  */
 class restore_questionnaire_activity_structure_step extends restore_activity_structure_step {
+	const batchsize = 500;
+
+	protected $choices_to_insert = array();
 
     protected function define_structure() {
 
@@ -107,6 +110,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $oldid = $data->id;
         $data->survey_id = $this->get_new_parentid('questionnaire_survey');
 
+        $this->process_questionnaire_quest_choice_flush();
+
         if (isset($data->dependquestion)) {
             // Dependquestion.
             $data->dependquestion = $this->get_mappingid('questionnaire_question', $data->dependquestion);
@@ -161,6 +166,42 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->set_mapping('questionnaire_feedback', $oldid, $newitemid, true);
     }
 
+    protected function process_questionnaire_quest_choice_flush() {
+        global $DB;
+        static $batch = 0, $last_question = 0;
+
+        if (empty($this->choices_to_insert)) {
+            return;
+        }
+
+        $DB->insert_records('questionnaire_quest_choice', $this->choices_to_insert);
+
+        // Get the IDs of choices just inserted.
+        if ($this->choices_to_insert[0]->question_id == $last_question) {
+            $batch++;
+        } else {
+            $batch = 0;
+        }
+
+        $params = array($this->choices_to_insert[0]->question_id);
+        $limitfrom = $batch * self::batchsize;
+
+        // Don't assume the content is unique within a question (I don't understand why,
+        // but have seen it not be unique).
+        $rs = $DB->get_records_select('questionnaire_quest_choice', 'question_id = ?', $params, 'id', '*', $limitfrom, self::batchsize);
+
+        // Assumes IDs are allocating ascending sequence, batching the order of the records we provide.
+        reset($this->choices_to_insert);
+
+        foreach($rs as $record) {
+            $current_record = current($this->choices_to_insert);
+            $this->set_mapping('questionnaire_quest_choice', $current_record->old_id, $record->id);
+            next($this->choices_to_insert);
+        }
+        $last_question = $this->choices_to_insert[0]->question_id;
+        $this->choices_to_insert = array();
+    }
+
     protected function process_questionnaire_quest_choice($data) {
         global $CFG, $DB;
 
@@ -180,6 +221,9 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $data->question_id = $this->get_new_parentid('questionnaire_question');
 
         if (isset($data->dependquestion)) {
+            // Flush any unsaved data. It might have the mapping we're wanting.
+            $this->process_questionnaire_quest_choice_flush();
+
             // Dependquestion.
             $data->dependquestion = $this->get_mappingid('questionnaire_question', $data->dependquestion);
 
@@ -195,8 +239,13 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         }
 
         // Insert the questionnaire_quest_choice record.
-        $newitemid = $DB->insert_record('questionnaire_quest_choice', $data);
-        $this->set_mapping('questionnaire_quest_choice', $oldid, $newitemid);
+        if (sizeof($this->choices_to_insert) == self::batchsize) {
+            $this->process_questionnaire_quest_choice_flush();
+        }
+
+        $data->old_id = $data->id;
+        unset($data->id);
+        $this->choices_to_insert[] = $data;
     }
 
     protected function process_questionnaire_attempt($data) {
