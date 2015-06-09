@@ -91,7 +91,7 @@ class questionnaire_settings_form extends moodleform {
         $mform->addHelpButton('email', 'sendemail', 'questionnaire');
 
         // TODO $maxsections should be a site option of questionnaire.
-        $defaultsections = $CFG->questionnaire_maxsections;
+        $defaultsections = get_config('questionnaire', 'maxsections');
         // We cannot have more sections than available (required) questions with a choice value.
         $nbquestions = 0;
         foreach ($questionnaire->questions as $question) {
@@ -132,7 +132,7 @@ class questionnaire_settings_form extends moodleform {
             $mform->addHelpButton('feedbackscores', 'feedbackscores', 'questionnaire');
 
             // Is the RGraph library enabled at level site?
-            if ($CFG->questionnaire_usergraph) {
+            if (get_config('questionnaire', 'usergraph')) {
                 $chartgroup = array();
                 $charttypes = array (null => get_string('none'),
                         'bipolar' => get_string('chart:bipolar', 'questionnaire'),
