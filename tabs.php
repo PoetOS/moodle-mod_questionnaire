@@ -172,7 +172,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         $inactive[] = 'vresp';
         if ($currenttab != 'deleteresp') {
             $activated[] = 'vresp';
-        }        
+        }
         if ($questionnaire->capabilities->deleteresponses) {
             $argstr2 = $argstr.'&action=dresp&rid='.$rid.'&individualresponse=1';
             $row2[] = new tabobject('deleteresp', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),

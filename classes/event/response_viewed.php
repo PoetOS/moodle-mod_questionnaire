@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_questionnaire response_viewed event class.
-
+ *
  * @package    mod_questionnaire
  * @since      Moodle 2.7
  * @copyright  2014 Joseph Rézeau <moodle@rezeau.org>
