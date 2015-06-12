@@ -1,16 +1,6 @@
 Release Notes
-Version 2.8.2 (Build - 2015031901)
-CONTRIB-4838 - allow configuration of allowed fields for CSV download - security issue.
-CONTRIB-5600 - Fixed filtering of 'Page Break' question when no questions present.
-CONTRIB-5616 - fix type qreg_quote
-
-Version 2.8.1 (Build - 2015020601)
-CONTRIB-5530 - Fixed code to correctly ignore '\!other=' when fixing value/display pairs in radio buttons.
-CONTRIB-5575 - Fixed filtering on titles and question text.
-CONTRIB-4891 - Changed use of empty string to db param based.
-Merge pull request #23 from davosmith/patch-3
-CONTRIB-4643 - replaced all db 'IN' usage with get_in_or_equal().
-CONTRIB-5435 - Put back precision setting for text box questions.
-
-Version 2.8.0 (Build - 2014112000)
-Released 2.8 version based on 2.7 version.
+Version 2.9.0 (Build Build - 2015060701)
+CONTRIB-5613 - Made "maxsections" configurable.
+CONTRIB-5738 mod-questionnaire: Fixing questionnaire codechecker reports.
+CONTRIB-5737 mod-questionnaire: Switching cron to use new scheduler.
+CONTRIB-5778 - Changed 'usergraph' setting from a global config to a plugin config.
