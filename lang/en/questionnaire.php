@@ -86,6 +86,7 @@ $string['completionsubmit'] = 'Student must submit this questionnaire to complet
 $string['confalts'] = '- OR - <br />Confirmation page';
 $string['configusergraph'] = 'Display charts for "Personality Test" feedback';
 $string['configusergraphlong'] = 'Use the <a href="http://www.rgraph.net/">Rgraph</a> library to display "Personality Test" feedback charts.';
+$string['configmaxsections'] = 'Maximum feedback sections';
 $string['confirmdelallresp'] = 'Are you sure you want to delete ALL the responses in this questionnaire?';
 $string['confirmdelchildren'] = 'If you delete this question, its child(ren) question(s) will also be deleted:';
 $string['confirmdelgroupresp'] = 'Are you sure you want to delete ALL the responses of {$a}?';
