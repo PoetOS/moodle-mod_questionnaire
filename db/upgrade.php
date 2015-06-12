@@ -509,6 +509,14 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
          upgrade_mod_savepoint(true, 2014010300, 'questionnaire');
     }
 
+    if ($oldversion < 2015051101) {
+        // Move the global config value for 'usergraph' to the plugin config setting instead.
+        if (isset($CFG->questionnaire_usergraph)) {
+            set_config('usergraph', $CFG->questionnaire_usergraph, 'questionnaire');
+            unset_config('questionnaire_usergraph');
+        }
+        upgrade_mod_savepoint(true, 2015051101, 'questionnaire');
+    }
     return $result;
 }
 

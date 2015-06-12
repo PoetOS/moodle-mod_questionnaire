@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die;
 if ($ADMIN->fulltree) {
     $options = array(0 => get_string('no'), 1 => get_string('yes'));
     $str = get_string('configusergraphlong', 'questionnaire');
-    $settings->add(new admin_setting_configselect('questionnaire_usergraph',
+    $settings->add(new admin_setting_configselect('questionnaire/usergraph',
                                     get_string('configusergraph', 'questionnaire'),
                                     $str, 0, $options));
     $choices = array(

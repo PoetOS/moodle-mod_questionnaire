@@ -124,7 +124,8 @@ if ($settings = $settingsform->get_data()) {
 
     if (isset ($settings->feedbacksections)) {
         $sdata->feedbacksections = $settings->feedbacksections;
-        if ($CFG->questionnaire_usergraph) {
+        $usergraph = get_config('questionnaire', 'usergraph');
+        if ($usergraph) {
             if ($settings->feedbacksections == 1) {
                 $sdata->chart_type = $settings->chart_type_global;
             } else if ($settings->feedbacksections == 2) {

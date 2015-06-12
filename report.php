@@ -47,6 +47,7 @@ if ($instance === false) {
     }
 }
 $SESSION->instance = $instance;
+$usergraph = get_config('questionnaire', 'usergraph');
 
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
     print_error('incorrectquestionnaire', 'questionnaire');
@@ -177,7 +178,7 @@ if ($groupmode > 0) {
         $groupname = '<strong>'.get_string('allparticipants').'</strong>';
     }
 }
-if ($CFG->questionnaire_usergraph) {
+if ($usergraph) {
     $charttype = $questionnaire->survey->chart_type;
     if ($charttype) {
         $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
@@ -666,7 +667,7 @@ switch ($action) {
         }
         $ruser = false;
         $noresponses = false;
-        if ($CFG->questionnaire_usergraph) {
+        if ($usergraph) {
             $charttype = $questionnaire->survey->chart_type;
             if ($charttype) {
                 $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');

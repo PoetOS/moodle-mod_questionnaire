@@ -136,7 +136,8 @@ switch ($action) {
             print_error('surveynotexists', 'questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'mybyresponse';
-        if ($CFG->questionnaire_usergraph) {
+        $usergraph = get_config('questionnaire', 'usergraph');
+        if ($usergraph) {
             $charttype = $questionnaire->survey->chart_type;
             if ($charttype) {
                 $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');

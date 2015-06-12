@@ -3202,7 +3202,8 @@ class questionnaire {
             if ($compare  || $allresponses) {
                 $allscore = array($allscorepercent, 100 - $allscorepercent);
             }
-            if ($CFG->questionnaire_usergraph && $this->survey->chart_type) {
+            $usergraph = get_config('questionnaire', 'usergraph');
+            if ($usergraph && $this->survey->chart_type) {
                 draw_chart ($feedbacktype = 'global', $this->survey->chart_type, $labels,
                                     $score, $allscore, $sectionlabel, $groupname, $allresponses);
             }
@@ -3332,7 +3333,8 @@ class questionnaire {
                 $table->data[] = array($sectionlabel, $allscorepercent[$key].'%'.$oppositeallscore);
             }
         }
-        if (isset($CFG->questionnaire_usergraph) && $CFG->questionnaire_usergraph && $this->survey->chart_type) {
+        $usergraph = get_config('questionnaire', 'usergraph');
+        if ($usergraph && $this->survey->chart_type) {
             draw_chart($feedbacktype = 'sections', $this->survey->chart_type, array_values($chartlabels),
                 array_values($scorepercent), array_values($allscorepercent), $sectionlabel, $groupname, $allresponses);
         }

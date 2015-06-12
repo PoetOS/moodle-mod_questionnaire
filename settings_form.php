@@ -132,7 +132,8 @@ class questionnaire_settings_form extends moodleform {
             $mform->addHelpButton('feedbackscores', 'feedbackscores', 'questionnaire');
 
             // Is the RGraph library enabled at level site?
-            if ($CFG->questionnaire_usergraph) {
+            $usergraph = get_config('questionnaire', 'usergraph');
+            if ($usergraph) {
                 $chartgroup = array();
                 $charttypes = array (null => get_string('none'),
                         'bipolar' => get_string('chart:bipolar', 'questionnaire'),
