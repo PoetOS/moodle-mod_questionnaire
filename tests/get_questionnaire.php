@@ -13,22 +13,17 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Este bloco é parte do Moodle Provas - http://tutoriais.moodle.ufsc.br/provas/
+// Este projeto é financiado pela
+// UAB - Universidade Aberta do Brasil (http://www.uab.capes.gov.br/)
+// e é distribuído sob os termos da "GNU General Public License",
+// como publicada pela "Free Software Foundation".
 
-/**
- * Questionnaire version information.
- *
- * @package mod_questionnaire
- * @author  Mike Churchward
- * @author  Joseph Rézeau
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+include(dirname(__FILE__) . '/config.php');
 
-defined('MOODLE_INTERNAL') || die();
+$functionname = 'mod_questionnaire_get_questionnaire';
+$params = array('cmid'=>796921);
 
-$plugin->version  = 2015061600;  // The current module version (Date: YYYYMMDDXX)
-$plugin->requires = 2015051100; // Moodle version.
-
-$plugin->component = 'mod_questionnaire';
-
-$plugin->release  = '2.9.0 (Build - 2015060701)';
-$plugin->maturity  = MATURITY_STABLE;
+$ret = call_ws($functionname, $params);
+var_dump($ret);

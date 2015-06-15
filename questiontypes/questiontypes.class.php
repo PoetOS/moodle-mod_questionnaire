@@ -2491,6 +2491,188 @@ class questionnaire_question {
         }
         echo html_writer::table($table);
     }
+
+    public function get_responses() {
+        global $qtypenames;
+
+        if (!isset($qtypenames[$this->type_id])) {
+            return array();
+        }
+
+        $qtypename = $qtypenames[$this->type_id];
+        $method = 'get_'.$qtypename.'_responses';
+
+        if (method_exists($this, $method)) {
+            return $this->$method();
+        } else {
+            return array();
+        }
+    }
+
+    private function get_yesno_responses() {
+        return $this->get_field_responses('choice_id');
+    }
+
+    private function get_text_responses() {
+        return $this->get_field_responses('response');
+    }
+
+    private function get_essay_responses() {
+        return $this->get_field_responses('response');
+    }
+
+    private function get_date_responses() {
+        return $this->get_field_responses('response');
+    }
+
+    private function get_numeric_responses() {
+        return $this->get_field_responses('response');
+    }
+
+    private function get_radio_responses() {
+        return $this->get_single_choice_responses();
+    }
+
+    private function get_drop_responses() {
+        return $this->get_single_choice_responses();
+    }
+
+    private function get_check_responses() {
+        global $DB;
+
+        $qtypename = 'check';
+        $sql = $this->sql_for_choice_responses();
+
+        $result = array();
+        $old_response_id = 0;
+        foreach($DB->get_recordset_sql($sql, array($this->id, $this->id)) AS $rec) {
+            if ($rec->response_id != $old_response_id) {
+                if ($old_response_id != 0) {
+                    $resp->$qtypename = $choices;
+                    $result[$old_response_id] = $resp;
+                }
+                $resp = $this->populate_response($rec, $qtypename);
+                $choices = array();
+                $old_response_id = $rec->response_id;
+            }
+            $choices[] = $rec->content;
+        }
+        if ($old_response_id != 0) {
+            $resp->$qtypename = $choices;
+            $result[$old_response_id] = $resp;
+        }
+
+        return $result;
+    }
+
+    private function get_rate_responses() {
+        global $DB;
+
+        $qtypename = 'rate';
+
+        $sql_userid = $DB->sql_cast_char2int('qr.username');
+        $sql = "SELECT qt.response_id, qr.submitted, qr.complete, qr.grade, u.id AS userid, u.username, qc.content, qt.rank
+                  FROM {questionnaire_{$this->response_table}} qt
+                  JOIN {questionnaire_response} qr ON (qr.id = qt.response_id)
+                  JOIN {questionnaire_quest_choice} qc ON (qc.id = qt.choice_id AND qc.content NOT LIKE '!other%')
+                  JOIN {user} u ON (u.id = {$sql_userid})
+                 WHERE qt.question_id = ?
+              ORDER BY username, submitted, response_id";
+        $result = array();
+        $old_response_id = 0;
+        foreach($DB->get_recordset_sql($sql, array($this->id)) AS $rec) {
+            if ($rec->response_id != $old_response_id) {
+                if ($old_response_id != 0) {
+                    $resp->$qtypename = $choices;
+                    $result[$old_response_id] = $resp;
+                }
+                $resp = $this->populate_response($rec, $qtypename);
+                $choices = array();
+                $old_response_id = $rec->response_id;
+            }
+            $r = new stdClass();
+            $r->item = $rec->content;
+            $r->rank = $rec->rank;
+            $choices[] = $r;
+        }
+        if ($old_response_id != 0) {
+            $resp->$qtypename = $choices;
+            $result[$old_response_id] = $resp;
+        }
+
+        return $result;
+    }
+
+    private function populate_response($rec, $qtypename='text') {
+        $resp = new stdClass();
+        $resp->userid = $rec->userid;
+        $resp->username = $rec->username;
+        $resp->submitted = $rec->submitted;
+        $resp->complete = $rec->complete == 'y';
+        $resp->grade = $rec->grade;
+        $resp->response_field = $qtypename;
+        return $resp;
+    }
+
+    private function get_field_responses($field) {
+        global $DB;
+
+        $sql_userid = $DB->sql_cast_char2int('qr.username');
+        $sql = "SELECT qt.response_id, qr.submitted, qr.complete, qr.grade, u.id AS userid, u.username, qt.{$field}
+                  FROM {questionnaire_{$this->response_table}} qt
+                  JOIN {questionnaire_response} qr ON (qr.id = qt.response_id)
+                  JOIN {user} u ON (u.id = {$sql_userid})
+                 WHERE qt.question_id = ?
+              ORDER BY u.username, qr.submitted";
+        $result = array();
+        foreach($DB->get_recordset_sql($sql, array($this->id)) AS $rec) {
+            $resp = $this->populate_response($rec);
+            $resp->text = $rec->$field;
+            $result[$rec->response_id] = $resp;
+        }
+
+        return $result;
+    }
+
+    private function sql_for_choice_responses() {
+        global $DB;
+
+        $sql_userid = $DB->sql_cast_char2int('qr.username');
+        $sql = "SELECT qt.response_id, qr.submitted, qr.complete, qr.grade, u.id AS userid, u.username, qc.content
+                  FROM {questionnaire_{$this->response_table}} qt
+                  JOIN {questionnaire_response} qr ON (qr.id = qt.response_id)
+                  JOIN {questionnaire_quest_choice} qc ON (qc.id = qt.choice_id AND qc.content NOT LIKE '!other%')
+                  JOIN {user} u ON (u.id = {$sql_userid})
+                 WHERE qt.question_id = ?
+
+                 UNION
+
+                SELECT qt.response_id, qr.submitted, qr.complete, qr.grade, u.id AS userid, u.username, ro.response AS content
+                  FROM {questionnaire_{$this->response_table}} qt
+                  JOIN {questionnaire_response} qr ON (qr.id = qt.response_id)
+                  JOIN {questionnaire_quest_choice} qc ON (qc.id = qt.choice_id AND qc.content LIKE '!other%')
+                  JOIN {questionnaire_response_other} ro ON (ro.question_id = qt.question_id AND ro.choice_id = qc.id)
+                  JOIN {user} u ON (u.id = {$sql_userid})
+                 WHERE qt.question_id = ?
+
+              ORDER BY username, submitted, response_id";
+        return $sql;
+    }
+
+    private function get_single_choice_responses() {
+        global $DB;
+
+        $sql = $this->sql_for_choice_responses();
+        $result = array();
+        foreach($DB->get_recordset_sql($sql, array($this->id, $this->id)) AS $rec) {
+            $resp = $this->populate_response($rec);
+            $resp->text = $rec->content;
+            $result[$rec->response_id] = $resp;
+        }
+
+        return $result;
+    }
+
 }
 
 function sortavgasc($a, $b) {
