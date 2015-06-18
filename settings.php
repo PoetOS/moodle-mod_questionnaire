@@ -30,6 +30,9 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('questionnaire/usergraph',
                                     get_string('configusergraph', 'questionnaire'),
                                     $str, 0, $options));
+    $settings->add(new admin_setting_configselect('questionnaire/redirectifsingleactivitycourse',
+                                    get_string('configredirectifsingleactivitycourse', 'questionnaire'),
+                                    '', 0, $options));
     $settings->add(new admin_setting_configtext('questionnaire/maxsections',
                                     get_string('configmaxsections', 'questionnaire'),
                                     '', 10, PARAM_INT));
