@@ -140,12 +140,18 @@ if (!$questionnaire->is_active()) {
     $resume = $DB->get_record_select('questionnaire_response', $select, null) !== false;
     if (!$resume) {
         $complete = get_string('answerquestions', 'questionnaire');
+        $redirectMsg = get_string('redirecttosurvey', 'questionnaire');
     } else {
         $complete = get_string('resumesurvey', 'questionnaire');
+        $redirectMsg = get_string('redirecttosurveyresume', 'questionnaire');
     }
     if ($questionnaire->questions) { // Sanity check.
-        echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
-        'id='.$questionnaire->cm->id.'&resume='.$resume).'">'.$complete.'</a>';
+        if(course_get_format($course)->get_format() == 'singleactivity' && get_config('questionnaire', 'redirectifsingleactivitycourse') && $questionnaire->count_submissions($USER->id) == 0){
+            redirect($CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?id='.$questionnaire->cm->id.'&resume='.$resume), $redirectMsg);
+        } else {
+            echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
+			'id='.$questionnaire->cm->id.'&resume='.$resume).'">'.$complete.'</a>';
+        }
     }
 }
 if ($questionnaire->is_active() && !$questionnaire->questions) {
