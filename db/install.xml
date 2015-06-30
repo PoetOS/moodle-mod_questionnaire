@@ -45,7 +45,7 @@
         <FIELD NAME="thanks_page" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="thank_head" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="thank_body" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="feedbacksections" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="feedbacksections" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="feedbacknotes" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="feedbackscores" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="chart_type" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
@@ -230,7 +230,7 @@
     <TABLE NAME="questionnaire_fb_sections" COMMENT="questionnaire_fb_sections table retrofitted from MySQL" PREVIOUS="questionnaire_response_text" NEXT="questionnaire_feedback">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="true" NEXT="survey_id"/>
-        <FIELD NAME="survey_id" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="section"/>
+        <FIELD NAME="survey_id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="section"/>
         <FIELD NAME="section" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" PREVIOUS="survey_id" NEXT="scorecalculation"/>
         <FIELD NAME="scorecalculation" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="section" NEXT="sectionlabel"/>
         <FIELD NAME="sectionlabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" PREVIOUS="scorecalculation" NEXT="sectionheading"/>
@@ -244,7 +244,7 @@
     <TABLE NAME="questionnaire_feedback" COMMENT="questionnaire_feedback table retrofitted from MySQL" PREVIOUS="questionnaire_fb_sections">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="true" NEXT="section_id"/>
-        <FIELD NAME="section_id" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="feedbacklabel"/>
+        <FIELD NAME="section_id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="feedbacklabel"/>
         <FIELD NAME="feedbacklabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" PREVIOUS="section_id" NEXT="feedbacktext"/>
         <FIELD NAME="feedbacktext" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="feedbacklabel" NEXT="feedbacktextformat"/>
         <FIELD NAME="feedbacktextformat" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false" PREVIOUS="feedbacktext" NEXT="minscore"/>
