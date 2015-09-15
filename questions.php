@@ -595,14 +595,9 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     // Count responses already saved for that question.
     $countresps = 0;
     if ($qtype != QUESSECTIONTEXT) {
-        $sql = 'SELECT response_table FROM {questionnaire_question_type} WHERE typeid = '.$qtype;
-        if ($resptable = $DB->get_record_sql($sql)) {
-            $sql = 'SELECT *
-                FROM {questionnaire_'.$resptable->response_table.'}
-                WHERE question_id ='.$qid;
-            if ($resps = $DB->get_records_sql($sql) ) {
-                $countresps = count($resps);
-            }
+        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', array('typeid' => $qtype));
+        if (!empty($responsetable)) {
+            $countresps = $DB->count_records('questionnaire_'.$responsetable, array('question_id' => $qid));
         }
     }
 
