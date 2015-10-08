@@ -2021,7 +2021,7 @@ class questionnaire {
                 $newrow = array();
                 foreach ($row as $key => $val) {
                     if (!is_numeric($key)) {
-                        $newrow[] = $val;
+                        $newrow[] = file_rewrite_pluginfile_urls($val, 'pluginfile.php', $this->context->id, 'mod_questionnaire', 'response', $qid);
                     }
                 }
                 $values["$qid"] = $newrow;

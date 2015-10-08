@@ -240,11 +240,12 @@ class questionnaire_question {
             $val = preg_replace("/[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
         }
 
+        $draftitemid = file_get_submitted_draft_itemid('essay_attachment');
         if (preg_match("/[^ \t\n]/", $val)) {
             $record = new Object();
             $record->response_id = $rid;
             $record->question_id = $this->id;
-            $record->response = $val;
+            $record->response = file_save_draft_area_files($draftitemid, $this->context->id, 'mod_questionnaire', 'response', $this->id, array('subdirs'=>true), $val);
             return $DB->insert_record('questionnaire_'.$this->response_table, $record);
         } else {
             return false;
@@ -1066,7 +1067,7 @@ class questionnaire_question {
             require_once($CFG->dirroot.'/lib/filelib.php');
             require_once($CFG->dirroot.'/repository/lib.php');
             $options = questionnaire_get_editor_options($this->context);
-            $draftitemid = file_get_unused_draft_itemid();
+            $draftitemid = file_get_submitted_draft_itemid($this->id);
 
             // get filepicker info
             //
@@ -2103,7 +2104,11 @@ class questionnaire_question {
             $table->size = array('*');
         }
         foreach ($rows as $row) {
-            $text = format_text($row->response, FORMAT_HTML);
+            $formatoptions = new Object();
+            $formatoptions->filter = false;
+            $text = format_text(file_rewrite_pluginfile_urls($row->response, 'pluginfile.php', $this->context->id, 'mod_questionnaire', 'response', $this->id),
+                FORMAT_HTML,
+                $formatoptions);
             if ($viewsingleresponse && $nonanonymous) {
                 $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
                 $title = userdate($row->submitted);

@@ -445,7 +445,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
 
     require_course_login($course, true, $cm);
 
-    $fileareas = array('intro', 'info', 'thankbody', 'question', 'feedbacknotes');
+    $fileareas = array('intro', 'info', 'thankbody', 'question', 'feedbacknotes', 'response');
     if (!in_array($filearea, $fileareas)) {
         return false;
     }
