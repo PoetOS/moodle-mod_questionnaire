@@ -518,6 +518,20 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         }
         upgrade_mod_savepoint(true, 2015051101, 'questionnaire');
     }
+
+    // Add index to reduce load on the questionnaire_quest_choice table.
+    if ($oldversion < 2015051102) {
+        // Conditionally add an index to the question_id field.
+        $table = new xmldb_table('questionnaire_quest_choice');
+        $index = new xmldb_index('quest_choice_quesidx', XMLDB_INDEX_NOTUNIQUE, array('question_id'));
+        // Only add the index if it does not exist.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2015051102, 'questionnaire');
+    }
+
     return $result;
 }
 
