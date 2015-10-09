@@ -1817,7 +1817,7 @@ class questionnaire {
                     }
                 }
                 list($qsql, $params) = $DB->get_in_or_equal($qids2);
-                $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE question_id ' . $qsql . 'ORDER BY id';
+                $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE question_id ' . $qsql . ' ORDER BY id';
                 if ($records2 = $DB->get_records_sql($sql, $params)) {
                     foreach ($records2 as $qid => $row2) {
                         $selected = '0';
