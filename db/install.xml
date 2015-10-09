@@ -103,9 +103,7 @@
       <INDEXES>
         <INDEX NAME="quest_choice_quesidx" UNIQUE="false" FIELDS="question_id" COMMENT="Index to reduce DB load on querying table by question_id"/>
       </INDEXES>
-     </TABLE>
-     <TABLE NAME="questionnaire_question_type" COMMENT="questionnaire_question_type table retrofitted from MySQL">
-       <FIELDS>    </TABLE>
+    </TABLE>
     <TABLE NAME="questionnaire_question_type" COMMENT="questionnaire_question_type table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
