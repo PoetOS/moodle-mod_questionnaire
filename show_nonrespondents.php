@@ -185,11 +185,7 @@ if ($fullname) {
     // Print the main part of the page.
     // Print the users with no responses
     // Get the effective groupmode of this course and module.
-    if (isset($cm->groupmode) && empty($course->groupmodeforce)) {
-        $groupmode = $cm->groupmode;
-    } else {
-        $groupmode = $course->groupmode;
-    }
+    $groupmode = groups_get_activity_groupmode($cm, $course);
 
     $groupselect = groups_print_activity_menu($cm, $url->out(), true);
     $mygroupid = groups_get_activity_group($cm);
