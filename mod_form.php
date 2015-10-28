@@ -41,7 +41,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
-        $this->add_intro_editor(false, get_string('description'));
+        $this->standard_intro_elements(get_string('description'));
 
         $mform->addElement('header', 'timinghdr', get_string('timing', 'form'));
 

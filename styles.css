@@ -347,6 +347,4 @@ td.selected {
 /* !important is needed in moodle 2.6 to override the display block when window width is reduced. */
 #page-mod-questionnaire-questions #region-main .mform .fitem .felement {
     margin-bottom: 0px;
-    margin-left: 5px;
-    width: 97%;
 }
