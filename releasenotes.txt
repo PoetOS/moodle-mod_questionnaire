@@ -1,4 +1,11 @@
 Release Notes
+Version 2.8.3 (Build - 2015102801)
+Remove hard-coded $CFG->prefix
+CONTRIB-5389 - Added index to questionnaire_quest_choice - credit Chris Follin.
+CONTRIB-5736 - Fixed incorrect use of checking activity group mode.
+CONTRIB-5856 - Fixed SQL query causing error downloading summary responses file.
+CONTRIB-5872 - Added ->set_cm(), but not sure why its needed.
+
 Version 2.8.2 (Build - 2015031901)
 CONTRIB-4838 - allow configuration of allowed fields for CSV download - security issue.
 CONTRIB-5600 - Fixed filtering of 'Page Break' question when no questions present.
