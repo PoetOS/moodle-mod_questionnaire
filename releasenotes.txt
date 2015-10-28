@@ -1,0 +1,6 @@
+Release Notes
+Version 2.9.0 (Build Build - 2015060701)
+CONTRIB-5613 - Made "maxsections" configurable.
+CONTRIB-5738 mod-questionnaire: Fixing questionnaire codechecker reports.
+CONTRIB-5737 mod-questionnaire: Switching cron to use new scheduler.
+CONTRIB-5778 - Changed 'usergraph' setting from a global config to a plugin config.
