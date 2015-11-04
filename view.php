@@ -161,7 +161,7 @@ if (isguestuser()) {
     $guestno = html_writer::tag('p', get_string('noteligible', 'questionnaire'));
     $liketologin = html_writer::tag('p', get_string('liketologin'));
     $output .= $OUTPUT->confirm($guestno."\n\n".$liketologin."\n", get_login_url(),
-            get_referer(false));
+            get_local_referer(false));
     echo $output;
 }
 
