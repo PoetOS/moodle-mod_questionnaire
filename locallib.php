@@ -299,7 +299,7 @@ function questionnaire_load_capabilities($cmid) {
 
     $context = questionnaire_get_context($cmid);
 
-    $cb = new object;
+    $cb = new \stdClass();
     $cb->view                   = has_capability('mod/questionnaire:view', $context);
     $cb->submit                 = has_capability('mod/questionnaire:submit', $context);
     $cb->viewsingleresponse     = has_capability('mod/questionnaire:viewsingleresponse', $context);
@@ -588,7 +588,7 @@ function questionnaire_set_events($questionnaire) {
     }
 
     // The open-event.
-    $event = new stdClass;
+    $event = new stdClass();
     $event->description = $questionnaire->name;
     $event->courseid = $questionnaire->course;
     $event->groupid = 0;
@@ -915,7 +915,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                     } else {
                         $pos = 1;
                     }
-                    $question = new Object();
+                    $question = new \stdClass();
                     $question->survey_id = $questionnaire->survey->id;
                     $question->type_id = QUESPAGEBREAK;
                     $question->position = $pos;
