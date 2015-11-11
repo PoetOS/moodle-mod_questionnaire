@@ -322,7 +322,7 @@ if ($action == 'main') {
             $qformdata->allchoices = trim($qformdata->allchoices);
             if (empty($qformdata->allchoices)) {
                 if ($qformdata->type_id != QUESRATE) {
-                    error (get_string('enterpossibleanswers', 'questionnaire'));
+                    print_error('enterpossibleanswers', 'questionnaire');
                 } else {
                     // Add dummy blank space character for empty value.
                     $qformdata->allchoices = " ";
