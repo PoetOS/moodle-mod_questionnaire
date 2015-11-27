@@ -75,7 +75,7 @@ class questionnaire_question {
      * The database id of the survey this question belongs to.
      * @var int $survey_id
      */
-     public $surveyid   = 0;
+     public $survey_id   = 0;
 
     /**
      * The name of this question.
