@@ -27,7 +27,7 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
 class questionnaire_settings_form extends moodleform {
 
     public function definition() {
-        global $questionnaire, $questionnairerealms, $CFG;
+        global $questionnaire, $questionnairerealms;
 
         $mform    =& $this->_form;
 

@@ -35,25 +35,23 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @return int
      */
     public function create_instance($record = array(), array $options = null) {
-        global $CFG;
-
         $record = (object)$record;
 
         $defaultquestionnairesettings = array(
-            'qtype'               	=> 0,
-            'respondenttype'		=> 'fullname',
-            'resp_eligible'			=> 'all',
-            'resp_view'				=> 0,
-            'opendate'				=> 0,
-            'closedate'				=> 0,
-            'resume'				=> 0,
-            'navigate'				=> 0,
-            'grade'					=> 0,
-            'sid'					=> 0,
-            'timemodified'			=> time(),
-            'completionsubmit'		=> 0,
-            'autonum'				=> 3,
-            'create'				=> 'new-0',		// used in form only to indicate a new, empty instance.
+            'qtype'                 => 0,
+            'respondenttype'        => 'fullname',
+            'resp_eligible'         => 'all',
+            'resp_view'             => 0,
+            'opendate'              => 0,
+            'closedate'             => 0,
+            'resume'                => 0,
+            'navigate'              => 0,
+            'grade'                 => 0,
+            'sid'                   => 0,
+            'timemodified'          => time(),
+            'completionsubmit'      => 0,
+            'autonum'               => 3,
+            'create'                => 'new-0',        // Used in form only to indicate a new, empty instance.
         );
 
         foreach ($defaultquestionnairesettings as $name => $value) {
@@ -77,7 +75,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid), '*', MUST_EXIST);
         foreach ($record as $name => $value) {
-        	$survey->{$name} = $value;
+            $survey->{$name} = $value;
         }
         return $questionnaire->survey_update($survey);
     }
@@ -88,8 +86,8 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @return object
      */
     public function create_question($questiondata = array(), $choicedata = array()) {
-        // *** Currently, there is no API to create a question record.
-        // *** The code does this in the "questions.php" page. This needs to be changed.
+        // NOTE - Currently, there is no API to create a question record.
+        // NOTE - The code does this in the "questions.php" page. This needs to be changed.
         global $DB;
 
         // Construct a new question object.
@@ -114,9 +112,9 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         // Handle any choice data provided.
         foreach ($choicedata as $content => $value) {
-            $choice = $this->create_question_choice(array('question_id' => $question->id,
-                                                          'content' => $content,
-                                                          'value' => $value));
+            $this->create_question_choice(array('question_id' => $question->id,
+                                                'content' => $content,
+                                                'value' => $value));
         }
 
         return $question;
@@ -159,7 +157,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
-        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESCHECK)+$questiondata, $choicedata);
+        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESCHECK) + $questiondata, $choicedata);
         return new questionnaire_question($question->id);
     }
 
@@ -173,7 +171,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
-        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESDATE)+$questiondata);
+        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESDATE) + $questiondata);
         return new questionnaire_question($question->id);
     }
 
@@ -188,7 +186,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
-        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESDROP)+$questiondata, $choicedata);
+        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESDROP) + $questiondata, $choicedata);
         return new questionnaire_question($question->id);
     }
 
@@ -220,7 +218,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
-        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESSECTIONTEXT)+$questiondata);
+        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESSECTIONTEXT) + $questiondata);
         return new questionnaire_question($question->id);
     }
 
@@ -253,7 +251,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
-        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESRADIO)+$questiondata, $choicedata);
+        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESRADIO) + $questiondata, $choicedata);
         return new questionnaire_question($question->id);
     }
 
@@ -268,7 +266,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
-        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESRATE)+$questiondata, $choicedata);
+        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESRATE) + $questiondata, $choicedata);
         return new questionnaire_question($question->id);
     }
 
@@ -300,7 +298,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
-        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESYESNO)+$questiondata);
+        $question = $this->create_question(array('survey_id' => $surveyid, 'type_id' => QUESYESNO) + $questiondata);
         return new questionnaire_question($question->id);
     }
 }

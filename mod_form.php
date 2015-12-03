@@ -30,6 +30,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
     protected function definition() {
         global $COURSE;
+        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
         $questionnaire = new questionnaire($this->_instance, null, $COURSE, $this->_cm);
 
@@ -59,7 +60,6 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addHelpButton('enableclosegroup', 'closedate', 'questionnaire');
         $mform->disabledIf('enableclosegroup', 'useclosedate', 'notchecked');
 
-        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $questionnairerealms, $autonumbering;
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
         $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnairetypes);

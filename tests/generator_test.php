@@ -39,7 +39,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $this->assertInstanceOf('mod_questionnaire_generator', $generator);
         $this->assertEquals('questionnaire', $generator->get_modulename());
 
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $this->assertEquals(1, $DB->count_records('questionnaire'));
 
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
@@ -67,9 +67,9 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, false);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, false);
 
         $newcontent = array(
             'title'         => 'New title',
@@ -96,7 +96,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Check one');
@@ -119,7 +119,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         }
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -135,7 +135,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Enter a date');
@@ -148,7 +148,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $this->assertEquals($question->content, $questiondata['content']);
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -163,7 +163,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Select one');
@@ -186,7 +186,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         }
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -202,7 +202,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Enter an essay');
@@ -215,7 +215,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $this->assertEquals($question->content, $questiondata['content']);
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -230,7 +230,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('content' => 'This a section label.');
@@ -242,7 +242,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $this->assertEquals($question->content, $questiondata['content']);
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -257,7 +257,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Enter a number');
@@ -270,7 +270,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $this->assertEquals($question->content, $questiondata['content']);
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -285,7 +285,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Choose one');
@@ -308,7 +308,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         }
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -324,7 +324,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Rate these');
@@ -347,7 +347,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         }
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -363,7 +363,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Enter some text.');
@@ -376,7 +376,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $this->assertEquals($question->content, $questiondata['content']);
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
@@ -391,7 +391,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course'=>$course->id));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata = array('name' => 'Q1', 'content' => 'Enter yes or no.');
@@ -404,7 +404,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $this->assertEquals($question->content, $questiondata['content']);
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, NULL, $course, $cm, true);
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));

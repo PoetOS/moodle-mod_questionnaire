@@ -228,7 +228,7 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $result = new stdClass();
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete = true)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, true)) {
         $n = count($responses);
         if ($n == 1) {
             $result->info = $n.' '.get_string("response", "questionnaire");
@@ -249,7 +249,7 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete = false)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, false)) {
         foreach ($responses as $response) {
             if ($response->complete == 'y') {
                 echo get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
@@ -402,24 +402,24 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
 }
 
 /**
- * This function returns if a scale is being used by one book
+ * This function returns if a scale is being used by one questionnaire
  * it it has support for grading and scales. Commented code should be
  * modified if necessary. See forum, glossary or journal modules
  * as reference.
- * @param $bookid int
+ * @param $questionnaireid int
  * @param $scaleid int
- * @return boolean True if the scale is used by any journal
+ * @return boolean True if the scale is used by any questionnaire
  */
-function questionnaire_scale_used ($bookid, $scaleid) {
+function questionnaire_scale_used ($questionnaireid, $scaleid) {
     return false;
 }
 
 /**
- * Checks if scale is being used by any instance of book
+ * Checks if scale is being used by any instance of questionnaire
  *
  * This is used to find out if scale used anywhere
  * @param $scaleid int
- * @return boolean True if the scale is used by any journal
+ * @return boolean True if the scale is used by any questionnaire
  */
 function questionnaire_scale_used_anywhere($scaleid) {
     return false;
@@ -453,16 +453,16 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
     $componentid = (int)array_shift($args);
 
     if ($filearea != 'question') {
-        if (!$survey = $DB->get_record('questionnaire_survey', array('id' => $componentid))) {
+        if (!$DB->get_record('questionnaire_survey', array('id' => $componentid))) {
             return false;
         }
     } else {
-        if (!$question = $DB->get_record('questionnaire_question', array('id' => $componentid))) {
+        if (!$DB->get_record('questionnaire_question', array('id' => $componentid))) {
             return false;
         }
     }
 
-    if (!$questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance))) {
+    if ($DB->get_record('questionnaire', array('id' => $cm->instance))) {
         return false;
     }
 
@@ -578,7 +578,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                     navigation_node::TYPE_SETTING, null, 'yourresponses');
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
-            $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
+            $myreportnode->add(get_string('summary', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/myreport.php',
                             array('instance' => $questionnaire->id, 'userid' => $USER->id,
                                             'byresponse' => 0, 'action' => 'summary', 'group' => $currentgroupid)));
@@ -586,12 +586,12 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                     new moodle_url('/mod/questionnaire/myreport.php',
                             array('instance' => $questionnaire->id, 'userid' => $USER->id,
                                             'byresponse' => 1, 'action' => 'vresp', 'group' => $currentgroupid)));
-            $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
+            $myreportnode->add(get_string('myresponses', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/myreport.php',
                             array('instance' => $questionnaire->id, 'userid' => $USER->id,
                                             'byresponse' => 0, 'action' => 'vall', 'group' => $currentgroupid)));
             if ($questionnaire->capabilities->downloadresponses) {
-                $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
+                $myreportnode->add(get_string('downloadtext'),
                         new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'user' => $USER->id,
                                             'action' => 'dwnpg', 'group' => $currentgroupid)));
@@ -649,24 +649,24 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         } else {
             $summarynode = $reportnode;
         }
-        $defaultordernode = $summarynode->add(get_string('order_default', 'questionnaire'),
+        $summarynode->add(get_string('order_default', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'action' => 'vall', 'group' => $currentgroupid)));
-        $ascendingordernode = $summarynode->add(get_string('order_ascending', 'questionnaire'),
+        $summarynode->add(get_string('order_ascending', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'action' => 'vallasort', 'group' => $currentgroupid)));
-        $descendingordernode = $summarynode->add(get_string('order_descending', 'questionnaire'),
+        $summarynode->add(get_string('order_descending', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'action' => 'vallarsort', 'group' => $currentgroupid)));
 
         if ($questionnaire->capabilities->deleteresponses) {
-            $deleteallnode = $summarynode->add(get_string('deleteallresponses', 'questionnaire'),
+            $summarynode->add(get_string('deleteallresponses', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'action' => 'delallresp', 'group' => $currentgroupid)));
         }
 
         if ($questionnaire->capabilities->downloadresponses) {
-            $downloadresponsesnode = $summarynode->add(get_string('downloadtextformat', 'questionnaire'),
+            $summarynode->add(get_string('downloadtextformat', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
         }
@@ -675,12 +675,12 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                 new moodle_url('/mod/questionnaire/report.php',
                     array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
 
-            $viewindividualresponsenode = $byresponsenode->add(get_string('view', 'questionnaire'),
+            $byresponsenode->add(get_string('view', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                     array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
 
             if ($individualresponse) {
-                $deleteindividualresponsenode = $byresponsenode->add(get_string('deleteresp', 'questionnaire'),
+                $byresponsenode->add(get_string('deleteresp', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'action' => 'dresp', 'byresponse' => 1,
                             'rid' => $rid, 'group' => $currentgroupid, 'individualresponse' => 1)));
@@ -692,7 +692,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $node = navigation_node::create(get_string('show_nonrespondents', 'questionnaire'),
                 new moodle_url($url, array('id' => $cmid)),
                 navigation_node::TYPE_SETTING, null, 'nonrespondents');
-        $nonrespondentsnode = $questionnairenode->add_node($node, $beforekey);
+        $questionnairenode->add_node($node, $beforekey);
 
     }
 }
@@ -883,7 +883,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
  * @return void Output is echo'd
  */
 function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, $modnames) {
-    global $CFG, $OUTPUT;
+    global $OUTPUT;
 
     // If the questionnaire is "anonymous", then $activity->user won't have been set, so do not display respondent info.
     if ($activity->anonymous) {
@@ -1007,7 +1007,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
                 $attempts = $DB->count_records('questionnaire_attempts', array('id' => $questionnaire->id));
                 $str .= $OUTPUT->box(get_string('numattemptsmade', 'questionnaire', $attempts), 'info');
             } else {
-                if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete = false)) {
+                if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, false)) {
                     foreach ($responses as $response) {
                         if ($response->complete == 'y') {
                             $str .= $OUTPUT->box($strattempted, 'info');
@@ -1069,7 +1069,7 @@ function questionnaire_reset_userdata($data) {
     $status = array();
 
     if (!empty($data->reset_questionnaire)) {
-        $surveys = questionnaire_get_survey_list($data->courseid, $type = '');
+        $surveys = questionnaire_get_survey_list($data->courseid, '');
 
         // Delete responses.
         foreach ($surveys as $survey) {
@@ -1119,7 +1119,7 @@ function questionnaire_reset_userdata($data) {
  * @return bool True if completed, false if not, $type if conditions not set.
  */
 function questionnaire_get_completion_state($course, $cm, $userid, $type) {
-    global $CFG, $DB;
+    global $DB;
 
     // Get questionnaire details.
     $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance), '*', MUST_EXIST);

@@ -75,7 +75,7 @@ class questionnaire_question {
      * The database id of the survey this question belongs to.
      * @var int $survey_id
      */
-     public $survey_id   = 0;
+     // public $survey_id   = 0;
 
     /**
      * The name of this question.
@@ -712,12 +712,20 @@ class questionnaire_question {
     }
 
     private function display_resp_single_results($rids=false, $sort) {
+        $this->display_response_choice_results($this->get_response_single_results($rids), $rids, $sort);
+    }
+
+    private function display_resp_multiple_results($rids=false, $sort) {
+        $this->display_response_choice_results($this->get_response_multiple_results($rids), $rids, $sort);
+    }
+
+    private function display_response_choice_results($rows, $rids, $sort) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
             $prtotal = 0;
         }
-        if ($rows = $this->get_response_single_results($rids)) {
+        if ($rows) {
             foreach ($rows as $idx => $row) {
                 if (strpos($idx, 'other') === 0) {
                     $answer = $row->response;
@@ -735,36 +743,6 @@ class questionnaire_question {
                 }
             }
             $this->mkrespercent(count($rids), $this->precise, $prtotal, $sort);
-        } else {
-            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
-        }
-    }
-
-    private function display_resp_multiple_results($rids=false, $sort) {
-        if (is_array($rids)) {
-            $prtotal = 1;
-        } else if (is_int($rids)) {
-            $prtotal = 0;
-        }
-        if ($rows = $this->get_response_multiple_results($rids)) {
-            foreach ($rows as $idx => $row) {
-                if (strpos($idx, 'other') === 0) {
-                    $answer = $row->response;
-                    $ccontent = $row->content;
-                    $content = preg_replace(array('/^!other=/', '/^!other/'),
-                            array('', get_string('other', 'questionnaire')), $ccontent);
-                    $content .= ' ' . clean_text($answer);
-                    $textidx = $content;
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
-                } else {
-                    $contents = questionnaire_choice_values($row->content);
-                    $this->choice = $contents->text.$contents->image;
-                    $textidx = $this->choice;
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
-                }
-            }
-
-            $this->mkrespercent(count($rids), $this->precise, 0, $sort);
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
@@ -944,7 +922,8 @@ class questionnaire_question {
         echo html_writer::end_tag('fieldset');
     }
 
-    private function response_check_required ($data) { // JR check all question types
+    private function response_check_required ($data) {
+        // JR check all question types
         if ($this->type_id == QUESRATE) { // Rate is a special case.
             foreach ($this->choices as $cid => $choice) {
                 $str = 'q'."{$this->id}_$cid";
@@ -1035,14 +1014,16 @@ class questionnaire_question {
         echo $output;
     }
 
-    private function text_survey_display($data) { // Text Box.
+    private function text_survey_display($data) {
+    // Text Box.
         echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'"'.
              ($this->precise > 0 ? ' maxlength="'.$this->precise.'"' : '').' value="'.
              (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '').
              '" id="' . $this->type . $this->id . '" />';
     }
 
-    private function essay_survey_display($data) { // Essay.
+    private function essay_survey_display($data) {
+        // Essay.
         // Columns and rows default values.
         $cols = 80;
         $rows = 15;
@@ -1074,7 +1055,8 @@ class questionnaire_question {
         echo $texteditor;
     }
 
-    private function radio_survey_display($data, $descendantsdata, $blankquestionnaire=false) { // Radio buttons
+    private function radio_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+        // Radio buttons
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $otherempty = false;
@@ -1210,7 +1192,8 @@ class questionnaire_question {
         }
     }
 
-    private function check_survey_display($data) { // Check boxes.
+    private function check_survey_display($data) {
+        // Check boxes.
         $otherempty = false;
         if (!empty($data) ) {
             if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
@@ -1304,7 +1287,8 @@ class questionnaire_question {
         }
     }
 
-    private function drop_survey_display($data, $descendantsdata) { // Drop.
+    private function drop_survey_display($data, $descendantsdata) {
+        // Drop.
         global $OUTPUT;
         $options = array();
 
@@ -1491,8 +1475,8 @@ class questionnaire_question {
                         $str.'" type="radio" value="-999" '.$checked.$order.' /></td>';
                 }
                 for ($j = 0; $j < $this->length + $isna; $j++) {
-                    $checked = ((isset($data->$str) && ($j == $data->$str || $j ==
-                                    $this->length && $data->$str == -1)) ? ' checked="checked"' : '');
+                    $checked = ((isset($data->$str) && ($j == $data->$str ||
+                                 $j == $this->length && $data->$str == -1)) ? ' checked="checked"' : '');
                     $checked = '';
                     if (isset($data->$str) && ($j == $data->$str || $j == $this->length && $data->$str == -1)) {
                         $checked = ' checked="checked"';
@@ -1520,7 +1504,8 @@ class questionnaire_question {
         echo '</table>';
     }
 
-    private function date_survey_display($data) { // Date.
+    private function date_survey_display($data) {
+        // Date.
 
         $datemess = html_writer::start_tag('div', array('class' => 'qn-datemsg'));
         $datemess .= get_string('dateformatting', 'questionnaire');
@@ -1545,7 +1530,8 @@ class questionnaire_question {
         echo html_writer::end_tag('div');
     }
 
-    private function numeric_survey_display($data) { // Numeric.
+    private function numeric_survey_display($data) {
+        // Numeric.
         $precision = $this->precise;
         $a = '';
         if (isset($data->{'q'.$this->id})) {

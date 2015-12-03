@@ -57,6 +57,7 @@ class questionnaire_feedback_form extends moodleform {
         if (isset($fbsection->scorecalculation)) {
             $scorecalculation = unserialize($fbsection->scorecalculation);
             $questionslist = '<ul style="float: left;">';
+            // @SuppressWarnings(PHPMD.UnusedLocalVariable)
             foreach ($scorecalculation as $qid => $key) {
                 $questionslist .= '<li>'.$questions[$qid]->name.'</li>';
             }
@@ -170,18 +171,15 @@ class questionnaire_feedback_form extends moodleform {
                 if (is_numeric($boundary)) {
                     $boundary = $boundary * 100 / 100.0;
                 } else {
-                    $errors["feedbackboundaries[$i]"] =
-                    get_string('feedbackerrorboundaryformat', 'quiz', $i + 1);
+                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryformat', 'quiz', $i + 1);
                 }
             }
             if (is_numeric($boundary) && $boundary <= 0) {
-                $errors["feedbackboundaries[$i]"] =
-                get_string('feedbackerrorboundaryoutofrange', 'questionnaire', $i + 1);
+                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryoutofrange', 'questionnaire', $i + 1);
             }
             if (is_numeric($boundary) && $i > 0 &&
                             $boundary >= $data['feedbackboundaries'][$i - 1]) {
-                $errors["feedbackboundaries[$i]"] =
-                get_string('feedbackerrororder', 'questionnaire', $i + 1);
+                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrororder', 'questionnaire', $i + 1);
             }
             $data['feedbackboundaries'][$i] = $boundary;
             $i += 1;
@@ -193,16 +191,14 @@ class questionnaire_feedback_form extends moodleform {
             for ($i = $numboundaries; $i < count($data['feedbackboundaries']); $i += 1) {
                 if (!empty($data['feedbackboundaries'][$i] ) &&
                                 trim($data['feedbackboundaries'][$i] ) != '') {
-                    $errors["feedbackboundaries[$i]"] =
-                    get_string('feedbackerrorjunkinboundary', 'questionnaire', $i + 1);
+                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorjunkinboundary', 'questionnaire', $i + 1);
                 }
             }
         }
         for ($i = $numboundaries + 1; $i < count($data['feedbacktext']); $i += 1) {
             if (!empty($data['feedbacktext'][$i]['text']) &&
                             trim($data['feedbacktext'][$i]['text'] ) != '') {
-                    $errors["feedbacktext[$i]"] =
-                        get_string('feedbackerrorjunkinfeedback', 'questionnaire', $i + 1);
+                    $errors["feedbacktext[$i]"] = get_string('feedbackerrorjunkinfeedback', 'questionnaire', $i + 1);
             }
         }
         return $errors;

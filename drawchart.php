@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 function draw_chart($feedbacktype, $charttype=null, $labels,
-                $score=null, $allscore=null, $globallabel=null, $groupname, $allresponses) {
-    global $CFG, $OUTPUT, $PAGE;
+                    $score=null, $allscore=null, $globallabel=null, $groupname, $allresponses) {
+    global $OUTPUT, $PAGE;
 
     echo $OUTPUT->box_start();
 

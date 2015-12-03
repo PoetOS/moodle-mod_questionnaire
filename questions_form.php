@@ -40,12 +40,9 @@ class questionnaire_questions_form extends moodleform {
         $mform->addElement('header', 'questionhdr', get_string('addquestions', 'questionnaire'));
         $mform->addHelpButton('questionhdr', 'questiontypes', 'questionnaire');
 
-        $stredit = get_string('edit', 'questionnaire');
         $strremove = get_string('remove', 'questionnaire');
         $strmove = get_string('move');
         $strmovehere = get_string('movehere');
-        $stryes = get_string('yes');
-        $strno = get_string('no');
         $strposition = get_string('position', 'questionnaire');
 
         if (!isset($questionnaire->questions)) {
@@ -183,7 +180,6 @@ class questionnaire_questions_form extends moodleform {
                     $esrc = $OUTPUT->pix_url('t/edit');
                 }
                 $rsrc = $OUTPUT->pix_url('t/delete');
-                        $qreq = '';
 
                 // Question numbers.
                 $manageqgroup[] =& $mform->createElement('static', 'qnums', '',
@@ -372,8 +368,7 @@ class questionnaire_questions_form extends moodleform {
 class questionnaire_edit_question_form extends moodleform {
 
     public function definition() {
-        global $CFG, $COURSE, $questionnaire, $question, $questionnairerealms, $SESSION;
-        global $DB;
+        global $DB, $questionnaire, $question, $SESSION;
 
         // The 'sticky' required response value for further new questions.
         if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
@@ -436,10 +431,6 @@ class questionnaire_edit_question_form extends moodleform {
                 $deflength = 0;
                 $defprecise = 0;
         }
-
-        $defdependquestion = 0;
-        $defdependchoice = 0;
-        $dlabelname = 'dependquestion';
 
         $mform    =& $this->_form;
 
@@ -601,7 +592,7 @@ class questionnaire_edit_question_form extends moodleform {
             }
 
             if (!empty($question->choices)) {
-                foreach ($question->choices as $choiceid => $choice) {
+                foreach ($question->choices as $choice) {
                     if (!empty($question->allchoices)) {
                         $question->allchoices .= "\n";
                     }
@@ -658,7 +649,6 @@ class questionnaire_edit_question_form extends moodleform {
             if ($data['precise'] == 2 ) {
                 $allchoices = $data['allchoices'];
                 $allchoices = explode("\n", $allchoices);
-                $nbnameddegrees = 0;
                 $nbvalues = 0;
                 foreach ($allchoices as $choice) {
                     if ($choice && !preg_match("/^[0-9]{1,3}=/", $choice)) {

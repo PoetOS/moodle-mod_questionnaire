@@ -18,14 +18,14 @@
  *
  * @package    mod
  * @subpackage questionnaire
- * @copyright  
+ * @copyright
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
 /**
- * Javascript for hiding/displaying children questions on preview page of 
- * questionnaire with conditional branching. 
+ * Javascript for hiding/displaying children questions on preview page of
+ * questionnaire with conditional branching.
  */
 
 function dependdrop(qId, children) {
