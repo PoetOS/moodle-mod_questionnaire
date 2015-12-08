@@ -86,7 +86,7 @@ class questionnaire {
      * Adding questions to the object.
      */
     public function add_questions($sid = false, $section = false) {
-        global $DB;
+        global $CFG, $DB, $qtypenames;
 
         if ($sid === false) {
             $sid = $this->sid;
@@ -102,7 +102,11 @@ class questionnaire {
             $sec = 1;
             $isbreak = false;
             foreach ($records as $record) {
-                $this->questions[$record->id] = new questionnaire_question(0, $record, $this->context);
+                $questionclass = 'questionnaire_question_' . $qtypenames[$record->type_id];
+                if (!class_exists($questionclass)) {
+                    require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/question' . $qtypenames[$record->type_id] . '.class.php');
+                }
+                $this->questions[$record->id] = new $questionclass(0, $record, $this->context);
                 if ($record->type_id != QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][$record->id] = &$this->questions[$record->id];
                     $isbreak = false;
@@ -318,28 +322,23 @@ class questionnaire {
                 }
                 $qid = preg_quote('q'.$question->id, '/');
                 if ($question->type_id != QUESPAGEBREAK) {
-                    $method = $qtypenames[$question->type_id].'_response_display';
-                    if (method_exists($question, $method)) {
-                        echo $OUTPUT->box_start('individualresp');
-                        $question->questionstart_survey_display($i);
-                        foreach ($data as $respid => $respdata) {
-                            $hasresp = false;
-                            foreach ($respdata as $key => $value) {
-                                if ($hasresp = preg_match("/$qid(_|$)/", $key)) {
-                                    break;
-                                }
-                            }
-                            // Do not display empty responses.
-                            if ($hasresp) {
-                                echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
-                                $question->$method($respdata);
+                    echo $OUTPUT->box_start('individualresp');
+                    $question->questionstart_survey_display($i);
+                    foreach ($data as $respid => $respdata) {
+                        $hasresp = false;
+                        foreach ($respdata as $key => $value) {
+                            if ($hasresp = preg_match("/$qid(_|$)/", $key)) {
+                                break;
                             }
                         }
-                        $question->questionend_survey_display($i);
-                        echo $OUTPUT->box_end();
-                    } else {
-                        print_error('displaymethod', 'questionnaire');
+                        // Do not display empty responses.
+                        if ($hasresp) {
+                            echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
+                            $question->response_display($respdata);
+                        }
                     }
+                    $question->questionend_survey_display($i);
+                    echo $OUTPUT->box_end();
                 }
             }
         } else {
@@ -1155,7 +1154,6 @@ class questionnaire {
         $qnum = $i - 1;
 
         foreach ($this->questionsbysec[$section] as $question) {
-
             $qid = $question->id;
             $tid = $question->type_id;
             $lid = $question->length;
@@ -1163,184 +1161,13 @@ class questionnaire {
             if ($tid != QUESSECTIONTEXT) {
                 $qnum++;
             }
-            $missingresp = false;
-
-            // Note: The "missing response" detection is carried out differently in Rate questions (see below).
-
-            if ( ($question->required == 'y') && ($question->deleted == 'n') && ((isset($formdata->{'q'.$qid})
-                        && $formdata->{'q'.$qid} == '')
-                    || (!isset($formdata->{'q'.$qid}))) && $tid != QUESSECTIONTEXT && $tid != QUESRATE) {
-
-                if ($PAGE->pagetype != 'mod-questionnaire-preview') {
-                    $missingresp = true;
-
-                } else if ($question->dependquestion == 0) {
-                    $missingresp = true;
-
-                } else { // For yes/no questions, convert 0 and 1 to y(es) and n(o).
-                    if ($question->dependchoice == 0) {
-                        $dependchoice = 'y';
-                    } else if ($question->dependchoice == 1) {
-                        $dependchoice = 'n';
-                    } else {
-                        $dependchoice = $question->dependchoice;
-                    }
-                    if (isset($formdata->{'q'.$question->dependquestion})
-                            && $formdata->{'q'.$question->dependquestion} == $dependchoice) {
-                        $missingresp = true;
-                    }
-                }
-            }
-
-            if ($missingresp) {
+            if (!$question->response_complete($formdata)) {
                 $missing++;
                 $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
             }
-
-            switch ($tid) {
-
-                case QUESRADIO: // Radio Buttons with !other field.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    $resp = $formdata->{'q'.$qid};
-                    $pos = strpos($resp, 'other_');
-
-                    // Other "other" choice is checked but text box is empty.
-                    if (is_int($pos) == true) {
-                        $othercontent = "q".$qid.substr($resp, 5);
-                        if ( !$formdata->$othercontent ) {
-                            $wrongformat++;
-                            $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                            break;
-                        }
-                    }
-
-                    if (is_int($pos) == true && $question->required == 'y') {
-                        $resp = 'q'.$qid.''.substr($resp, 5);
-                        if (!$formdata->$resp) {
-                            $missing++;
-                            $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                        }
-                    }
-                    break;
-
-                case QUESCHECK: // Check Boxes.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    $resps = $formdata->{'q'.$qid};
-                    $nbrespchoices = 0;
-                    foreach ($resps as $resp) {
-                        $pos = strpos($resp, 'other_');
-
-                        // Other "other" choice is checked but text box is empty.
-                        if (is_int ($pos) == true) {
-                            $othercontent = "q".$qid.substr($resp, 5);
-                            if ( !$formdata->$othercontent ) {
-                                $wrongformat++;
-                                $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                                break;
-                            }
-                        }
-
-                        if (is_numeric($resp) || is_int($pos) == true) {
-                            $nbrespchoices++;
-                        }
-                    }
-                    $nbquestchoices = count($question->choices);
-                    $min = $lid;
-                    $max = $pid;
-                    if ($max == 0) {
-                        $max = $nbquestchoices;
-                    }
-                    if ($min > $max) {
-                        $min = $max;     // Sanity check.
-                    }
-                    $min = min($nbquestchoices, $min);
-                    // Number of ticked boxes is not within min and max set limits.
-                    if ( $nbrespchoices && ($nbrespchoices < $min || $nbrespchoices > $max) ) {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                        break;
-                    }
-                    break;
-
-                case QUESRATE: // Rate.
-                    $num = 0;
-                    $nbchoices = count($question->choices);
-                    $na = get_string('notapplicable', 'questionnaire');
-                    foreach ($question->choices as $cid => $choice) {
-                        // In case we have named degrees on the Likert scale, count them to substract from nbchoices.
-                        $nameddegrees = 0;
-                        $content = $choice->content;
-                        if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
-                            $nameddegrees++;
-                        } else {
-                            $str = 'q'."{$question->id}_$cid";
-                            if (isset($formdata->$str) && $formdata->$str == $na) {
-                                $formdata->$str = -1;
-                            }
-                            // If choice value == -999 this is a not yet answered choice.
-                            $num += (isset($formdata->$str) && ($formdata->$str != -999));
-                        }
-                        $nbchoices -= $nameddegrees;
-                    }
-
-                    if ($num == 0) {
-                        $missingresp = false;
-                        if ($PAGE->pagetype != 'mod-questionnaire-preview' || $question->dependquestion == 0) {
-                            if ($question->required == 'y') {
-                                $missingresp = true;
-                            }
-                        } else {
-                            if (isset($formdata->{'q'.$question->dependquestion})
-                                    && $formdata->{'q'.$question->dependquestion} == $question->dependchoice) {
-                                $missingresp = true;
-                            }
-                        }
-                        if ($missingresp) {
-                            $missing++;
-                            $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                        }
-                    }
-                    // If nodupes and nb choice restricted, nbchoices may be > actual choices, so limit it to $question->length.
-                    $isrestricted = ($question->length < count($question->choices)) && $question->precise == 2;
-                    if ($isrestricted) {
-                        $nbchoices = min ($nbchoices, $question->length);
-                    }
-                    if ( $num != $nbchoices && $num != 0 ) {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                    }
-                    break;
-
-                case QUESDATE: // Date.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    $checkdateresult = '';
-                    if ($formdata->{'q'.$qid} != '') {
-                        $checkdateresult = questionnaire_check_date($formdata->{'q'.$qid});
-                    }
-                    if (substr($checkdateresult, 0, 5) == 'wrong') {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                    }
-                    break;
-
-                case QUESNUMERIC: // Numeric.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    if ( ($formdata->{'q'.$qid} != '') && (!is_numeric($formdata->{'q'.$qid})) ) {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                    }
-                    break;
-
-                default:
-                break;
+            if (!$question->response_valid($formdata)) {
+                $wrongformat++;
+                $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
             }
         }
         $message = '';
@@ -1698,7 +1525,10 @@ class questionnaire {
 
         if (!empty($this->questionsbysec[$section])) {
             foreach ($this->questionsbysec[$section] as $question) {
-                $question->insert_response($rid);
+                // NOTE *** $val really should be a value obtained from the caller or somewhere else.
+                // Also note that "optional_param" accepting arrays is deprecated.
+                $val = optional_param('q'.$question->id, '', PARAM_RAW);
+                $question->insert_response($rid, $val);
             }
         }
         return($rid);
