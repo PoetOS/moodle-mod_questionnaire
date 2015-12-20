@@ -79,6 +79,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $data->timemodified = $this->apply_date_offset($data->timemodified);
 
+        // FK Support, set sid to null because sid not exist yet
+        $data->sid = null;
         // Insert the questionnaire record.
         $newitemid = $DB->insert_record('questionnaire', $data);
         // Immediately after inserting "activity" record, call this.

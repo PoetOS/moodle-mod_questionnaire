@@ -68,8 +68,8 @@ $questionnairerealms = array ('private' => get_string('private', 'questionnaire'
                                'template' => get_string('template', 'questionnaire'));
 
 global $questionnaireresponseviewers;
-$questionnaireresponseviewers =
-    array ( QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
+$questionnaireresponseviewers = array (
+            QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
             QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED => get_string('responseviewstudentswhenclosed', 'questionnaire'),
             QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS => get_string('responseviewstudentsalways', 'questionnaire'));
 

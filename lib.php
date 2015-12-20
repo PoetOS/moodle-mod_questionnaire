@@ -270,7 +270,7 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
 function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-    return false;  //  True if anything was printed, otherwise false.
+    return false;  // True if anything was printed, otherwise false.
 }
 
 // Must return an array of grades for a given instance of this module,
