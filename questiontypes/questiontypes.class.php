@@ -69,19 +69,19 @@ class questionnaire_question {
      * The database id of this question.
      * @var int $id
      */
-     public $id          = 0;
+    public $id = 0;
 
     /**
      * The database id of the survey this question belongs to.
      * @var int $survey_id
      */
-     public $surveyid   = 0;
+    public $surveyid = 0;
 
     /**
      * The name of this question.
      * @var string $name
      */
-     public $name        = '';
+    public $name = '';
 
     /**
      * The alias of the number of this question.
@@ -92,61 +92,61 @@ class questionnaire_question {
      * The name of the question type.
      * @var string $type
      */
-     public $type        = '';
+    public $type = '';
 
     /**
      * Array holding any choices for this question.
      * @var array $choices
      */
-     public $choices     = array();
+    public $choices = array();
 
     /**
      * The table name for responses.
      * @var string $response_table
      */
-     public $responsetable = '';
+    public $responsetable = '';
 
     /**
      * The length field.
      * @var int $length
      */
-     public $length      = 0;
+    public $length = 0;
 
     /**
      * The precision field.
      * @var int $precise
      */
-     public $precise     = 0;
+    public $precise = 0;
 
     /**
      * Position in the questionnaire
      * @var int $position
      */
-     public $position    = 0;
+    public $position = 0;
 
     /**
      * The question's content.
      * @var string $content
      */
-     public $content     = '';
+    public $content = '';
 
     /**
      * The list of all question's choices.
      * @var string $allchoices
      */
-     public $allchoices  = '';
+    public $allchoices = '';
 
     /**
      * The required flag.
      * @var boolean $required
      */
-     public $required    = 'n';
+    public $required = 'n';
 
     /**
      * The deleted flag.
      * @var boolean $deleted
      */
-     public $deleted     = 'n';
+    public $deleted = 'n';
 
     // Class Methods.
 
@@ -944,7 +944,8 @@ class questionnaire_question {
         echo html_writer::end_tag('fieldset');
     }
 
-    private function response_check_required ($data) { // JR check all question types
+    // JR check all question types
+    private function response_check_required ($data) {
         if ($this->type_id == QUESRATE) { // Rate is a special case.
             foreach ($this->choices as $cid => $choice) {
                 $str = 'q'."{$this->id}_$cid";
@@ -1035,14 +1036,16 @@ class questionnaire_question {
         echo $output;
     }
 
-    private function text_survey_display($data) { // Text Box.
+    // Text Box.
+    private function text_survey_display($data) {
         echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'"'.
              ($this->precise > 0 ? ' maxlength="'.$this->precise.'"' : '').' value="'.
              (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '').
              '" id="' . $this->type . $this->id . '" />';
     }
 
-    private function essay_survey_display($data) { // Essay.
+    // Essay.
+    private function essay_survey_display($data) {
         // Columns and rows default values.
         $cols = 80;
         $rows = 15;
@@ -1074,7 +1077,8 @@ class questionnaire_question {
         echo $texteditor;
     }
 
-    private function radio_survey_display($data, $descendantsdata, $blankquestionnaire=false) { // Radio buttons
+    // Radio buttons
+    private function radio_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $otherempty = false;
@@ -1210,7 +1214,8 @@ class questionnaire_question {
         }
     }
 
-    private function check_survey_display($data) { // Check boxes.
+    // Check boxes.
+    private function check_survey_display($data) {
         $otherempty = false;
         if (!empty($data) ) {
             if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
@@ -1304,7 +1309,8 @@ class questionnaire_question {
         }
     }
 
-    private function drop_survey_display($data, $descendantsdata) { // Drop.
+    // Drop.
+    private function drop_survey_display($data, $descendantsdata) {
         global $OUTPUT;
         $options = array();
 
@@ -1491,8 +1497,8 @@ class questionnaire_question {
                         $str.'" type="radio" value="-999" '.$checked.$order.' /></td>';
                 }
                 for ($j = 0; $j < $this->length + $isna; $j++) {
-                    $checked = ((isset($data->$str) && ($j == $data->$str || $j ==
-                                    $this->length && $data->$str == -1)) ? ' checked="checked"' : '');
+                    $checked = ((isset($data->$str) && ($j == $data->$str || $j == $this->length
+                        && $data->$str == -1)) ? ' checked="checked"' : '');
                     $checked = '';
                     if (isset($data->$str) && ($j == $data->$str || $j == $this->length && $data->$str == -1)) {
                         $checked = ' checked="checked"';
@@ -1520,7 +1526,8 @@ class questionnaire_question {
         echo '</table>';
     }
 
-    private function date_survey_display($data) { // Date.
+    // Date.
+    private function date_survey_display($data) {
 
         $datemess = html_writer::start_tag('div', array('class' => 'qn-datemsg'));
         $datemess .= get_string('dateformatting', 'questionnaire');
@@ -1545,7 +1552,8 @@ class questionnaire_question {
         echo html_writer::end_tag('div');
     }
 
-    private function numeric_survey_display($data) { // Numeric.
+    // Numeric.
+    private function numeric_survey_display($data) {
         $precision = $this->precise;
         $a = '';
         if (isset($data->{'q'.$this->id})) {
