@@ -156,7 +156,7 @@ abstract class questionnaire_question_base {
         }
     }
 
-    static function question_builder($qtype, $params = null) {
+    static public function question_builder($qtype, $params = null) {
         global $CFG, $qtypenames;
 
         $qclassfile = $CFG->dirroot.'/mod/questionnaire/questiontypes/question' . $qtypenames[$qtype] . '.class.php';
@@ -364,7 +364,7 @@ abstract class questionnaire_question_base {
             } else {
                 $qid = $this->id;
             }
-            foreach($this->choices as $key => $choice) {
+            foreach ($this->choices as $key => $choice) {
                 $choicrecord = new stdClass();
                 $choicerecord->id = $key;
                 $choicerecord->question_id = $qid;
@@ -668,11 +668,11 @@ abstract class questionnaire_question_base {
     }
 
     protected function form_length(MoodleQuickForm $mform, $helpname = '') {
-        questionnaire_question_base::form_length_text($mform, $helpname);
+        self::form_length_text($mform, $helpname);
     }
 
     protected function form_precise(MoodleQuickForm $mform, $helpname = '') {
-        questionnaire_question_base::form_precise_text($mform, $helpname);
+        self::form_precise_text($mform, $helpname);
     }
 
     protected function form_dependencies(MoodleQuickForm $mform, $questionnaire) {
@@ -741,13 +741,13 @@ abstract class questionnaire_question_base {
 
     // Helper functions for commonly used editing functions.
 
-    static function form_length_hidden(MoodleQuickForm $mform, $value = 0) {
+    static public function form_length_hidden(MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'length', $value);
         $mform->setType('length', PARAM_INT);
         return $mform;
     }
 
-    static function form_length_text(MoodleQuickForm $mform, $helpname = '', $value = 0) {
+    static public function form_length_text(MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'length', get_string($helpname, 'questionnaire'), array('size' => '1'), $value);
         $mform->setType('length', PARAM_INT);
         if (!empty($helpname)) {
@@ -756,13 +756,13 @@ abstract class questionnaire_question_base {
         return $mform;
     }
 
-    static function form_precise_hidden(MoodleQuickForm $mform, $value = 0) {
+    static public function form_precise_hidden(MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'precise', $value);
         $mform->setType('precise', PARAM_INT);
         return $mform;
     }
 
-    static function form_precise_text(MoodleQuickForm $mform, $helpname = '', $value = 0) {
+    static public function form_precise_text(MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'precise', get_string($helpname, 'questionnaire'), array('size' => '1'));
         $mform->setType('precise', PARAM_INT);
         if (!empty($helpname)) {

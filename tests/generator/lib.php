@@ -92,7 +92,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         // Construct a new question object.
         $question = questionnaire_question_base::question_builder($qtype);
-        $questiondata= (object)$questiondata;
+        $questiondata = (object)$questiondata;
         $question->add($questiondata, $choicedata);
 
         return $question;

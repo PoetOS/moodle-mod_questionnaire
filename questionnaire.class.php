@@ -1888,7 +1888,6 @@ class questionnaire {
                 array_push($values["$qid"], '', '', $val);
             }
         }
-print_object($values);
         return($values);
     }
 
