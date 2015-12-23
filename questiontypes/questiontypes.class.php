@@ -165,7 +165,7 @@ abstract class questionnaire_question_base {
         if (!empty($params) && is_array($params)) {
             $params = (object)$params;
         }
-        return new $qclassname(0, $params);
+        return new $qclassname(0, $params, null, array('type_id' => $qtype));
     }
 
     /**
@@ -310,11 +310,22 @@ abstract class questionnaire_question_base {
         }
     }
 
-    public function add($questionrecord, $calcposition = true) {
+    /**
+     * Add the question to the database from supplied arguments.
+     * @param object $questionrecord The required data for adding the question.
+     * @param array $choicerecords An array of choice records with 'content' and 'value' properties.
+     * @param boolean $calcposition Whether or not to calculate the next available position in the survey.
+     */
+    public function add($questionrecord, array $choicerecords = null, boolean $calcposition = null) {
         global $DB;
 
+        // Default boolean parameter to "true".
+        if (is_null($calcposition)) {
+            $calcposition = true;
+        }
+
         // Create new question:
-        if ($calcposition) {
+        if (is_null($calcposition) || $calcposition) {
             // set the position to the end.
             $sql = 'SELECT MAX(position) as maxpos '.
                    'FROM {questionnaire_question} '.
@@ -327,7 +338,19 @@ abstract class questionnaire_question_base {
             }
         }
 
+        // Make sure we add all necessary data.
+        if (!isset($questionrecord->type_id) || empty($questionrecord->type_id)) {
+            $questionrecord->type_id = $this->type_id;
+        }
+
         $this->qid = $DB->insert_record('questionnaire_question', $questionrecord);
+
+        if ($this->has_choices() && !empty($choicerecords)) {
+            foreach ($choicerecords as $choicerecord) {
+                $choicerecord->question_id = $this->qid;
+                $this->add_choice($choicerecord);
+            }
+        }
     }
 
     public function update_choices() {
@@ -342,7 +365,7 @@ abstract class questionnaire_question_base {
                 $qid = $this->id;
             }
             foreach($this->choices as $key => $choice) {
-                $choicrecord = new Object();
+                $choicrecord = new stdClass();
                 $choicerecord->id = $key;
                 $choicerecord->question_id = $qid;
                 $choicerecord->content = $choice->content;
