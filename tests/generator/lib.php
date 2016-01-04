@@ -81,7 +81,7 @@ class mod_questionnaire_generator extends testing_module_generator {
     }
 
     /**
-     * Create an default question as a generic object.
+     * Create a question object of a specific question type and add it to the database.
      * @param integer $qtype The question type to create.
      * @param array $questiondata Any data to load into the question.
      * @param array $choicedata Any choice data for the question.

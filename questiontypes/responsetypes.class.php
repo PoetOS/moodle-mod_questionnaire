@@ -890,7 +890,6 @@ class questionnaire_response_single extends questionnaire_response_base {
         if (preg_match("/other_q([0-9]+)/", (isset($val) ? $val : ''), $regs)) {
             $cid = $regs[1];
             if (!isset($other)) {
-                break; // Out of the case.
                 $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_CLEAN);
             }
             if (preg_match("/[^ \t\n]/", $other)) {
