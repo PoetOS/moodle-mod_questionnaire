@@ -1025,3 +1025,40 @@ function questionnaire_prep_for_questionform($questionnaire, $qid) {
     }
     return $question;
 }
+
+/**
+ * Get the standard page contructs and check for validity.
+ * @param int $id The coursemodule id.
+ * @param int $a  The module instance id.
+ * @return array An array with the $cm, $course, and $questionnaire records in that order.
+ */
+function questionnaire_get_standard_page_items($id = null, $a = null) {
+    global $DB;
+
+    if ($id) {
+        if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
+            print_error('invalidcoursemodule');
+        }
+
+        if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+            print_error('coursemisconf');
+        }
+
+        if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+            print_error('invalidcoursemodule');
+        }
+
+    } else {
+        if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $a))) {
+            print_error('invalidcoursemodule');
+        }
+        if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+            print_error('coursemisconf');
+        }
+        if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
+            print_error('invalidcoursemodule');
+        }
+    }
+
+    return (array($cm, $course, $questionnaire));
+}
