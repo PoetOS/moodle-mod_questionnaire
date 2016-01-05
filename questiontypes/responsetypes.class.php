@@ -36,6 +36,13 @@ abstract class questionnaire_response_base {
     }
 
     /**
+     * Provide the necessary response data table name.
+     *
+     * @return string response table name.
+     */
+    abstract public function response_table();
+
+    /**
      * Insert a provided response to the question.
      *
      * @param integer $rid - The data id of the response table id.
@@ -672,6 +679,11 @@ abstract class questionnaire_response_base {
 }
 
 class questionnaire_response_boolean extends questionnaire_response_base {
+
+    public function response_table() {
+        return 'questionnaire_response_bool';
+    }
+
     public function insert_response($rid, $val) {
         global $DB;
         if (!empty($val)) { // If "no answer" then choice is empty (CONTRIB-846).
@@ -679,7 +691,7 @@ class questionnaire_response_boolean extends questionnaire_response_base {
             $record->response_id = $rid;
             $record->question_id = $this->question->id;
             $record->choice_id = $val;
-            return $DB->insert_record('questionnaire_response_bool', $record);
+            return $DB->insert_record($this->response_table(), $record);
         } else {
             return false;
         }
@@ -699,7 +711,7 @@ class questionnaire_response_boolean extends questionnaire_response_base {
         $params[] = '';
 
         $sql = 'SELECT choice_id, COUNT(response_id) AS num ' .
-               'FROM {questionnaire_response_bool} ' .
+               'FROM {'.$this->response_table().'} ' .
                'WHERE question_id= ? ' . $rsql . ' AND choice_id != ? ' .
                'GROUP BY choice_id';
         return $DB->get_records_sql($sql, $params);
@@ -737,6 +749,10 @@ class questionnaire_response_boolean extends questionnaire_response_base {
 }
 
 class questionnaire_response_text extends questionnaire_response_base {
+    public function response_table() {
+        return 'questionnaire_response_text';
+    }
+
     public function insert_response($rid, $val) {
         global $DB;
         // Only insert if non-empty content.
@@ -749,7 +765,7 @@ class questionnaire_response_text extends questionnaire_response_base {
             $record->response_id = $rid;
             $record->question_id = $this->question->id;
             $record->response = $val;
-            return $DB->insert_record('questionnaire_response_text', $record);
+            return $DB->insert_record($this->response_table(), $record);
         } else {
             return false;
         }
@@ -764,16 +780,16 @@ class questionnaire_response_text extends questionnaire_response_base {
             $rsql = ' AND response_id ' . $rsql;
         }
 
-        $sql = 'SELECT T.id, T.response, R.submitted AS submitted, R.username, U.username AS username, ' .
-                'U.id as userid, ' .
-                'R.survey_id, R.id AS rid ' .
-                'FROM {questionnaire_response_text} T, ' .
-                '{questionnaire_response} R, ' .
-                '{user} U ' .
+        $sql = 'SELECT t.id, t.response, r.submitted AS submitted, r.username, u.username AS username, ' .
+                'u.id as userid, ' .
+                'r.survey_id, r.id AS rid ' .
+                'FROM {'.$this->response_table().'} t, ' .
+                '{questionnaire_response} r, ' .
+                '{user} u ' .
                 'WHERE question_id=' . $this->question->id . $rsql .
-                ' AND T.response_id = R.id' .
-                ' AND U.id = ' . $DB->sql_cast_char2int('R.username') .
-                'ORDER BY U.lastname, U.firstname, R.submitted';
+                ' AND t.response_id = r.id' .
+                ' AND u.id = ' . $DB->sql_cast_char2int('r.username') .
+                'ORDER BY u.lastname, u.firstname, r.submitted';
         return $DB->get_records_sql($sql, $params);
     }
 
@@ -806,6 +822,10 @@ class questionnaire_response_text extends questionnaire_response_base {
 }
 
 class questionnaire_response_date extends questionnaire_response_base {
+    public function response_table() {
+        return 'questionnaire_response_date';
+    }
+
     public function insert_response($rid, $val) {
         global $DB;
         $checkdateresult = questionnaire_check_date($val);
@@ -819,7 +839,7 @@ class questionnaire_response_date extends questionnaire_response_base {
         $record->response_id = $rid;
         $record->question_id = $this->question->id;
         $record->response = $checkdateresult;
-        return $DB->insert_record('questionnaire_response_date', $record);
+        return $DB->insert_record($this->response_table(), $record);
     }
 
     protected function get_results($rids=false) {
@@ -834,7 +854,7 @@ class questionnaire_response_date extends questionnaire_response_base {
         }
 
         $sql = 'SELECT id, response ' .
-               'FROM {questionnaire_response_date} ' .
+               'FROM {'.$this->response_table().'} ' .
                'WHERE question_id= ? ' . $rsql;
 
         return $DB->get_records_sql($sql, $params);
@@ -865,6 +885,10 @@ class questionnaire_response_date extends questionnaire_response_base {
 }
 
 class questionnaire_response_single extends questionnaire_response_base {
+    public function response_table() {
+        return 'questionnaire_resp_single';
+    }
+
     public function insert_response($rid, $val) {
         global $DB;
         if (!empty($val)) {
@@ -907,7 +931,7 @@ class questionnaire_response_single extends questionnaire_response_base {
         $record->question_id = $this->question->id;
         $record->choice_id = isset($val) ? $val : 0;
         if ($record->choice_id) {// If "no answer" then choice_id is empty (CONTRIB-846).
-            return $DB->insert_record('questionnaire_resp_single', $record);
+            return $DB->insert_record($this->response_table(), $record);
         } else {
             return false;
         }
@@ -926,7 +950,7 @@ class questionnaire_response_single extends questionnaire_response_base {
         // Added qc.id to preserve original choices ordering.
         $sql = 'SELECT rt.id, qc.id as cid, qc.content ' .
                'FROM {questionnaire_quest_choice} qc, ' .
-               '{questionnaire_resp_single} rt ' .
+               '{'.$this->response_table().'} rt ' .
                'WHERE qc.question_id= ? AND qc.content NOT LIKE \'!other%\' AND ' .
                      'rt.question_id=qc.question_id AND rt.choice_id=qc.id' . $rsql . ' ' .
                'ORDER BY qc.id';
@@ -958,7 +982,15 @@ class questionnaire_response_single extends questionnaire_response_base {
     }
 }
 
-class questionnaire_response_multiple extends questionnaire_response_base {
+class questionnaire_response_multiple extends questionnaire_response_single {
+    /**
+     * The only differences between multuple and single responses are the 
+     * response table and the insert logic.
+     */
+    public function response_table() {
+        return 'questionnaire_resp_multiple';
+    }
+
     public function insert_response($rid, $val) {
         global $DB;
         $resid = '';
@@ -998,58 +1030,18 @@ class questionnaire_response_multiple extends questionnaire_response_base {
                 $record->response_id = $rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
-                $resid = $DB->insert_record('questionnaire_resp_multiple', $record);
+                $resid = $DB->insert_record($this->response_table(), $record);
             }
         }
         return $resid;
     }
-
-    protected function get_results($rids=false) {
-        global $DB;
-
-        $rsql = '';
-        $params = array($this->question->id);
-        if (!empty($rids)) {
-            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
-            $params = array_merge($params, $rparams);
-            $rsql = ' AND response_id ' . $rsql;
-        }
-        // Added qc.id to preserve original choices ordering.
-        $sql = 'SELECT rt.id, qc.id as cid, qc.content ' .
-               'FROM {questionnaire_quest_choice} qc, ' .
-               '{questionnaire_resp_multiple} rt ' .
-               'WHERE qc.question_id= ? AND qc.content NOT LIKE \'!other%\' AND ' .
-                     'rt.question_id=qc.question_id AND rt.choice_id=qc.id' . $rsql . ' ' .
-               'ORDER BY qc.id';
-
-        $rows = $DB->get_records_sql($sql, $params);
-
-        // Handle 'other...'.
-        $sql = 'SELECT rt.id, rt.response, qc.content ' .
-               'FROM {questionnaire_response_other} rt, ' .
-                    '{questionnaire_quest_choice} qc ' .
-               'WHERE rt.question_id= ? AND rt.choice_id=qc.id' . $rsql . ' ' .
-               'ORDER BY qc.id';
-
-        if ($recs = $DB->get_records_sql($sql, $params)) {
-            $i = 1;
-            foreach ($recs as $rec) {
-                $rows['other'.$i] = new stdClass();
-                $rows['other'.$i]->content = $rec->content;
-                $rows['other'.$i]->response = $rec->response;
-                $i++;
-            }
-        }
-
-        return $rows;
-    }
-
-    public function display_results($rids=false, $sort='') {
-        $this->display_response_choice_results($this->get_results($rids), $rids, $sort);
-    }
 }
 
 class questionnaire_response_rank extends questionnaire_response_base {
+    public function response_table() {
+        return 'questionnaire_response_rank';
+    }
+
     public function insert_response($rid, $val) {
         global $DB;
         if ($this->question->type_id == QUESRATE) {
@@ -1070,7 +1062,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
                 $record->rank = $rank;
-                $resid = $DB->insert_record('questionnaire_response_rank', $record);
+                $resid = $DB->insert_record($this->response_table(), $record);
             }
             return $resid;
         } else { // THIS SHOULD NEVER HAPPEN.
@@ -1084,7 +1076,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
             $record->response_id = $rid;
             $record->question_id = $this->question->id;
             $record->rank = $rank;
-            return $DB->insert_record('questionnaire_response_rank', $record);
+            return $DB->insert_record($this->response_table(), $record);
         }
     }
 
@@ -1104,7 +1096,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
             if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
                 foreach ($rows as $row) {
                     $this->counts[$row->content] = new stdClass();
-                    $nbna = $DB->count_records('questionnaire_response_rank', array('question_id' => $this->question->id,
+                    $nbna = $DB->count_records($this->response_table(), array('question_id' => $this->question->id,
                                     'choice_id' => $row->id, 'rank' => '-1'));
                     $this->counts[$row->content]->nbna = $nbna;
                     // The $row->value may be null (i.e. empty) or have a 'NULL' value.
@@ -1119,7 +1111,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
             if (!$isrestricted) {
                 if (!empty ($rankvalue)) {
                     $sql = "SELECT r.id, c.content, r.rank, c.id AS choiceid
-                    FROM {questionnaire_quest_choice} c, {questionnaire_response_rank} r
+                    FROM {questionnaire_quest_choice} c, {".$this->response_table()."} r
                     WHERE r.choice_id = c.id
                     AND c.question_id = " . $this->question->id . "
                     AND r.rank >= 0{$rsql}
@@ -1139,7 +1131,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
                         FROM {questionnaire_quest_choice} c
                         INNER JOIN
                              (SELECT c2.id, AVG(a2.rank+1) AS average, COUNT(a2.response_id) AS num
-                              FROM {questionnaire_quest_choice} c2, {questionnaire_response_rank} a2
+                              FROM {questionnaire_quest_choice} c2, {".$this->response_table()."} a2
                               WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rank >= 0{$rsql}
                               GROUP BY c2.id) a ON a.id = c.id
                               order by c.id";
@@ -1161,7 +1153,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
                         FROM {questionnaire_quest_choice} c
                         INNER JOIN
                              (SELECT c2.id, SUM(a2.rank+1) AS sum, COUNT(a2.response_id) AS num
-                              FROM {questionnaire_quest_choice} c2, {questionnaire_response_rank} a2
+                              FROM {questionnaire_quest_choice} c2, {".$this->response_table()."} a2
                               WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rank >= 0{$rsql}
                               GROUP BY c2.id) a ON a.id = c.id";
                 $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
@@ -1176,7 +1168,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
             }
         } else {
             $sql = 'SELECT A.rank, COUNT(A.response_id) AS num ' .
-                   'FROM {questionnaire_response_rank} A ' .
+                   'FROM {'.$this->response_table().'} A ' .
                    'WHERE A.question_id= ? ' . $rsql . ' ' .
                    'GROUP BY A.rank';
             return $DB->get_records_sql($sql, array_merge(array($this->question->id), $params));

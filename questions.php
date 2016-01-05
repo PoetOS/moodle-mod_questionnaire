@@ -430,31 +430,3 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $questionsform->display();
 }
 echo $OUTPUT->footer();
-
-/**
- * Code snippet used to set up the questionform.
- */
-function questionnaire_prep_for_questionform($questionnaire, $qid) {
-    $context = context_module::instance($questionnaire->cm->id);
-    if ($qid != 0) {
-        $question = clone($questionnaire->questions[$qid]);
-        $question->qid = $question->id;
-        $question->sid = $questionnaire->survey->id;
-        $question->id = $questionnaire->cm->id;
-        $draftideditor = file_get_submitted_draft_itemid('question');
-        $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                           $qid, array('subdirs' => true), $question->content);
-        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
-    } else {
-        $question = questionnaire_question_base::question_builder($qtype);
-        $question->sid = $questionnaire->survey->id;
-        $question->id = $questionnaire->cm->id;
-        $question->type_id = $qtype;
-        $question->type = '';
-        $draftideditor = file_get_submitted_draft_itemid('question');
-        $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                           null, array('subdirs' => true), '');
-        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
-    }
-    return $question;
-}

@@ -494,6 +494,44 @@ class questionnaire {
         }
     }
 
+    public function can_view_all_responses() {
+        global $USER, $DB, $SESSION;
+
+        if ($owner = $DB->get_field('questionnaire_survey', 'owner', array('id' => $this->sid))) {
+            $owner = (trim($owner) == trim($this->course->id));
+        } else {
+            $owner = true;
+        }
+        $numresp = $this->count_submissions();
+
+        // Number of Responses in currently selected group (or all participants etc.).
+        if (isset($SESSION->questionnaire->numselectedresps)) {
+            $numselectedresps = $SESSION->questionnaire->numselectedresps;
+        } else {
+            $numselectedresps = $numresp;
+        }
+
+        // If questionnaire is set to separate groups, prevent user who is not member of any group
+        // to view All responses.
+        $canviewgroups = true;
+        $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
+        if ($groupmode == 1) {
+            $canviewgroups = groups_has_membership($this->cm, $USER->id);;
+        }
+
+        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
+        return (( // Teacher or non-editing teacher (if can view all groups).
+                 ($canviewallgroups ||
+                  // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
+                  ($canviewgroups && $this->capabilities->readallresponseanytime)) &&
+                 $numresp > 0 && $owner && $numselectedresps > 0) ||
+                ($this->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
+                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp > 0)) &&
+                 $this->is_survey_owner()));
+    }
+
     public function count_submissions($userid=false) {
         global $DB;
 
