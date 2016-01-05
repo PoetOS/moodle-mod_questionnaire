@@ -70,7 +70,7 @@ abstract class questionnaire_question_base {
     public $id          = 0;
 
     /** @var int $survey_id The database id of the survey this question belongs to. */
-    public $survey_id   = 0;
+//    public $survey_id   = 0;  Commenting out for now, as '_' not allowed.
 
     /** @var string $name The name of this question. */
     public $name        = '';

@@ -984,7 +984,7 @@ class questionnaire_response_single extends questionnaire_response_base {
 
 class questionnaire_response_multiple extends questionnaire_response_single {
     /**
-     * The only differences between multuple and single responses are the 
+     * The only differences between multuple and single responses are the
      * response table and the insert logic.
      */
     public function response_table() {
