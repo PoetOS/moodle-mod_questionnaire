@@ -1113,26 +1113,6 @@ class questionnaire {
         return($newsid);
     }
 
-    public function type_has_choices() {
-        global $DB;
-
-        $haschoices = array();
-
-        if ($records = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid, has_choices')) {
-            foreach ($records as $record) {
-                if ($record->has_choices == 'y') {
-                    $haschoices[$record->typeid] = 1;
-                } else {
-                    $haschoices[$record->typeid] = 0;
-                }
-            }
-        } else {
-            $haschoices = array();
-        }
-
-        return($haschoices);
-    }
-
     // RESPONSE LIBRARY.
 
     private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
@@ -2289,7 +2269,7 @@ class questionnaire {
         } else {
             $navbar = false;
             $sql = "";
-            $castsql = $DB->sql_cast_char2int('R.username');
+            $castsql = $DB->sql_cast_char2int('r.username');
             if ($uid !== false) { // One participant only.
                 $sql = "SELECT r.id, r.survey_id
                           FROM {questionnaire_response} r
@@ -2299,20 +2279,20 @@ class questionnaire {
                          ORDER BY r.id";
                 // All participants or all members of a group.
             } else if ($currentgroupid == 0) {
-                $sql = "SELECT R.id, R.survey_id, R.username as userid
-                          FROM {questionnaire_response} R
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y'
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id, r.username as userid
+                          FROM {questionnaire_response} r
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y'
+                         ORDER BY r.id";
             } else { // Members of a specific group.
-                $sql = "SELECT R.id, R.survey_id
-                          FROM {questionnaire_response} R,
-                                {groups_members} GM
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y' AND
-                               GM.groupid=".$currentgroupid." AND
-                               ".$castsql."=GM.userid
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id
+                          FROM {questionnaire_response} r,
+                                {groups_members} gm
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y' AND
+                               gm.groupid=".$currentgroupid." AND
+                               ".$castsql."=gm.userid
+                         ORDER BY r.id";
             }
             if (!($rows = $DB->get_records_sql($sql))) {
                 echo (get_string('noresponses', 'questionnaire'));
@@ -2546,33 +2526,33 @@ class questionnaire {
                 $records = array();
             }
         } else if ($userid) {    // Download CSV for one user's own responses'.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM {questionnaire_response} R
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y' AND
-                               R.username='$userid'
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id, r.submitted, r.username
+                          FROM {questionnaire_response} r
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y' AND
+                               r.username='$userid'
+                         ORDER BY r.id";
             if (!($records = $DB->get_records_sql($sql))) {
                 $records = array();
             }
 
         } else { // Download CSV for all participants (or groups if enabled).
-            $castsql = $DB->sql_cast_char2int('R.username');
+            $castsql = $DB->sql_cast_char2int('r.username');
             if ($currentgroupid == 0) { // All participants.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM {questionnaire_response} R
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y'
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id, r.submitted, r.username
+                          FROM {questionnaire_response} r
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y'
+                         ORDER BY r.id";
             } else {                 // Members of a specific group.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM {questionnaire_response} R,
-                                {groups_members} GM
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y' AND
-                               GM.groupid=".$currentgroupid." AND
-                               ".$castsql."=GM.userid
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id, r.submitted, r.username
+                          FROM {questionnaire_response} r,
+                                {groups_members} gm
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y' AND
+                               gm.groupid=".$currentgroupid." AND
+                               ".$castsql."=gm.userid
+                         ORDER BY r.id";
             }
             if (!($records = $DB->get_records_sql($sql))) {
                 $records = array();
@@ -2902,7 +2882,7 @@ class questionnaire {
         $allqscore = array();
 
         // Get all response ids for all respondents.
-        $castsql = $DB->sql_cast_char2int('R.username');
+        $castsql = $DB->sql_cast_char2int('r.username');
 
         $rids = array();
         foreach ($resps as $key => $resp) {
