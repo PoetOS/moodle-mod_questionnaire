@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
 class mod_questionnaire_generator extends testing_module_generator {
 
@@ -70,8 +72,7 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @return int
      */
     public function create_content($questionnaire, $record = array()) {
-        global $DB, $CFG;
-        require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+        global $DB;
 
         $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid), '*', MUST_EXIST);
         foreach ($record as $name => $value) {
