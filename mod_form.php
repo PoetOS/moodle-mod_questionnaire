@@ -105,7 +105,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             $mform->addElement('radio', 'create', get_string('createnew', 'questionnaire'), '', 'new-0');
 
             // Retrieve existing private questionnaires from current course.
-            $surveys = questionnaire_get_survey_select($questionnaire->id, $COURSE->id, 0, 'private');
+            $surveys = questionnaire_get_survey_select($COURSE->id, 'private');
             if (!empty($surveys)) {
                 $prelabel = get_string('useprivate', 'questionnaire');
                 foreach ($surveys as $value => $label) {
@@ -114,7 +114,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
                 }
             }
             // Retrieve existing template questionnaires from this site.
-            $surveys = questionnaire_get_survey_select($questionnaire->id, $COURSE->id, 0, 'template');
+            $surveys = questionnaire_get_survey_select($COURSE->id, 'template');
             if (!empty($surveys)) {
                 $prelabel = get_string('usetemplate', 'questionnaire');
                 foreach ($surveys as $value => $label) {
@@ -127,7 +127,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             }
 
             // Retrieve existing public questionnaires from this site.
-            $surveys = questionnaire_get_survey_select($questionnaire->id, $COURSE->id, 0, 'public');
+            $surveys = questionnaire_get_survey_select($COURSE->id, 'public');
             if (!empty($surveys)) {
                 $prelabel = get_string('usepublic', 'questionnaire');
                 foreach ($surveys as $value => $label) {

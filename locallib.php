@@ -504,7 +504,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
     return $DB->get_records_sql($sql, $params);
 }
 
-function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='') {
+function questionnaire_get_survey_select($courseid=0, $type='') {
     global $OUTPUT, $DB;
 
     $surveylist = array();

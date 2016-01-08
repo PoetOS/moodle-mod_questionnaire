@@ -125,6 +125,11 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->set_mapping('questionnaire_question', $oldid, $newitemid, true);
     }
 
+    /**
+     * $qid is unused, but is needed in order to get the $key elements of the array. Suppress PHPMD warning.
+     *
+     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
+     */
     protected function process_questionnaire_fb_sections($data) {
         global $DB;
 
@@ -136,7 +141,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         if (isset($data->scorecalculation)) {
             $scorecalculation = unserialize($data->scorecalculation);
             $newscorecalculation = array();
-            // @SuppressWarnings(PHPMD.UnusedLocalVariable)
             foreach ($scorecalculation as $key => $qid) {
                 $newqid = $this->get_mappingid('questionnaire_question', $key);
                 $newscorecalculation[$newqid] = null;

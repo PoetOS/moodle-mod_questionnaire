@@ -223,6 +223,11 @@ function questionnaire_delete_instance($id) {
 // Used for user activity reports.
 // $return->time = the time they did it
 // $return->info = a short text description.
+/**
+ * $course and $mod are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -245,6 +250,11 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
 
 // Print a detailed representation of what a  user has done with
 // a given particular instance of this module, for user activity reports.
+/**
+ * $course and $mod are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -267,14 +277,22 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
 // Given a course and a time, this module should find recent activity
 // that has occurred in questionnaire activities and print it out.
 // Return true if there was output, or false is there was none.
+/**
+ * $course, $isteacher and $timestart are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
-    global $CFG;
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
     return false;  //  True if anything was printed, otherwise false.
 }
 
 // Must return an array of grades for a given instance of this module,
 // indexed by user.  It also returns a maximum allowed grade.
+/**
+ * $questionnaireid is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 function questionnaire_grades($questionnaireid) {
     return null;
 }
@@ -306,6 +324,10 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
  *
  * @param object $assignment null means all assignments
  * @param int $userid specific user only, 0 mean all
+ *
+ * $nullifnone is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone=true) {
     global $CFG, $DB;
@@ -409,6 +431,10 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
  * @param $questionnaireid int
  * @param $scaleid int
  * @return boolean True if the scale is used by any questionnaire
+ *
+ * Function parameters are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_scale_used ($questionnaireid, $scaleid) {
     return false;
@@ -420,6 +446,10 @@ function questionnaire_scale_used ($questionnaireid, $scaleid) {
  * This is used to find out if scale used anywhere
  * @param $scaleid int
  * @return boolean True if the scale is used by any questionnaire
+ *
+ * Function parameters are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_scale_used_anywhere($scaleid) {
     return false;
@@ -435,6 +465,10 @@ function questionnaire_scale_used_anywhere($scaleid) {
  * @param array $args
  * @param bool $forcedownload
  * @return bool false if file not found, does not return if found - justsend the file
+ *
+ * $forcedownload is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
     global $DB;
@@ -481,6 +515,10 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
  *
  * @param settings_navigation $settings The settings navigation object
  * @param navigation_node $questionnairenode The node to add module settings to
+ *
+ * $settings is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_extend_settings_navigation(settings_navigation $settings,
         navigation_node $questionnairenode) {
@@ -861,6 +899,10 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
  * @param string $detail not used but needed for compability
  * @param array $modnames
  * @return void Output is echo'd
+ *
+ * $details and $modenames are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, $modnames) {
     global $OUTPUT;
@@ -1027,6 +1069,10 @@ function questionnaire_reset_course_form_definition($mform) {
 /**
  * Course reset form defaults.
  * @return array the defaults.
+ *
+ * Function parameters are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_reset_course_form_defaults($course) {
     return array('reset_questionnaire' => 1);
@@ -1097,6 +1143,10 @@ function questionnaire_reset_userdata($data) {
  * @param int $userid User ID
  * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
  * @return bool True if completed, false if not, $type if conditions not set.
+ *
+ * $course is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_get_completion_state($course, $cm, $userid, $type) {
     global $DB;

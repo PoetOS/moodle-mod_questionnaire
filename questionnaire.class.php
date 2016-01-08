@@ -85,7 +85,7 @@ class questionnaire {
     /**
      * Adding questions to the object.
      */
-    public function add_questions($sid = false, $section = false) {
+    public function add_questions($sid = false) {
         global $CFG, $DB, $qtypenames;
 
         if ($sid === false) {
@@ -165,7 +165,6 @@ class questionnaire {
             .get_string('noteligible', 'questionnaire')
             .'</div>';
         } else if ($this->user_can_take($USER->id)) {
-            $sid = $this->sid;
             $quser = $USER->id;
 
             if ($this->survey->realm == 'template') {
@@ -301,9 +300,12 @@ class questionnaire {
     /*
     * Function to view an entire responses data.
     *
+    * $value is unused, but is needed in order to get the $key elements of the array. Suppress PHPMD warning.
+    *
+    * @SuppressWarnings(PHPMD.UnusedLocalVariable)
     */
     public function view_all_responses($resps) {
-        global $qtypenames, $OUTPUT;
+        global $OUTPUT;
         $this->print_survey_start('', 1, 1, 0);
 
         // If a student's responses have been deleted by teacher while student was viewing the report,
