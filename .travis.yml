@@ -19,7 +19,7 @@ matrix:
 env:
  global:
   - MOODLE_BRANCH=MOODLE_30_STABLE
-  - IGNORE_PATHS=javascript/RGraph
+#  - IGNORE_PATHS=javascript/RGraph
  matrix:
   - DB=pgsql
   - DB=mysqli
@@ -40,6 +40,6 @@ script:
   - moodle-plugin-ci codechecker
   - moodle-plugin-ci csslint
   - moodle-plugin-ci shifter
-#  - moodle-plugin-ci jshint
+  - moodle-plugin-ci jshint
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
