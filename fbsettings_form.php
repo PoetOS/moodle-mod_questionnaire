@@ -57,7 +57,6 @@ class questionnaire_feedback_form extends moodleform {
         if (isset($fbsection->scorecalculation)) {
             $scorecalculation = unserialize($fbsection->scorecalculation);
             $questionslist = '<ul style="float: left;">';
-            // @SuppressWarnings(PHPMD.UnusedLocalVariable)
             foreach ($scorecalculation as $qid => $key) {
                 $questionslist .= '<li>'.$questions[$qid]->name.'</li>';
             }

@@ -192,7 +192,7 @@ class questionnaire_question_check extends questionnaire_question_base {
             $nbrespchoices = 0;
             foreach ($responsedata->{'q'.$this->id} as $resp) {
                 if (strpos($resp, 'other_') !== false) {
-                    // "other" choice is checked but text box is empty.
+                    // ..."other" choice is checked but text box is empty.
                     $othercontent = "q".$this->id.substr($resp, 5);
                     if (empty($responsedata->$othercontent)) {
                         $valid = false;

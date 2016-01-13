@@ -19,7 +19,8 @@ matrix:
 env:
  global:
   - MOODLE_BRANCH=MOODLE_30_STABLE
-#  - IGNORE_PATHS=javascript/RGraph
+# Temporarily turn off checking for this file. It will be replaced.
+  - IGNORE_PATHS=module.js
  matrix:
   - DB=pgsql
   - DB=mysqli

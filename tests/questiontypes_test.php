@@ -28,9 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
-require_once($CFG->dirroot . '/mod/questionnaire/tests/generator_test.php');
 
-class mod_questionnaire_questiontypes_testcase extends mod_questionnaire_generator_testcase {
+class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
     public function test_create_question_checkbox() {
         $this->create_test_question_with_choices(QUESCHECK, 'questionnaire_question_check', array('content' => 'Check one'));
     }
@@ -45,14 +44,15 @@ class mod_questionnaire_questiontypes_testcase extends mod_questionnaire_generat
 
     public function test_create_question_essay() {
         $questiondata = array(
-            'content' => 'Enter a date',
+            'content' => 'Enter an essay',
             'length' => 0,
             'precise' => 5);
         $this->create_test_question(QUESESSAY, 'questionnaire_question_essay', $questiondata);
     }
 
     public function test_create_question_sectiontext() {
-        $this->create_test_question(QUESSECTIONTEXT, 'questionnaire_question_sectiontext', array('name' => null, 'content' => 'This a section label.'));
+        $this->create_test_question(QUESSECTIONTEXT, 'questionnaire_question_sectiontext',
+            array('name' => null, 'content' => 'This a section label.'));
     }
 
     public function test_create_question_numeric() {
@@ -84,7 +84,7 @@ class mod_questionnaire_questiontypes_testcase extends mod_questionnaire_generat
     }
 
 
-// General tests to call from specific tests above:
+// General tests to call from specific tests above.
 
     public function create_test_question($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
         global $DB;

@@ -104,7 +104,8 @@ class questionnaire {
             foreach ($records as $record) {
                 $questionclass = 'questionnaire_question_' . $qtypenames[$record->type_id];
                 if (!class_exists($questionclass)) {
-                    require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/question' . $qtypenames[$record->type_id] . '.class.php');
+                    require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/question' .
+                        $qtypenames[$record->type_id] . '.class.php');
                 }
                 $this->questions[$record->id] = new $questionclass(0, $record, $this->context);
                 if ($record->type_id != QUESPAGEBREAK) {
@@ -1512,7 +1513,7 @@ class questionnaire {
         return $return;
     }
 
-    private function response_insert($sid, $section, $rid, $userid, $resume=false) {
+    public function response_insert($sid, $section, $rid, $userid, $resume=false) {
         global $DB, $USER;
 
         $record = new object;
@@ -1546,8 +1547,12 @@ class questionnaire {
         if (!empty($this->questionsbysec[$section])) {
             foreach ($this->questionsbysec[$section] as $question) {
                 // NOTE *** $val really should be a value obtained from the caller or somewhere else.
-                // Also note that "optional_param" accepting arrays is deprecated.
-                $val = optional_param('q'.$question->id, '', PARAM_RAW);
+                // Note that "optional_param" accepting arrays is deprecated for optional_param_array.
+                if ($question->response_table == 'resp_multiple') {
+                    $val = optional_param_array('q'.$question->id, '', PARAM_RAW);
+                } else {
+                    $val = optional_param('q'.$question->id, '', PARAM_RAW);
+                }
                 $question->insert_response($rid, $val);
             }
         }
