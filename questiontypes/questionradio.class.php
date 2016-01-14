@@ -231,7 +231,7 @@ class questionnaire_question_radio extends questionnaire_question_base {
      * @return boolean
      */
     public function response_complete($responsedata) {
-        if (isset($responsedata->{'q'.$this->id}) && ($this->required == 'y') && 
+        if (isset($responsedata->{'q'.$this->id}) && ($this->required == 'y') &&
                 (strpos($responsedata->{'q'.$this->id}, 'other_') !== false)) {
             return !empty($responsedata->{'q'.$this->id.''.substr($responsedata->{'q'.$this->id}, 5)});
         } else {

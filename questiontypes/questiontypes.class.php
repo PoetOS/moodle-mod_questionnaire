@@ -70,7 +70,7 @@ abstract class questionnaire_question_base {
     public $id          = 0;
 
     /** @var int $survey_id The database id of the survey this question belongs to. */
-//    public $survey_id   = 0;  Commenting out for now, as '_' not allowed.
+// ...    public $survey_id   = 0;  Commenting out for now, as '_' not allowed.
 
     /** @var string $name The name of this question. */
     public $name        = '';
@@ -193,7 +193,8 @@ abstract class questionnaire_question_base {
      * Insert response data method.
      */
     public function insert_response($rid, $val) {
-        if (isset ($this->response) && is_object($this->response) && is_subclass_of($this->response, 'questionnaire_response_base')) {
+        if (isset ($this->response) && is_object($this->response) &&
+            is_subclass_of($this->response, 'questionnaire_response_base')) {
             return $this->response->insert_response($rid, $val);
         } else {
             return false;
@@ -204,7 +205,8 @@ abstract class questionnaire_question_base {
      * Get results data method.
      */
     public function get_results($rids = false) {
-        if (isset ($this->response) && is_object($this->response) && is_subclass_of($this->response, 'questionnaire_response_base')) {
+        if (isset ($this->response) && is_object($this->response) &&
+            is_subclass_of($this->response, 'questionnaire_response_base')) {
             return $this->response->get_results($rids);
         } else {
             return false;
@@ -215,7 +217,8 @@ abstract class questionnaire_question_base {
      * Display results method.
      */
     public function display_results($rids=false, $sort='') {
-        if (isset ($this->response) && is_object($this->response) && is_subclass_of($this->response, 'questionnaire_response_base')) {
+        if (isset ($this->response) && is_object($this->response) &&
+            is_subclass_of($this->response, 'questionnaire_response_base')) {
             return $this->response->display_results($rids, $sort);
         } else {
             return false;
@@ -324,9 +327,9 @@ abstract class questionnaire_question_base {
             $calcposition = true;
         }
 
-        // Create new question:
+        // Create new question.
         if (is_null($calcposition) || $calcposition) {
-            // set the position to the end.
+            // Set the position to the end.
             $sql = 'SELECT MAX(position) as maxpos '.
                    'FROM {questionnaire_question} '.
                    'WHERE survey_id = ? AND deleted = ?';
@@ -784,8 +787,8 @@ abstract class questionnaire_question_base {
             $formdata->itemid  = $formdata->content['itemid'];
             $formdata->format  = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
-            $formdata->content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire', 'question',
-                                                             $formdata->qid, array('subdirs' => true), $formdata->content);
+            $formdata->content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
+                'question', $formdata->qid, array('subdirs' => true), $formdata->content);
 
             $fields = array('name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice');
             $questionrecord = new Object();
@@ -820,8 +823,8 @@ abstract class questionnaire_question_base {
             $formdata->itemid  = $formdata->content['itemid'];
             $formdata->format  = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
-            $content            = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire', 'question',
-                                                             $this->qid, array('subdirs' => true), $formdata->content);
+            $content           = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
+                'question', $this->qid, array('subdirs' => true), $formdata->content);
             $result = $DB->set_field('questionnaire_question', 'content', $content, array('id' => $this->qid));
         }
 

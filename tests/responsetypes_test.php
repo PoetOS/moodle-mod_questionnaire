@@ -37,14 +37,15 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
 
-        $questionnaire = $this->create_test_questionnaire(QUESYESNO, 'questionnaire_question_yesno', array('content' => 'Enter yes or no'));
+        $questionnaire = $this->create_test_questionnaire(QUESYESNO, 'questionnaire_question_yesno',
+            array('content' => 'Enter yes or no'));
         $question = reset($questionnaire->questions);
         $_POST['q'.$question->id] = 'y';
         $responseid = $questionnaire->response_insert($question->survey_id, 1, 0, 1);
 
 // ** Need to determine where and when "attempt" records get added.
-//        $attempts = $DB->get_records('questionnaire_attempts', array('qid' => $questionnaire->id, 'userid' => 1, 'rid' => $responseid));
-//        $this->assertEquals(count($attempts), 1);
+// ...       $attempts = $DB->get_records('questionnaire_attempts', array('qid' => $questionnaire->id, 'userid' => 1, 'rid' => $responseid));
+// ...       $this->assertEquals(count($attempts), 1);
 
         $responses = $DB->get_records('questionnaire_response', array('survey_id' => $question->survey_id));
         $this->assertEquals(1, count($responses));
@@ -89,7 +90,8 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
 
-        $questionnaire = $this->create_test_questionnaire(QUESDATE, 'questionnaire_question_date', array('content' => 'Enter a date'));
+        $questionnaire = $this->create_test_questionnaire(QUESDATE, 'questionnaire_question_date',
+            array('content' => 'Enter a date'));
         $question = reset($questionnaire->questions);
         // Date format is configured per site. This won't work unless it matches the configured format.
         $_POST['q'.$question->id] = '27/1/2015';
@@ -264,7 +266,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         }
     }
 
-// General tests to call from specific tests above:
+// General tests to call from specific tests above.
 
     public function create_test_questionnaire($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
         global $DB;
