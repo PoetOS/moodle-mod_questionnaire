@@ -31,6 +31,10 @@ require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class
 require_once($CFG->dirroot . '/mod/questionnaire/tests/generator_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/questiontypes_test.php');
 
+/**
+ * Unit tests for {@link questionnaire_responsetypes_testcase}.
+ * @group mod_questionnaire
+ */
 class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
     public function test_create_response_boolean() {
         global $DB;
@@ -43,8 +47,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $currentrid = 0;
 
         // Set up a questinnaire with one boolean response question.
-        $questionnaire = $this->create_test_questionnaire(QUESYESNO, 'questionnaire_question_yesno',
-            array('content' => 'Enter yes or no'));
+        $questionnaire = $this->create_test_questionnaire(QUESYESNO, array('content' => 'Enter yes or no'));
         $question = reset($questionnaire->questions);
         $_POST['q'.$question->id] = 'y';
         $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
@@ -76,7 +79,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             'content' => 'Enter some text',
             'length' => 0,
             'precise' => 5);
-        $questionnaire = $this->create_test_questionnaire(QUESESSAY, 'questionnaire_question_essay', $questiondata);
+        $questionnaire = $this->create_test_questionnaire(QUESESSAY, $questiondata);
         $question = reset($questionnaire->questions);
         $_POST['q'.$question->id] = 'This is my essay.';
         $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
@@ -104,8 +107,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $currentrid = 0;
 
         // Set up a questionnaire with one text response question.
-        $questionnaire = $this->create_test_questionnaire(QUESDATE, 'questionnaire_question_date',
-            array('content' => 'Enter a date'));
+        $questionnaire = $this->create_test_questionnaire(QUESDATE, array('content' => 'Enter a date'));
         $question = reset($questionnaire->questions);
         // Date format is configured per site. This won't work unless it matches the configured format.
         $_POST['q'.$question->id] = '27/1/2015';
@@ -140,8 +142,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             (object)array('content' => 'Two', 'value' => 2),
             (object)array('content' => 'Three', 'value' => 3),
             (object)array('content' => '!other=Something else', 'value' => 4));
-        $questionnaire = $this->create_test_questionnaire(QUESRADIO, 'questionnaire_question_radio',
-            array('content' => 'Select one'), $choicedata);
+        $questionnaire = $this->create_test_questionnaire(QUESRADIO, array('content' => 'Select one'), $choicedata);
 
         // Create a response using one of the choices.
         $question = reset($questionnaire->questions);
@@ -212,8 +213,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             (object)array('content' => 'Two', 'value' => 2),
             (object)array('content' => 'Three', 'value' => 3),
             (object)array('content' => '!other=Another number', 'value' => 4));
-        $questionnaire = $this->create_test_questionnaire(QUESCHECK, 'questionnaire_question_check',
-            array('content' => 'Select any'), $choicedata);
+        $questionnaire = $this->create_test_questionnaire(QUESCHECK, array('content' => 'Select any'), $choicedata);
 
         $question = reset($questionnaire->questions);
         $val = array();
@@ -270,8 +270,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             'content' => 'Rank these',
             'length' => 5,
             'precise' => 0);
-        $questionnaire = $this->create_test_questionnaire(QUESRATE, 'questionnaire_question_rank',
-            $questiondata, $choicedata);
+        $questionnaire = $this->create_test_questionnaire(QUESRATE, $questiondata, $choicedata);
 
         // Create a response for each choice.
         $question = reset($questionnaire->questions);
@@ -298,9 +297,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
 // General tests to call from specific tests above.
 
-    public function create_test_questionnaire($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
-        global $DB;
-
+    public function create_test_questionnaire($qtype, $questiondata = array(), $choicedata = null) {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
@@ -311,7 +308,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questiondata['survey_id'] = $questionnaire->sid;
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
-        $question = $generator->create_question($qtype, $questiondata, $choicedata);
+        $generator->create_question($qtype, $questiondata, $choicedata);
 
         $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
 

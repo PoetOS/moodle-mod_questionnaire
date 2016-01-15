@@ -29,6 +29,10 @@ global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
+/**
+ * Unit tests for {@link questionnaire_questiontypes_testcase}.
+ * @group mod_questionnaire
+ */
 class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
     public function test_create_question_checkbox() {
         $this->create_test_question_with_choices(QUESCHECK, 'questionnaire_question_check', array('content' => 'Check one'));
@@ -86,7 +90,7 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
 
 // General tests to call from specific tests above.
 
-    public function create_test_question($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
+    private function create_test_question($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
         global $DB;
 
         $this->resetAfterTest();
@@ -132,7 +136,7 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         }
     }
 
-    public function create_test_question_with_choices($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
+    private function create_test_question_with_choices($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
         if (is_null($choicedata)) {
             $choicedata = array(
                 (object)array('content' => 'One', 'value' => 1),

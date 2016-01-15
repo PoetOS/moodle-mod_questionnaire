@@ -25,6 +25,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Unit tests for {@link questionnaire_generator_testcase}.
+ * @group mod_questionnaire
+ */
 class mod_questionnaire_generator_testcase extends advanced_testcase {
     public function test_create_instance() {
         global $DB;

@@ -89,8 +89,6 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @return object
      */
     public function create_question($qtype, $questiondata = array(), $choicedata = array()) {
-        global $DB;
-
         // Construct a new question object.
         $question = questionnaire_question_base::question_builder($qtype);
         $questiondata = (object)$questiondata;

@@ -4,7 +4,6 @@ Feature: Add a questionnaire activity
   As a teacher
   I need to add a questionnaire activity to a moodle course
 
-@wip
   Scenario: Add a forum and a discussion attaching files
     Given the following "users" exist:
       | username | firstname | lastname | email |

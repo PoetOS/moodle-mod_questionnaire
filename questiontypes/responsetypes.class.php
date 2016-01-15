@@ -101,11 +101,10 @@ abstract class questionnaire_response_base {
       Builds HTML showing PERCENTAGE results. */
 
     protected function mkrespercent($total, $precision, $showtotals, $sort) {
-        global $CFG, $OUTPUT;
+        global $CFG;
         $precision = 0;
         $i = 0;
         $alt = '';
-        $bg = '';
         $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
         $strtotal = get_string('total', 'questionnaire');
         $table = new html_table();
@@ -191,8 +190,6 @@ abstract class questionnaire_response_base {
     /* {{{ proto void mkreslist(array weights, int total, int precision, bool show_totals)
         Builds HTML showing LIST results. */
     protected function mkreslist($total, $precision, $showtotals) {
-        global $CFG, $OUTPUT;
-
         if ($total == 0) {
             return;
         }
@@ -201,8 +198,6 @@ abstract class questionnaire_response_base {
         $strnum = get_string('num', 'questionnaire');
         $table = new html_table();
         $table->align = array('left', 'left');
-
-        $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
 
         $table->head = array($strnum, $strresponse);
         $table->size = array('10%', '*');
@@ -220,7 +215,7 @@ abstract class questionnaire_response_base {
     }
 
     protected function mkreslisttext($rows) {
-        global $CFG, $SESSION, $questionnaire, $OUTPUT, $DB;
+        global $CFG, $SESSION, $questionnaire, $DB;
         $strresponse = get_string('response', 'questionnaire');
         $viewsingleresponse = $questionnaire->capabilities->viewsingleresponse;
         $nonanonymous = $questionnaire->respondenttype != 'anonymous';
@@ -257,7 +252,6 @@ abstract class questionnaire_response_base {
     }
 
     protected function mkreslistdate($total, $precision, $showtotals) {
-        global $CFG, $OUTPUT;
         $dateformat = get_string('strfdate', 'questionnaire');
 
         if ($total == 0) {
@@ -285,7 +279,6 @@ abstract class questionnaire_response_base {
     }
 
     protected function mkreslistnumeric($total, $precision) {
-        global $CFG, $OUTPUT;
         if ($total == 0) {
             return;
         }
@@ -324,7 +317,7 @@ abstract class questionnaire_response_base {
         Builds HTML showing AVG results. */
 
     protected function mkresavg($total, $precision, $showtotals, $length, $sort, $stravgvalue='') {
-        global $CFG, $OUTPUT;
+        global $CFG;
         $stravgrank = get_string('averagerank', 'questionnaire');
         $osgood = false;
         if ($precision == 3) { // Osgood's semantic differential.
@@ -371,7 +364,6 @@ abstract class questionnaire_response_base {
         }
         // Add an extra column to accomodate lower ranks in this case.
         $length += $isrestricted;
-        $nacol = 0;
         $width = 100 / $length;
         $n = array();
         $nameddegrees = 0;
@@ -483,7 +475,7 @@ abstract class questionnaire_response_base {
 
     protected function mkrescount($rids, $rows, $precision, $length, $sort) {
         // Display number of responses to Rate questions - see http://moodle.org/mod/forum/discuss.php?d=185106.
-        global $CFG, $DB;
+        global $DB;
         $nbresponses = count($rids);
         // Prepare data to be displayed.
         $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->precise == 2;
@@ -547,12 +539,10 @@ abstract class questionnaire_response_base {
         }
 
         // Psettings for display.
-        $strresp = '<div style="text-align:center">'.get_string('responses', 'questionnaire').'</div>';
         $strtotal = '<strong>'.get_string('total', 'questionnaire').'</strong>';
         $isna = $this->question->precise == 1;
         $isnahead = '';
         $osgood = false;
-        $nbchoices = count ($this->counts);
         if ($precision == 3) { // Osgood's semantic differential.
             $osgood = true;
         }
@@ -564,10 +554,8 @@ abstract class questionnaire_response_base {
         } else {
             $na = '';
         }
-        $colspan = $length + 1 + ($na != '') + $osgood;
         $nameddegrees = 0;
         $n = array();
-        $mods = array();
         foreach ($this->question->choices as $cid => $choice) {
             $content = $choice->content;
             // Check for number from 1 to 3 digits, followed by the equal sign = (to accomodate named degrees).
@@ -583,7 +571,6 @@ abstract class questionnaire_response_base {
         }
 
         $headings = array('<span class="smalltext">'.get_string('responses', 'questionnaire').'</span>');
-        $chartkeys = array();
         if ($osgood) {
             $align = array('right');
         } else {
@@ -699,7 +686,6 @@ class questionnaire_response_boolean extends questionnaire_response_base {
 
     protected function get_results($rids=false) {
         global $DB;
-        global $CFG;
 
         $rsql = '';
         $params = array($this->question->id);
@@ -834,7 +820,7 @@ class questionnaire_response_date extends questionnaire_response_base {
             return false;
         }
         // Now use ISO date formatting.
-        $checkdateresult = questionnaire_check_date($thisdate, $insert = true);
+        $checkdateresult = questionnaire_check_date($thisdate, true);
         $record = new Object();
         $record->response_id = $rid;
         $record->question_id = $this->question->id;
@@ -1066,7 +1052,6 @@ class questionnaire_response_rank extends questionnaire_response_base {
             }
             return $resid;
         } else { // THIS SHOULD NEVER HAPPEN.
-            $r = $val;
             if ($val == get_string('notapplicable', 'questionnaire')) {
                 $rank = -1;
             } else {
@@ -1081,7 +1066,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
     }
 
     protected function get_results($rids=false) {
-        global $CFG, $DB;
+        global $DB;
 
         $rsql = '';
         if (!empty($rids)) {
