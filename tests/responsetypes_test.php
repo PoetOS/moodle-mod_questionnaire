@@ -37,21 +37,23 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
 
+        // Some common variables used below.
+        $userid = 1;
+        $section = 1;
+        $currentrid = 0;
+
+        // Set up a questinnaire with one boolean response question.
         $questionnaire = $this->create_test_questionnaire(QUESYESNO, 'questionnaire_question_yesno',
             array('content' => 'Enter yes or no'));
         $question = reset($questionnaire->questions);
         $_POST['q'.$question->id] = 'y';
-        $responseid = $questionnaire->response_insert($question->survey_id, 1, 0, 1);
+        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        questionnaire_record_submission($questionnaire, $userid, $responseid);
 
-// ** Need to determine where and when "attempt" records get added.
-// ...       $attempts = $DB->get_records('questionnaire_attempts', array('qid' => $questionnaire->id, 'userid' => 1, 'rid' => $responseid));
-// ...       $this->assertEquals(count($attempts), 1);
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $question->survey_id, $responseid, $userid);
 
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $question->survey_id));
-        $this->assertEquals(1, count($responses));
-        $response = reset($responses);
-        $this->assertEquals($responseid, $response->id);
-
+        // Retrieve the specific boolean response.
         $booleanresponses = $DB->get_records('questionnaire_response_bool', array('response_id' => $responseid));
         $this->assertEquals(1, count($booleanresponses));
         $booleanresponse = reset($booleanresponses);
@@ -64,6 +66,12 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
 
+        // Some common variables used below.
+        $userid = 1;
+        $section = 1;
+        $currentrid = 0;
+
+        // Set up a questionnaire with one text response question.
         $questiondata = array(
             'content' => 'Enter some text',
             'length' => 0,
@@ -71,13 +79,13 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questionnaire = $this->create_test_questionnaire(QUESESSAY, 'questionnaire_question_essay', $questiondata);
         $question = reset($questionnaire->questions);
         $_POST['q'.$question->id] = 'This is my essay.';
-        $responseid = $questionnaire->response_insert($question->survey_id, 1, 0, 1);
+        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        questionnaire_record_submission($questionnaire, $userid, $responseid);
 
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $question->survey_id));
-        $this->assertEquals(1, count($responses));
-        $response = reset($responses);
-        $this->assertEquals($responseid, $response->id);
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $question->survey_id, $responseid, $userid);
 
+        // Retrieve the specific text response.
         $textresponses = $DB->get_records('questionnaire_response_text', array('response_id' => $responseid));
         $this->assertEquals(1, count($textresponses));
         $textresponse = reset($textresponses);
@@ -90,18 +98,24 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
 
+        // Some common variables used below.
+        $userid = 1;
+        $section = 1;
+        $currentrid = 0;
+
+        // Set up a questionnaire with one text response question.
         $questionnaire = $this->create_test_questionnaire(QUESDATE, 'questionnaire_question_date',
             array('content' => 'Enter a date'));
         $question = reset($questionnaire->questions);
         // Date format is configured per site. This won't work unless it matches the configured format.
         $_POST['q'.$question->id] = '27/1/2015';
-        $responseid = $questionnaire->response_insert($question->survey_id, 1, 0, 1);
+        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        questionnaire_record_submission($questionnaire, $userid, $responseid);
 
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $question->survey_id));
-        $this->assertEquals(1, count($responses));
-        $response = reset($responses);
-        $this->assertEquals($responseid, $response->id);
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $question->survey_id, $responseid, $userid);
 
+        // Retrieve the specific date response.
         $dateresponses = $DB->get_records('questionnaire_response_date', array('response_id' => $responseid));
         $this->assertEquals(1, count($dateresponses));
         $dateresponse = reset($dateresponses);
@@ -114,6 +128,11 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         global $DB;
 
         $this->resetAfterTest();
+
+        // Some common variables used below.
+        $userid = 1;
+        $section = 1;
+        $currentrid = 0;
 
         // Set up a questinnaire with one question with choices including an "other" option.
         $choicedata = array(
@@ -133,13 +152,11 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             }
         }
         $_POST['q'.$question->id] = $val;
-        $responseid = $questionnaire->response_insert($question->survey_id, 1, 0, 1);
+        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        questionnaire_record_submission($questionnaire, $userid, $responseid);
 
-        // Retrieve the responses for this questionnaire.
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $question->survey_id));
-        $this->assertEquals(1, count($responses));
-        $response = reset($responses);
-        $this->assertEquals($responseid, $response->id);
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $question->survey_id, $responseid, $userid);
 
         // Retrieve the specific single response.
         $singresponses = $DB->get_records('questionnaire_resp_single', array('response_id' => $responseid));
@@ -148,7 +165,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals($question->id, $singresponse->question_id);
         $this->assertEquals($val, $singresponse->choice_id);
 
-        // Create anothe response using the '!other' choice.
+        // Create another response using the '!other' choice.
         foreach ($question->choices as $cid => $choice) {
             if ($choice->content == '!other=Something else') {
                 $val = $cid;
@@ -156,13 +173,12 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         }
         $_POST['q'.$question->id] = $val;
         $_POST['q'.$question->id.'_'.$val] = 'Forty-four';
-        $responseid = $questionnaire->response_insert($question->survey_id, 1, 0, 2);
+        $userid = 2;
+        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        questionnaire_record_submission($questionnaire, $userid, $responseid);
 
-        // Retrieve the responses for this questionnaire.
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $question->survey_id));
-        $this->assertEquals(2, count($responses));
-        $response = $responses[$responseid];
-        $this->assertEquals($responseid, $response->id);
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $question->survey_id, $responseid, $userid, 1, 2);
 
         // Retrieve the specific single response.
         $singresponses = $DB->get_records('questionnaire_resp_single', array('response_id' => $responseid));
@@ -185,6 +201,12 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
 
+        // Some common variables used below.
+        $userid = 1;
+        $section = 1;
+        $currentrid = 0;
+
+        // Set up a questionnaire with one question with choices including an "other" option.
         $choicedata = array(
             (object)array('content' => 'One', 'value' => 1),
             (object)array('content' => 'Two', 'value' => 2),
@@ -204,13 +226,13 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         }
         $_POST['q'.$question->id] = $val;
         $_POST['q'.$question->id.'_'.$val2] = 'Forty-four';
-        $responseid = $questionnaire->response_insert($question->survey_id, 1, 0, 1);
+        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        questionnaire_record_submission($questionnaire, $userid, $responseid);
 
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $question->survey_id));
-        $this->assertEquals(1, count($responses));
-        $response = reset($responses);
-        $this->assertEquals($responseid, $response->id);
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $question->survey_id, $responseid, $userid);
 
+        // Retrieve the specific multiples responses.
         $multresponses = $DB->get_records('questionnaire_resp_multiple', array('response_id' => $responseid));
         $this->assertEquals(3, count($multresponses));
         $multresponse = reset($multresponses);
@@ -220,6 +242,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals($question->id, $multresponse->question_id);
         $this->assertEquals(next($val), $multresponse->choice_id);
 
+        // Retrieve the specific other response.
         $otherresponses = $DB->get_records('questionnaire_response_other',
             array('response_id' => $responseid, 'question_id' => $question->id));
         $this->assertEquals(1, count($otherresponses));
@@ -233,6 +256,12 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
 
+        // Some common variables used below.
+        $userid = 1;
+        $section = 1;
+        $currentrid = 0;
+
+        // Set up a questionnaire with one ranking question.
         $choicedata = array(
             (object)array('content' => 'One', 'value' => 1),
             (object)array('content' => 'Two', 'value' => 2),
@@ -244,6 +273,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questionnaire = $this->create_test_questionnaire(QUESRATE, 'questionnaire_question_rank',
             $questiondata, $choicedata);
 
+        // Create a response for each choice.
         $question = reset($questionnaire->questions);
         $vals = array();
         $i = 1;
@@ -251,13 +281,13 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             $vals[$cid] = $i;
             $_POST['q'.$question->id.'_'.$cid] = $i++;
         }
-        $responseid = $questionnaire->response_insert($question->survey_id, 1, 0, 1);
+        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        questionnaire_record_submission($questionnaire, $userid, $responseid);
 
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $question->survey_id));
-        $this->assertEquals(1, count($responses));
-        $response = reset($responses);
-        $this->assertEquals($responseid, $response->id);
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $question->survey_id, $responseid, $userid);
 
+        // Retrieve the specific rank response.
         $multresponses = $DB->get_records('questionnaire_response_rank', array('response_id' => $responseid));
         $this->assertEquals(3, count($multresponses));
         foreach ($multresponses as $multresponse) {
@@ -286,5 +316,18 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
 
         return $questionnaire;
+    }
+
+    private function response_tests($questionnaireid, $surveyid, $responseid, $userid,
+                                    $attemptcount = 1, $responsecount = 1) {
+        global $DB;
+
+        $attempts = $DB->get_records('questionnaire_attempts',
+                    array('qid' => $questionnaireid, 'userid' => $userid, 'rid' => $responseid));
+        $this->assertEquals($attemptcount, count($attempts));
+        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $surveyid));
+        $this->assertEquals($responsecount, count($responses));
+        $this->assertArrayHasKey($responseid, $responses);
+        $this->assertEquals($responseid, $responses[$responseid]->id);
     }
 }
