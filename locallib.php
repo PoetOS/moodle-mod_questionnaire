@@ -1001,7 +1001,7 @@ function questionnaire_cmp($a, $b) {
 /**
  * Code snippet used to set up the questionform.
  */
-function questionnaire_prep_for_questionform($questionnaire, $qid) {
+function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
     $context = context_module::instance($questionnaire->cm->id);
     if ($qid != 0) {
         $question = clone($questionnaire->questions[$qid]);

@@ -4,7 +4,8 @@ Feature: Add a questionnaire activity
   As a teacher
   I need to add a questionnaire activity to a moodle course
 
-  Scenario: Add a forum and a discussion attaching files
+@javascript
+  Scenario: Add a questionnaire to a course
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
@@ -17,11 +18,7 @@ Feature: Add a questionnaire activity
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
     And I log in as "teacher1"
-    And I follow "Course 1"
-    And I turn editing mode on
-    And I add a "Questionnaire" to section "1" and I fill the form with:
-      | Name | Test questionnaire |
-      | Description | Test questionnaire description |
+    And I add a questionnaire "Test questionnaire" to the course "Course 1" and start to enter questions
     And I log out
     And I log in as "student1"
     And I follow "Course 1"

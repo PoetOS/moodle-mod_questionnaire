@@ -306,8 +306,7 @@ class questionnaire_questions_form extends moodleform {
             } else {
                 $qname = '';
             }
-            $manageqgroup[] =& $mform->createElement('static', 'qtype_'.$question->id, '', $qtype);
-            $manageqgroup[] =& $mform->createElement('static', 'qname_'.$question->id, '', $qname);
+            $manageqgroup[] =& $mform->createElement('static', 'qinfo_'.$question->id, '', $qtype.' '.$qname);
 
             if ($dependency) {
                 $mform->addElement('static', 'qdepend_'.$question->id, '', '<div class="qdepend">'.$dependency.'</div>');

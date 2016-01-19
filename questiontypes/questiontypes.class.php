@@ -778,6 +778,8 @@ abstract class questionnaire_question_base {
      * Create and update question data from the forms.
      */
     public function form_update($formdata, $questionnaire) {
+        global $DB;
+
         $this->form_preprocess_data($formdata);
 
         if (!empty($formdata->qid)) {
