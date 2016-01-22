@@ -5,7 +5,7 @@ Feature: Add a questionnaire activity
   I need to add a questionnaire activity to a moodle course
 
 @javascript
-  Scenario: Add a questionnaire to a course
+  Scenario: Add a questionnaire to a course without questions
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |

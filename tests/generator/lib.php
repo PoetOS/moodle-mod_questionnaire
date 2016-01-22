@@ -32,19 +32,25 @@ class mod_questionnaire_generator extends testing_module_generator {
 
     /**
      * Create a questionnaire activity.
-     * @param array $record
+     * @param array $record Will be changed in this function.
      * @param array $options
      * @return int
      */
-    public function create_instance($record = array(), array $options = null) {
-        $record = (object)$record;
+    public function create_instance($record = array(), array $options = array()) {
+        global $COURSE; // Needed for add_instance.
+
+        if (is_array($record)) {
+            $record = (object)$record;
+        }
 
         $defaultquestionnairesettings = array(
             'qtype'                 => 0,
             'respondenttype'        => 'fullname',
             'resp_eligible'         => 'all',
             'resp_view'             => 0,
+            'useopendate'           => true, // Used in form only to indicate opendate can be used.
             'opendate'              => 0,
+            'useclosedate'          => true, // Used in form only to indicate closedate can be used.
             'closedate'             => 0,
             'resume'                => 0,
             'navigate'              => 0,
@@ -53,7 +59,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             'timemodified'          => time(),
             'completionsubmit'      => 0,
             'autonum'               => 3,
-            'create'                => 'new-0',        // Used in form only to indicate a new, empty instance.
+            'create'                => 'new-0', // Used in form only to indicate a new, empty instance.
         );
 
         foreach ($defaultquestionnairesettings as $name => $value) {
@@ -62,7 +68,11 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
         }
 
-        return parent::create_instance($record, (array)$options);
+        if (isset($record->course)) {
+            $COURSE->id = $record->course;
+        }
+
+        return parent::create_instance($record, $options);
     }
 
     /**

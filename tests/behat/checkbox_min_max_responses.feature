@@ -26,7 +26,6 @@ Feature: Checkbox questions can have forced minimum and maximum numbers of boxes
       | Question Text | Select one or two choices only |
       | Possible answers | One,Two,Three,Four |
     Then I should see "position 1"
-#    And I should see "[Check Boxes] (Q1)" in the "#fgroup_id_manageqgroup" "css_element"
     And I should see "[Check Boxes] (Q1)"
     And I should see "Select one or two choices only"
     And I log out
