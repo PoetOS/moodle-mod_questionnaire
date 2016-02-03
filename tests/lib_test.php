@@ -44,6 +44,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->assertTrue(questionnaire_supports(FEATURE_GROUPS));
         $this->assertTrue(questionnaire_supports(FEATURE_MOD_INTRO));
         $this->assertTrue(questionnaire_supports(FEATURE_SHOW_DESCRIPTION));
+        $this->assertNull(questionnaire_supports('unknown option'));
     }
 
     public function test_questionnaire_get_extra_capabilities() {
@@ -59,9 +60,8 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
 
-        // Change all the default values.
+        // Create test data as a record.
         $questdata = new stdClass();
         $questdata->course = $course->id;
         $questdata->name = 'Test questionnaire';
@@ -81,22 +81,8 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $questdata->completionsubmit = 1;
         $questdata->autonum = 1;
 
-        // mod::add_instance is called from the generator->create_instance function
-        // (if not overridden) and doesn't need to be called on its own.
-        $questionnaire = $generator->create_instance(clone $questdata);
-        $this->assertNotEmpty($questionnaire);
-        $this->assertTrue($questionnaire->id > 0);
-
-        // Verify that all the specified data was added, and not the defaults.
-        $questrecord = $DB->get_record('questionnaire', array('id' => $questionnaire->id));
-        foreach ($questdata as $property => $value) {
-            // 'timemodified' is set to the value of current time when added.
-            if ($property == 'timemodified') {
-                $this->assertTrue(($questrecord->$property > 3) && ($questrecord->$property <= time()));
-            } else {
-                $this->assertEquals($value, $questrecord->$property);
-            }
-        }
+        // Call add_instance with the data.
+        $this->assertTrue(questionnaire_add_instance($questdata) > 0);
     }
 
     public function test_update_instance() {
@@ -108,48 +94,23 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(array('course' => $course->id));
 
-        $questionnaire->sid = 1;
-        $qid = questionnaire_add_instance($questionnaire);
-        $this->assertTrue($qid > 0);
-
-        // Change all the default values.
+        // Change some record values.
         $questionnaire->qtype = 1;
         $questionnaire->respondenttype = 'anonymous';
         $questionnaire->resp_eligible = 'none';
         $questionnaire->resp_view = 2;
-        $questionnaire->useopendate = true;
-        $questionnaire->opendate = 99;
-        $questionnaire->useclosedate = true;
-        $questionnaire->closedate = 50;
         $questionnaire->resume = 1;
         $questionnaire->navigate = 1;
         $questionnaire->grade = 100;
-        $questionnaire->timemodified = 3;
         $questionnaire->completionsubmit = 1;
         $questionnaire->autonum = 1;
 
         // Moodle update form passes "instance" instead of "id" to [mod]_update_instance.
-        $questionnaire->instance = $qid;
+        $questionnaire->instance = $questionnaire->id;
         // Grade function needs the "cm" "idnumber" field.
         $questionnaire->cmidnumber = '';
 
         $this->assertTrue(questionnaire_update_instance($questionnaire));
-
-        $questrecord = $DB->get_record('questionnaire', array('id' => $qid));
-        $this->assertNotEmpty($questrecord);
-        $this->assertEquals($questionnaire->qtype, $questrecord->qtype);
-        $this->assertEquals($questionnaire->respondenttype, $questrecord->respondenttype);
-        $this->assertEquals($questionnaire->resp_eligible, $questrecord->resp_eligible);
-        $this->assertEquals($questionnaire->resp_view, $questrecord->resp_view);
-        $this->assertEquals($questionnaire->opendate, $questrecord->opendate);
-        $this->assertEquals($questionnaire->closedate, $questrecord->closedate);
-        $this->assertEquals($questionnaire->resume, $questrecord->resume);
-        $this->assertEquals($questionnaire->navigate, $questrecord->navigate);
-        $this->assertEquals($questionnaire->grade, $questrecord->grade);
-        $this->assertEquals($questionnaire->sid, $questrecord->sid);
-        $this->assertEquals($questionnaire->timemodified, $questrecord->timemodified);
-        $this->assertEquals($questionnaire->completionsubmit, $questrecord->completionsubmit);
-        $this->assertEquals($questionnaire->autonum, $questrecord->autonum);
     }
 
     /*
@@ -165,32 +126,17 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         // Set up a new questionnaire.
         $questiondata = array();
         $questiondata['content'] = 'Enter yes or no';
-        $questionnaire = $this->create_test_questionnaire(QUESYESNO, $questiondata);
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO, $questiondata);
 
         $question = reset($questionnaire->questions);
 
         // Add a response for the question.
-        $userid = 1;
-        $section = 1;
-        $currentrid = 0;
-        $_POST['q'.$question->id] = 'y';
-        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
-        questionnaire_record_submission($questionnaire, $userid, $responseid);
+        $response = $generator->create_question_response($questionnaire, $question, 'y');
 
-        // Confirm that expected records are in the database.
-        $questionnaire = $DB->get_record('questionnaire', array('id' => $questionnaire->id));
-        $this->assertInstanceOf('stdClass', $questionnaire);
+        // Get records for database deletion confirmation.
         $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid));
-        $this->assertInstanceOf('stdClass', $survey);
-        $questions = $DB->get_records('questionnaire_question', array('survey_id' => $survey->id));
-        $this->assertCount(1, $questions);
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $survey->id));
-        $this->assertCount(1, $responses);
-        $attempts = $DB->get_records('questionnaire_attempts', array('qid' => $questionnaire->id));
-        $this->assertCount(1, $attempts);
-        $response = reset($responses);
-        $this->assertCount(1, $DB->get_records('questionnaire_response_bool', array('response_id' => $response->id)));
-        $this->assertTrue($DB->get_records('event', array("modulename" => 'questionnaire', "instance" => $questionnaire->id)) > 0);
 
         // Now delete it all.
         $this->assertTrue(questionnaire_delete_instance($questionnaire->id));
@@ -204,23 +150,65 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
     }
 
     public function test_questionnaire_user_outline() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questiondata = array();
+        $questiondata['content'] = 'Enter yes or no';
+        $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO, $questiondata);
 
+        // Test for correct "no response" values.
+        $outline = questionnaire_user_outline($course, $user, null, $questionnaire);
+        $this->assertEquals(get_string("noresponses", "questionnaire"), $outline->info);
+
+        // Test for a user with one response.
+        $response = $generator->create_question_response($questionnaire, reset($questionnaire->questions), 'y', $user->id);
+        $outline = questionnaire_user_outline($course, $user, null, $questionnaire);
+        $this->assertEquals('1 '.get_string("response", "questionnaire"), $outline->info);
     }
 
     public function test_questionnaire_user_complete() {
+        // This only performs screen output. How do we unit test this?
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO);
 
+        $this->assertTrue(questionnaire_user_complete($course, $user, null, $questionnaire));
     }
 
     public function test_questionnaire_print_recent_activity() {
-
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $this->assertFalse(questionnaire_print_recent_activity(null, null, null));
     }
 
     public function test_questionnaire_grades() {
-
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $this->assertNull(questionnaire_grades(null));
     }
 
     public function test_questionnaire_get_user_grades() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
 
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire($course);
+
+        // Test for an array when user specified.
+        $grades = questionnaire_get_user_grades($questionnaire, $user->id);
+        $this->assertInternalType('array', $grades);
+
+        // Test for an array when no user specified.
+        $grades = questionnaire_get_user_grades($questionnaire);
+        $this->assertInternalType('array', $grades);
     }
 
     public function test_questionnaire_update_grades() {
@@ -229,24 +217,5 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
 
     public function test_questionnaire_grade_item_update() {
 
-    }
-
-    /**
-     * Create a questionnaire with questions and response data for use in other tests.
-     */
-    public function create_test_questionnaire($qtype, $questiondata = array(), $choicedata = null) {
-        $course = $this->getDataGenerator()->create_course();
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course' => $course->id));
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-
-        $questiondata['survey_id'] = $questionnaire->sid;
-        $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
-        $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
-        $generator->create_question($qtype, $questiondata, $choicedata);
-
-        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
-
-        return $questionnaire;
     }
 }

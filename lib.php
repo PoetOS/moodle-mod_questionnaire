@@ -243,9 +243,9 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
         $lastresponse = array_pop($responses);
         $result->time = $lastresponse->submitted;
     } else {
-            $result->info = get_string("noresponses", "questionnaire");
+        $result->info = get_string("noresponses", "questionnaire");
     }
-        return $result;
+    return $result;
 }
 
 // Print a detailed representation of what a  user has done with
