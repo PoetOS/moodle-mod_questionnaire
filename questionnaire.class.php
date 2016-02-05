@@ -497,7 +497,7 @@ class questionnaire {
         }
     }
 
-    public function can_view_all_responses() {
+    public function can_view_all_responses($usernumresp = null) {
         global $USER, $DB, $SESSION;
 
         if ($owner = $DB->get_field('questionnaire_survey', 'owner', array('id' => $this->sid))) {
@@ -506,6 +506,9 @@ class questionnaire {
             $owner = true;
         }
         $numresp = $this->count_submissions();
+        if (is_null($usernumresp)) {
+            $usernumresp = $questionnaire->count_submissions($USER->id);
+        }
 
         // Number of Responses in currently selected group (or all participants etc.).
         if (isset($SESSION->questionnaire->numselectedresps)) {

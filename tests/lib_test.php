@@ -212,10 +212,18 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
     }
 
     public function test_questionnaire_update_grades() {
-
+        /// Don't know how to test this yet! It doesn't return anything.
+        $this->assertNull(questionnaire_update_grades());
     }
 
     public function test_questionnaire_grade_item_update() {
-
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire($course);
+        $questionnaire->cmidnumber = $questionnaire->cm->idnumber;
+        $questionnaire->courseid = $questionnaire->course->id;
+        $this->assertEquals(GRADE_UPDATE_OK, questionnaire_grade_item_update($questionnaire));
     }
 }

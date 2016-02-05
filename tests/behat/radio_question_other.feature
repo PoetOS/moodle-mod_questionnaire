@@ -1,0 +1,56 @@
+@mod @mod_questionnaire @wip
+Feature: Radio questions allow optional "other" responses with optional labels
+  In order to allow users to enter "other" answers to a radio button question
+  As a teacher
+  I need to specify an "other" choice
+
+  Background: Add two radio button question to a questionnaire with both "other" choice options specified
+    Given the following "users" exist:
+      | username | firstname | lastname | email |
+      | teacher1 | Teacher | 1 | teacher1@example.com |
+      | student1 | Student | 1 | student1@example.com |
+    And the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 1 | C1 | 0 |
+    And the following "course enrolments" exist:
+      | user | course | role |
+      | teacher1 | C1 | editingteacher |
+      | student1 | C1 | student |
+    And I log in as "teacher1"
+    And I add a questionnaire "Test questionnaire" to the course "Course 1" and start to enter questions
+    And I add a "Radio Buttons" question and I fill the form with:
+      | Question Name | Q1 |
+      | Yes | y |
+      | Question Text | Select one |
+      | Possible answers | Red,Blue,Black,!other |
+    Then I should see "position 1"
+    And I should see "[Radio Buttons] (Q1)"
+    And I should see "Select one"
+    And I add a "Radio Buttons" question and I fill the form with:
+      | Question Name | Q2 |
+      | Yes | y |
+      | Question Text | Select another |
+      | Possible answers | Green,Orange,Yellow,!other=Another colour: |
+    Then I should see "position 2"
+    And I should see "[Radio Buttons] (Q2)"
+    And I should see "Select another"
+    And I log out
+
+@javascript
+  Scenario: Student must enter no more than six digits and decimal points.
+    And I log in as "student1"
+    And I follow "Course 1"
+    And I follow "Test questionnaire"
+    And I follow "Answer the questions..."
+    Then I should see "Test questionnaire"
+    And I set the field "Other:" to "checked"
+    And I set the text field to "Yellow"
+    And I set the field "Another colour:" to "checked"
+    And I set the text field to "Indigo"
+    And I press "Submit questionnaire"
+    Then I should see "Thank you for completing this Questionnaire."
+    And I follow "Continue"
+    Then I should see "Your response"
+    And I should see "Test questionnaire"
+    And I should see "Other: Yellow"
+    And I should see "Another colour: Indigo"

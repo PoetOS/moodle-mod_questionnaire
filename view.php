@@ -171,7 +171,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
     echo $OUTPUT->box_end();
 }
 
-if ($questionnaire->can_view_all_responses()) {
+if ($questionnaire->can_view_all_responses($usernumresp)) {
     echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
     $argstr = 'instance='.$questionnaire->id.'&group='.$currentgroupid;
     echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
