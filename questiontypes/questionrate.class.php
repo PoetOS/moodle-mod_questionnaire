@@ -24,6 +24,15 @@
 
 class questionnaire_question_rate extends questionnaire_question_base {
 
+    /**
+     * Constructor. Use to set any default properties.
+     *
+     */
+    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+        $this->length = 5;
+        return parent::__construct($id, $question, $context, $params);
+    }
+
     protected function responseclass() {
         return 'questionnaire_response_rank';
     }
@@ -164,7 +173,9 @@ class questionnaire_question_rate extends questionnaire_question_base {
             $notcomplete = true;
         }
 
+        $row = 0;
         foreach ($this->choices as $cid => $choice) {
+            $row++;
             if (isset($choice->content)) {
                 $str = 'q'."{$this->id}_$cid";
                 echo '<tr class="raterow">';
@@ -199,7 +210,8 @@ class questionnaire_question_rate extends questionnaire_question_base {
                         array('class' => 'accesshide'));
                     // If isna column then set na choice to -1 value.
                     $value = ($j < $this->length ? $j : - 1);
-                    echo '<input name="'.$str.'" type="radio" value="'.$value .'"'.$checked.$disabled.$order.' /></td>';
+                    echo '<input name="'.$str.'" type="radio" value="'.$value .'"'.$checked.$disabled.$order.' id="'.$str.'_'.$value.'" />'.
+                         '<label for="'.$str.'_'.$value.'" class="accesshide">Choice '.$i.' for row '.$row.'</label></td>';
                     if ($bg == 'c0 raterow') {
                         $bg = 'c1 raterow';
                     } else {

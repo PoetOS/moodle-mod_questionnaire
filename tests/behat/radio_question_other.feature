@@ -1,4 +1,4 @@
-@mod @mod_questionnaire @wip
+@mod @mod_questionnaire
 Feature: Radio questions allow optional "other" responses with optional labels
   In order to allow users to enter "other" answers to a radio button question
   As a teacher
@@ -37,16 +37,16 @@ Feature: Radio questions allow optional "other" responses with optional labels
     And I log out
 
 @javascript
-  Scenario: Student must enter no more than six digits and decimal points.
+  Scenario: Student selects other options and enters their own text.
     And I log in as "student1"
     And I follow "Course 1"
     And I follow "Test questionnaire"
     And I follow "Answer the questions..."
     Then I should see "Test questionnaire"
-    And I set the field "Other:" to "checked"
-    And I set the text field to "Yellow"
-    And I set the field "Another colour:" to "checked"
-    And I set the text field to "Indigo"
+    And I click on "Other:" "radio"
+    And I set the field "Text for Other:" to "Yellow"
+    And I click on "Another colour:" "radio"
+    And I set the field "Text for Another colour:" to "Indigo"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I follow "Continue"

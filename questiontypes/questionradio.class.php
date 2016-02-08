@@ -125,11 +125,12 @@ class questionnaire_question_radio extends questionnaire_question_base {
                 $output .= ' /><label for="'.$htmlid.'" >'.format_text($othertext, FORMAT_HTML).'</label>';
 
                 $choices['other_'.$cid] = $othertext;
-                $output .= '<input type="text" size="25" name="'.$cid.'" onclick="other_check(name)"';
+                $output .= '<input type="text" size="25" name="'.$cid.'" id="'.$htmlid.'-other" onclick="other_check(name)"';
                 if (isset($data->$cid)) {
                     $output .= ' value="'.stripslashes($data->$cid) .'"';
                 }
-                $output .= ' />&nbsp;';
+                $output .= ' />';
+                $output .= '<label for="'.$htmlid.'-other" class="accesshide">Text for '.format_text($othertext, FORMAT_HTML).'</label>&nbsp;';
             }
             if ($horizontal) {
                 // Added a zero-width space character to make MSIE happy!

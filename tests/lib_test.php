@@ -212,7 +212,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
     }
 
     public function test_questionnaire_update_grades() {
-        /// Don't know how to test this yet! It doesn't return anything.
+        // Don't know how to test this yet! It doesn't return anything.
         $this->assertNull(questionnaire_update_grades());
     }
 

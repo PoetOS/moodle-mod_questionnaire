@@ -24,6 +24,16 @@
 
 class questionnaire_question_text extends questionnaire_question_base {
 
+    /**
+     * Constructor. Use to set any default properties.
+     *
+     */
+    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+        $this->length = 20;
+        $this->precise = 25;
+        return parent::__construct($id, $question, $context, $params);
+    }
+
     protected function responseclass() {
         return 'questionnaire_response_text';
     }

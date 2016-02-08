@@ -24,6 +24,15 @@
 
 class questionnaire_question_numeric extends questionnaire_question_base {
 
+    /**
+     * Constructor. Use to set any default properties.
+     *
+     */
+    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+        $this->length = 10;
+        return parent::__construct($id, $question, $context, $params);
+    }
+
     protected function responseclass() {
         return 'questionnaire_response_text';
     }
@@ -100,6 +109,7 @@ class questionnaire_question_numeric extends questionnaire_question_base {
     }
 
     protected function form_length(MoodleQuickForm $mform, $helptext = '') {
+        $this->length = isset($this->length) ? $this->length : 10;
         return parent::form_length($mform, 'maxdigitsallowed');
     }
 
