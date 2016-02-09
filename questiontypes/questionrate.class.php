@@ -175,8 +175,8 @@ class questionnaire_question_rate extends questionnaire_question_base {
 
         $row = 0;
         foreach ($this->choices as $cid => $choice) {
-            $row++;
             if (isset($choice->content)) {
+                $row++;
                 $str = 'q'."{$this->id}_$cid";
                 echo '<tr class="raterow">';
                 $content = $choice->content;
