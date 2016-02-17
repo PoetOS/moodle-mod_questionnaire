@@ -43,7 +43,7 @@ class questionnaire_question_text extends questionnaire_question_base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-    // Text Box.
+        // Text Box.
         echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'"'.
              ($this->precise > 0 ? ' maxlength="'.$this->precise.'"' : '').' value="'.
              (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '').

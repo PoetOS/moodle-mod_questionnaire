@@ -23,7 +23,7 @@ class questionnaire {
      * The survey record.
      * @var object $survey
      */
-     //  Todo var $survey; TODO.
+     // Todo var $survey; TODO.
 
     // Class Methods.
 
@@ -710,7 +710,7 @@ class questionnaire {
                 echo '<input type="submit" name="resume" value="'.get_string('save', 'questionnaire').'" />';
             }
 
-            //  Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
+            // Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
 
             if ($formdata->sec == $numsections) {
                 echo '
@@ -2624,7 +2624,7 @@ class questionnaire {
             }
 
             // Moodle:
-            //  Get the course name that this questionnaire belongs to.
+            // Get the course name that this questionnaire belongs to.
             if ($survey->realm != 'public') {
                 $courseid = $this->course->id;
                 $coursename = $this->course->fullname;
@@ -2642,7 +2642,7 @@ class questionnaire {
                 }
             }
             // Moodle:
-            //  If the username is numeric, try it as a Moodle user id.
+            // If the username is numeric, try it as a Moodle user id.
             if (is_numeric($username)) {
                 if ($user = $DB->get_record('user', array('id' => $username))) {
                     $uid = $username;
@@ -2652,7 +2652,7 @@ class questionnaire {
             }
 
             // Moodle:
-            //  Determine if the user is a member of a group in this course or not.
+            // Determine if the user is a member of a group in this course or not.
             $groupname = '';
             if (groups_get_activity_groupmode($this->cm, $this->course)) {
                 if ($currentgroupid > 0) {

@@ -57,9 +57,9 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
                     ),
                 )
             ),
-           new convert_path('survey', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY'),
-           new convert_path('question', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION'),
-           new convert_path('question_choice', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION/QUESTION_CHOICE'),
+            new convert_path('survey', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY'),
+            new convert_path('question', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION'),
+            new convert_path('question_choice', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION/QUESTION_CHOICE'),
         );
     }
     /**

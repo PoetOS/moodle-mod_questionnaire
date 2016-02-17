@@ -283,7 +283,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         }
     }
 
-// General tests to call from specific tests above.
+    // General tests to call from specific tests above.
 
     private function response_tests($questionnaireid, $surveyid, $responseid, $userid,
                                     $attemptcount = 1, $responsecount = 1) {

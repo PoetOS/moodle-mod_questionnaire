@@ -588,7 +588,7 @@ switch ($action) {
             $resps = $respsallparticipants;
         }
         if (!empty($resps)) {
-// NOTE*** response_analysis uses $resps to get the id's of the responses only. Need to figure out what this function does.
+            // NOTE*** response_analysis uses $resps to get the id's of the responses only. Need to figure out what this function does.
             $ret = $questionnaire->response_analysis($rid = 0, $resps, $compare = false,
                             $isgroupmember = false, $allresponses = true, $currentgroupid);
         }

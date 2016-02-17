@@ -88,7 +88,7 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
     }
 
 
-// General tests to call from specific tests above.
+    // General tests to call from specific tests above.
 
     private function create_test_question($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
         global $DB;
