@@ -18,88 +18,9 @@
  *
  * @package    mod
  * @subpackage questionnaire
- * @copyright  
+ * @copyright
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-
-/**
- * Javascript for hiding/displaying children questions on preview page of 
- * questionnaire with conditional branching. 
- */
-
-function dependdrop(qId, children) {
-    var e = document.getElementById(qId);
-    var choice = e.options[e.selectedIndex].value;
-    depend (children, choice);
-}
-
-function depend (children, choices) {
-    children = children.split(',');
-    choices = choices.split(',');
-    var childrenlength = children.length;
-    var choiceslength = choices.length;
-    child = null;
-    choice = null;
-    for (var i = 0; i < childrenlength; i++) {
-        child = children[i];
-        var q = document.getElementById(child);
-        if (q) {
-            var radios = q.getElementsByTagName('input');
-            var radiolength = radios.length;
-             var droplists = q.getElementsByTagName('select');
-            var droplistlength = droplists.length;
-            var textareas = q.getElementsByTagName('textarea');
-            var textarealength = textareas.length;
-            for (var k = 0; k < choiceslength; k++) {
-                choice = choices[k];
-                if (child == choice) {
-                    // If this browser version accepts classList.
-                    if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
-                        q.classList.add('qn-container');
-                    // If this browser version DOES NOT accept classList (e.g. MSIE < 10)
-                    } else {
-                        addClass(q, 'qn-container');
-                    }
-                    for (var j = 0; j < radiolength; j++) {
-                        radio = radios[j];
-                        radio.disabled = false;
-                    }
-                    for (var m = 0; m < droplistlength; m++) {
-                        droplist = droplists[m];
-                        droplist.disabled = false;
-                    }
-                    delete children[i];
-                } else if (children[i]){
-                    if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
-                        q.classList.remove('qn-container');
-                        q.classList.add('hidedependquestion');
-                    } else {
-                        removeClass(q, 'qn-container');
-                    }
-                    addClass(q, 'hidedependquestion');
-                    for (var j = 0; j < radiolength; j++) {
-                        radio = radios[j];
-                        radio.disabled = true;
-                        radio.checked = false;
-                        radio.value = '';
-                    }
-                    for (var m = 0; m < droplistlength; m++) {
-                        droplist = droplists[m];
-                        droplist.selectedIndex = 0;
-                        droplist.disabled = true;
-                        droplist.checked = false;
-                    }
-                    for (var n = 0; n < textarealength; n++) {
-                        textarea = textareas[n];
-                        textarea.value = '';
-                    }
-                }
-            }
-        }
-    }
-}
-// End conditional branching functions.
 
 /*
  * A workaround for MSIE versions < 10 which do not recognize classList. Answer by Paulpro at:
@@ -119,6 +40,85 @@ function removeClass(el, aclass){
 }
 // End classList workaround.
 
+/**
+ * Javascript for hiding/displaying children questions on preview page of
+ * questionnaire with conditional branching.
+ */
+
+function depend (children, choices) {
+    children = children.split(',');
+    choices = choices.split(',');
+    var childrenlength = children.length;
+    var choiceslength = choices.length;
+    child = null;
+    choice = null;
+    for (var i = 0; i < childrenlength; i++) {
+        child = children[i];
+        var q = document.getElementById(child);
+        if (q) {
+            var radios = q.getElementsByTagName('input');
+            var radiolength = radios.length;
+            var droplists = q.getElementsByTagName('select');
+            var droplistlength = droplists.length;
+            var textareas = q.getElementsByTagName('textarea');
+            var textarealength = textareas.length;
+            for (var k = 0; k < choiceslength; k++) {
+                var j, m, n;
+                choice = choices[k];
+                if (child == choice) {
+                    // If this browser version accepts classList.
+                    if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
+                        q.classList.add('qn-container');
+                    // If this browser version DOES NOT accept classList (e.g. MSIE < 10)
+                    } else {
+                        addClass(q, 'qn-container');
+                    }
+                    for (j = 0; j < radiolength; j++) {
+                        radio = radios[j];
+                        radio.disabled = false;
+                    }
+                    for (m = 0; m < droplistlength; m++) {
+                        droplist = droplists[m];
+                        droplist.disabled = false;
+                    }
+                    delete children[i];
+                } else if (children[i]){
+                    if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
+                        q.classList.remove('qn-container');
+                        q.classList.add('hidedependquestion');
+                    } else {
+                        removeClass(q, 'qn-container');
+                    }
+                    addClass(q, 'hidedependquestion');
+                    for (j = 0; j < radiolength; j++) {
+                        radio = radios[j];
+                        radio.disabled = true;
+                        radio.checked = false;
+                        radio.value = '';
+                    }
+                    for (m = 0; m < droplistlength; m++) {
+                        droplist = droplists[m];
+                        droplist.selectedIndex = 0;
+                        droplist.disabled = true;
+                        droplist.checked = false;
+                    }
+                    for (n = 0; n < textarealength; n++) {
+                        textarea = textareas[n];
+                        textarea.value = '';
+                    }
+                }
+            }
+        }
+    }
+}
+
+function dependdrop(qId, children) {
+    var e = document.getElementById(qId);
+    var choice = e.options[e.selectedIndex].value;
+    depend (children, choice);
+}
+// End conditional branching functions.
+
 // When respondent enters text in !other field, corresponding
 // radio button OR check box is automatically checked.
 function other_check(name) {
@@ -135,7 +135,8 @@ function other_check(name) {
 // Automatically empty an !other text input field if another Radio button is clicked.
 function other_check_empty(name, value) {
   var f = document.getElementById("phpesp_response");
-  for (var i = 0; i < f.elements.length; i++) {
+  var i;
+  for (i = 0; i < f.elements.length; i++) {
     if ((f.elements[i].name == name) && f.elements[i].value.substr(0,6) == "other_") {
         f.elements[i].checked = true;
         var otherid = f.elements[i].name + "_" + f.elements[i].value.substring(6);
@@ -146,7 +147,7 @@ function other_check_empty(name, value) {
             other[0].focus();
         }
         var actualbuttons = document.getElementsByName (name);
-          for (var i = 0; i <= actualbuttons.length; i++) {
+          for (i = 0; i <= actualbuttons.length; i++) {
             if (actualbuttons[i].value == value) {
                 actualbuttons[i].checked = true;
                 break;

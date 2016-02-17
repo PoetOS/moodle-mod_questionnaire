@@ -215,29 +215,22 @@ if ($action == 'main') {
 
             $qid = key($qformdata->requiredbutton);
             if ($questionnaire->questions[$qid]->required == 'y') {
-                $DB->set_field('questionnaire_question', 'required', 'n', array('id' => $qid, 'survey_id' => $sid));
+                $questionnaire->questions[$qid]->set_required(false);
 
             } else {
-                $DB->set_field('questionnaire_question', 'required', 'y', array('id' => $qid, 'survey_id' => $sid));
+                $questionnaire->questions[$qid]->set_required(true);
             }
 
             $reload = true;
 
         } else if (isset($qformdata->addqbutton)) {
             if ($qformdata->type_id == QUESPAGEBREAK) { // Adding section break is handled right away....
-                $sql = 'SELECT MAX(position) as maxpos FROM {questionnaire_question} '.
-                       'WHERE survey_id = '.$qformdata->sid.' AND deleted = \'n\'';
-                if ($record = $DB->get_record_sql($sql)) {
-                    $pos = $record->maxpos + 1;
-                } else {
-                    $pos = 1;
-                }
-                $question = new Object();
-                $question->survey_id = $qformdata->sid;
-                $question->type_id = QUESPAGEBREAK;
-                $question->position = $pos;
-                $question->content = 'break';
-                $DB->insert_record('questionnaire_question', $question);
+                $questionrec = new stdClass();
+                $questionrec->survey_id = $qformdata->sid;
+                $questionrec->type_id = QUESPAGEBREAK;
+                $questionrec->content = 'break';
+                $question = questionnaire_question_base::question_builder(QUESPAGEBREAK);
+                $question->add($questionrec);
                 $reload = true;
             } else {
                 // Switch to edit question screen.
@@ -280,26 +273,7 @@ if ($action == 'main') {
 
 
 } else if ($action == 'question') {
-    if ($qid != 0) {
-        $question = clone($questionnaire->questions[$qid]);
-        $question->qid = $question->id;
-        $question->sid = $questionnaire->survey->id;
-        $question->id = $cm->id;
-        $draftideditor = file_get_submitted_draft_itemid('question');
-        $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                           $qid, array('subdirs' => true), $question->content);
-        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
-    } else {
-        $question = new Object();
-        $question->sid = $questionnaire->survey->id;
-        $question->id = $cm->id;
-        $question->type_id = $qtype;
-        $question->type = '';
-        $draftideditor = file_get_submitted_draft_itemid('question');
-        $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                           null, array('subdirs' => true), '');
-        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
-    }
+    $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
     $questionsform = new questionnaire_edit_question_form('questions.php');
     $questionsform->set_data($question);
     if ($questionsform->is_cancelled()) {
@@ -313,186 +287,8 @@ if ($action == 'main') {
             $qformdata->qid = 0;
         }
 
-        $haschoices = $questionnaire->type_has_choices();
-        // THIS SECTION NEEDS TO BE MOVED OUT OF HERE - SHOULD CREATE QUESTION-SPECIFIC UPDATE FUNCTIONS.
-        if ($haschoices[$qformdata->type_id]) {
-            // Eliminate trailing blank lines.
-            $qformdata->allchoices = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $qformdata->allchoices);
-            // Trim to eliminate potential trailing carriage return.
-            $qformdata->allchoices = trim($qformdata->allchoices);
-            if (empty($qformdata->allchoices)) {
-                if ($qformdata->type_id != QUESRATE) {
-                    error (get_string('enterpossibleanswers', 'questionnaire'));
-                } else {
-                    // Add dummy blank space character for empty value.
-                    $qformdata->allchoices = " ";
-                }
-            } else if ($qformdata->type_id == QUESRATE) {    // Rate.
-                $allchoices = $qformdata->allchoices;
-                $allchoices = explode("\n", $allchoices);
-                $ispossibleanswer = false;
-                $nbnameddegrees = 0;
-                $nbvalues = 0;
-                foreach ($allchoices as $choice) {
-                    if ($choice) {
-                        // Check for number from 1 to 3 digits, followed by the equal sign =.
-                        if (preg_match("/^[0-9]{1,3}=/", $choice)) {
-                            $nbnameddegrees++;
-                        } else {
-                            $nbvalues++;
-                            $ispossibleanswer = true;
-                        }
-                    }
-                }
-                // Add carriage return and dummy blank space character for empty value.
-                if (!$ispossibleanswer) {
-                    $qformdata->allchoices .= "\n ";
-                }
+        $question->form_update($qformdata, $questionnaire);
 
-                // Sanity checks for correct number of values in $qformdata->length.
-
-                // Sanity check for named degrees.
-                if ($nbnameddegrees && $nbnameddegrees != $qformdata->length) {
-                    $qformdata->length = $nbnameddegrees;
-                }
-                // Sanity check for "no duplicate choices"".
-                if ($qformdata->precise == 2 && ($qformdata->length > $nbvalues || !$qformdata->length)) {
-                    $qformdata->length = $nbvalues;
-                }
-            } else if ($qformdata->type_id == QUESCHECK) {
-                // Sanity checks for min and max checked boxes.
-                $allchoices = $qformdata->allchoices;
-                $allchoices = explode("\n", $allchoices);
-                $nbvalues = count($allchoices);
-
-                if ($qformdata->length > $nbvalues) {
-                    $qformdata->length = $nbvalues;
-                }
-                if ($qformdata->precise > $nbvalues) {
-                    $qformdata->precise = $nbvalues;
-                }
-                $qformdata->precise = max($qformdata->length, $qformdata->precise);
-            }
-        }
-
-        $dependency = array();
-        if (isset($qformdata->dependquestion) && $qformdata->dependquestion != 0) {
-            $dependency = explode(",", $qformdata->dependquestion);
-            $qformdata->dependquestion = $dependency[0];
-            $qformdata->dependchoice = $dependency[1];
-        }
-
-        if (!empty($qformdata->qid)) {
-
-            // Update existing question.
-            // Handle any attachments in the content.
-            $qformdata->itemid  = $qformdata->content['itemid'];
-            $qformdata->format  = $qformdata->content['format'];
-            $qformdata->content = $qformdata->content['text'];
-            $qformdata->content = file_save_draft_area_files($qformdata->itemid, $context->id, 'mod_questionnaire', 'question',
-                                                             $qformdata->qid, array('subdirs' => true), $qformdata->content);
-
-            $fields = array('name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice');
-            $questionrecord = new Object();
-            $questionrecord->id = $qformdata->qid;
-            foreach ($fields as $f) {
-                if (isset($qformdata->$f)) {
-                    $questionrecord->$f = trim($qformdata->$f);
-                }
-            }
-            $result = $DB->update_record('questionnaire_question', $questionrecord);
-            if ($questionnairehasdependencies) {
-                questionnaire_check_page_breaks($questionnaire);
-            }
-        } else {
-            // Create new question:
-            // set the position to the end.
-            $sql = 'SELECT MAX(position) as maxpos FROM {questionnaire_question} '.
-                   'WHERE survey_id = '.$qformdata->sid.' AND deleted = \'n\'';
-            if ($record = $DB->get_record_sql($sql)) {
-                $qformdata->position = $record->maxpos + 1;
-            } else {
-                $qformdata->position = 1;
-            }
-
-            // Need to update any image content after the question is created, so create then update the content.
-            $qformdata->survey_id = $qformdata->sid;
-            $fields = array('survey_id', 'name', 'type_id', 'length', 'precise', 'required', 'position',
-                            'dependquestion', 'dependchoice');
-            $questionrecord = new Object();
-            foreach ($fields as $f) {
-                if (isset($qformdata->$f)) {
-                    $questionrecord->$f = trim($qformdata->$f);
-                }
-            }
-            $questionrecord->content = '';
-
-            $qformdata->qid = $DB->insert_record('questionnaire_question', $questionrecord);
-
-            // Handle any attachments in the content.
-            $qformdata->itemid  = $qformdata->content['itemid'];
-            $qformdata->format  = $qformdata->content['format'];
-            $qformdata->content = $qformdata->content['text'];
-            $content            = file_save_draft_area_files($qformdata->itemid, $context->id, 'mod_questionnaire', 'question',
-                                                             $qformdata->qid, array('subdirs' => true), $qformdata->content);
-            $result = $DB->set_field('questionnaire_question', 'content', $content, array('id' => $qformdata->qid));
-        }
-
-        // UPDATE or INSERT rows for each of the question choices for this question.
-        if ($haschoices[$qformdata->type_id]) {
-            $cidx = 0;
-            if (isset($question->choices) && !isset($qformdata->makecopy)) {
-                $oldcount = count($question->choices);
-                $echoice = reset($question->choices);
-                $ekey = key($question->choices);
-            } else {
-                $oldcount = 0;
-            }
-
-            $newchoices = explode("\n", $qformdata->allchoices);
-            $nidx = 0;
-            $newcount = count($newchoices);
-
-            while (($nidx < $newcount) && ($cidx < $oldcount)) {
-                if ($newchoices[$nidx] != $echoice->content) {
-                    $newchoices[$nidx] = trim ($newchoices[$nidx]);
-                    $result = $DB->set_field('questionnaire_quest_choice', 'content', $newchoices[$nidx], array('id' => $ekey));
-                    $r = preg_match_all("/^(\d{1,2})(=.*)$/", $newchoices[$nidx], $matches);
-                    // This choice has been attributed a "score value" OR this is a rate question type.
-                    if ($r) {
-                        $newscore = $matches[1][0];
-                        $result = $DB->set_field('questionnaire_quest_choice', 'value', $newscore, array('id' => $ekey));
-                    } else {     // No score value for this choice.
-                        $result = $DB->set_field('questionnaire_quest_choice', 'value', null, array('id' => $ekey));
-                    }
-                }
-                $nidx++;
-                $echoice = next($question->choices);
-                $ekey = key($question->choices);
-                $cidx++;
-            }
-
-            while ($nidx < $newcount) {
-                // New choices...
-                $choicerecord = new Object();
-                $choicerecord->question_id = $qformdata->qid;
-                $choicerecord->content = trim($newchoices[$nidx]);
-                $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choicerecord->content, $matches);
-                // This choice has been attributed a "score value" OR this is a rate question type.
-                if ($r) {
-                    $choicerecord->value = $matches[1][0];
-                }
-                $result = $DB->insert_record('questionnaire_quest_choice', $choicerecord);
-                $nidx++;
-            }
-
-            while ($cidx < $oldcount) {
-                $result = $DB->delete_records('questionnaire_quest_choice', array('id' => $ekey));
-                $echoice = next($question->choices);
-                $ekey = key($question->choices);
-                $cidx++;
-            }
-        }
         // Make these field values 'sticky' for further new questions.
         if (!isset($qformdata->required)) {
             $qformdata->required = 'n';
@@ -544,26 +340,7 @@ if ($reload) {
         }
         $questionsform->set_data($sdata);
     } else if ($action == 'question') {
-        if ($qid != 0) {
-            $question = clone($questionnaire->questions[$qid]);
-            $question->qid = $question->id;
-            $question->sid = $questionnaire->survey->id;
-            $question->id = $cm->id;
-            $draftideditor = file_get_submitted_draft_itemid('question');
-            $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                               $qid, array('subdirs' => true), $question->content);
-            $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
-        } else {
-            $question = new Object();
-            $question->sid = $questionnaire->survey->id;
-            $question->id = $cm->id;
-            $question->type_id = $qtype;
-            $question->type = $DB->get_field('questionnaire_question_type', 'type', array('id' => $qtype));
-            $draftideditor = file_get_submitted_draft_itemid('question');
-            $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
-                                               null, array('subdirs' => true), '');
-            $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
-        }
+        $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
         $questionsform = new questionnaire_edit_question_form('questions.php');
         $questionsform->set_data($question);
     }

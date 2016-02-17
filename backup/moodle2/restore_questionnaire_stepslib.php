@@ -74,7 +74,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->course = $this->get_courseid();
 
         $data->timemodified = $this->apply_date_offset($data->timemodified);
@@ -113,7 +112,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
             // Dependchoice.
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields = 'type_id');
+            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), 'type_id');
             if (is_object($dependquestion)) {
                 if ($dependquestion->type_id != 1) {
                     $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);
@@ -126,6 +125,11 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->set_mapping('questionnaire_question', $oldid, $newitemid, true);
     }
 
+    /**
+     * $qid is unused, but is needed in order to get the $key elements of the array. Suppress PHPMD warning.
+     *
+     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
+     */
     protected function process_questionnaire_fb_sections($data) {
         global $DB;
 
@@ -172,7 +176,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         if (($data->value == null || $data->value == 'NULL') && !preg_match("/^([0-9]{1,3}=.*|!other=.*)$/", $data->content)) {
             $content = questionnaire_choice_values($data->content);
-            if ($pos = strpos($content->text, '=')) {
+            if (strpos($content->text, '=')) {
                 $data->content = str_replace('=', '::', $content->text);
             }
         }
@@ -187,7 +191,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
             // Dependchoice.
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
             $dependquestion = $DB->get_record('questionnaire_question',
-                            array('id' => $data->dependquestion), $fields = 'type_id');
+                            array('id' => $data->dependquestion), 'type_id');
             if (is_object($dependquestion)) {
                 if ($dependquestion->type_id != 1) {
                     $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);
@@ -234,88 +238,81 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
 
         // Insert the questionnaire_response_bool record.
-        $newitemid = $DB->insert_record('questionnaire_response_bool', $data);
+        $DB->insert_record('questionnaire_response_bool', $data);
     }
 
     protected function process_questionnaire_response_date($data) {
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
 
         // Insert the questionnaire_response_date record.
-        $newitemid = $DB->insert_record('questionnaire_response_date', $data);
+        $DB->insert_record('questionnaire_response_date', $data);
     }
 
     protected function process_questionnaire_response_multiple($data) {
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
         $data->choice_id = $this->get_mappingid('questionnaire_quest_choice', $data->choice_id);
 
         // Insert the questionnaire_resp_multiple record.
-        $newitemid = $DB->insert_record('questionnaire_resp_multiple', $data);
+        $DB->insert_record('questionnaire_resp_multiple', $data);
     }
 
     protected function process_questionnaire_response_other($data) {
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
         $data->choice_id = $this->get_mappingid('questionnaire_quest_choice', $data->choice_id);
 
         // Insert the questionnaire_response_other record.
-        $newitemid = $DB->insert_record('questionnaire_response_other', $data);
+        $DB->insert_record('questionnaire_response_other', $data);
     }
 
     protected function process_questionnaire_response_rank($data) {
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
         $data->choice_id = $this->get_mappingid('questionnaire_quest_choice', $data->choice_id);
 
         // Insert the questionnaire_response_rank record.
-        $newitemid = $DB->insert_record('questionnaire_response_rank', $data);
+        $DB->insert_record('questionnaire_response_rank', $data);
     }
 
     protected function process_questionnaire_response_single($data) {
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
         $data->choice_id = $this->get_mappingid('questionnaire_quest_choice', $data->choice_id);
 
         // Insert the questionnaire_resp_single record.
-        $newitemid = $DB->insert_record('questionnaire_resp_single', $data);
+        $DB->insert_record('questionnaire_resp_single', $data);
     }
 
     protected function process_questionnaire_response_text($data) {
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
 
         // Insert the questionnaire_response_text record.
-        $newitemid = $DB->insert_record('questionnaire_response_text', $data);
+        $DB->insert_record('questionnaire_response_text', $data);
     }
 
     protected function after_execute() {

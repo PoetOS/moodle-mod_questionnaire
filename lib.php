@@ -223,12 +223,17 @@ function questionnaire_delete_instance($id) {
 // Used for user activity reports.
 // $return->time = the time they did it
 // $return->info = a short text description.
+/**
+ * $course and $mod are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $result = new stdClass();
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete = true)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, true)) {
         $n = count($responses);
         if ($n == 1) {
             $result->info = $n.' '.get_string("response", "questionnaire");
@@ -238,18 +243,23 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
         $lastresponse = array_pop($responses);
         $result->time = $lastresponse->submitted;
     } else {
-            $result->info = get_string("noresponses", "questionnaire");
+        $result->info = get_string("noresponses", "questionnaire");
     }
-        return $result;
+    return $result;
 }
 
 // Print a detailed representation of what a  user has done with
 // a given particular instance of this module, for user activity reports.
+/**
+ * $course and $mod are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete = false)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, false)) {
         foreach ($responses as $response) {
             if ($response->complete == 'y') {
                 echo get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
@@ -267,14 +277,22 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
 // Given a course and a time, this module should find recent activity
 // that has occurred in questionnaire activities and print it out.
 // Return true if there was output, or false is there was none.
+/**
+ * $course, $isteacher and $timestart are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
-    global $CFG;
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
     return false;  //  True if anything was printed, otherwise false.
 }
 
 // Must return an array of grades for a given instance of this module,
 // indexed by user.  It also returns a maximum allowed grade.
+/**
+ * $questionnaireid is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 function questionnaire_grades($questionnaireid) {
     return null;
 }
@@ -306,6 +324,10 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
  *
  * @param object $assignment null means all assignments
  * @param int $userid specific user only, 0 mean all
+ *
+ * $nullifnone is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone=true) {
     global $CFG, $DB;
@@ -402,24 +424,32 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
 }
 
 /**
- * This function returns if a scale is being used by one book
+ * This function returns if a scale is being used by one questionnaire
  * it it has support for grading and scales. Commented code should be
  * modified if necessary. See forum, glossary or journal modules
  * as reference.
- * @param $bookid int
+ * @param $questionnaireid int
  * @param $scaleid int
- * @return boolean True if the scale is used by any journal
+ * @return boolean True if the scale is used by any questionnaire
+ *
+ * Function parameters are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
-function questionnaire_scale_used ($bookid, $scaleid) {
+function questionnaire_scale_used ($questionnaireid, $scaleid) {
     return false;
 }
 
 /**
- * Checks if scale is being used by any instance of book
+ * Checks if scale is being used by any instance of questionnaire
  *
  * This is used to find out if scale used anywhere
  * @param $scaleid int
- * @return boolean True if the scale is used by any journal
+ * @return boolean True if the scale is used by any questionnaire
+ *
+ * Function parameters are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_scale_used_anywhere($scaleid) {
     return false;
@@ -435,6 +465,10 @@ function questionnaire_scale_used_anywhere($scaleid) {
  * @param array $args
  * @param bool $forcedownload
  * @return bool false if file not found, does not return if found - justsend the file
+ *
+ * $forcedownload is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
     global $DB;
@@ -453,16 +487,16 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
     $componentid = (int)array_shift($args);
 
     if ($filearea != 'question') {
-        if (!$survey = $DB->get_record('questionnaire_survey', array('id' => $componentid))) {
+        if (!$DB->get_record('questionnaire_survey', array('id' => $componentid))) {
             return false;
         }
     } else {
-        if (!$question = $DB->get_record('questionnaire_question', array('id' => $componentid))) {
+        if (!$DB->get_record('questionnaire_question', array('id' => $componentid))) {
             return false;
         }
     }
 
-    if (!$questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance))) {
+    if ($DB->get_record('questionnaire', array('id' => $cm->instance))) {
         return false;
     }
 
@@ -481,6 +515,10 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
  *
  * @param settings_navigation $settings The settings navigation object
  * @param navigation_node $questionnairenode The node to add module settings to
+ *
+ * $settings is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_extend_settings_navigation(settings_navigation $settings,
         navigation_node $questionnairenode) {
@@ -504,10 +542,9 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     $courseid = $course->id;
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
-    if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
-        $owner = (trim($survey->owner) == trim($courseid));
+    if ($owner = $DB->get_field('questionnaire_survey', 'owner', array('id' => $questionnaire->sid))) {
+        $owner = (trim($owner) == trim($courseid));
     } else {
-        $survey = false;
         $owner = true;
     }
 
@@ -578,7 +615,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                     navigation_node::TYPE_SETTING, null, 'yourresponses');
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
-            $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
+            $myreportnode->add(get_string('summary', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/myreport.php',
                             array('instance' => $questionnaire->id, 'userid' => $USER->id,
                                             'byresponse' => 0, 'action' => 'summary', 'group' => $currentgroupid)));
@@ -586,12 +623,12 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                     new moodle_url('/mod/questionnaire/myreport.php',
                             array('instance' => $questionnaire->id, 'userid' => $USER->id,
                                             'byresponse' => 1, 'action' => 'vresp', 'group' => $currentgroupid)));
-            $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
+            $myreportnode->add(get_string('myresponses', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/myreport.php',
                             array('instance' => $questionnaire->id, 'userid' => $USER->id,
                                             'byresponse' => 0, 'action' => 'vall', 'group' => $currentgroupid)));
             if ($questionnaire->capabilities->downloadresponses) {
-                $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
+                $myreportnode->add(get_string('downloadtext'),
                         new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'user' => $USER->id,
                                             'action' => 'dwnpg', 'group' => $currentgroupid)));
@@ -606,35 +643,9 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         }
     }
 
-    $numresp = $questionnaire->count_submissions();
-    // Number of responses in currently selected group (or all participants etc.).
-    if (isset($SESSION->questionnaire->numselectedresps)) {
-        $numselectedresps = $SESSION->questionnaire->numselectedresps;
-    } else {
-        $numselectedresps = $numresp;
-    }
-
     // If questionnaire is set to separate groups, prevent user who is not member of any group
     // and is not a non-editing teacher to view All responses.
-    $canviewgroups = true;
-    $groupmode = groups_get_activity_groupmode($cm, $course);
-    if ($groupmode == 1) {
-        $canviewgroups = groups_has_membership($cm, $USER->id);
-    }
-    $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
-    if (( (
-            // Teacher or non-editing teacher (if can view all groups).
-            $canviewallgroups ||
-            // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
-            ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
-            && $numresp > 0 && $owner && $numselectedresps > 0) ||
-            $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
-            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
-                            && $questionnaire->is_closed()) ||
-                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
-                            && $usernumresp > 0)) &&
-            $questionnaire->is_survey_owner()) {
+    if ($questionnaire->can_view_all_responses($usernumresp)) {
 
         $url = '/mod/questionnaire/report.php';
         $node = navigation_node::create(get_string('viewallresponses', 'questionnaire'),
@@ -649,24 +660,24 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         } else {
             $summarynode = $reportnode;
         }
-        $defaultordernode = $summarynode->add(get_string('order_default', 'questionnaire'),
+        $summarynode->add(get_string('order_default', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'action' => 'vall', 'group' => $currentgroupid)));
-        $ascendingordernode = $summarynode->add(get_string('order_ascending', 'questionnaire'),
+        $summarynode->add(get_string('order_ascending', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'action' => 'vallasort', 'group' => $currentgroupid)));
-        $descendingordernode = $summarynode->add(get_string('order_descending', 'questionnaire'),
+        $summarynode->add(get_string('order_descending', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'action' => 'vallarsort', 'group' => $currentgroupid)));
 
         if ($questionnaire->capabilities->deleteresponses) {
-            $deleteallnode = $summarynode->add(get_string('deleteallresponses', 'questionnaire'),
+            $summarynode->add(get_string('deleteallresponses', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'action' => 'delallresp', 'group' => $currentgroupid)));
         }
 
         if ($questionnaire->capabilities->downloadresponses) {
-            $downloadresponsesnode = $summarynode->add(get_string('downloadtextformat', 'questionnaire'),
+            $summarynode->add(get_string('downloadtextformat', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
                             array('instance' => $questionnaire->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
         }
@@ -675,24 +686,31 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                 new moodle_url('/mod/questionnaire/report.php',
                     array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
 
-            $viewindividualresponsenode = $byresponsenode->add(get_string('view', 'questionnaire'),
+            $byresponsenode->add(get_string('view', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
                     array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
 
             if ($individualresponse) {
-                $deleteindividualresponsenode = $byresponsenode->add(get_string('deleteresp', 'questionnaire'),
+                $byresponsenode->add(get_string('deleteresp', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'action' => 'dresp', 'byresponse' => 1,
                             'rid' => $rid, 'group' => $currentgroupid, 'individualresponse' => 1)));
             }
         }
     }
+
+    $canviewgroups = true;
+    $groupmode = groups_get_activity_groupmode($cm, $course);
+    if ($groupmode == 1) {
+        $canviewgroups = groups_has_membership($cm, $USER->id);
+    }
+    $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
     if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
         $url = '/mod/questionnaire/show_nonrespondents.php';
         $node = navigation_node::create(get_string('show_nonrespondents', 'questionnaire'),
                 new moodle_url($url, array('id' => $cmid)),
                 navigation_node::TYPE_SETTING, null, 'nonrespondents');
-        $nonrespondentsnode = $questionnairenode->add_node($node, $beforekey);
+        $questionnairenode->add_node($node, $beforekey);
 
     }
 }
@@ -881,9 +899,13 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
  * @param string $detail not used but needed for compability
  * @param array $modnames
  * @return void Output is echo'd
+ *
+ * $details and $modenames are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, $modnames) {
-    global $CFG, $OUTPUT;
+    global $OUTPUT;
 
     // If the questionnaire is "anonymous", then $activity->user won't have been set, so do not display respondent info.
     if ($activity->anonymous) {
@@ -1007,7 +1029,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
                 $attempts = $DB->count_records('questionnaire_attempts', array('id' => $questionnaire->id));
                 $str .= $OUTPUT->box(get_string('numattemptsmade', 'questionnaire', $attempts), 'info');
             } else {
-                if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete = false)) {
+                if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, false)) {
                     foreach ($responses as $response) {
                         if ($response->complete == 'y') {
                             $str .= $OUTPUT->box($strattempted, 'info');
@@ -1047,6 +1069,10 @@ function questionnaire_reset_course_form_definition($mform) {
 /**
  * Course reset form defaults.
  * @return array the defaults.
+ *
+ * Function parameters are unused, but API requires them. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_reset_course_form_defaults($course) {
     return array('reset_questionnaire' => 1);
@@ -1069,7 +1095,7 @@ function questionnaire_reset_userdata($data) {
     $status = array();
 
     if (!empty($data->reset_questionnaire)) {
-        $surveys = questionnaire_get_survey_list($data->courseid, $type = '');
+        $surveys = questionnaire_get_survey_list($data->courseid, '');
 
         // Delete responses.
         foreach ($surveys as $survey) {
@@ -1117,9 +1143,13 @@ function questionnaire_reset_userdata($data) {
  * @param int $userid User ID
  * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
  * @return bool True if completed, false if not, $type if conditions not set.
+ *
+ * $course is unused, but API requires it. Suppress PHPMD warning.
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_get_completion_state($course, $cm, $userid, $type) {
-    global $CFG, $DB;
+    global $DB;
 
     // Get questionnaire details.
     $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance), '*', MUST_EXIST);

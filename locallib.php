@@ -68,8 +68,8 @@ $questionnairerealms = array ('private' => get_string('private', 'questionnaire'
                                'template' => get_string('template', 'questionnaire'));
 
 global $questionnaireresponseviewers;
-$questionnaireresponseviewers =
-    array ( QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
+$questionnaireresponseviewers = array (
+            QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
             QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED => get_string('responseviewstudentswhenclosed', 'questionnaire'),
             QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS => get_string('responseviewstudentsalways', 'questionnaire'));
 
@@ -209,7 +209,7 @@ function questionnaire_choice_values($content) {
     $contents->modname = '';
     $contents->title = '';
     // Has image.
-    if ($count = preg_match('/(<img)\s .*(src="(.[^"]{1,})")/isxmU', $content, $matches)) {
+    if (preg_match('/(<img)\s .*(src="(.[^"]{1,})")/isxmU', $content, $matches)) {
         $contents->image = $matches[0];
         $imageurl = $matches[3];
         // Image has a title or alt text: use one of them.
@@ -251,7 +251,6 @@ function questionnaire_choice_values($content) {
  * @return array a standard jsmodule structure.
  */
 function questionnaire_get_js_module() {
-    global $PAGE;
     return array(
             'name' => 'mod_questionnaire',
             'fullpath' => '/mod/questionnaire/module.js',
@@ -505,7 +504,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
     return $DB->get_records_sql($sql, $params);
 }
 
-function questionnaire_get_survey_select($instance, $courseid=0, $sid=0, $type='') {
+function questionnaire_get_survey_select($courseid=0, $type='') {
     global $OUTPUT, $DB;
 
     $surveylist = array();
@@ -661,11 +660,11 @@ function questionnaire_get_incomplete_users($cm, $sid,
 
     // Nnow get all completed questionnaires.
     $params = array('survey_id' => $sid, 'complete' => 'y');
-    $sql = "SELECT username FROM {questionnaire_response} "
-                    . "WHERE survey_id = $sid AND complete = 'y' "
-    . "GROUP BY username ";
+    $sql = "SELECT username FROM {questionnaire_response} " .
+           "WHERE survey_id = :survey_id AND complete = :complete " .
+           "GROUP BY username ";
 
-    if (!$completedusers = $DB->get_records_sql($sql)) {
+    if (!$completedusers = $DB->get_records_sql($sql, $params)) {
         return $allusers;
     }
     $completedusers = array_keys($completedusers);
@@ -804,7 +803,6 @@ function questionnaire_get_parent ($question) {
 
 // Get parent position of all child questions in current questionnaire.
 function questionnaire_get_parent_positions ($questions) {
-    global $DB;
     $parentpositions = array();
     foreach ($questions as $question) {
         $dependquestion = $question->dependquestion;
@@ -819,7 +817,6 @@ function questionnaire_get_parent_positions ($questions) {
 
 // Get child position of all parent questions in current questionnaire.
 function questionnaire_get_child_positions ($questions) {
-    global $DB;
     $childpositions = array();
     foreach ($questions as $question) {
         $dependquestion = $question->dependquestion;
@@ -897,14 +894,11 @@ function questionnaire_check_page_breaks($questionnaire) {
         }
         // Add pagebreak between question child and not dependent question that follows.
         if ($qu['type_id'] != QUESPAGEBREAK) {
-            $qname = $positions[$i]['qname'];
             $j = $i - 1;
             if ($j != 0) {
                 $prevtypeid = $positions[$j]['type_id'];
                 $prevdependquestion = $positions[$j]['dependquestion'];
                 $prevdependchoice = $positions[$j]['dependchoice'];
-                $prevdependquestionname = $positions[$j]['qname'];
-                $prevqname = $positions[$j]['qname'];
                 if (($prevtypeid != QUESPAGEBREAK && ($prevdependquestion != $qu['dependquestion']
                                 || $prevdependchoice != $qu['dependchoice']))
                                 || ($qu['dependquestion'] == 0 && $prevdependquestion != 0)) {
@@ -946,7 +940,6 @@ function questionnaire_check_page_breaks($questionnaire) {
 
 // Get all descendants and choices for questions with descendants.
 function questionnaire_get_descendants_and_choices ($questions) {
-    global $DB;
     $questions = array_reverse($questions, true);
     $qu = array();
     foreach ($questions as $question) {
@@ -969,14 +962,12 @@ function questionnaire_get_descendants_and_choices ($questions) {
 
 // Get all descendants for a question to be deleted.
 function questionnaire_get_descendants ($questions, $questionid) {
-    global $DB;
     $questions = array_reverse($questions, true);
     $qu = array();
     foreach ($questions as $question) {
         if ($question->dependquestion) {
             $dq = $question->dependquestion;
             $qid = $question->id;
-            $qpos = $question->position;
             $qu[$dq][] = $qid;
             if (array_key_exists($qid, $qu)) {
                 foreach ($qu[$qid] as $q) {
@@ -1005,4 +996,69 @@ function questionnaire_cmp($a, $b) {
     } else {
         return 1;
     }
+}
+
+/**
+ * Code snippet used to set up the questionform.
+ */
+function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
+    $context = context_module::instance($questionnaire->cm->id);
+    if ($qid != 0) {
+        $question = clone($questionnaire->questions[$qid]);
+        $question->qid = $question->id;
+        $question->sid = $questionnaire->survey->id;
+        $question->id = $questionnaire->cm->id;
+        $draftideditor = file_get_submitted_draft_itemid('question');
+        $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
+                                           $qid, array('subdirs' => true), $question->content);
+        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
+    } else {
+        $question = questionnaire_question_base::question_builder($qtype);
+        $question->sid = $questionnaire->survey->id;
+        $question->id = $questionnaire->cm->id;
+        $question->type_id = $qtype;
+        $question->type = '';
+        $draftideditor = file_get_submitted_draft_itemid('question');
+        $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
+                                           null, array('subdirs' => true), '');
+        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
+    }
+    return $question;
+}
+
+/**
+ * Get the standard page contructs and check for validity.
+ * @param int $id The coursemodule id.
+ * @param int $a  The module instance id.
+ * @return array An array with the $cm, $course, and $questionnaire records in that order.
+ */
+function questionnaire_get_standard_page_items($id = null, $a = null) {
+    global $DB;
+
+    if ($id) {
+        if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
+            print_error('invalidcoursemodule');
+        }
+
+        if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+            print_error('coursemisconf');
+        }
+
+        if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+            print_error('invalidcoursemodule');
+        }
+
+    } else {
+        if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $a))) {
+            print_error('invalidcoursemodule');
+        }
+        if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+            print_error('coursemisconf');
+        }
+        if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
+            print_error('invalidcoursemodule');
+        }
+    }
+
+    return (array($cm, $course, $questionnaire));
 }

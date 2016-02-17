@@ -28,30 +28,7 @@ $a = optional_param('a', null, PARAM_INT);      // Or questionnaire ID.
 
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 
-if ($id) {
-    if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-        print_error('invalidcoursemodule');
-    }
-
-    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-        print_error('coursemisconf');
-    }
-
-    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
-        print_error('invalidcoursemodule');
-    }
-
-} else {
-    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $a))) {
-        print_error('invalidcoursemodule');
-    }
-    if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
-        print_error('coursemisconf');
-    }
-    if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-        print_error('invalidcoursemodule');
-    }
-}
+list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($id, $a);
 
 // Check login and get context.
 require_course_login($course, true, $cm);
@@ -194,43 +171,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
     echo $OUTPUT->box_end();
 }
 
-if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
-    $owner = (trim($survey->owner) == trim($course->id));
-} else {
-    $survey = false;
-    $owner = true;
-}
-$numresp = $questionnaire->count_submissions();
-
-// Number of Responses in currently selected group (or all participants etc.).
-if (isset($SESSION->questionnaire->numselectedresps)) {
-    $numselectedresps = $SESSION->questionnaire->numselectedresps;
-} else {
-    $numselectedresps = $numresp;
-}
-
-// If questionnaire is set to separate groups, prevent user who is not member of any group
-// to view All responses.
-$canviewgroups = true;
-$groupmode = groups_get_activity_groupmode($cm, $course);
-if ($groupmode == 1) {
-    $canviewgroups = groups_has_membership($cm, $USER->id);;
-}
-
-$canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
-if (( (
-            // Teacher or non-editing teacher (if can view all groups).
-            $canviewallgroups ||
-            // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
-            ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
-            && $numresp > 0 && $owner && $numselectedresps > 0) ||
-            $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
-            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
-                            && $questionnaire->is_closed()) ||
-                    ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED
-                            && $usernumresp > 0)) &&
-            $questionnaire->is_survey_owner()) {
+if ($questionnaire->can_view_all_responses($usernumresp)) {
     echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
     $argstr = 'instance='.$questionnaire->id.'&group='.$currentgroupid;
     echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.

@@ -85,8 +85,8 @@ class questionnaire {
     /**
      * Adding questions to the object.
      */
-    public function add_questions($sid = false, $section = false) {
-        global $DB;
+    public function add_questions($sid = false) {
+        global $CFG, $DB, $qtypenames;
 
         if ($sid === false) {
             $sid = $this->sid;
@@ -102,7 +102,12 @@ class questionnaire {
             $sec = 1;
             $isbreak = false;
             foreach ($records as $record) {
-                $this->questions[$record->id] = new questionnaire_question(0, $record, $this->context);
+                $questionclass = 'questionnaire_question_' . $qtypenames[$record->type_id];
+                if (!class_exists($questionclass)) {
+                    require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/question' .
+                        $qtypenames[$record->type_id] . '.class.php');
+                }
+                $this->questions[$record->id] = new $questionclass(0, $record, $this->context);
                 if ($record->type_id != QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][$record->id] = &$this->questions[$record->id];
                     $isbreak = false;
@@ -161,7 +166,6 @@ class questionnaire {
             .get_string('noteligible', 'questionnaire')
             .'</div>';
         } else if ($this->user_can_take($USER->id)) {
-            $sid = $this->sid;
             $quser = $USER->id;
 
             if ($this->survey->realm == 'template') {
@@ -297,9 +301,12 @@ class questionnaire {
     /*
     * Function to view an entire responses data.
     *
+    * $value is unused, but is needed in order to get the $key elements of the array. Suppress PHPMD warning.
+    *
+    * @SuppressWarnings(PHPMD.UnusedLocalVariable)
     */
     public function view_all_responses($resps) {
-        global $qtypenames, $OUTPUT;
+        global $OUTPUT;
         $this->print_survey_start('', 1, 1, 0);
 
         // If a student's responses have been deleted by teacher while student was viewing the report,
@@ -318,28 +325,23 @@ class questionnaire {
                 }
                 $qid = preg_quote('q'.$question->id, '/');
                 if ($question->type_id != QUESPAGEBREAK) {
-                    $method = $qtypenames[$question->type_id].'_response_display';
-                    if (method_exists($question, $method)) {
-                        echo $OUTPUT->box_start('individualresp');
-                        $question->questionstart_survey_display($i);
-                        foreach ($data as $respid => $respdata) {
-                            $hasresp = false;
-                            foreach ($respdata as $key => $value) {
-                                if ($hasresp = preg_match("/$qid(_|$)/", $key)) {
-                                    break;
-                                }
-                            }
-                            // Do not display empty responses.
-                            if ($hasresp) {
-                                echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
-                                $question->$method($respdata);
+                    echo $OUTPUT->box_start('individualresp');
+                    $question->questionstart_survey_display($i);
+                    foreach ($data as $respid => $respdata) {
+                        $hasresp = false;
+                        foreach ($respdata as $key => $value) {
+                            if ($hasresp = preg_match("/$qid(_|$)/", $key)) {
+                                break;
                             }
                         }
-                        $question->questionend_survey_display($i);
-                        echo $OUTPUT->box_end();
-                    } else {
-                        print_error('displaymethod', 'questionnaire');
+                        // Do not display empty responses.
+                        if ($hasresp) {
+                            echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
+                            $question->response_display($respdata);
+                        }
                     }
+                    $question->questionend_survey_display($i);
+                    echo $OUTPUT->box_end();
                 }
             }
         } else {
@@ -493,6 +495,47 @@ class questionnaire {
                 return true;
             }
         }
+    }
+
+    public function can_view_all_responses($usernumresp = null) {
+        global $USER, $DB, $SESSION;
+
+        if ($owner = $DB->get_field('questionnaire_survey', 'owner', array('id' => $this->sid))) {
+            $owner = (trim($owner) == trim($this->course->id));
+        } else {
+            $owner = true;
+        }
+        $numresp = $this->count_submissions();
+        if (is_null($usernumresp)) {
+            $usernumresp = $questionnaire->count_submissions($USER->id);
+        }
+
+        // Number of Responses in currently selected group (or all participants etc.).
+        if (isset($SESSION->questionnaire->numselectedresps)) {
+            $numselectedresps = $SESSION->questionnaire->numselectedresps;
+        } else {
+            $numselectedresps = $numresp;
+        }
+
+        // If questionnaire is set to separate groups, prevent user who is not member of any group
+        // to view All responses.
+        $canviewgroups = true;
+        $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
+        if ($groupmode == 1) {
+            $canviewgroups = groups_has_membership($this->cm, $USER->id);;
+        }
+
+        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
+        return (( // Teacher or non-editing teacher (if can view all groups).
+                 ($canviewallgroups ||
+                  // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
+                  ($canviewgroups && $this->capabilities->readallresponseanytime)) &&
+                 $numresp > 0 && $owner && $numselectedresps > 0) ||
+                ($this->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
+                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp > 0)) &&
+                 $this->is_survey_owner()));
     }
 
     public function count_submissions($userid=false) {
@@ -1114,26 +1157,6 @@ class questionnaire {
         return($newsid);
     }
 
-    public function type_has_choices() {
-        global $DB;
-
-        $haschoices = array();
-
-        if ($records = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid, has_choices')) {
-            foreach ($records as $record) {
-                if ($record->has_choices == 'y') {
-                    $haschoices[$record->typeid] = 1;
-                } else {
-                    $haschoices[$record->typeid] = 0;
-                }
-            }
-        } else {
-            $haschoices = array();
-        }
-
-        return($haschoices);
-    }
-
     // RESPONSE LIBRARY.
 
     private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
@@ -1155,7 +1178,6 @@ class questionnaire {
         $qnum = $i - 1;
 
         foreach ($this->questionsbysec[$section] as $question) {
-
             $qid = $question->id;
             $tid = $question->type_id;
             $lid = $question->length;
@@ -1163,184 +1185,13 @@ class questionnaire {
             if ($tid != QUESSECTIONTEXT) {
                 $qnum++;
             }
-            $missingresp = false;
-
-            // Note: The "missing response" detection is carried out differently in Rate questions (see below).
-
-            if ( ($question->required == 'y') && ($question->deleted == 'n') && ((isset($formdata->{'q'.$qid})
-                        && $formdata->{'q'.$qid} == '')
-                    || (!isset($formdata->{'q'.$qid}))) && $tid != QUESSECTIONTEXT && $tid != QUESRATE) {
-
-                if ($PAGE->pagetype != 'mod-questionnaire-preview') {
-                    $missingresp = true;
-
-                } else if ($question->dependquestion == 0) {
-                    $missingresp = true;
-
-                } else { // For yes/no questions, convert 0 and 1 to y(es) and n(o).
-                    if ($question->dependchoice == 0) {
-                        $dependchoice = 'y';
-                    } else if ($question->dependchoice == 1) {
-                        $dependchoice = 'n';
-                    } else {
-                        $dependchoice = $question->dependchoice;
-                    }
-                    if (isset($formdata->{'q'.$question->dependquestion})
-                            && $formdata->{'q'.$question->dependquestion} == $dependchoice) {
-                        $missingresp = true;
-                    }
-                }
-            }
-
-            if ($missingresp) {
+            if (!$question->response_complete($formdata)) {
                 $missing++;
                 $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
             }
-
-            switch ($tid) {
-
-                case QUESRADIO: // Radio Buttons with !other field.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    $resp = $formdata->{'q'.$qid};
-                    $pos = strpos($resp, 'other_');
-
-                    // Other "other" choice is checked but text box is empty.
-                    if (is_int($pos) == true) {
-                        $othercontent = "q".$qid.substr($resp, 5);
-                        if ( !$formdata->$othercontent ) {
-                            $wrongformat++;
-                            $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                            break;
-                        }
-                    }
-
-                    if (is_int($pos) == true && $question->required == 'y') {
-                        $resp = 'q'.$qid.''.substr($resp, 5);
-                        if (!$formdata->$resp) {
-                            $missing++;
-                            $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                        }
-                    }
-                    break;
-
-                case QUESCHECK: // Check Boxes.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    $resps = $formdata->{'q'.$qid};
-                    $nbrespchoices = 0;
-                    foreach ($resps as $resp) {
-                        $pos = strpos($resp, 'other_');
-
-                        // Other "other" choice is checked but text box is empty.
-                        if (is_int ($pos) == true) {
-                            $othercontent = "q".$qid.substr($resp, 5);
-                            if ( !$formdata->$othercontent ) {
-                                $wrongformat++;
-                                $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                                break;
-                            }
-                        }
-
-                        if (is_numeric($resp) || is_int($pos) == true) {
-                            $nbrespchoices++;
-                        }
-                    }
-                    $nbquestchoices = count($question->choices);
-                    $min = $lid;
-                    $max = $pid;
-                    if ($max == 0) {
-                        $max = $nbquestchoices;
-                    }
-                    if ($min > $max) {
-                        $min = $max;     // Sanity check.
-                    }
-                    $min = min($nbquestchoices, $min);
-                    // Number of ticked boxes is not within min and max set limits.
-                    if ( $nbrespchoices && ($nbrespchoices < $min || $nbrespchoices > $max) ) {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                        break;
-                    }
-                    break;
-
-                case QUESRATE: // Rate.
-                    $num = 0;
-                    $nbchoices = count($question->choices);
-                    $na = get_string('notapplicable', 'questionnaire');
-                    foreach ($question->choices as $cid => $choice) {
-                        // In case we have named degrees on the Likert scale, count them to substract from nbchoices.
-                        $nameddegrees = 0;
-                        $content = $choice->content;
-                        if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
-                            $nameddegrees++;
-                        } else {
-                            $str = 'q'."{$question->id}_$cid";
-                            if (isset($formdata->$str) && $formdata->$str == $na) {
-                                $formdata->$str = -1;
-                            }
-                            // If choice value == -999 this is a not yet answered choice.
-                            $num += (isset($formdata->$str) && ($formdata->$str != -999));
-                        }
-                        $nbchoices -= $nameddegrees;
-                    }
-
-                    if ($num == 0) {
-                        $missingresp = false;
-                        if ($PAGE->pagetype != 'mod-questionnaire-preview' || $question->dependquestion == 0) {
-                            if ($question->required == 'y') {
-                                $missingresp = true;
-                            }
-                        } else {
-                            if (isset($formdata->{'q'.$question->dependquestion})
-                                    && $formdata->{'q'.$question->dependquestion} == $question->dependchoice) {
-                                $missingresp = true;
-                            }
-                        }
-                        if ($missingresp) {
-                            $missing++;
-                            $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
-                        }
-                    }
-                    // If nodupes and nb choice restricted, nbchoices may be > actual choices, so limit it to $question->length.
-                    $isrestricted = ($question->length < count($question->choices)) && $question->precise == 2;
-                    if ($isrestricted) {
-                        $nbchoices = min ($nbchoices, $question->length);
-                    }
-                    if ( $num != $nbchoices && $num != 0 ) {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                    }
-                    break;
-
-                case QUESDATE: // Date.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    $checkdateresult = '';
-                    if ($formdata->{'q'.$qid} != '') {
-                        $checkdateresult = questionnaire_check_date($formdata->{'q'.$qid});
-                    }
-                    if (substr($checkdateresult, 0, 5) == 'wrong') {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                    }
-                    break;
-
-                case QUESNUMERIC: // Numeric.
-                    if (!isset($formdata->{'q'.$qid})) {
-                        break;
-                    }
-                    if ( ($formdata->{'q'.$qid} != '') && (!is_numeric($formdata->{'q'.$qid})) ) {
-                        $wrongformat++;
-                        $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
-                    }
-                    break;
-
-                default:
-                break;
+            if (!$question->response_valid($formdata)) {
+                $wrongformat++;
+                $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
             }
         }
         $message = '';
@@ -1665,7 +1516,7 @@ class questionnaire {
         return $return;
     }
 
-    private function response_insert($sid, $section, $rid, $userid, $resume=false) {
+    public function response_insert($sid, $section, $rid, $userid, $resume=false) {
         global $DB, $USER;
 
         $record = new object;
@@ -1698,7 +1549,14 @@ class questionnaire {
 
         if (!empty($this->questionsbysec[$section])) {
             foreach ($this->questionsbysec[$section] as $question) {
-                $question->insert_response($rid);
+                // NOTE *** $val really should be a value obtained from the caller or somewhere else.
+                // Note that "optional_param" accepting arrays is deprecated for optional_param_array.
+                if ($question->response_table == 'resp_multiple') {
+                    $val = optional_param_array('q'.$question->id, '', PARAM_RAW);
+                } else {
+                    $val = optional_param('q'.$question->id, '', PARAM_RAW);
+                }
+                $question->insert_response($rid, $val);
             }
         }
         return($rid);
@@ -2459,7 +2317,7 @@ class questionnaire {
         } else {
             $navbar = false;
             $sql = "";
-            $castsql = $DB->sql_cast_char2int('R.username');
+            $castsql = $DB->sql_cast_char2int('r.username');
             if ($uid !== false) { // One participant only.
                 $sql = "SELECT r.id, r.survey_id
                           FROM {questionnaire_response} r
@@ -2469,20 +2327,20 @@ class questionnaire {
                          ORDER BY r.id";
                 // All participants or all members of a group.
             } else if ($currentgroupid == 0) {
-                $sql = "SELECT R.id, R.survey_id, R.username as userid
-                          FROM {questionnaire_response} R
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y'
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id, r.username as userid
+                          FROM {questionnaire_response} r
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y'
+                         ORDER BY r.id";
             } else { // Members of a specific group.
-                $sql = "SELECT R.id, R.survey_id
-                          FROM {questionnaire_response} R,
-                                {groups_members} GM
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y' AND
-                               GM.groupid=".$currentgroupid." AND
-                               ".$castsql."=GM.userid
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id
+                          FROM {questionnaire_response} r,
+                                {groups_members} gm
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y' AND
+                               gm.groupid=".$currentgroupid." AND
+                               ".$castsql."=gm.userid
+                         ORDER BY r.id";
             }
             if (!($rows = $DB->get_records_sql($sql))) {
                 echo (get_string('noresponses', 'questionnaire'));
@@ -2716,33 +2574,33 @@ class questionnaire {
                 $records = array();
             }
         } else if ($userid) {    // Download CSV for one user's own responses'.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM {questionnaire_response} R
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y' AND
-                               R.username='$userid'
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id, r.submitted, r.username
+                          FROM {questionnaire_response} r
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y' AND
+                               r.username='$userid'
+                         ORDER BY r.id";
             if (!($records = $DB->get_records_sql($sql))) {
                 $records = array();
             }
 
         } else { // Download CSV for all participants (or groups if enabled).
-            $castsql = $DB->sql_cast_char2int('R.username');
+            $castsql = $DB->sql_cast_char2int('r.username');
             if ($currentgroupid == 0) { // All participants.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM {questionnaire_response} R
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y'
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id, r.submitted, r.username
+                          FROM {questionnaire_response} r
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y'
+                         ORDER BY r.id";
             } else {                 // Members of a specific group.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM {questionnaire_response} R,
-                                {groups_members} GM
-                         WHERE R.survey_id='{$this->survey->id}' AND
-                               R.complete='y' AND
-                               GM.groupid=".$currentgroupid." AND
-                               ".$castsql."=GM.userid
-                         ORDER BY R.id";
+                $sql = "SELECT r.id, r.survey_id, r.submitted, r.username
+                          FROM {questionnaire_response} r,
+                                {groups_members} gm
+                         WHERE r.survey_id='{$this->survey->id}' AND
+                               r.complete='y' AND
+                               gm.groupid=".$currentgroupid." AND
+                               ".$castsql."=gm.userid
+                         ORDER BY r.id";
             }
             if (!($records = $DB->get_records_sql($sql))) {
                 $records = array();
@@ -3072,7 +2930,7 @@ class questionnaire {
         $allqscore = array();
 
         // Get all response ids for all respondents.
-        $castsql = $DB->sql_cast_char2int('R.username');
+        $castsql = $DB->sql_cast_char2int('r.username');
 
         $rids = array();
         foreach ($resps as $key => $resp) {
