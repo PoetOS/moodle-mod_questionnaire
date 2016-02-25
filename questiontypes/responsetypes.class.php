@@ -22,6 +22,8 @@
  * @package questiontypes
  */
 
+use mod_questionnaire\db\bulk_sql_config;
+
 /**
  * Class for describing a question
  *
@@ -663,6 +665,94 @@ abstract class questionnaire_response_base {
         }
         echo html_writer::table($table);
     }
+
+
+    /**
+     * Return all the fields to be used for users in bulk questionnaire sql.
+     *
+     * @author: Guy Thomas
+     * @return string
+     */
+    protected function user_fields_sql() {
+        $userfieldsarr = get_all_user_name_fields();
+        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution']);
+        $userfields = '';
+        foreach ($userfieldsarr as $field) {
+            $userfields .= $userfields === '' ? '' : ', ';
+            $userfields .= 'u.'.$field;
+        }
+        $userfields .= ', u.id as userid';
+        return $userfields;
+    }
+
+    /**
+     * Return sql and params for getting responses in bulk.
+     * @author Guy Thomas
+     * @param int $surveyid
+     * @param bool|int $responseid
+     * @param bool|int $userid
+     * @return array
+     */
+    public function get_bulk_sql($surveyid, $responseid = false, $userid = false) {
+        $sql = $this->bulk_sql($surveyid, $responseid, $userid);
+        $sql.= "
+            AND qr.survey_id = ? AND qr.complete = ?
+      LEFT JOIN {user} u ON u.id = qr.username
+        ";
+        $params = [$surveyid, 'y'];
+        if ($responseid) {
+            $sql.=" AND qr.id = ?";
+            $params[] = $responseid;
+        } else if ($userid) {
+            $sql .= " AND qr.username = ?"; // Note: username is the userid.
+            $params[] = $userid;
+        }
+
+        return [$sql, $params];
+    }
+
+    /**
+     * Configure bulk sql
+     * @return bulk_sql_config
+     */
+    protected function bulk_sql_config() {
+        return new bulk_sql_config('questionnaire_response_other', 'qro', true, true, false);
+    }
+
+    /**
+     * Return sql for getting responses in bulk.
+     * @author Guy Thomas
+     * @return string
+     */
+    protected function bulk_sql() {
+        global $DB;
+        $userfields = $this->user_fields_sql();
+
+        $config = $this->bulk_sql_config();
+        $alias = $config->tablealias;
+
+        $extraselectfields = $config->get_extra_select();
+        $extraselect = '';
+        foreach ($extraselectfields as $field => $include) {
+            $extraselect .= $extraselect === '' ? '' : ', ';
+            if ($include) {
+                $extraselect .= $alias . '.' . $field;
+            } else {
+                $extraselect .= 'null AS ' . $field;
+            }
+        }
+
+
+        return "
+            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->get_helpname()."'", $alias.'.id']) . " AS id,
+                   qr.submitted, qr.complete, qr.grade, qr.username, $userfields, qr.id AS rid, $alias.question_id,
+                   $extraselect
+              FROM {questionnaire_response} qr
+              JOIN {".$config->table."} $alias
+                ON $alias.response_id = qr.id
+        ";
+    }
+
 }
 
 class questionnaire_response_boolean extends questionnaire_response_base {
@@ -731,6 +821,14 @@ class questionnaire_response_boolean extends questionnaire_response_base {
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
+    }
+
+    /**
+     * Configure bulk sql
+     * @return bulk_sql_config
+     */
+    protected function bulk_sql_config() {
+        return new bulk_sql_config($this->response_table(), 'qrb', true, false, false);
     }
 }
 
@@ -805,6 +903,14 @@ class questionnaire_response_text extends questionnaire_response_base {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
     }
+
+    /**
+     * Configure bulk sql
+     * @return bulk_sql_config
+     */
+    protected function bulk_sql_config() {
+        return new bulk_sql_config($this->response_table(), 'qrt', false, true, false);
+    }
 }
 
 class questionnaire_response_date extends questionnaire_response_base {
@@ -867,6 +973,14 @@ class questionnaire_response_date extends questionnaire_response_base {
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
+    }
+
+    /**
+     * Configure bulk sql
+     * @return bulk_sql_config
+     */
+    protected function bulk_sql_config() {
+        return new bulk_sql_config($this->response_table(), 'qrd', false, true, false);
     }
 }
 
@@ -966,6 +1080,14 @@ class questionnaire_response_single extends questionnaire_response_base {
     public function display_results($rids=false, $sort='') {
         $this->display_response_choice_results($this->get_results($rids), $rids, $sort);
     }
+
+    /**
+     * Configure bulk sql
+     * @return bulk_sql_config
+     */
+    protected function bulk_sql_config() {
+        return new bulk_sql_config('questionnaire_resp_single', 'qrs', true, false, false);
+    }
 }
 
 class questionnaire_response_multiple extends questionnaire_response_single {
@@ -1020,6 +1142,14 @@ class questionnaire_response_multiple extends questionnaire_response_single {
             }
         }
         return $resid;
+    }
+
+    /**
+     * Configure bulk sql
+     * @return bulk_sql_config
+     */
+    protected function bulk_sql_config() {
+        return new bulk_sql_config($this->response_table(), 'qrm', true, false, false);
     }
 }
 
@@ -1199,6 +1329,14 @@ class questionnaire_response_rank extends questionnaire_response_base {
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
+    }
+
+    /**
+     * Configure bulk sql
+     * @return bulk_sql_config
+     */
+    protected function bulk_sql_config() {
+        return new bulk_sql_config($this->response_table(), 'qrr', true, false, true);
     }
 }
 
