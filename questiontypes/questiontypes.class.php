@@ -928,7 +928,7 @@ class questionnaire_question {
         if ($this->type_id == QUESESSAY) {
             echo html_writer::start_tag('label', array('for' => 'edit-q' . $this->id));
         }
-        $options = array('noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true);
+        $options = array('noclean' => false, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true);
         echo format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
             $this->context->id, 'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options);
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
