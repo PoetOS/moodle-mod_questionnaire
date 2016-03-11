@@ -72,9 +72,9 @@ td.selected {
     border-bottom: 1px dashed gray;
 }
 
-#page-mod-questionnaire-complete .message,
+#page-mod-questionnaire-complete #region-main .message,
 #page-mod-questionnaire-complete .notifyproblem,
-#page-mod-questionnaire-preview .message,
+#page-mod-questionnaire-preview #region-main .message,
 #page-mod-questionnaire-preview .notifyproblem,
 #page-mod-questionnaire-complete .thankbody,
 #page-mod-questionnaire-complete .thankhead {
@@ -95,8 +95,8 @@ td.selected {
     padding: 0px;
 }
 
-#page-mod-questionnaire-complete .message,
-#page-mod-questionnaire-preview .message,
+#page-mod-questionnaire-complete #region-main .message,
+#page-mod-questionnaire-preview #region-main .message,
 #page-mod-questionnaire-complete .thankbody,
 #page-mod-questionnaire-complete .thankhead {
     border-color: blue;

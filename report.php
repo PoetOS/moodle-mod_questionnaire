@@ -248,7 +248,7 @@ switch ($action) {
         
         // Print the confirmation.
         echo '<p>&nbsp;</p>';
-        $msg = '<div class="warning centerpara">';
+        $msg = '<div class="alert alert-warning centerpara">';
         $msg .= get_string('confirmdelresp', 'questionnaire', $ruser.$timesubmitted);
         $msg .= '</div>';
         $urlyes = new moodle_url('report.php', array('action' => 'dvresp',
@@ -284,7 +284,7 @@ switch ($action) {
 
         // Print the confirmation.
         echo '<p>&nbsp;</p>';
-        $msg = '<div class="warning centerpara">';
+        $msg = '<div class="alert alert-warning centerpara">';
         if ($groupmode == 0) {   // No groups or visible groups.
             $msg .= get_string('confirmdelallresp', 'questionnaire');
         } else {                 // Separate groups.
