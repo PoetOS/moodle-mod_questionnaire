@@ -81,7 +81,7 @@ if ($settingsform->is_cancelled()) {
 }
 
 if ($settings = $settingsform->get_data()) {
-    $sdata = new Object();
+    $sdata = new \stdClass();
     $sdata->id = $settings->sid;
     $sdata->name = $settings->name;
     $sdata->realm = $settings->realm;

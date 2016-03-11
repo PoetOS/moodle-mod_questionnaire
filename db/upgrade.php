@@ -159,7 +159,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             $capsubmit = 'mod/questionnaire:submit';
 
             foreach ($rs as $questionnaire) {
-                $context = get_context_instance(CONTEXT_MODULE, $questionnaire->cmid);
+                $context = \context_module::instance($questionnaire->cmid);
 
                 // Convert questionnaires with resp_eligible = 'all' so that students & teachers have view and submit.
                 if ($questionnaire->resp_eligible == 'all') {

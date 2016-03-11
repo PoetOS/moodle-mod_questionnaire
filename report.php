@@ -211,7 +211,7 @@ switch ($action) {
 
         if (empty($questionnaire->survey)) {
             $id = $questionnaire->survey;
-            notify ("questionnaire->survey = /$id/");
+            echo $OUTPUT->notification("questionnaire->survey = /$id/");
             print_error('surveynotexists', 'questionnaire');
         } else if ($questionnaire->survey->owner != $course->id) {
             print_error('surveyowner', 'questionnaire');
@@ -361,7 +361,7 @@ switch ($action) {
 
             redirect($redirection);
         } else {
-            error (get_string('couldnotdelresp', 'questionnaire').$rid.get_string('by', 'questionnaire').$ruser.'?',
+            print_error (get_string('couldnotdelresp', 'questionnaire').$rid.get_string('by', 'questionnaire').$ruser.'?',
                    $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$sid.'&amp;&amp;instance='.
                    $instance.'byresponse=1');
         }
@@ -449,7 +449,7 @@ switch ($action) {
 
             redirect($redirection);
         } else {
-            error (get_string('couldnotdelresp', 'questionnaire'),
+            print_error (get_string('couldnotdelresp', 'questionnaire'),
                    $CFG->wwwroot.'/mod/questionnaire/report.php?action=vall&amp;sid='.$sid.'&amp;instance='.$instance);
         }
         break;

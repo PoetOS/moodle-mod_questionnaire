@@ -222,7 +222,7 @@ class questionnaire_question {
         global $DB;
         $val = optional_param('q'.$this->id, '', PARAM_ALPHANUMEXT);
         if (!empty($val)) { // If "no answer" then choice is empty (CONTRIB-846).
-            $record = new Object();
+            $record = new \stdClass();
             $record->response_id = $rid;
             $record->question_id = $this->id;
             $record->choice_id = $val;
@@ -241,7 +241,7 @@ class questionnaire_question {
         }
 
         if (preg_match("/[^ \t\n]/", $val)) {
-            $record = new Object();
+            $record = new \stdClass();
             $record->response_id = $rid;
             $record->question_id = $this->id;
             $record->response = $val;
@@ -261,7 +261,7 @@ class questionnaire_question {
         }
         // Now use ISO date formatting.
         $checkdateresult = questionnaire_check_date($thisdate, $insert = true);
-        $record = new Object();
+        $record = new \stdClass();
         $record->response_id = $rid;
         $record->question_id = $this->id;
         $record->response = $checkdateresult;
@@ -279,7 +279,7 @@ class questionnaire_question {
                         continue;
                     }
                     if (preg_match("/[^ \t\n]/", $other)) {
-                        $record = new Object();
+                        $record = new \stdClass();
                         $record->response_id = $rid;
                         $record->question_id = $this->id;
                         $record->choice_id = $cid;
@@ -297,7 +297,7 @@ class questionnaire_question {
                 $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
             }
             if (preg_match("/[^ \t\n]/", $other)) {
-                $record = new object;
+                $record = new \stdClass();
                 $record->response_id = $rid;
                 $record->question_id = $this->id;
                 $record->choice_id = $cid;
@@ -306,7 +306,7 @@ class questionnaire_question {
                 $val = $cid;
             }
         }
-        $record = new Object();
+        $record = new \stdClass();
         $record->response_id = $rid;
         $record->question_id = $this->id;
         $record->choice_id = isset($val) ? $val : 0;
@@ -333,7 +333,7 @@ class questionnaire_question {
                     array_push($val, $cid);
                 }
                 if (preg_match("/[^ \t\n]/", $other)) {
-                    $record = new Object();
+                    $record = new \stdClass();
                     $record->response_id = $rid;
                     $record->question_id = $this->id;
                     $record->choice_id = $cid;
@@ -353,7 +353,7 @@ class questionnaire_question {
                 if (preg_match("/other_q[0-9]+/", $cid)) {
                     continue;
                 }
-                $record = new Object();
+                $record = new \stdClass();
                 $record->response_id = $rid;
                 $record->question_id = $this->id;
                 $record->choice_id = $cid;
@@ -379,7 +379,7 @@ class questionnaire_question {
                 } else {
                     $rank = intval($other);
                 }
-                $record = new Object();
+                $record = new \stdClass();
                 $record->response_id = $rid;
                 $record->question_id = $this->id;
                 $record->choice_id = $cid;
@@ -394,7 +394,7 @@ class questionnaire_question {
             } else {
                 $rank = intval($val);
             }
-            $record = new Object();
+            $record = new \stdClass();
             $record->response_id = $rid;
             $record->question_id = $this->id;
             $record->rank = $rank;
