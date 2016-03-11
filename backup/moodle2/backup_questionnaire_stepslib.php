@@ -202,6 +202,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $fbsection->annotate_files('mod_questionnaire', 'sectionheading', 'id'); // By feedback->id.
         $feedback->annotate_files('mod_questionnaire', 'feedback', 'id'); // By feedback->id.
+        $question->annotate_files('mod_questionnaire', 'response', 'id'); // By question->id
 
         // Return the root element, wrapped into standard activity structure.
         return $this->prepare_activity_structure($questionnaire);

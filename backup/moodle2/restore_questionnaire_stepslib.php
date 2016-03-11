@@ -327,5 +327,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->add_related_files('mod_questionnaire', 'question', 'questionnaire_question');
         $this->add_related_files('mod_questionnaire', 'sectionheading', 'questionnaire_fb_sections');
         $this->add_related_files('mod_questionnaire', 'feedback', 'questionnaire_feedback');
+        $this->add_related_files('mod_questionnaire', 'response', 'questionnaire_question');
     }
 }

@@ -240,11 +240,12 @@ class questionnaire_question {
             $val = preg_replace("/[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
         }
 
+        $draftitemid = file_get_submitted_draft_itemid('essay_attachment');
         if (preg_match("/[^ \t\n]/", $val)) {
             $record = new Object();
             $record->response_id = $rid;
             $record->question_id = $this->id;
-            $record->response = $val;
+            $record->response = file_save_draft_area_files($draftitemid, $this->context->id, 'mod_questionnaire', 'response', $this->id, array('subdirs'=>true), $val);
             return $DB->insert_record('questionnaire_'.$this->response_table, $record);
         } else {
             return false;
@@ -1043,6 +1044,7 @@ class questionnaire_question {
     }
 
     private function essay_survey_display($data) { // Essay.
+        global $CFG;
         // Columns and rows default values.
         $cols = 80;
         $rows = 15;
@@ -1062,8 +1064,53 @@ class questionnaire_question {
             $value = '';
         }
         if ($canusehtmleditor) {
+            require_once($CFG->dirroot.'/lib/filelib.php');
+            require_once($CFG->dirroot.'/repository/lib.php');
+            $options = questionnaire_get_editor_options($this->context);
+            $draftitemid = file_get_submitted_draft_itemid($this->id);
+
+            // get filepicker info
+            //
+            $fpoptions = array();
+            if ($options['maxfiles'] != 0 ) {
+                $args = new stdClass();
+                // need these three to filter repositories list
+                $args->accepted_types = array('web_image');
+                $args->return_types = (FILE_INTERNAL | FILE_EXTERNAL);
+                $args->context = $this->context;
+                $args->env = 'filepicker';
+                // advimage plugin
+                $image_options = initialise_filepicker($args);
+                $image_options->context = $this->context;
+                $image_options->client_id = uniqid();
+                $image_options->maxbytes = $options['maxbytes'];
+                $image_options->env = 'editor';
+                $image_options->itemid = $draftitemid;
+    
+                // moodlemedia plugin
+                $args->accepted_types = array('video', 'audio');
+                $media_options = initialise_filepicker($args);
+                $media_options->context = $this->context;
+                $media_options->client_id = uniqid();
+                $media_options->maxbytes  = $options['maxbytes'];
+                $media_options->env = 'editor';
+                $media_options->itemid = $draftitemid;
+    
+                // advlink plugin
+                $args->accepted_types = '*';
+                $link_options = initialise_filepicker($args);
+                $link_options->context = $this->context;
+                $link_options->client_id = uniqid();
+                $link_options->maxbytes  = $options['maxbytes'];
+                $link_options->env = 'editor';
+                $link_options->itemid = $draftitemid;
+    
+                $fpoptions['image'] = $image_options;
+                $fpoptions['media'] = $media_options;
+                $fpoptions['link'] = $link_options;
+            }
             $editor = editors_get_preferred_editor();
-            $editor->use_editor($name, questionnaire_get_editor_options($this->context));
+            $editor->use_editor($name, $options, $fpoptions);
             $texteditor = html_writer::tag('textarea', $value,
                             array('id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols));
         } else {
@@ -2057,7 +2104,11 @@ class questionnaire_question {
             $table->size = array('*');
         }
         foreach ($rows as $row) {
-            $text = format_text($row->response, FORMAT_HTML);
+            $formatoptions = new Object();
+            $formatoptions->filter = false;
+            $text = format_text(file_rewrite_pluginfile_urls($row->response, 'pluginfile.php', $this->context->id, 'mod_questionnaire', 'response', $this->id),
+                FORMAT_HTML,
+                $formatoptions);
             if ($viewsingleresponse && $nonanonymous) {
                 $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
                 $title = userdate($row->submitted);
