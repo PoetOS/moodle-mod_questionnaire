@@ -1658,7 +1658,7 @@ class questionnaire_question {
                 if ($id == $checked) {
                     echo '<span class="selected">'.
                          '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.
-                         ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
+                         ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;(<b>Score: '..$choice->value.'</b>);
                 } else {
                     echo '<span class="unselected">'.
                          '<input type="radio" disabled="disabled" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
