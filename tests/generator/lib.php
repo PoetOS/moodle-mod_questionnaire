@@ -109,7 +109,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             $COURSE->id = $record->course;
         }
 
-        $instance =  parent::create_instance($record, $options);
+        $instance = parent::create_instance($record, $options);
         $this->questionnaires[] = $instance;
         return $instance;
     }
@@ -436,7 +436,6 @@ class mod_questionnaire_generator extends testing_module_generator {
                 );
             }
 
-
         } else {
             $DB->insert_record('questionnaire_response_text', [
                     'response_id' => $responseid,
@@ -472,7 +471,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $record['submitted'] = time() + $this->responsecount;
 
-        //$questionnaire = $DB->get_record('questionnaire', ['id' => $record['survey_id']]);
+        // $questionnaire = $DB->get_record('questionnaire', ['id' => $record['survey_id']]);
 
         // Add the response.
         $record['id'] = $DB->insert_record('questionnaire_response', $record);
@@ -508,13 +507,13 @@ class mod_questionnaire_generator extends testing_module_generator {
             ', fourteen, fifteen, sixteen, seventeen, eighteen, nineteen, twenty, happy, sad, jealous, angry';
         $opts = explode (', ', $opts);
 
-        if ($number > (count($opts)/2)) {
-            throw new coding_exception('Maxiumum number of options is '.($opts/2));
+        if ($number > (count($opts) / 2)) {
+            throw new coding_exception('Maxiumum number of options is '.($opts / 2));
         }
 
         $randomopts = [];
         while (count($randomopts) < $number) {
-            $randomopts[] = $opts[rand(0, count($opts)-1)];
+            $randomopts[] = $opts[rand(0, count($opts) - 1)];
             $randomopts = array_unique($randomopts);
         }
         // Return re-indexed version of array (otherwise you can get a weird index of 1,2,5,9, etc).
@@ -548,8 +547,8 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $responses[] = new question_response($question->id, $question->opts[$optidx]);
                     break;
                 case QUESCHECK :
-                    $answers=[];
-                    for ($a =0 ; $a < count($question->opts)-1; $a++) {
+                    $answers = [];
+                    for ($a = 0; $a < count($question->opts) - 1; $a++) {
                         $optidx = rand(0, count($question->opts) - 1);
                         $answers[] = $question->opts[$optidx];
                     }
@@ -557,14 +556,13 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $responses[] = new question_response($question->id, $answers);
                     break;
                 case QUESRATE :
-                    $answers=[];
-                    for ($a =0 ; $a < count($question->opts)-1; $a++) {
+                    $answers = [];
+                    for ($a = 0; $a < count($question->opts) - 1; $a++) {
                         $answers[] = new question_response_rank($question->opts[$a], rand(0,4));
                     }
                     $responses[] = new question_response($question->id, $answers);
                     break;
             }
-
 
         }
         return $this->create_response(['survey_id' => $questionnaire->sid, 'username' => $userid], $responses);

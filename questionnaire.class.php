@@ -2512,7 +2512,7 @@ class questionnaire {
             $allresponsessql .= $sql;
         }
 
-        $allresponsessql.=" ORDER BY userid, id";
+        $allresponsessql .= " ORDER BY userid, id";
         $allresponses = $DB->get_recordset_sql($allresponsessql, $allresponsesparams);
         return $allresponses;
     }
@@ -2556,7 +2556,7 @@ class questionnaire {
         $isanonymous = $this->respondenttype == 'anonymous';
 
         // Moodle:
-        //  Get the course name that this questionnaire belongs to.
+        // Get the course name that this questionnaire belongs to.
         if ($this->survey->realm != 'public') {
             $courseid = $this->course->id;
             $coursename = $this->course->fullname;
@@ -2575,7 +2575,7 @@ class questionnaire {
         }
 
         // Moodle:
-        //  Determine if the user is a member of a group in this course or not.
+        // Determine if the user is a member of a group in this course or not.
         // TODO - review for performance.
         $groupname = '';
         if (groups_get_activity_groupmode($this->cm, $this->course)) {
@@ -2755,7 +2755,6 @@ class questionnaire {
 
         $questionidcols = [];
 
-
         // TODO - consider removing this and just using $this->questions
         // $this->questions results in a different order of questions.
         $questionsbyid = $this->get_survey_questions($this->survey->id);
@@ -2879,7 +2878,6 @@ class questionnaire {
         array_push($output, $columns);
         $numrespcols = count($output[0]); // Number of columns used for storing question responses.
 
-
         // Flatten questionidcols
         $tmparr = [];
         for ($c = 0; $c < $nbinfocols; $c++) {
@@ -2970,7 +2968,7 @@ class questionnaire {
                     } else if ($choicecodes == 1) {
                         $responsetxt = $c;
                     } else {
-                        $responsetxt= $content;
+                        $responsetxt = $content;
                     }
                 } else if (intval($qtype) === QUESYESNO) {
                     $responsetxt = $responserow->choice_id === 'y' ? "1" : "0";
@@ -2990,7 +2988,6 @@ class questionnaire {
         }
         // Add final row to output
         $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition, $nbinfocols, $numrespcols);
-
 
         // Change table headers to incorporate actual question numbers.
         $numcol = 0;

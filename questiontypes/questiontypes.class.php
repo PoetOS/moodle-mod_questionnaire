@@ -168,7 +168,7 @@ abstract class questionnaire_question_base {
      * @TODO - refactor protected function helpname to be public and get rid of this wrapper.
      * @return string
      */
-    public function get_helpname(){
+    public function get_helpname() {
         return $this->helpname();
     }
 
@@ -964,13 +964,13 @@ abstract class questionnaire_question_base {
      */
     public function get_bulk_sql($surveyid, $responseid = false, $userid = false) {
         $sql = $this->bulk_sql($surveyid, $responseid, $userid);
-        $sql.= "
+        $sql .= "
             AND qr.survey_id = ? AND qr.complete = ?
       LEFT JOIN {user} u ON u.id = qr.username
         ";
         $params = [$surveyid, 'y'];
         if ($responseid) {
-            $sql.=" AND qr.id = ?";
+            $sql .= " AND qr.id = ?";
             $params[] = $responseid;
         } else if ($userid) {
             $sql .= " AND qr.username = ?"; // Note: username is the userid.
@@ -1010,7 +1010,6 @@ abstract class questionnaire_question_base {
                 $extraselect .= 'null AS ' . $field;
             }
         }
-
 
         return "
             SELECT " . $DB->sql_concat_join("'_'", ['qr.id', $this->helpname(), $alias.'.id']) . " AS id,
