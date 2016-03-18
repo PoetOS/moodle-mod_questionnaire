@@ -131,13 +131,28 @@ class mod_questionnaire_generator extends testing_module_generator {
     }
 
     /**
-     * Function to create a question.
+     * Create a question object of a specific question type and add it to the database.
+     * @param integer $qtype The question type to create.
+     * @param array $questiondata Any data to load into the question.
+     * @param array $choicedata Any choice data for the question.
+     * @return object
+     */
+    public function create_question($qtype, $questiondata = array(), $choicedata = array()) {
+        // Construct a new question object.
+        $question = questionnaire_question_base::question_builder($qtype);
+        $questiondata = (object)$questiondata;
+        $question->add($questiondata, $choicedata);
+        return $question;
+    }
+
+    /**
+     * Function to create a question. (From Guy Thomas)
      *
      * @param array|stdClass $record
      * @param array|stdClass $data - accompanying data for question - e.g. choices
      * @return stdClass the question object
      */
-    public function create_question($record = null, $data = null) {
+    public function gt_create_question($record = null, $data = null) {
         global $DB;
 
         // Increment the question count.
@@ -603,7 +618,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $questions = [];
                 foreach ($questiontypes as $questiontype) {
                     // Add section text for this question
-                    $qdg->create_question(
+                    $qdg->gt_create_question(
                         [
                             'survey_id' => $questionnaire->sid,
                             'name'      => $qdg->type_name($questiontype),
@@ -616,7 +631,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         if ($qdg->question_has_choices($questiontype)) {
                             $opts = $qdg->random_opts(10);
                         }
-                        $questions[] = $qdg->create_question(
+                        $questions[] = $qdg->gt_create_question(
                             [
                                 'survey_id' => $questionnaire->sid,
                                 'name'      => uniqid($qdg->type_name($questiontype).' '),
@@ -626,7 +641,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         );
                     }
                     // Add page break.
-                    $qdg->create_question(
+                    $qdg->gt_create_question(
                         [
                             'survey_id' => $questionnaire->sid,
                             'name' => uniqid('pagebreak '),
