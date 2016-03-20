@@ -147,7 +147,7 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param questionnaire $questionnaire
      * @param array|stdClass $record
      * @param array|stdClass $data - accompanying data for question - e.g. choices
-     * @return stdClass the question object
+     * @return questionnaire_question_base the question object
      */
     public function create_question(questionnaire $questionnaire, $record = null, $data = null) {
         global $DB, $qtypenames;

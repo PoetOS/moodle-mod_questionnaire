@@ -108,7 +108,7 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $question = $generator->create_question($questionnaire, $questiondata, $choicedata);
         $this->assertInstanceOf($questionclass, $question);
-        $this->assertTrue($question->qid > 0);
+        $this->assertTrue($question->id > 0);
 
         // Question object retrieved from the database should have correct data.
         $this->assertEquals($question->type_id, $qtype);
