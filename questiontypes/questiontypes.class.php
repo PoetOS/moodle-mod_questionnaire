@@ -162,15 +162,7 @@ abstract class questionnaire_question_base {
      * Short name for this question type - no spaces, etc..
      * @return string
      */
-    abstract protected function helpname();
-
-    /**
-     * @TODO - refactor protected function helpname to be public and get rid of this wrapper.
-     * @return string
-     */
-    public function get_helpname(){
-        return $this->helpname();
-    }
+    abstract public function helpname();
 
     static public function question_builder($qtype, $params = null) {
         global $CFG, $qtypenames;

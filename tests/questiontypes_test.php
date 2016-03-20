@@ -96,19 +96,21 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
+        /** @var $generator mod_questionnaire_generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
+
+        $questiondata['type_id'] = $qtype;
         $questiondata['survey_id'] = $questionnaire->sid;
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
-        $question = $generator->create_question($qtype, $questiondata, $choicedata);
+        $question = $generator->create_question($questionnaire, $questiondata, $choicedata);
         $this->assertInstanceOf($questionclass, $question);
         $this->assertTrue($question->qid > 0);
 
         // Question object retrieved from the database should have correct data.
-        $question = new $questionclass($question->qid);
         $this->assertEquals($question->type_id, $qtype);
         foreach ($questiondata as $property => $value) {
             $this->assertEquals($question->$property, $value);

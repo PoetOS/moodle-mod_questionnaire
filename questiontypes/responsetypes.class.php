@@ -744,7 +744,7 @@ abstract class questionnaire_response_base {
 
 
         return "
-            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->get_helpname()."'", $alias.'.id']) . " AS id,
+            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.username, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr

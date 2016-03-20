@@ -236,6 +236,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
      */
     public function create_test_questionnaire($qtype, $questiondata = array(), $choicedata = null) {
         $course = $this->getDataGenerator()->create_course();
+        /** @var $generator mod_questionnaire_generator*/
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
@@ -243,9 +244,9 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $questiondata['survey_id'] = $questionnaire->sid;
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
-        $generator->create_question($qtype, $questiondata, $choicedata);
+        $questiondata['type_id'] = $qtype;
 
-        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
+        $generator->create_question($questionnaire, $questiondata, $choicedata);
 
         return $questionnaire;
     }

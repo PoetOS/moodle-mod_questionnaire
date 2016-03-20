@@ -28,7 +28,7 @@ class questionnaire_question_rate extends questionnaire_question_base {
         return 'questionnaire_response_rank';
     }
 
-    protected function helpname() {
+    public function helpname() {
         return 'ratescale';
     }
 

@@ -28,7 +28,7 @@ class questionnaire_question_radio extends questionnaire_question_base {
         return 'questionnaire_response_single';
     }
 
-    protected function helpname() {
+    public function helpname() {
         return 'radiobuttons';
     }
 
