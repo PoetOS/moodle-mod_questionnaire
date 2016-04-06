@@ -87,9 +87,10 @@ class questionnaire_feedback_form extends moodleform {
         $repeatarray = array();
         $repeatedoptions = array();
 
-        $repeatarray[] = $mform->createElement('editor', 'feedbacktext',
-                        get_string('feedback', 'questionnaire'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES,
-                                        'noclean' => true, 'context' => $questionnaire->context));
+        $repeatarray[] = $mform->createElement(
+            'editor', 'feedbacktext', get_string('feedback', 'questionnaire'), null,
+            array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context)
+        );
         $repeatarray[] = $mform->createElement('text', 'feedbackboundaries',
                         get_string('feedbackscoreboundary', 'questionnaire'), array('size' => 10));
         $repeatedoptions['feedbacklabel']['type'] = PARAM_RAW;

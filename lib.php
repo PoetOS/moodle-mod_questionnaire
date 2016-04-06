@@ -609,10 +609,12 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $url = '/mod/questionnaire/myreport.php';
 
         if ($usernumresp > 1) {
-            $node = navigation_node::create(get_string('yourresponses', 'questionnaire'),
-                    new moodle_url($url, array('instance' => $questionnaire->id,
-                                    'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary', 'group' => $currentgroupid)),
-                    navigation_node::TYPE_SETTING, null, 'yourresponses');
+            $node = navigation_node::create(
+                get_string('yourresponses', 'questionnaire'),
+                new moodle_url($url, array('instance' => $questionnaire->id,
+                'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary', 'group' => $currentgroupid)),
+                navigation_node::TYPE_SETTING, null, 'yourresponses'
+            );
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
             $myreportnode->add(get_string('summary', 'questionnaire'),
