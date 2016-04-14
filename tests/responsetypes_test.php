@@ -285,6 +285,25 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
     // General tests to call from specific tests above.
 
+    public function create_test_questionnaire($qtype, $questiondata = array(), $choicedata = null) {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
+        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
+
+        $questiondata['type_id'] = $qtype;
+        $questiondata['survey_id'] = $questionnaire->sid;
+        $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
+        $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
+        $generator->create_question($questionnaire, $questiondata, $choicedata);
+
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
+
+        return $questionnaire;
+    }
+
     private function response_tests($questionnaireid, $surveyid, $responseid, $userid,
                                     $attemptcount = 1, $responsecount = 1) {
         global $DB;

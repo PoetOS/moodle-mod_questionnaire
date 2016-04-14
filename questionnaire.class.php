@@ -23,7 +23,7 @@ class questionnaire {
     /**
      * @var questionnaire_question_base[] $quesitons
      */
-    var $questions = [];
+    public $questions = [];
 
     /*
      * The survey record.
@@ -99,7 +99,7 @@ class questionnaire {
      * @param array $params
      * @return questionnaire_question_base|mixed
      */
-    protected function question_factory($typename, $id = 0, $record = null, $context = null, $params = []) {
+    public static function question_factory($typename, $id = 0, $record = null, $context = null, $params = []) {
         global $CFG;
         $questionclass = 'questionnaire_question_' . $typename;
         if (!class_exists($questionclass)) {
@@ -131,7 +131,7 @@ class questionnaire {
             foreach ($records as $record) {
 
                 $typename = $qtypenames[$record->type_id];
-                $this->questions[$record->id] = $this->question_factory($typename, 0, $record, $this->context);
+                $this->questions[$record->id] = self::question_factory($typename, 0, $record, $this->context);
 
                 if ($record->type_id != QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][$record->id] = &$this->questions[$record->id];
@@ -2502,7 +2502,7 @@ class questionnaire {
 
         foreach ($uniquetypes as $type) {
             $typename = $qtypenames[$type];
-            $question = $this->question_factory($typename);
+            $question = self::question_factory($typename);
             if (!isset($question->response)) {
                 continue;
             }
@@ -2651,31 +2651,6 @@ class questionnaire {
         return $positioned;
     }
 
-    /**
-     * TODO - consider removing this and just using $this->questions.
-     * This is currently here so that the questions are ordered in the same way for generating CSVs.
-     * @param $surveyid
-     * @return mixed
-     * @throws moodle_exception
-     */
-    protected function get_survey_questions($surveyid) {
-            global $DB;
-
-        static $surveyquestions = [];
-
-        if (!empty($surveyquestions[$surveyid])) {
-                    return $surveyquestions[$surveyid];
-        }
-
-        $select = 'survey_id = '.$surveyid.' AND deleted = \'n\' AND type_id < 50';
-        $fields = 'id, name, type_id, position';
-        if (!($surveyquestions[$surveyid] = $DB->get_records_select('questionnaire_question', $select, null, 'position', $fields))) {
-                    throw new moodle_exception('Questionnaire has no questions!');
-
-        }
-        return $surveyquestions[$surveyid];
-    }
-
     /* {{{ proto array survey_generate_csv(int survey_id)
     Exports the results of a survey to an array.
     */
@@ -2755,16 +2730,11 @@ class questionnaire {
 
         $questionidcols = [];
 
-        // TODO - consider removing this and just using $this->questions
-        // $this->questions results in a different order of questions.
-        $questionsbyid = $this->get_survey_questions($this->survey->id);
-
-        foreach ($questionsbyid as $question) {
+        foreach ($this->questions as $question) {
             // Skip questions that aren't response capable.
-            // TODO - re-enable this if $this->questions used instead of $questionsbyid
-            /*if (!isset($question->response)) {
+            if (!isset($question->response)) {
                 continue;
-            }*/
+            }
             // Establish the table's field names.
             $qid = $question->id;
             $qpos = $question->position;
@@ -2878,7 +2848,7 @@ class questionnaire {
         array_push($output, $columns);
         $numrespcols = count($output[0]); // Number of columns used for storing question responses.
 
-        // Flatten questionidcols
+        // Flatten questionidcols.
         $tmparr = [];
         for ($c = 0; $c < $nbinfocols; $c++) {
             $tmparr[] = null; // Pad with non question columns.
@@ -2891,7 +2861,7 @@ class questionnaire {
         $questionidcols = $tmparr;
 
         // Create array of question positions hashed by question / question + choiceid.
-        // And array of questions hashed by position
+        // And array of questions hashed by position.
         $questionpositions = [];
         $questionsbyposition = [];
         $p = 0;

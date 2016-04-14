@@ -162,15 +162,7 @@ abstract class questionnaire_question_base {
      * Short name for this question type - no spaces, etc..
      * @return string
      */
-    abstract protected function helpname();
-
-    /**
-     * @TODO - refactor protected function helpname to be public and get rid of this wrapper.
-     * @return string
-     */
-    public function get_helpname() {
-        return $this->helpname();
-    }
+    abstract public function helpname();
 
     static public function question_builder($qtype, $params = null) {
         global $CFG, $qtypenames;
@@ -952,72 +944,5 @@ abstract class questionnaire_question_base {
         }
         $userfields .= ', u.id as userid';
         return $userfields;
-    }
-
-    /**
-     * Return sql and params for getting responses in bulk.
-     * @author Guy Thomas
-     * @param int $surveyid
-     * @param bool|int $responseid
-     * @param bool|int $userid
-     * @return array
-     */
-    public function get_bulk_sql($surveyid, $responseid = false, $userid = false) {
-        $sql = $this->bulk_sql($surveyid, $responseid, $userid);
-        $sql .= "
-            AND qr.survey_id = ? AND qr.complete = ?
-      LEFT JOIN {user} u ON u.id = qr.username
-        ";
-        $params = [$surveyid, 'y'];
-        if ($responseid) {
-            $sql .= " AND qr.id = ?";
-            $params[] = $responseid;
-        } else if ($userid) {
-            $sql .= " AND qr.username = ?"; // Note: username is the userid.
-            $params[] = $userid;
-        }
-
-        return [$sql, $params];
-    }
-
-    /**
-     * Configure bulk sql
-     * @return bulk_sql_config
-     */
-    protected function bulk_sql_config() {
-        return new bulk_sql_config('questionnaire_response_other', 'qro', true, true, false);
-    }
-
-    /**
-     * Return sql for getting responses in bulk.
-     * @author Guy Thomas
-     * @return string
-     */
-    protected function bulk_sql() {
-        global $DB;
-        $userfields = $this->user_fields_sql();
-
-        $config = $this->bulk_sql_config();
-        $alias = $config->tablealias;
-
-        $extraselectfields = $config->get_extra_select();
-        $extraselect = '';
-        foreach ($extraselectfields as $field => $include) {
-            $extraselect .= $extraselect === '' ? '' : ', ';
-            if ($include) {
-                $extraselect .= $alias . $field;
-            } else {
-                $extraselect .= 'null AS ' . $field;
-            }
-        }
-
-        return "
-            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', $this->helpname(), $alias.'.id']) . " AS id,
-                   qr.submitted, qr.complete, qr.grade, qr.username, $userfields, qr.id AS rid, $alias.question_id,
-                   $extraselect
-              FROM {questionnaire_response} qr
-              JOIN {$config->table} $alias
-                ON $alias.response_id = qr.id
-        ";
     }
 }

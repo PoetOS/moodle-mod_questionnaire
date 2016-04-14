@@ -28,7 +28,7 @@ class questionnaire_question_pagebreak extends questionnaire_question_base {
         return '';
     }
 
-    protected function helpname() {
+    public function helpname() {
         return '';
     }
 

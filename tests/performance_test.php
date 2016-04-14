@@ -59,8 +59,6 @@ class performance_test extends advanced_testcase {
     }
 
     public function test_performance() {
-        global $DB;
-
         $this->resetAfterTest(!static::$noreset);
         $dg = $this->getDataGenerator();
         $qdg = $dg->get_plugin_generator('mod_questionnaire');
@@ -68,7 +66,6 @@ class performance_test extends advanced_testcase {
 
         $q = 0;
         // The following line simply
-        $DB->execute('-- Questionnaire generate_csv sql start '.date('Y-m-d h:i:s'));
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
             $q ++;
@@ -84,7 +81,6 @@ class performance_test extends advanced_testcase {
             $end = microtime(true);
             mtrace('New CSV export for questionnaire  ' . $q . ' of ' . count($questionnaires) . ' - operation took ' . round($end - $start, 2) . ' seconds');
         }
-        $DB->execute('-- Questionnaire generate_csv sql end '.date('Y-m-d h:i:s'));
     }
 
     public static function tearDownAfterClass() {

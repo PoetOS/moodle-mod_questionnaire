@@ -788,12 +788,12 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     $params['questionnaireid'] = $questionnaire->sid;
 
     $ufields = user_picture::fields('u', null, 'useridagain');
-    $castsql = $DB->sql_cast_char2int('qr.username');
+    $usernamesql = $DB->sql_cast_char2int('qr.username');
     if (!$attempts = $DB->get_records_sql("
                     SELECT qr.*,
                     {$ufields}
                     FROM {questionnaire_response} qr
-                    JOIN {user} u ON u.id = $castsql
+                    JOIN {user} u ON u.id = $usernamesql
                     $groupjoin
                     WHERE qr.submitted > :timestart
                     AND qr.survey_id = :questionnaireid

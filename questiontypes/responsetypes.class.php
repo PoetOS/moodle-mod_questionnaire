@@ -694,14 +694,18 @@ abstract class questionnaire_response_base {
      * @return array
      */
     public function get_bulk_sql($surveyid, $responseid = false, $userid = false) {
+        global $DB;
+
+        $usernamesql = $DB->sql_cast_char2int('qr.username');
+
         $sql = $this->bulk_sql($surveyid, $responseid, $userid);
-        $sql .= "
+        $sql.= "
             AND qr.survey_id = ? AND qr.complete = ?
-      LEFT JOIN {user} u ON u.id = qr.username
+      LEFT JOIN {user} u ON u.id = $usernamesql
         ";
         $params = [$surveyid, 'y'];
         if ($responseid) {
-            $sql .= " AND qr.id = ?";
+            $sql.=" AND qr.id = ?";
             $params[] = $responseid;
         } else if ($userid) {
             $sql .= " AND qr.username = ?"; // Note: username is the userid.
@@ -738,12 +742,14 @@ abstract class questionnaire_response_base {
             if ($include) {
                 $extraselect .= $alias . '.' . $field;
             } else {
-                $extraselect .= 'null AS ' . $field;
+                $default = $field === 'response' ? 'null' : 0;
+                $extraselect .= $default.' AS ' . $field;
             }
         }
 
+
         return "
-            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->get_helpname()."'", $alias.'.id']) . " AS id,
+            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.username, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr

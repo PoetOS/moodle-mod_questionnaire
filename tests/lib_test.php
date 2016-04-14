@@ -91,26 +91,54 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
+        /** @var mod_questionnaire_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course' => $course->id));
+        /** @var questionnaire $questionnaire */
+        $questionnaire = $generator->create_instance(array('course' => $course->id, 'sid' => 1));
 
-        // Change some record values.
-        $questionnaire->qtype = 1;
-        $questionnaire->respondenttype = 'anonymous';
-        $questionnaire->resp_eligible = 'none';
-        $questionnaire->resp_view = 2;
-        $questionnaire->resume = 1;
-        $questionnaire->navigate = 1;
-        $questionnaire->grade = 100;
-        $questionnaire->completionsubmit = 1;
-        $questionnaire->autonum = 1;
+        $qid = $questionnaire->id;
+        $this->assertTrue($qid > 0);
+
+        // Change all the default values.
+        // Note, we need to get the actual db row to do an update to it.
+        $qrow = $DB->get_record('questionnaire', ['id' => $qid]);
+        $qrow->qtype = 1;
+        $qrow->respondenttype = 'anonymous';
+        $qrow->resp_eligible = 'none';
+        $qrow->resp_view = 2;
+        $qrow->useopendate = true;
+        $qrow->opendate = 99;
+        $qrow->useclosedate = true;
+        $qrow->closedate = 50;
+        $qrow->resume = 1;
+        $qrow->navigate = 1;
+        $qrow->grade = 100;
+        $qrow->timemodified = 3;
+        $qrow->completionsubmit = 1;
+        $qrow->autonum = 1;
 
         // Moodle update form passes "instance" instead of "id" to [mod]_update_instance.
-        $questionnaire->instance = $questionnaire->id;
+        $qrow->instance = $qid;
         // Grade function needs the "cm" "idnumber" field.
-        $questionnaire->cmidnumber = '';
+        $qrow->cmidnumber = '';
 
-        $this->assertTrue(questionnaire_update_instance($questionnaire));
+        $this->assertTrue(questionnaire_update_instance($qrow));
+
+        $questrecord = $DB->get_record('questionnaire', array('id' => $qid));
+        $this->assertNotEmpty($questrecord);
+        $this->assertEquals($qrow->qtype, $questrecord->qtype);
+        $this->assertEquals($qrow->respondenttype, $questrecord->respondenttype);
+        $this->assertEquals($qrow->resp_eligible, $questrecord->resp_eligible);
+        $this->assertEquals($qrow->resp_view, $questrecord->resp_view);
+        $this->assertEquals($qrow->opendate, $questrecord->opendate);
+        $this->assertEquals($qrow->closedate, $questrecord->closedate);
+        $this->assertEquals($qrow->resume, $questrecord->resume);
+        $this->assertEquals($qrow->navigate, $questrecord->navigate);
+        $this->assertEquals($qrow->grade, $questrecord->grade);
+        $this->assertEquals($qrow->sid, $questrecord->sid);
+        $this->assertEquals($qrow->timemodified, $questrecord->timemodified);
+        $this->assertEquals($qrow->completionsubmit, $questrecord->completionsubmit);
+        $this->assertEquals($qrow->autonum, $questrecord->autonum);
     }
 
     /*
@@ -220,10 +248,18 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
+        /** @var $generator mod_questionnaire_generator*/
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_test_questionnaire($course);
-        $questionnaire->cmidnumber = $questionnaire->cm->idnumber;
-        $questionnaire->courseid = $questionnaire->course->id;
-        $this->assertEquals(GRADE_UPDATE_OK, questionnaire_grade_item_update($questionnaire));
+        $questionnaire = $generator->create_instance(array('course' => $course->id));
+        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
+
+        $questiondata['survey_id'] = $questionnaire->sid;
+        $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
+        $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
+        $questiondata['type_id'] = $qtype;
+
+        $generator->create_question($questionnaire, $questiondata, $choicedata);
+
+        return $questionnaire;
     }
 }

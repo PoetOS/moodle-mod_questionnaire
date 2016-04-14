@@ -28,7 +28,7 @@ class questionnaire_question_check extends questionnaire_question_base {
         return 'questionnaire_response_multiple';
     }
 
-    protected function helpname() {
+    public function helpname() {
         return 'checkboxes';
     }
 
