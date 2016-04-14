@@ -694,10 +694,14 @@ abstract class questionnaire_response_base {
      * @return array
      */
     public function get_bulk_sql($surveyid, $responseid = false, $userid = false) {
+        global $DB;
+
+        $usernamesql = $DB->sql_cast_char2int('qr.username');
+
         $sql = $this->bulk_sql($surveyid, $responseid, $userid);
         $sql.= "
             AND qr.survey_id = ? AND qr.complete = ?
-      LEFT JOIN {user} u ON u.id = qr.username
+      LEFT JOIN {user} u ON u.id = $usernamesql
         ";
         $params = [$surveyid, 'y'];
         if ($responseid) {
@@ -738,7 +742,8 @@ abstract class questionnaire_response_base {
             if ($include) {
                 $extraselect .= $alias . '.' . $field;
             } else {
-                $extraselect .= 'null AS ' . $field;
+                $default = $field === 'response' ? 'null' : 0;
+                $extraselect .= $default.' AS ' . $field;
             }
         }
 

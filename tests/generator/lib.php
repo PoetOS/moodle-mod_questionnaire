@@ -211,7 +211,6 @@ class mod_questionnaire_generator extends testing_module_generator {
         $questionnaire->add_questions();
 
         return $question;
-
     }
 
 
@@ -285,7 +284,17 @@ class mod_questionnaire_generator extends testing_module_generator {
      */
     protected function add_question_choices($question, $data) {
         foreach ($data as $content) {
-            $record = (object) ['question_id' => $question->id, 'content' => $content];
+            if (!is_object($content)) {
+                $content = (object) [
+                    'content' => $content,
+                    'value' => $content
+                ];
+            }
+            $record = (object) [
+                'question_id' => $question->id,
+                'content' => $content->content,
+                'value' => $content->value
+            ];
             $question->add_choice($record);
         }
     }

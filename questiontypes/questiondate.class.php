@@ -91,12 +91,4 @@ class questionnaire_question_date extends questionnaire_question_base {
     protected function form_precise(MoodleQuickForm $mform, $helpname = '') {
         return questionnaire_question_base::form_precise_hidden($mform);
     }
-
-    /**
-     * Configure bulk sql
-     * @return bulk_sql_config
-     */
-    protected function bulk_sql_config() {
-        return new bulk_sql_config('questionnaire_response_date', 'qrd', false, true, false);
-    }
 }
