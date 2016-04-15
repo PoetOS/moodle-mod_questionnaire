@@ -30,9 +30,14 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Unit tests for {@link questionnaire_performance_test}.
+ * @group mod_questionnaire
+ */
+
 class performance_test extends advanced_testcase {
 
-    static $noreset = false;
+    static public $noreset = false;
 
     public function setUp() {
         global $CFG;

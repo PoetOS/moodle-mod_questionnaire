@@ -699,13 +699,13 @@ abstract class questionnaire_response_base {
         $usernamesql = $DB->sql_cast_char2int('qr.username');
 
         $sql = $this->bulk_sql($surveyid, $responseid, $userid);
-        $sql.= "
+        $sql .= "
             AND qr.survey_id = ? AND qr.complete = ?
       LEFT JOIN {user} u ON u.id = $usernamesql
         ";
         $params = [$surveyid, 'y'];
         if ($responseid) {
-            $sql.=" AND qr.id = ?";
+            $sql .= " AND qr.id = ?";
             $params[] = $responseid;
         } else if ($userid) {
             $sql .= " AND qr.username = ?"; // Note: username is the userid.
@@ -746,7 +746,6 @@ abstract class questionnaire_response_base {
                 $extraselect .= $default.' AS ' . $field;
             }
         }
-
 
         return "
             SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,

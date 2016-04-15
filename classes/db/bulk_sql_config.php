@@ -30,12 +30,12 @@ class bulk_sql_config  {
     /**
      * @var string $table
      */
-    var $table = '';
+    public $table = '';
 
     /**
      * @var string $tablealias
      */
-    var $tablealias = '';
+    public $tablealias = '';
 
     /**
      * @var bool $usechoiceid
@@ -59,7 +59,7 @@ class bulk_sql_config  {
      * @param bool $useresponse
      * @param bool $userank
      */
-    function __construct($table, $tablealias, $usechoiceid = false, $useresponse = false, $userank = false) {
+    public function __construct($table, $tablealias, $usechoiceid = false, $useresponse = false, $userank = false) {
         $this->table = $table;
         $this->tablealias = $tablealias;
         $this->usechoiceid = $usechoiceid;
@@ -71,7 +71,7 @@ class bulk_sql_config  {
      * Fields that need to be included for extra select.
      * @return array
      */
-    function get_extra_select() {
+    public function get_extra_select() {
         return [
             'choice_id' => $this->usechoiceid,
             'response' => $this->useresponse,

@@ -28,7 +28,7 @@ class question_response {
     public $questionid;
     public $response;
 
-    function __construct($questionid, $response) {
+    public function __construct($questionid, $response) {
         $this->questionid = $questionid;
         $this->response = $response;
     }

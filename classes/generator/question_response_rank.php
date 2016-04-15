@@ -27,7 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 class question_response_rank {
     public $choice;
     public $rank;
-    function __construct($choice, $rank) {
+
+    public function __construct($choice, $rank) {
         $this->choice = $choice;
         $this->rank = $rank;
     }

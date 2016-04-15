@@ -101,7 +101,6 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
-
         $questiondata['type_id'] = $qtype;
         $questiondata['survey_id'] = $questionnaire->sid;
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';

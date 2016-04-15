@@ -2657,7 +2657,7 @@ class questionnaire {
     public function generate_csv_new($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid) {
         global $DB;
 
-        ini_set('memory_limit','1G');
+        ini_set('memory_limit', '1G');
 
         $output = array();
         $stringother = get_string('other', 'questionnaire');

@@ -116,7 +116,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             $COURSE->id = $record->course;
         }
 
-        $instance =  parent::create_instance($record, $options);
+        $instance = parent::create_instance($record, $options);
         $cm = get_coursemodule_from_instance('questionnaire', $instance->id);
         $questionnaire = new questionnaire(0, $instance, $COURSE, $cm, false);
 
@@ -444,7 +444,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         }
 
         if ($qtype === QUESCHOOSE || $qtype === QUESRADIO || $qtype === QUESDROP || $qtype === QUESCHECK || $qtype === QUESRATE) {
-            if (is_int($questionresponse->response)){
+            if (is_int($questionresponse->response)) {
                 $choiceid = $questionresponse->response;
             } else {
                 if ($qtype === QUESRATE) {
@@ -533,15 +533,15 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $record['submitted'] = time() + $this->responsecount;
 
-        //$questionnaire = $DB->get_record('questionnaire', ['id' => $record['survey_id']]);
+        // $questionnaire = $DB->get_record('questionnaire', ['id' => $record['survey_id']]);
 
         // Add the response.
         $record['id'] = $DB->insert_record('questionnaire_response', $record);
         $responseid = $record['id'];
 
         foreach ($questionresponses as $questionresponse) {
-            if (!$questionresponse instanceof question_response){
-                throw new coding_exception('Question responses must have an instance of question_response'.var_export($questionresponse,true));
+            if (!$questionresponse instanceof question_response) {
+                throw new coding_exception('Question responses must have an instance of question_response'.var_export($questionresponse, true));
             }
             $this->add_response_choice($questionresponse, $responseid);
         }
@@ -621,8 +621,8 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $responses[] = new question_response($question->id, $choices[$optidx]);
                     break;
                 case QUESCHECK :
-                    $answers=[];
-                    for ($a =0 ; $a < count($choices) - 1; $a++) {
+                    $answers = [];
+                    for ($a = 0; $a < count($choices) - 1; $a++) {
                         $optidx = rand(0, count($choices) - 1);
                         $answers[] = $choices[$optidx]->content;
                     }
@@ -632,9 +632,9 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $responses[] = new question_response($question->id, $answers);
                     break;
                 case QUESRATE :
-                    $answers=[];
-                    for ($a =0 ; $a < count($choices) - 1; $a++) {
-                        $answers[] = new question_response_rank($choices[$a], rand(0,4));
+                    $answers = [];
+                    for ($a = 0; $a < count($choices) - 1; $a++) {
+                        $answers[] = new question_response_rank($choices[$a], rand(0, 4));
                     }
                     $responses[] = new question_response($question->id, $answers);
                     break;
