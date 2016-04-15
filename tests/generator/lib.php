@@ -214,6 +214,22 @@ class mod_questionnaire_generator extends testing_module_generator {
     }
 
     /**
+     * Create a questionnaire with questions and response data for use in other tests.
+     */
+    public function create_test_questionnaire($course, $qtype = null, $questiondata = array(), $choicedata = null) {
+        $questionnaire = $this->create_instance(array('course' => $course->id));
+        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
+        if (!is_null($qtype)) {
+            $questiondata['survey_id'] = $questionnaire->sid;
+            $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
+            $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
+            $this->create_question($qtype, $questiondata, $choicedata);
+        }
+        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
+        return $questionnaire;
+    }
+
+    /**
      * Validate choice question type
      * @param $data
      * @throws coding_exception
