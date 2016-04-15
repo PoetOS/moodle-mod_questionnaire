@@ -220,13 +220,40 @@ class mod_questionnaire_generator extends testing_module_generator {
         $questionnaire = $this->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
         if (!is_null($qtype)) {
+            $questiondata['type_id'] = $qtype;
             $questiondata['survey_id'] = $questionnaire->sid;
             $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
             $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
-            $this->create_question($qtype, $questiondata, $choicedata);
+            $this->create_question($questionnaire, $questiondata, $choicedata);
         }
         $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
         return $questionnaire;
+    }
+
+    /**
+     * Create a reponse to the supplied question.
+     */
+    public function create_question_response($questionnaire, $question, $respval, $userid = 1, $section = 1) {
+        global $DB;
+        $currentrid = 0;
+        $_POST['q'.$question->id] = $respval;
+        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        $this->response_commit($questionnaire, $responseid);
+        questionnaire_record_submission($questionnaire, $userid, $responseid);
+        return $DB->get_record('questionnaire_response', array('id' => $responseid));
+        // TO DO - look at the implementing Guy's code below.
+        /* $responses[] = new question_response($question->id, 'Test answer');
+        return $this->create_response(['survey_id' => $questionnaire->sid, 'username' => $userid], $responses); */
+    }
+
+    /**
+     * Need to create a method to access a private questionnaire method.
+     * TO DO - may not need this with above "TO DO".
+     */
+    private function response_commit($questionnaire, $responseid) {
+        $method = new ReflectionMethod('questionnaire', 'response_commit');
+        $method->setAccessible(true);
+        return $method->invoke($questionnaire, $responseid);
     }
 
     /**
