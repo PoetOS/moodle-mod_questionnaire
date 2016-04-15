@@ -248,18 +248,10 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
-        /** @var $generator mod_questionnaire_generator*/
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course' => $course->id));
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-
-        $questiondata['survey_id'] = $questionnaire->sid;
-        $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
-        $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
-        $questiondata['type_id'] = $qtype;
-
-        $generator->create_question($questionnaire, $questiondata, $choicedata);
-
-        return $questionnaire;
+        $questionnaire = $generator->create_test_questionnaire($course);
+        $questionnaire->cmidnumber = $questionnaire->cm->idnumber;
+        $questionnaire->courseid = $questionnaire->course->id;
+        $this->assertEquals(GRADE_UPDATE_OK, questionnaire_grade_item_update($questionnaire));
     }
 }
