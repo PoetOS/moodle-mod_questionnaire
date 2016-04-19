@@ -81,17 +81,18 @@ class questionnaire_feedback_form extends moodleform {
         $mform->addElement('header', 'feedbackhdr', $feedbackmessages);
         $mform->addHelpButton('feedbackhdr', 'feedback', 'questionnaire');
 
-        $mform->addElement('static', 'scoreboundarystatic1',
-                        get_string('feedbackscoreboundary', 'questionnaire'), '100%');
+        $mform->addElement('static', 'scoreboundarystatic1', get_string('feedbackscoreboundary', 'questionnaire'), '100%');
 
         $repeatarray = array();
         $repeatedoptions = array();
 
-        $repeatarray[] = $mform->createElement('editor', 'feedbacktext',
-                        get_string('feedback', 'questionnaire'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES,
-                                        'noclean' => true, 'context' => $questionnaire->context));
-        $repeatarray[] = $mform->createElement('text', 'feedbackboundaries',
-                        get_string('feedbackscoreboundary', 'questionnaire'), array('size' => 10));
+        $repeatarray[] = $mform->createElement(
+            'editor', 'feedbacktext', get_string('feedback', 'questionnaire'), null,
+            array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context)
+        );
+        $repeatarray[] = $mform->createElement(
+            'text', 'feedbackboundaries', get_string('feedbackscoreboundary', 'questionnaire'), array('size' => 10)
+        );
         $repeatedoptions['feedbacklabel']['type'] = PARAM_RAW;
         $repeatedoptions['feedbacktext']['type'] = PARAM_RAW;
         $repeatedoptions['feedbackboundaries']['type'] = PARAM_RAW;
