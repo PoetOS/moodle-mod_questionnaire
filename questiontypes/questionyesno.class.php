@@ -30,7 +30,7 @@ class questionnaire_question_yesno extends questionnaire_question_base {
         return 'questionnaire_response_boolean';
     }
 
-    protected function helpname() {
+    public function helpname() {
         return 'yesno';
     }
 

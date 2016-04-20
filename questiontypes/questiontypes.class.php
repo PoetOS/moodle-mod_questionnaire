@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * This file contains the parent class for questionnaire question types.
  *
@@ -155,6 +157,12 @@ abstract class questionnaire_question_base {
             $this->response = new $respclass($this);
         }
     }
+
+    /**
+     * Short name for this question type - no spaces, etc..
+     * @return string
+     */
+    abstract public function helpname();
 
     static public function question_builder($qtype, $params = null) {
         global $CFG, $qtypenames;
@@ -918,5 +926,23 @@ abstract class questionnaire_question_base {
             error (get_string('enterpossibleanswers', 'questionnaire'));
         }
         return false;
+    }
+
+    /**
+     * Return all the fields to be used for users in questionnaire sql.
+     *
+     * @author: Guy Thomas
+     * @return string
+     */
+    protected function user_fields_sql() {
+        $userfieldsarr = get_all_user_name_fields();
+        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution']);
+        $userfields = '';
+        foreach ($userfieldsarr as $field) {
+            $userfields .= $userfields === '' ? '' : ', ';
+            $userfields .= 'u.'.$field;
+        }
+        $userfields .= ', u.id as userid';
+        return $userfields;
     }
 }

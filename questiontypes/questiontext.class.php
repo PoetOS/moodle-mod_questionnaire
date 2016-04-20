@@ -38,7 +38,7 @@ class questionnaire_question_text extends questionnaire_question_base {
         return 'questionnaire_response_text';
     }
 
-    protected function helpname() {
+    public function helpname() {
         return 'textbox';
     }
 

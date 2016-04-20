@@ -488,6 +488,7 @@ switch ($action) {
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
         $choicetext  = optional_param('choicetext', '0', PARAM_INT);
         $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid);
+
         // CSV
         // SEP. 2007 JR changed file extension to *.txt for non-English Excel users' sake
         // and changed separator to tabulation

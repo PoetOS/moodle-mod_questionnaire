@@ -69,7 +69,7 @@ function depend (children, choices) {
                     // If this browser version accepts classList.
                     if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
                         q.classList.add('qn-container');
-                    // If this browser version DOES NOT accept classList (e.g. MSIE < 10)
+                        // If this browser version DOES NOT accept classList (e.g. MSIE < 10)
                     } else {
                         addClass(q, 'qn-container');
                     }
@@ -122,40 +122,40 @@ function dependdrop(qId, children) {
 // When respondent enters text in !other field, corresponding
 // radio button OR check box is automatically checked.
 function other_check(name) {
-  other = name.split("_");
-  var f = document.getElementById("phpesp_response");
-  for (var i = 0; i <= f.elements.length; i++) {
-    if (f.elements[i].value == "other_" + other[1]) {
-      f.elements[i].checked = true;
-      break;
+    other = name.split("_");
+    var f = document.getElementById("phpesp_response");
+    for (var i = 0; i <= f.elements.length; i++) {
+        if (f.elements[i].value == "other_" + other[1]) {
+            f.elements[i].checked = true;
+            break;
+        }
     }
-  }
 }
 
 // Automatically empty an !other text input field if another Radio button is clicked.
 function other_check_empty(name, value) {
-  var f = document.getElementById("phpesp_response");
-  var i;
-  for (i = 0; i < f.elements.length; i++) {
-    if ((f.elements[i].name == name) && f.elements[i].value.substr(0,6) == "other_") {
-        f.elements[i].checked = true;
-        var otherid = f.elements[i].name + "_" + f.elements[i].value.substring(6);
-        var other = document.getElementsByName (otherid);
-        if (value.substr(0,6) != "other_") {
-           other[0].value = "";
-        } else {
-            other[0].focus();
-        }
-        var actualbuttons = document.getElementsByName (name);
-          for (i = 0; i <= actualbuttons.length; i++) {
-            if (actualbuttons[i].value == value) {
-                actualbuttons[i].checked = true;
-                break;
+    var f = document.getElementById("phpesp_response");
+    var i;
+    for (i = 0; i < f.elements.length; i++) {
+        if ((f.elements[i].name == name) && f.elements[i].value.substr(0,6) == "other_") {
+            f.elements[i].checked = true;
+            var otherid = f.elements[i].name + "_" + f.elements[i].value.substring(6);
+            var other = document.getElementsByName (otherid);
+            if (value.substr(0,6) != "other_") {
+                other[0].value = "";
+            } else {
+                other[0].focus();
             }
+            var actualbuttons = document.getElementsByName (name);
+            for (i = 0; i <= actualbuttons.length; i++) {
+                if (actualbuttons[i].value == value) {
+                    actualbuttons[i].checked = true;
+                    break;
+                }
+            }
+            break;
         }
-    break;
     }
-  }
 }
 
 // In a Rate question type of sub-type Order : automatically uncheck a Radio button

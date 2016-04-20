@@ -15,32 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the parent class for questionnaire question types.
- *
- * @author Mike Churchward
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * Question response rank class
+ * @author    gthomas2
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class questionnaire_question_pagebreak extends questionnaire_question_base {
+namespace mod_questionnaire\generator;
 
-    protected function responseclass() {
-        return '';
-    }
+defined('MOODLE_INTERNAL') || die();
 
-    public function helpname() {
-        return '';
-    }
+class question_response_rank {
+    public $choice;
+    public $rank;
 
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        return;
-    }
-
-    protected function response_survey_display($data) {
-        return;
-    }
-
-    public function edit_form(MoodleQuickForm $qform, $questionnaire, $modcontext) {
-        return false;
+    public function __construct($choice, $rank) {
+        $this->choice = $choice;
+        $this->rank = $rank;
     }
 }
