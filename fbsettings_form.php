@@ -104,14 +104,13 @@ class questionnaire_feedback_form extends moodleform {
                         get_string('feedbackaddmorefeedbacks', 'questionnaire'), true);
 
         // Put some extra elements in before the button.
-        $mform->insertElementBefore($mform->createElement('editor',
-                "feedbacktext[$nextel]", get_string('feedback', 'questionnaire'), null,
-                array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true,
-                        'context' => $questionnaire->context)),
-                'boundary_add_fields');
-        $mform->insertElementBefore($mform->createElement('static',
-                        'scoreboundarystatic2', get_string('feedbackscoreboundary', 'questionnaire'), '0%'),
-                        'boundary_add_fields');
+        $mform->insertElementBefore(
+            $mform->createElement('editor', "feedbacktext[$nextel]", get_string('feedback', 'questionnaire'), null,
+                array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context)),
+            'boundary_add_fields');
+        $mform->insertElementBefore(
+            $mform->createElement('static', 'scoreboundarystatic2', get_string('feedbackscoreboundary', 'questionnaire'), '0%'),
+            'boundary_add_fields');
 
         // Hidden fields.
         $mform->addElement('hidden', 'id', 0);
@@ -124,7 +123,7 @@ class questionnaire_feedback_form extends moodleform {
             $currentsection ++;
             $sectionsnav = ' ('.$currentsection.'/'.$feedbacksections.')';
             $buttonarray[] = &$mform->createElement('submit', 'submitbutton',
-                            get_string('feedbacknextsection', 'questionnaire', $sectionsnav));
+                get_string('feedbacknextsection', 'questionnaire', $sectionsnav));
         } else {
             $buttonarray[] = &$mform->createElement('submit', 'savesettings', get_string('savesettings', 'questionnaire'));
         }
@@ -139,13 +138,13 @@ class questionnaire_feedback_form extends moodleform {
             foreach ($this->_feedbacks as $feedback) {
                 $draftid = file_get_submitted_draft_itemid('feedbacktext['.$key.']');
                 $toform['feedbacktext['.$key.']']['text'] = file_prepare_draft_area(
-                        $draftid,               // Draftid.
-                        $this->context->id,     // Context.
-                        'mod_questionnaire',    // Component.
-                        'feedback',             // Filarea.
-                        !empty($feedback->id) ? (int) $feedback->id : null, // Itemid.
-                        null,
-                        $feedback->feedbacktext // Text.
+                    $draftid,               // Draftid.
+                    $this->context->id,     // Context.
+                    'mod_questionnaire',    // Component.
+                    'feedback',             // Filarea.
+                    !empty($feedback->id) ? (int) $feedback->id : null, // Itemid.
+                    null,
+                    $feedback->feedbacktext // Text.
                 );
                 $toform['feedbacktext['.$key.']']['format'] = 1;
                 $toform['feedbacklabel['.$key.']'] = $feedback->feedbacklabel;
@@ -163,8 +162,7 @@ class questionnaire_feedback_form extends moodleform {
 
         // Check the boundary value is a number or a percentage, and in range.
         $i = 0;
-        while (!empty($data['feedbackboundaries'][$i] )) {
-
+        while (!empty($data['feedbackboundaries'][$i])) {
             $boundary = trim($data['feedbackboundaries'][$i]);
             if (strlen($boundary) > 0 && $boundary[strlen($boundary) - 1] == '%') {
                 $boundary = trim(substr($boundary, 0, -1));
@@ -178,7 +176,7 @@ class questionnaire_feedback_form extends moodleform {
                 $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryoutofrange', 'questionnaire', $i + 1);
             }
             if (is_numeric($boundary) && $i > 0 &&
-                            $boundary >= $data['feedbackboundaries'][$i - 1]) {
+                    $boundary >= $data['feedbackboundaries'][$i - 1]) {
                 $errors["feedbackboundaries[$i]"] = get_string('feedbackerrororder', 'questionnaire', $i + 1);
             }
             $data['feedbackboundaries'][$i] = $boundary;
@@ -190,15 +188,15 @@ class questionnaire_feedback_form extends moodleform {
         if (!empty($data['feedbackboundaries'])) {
             for ($i = $numboundaries; $i < count($data['feedbackboundaries']); $i += 1) {
                 if (!empty($data['feedbackboundaries'][$i] ) &&
-                                trim($data['feedbackboundaries'][$i] ) != '') {
+                        trim($data['feedbackboundaries'][$i] ) != '') {
                     $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorjunkinboundary', 'questionnaire', $i + 1);
                 }
             }
         }
         for ($i = $numboundaries + 1; $i < count($data['feedbacktext']); $i += 1) {
             if (!empty($data['feedbacktext'][$i]['text']) &&
-                            trim($data['feedbacktext'][$i]['text'] ) != '') {
-                    $errors["feedbacktext[$i]"] = get_string('feedbackerrorjunkinfeedback', 'questionnaire', $i + 1);
+                    trim($data['feedbacktext'][$i]['text'] ) != '') {
+                $errors["feedbacktext[$i]"] = get_string('feedbackerrorjunkinfeedback', 'questionnaire', $i + 1);
             }
         }
         return $errors;
