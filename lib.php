@@ -612,39 +612,33 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
             $node = navigation_node::create(get_string('yourresponses', 'questionnaire'),
                 new moodle_url($url,
                     array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0,
-                        'action' => 'summary', 'group' => $currentgroupid
-                    )),
+                    'action' => 'summary', 'group' => $currentgroupid)),
                 navigation_node::TYPE_SETTING, null, 'yourresponses');
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
             $myreportnode->add(get_string('summary', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                     array('instance' => $questionnaire->id, 'userid' => $USER->id,
-                        'byresponse' => 0, 'action' => 'summary', 'group' => $currentgroupid
-                    )));
+                    'byresponse' => 0, 'action' => 'summary', 'group' => $currentgroupid)));
             $byresponsenode = $myreportnode->add(get_string('viewindividualresponse', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                     array('instance' => $questionnaire->id, 'userid' => $USER->id,
-                        'byresponse' => 1, 'action' => 'vresp', 'group' => $currentgroupid
-                    )));
+                    'byresponse' => 1, 'action' => 'vresp', 'group' => $currentgroupid)));
             $myreportnode->add(get_string('myresponses', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/myreport.php',
                     array('instance' => $questionnaire->id, 'userid' => $USER->id,
-                        'byresponse' => 0, 'action' => 'vall', 'group' => $currentgroupid
-                    )));
+                    'byresponse' => 0, 'action' => 'vall', 'group' => $currentgroupid)));
             if ($questionnaire->capabilities->downloadresponses) {
                 $myreportnode->add(get_string('downloadtext'),
                     new moodle_url('/mod/questionnaire/report.php',
                         array('instance' => $questionnaire->id, 'user' => $USER->id,
-                            'action' => 'dwnpg', 'group' => $currentgroupid
-                        )));
+                        'action' => 'dwnpg', 'group' => $currentgroupid)));
             }
         } else {
             $node = navigation_node::create(get_string('yourresponse', 'questionnaire'),
                 new moodle_url($url,
                     array('instance' => $questionnaire->id, 'userid' => $USER->id,
-                        'byresponse' => 1, 'action' => 'vresp', 'group' => $currentgroupid
-                    )),
+                    'byresponse' => 1, 'action' => 'vresp', 'group' => $currentgroupid)),
                 navigation_node::TYPE_SETTING, null, 'yourresponse');
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
         }
