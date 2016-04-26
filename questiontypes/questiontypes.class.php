@@ -297,7 +297,7 @@ class questionnaire_question {
                 $other = optional_param('q'.$this->id.'_'.$cid, null, PARAM_CLEAN);
             }
             if (preg_match("/[^ \t\n]/", $other)) {
-                $record = new object;
+                $record = new stdClass();
                 $record->response_id = $rid;
                 $record->question_id = $this->id;
                 $record->choice_id = $cid;

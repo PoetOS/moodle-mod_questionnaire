@@ -299,7 +299,7 @@ function questionnaire_load_capabilities($cmid) {
 
     $context = questionnaire_get_context($cmid);
 
-    $cb = new object;
+    $cb = new stdClass();
     $cb->view                   = has_capability('mod/questionnaire:view', $context);
     $cb->submit                 = has_capability('mod/questionnaire:submit', $context);
     $cb->viewsingleresponse     = has_capability('mod/questionnaire:viewsingleresponse', $context);
