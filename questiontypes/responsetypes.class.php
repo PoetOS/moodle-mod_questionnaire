@@ -1021,7 +1021,7 @@ class questionnaire_response_single extends questionnaire_response_base {
                 $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_CLEAN);
             }
             if (preg_match("/[^ \t\n]/", $other)) {
-                $record = new object;
+                $record = new stdClass();
                 $record->response_id = $rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;

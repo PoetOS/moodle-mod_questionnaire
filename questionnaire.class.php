@@ -1168,7 +1168,7 @@ class questionnaire {
             foreach ($newquestions as $question) {
                 if ($question->dependquestion != 0) {
                     $dependqtypeid = $this->questions[$question->dependquestion]->type_id;
-                    $record = new object;
+                    $record = new stdClass();
                     $record->id = $question->id;
                     $record->dependquestion = $qidarray[$question->dependquestion];
                     if ($dependqtypeid != 1) {
@@ -1331,7 +1331,7 @@ class questionnaire {
     private function response_commit($rid) {
         global $DB;
 
-        $record = new object;
+        $record = new stdClass();
         $record->id = $rid;
         $record->complete = 'y';
         $record->submitted = time();
@@ -1544,7 +1544,7 @@ class questionnaire {
     public function response_insert($sid, $section, $rid, $userid, $resume=false) {
         global $DB, $USER;
 
-        $record = new object;
+        $record = new stdClass();
         $record->submitted = time();
 
         if (empty($rid)) {
