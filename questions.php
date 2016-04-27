@@ -232,7 +232,7 @@ if ($action == 'main') {
                 } else {
                     $pos = 1;
                 }
-                $question = new Object();
+                $question = new stdClass();
                 $question->survey_id = $qformdata->sid;
                 $question->type_id = QUESPAGEBREAK;
                 $question->position = $pos;
@@ -290,7 +290,7 @@ if ($action == 'main') {
                                            $qid, array('subdirs' => true), $question->content);
         $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
     } else {
-        $question = new Object();
+        $question = new stdClass();
         $question->sid = $questionnaire->survey->id;
         $question->id = $cm->id;
         $question->type_id = $qtype;
@@ -393,7 +393,7 @@ if ($action == 'main') {
                                                              $qformdata->qid, array('subdirs' => true), $qformdata->content);
 
             $fields = array('name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice');
-            $questionrecord = new Object();
+            $questionrecord = new stdClass();
             $questionrecord->id = $qformdata->qid;
             foreach ($fields as $f) {
                 if (isset($qformdata->$f)) {
@@ -419,7 +419,7 @@ if ($action == 'main') {
             $qformdata->survey_id = $qformdata->sid;
             $fields = array('survey_id', 'name', 'type_id', 'length', 'precise', 'required', 'position',
                             'dependquestion', 'dependchoice');
-            $questionrecord = new Object();
+            $questionrecord = new stdClass();
             foreach ($fields as $f) {
                 if (isset($qformdata->$f)) {
                     $questionrecord->$f = trim($qformdata->$f);
@@ -474,7 +474,7 @@ if ($action == 'main') {
 
             while ($nidx < $newcount) {
                 // New choices...
-                $choicerecord = new Object();
+                $choicerecord = new stdClass();
                 $choicerecord->question_id = $qformdata->qid;
                 $choicerecord->content = trim($newchoices[$nidx]);
                 $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choicerecord->content, $matches);
@@ -554,7 +554,7 @@ if ($reload) {
                                                $qid, array('subdirs' => true), $question->content);
             $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
         } else {
-            $question = new Object();
+            $question = new stdClass();
             $question->sid = $questionnaire->survey->id;
             $question->id = $cm->id;
             $question->type_id = $qtype;
