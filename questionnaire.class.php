@@ -228,7 +228,7 @@ class questionnaire {
                 questionnaire_record_submission($this, $USER->id, $rid);
 
                 if ($this->grade != 0) {
-                    $questionnaire = new Object();
+                    $questionnaire = new stdClass();
                     $questionnaire->id = $this->id;
                     $questionnaire->name = $this->name;
                     $questionnaire->grade = $this->grade;
@@ -292,7 +292,7 @@ class questionnaire {
 
         $this->print_survey_start('', 1, 1, 0, $rid, false);
 
-        $data = new Object();
+        $data = new stdClass();
         $i = 0;
         $this->response_import_all($rid, $data);
         if ($referer != 'print') {
@@ -338,7 +338,7 @@ class questionnaire {
         // then responses may have become empty, hence this test is necessary.
         if ($resps) {
             foreach ($resps as $resp) {
-                $data[$resp->id] = new Object();
+                $data[$resp->id] = new stdClass();
                 $this->response_import_all($resp->id, $data[$resp->id]);
             }
 
@@ -1050,7 +1050,7 @@ class questionnaire {
             $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page', 'thank_head',
                             'thank_body', 'feedbacknotes', 'info', 'feedbacksections', 'feedbackscores', 'chart_type');
             // Theme field deprecated.
-            $record = new Object();
+            $record = new stdClass();
             $record->id = 0;
             $record->owner = $sdata->owner;
             foreach ($fields as $f) {
@@ -1090,7 +1090,7 @@ class questionnaire {
             }
 
             // UPDATE the row in the DB with current values.
-            $surveyrecord = new Object();
+            $surveyrecord = new stdClass();
             $surveyrecord->id = $this->survey->id;
             foreach ($fields as $f) {
                 $surveyrecord->$f = trim($sdata->{$f});
@@ -1526,7 +1526,7 @@ class questionnaire {
         $return = true;
         $mailaddresses = preg_split('/,|;/', $email);
         foreach ($mailaddresses as $email) {
-            $userto = new Object();
+            $userto = new stdClass();
             $userto->email = $email;
             $userto->mailformat = 1;
             // Dummy userid to keep email_to_user happy in moodle 2.6.
@@ -2882,7 +2882,7 @@ class questionnaire {
             $p++;
         }
 
-        $formatoptions = new Object();
+        $formatoptions = new stdClass();
         $formatoptions->filter = false;  // To prevent any filtering in CSV output.
 
         // Get textual versions of responses, add them to output at the correct col position.

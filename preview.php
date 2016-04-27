@@ -45,7 +45,7 @@ if ($id) {
         print_error('coursemisconf');
     }
     // Dummy questionnaire object.
-    $questionnaire = new Object();
+    $questionnaire = new stdClass();
     $questionnaire->id = 0;
     $questionnaire->course = $course->id;
     $questionnaire->name = $survey->title;

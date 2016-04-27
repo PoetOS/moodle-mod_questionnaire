@@ -292,7 +292,7 @@ abstract class questionnaire_question_base {
         global $DB;
 
         if (is_null($questionrecord)) {
-            $questionrecord = new Object();
+            $questionrecord = new stdClass();
             $questionrecord->id = $this->id;
             $questionrecord->survey_id = $this->survey_id;
             $questionrecord->name = $this->name;
@@ -396,7 +396,7 @@ abstract class questionnaire_question_base {
         global $DB;
         $retvalue = true;
         if ($cid = $DB->insert_record('questionnaire_quest_choice', $choicerecord)) {
-            $this->choices[$cid] = new Object();
+            $this->choices[$cid] = new stdClass();
             $this->choices[$cid]->content = $choicerecord->content;
             $this->choices[$cid]->value = isset($choicerecord->value) ? $choicerecord->value : null;
         } else {
@@ -801,7 +801,7 @@ abstract class questionnaire_question_base {
                 'question', $formdata->qid, array('subdirs' => true), $formdata->content);
 
             $fields = array('name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice');
-            $questionrecord = new Object();
+            $questionrecord = new stdClass();
             $questionrecord->id = $formdata->qid;
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {
@@ -819,7 +819,7 @@ abstract class questionnaire_question_base {
             $formdata->survey_id = $formdata->sid;
             $fields = array('survey_id', 'name', 'type_id', 'length', 'precise', 'required', 'position',
                             'dependquestion', 'dependchoice');
-            $questionrecord = new Object();
+            $questionrecord = new stdClass();
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {
                     $questionrecord->$f = trim($formdata->$f);
@@ -855,7 +855,7 @@ abstract class questionnaire_question_base {
 
             while (($nidx < $newcount) && ($cidx < $oldcount)) {
                 if ($newchoices[$nidx] != $echoice->content) {
-                    $choicerecord = new Object();
+                    $choicerecord = new stdClass();
                     $choicerecord->id = $ekey;
                     $choicerecord->question_id = $this->qid;
                     $choicerecord->content = trim($newchoices[$nidx]);
@@ -877,7 +877,7 @@ abstract class questionnaire_question_base {
 
             while ($nidx < $newcount) {
                 // New choices...
-                $choicerecord = new Object();
+                $choicerecord = new stdClass();
                 $choicerecord->question_id = $this->qid;
                 $choicerecord->content = trim($newchoices[$nidx]);
                 $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choicerecord->content, $matches);

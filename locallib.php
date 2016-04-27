@@ -909,7 +909,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                     } else {
                         $pos = 1;
                     }
-                    $question = new Object();
+                    $question = new stdClass();
                     $question->survey_id = $questionnaire->survey->id;
                     $question->type_id = QUESPAGEBREAK;
                     $question->position = $pos;

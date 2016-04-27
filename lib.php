@@ -67,11 +67,11 @@ function questionnaire_add_instance($questionnaire) {
 
     if (empty($questionnaire->sid)) {
         // Create a new survey.
-        $cm = new Object();
+        $cm = new stdClass();
         $qobject = new questionnaire(0, $questionnaire, $COURSE, $cm);
 
         if ($questionnaire->create == 'new-0') {
-            $sdata = new Object();
+            $sdata = new stdClass();
             $sdata->name = $questionnaire->name;
             $sdata->realm = 'private';
             $sdata->title = $questionnaire->name;

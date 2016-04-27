@@ -768,7 +768,7 @@ class questionnaire_response_boolean extends questionnaire_response_base {
     public function insert_response($rid, $val) {
         global $DB;
         if (!empty($val)) { // If "no answer" then choice is empty (CONTRIB-846).
-            $record = new Object();
+            $record = new stdClass();
             $record->response_id = $rid;
             $record->question_id = $this->question->id;
             $record->choice_id = $val;
@@ -849,7 +849,7 @@ class questionnaire_response_text extends questionnaire_response_base {
         }
 
         if (preg_match("/[^ \t\n]/", $val)) {
-            $record = new Object();
+            $record = new stdClass();
             $record->response_id = $rid;
             $record->question_id = $this->question->id;
             $record->response = $val;
@@ -931,7 +931,7 @@ class questionnaire_response_date extends questionnaire_response_base {
         }
         // Now use ISO date formatting.
         $checkdateresult = questionnaire_check_date($thisdate, true);
-        $record = new Object();
+        $record = new stdClass();
         $record->response_id = $rid;
         $record->question_id = $this->question->id;
         $record->response = $checkdateresult;
@@ -1003,7 +1003,7 @@ class questionnaire_response_single extends questionnaire_response_base {
                         continue;
                     }
                     if (preg_match("/[^ \t\n]/", $other)) {
-                        $record = new Object();
+                        $record = new stdClass();
                         $record->response_id = $rid;
                         $record->question_id = $this->question->id;
                         $record->choice_id = $cid;
@@ -1030,7 +1030,7 @@ class questionnaire_response_single extends questionnaire_response_base {
                 $val = $cid;
             }
         }
-        $record = new Object();
+        $record = new stdClass();
         $record->response_id = $rid;
         $record->question_id = $this->question->id;
         $record->choice_id = isset($val) ? $val : 0;
@@ -1118,7 +1118,7 @@ class questionnaire_response_multiple extends questionnaire_response_single {
                     array_push($val, $cid);
                 }
                 if (preg_match("/[^ \t\n]/", $other)) {
-                    $record = new Object();
+                    $record = new stdClass();
                     $record->response_id = $rid;
                     $record->question_id = $this->question->id;
                     $record->choice_id = $cid;
@@ -1138,7 +1138,7 @@ class questionnaire_response_multiple extends questionnaire_response_single {
                 if (preg_match("/other_q[0-9]+/", $cid)) {
                     continue;
                 }
-                $record = new Object();
+                $record = new stdClass();
                 $record->response_id = $rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
@@ -1177,7 +1177,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
                 } else {
                     $rank = intval($other);
                 }
-                $record = new Object();
+                $record = new stdClass();
                 $record->response_id = $rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
@@ -1191,7 +1191,7 @@ class questionnaire_response_rank extends questionnaire_response_base {
             } else {
                 $rank = intval($val);
             }
-            $record = new Object();
+            $record = new stdClass();
             $record->response_id = $rid;
             $record->question_id = $this->question->id;
             $record->rank = $rank;
