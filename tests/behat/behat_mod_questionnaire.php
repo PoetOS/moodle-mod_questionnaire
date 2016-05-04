@@ -91,40 +91,31 @@ class behat_mod_questionnaire extends behat_base {
             throw new ExpectationException('Invalid question type specified.', $this->getSession());
         }
 
-        // We get option choices as CSV strings. If we have this, extract it out for use in
-        // multiline data, and remove that row from the $fieldata.
+        // We get option choices as CSV strings. If we have this, modify it for use in
+        // multiline data.
         $rows = $fielddata->getRows();
         $hashrows = $fielddata->getRowsHash();
         $options = array();
         if (isset($hashrows['Possible answers'])) {
             $options = explode(',', $hashrows['Possible answers']);
             $rownum = -1;
-            // Find the row that contained the data and remove it. Rows are two item arrays where the
+            // Find the row that contained multiline data and add line breaks. Rows are two item arrays where the
             // first is an identifier and the second is the value.
             foreach ($rows as $key => $row) {
                 if ($row[0] == 'Possible answers') {
-                    $rownum = $key;
+                    $row[1] = str_replace(',', "\n", $row[1]);
+                    $rows[$key] = $row;
                     break;
                 }
             }
-            if ($rownum > -1) {
-                unset($rows[$rownum]);
-            }
-            $fielddata->setRows($rows);
+            $fielddata = new TableNode($rows);
         }
 
         $steps = array(
             new Given('I set the field "id_type_id" to "'.$questiontype.'"'),
             new Given('I press "Add selected question type"'),
-            new Given('I set the following fields to these values:', $fielddata));
-
-        if (!empty($options)) {
-            $lines = implode("\n", $options);
-            $lines = new PyStringNode($lines);
-            $steps[] = new Given('I set the field "Possible answers" to multiline', $lines);
-        }
-
-        $steps[] = new Given('I press "Save changes"');
+            new Given('I set the following fields to these values:', $fielddata),
+            new Given('I press "Save changes"'));
 
         return $steps;
     }

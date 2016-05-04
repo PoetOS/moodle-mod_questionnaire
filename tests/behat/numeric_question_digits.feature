@@ -16,8 +16,13 @@ Feature: Numeric questions can specify a maximum number of digits, and minimum n
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
+    And the following "activities" exist:
+      | activity | name | description | course | idnumber |
+      | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
     And I log in as "teacher1"
-    And I add a questionnaire "Test questionnaire" to the course "Course 1" and start to enter questions
+    And I follow "Course 1"
+    And I follow "Test questionnaire"
+    And I follow "Questions"
     And I add a "Numeric" question and I fill the form with:
       | Question Name | Q1 |
       | Yes | y |

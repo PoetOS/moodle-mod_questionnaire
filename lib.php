@@ -613,7 +613,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                 new moodle_url($url,
                     array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0,
                         'action' => 'summary', 'group' => $currentgroupid)),
-                navigation_node::TYPE_SETTING, null, 'yourresponses');
+                    navigation_node::TYPE_SETTING, null, 'yourresponses');
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
             $myreportnode->add(get_string('summary', 'questionnaire'),
@@ -639,7 +639,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                 new moodle_url($url,
                     array('instance' => $questionnaire->id, 'userid' => $USER->id,
                         'byresponse' => 1, 'action' => 'vresp', 'group' => $currentgroupid)),
-                navigation_node::TYPE_SETTING, null, 'yourresponse');
+                    navigation_node::TYPE_SETTING, null, 'yourresponse');
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
         }
     }
