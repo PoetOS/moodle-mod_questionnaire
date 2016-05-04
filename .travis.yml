@@ -15,12 +15,12 @@ php:
 
 env:
  global:
-  - MOODLE_BRANCH=MOODLE_30_STABLE
+  - MOODLE_BRANCH=master
 # Temporarily turn off checking for this file. It will be replaced.
   - IGNORE_PATHS=module.js
  matrix:
   - DB=pgsql
-  - DB=mysqli
+#  - DB=mysqli
 
 before_install:
   - phpenv config-rm xdebug.ini
