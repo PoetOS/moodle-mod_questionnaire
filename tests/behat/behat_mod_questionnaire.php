@@ -44,27 +44,6 @@ use Behat\Behat\Context\Step\Given as Given,
 class behat_mod_questionnaire extends behat_base {
 
     /**
-     *
-     * @Given /^I add a questionnaire "([^"]*)" to the course "([^"]*)" and start to enter questions$/
-     *
-     * @param string $questionnairename
-     * @param string $coursename
-     * @return Given[]
-     *
-     */
-    public function i_add_a_questionnaire_to_the_course_and_start_to_enter_questions($questionnairename, $coursename) {
-        $fielddata = new TableNode();
-        $fielddata->addRow('| Name | '.$questionnairename.' |');
-        $fielddata->addRow('| Description | Test questionnaire description |');
-        return array(
-            new Given('I follow "'.$coursename.'"'),
-            new Given('I turn editing mode on'),
-            new Given('I add a "Questionnaire" to section "1" and I fill the form with:', $fielddata),
-            new Given('I follow "'.$questionnairename.'"'),
-            new Given('I follow "Add questions"'));
-    }
-
-    /**
      * Adds a question to the questionnaire with the provided data.
      *
      * @Given /^I add a "([^"]*)" question and I fill the form with:$/
@@ -111,12 +90,17 @@ class behat_mod_questionnaire extends behat_base {
             $fielddata = new TableNode($rows);
         }
 
-        $steps = array(
-            new Given('I set the field "id_type_id" to "'.$questiontype.'"'),
-            new Given('I press "Add selected question type"'),
-            new Given('I set the following fields to these values:', $fielddata),
-            new Given('I press "Save changes"'));
+        $this->execute('behat_forms::i_set_the_field_to', array('id_type_id', $questiontype));
+        $this->execute('behat_forms::press_button', 'Add selected question type');
+        $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $fielddata);
+        $this->execute('behat_forms::press_button', 'Save changes');
 
-        return $steps;
+//        $steps = array(
+//            new Given('I set the field "id_type_id" to "'.$questiontype.'"'),
+//            new Given('I press "Add selected question type"'),
+//            new Given('I set the following fields to these values:', $fielddata),
+//            new Given('I press "Save changes"'));
+
+//        return $steps;
     }
 }
