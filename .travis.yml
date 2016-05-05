@@ -20,7 +20,7 @@ env:
   - IGNORE_PATHS=module.js
  matrix:
   - DB=pgsql
-#  - DB=mysqli
+  - DB=mysqli
 
 before_install:
   - phpenv config-rm xdebug.ini
