@@ -609,11 +609,11 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $url = '/mod/questionnaire/myreport.php';
 
         if ($usernumresp > 1) {
-            $node = navigation_node::create(get_string('yourresponses', 'questionnaire'),
-                new moodle_url($url,
-                    array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0,
-                        'action' => 'summary', 'group' => $currentgroupid)),
-                    navigation_node::TYPE_SETTING, null, 'yourresponses');
+            $murl = new moodle_url($url,
+                array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary',
+                    'group' => $currentgroupid));
+            $node = navigation_node::create(get_string('yourresponses', 'questionnaire'), $murl, navigation_node::TYPE_SETTING,
+                null, 'yourresponses');
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
             $myreportnode->add(get_string('summary', 'questionnaire'),
@@ -635,11 +635,11 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
                             'action' => 'dwnpg', 'group' => $currentgroupid)));
             }
         } else {
-            $node = navigation_node::create(get_string('yourresponse', 'questionnaire'),
-                new moodle_url($url,
-                    array('instance' => $questionnaire->id, 'userid' => $USER->id,
-                        'byresponse' => 1, 'action' => 'vresp', 'group' => $currentgroupid)),
-                    navigation_node::TYPE_SETTING, null, 'yourresponse');
+            $murl = new moodle_url($url,
+                array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp',
+                    'group' => $currentgroupid));
+            $node = navigation_node::create(get_string('yourresponse', 'questionnaire'), $murl, navigation_node::TYPE_SETTING,
+                null, 'yourresponse');
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
         }
     }
