@@ -94,13 +94,5 @@ class behat_mod_questionnaire extends behat_base {
         $this->execute('behat_forms::press_button', 'Add selected question type');
         $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $fielddata);
         $this->execute('behat_forms::press_button', 'Save changes');
-
-//        $steps = array(
-//            new Given('I set the field "id_type_id" to "'.$questiontype.'"'),
-//            new Given('I press "Add selected question type"'),
-//            new Given('I set the following fields to these values:', $fielddata),
-//            new Given('I press "Save changes"'));
-
-//        return $steps;
     }
 }
