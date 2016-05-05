@@ -25,7 +25,7 @@ class questionnaire {
      */
     public $questions = [];
 
-    /*
+    /**
      * The survey record.
      * @var object $survey
      */
@@ -1415,7 +1415,7 @@ class questionnaire {
         while (list($qid, $arr) = each($res)) {
             // Question position (there may be "holes" in positions list).
             $qpos = $arr[0];
-            // Question type (1:bool,2:text,3:essay,4:radio,5:check,6:dropdn,7:rating(not used),8:rate,9:date,10:numeric).
+            // Question type (1-bool,2-text,3-essay,4-radio,5-check,6-dropdn,7-rating(not used),8-rate,9-date,10-numeric).
             $qtype = $arr[1];
             // Variable name; (may be empty); for rate questions: 'variable group' name.
             $qname = $arr[2];
@@ -2896,7 +2896,8 @@ class questionnaire {
             $questionobj = $this->questions[$qid];
 
             if ($prevresprow !== false && $prevresprow->rid !== $rid) {
-                $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition, $nbinfocols, $numrespcols);
+                $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition,
+                    $nbinfocols, $numrespcols);
                 $row = [];
             }
 
@@ -2921,7 +2922,7 @@ class questionnaire {
                     $c = 0;
                     if (in_array(intval($question->type_id), $choicetypes)) {
                         $choices = $choicesbyqid[$qid];
-                        // Get position of choice
+                        // Get position of choice.
                         foreach ($choices as $choice) {
                             $c++;
                             if ($responserow->choice_id === $choice->cid) {
@@ -2956,7 +2957,7 @@ class questionnaire {
 
             $prevresprow = $responserow;
         }
-        // Add final row to output
+        // Add final row to output.
         $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition, $nbinfocols, $numrespcols);
 
         // Change table headers to incorporate actual question numbers.

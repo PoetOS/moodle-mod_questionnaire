@@ -69,12 +69,6 @@ if ($fbsections = $DB->get_records('questionnaire_fb_sections',
         }
     }
     // If Global Feedback (only 1 section) and no questions have yet been put in section 1 check all questions.
-    /* if ($feedbacksections == 1 && !isset($fbsections[0]->scorecalculation)) {
-            $scorecalculation = unserialize($fbsection->scorecalculation);
-            foreach ($scorecalculation as $qid => $key) {
-                $questionsinsections[$qid] = $section;
-            }
-    } */
     if (!empty($questionsinsections)) {
         $vf = $questionsinsections;
     }

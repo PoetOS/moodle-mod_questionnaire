@@ -175,7 +175,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             $record['content'] = 'Random '.$this->type_str($record['type_id']).' '.uniqid();
         }
 
-        // Get question type
+        // Get question type.
         $typeid = $record['type_id'];
 
         if ($typeid === QUESRATE && !isset($record['length'])) {
@@ -207,7 +207,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
         }
 
-        // Update questionnaire
+        // Update questionnaire.
         $questionnaire->add_questions();
 
         return $question;
@@ -472,7 +472,8 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $rs = $DB->get_records_sql("SELECT * FROM {questionnaire_quest_choice} $select", $params, 0, 1);
                 $choice = reset($rs);
                 if (!$choice) {
-                    throw new coding_exception('Could not find choice for "'.$choiceval.'" (question_id = '.$question->id.')', var_export($choiceval, true));
+                    throw new coding_exception('Could not find choice for "'.$choiceval.
+                        '" (question_id = '.$question->id.')', var_export($choiceval, true));
                 }
                 $choiceid = $choice->id;
 
@@ -528,12 +529,11 @@ class mod_questionnaire_generator extends testing_module_generator {
         }
 
         if (!isset($record['username'])) {
-            throw new coding_exception('username (actually the user id) must be present in phpunit_util::create_response() $record');
+            throw new coding_exception('username (actually the user id) must be present in '.
+                'phpunit_util::create_response() $record');
         }
 
         $record['submitted'] = time() + $this->responsecount;
-
-        // $questionnaire = $DB->get_record('questionnaire', ['id' => $record['survey_id']]);
 
         // Add the response.
         $record['id'] = $DB->insert_record('questionnaire_response', $record);
@@ -541,17 +541,19 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         foreach ($questionresponses as $questionresponse) {
             if (!$questionresponse instanceof question_response) {
-                throw new coding_exception('Question responses must have an instance of question_response'.var_export($questionresponse, true));
+                throw new coding_exception('Question responses must have an instance of question_response'.
+                    var_export($questionresponse, true));
             }
             $this->add_response_choice($questionresponse, $responseid);
         }
 
-        // Mark response as complete
+        // Mark response as complete.
         $record['complete'] = 'y';
         $DB->update_record('questionnaire_response', $record);
 
-        // Create attempt record
-        $attempt = ['qid' => $record['survey_id'], 'userid' => $record['username'], 'rid' => $record['id'], 'timemodified' => time()];
+        // Create attempt record.
+        $attempt = ['qid' => $record['survey_id'], 'userid' => $record['username'], 'rid' => $record['id'],
+            'timemodified' => time()];
         $DB->insert_record('questionnaire_attempts', $attempt);
 
         return $record;
@@ -650,7 +652,8 @@ class mod_questionnaire_generator extends testing_module_generator {
         return $this->create_response(['survey_id' => $questionnaire->sid, 'username' => $userid], $responses);
     }
 
-    public function create_and_fully_populate($coursecount = 4, $studentcount = 20, $questionnairecount = 2, $questionspertype = 5) {
+    public function create_and_fully_populate($coursecount = 4, $studentcount = 20, $questionnairecount = 2,
+            $questionspertype = 5) {
         global $DB;
 
         $dg = $this->datagenerator;
@@ -660,15 +663,16 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $totalquestions = $coursecount * $questionnairecount * ($questionspertype * count($questiontypes));
         $totalquestionresponses = $studentcount * $totalquestions;
-        mtrace($coursecount.' courses * '.$questionnairecount.' questionnaires * '.($questionspertype * count($questiontypes)).' questions = '.$totalquestions.' total questions');
-        mtrace($totalquestions.' total questions * '.$studentcount.' resondees = '.$totalquestionresponses.' total question responses');
+        mtrace($coursecount.' courses * '.$questionnairecount.' questionnaires * '.($questionspertype * count($questiontypes)).
+            ' questions = '.$totalquestions.' total questions');
+        mtrace($totalquestions.' total questions * '.$studentcount.' resondees = '.$totalquestionresponses.
+            ' total question responses');
 
         $questionsprocessed = 0;
 
         $students = [];
         $courses = [];
 
-        /* @var $questionnaires questionnaire[] */
         $questionnaires = [];
 
         for ($u = 0; $u < $studentcount; $u++) {
@@ -677,7 +681,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $manplugin = enrol_get_plugin('manual');
 
-        // Create courses;
+        // Create courses.
         for ($c = 0; $c < $coursecount; $c++) {
             $course = $dg->create_course();
             $courses[] = $course;
@@ -690,7 +694,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
         }
 
-        // Create questionnaires in each course
+        // Create questionnaires in each course.
         for ($q = 0; $q < $questionnairecount; $q++) {
             $coursesprocessed = 0;
             foreach ($courses as $course) {
@@ -698,7 +702,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $questionnaires[] = $questionnaire;
                 $questions = [];
                 foreach ($questiontypes as $questiontype) {
-                    // Add section text for this question
+                    // Add section text for this question.
                     $qdg->create_question(
                         $questionnaire,
                         [

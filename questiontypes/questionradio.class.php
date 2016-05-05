@@ -130,7 +130,8 @@ class questionnaire_question_radio extends questionnaire_question_base {
                     $output .= ' value="'.stripslashes($data->$cid) .'"';
                 }
                 $output .= ' />';
-                $output .= '<label for="'.$htmlid.'-other" class="accesshide">Text for '.format_text($othertext, FORMAT_HTML).'</label>&nbsp;';
+                $output .= '<label for="'.$htmlid.'-other" class="accesshide">Text for '.
+                    format_text($othertext, FORMAT_HTML).'</label>&nbsp;';
             }
             if ($horizontal) {
                 // Added a zero-width space character to make MSIE happy!

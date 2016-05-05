@@ -124,13 +124,6 @@ function questionnaire_add_instance($questionnaire) {
         $questionnaire->resume = 0;
     }
 
-    // Field questionnaire->navigate used for branching questionnaires. Starting with version 2.5.5.
-    /* if ($questionnaire->navigate == '1') {
-        $questionnaire->navigate = 1;
-    } else {
-        $questionnaire->navigate = 0;
-    } */
-
     if (!$questionnaire->id = $DB->insert_record("questionnaire", $questionnaire)) {
         return false;
     }
@@ -168,13 +161,6 @@ function questionnaire_update_instance($questionnaire) {
     } else {
         $questionnaire->resume = 0;
     }
-
-    // Field questionnaire->navigate used for branching questionnaires. Starting with version 2.5.5.
-    /* if ($questionnaire->navigate == '1') {
-        $questionnaire->navigate = 1;
-    } else {
-        $questionnaire->navigate = 0;
-    } */
 
     // Get existing grade item.
     questionnaire_grade_item_update($questionnaire);

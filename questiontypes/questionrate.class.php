@@ -210,8 +210,9 @@ class questionnaire_question_rate extends questionnaire_question_base {
                         array('class' => 'accesshide'));
                     // If isna column then set na choice to -1 value.
                     $value = ($j < $this->length ? $j : - 1);
-                    echo '<input name="'.$str.'" type="radio" value="'.$value .'"'.$checked.$disabled.$order.' id="'.$str.'_'.$value.'" />'.
-                         '<label for="'.$str.'_'.$value.'" class="accesshide">Choice '.$i.' for row '.$row.'</label></td>';
+                    echo '<input name="'.$str.'" type="radio" value="'.$value .'"'.$checked.$disabled.$order.
+                        ' id="'.$str.'_'.$value.'" />'.'<label for="'.$str.'_'.$value.
+                        '" class="accesshide">Choice '.$i.' for row '.$row.'</label></td>';
                     if ($bg == 'c0 raterow') {
                         $bg = 'c1 raterow';
                     } else {
