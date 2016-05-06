@@ -97,9 +97,9 @@ class text extends base {
             }
             $isnumeric = $this->question->type_id == QUESNUMERIC;
             if ($isnumeric) {
-                $this->mkreslistnumeric(count($rids), $this->question->precise);
+                \mod_questionnaire\response\display_support::mkreslistnumeric($this->counts, count($rids), $this->question->precise);
             } else {
-                $this->mkreslisttext($rows);
+                \mod_questionnaire\response\display_support::mkreslisttext($rows);
             }
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';

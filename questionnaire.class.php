@@ -2634,7 +2634,7 @@ class questionnaire {
         for ($c = $nbinfocols; $c < $numrespcols; $c++) {
             if (isset($row[$c])) {
                 $positioned[] = $row[$c];
-            } else {
+            } else if (isset($questionsbyposition[$c])) {
                 $question = $questionsbyposition[$c];
                 $qtype = intval($question->type_id);
                 if ($qtype === QUESCHECK) {
@@ -2642,6 +2642,8 @@ class questionnaire {
                 } else {
                     $positioned[] = null;
                 }
+            } else {
+                $positioned[] = null;
             }
         }
         return $positioned;

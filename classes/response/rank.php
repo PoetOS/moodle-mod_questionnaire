@@ -204,9 +204,11 @@ class rank extends base {
                 $this->counts[$ccontent]->avg = $avg;
                 $this->counts[$ccontent]->avgvalue = $avgvalue;
             }
-            $this->mkresavg(count($rids), $this->question->precise, $prtotal, $this->question->length, $sort, $stravgvalue);
+            \mod_questionnaire\response\display_support::mkresavg($this->counts, count($rids), $this->question->choices,
+                $this->question->precise, $prtotal, $this->question->length, $sort, $stravgvalue);
 
-            $this->mkrescount($rids, $rows, $this->question->precise, $this->question->length, $sort);
+            \mod_questionnaire\response\display_support::mkrescount($this->counts, $rids, $rows, $this->question,
+                $this->question->precise, $this->question->length, $sort);
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
@@ -219,5 +221,5 @@ class rank extends base {
     protected function bulk_sql_config() {
         return new bulk_sql_config($this->response_table(), 'qrr', true, false, true);
     }
-}
 
+}

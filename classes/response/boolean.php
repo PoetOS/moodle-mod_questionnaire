@@ -96,7 +96,8 @@ class boolean extends base {
                 }
                 $this->counts[$this->choice] = intval($count);
             }
-            $this->mkrespercent(count($rids), $this->question->precise, $prtotal, $sort = '');
+            \mod_questionnaire\response\display_support::mkrespercent($this->counts, count($rids),
+                $this->question->precise, $prtotal, $sort = '');
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }

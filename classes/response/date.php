@@ -90,7 +90,7 @@ class date extends base {
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            $this->mkreslistdate(count($rids), $this->question->precise, $prtotal);
+            \mod_questionnaire\response\display_support::mkreslistdate($this->counts, count($rids), $this->question->precise, $prtotal);
         } else {
             echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
