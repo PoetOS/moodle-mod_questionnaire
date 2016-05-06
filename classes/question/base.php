@@ -95,20 +95,19 @@ abstract class base {
     public $deleted     = 'n';
 
     /** @var array $qtypenames List of all question names. */
-    private static $qtypenames =
-        array(
-            QUESYESNO => 'yesno',
-            QUESTEXT => 'text',
-            QUESESSAY => 'essay',
-            QUESRADIO => 'radio',
-            QUESCHECK => 'check',
-            QUESDROP => 'drop',
-            QUESRATE => 'rate',
-            QUESDATE => 'date',
-            QUESNUMERIC => 'numeric',
-            QUESPAGEBREAK => 'pagebreak',
-            QUESSECTIONTEXT => 'sectiontext'
-        );
+    private static $qtypenames = array(
+        QUESYESNO => 'yesno',
+        QUESTEXT => 'text',
+        QUESESSAY => 'essay',
+        QUESRADIO => 'radio',
+        QUESCHECK => 'check',
+        QUESDROP => 'drop',
+        QUESRATE => 'rate',
+        QUESDATE => 'date',
+        QUESNUMERIC => 'numeric',
+        QUESPAGEBREAK => 'pagebreak',
+        QUESSECTIONTEXT => 'sectiontext'
+    );
 
     // Class Methods.
 
