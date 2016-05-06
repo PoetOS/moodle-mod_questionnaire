@@ -25,9 +25,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_questionnaire\question\base;
+
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/generator_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/questiontypes_test.php');
 

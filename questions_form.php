@@ -21,7 +21,6 @@
  */
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
 class questionnaire_questions_form extends moodleform {
 

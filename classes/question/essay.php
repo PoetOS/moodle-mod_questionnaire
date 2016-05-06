@@ -15,17 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the parent class for questionnaire question types.
+ * This file contains the parent class for essay question types.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package questiontypes
  */
 
-class questionnaire_question_essay extends questionnaire_question_base {
+namespace mod_questionnaire\question;
+defined('MOODLE_INTERNAL') || die();
+use \html_writer;
+
+class essay extends base {
 
     protected function responseclass() {
-        return 'questionnaire_response_text';
+        return '\\mod_questionnaire\\response\\text';
     }
 
     public function helpname() {
@@ -73,7 +77,7 @@ class questionnaire_question_essay extends questionnaire_question_base {
 
     // Note - intentianally returning 'precise' for length and 'length' for precise.
 
-    protected function form_length(MoodleQuickForm $mform, $helptext = '') {
+    protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         $responseformats = array(
                         "0" => get_string('formateditor', 'questionnaire'),
                         "1" => get_string('formatplain', 'questionnaire'));
@@ -82,7 +86,7 @@ class questionnaire_question_essay extends questionnaire_question_base {
         return $mform;
     }
 
-    protected function form_precise(MoodleQuickForm $mform, $helptext = '') {
+    protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         $choices = array();
         for ($lines = 5; $lines <= 40; $lines += 5) {
             $choices[$lines] = get_string('nlines', 'questionnaire', $lines);

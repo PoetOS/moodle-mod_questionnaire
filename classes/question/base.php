@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
+use \html_writer;
 
 /**
  * This file contains the parent class for questionnaire question types.
@@ -45,27 +47,12 @@ define('QUESNUMERIC', 10);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
 
-GLOBAL $qtypenames;
-$qtypenames = array(
-        QUESYESNO => 'yesno',
-        QUESTEXT => 'text',
-        QUESESSAY => 'essay',
-        QUESRADIO => 'radio',
-        QUESCHECK => 'check',
-        QUESDROP => 'drop',
-        QUESRATE => 'rate',
-        QUESDATE => 'date',
-        QUESNUMERIC => 'numeric',
-        QUESPAGEBREAK => 'pagebreak',
-        QUESSECTIONTEXT => 'sectiontext'
-        );
 GLOBAL $idcounter, $CFG;
 $idcounter = 0;
 
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/responsetypes.class.php');
 
-abstract class questionnaire_question_base {
+abstract class base {
 
     // Class Properties.
     /** @var int $id The database id of this question. */
@@ -106,6 +93,22 @@ abstract class questionnaire_question_base {
 
     /** @var boolean $deleted The deleted flag. */
     public $deleted     = 'n';
+
+    /** @var array $qtypenames List of all question names. */
+    private static $qtypenames =
+        array(
+            QUESYESNO => 'yesno',
+            QUESTEXT => 'text',
+            QUESESSAY => 'essay',
+            QUESRADIO => 'radio',
+            QUESCHECK => 'check',
+            QUESDROP => 'drop',
+            QUESRATE => 'rate',
+            QUESDATE => 'date',
+            QUESNUMERIC => 'numeric',
+            QUESPAGEBREAK => 'pagebreak',
+            QUESSECTIONTEXT => 'sectiontext'
+        );
 
     // Class Methods.
 
@@ -165,15 +168,25 @@ abstract class questionnaire_question_base {
     abstract public function helpname();
 
     static public function question_builder($qtype, $params = null) {
-        global $CFG, $qtypenames;
+        global $CFG;
 
-        $qclassfile = $CFG->dirroot.'/mod/questionnaire/questiontypes/question' . $qtypenames[$qtype] . '.class.php';
-        $qclassname = 'questionnaire_question_' . $qtypenames[$qtype];
-        require_once($qclassfile);
+        $qclassname = '\\mod_questionnaire\\question\\'.self::qtypename($qtype);
         if (!empty($params) && is_array($params)) {
             $params = (object)$params;
         }
         return new $qclassname(0, $params, null, array('type_id' => $qtype));
+    }
+
+    /**
+     * Return the different question type names.
+     * @return array
+     */
+    static public function qtypename($qtype) {
+        if (array_key_exists($qtype, self::$qtypenames)) {
+            return self::$qtypenames[$qtype];
+        } else {
+            return('');
+        }
     }
 
     /**
@@ -188,7 +201,7 @@ abstract class questionnaire_question_base {
 
         if ($choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $this->id), 'id ASC')) {
             foreach ($choices as $choice) {
-                $this->choices[$choice->id] = new stdClass();
+                $this->choices[$choice->id] = new \stdClass();
                 $this->choices[$choice->id]->content = $choice->content;
                 $this->choices[$choice->id]->value = $choice->value;
             }
@@ -202,7 +215,7 @@ abstract class questionnaire_question_base {
      */
     public function insert_response($rid, $val) {
         if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, 'questionnaire_response_base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
             return $this->response->insert_response($rid, $val);
         } else {
             return false;
@@ -214,7 +227,7 @@ abstract class questionnaire_question_base {
      */
     public function get_results($rids = false) {
         if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, 'questionnaire_response_base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
             return $this->response->get_results($rids);
         } else {
             return false;
@@ -226,7 +239,7 @@ abstract class questionnaire_question_base {
      */
     public function display_results($rids=false, $sort='') {
         if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, 'questionnaire_response_base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
             return $this->response->display_results($rids, $sort);
         } else {
             return false;
@@ -292,7 +305,7 @@ abstract class questionnaire_question_base {
         global $DB;
 
         if (is_null($questionrecord)) {
-            $questionrecord = new stdClass();
+            $questionrecord = new \stdClass();
             $questionrecord->id = $this->id;
             $questionrecord->survey_id = $this->survey_id;
             $questionrecord->name = $this->name;
@@ -376,7 +389,7 @@ abstract class questionnaire_question_base {
                 $qid = $this->id;
             }
             foreach ($this->choices as $key => $choice) {
-                $choicrecord = new stdClass();
+                $choicrecord = new \stdClass();
                 $choicerecord->id = $key;
                 $choicerecord->question_id = $qid;
                 $choicerecord->content = $choice->content;
@@ -396,7 +409,7 @@ abstract class questionnaire_question_base {
         global $DB;
         $retvalue = true;
         if ($cid = $DB->insert_record('questionnaire_quest_choice', $choicerecord)) {
-            $this->choices[$cid] = new stdClass();
+            $this->choices[$cid] = new \stdClass();
             $this->choices[$cid]->content = $choicerecord->content;
             $this->choices[$cid]->value = isset($choicerecord->value) ? $choicerecord->value : null;
         } else {
@@ -610,7 +623,7 @@ abstract class questionnaire_question_base {
      * Override this, or any of the internal methods, to provide specific form data for editing the question type.
      * The structure of the elements here is the default layout for the question form.
      */
-    public function edit_form(MoodleQuickForm $mform, $questionnaire, $modcontext) {
+    public function edit_form(\MoodleQuickForm $mform, $questionnaire, $modcontext) {
         $this->form_header($mform);
         $this->form_name($mform);
         $this->form_required($mform);
@@ -646,7 +659,7 @@ abstract class questionnaire_question_base {
         return true;
     }
 
-    protected function form_header(MoodleQuickForm $mform, $helpname = '') {
+    protected function form_header(\MoodleQuickForm $mform, $helpname = '') {
         // Display different messages for new question creation and existing question modification.
         if (isset($this->qid) && !empty($this->qid)) {
             $header = get_string('editquestion', 'questionnaire', questionnaire_get_type($this->type_id));
@@ -661,7 +674,7 @@ abstract class questionnaire_question_base {
         $mform->addHelpButton('questionhdredit', $helpname, 'questionnaire');
     }
 
-    protected function form_name(MoodleQuickForm $mform) {
+    protected function form_name(\MoodleQuickForm $mform) {
         $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'),
                         array('size' => '30', 'maxlength' => '30'));
         $mform->setType('name', PARAM_TEXT);
@@ -669,7 +682,7 @@ abstract class questionnaire_question_base {
         return $mform;
     }
 
-    protected function form_required(MoodleQuickForm $mform) {
+    protected function form_required(\MoodleQuickForm $mform) {
         $reqgroup = array();
         $reqgroup[] =& $mform->createElement('radio', 'required', '', get_string('yes'), 'y');
         $reqgroup[] =& $mform->createElement('radio', 'required', '', get_string('no'), 'n');
@@ -678,15 +691,15 @@ abstract class questionnaire_question_base {
         return $mform;
     }
 
-    protected function form_length(MoodleQuickForm $mform, $helpname = '') {
+    protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
         self::form_length_text($mform, $helpname);
     }
 
-    protected function form_precise(MoodleQuickForm $mform, $helpname = '') {
+    protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         self::form_precise_text($mform, $helpname);
     }
 
-    protected function form_dependencies(MoodleQuickForm $mform, $questionnaire) {
+    protected function form_dependencies(\MoodleQuickForm $mform, $questionnaire) {
         // Dependence fields.
 
         if ($questionnaire->navigate) {
@@ -717,7 +730,7 @@ abstract class questionnaire_question_base {
         }
     }
 
-    protected function form_question_text(MoodleQuickForm $mform, $context) {
+    protected function form_question_text(\MoodleQuickForm $mform, $context) {
         $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true, 'context' => $context);
         $mform->addElement('editor', 'content', get_string('text', 'questionnaire'), null, $editoroptions);
         $mform->setType('content', PARAM_RAW);
@@ -725,7 +738,7 @@ abstract class questionnaire_question_base {
         return $mform;
     }
 
-    protected function form_choices(MoodleQuickForm $mform, array $choices, $helpname = '') {
+    protected function form_choices(\MoodleQuickForm $mform, array $choices, $helpname = '') {
         $numchoices = count($choices);
         $allchoices = '';
         foreach ($choices as $choice) {
@@ -752,13 +765,13 @@ abstract class questionnaire_question_base {
 
     // Helper functions for commonly used editing functions.
 
-    static public function form_length_hidden(MoodleQuickForm $mform, $value = 0) {
+    static public function form_length_hidden(\MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'length', $value);
         $mform->setType('length', PARAM_INT);
         return $mform;
     }
 
-    static public function form_length_text(MoodleQuickForm $mform, $helpname = '', $value = 0) {
+    static public function form_length_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'length', get_string($helpname, 'questionnaire'), array('size' => '1'), $value);
         $mform->setType('length', PARAM_INT);
         if (!empty($helpname)) {
@@ -767,13 +780,13 @@ abstract class questionnaire_question_base {
         return $mform;
     }
 
-    static public function form_precise_hidden(MoodleQuickForm $mform, $value = 0) {
+    static public function form_precise_hidden(\MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'precise', $value);
         $mform->setType('precise', PARAM_INT);
         return $mform;
     }
 
-    static public function form_precise_text(MoodleQuickForm $mform, $helpname = '', $value = 0) {
+    static public function form_precise_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'precise', get_string($helpname, 'questionnaire'), array('size' => '1'));
         $mform->setType('precise', PARAM_INT);
         if (!empty($helpname)) {
@@ -801,7 +814,7 @@ abstract class questionnaire_question_base {
                 'question', $formdata->qid, array('subdirs' => true), $formdata->content);
 
             $fields = array('name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice');
-            $questionrecord = new stdClass();
+            $questionrecord = new \stdClass();
             $questionrecord->id = $formdata->qid;
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {
@@ -819,7 +832,7 @@ abstract class questionnaire_question_base {
             $formdata->survey_id = $formdata->sid;
             $fields = array('survey_id', 'name', 'type_id', 'length', 'precise', 'required', 'position',
                             'dependquestion', 'dependchoice');
-            $questionrecord = new stdClass();
+            $questionrecord = new \stdClass();
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {
                     $questionrecord->$f = trim($formdata->$f);
@@ -855,7 +868,7 @@ abstract class questionnaire_question_base {
 
             while (($nidx < $newcount) && ($cidx < $oldcount)) {
                 if ($newchoices[$nidx] != $echoice->content) {
-                    $choicerecord = new stdClass();
+                    $choicerecord = new \stdClass();
                     $choicerecord->id = $ekey;
                     $choicerecord->question_id = $this->qid;
                     $choicerecord->content = trim($newchoices[$nidx]);
@@ -877,7 +890,7 @@ abstract class questionnaire_question_base {
 
             while ($nidx < $newcount) {
                 // New choices...
-                $choicerecord = new stdClass();
+                $choicerecord = new \stdClass();
                 $choicerecord->question_id = $this->qid;
                 $choicerecord->content = trim($newchoices[$nidx]);
                 $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choicerecord->content, $matches);

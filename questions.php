@@ -17,6 +17,7 @@
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questions_form.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot.'/mod/questionnaire/classes/question/base.php'); // Needed for question type constants.
 
 $id     = required_param('id', PARAM_INT);                 // Course module ID
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
@@ -130,7 +131,7 @@ if ($delq) {
 
     // Log question deleted event.
     $context = context_module::instance($questionnaire->cm->id);
-    $questiontype = $qtypenames[$qtype];
+    $questiontype = \mod_questionnaire\question\base::qtypename($qtype);
     $params = array(
                     'context' => $context,
                     'courseid' => $questionnaire->course->id,
@@ -229,7 +230,7 @@ if ($action == 'main') {
                 $questionrec->survey_id = $qformdata->sid;
                 $questionrec->type_id = QUESPAGEBREAK;
                 $questionrec->content = 'break';
-                $question = questionnaire_question_base::question_builder(QUESPAGEBREAK);
+                $question = \mod_questionnaire\question\base::question_builder(QUESPAGEBREAK);
                 $question->add($questionrec);
                 $reload = true;
             } else {
@@ -309,7 +310,7 @@ if ($action == 'main') {
     // Log question created event.
     if (isset($qformdata)) {
         $context = context_module::instance($questionnaire->cm->id);
-        $questiontype = $qtypenames[$qformdata->type_id];
+        $questiontype = \mod_questionnaire\question\base::qtypename($qformdata->type_id);
         $params = array(
                         'context' => $context,
                         'courseid' => $questionnaire->course->id,

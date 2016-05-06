@@ -15,14 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the parent class for questionnaire question types.
+ * This file contains the parent class for text question types.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package questiontypes
  */
 
-class questionnaire_question_text extends questionnaire_question_base {
+namespace mod_questionnaire\question;
+defined('MOODLE_INTERNAL') || die();
+
+class text extends base {
 
     /**
      * Constructor. Use to set any default properties.
@@ -35,7 +38,7 @@ class questionnaire_question_text extends questionnaire_question_base {
     }
 
     protected function responseclass() {
-        return 'questionnaire_response_text';
+        return '\\mod_questionnaire\\response\\text';
     }
 
     public function helpname() {
@@ -55,11 +58,11 @@ class questionnaire_question_text extends questionnaire_question_base {
         echo '<div class="response text"><span class="selected">'.$response.'</span></div>';
     }
 
-    protected function form_length(MoodleQuickForm $mform, $helptext = '') {
+    protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_length($mform, 'fieldlength');
     }
 
-    protected function form_precise(MoodleQuickForm $mform, $helptext = '') {
+    protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_precise($mform, 'maxtextlength');
     }
 }

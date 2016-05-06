@@ -25,9 +25,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_questionnaire\question\base;
+
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
 /**
  * Unit tests for {@link questionnaire_questiontypes_testcase}.
@@ -35,15 +36,15 @@ require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class
  */
 class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
     public function test_create_question_checkbox() {
-        $this->create_test_question_with_choices(QUESCHECK, 'questionnaire_question_check', array('content' => 'Check one'));
+        $this->create_test_question_with_choices(QUESCHECK, '\\mod_questionnaire\\question\\check', array('content' => 'Check one'));
     }
 
     public function test_create_question_date() {
-        $this->create_test_question(QUESDATE, 'questionnaire_question_date', array('content' => 'Enter a date'));
+        $this->create_test_question(QUESDATE, '\\mod_questionnaire\\question\\date', array('content' => 'Enter a date'));
     }
 
     public function test_create_question_dropdown() {
-        $this->create_test_question_with_choices(QUESDROP, 'questionnaire_question_drop', array('content' => 'Select one'));
+        $this->create_test_question_with_choices(QUESDROP, '\\mod_questionnaire\\question\\drop', array('content' => 'Select one'));
     }
 
     public function test_create_question_essay() {
@@ -51,11 +52,11 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
             'content' => 'Enter an essay',
             'length' => 0,
             'precise' => 5);
-        $this->create_test_question(QUESESSAY, 'questionnaire_question_essay', $questiondata);
+        $this->create_test_question(QUESESSAY, '\\mod_questionnaire\\question\\essay', $questiondata);
     }
 
     public function test_create_question_sectiontext() {
-        $this->create_test_question(QUESSECTIONTEXT, 'questionnaire_question_sectiontext',
+        $this->create_test_question(QUESSECTIONTEXT, '\\mod_questionnaire\\question\\sectiontext',
             array('name' => null, 'content' => 'This a section label.'));
     }
 
@@ -64,15 +65,15 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
             'content' => 'Enter a number',
             'length' => 10,
             'precise' => 0);
-        $this->create_test_question(QUESNUMERIC, 'questionnaire_question_numeric', $questiondata);
+        $this->create_test_question(QUESNUMERIC, '\\mod_questionnaire\\question\\numeric', $questiondata);
     }
 
     public function test_create_question_radiobuttons() {
-        $this->create_test_question_with_choices(QUESRADIO, 'questionnaire_question_radio', array('content' => 'Choose one'));
+        $this->create_test_question_with_choices(QUESRADIO, '\\mod_questionnaire\\question\\radio', array('content' => 'Choose one'));
     }
 
     public function test_create_question_ratescale() {
-        $this->create_test_question_with_choices(QUESRATE, 'questionnaire_question_rate', array('content' => 'Rate these'));
+        $this->create_test_question_with_choices(QUESRATE, '\\mod_questionnaire\\question\\rate', array('content' => 'Rate these'));
     }
 
     public function test_create_question_textbox() {
@@ -80,11 +81,11 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
             'content' => 'Enter some text',
             'length' => 20,
             'precise' => 25);
-        $this->create_test_question(QUESTEXT, 'questionnaire_question_text', $questiondata);
+        $this->create_test_question(QUESTEXT, '\\mod_questionnaire\\question\\text', $questiondata);
     }
 
     public function test_create_question_yesno() {
-        $this->create_test_question(QUESYESNO, 'questionnaire_question_yesno', array('content' => 'Enter yes or no'));
+        $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', array('content' => 'Enter yes or no'));
     }
 
 

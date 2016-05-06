@@ -15,19 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the parent class for questionnaire question types.
+ * This file contains the parent class for yesno question types.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package questiontypes
  */
 
-require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
+namespace mod_questionnaire\question;
+defined('MOODLE_INTERNAL') || die();
 
-class questionnaire_question_yesno extends questionnaire_question_base {
+class yesno extends base {
 
     protected function responseclass() {
-        return 'questionnaire_response_boolean';
+        return '\\mod_questionnaire\\response\\boolean';
     }
 
     public function helpname() {
@@ -140,11 +141,11 @@ class questionnaire_question_yesno extends questionnaire_question_base {
         echo '</div>';
     }
 
-    protected function form_length(MoodleQuickForm $mform, $helpname = '') {
-        return questionnaire_question_base::form_length_hidden($mform);
+    protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
+        return base::form_length_hidden($mform);
     }
 
-    protected function form_precise(MoodleQuickForm $mform, $helpname = '') {
-        return questionnaire_question_base::form_precise_hidden($mform);
+    protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
+        return base::form_precise_hidden($mform);
     }
 }

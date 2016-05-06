@@ -15,17 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the parent class for questionnaire question types.
+ * This file contains the parent class for radio question types.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package questiontypes
  */
 
-class questionnaire_question_radio extends questionnaire_question_base {
+namespace mod_questionnaire\question;
+defined('MOODLE_INTERNAL') || die();
+
+class radio extends base {
 
     protected function responseclass() {
-        return 'questionnaire_response_single';
+        return '\\mod_questionnaire\\response\\single';
     }
 
     public function helpname() {
@@ -256,7 +259,7 @@ class questionnaire_question_radio extends questionnaire_question_base {
         }
     }
 
-    protected function form_length(MoodleQuickForm $mform, $helptext = '') {
+    protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         $lengroup = array();
         $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('vertical', 'questionnaire'), '0');
         $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('horizontal', 'questionnaire'), '1');
@@ -267,7 +270,7 @@ class questionnaire_question_radio extends questionnaire_question_base {
         return $mform;
     }
 
-    protected function form_precise(MoodleQuickForm $mform, $helptext = '') {
-        return questionnaire_question_base::form_precise_hidden($mform);
+    protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
+        return base::form_precise_hidden($mform);
     }
 }

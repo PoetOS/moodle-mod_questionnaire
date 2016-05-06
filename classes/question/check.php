@@ -15,17 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the parent class for questionnaire question types.
+ * This file contains the parent class for check question types.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package questiontypes
  */
 
-class questionnaire_question_check extends questionnaire_question_base {
+namespace mod_questionnaire\question;
+defined('MOODLE_INTERNAL') || die();
+use \html_writer;
+
+class check extends base {
 
     protected function responseclass() {
-        return 'questionnaire_response_multiple';
+        return '\\mod_questionnaire\\response\\multiple';
     }
 
     public function helpname() {
@@ -224,11 +228,11 @@ class questionnaire_question_check extends questionnaire_question_base {
         return $valid;
     }
 
-    protected function form_length(MoodleQuickForm $mform, $helptext = '') {
+    protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_length($mform, 'minforcedresponses');
     }
 
-    protected function form_precise(MoodleQuickForm $mform, $helptext = '') {
+    protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_precise($mform, 'maxforcedresponses');
     }
 

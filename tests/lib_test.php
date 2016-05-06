@@ -25,8 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_questionnaire\question\base;
+
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+require_once($CFG->dirroot.'/mod/questionnaire/classes/question/base.php');
 
 /**
  * Unit tests for {@link questionnaire_lib_testcase}.

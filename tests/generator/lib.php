@@ -27,11 +27,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\generator\question_response,
-    mod_questionnaire\generator\question_response_rank;
+    mod_questionnaire\generator\question_response_rank,
+    mod_questionnaire\question\base;
 
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 
 class mod_questionnaire_generator extends testing_module_generator {
 
@@ -147,10 +147,10 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param questionnaire $questionnaire
      * @param array|stdClass $record
      * @param array|stdClass $data - accompanying data for question - e.g. choices
-     * @return questionnaire_question_base the question object
+     * @return \mod_questionnaire\question\base the question object
      */
     public function create_question(questionnaire $questionnaire, $record = null, $data = null) {
-        global $DB, $qtypenames;
+        global $DB;
 
         // Increment the question count.
         $this->questioncount++;
@@ -196,7 +196,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         // Add the question.
         $record->id = $DB->insert_record('questionnaire_question', $record);
 
-        $typename = $qtypenames[$record->type_id];
+        $typename = \mod_questionnaire\question\base::qtypename($record->type_id);
         $question = questionnaire::question_factory($typename, $record->id, $record);
 
         // Add the question choices if required.
@@ -321,7 +321,7 @@ class mod_questionnaire_generator extends testing_module_generator {
     /**
      * Add choices to question.
      *
-     * @param questionnaire_question_base $question
+     * @param \mod_questionnaire\question\base $question
      * @param stdClass $data
      */
     protected function add_question_choices($question, $data) {
@@ -592,7 +592,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
     /**
      * @param questionnaire $questionnaire
-     * @param questionnaire_question_base[] $questions
+     * @param \mod_questionnaire\question\base[] $questions
      * @param $userid
      * @return stdClass
      * @throws coding_exception

@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
+require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
 class questionnaire {
 
     // Class Properties.
 
     /**
-     * @var questionnaire_question_base[] $quesitons
+     * @var \mod_questionnaire\question\base[] $quesitons
      */
     public $questions = [];
 
@@ -97,15 +97,11 @@ class questionnaire {
      * @param null $record
      * @param null $context
      * @param array $params
-     * @return questionnaire_question_base|mixed
+     * @return \mod_questionnaire\question\base|mixed
      */
     public static function question_factory($typename, $id = 0, $record = null, $context = null, $params = []) {
         global $CFG;
-        $questionclass = 'questionnaire_question_' . $typename;
-        if (!class_exists($questionclass)) {
-            require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/question' .
-                $typename . '.class.php');
-        }
+        $questionclass = '\\mod_questionnaire\\question\\'.$typename;
         return new $questionclass($id, $record, $context, $params);
     }
 
@@ -113,7 +109,7 @@ class questionnaire {
      * Adding questions to the object.
      */
     public function add_questions($sid = false) {
-        global $CFG, $DB, $qtypenames;
+        global $CFG, $DB;
 
         if ($sid === false) {
             $sid = $this->sid;
@@ -130,7 +126,7 @@ class questionnaire {
             $isbreak = false;
             foreach ($records as $record) {
 
-                $typename = $qtypenames[$record->type_id];
+                $typename = \mod_questionnaire\question\base::qtypename($record->type_id);
                 $this->questions[$record->id] = self::question_factory($typename, 0, $record, $this->context);
 
                 if ($record->type_id != QUESPAGEBREAK) {
@@ -2495,13 +2491,13 @@ class questionnaire {
      * @return array
      */
     protected function get_survey_all_responses($rid = '', $userid = '') {
-        global $DB, $qtypenames;
+        global $DB;
         $uniquetypes = $this->get_survey_questiontypes(true);
         $allresponsessql = "";
         $allresponsesparams = [];
 
         foreach ($uniquetypes as $type) {
-            $typename = $qtypenames[$type];
+            $typename = \mod_questionnaire\question\base::qtypename($type);
             $question = self::question_factory($typename);
             if (!isset($question->response)) {
                 continue;

@@ -33,7 +33,6 @@
 
 require_once($CFG->libdir.'/eventslib.php');
 require_once($CFG->dirroot.'/calendar/lib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/questiontypes/questiontypes.class.php');
 // Constants.
 
 define ('QUESTIONNAIREUNLIMITED', 0);
@@ -1013,7 +1012,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
                                            $qid, array('subdirs' => true), $question->content);
         $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
     } else {
-        $question = questionnaire_question_base::question_builder($qtype);
+        $question = \mod_questionnaire\question\base::question_builder($qtype);
         $question->sid = $questionnaire->survey->id;
         $question->id = $questionnaire->cm->id;
         $question->type_id = $qtype;

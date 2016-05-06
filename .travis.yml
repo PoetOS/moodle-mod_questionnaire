@@ -7,7 +7,7 @@ cache:
     - $HOME/.composer/cache
 
 php:
-# For 3.1 forward, only test PHP7,
+# For 3.1 forward, only test PHP7.
  - 7.0
 
 env:
