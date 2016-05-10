@@ -21,6 +21,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package questionnaire
  */
+require_once($CFG->libdir . '/formslib.php');
 
 class mod_questionnaire_settings_form extends moodleform {
 

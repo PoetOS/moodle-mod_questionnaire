@@ -22,6 +22,7 @@
  * @package questionnaire
  */
 
+require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 
 class mod_questionnaire_feedback_form extends moodleform {
