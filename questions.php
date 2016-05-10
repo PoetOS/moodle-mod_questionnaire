@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/questionnaire/questions_form.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->dirroot.'/mod/questionnaire/classes/question/base.php'); // Needed for question type constants.
 
@@ -147,7 +146,7 @@ if ($delq) {
 }
 
 if ($action == 'main') {
-    $questionsform = new questionnaire_questions_form('questions.php', $moveq);
+    $questionsform = new mod_questionnaire_questions_form('questions.php', $moveq);
     $sdata = clone($questionnaire->survey);
     $sdata->sid = $questionnaire->survey->id;
     $sdata->id = $cm->id;
@@ -275,7 +274,7 @@ if ($action == 'main') {
 
 } else if ($action == 'question') {
     $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
-    $questionsform = new questionnaire_edit_question_form('questions.php');
+    $questionsform = new mod_questionnaire_edit_question_form('questions.php');
     $questionsform->set_data($question);
     if ($questionsform->is_cancelled()) {
         // Switch to main screen.
@@ -328,7 +327,7 @@ if ($reload) {
     unset($questionsform);
     $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm);
     if ($action == 'main') {
-        $questionsform = new questionnaire_questions_form('questions.php', $moveq);
+        $questionsform = new mod_questionnaire_questions_form('questions.php', $moveq);
         $sdata = clone($questionnaire->survey);
         $sdata->sid = $questionnaire->survey->id;
         $sdata->id = $cm->id;
@@ -342,7 +341,7 @@ if ($reload) {
         $questionsform->set_data($sdata);
     } else if ($action == 'question') {
         $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
-        $questionsform = new questionnaire_edit_question_form('questions.php');
+        $questionsform = new mod_questionnaire_edit_question_form('questions.php');
         $questionsform->set_data($question);
     }
 }

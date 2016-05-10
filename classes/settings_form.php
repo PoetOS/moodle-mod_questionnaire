@@ -22,9 +22,7 @@
  * @package questionnaire
  */
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
-
-class questionnaire_settings_form extends moodleform {
+class mod_questionnaire_settings_form extends moodleform {
 
     public function definition() {
         global $questionnaire, $questionnairerealms;

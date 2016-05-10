@@ -20,9 +20,7 @@
  * @package questionnaire
  */
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
-
-class questionnaire_questions_form extends moodleform {
+class mod_questionnaire_questions_form extends moodleform {
 
     public function __construct($action, $moveq=false) {
         $this->moveq = $moveq;
@@ -361,53 +359,4 @@ class questionnaire_questions_form extends moodleform {
         return $errors;
     }
 
-}
-
-class questionnaire_edit_question_form extends moodleform {
-
-    public function definition() {
-        global $questionnaire, $question, $SESSION;
-
-        // The 'sticky' required response value for further new questions.
-        if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
-            $question->required = $SESSION->questionnaire->required;
-        }
-        if (!isset($question->type_id)) {
-            print_error('undefinedquestiontype', 'questionnaire');
-        }
-
-        $mform =& $this->_form;
-
-        // Each question can provide its own form elements to the provided form, or use the default ones.
-        if (!$question->edit_form($mform, $questionnaire, $this->_customdata['modcontext'])) {
-            print_error("Question type had an unknown error in the edit_form method.");
-        }
-    }
-
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        // If this is a rate question.
-        if ($data['type_id'] == QUESRATE) {
-            if ($data['length'] < 2) {
-                $errors["length"] = get_string('notenoughscaleitems', 'questionnaire');
-            }
-            // If this is a rate question with no duplicates option.
-            if ($data['precise'] == 2 ) {
-                $allchoices = $data['allchoices'];
-                $allchoices = explode("\n", $allchoices);
-                $nbvalues = 0;
-                foreach ($allchoices as $choice) {
-                    if ($choice && !preg_match("/^[0-9]{1,3}=/", $choice)) {
-                            $nbvalues++;
-                    }
-                }
-                if ($nbvalues < 2) {
-                    $errors["allchoices"] = get_string('noduplicateschoiceserror', 'questionnaire');
-                }
-            }
-        }
-
-        return $errors;
-    }
 }

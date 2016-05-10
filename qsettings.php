@@ -17,7 +17,6 @@
 // This page prints a particular instance of questionnaire.
 
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/questionnaire/settings_form.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
@@ -54,7 +53,7 @@ if (!$questionnaire->capabilities->manage) {
     print_error('nopermissions', 'error', 'mod:questionnaire:manage');
 }
 
-$settingsform = new questionnaire_settings_form('qsettings.php');
+$settingsform = new mod_questionnaire_settings_form('qsettings.php');
 $sdata = clone($questionnaire->survey);
 $sdata->sid = $questionnaire->survey->id;
 $sdata->id = $cm->id;
