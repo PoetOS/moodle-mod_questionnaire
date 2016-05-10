@@ -22,10 +22,9 @@
  * @package questionnaire
  */
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
 require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 
-class questionnaire_feedback_form extends moodleform {
+class mod_questionnaire_feedback_form extends moodleform {
 
     protected $_feedbacks;
 

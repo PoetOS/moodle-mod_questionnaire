@@ -1859,7 +1859,7 @@ class questionnaire {
                     if ($key != 'content') { // No need to keep question text - ony keep choice text and rank.
                         if ($key == 'ccontent') {
                             if ($osgood) {
-                                list($contentleft, $contentright) = preg_split('/[|]/', $val);
+                                list($contentleft, $contentright) = array_merge(preg_split('/[|]/', $val), array(' '));
                                 $contents = questionnaire_choice_values($contentleft);
                                 if ($contents->title) {
                                     $contentleft = $contents->title;
@@ -2805,7 +2805,7 @@ class questionnaire {
                                 $nameddegrees++;
                             } else {
                                 if ($osgood) {
-                                    list($contentleft, $contentright) = preg_split('/[|]/', $content);
+                                    list($contentleft, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                                     $contents = questionnaire_choice_values($contentleft);
                                     if ($contents->title) {
                                         $contentleft = $contents->title;

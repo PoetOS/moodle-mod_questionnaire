@@ -189,7 +189,7 @@ class rank extends base {
                     if (isset($rows[$ccontent]->averagevalue)) {
                         $avgvalue = $rows[$ccontent]->averagevalue;
                         $osgood = false;
-                        if ($this->precise == 3) { // Osgood's semantic differential.
+                        if ($this->question->precise == 3) { // Osgood's semantic differential.
                             $osgood = true;
                         }
                         if ($stravgvalue == '' && !$osgood) {

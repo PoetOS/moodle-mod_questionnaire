@@ -349,7 +349,8 @@ class display_support {
                     }
 
                     if ($osgood) {
-                        list($content, $contentright) = preg_split('/[|]/', $content);
+                        // Ensure there are two bits of content.
+                        list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                     } else {
                         $contents = questionnaire_choice_values($content);
                         if ($contents->modname) {
@@ -530,7 +531,8 @@ class display_support {
                 $total = $counts[$content]->num;
                 $nbresp = '<strong>'.$total.'<strong>';
                 if ($osgood) {
-                    list($content, $contentright) = preg_split('/[|]/', $content);
+                    // Ensure there are two bits of content.
+                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                     $data[] = format_text($content, FORMAT_HTML);
                 } else {
                     // Eliminate potentially short-named choices.

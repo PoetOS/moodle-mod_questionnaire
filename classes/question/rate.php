@@ -185,7 +185,7 @@ class rate extends base {
                 echo '<tr class="raterow">';
                 $content = $choice->content;
                 if ($osgood) {
-                    list($content, $contentright) = preg_split('/[|]/', $content);
+                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }
                 echo '<td style="text-align: '.$textalign.';">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
                 $bg = 'c0 raterow';
@@ -320,7 +320,7 @@ class rate extends base {
                     $content = $contents->text;
                 }
                 if ($osgood) {
-                    list($content, $contentright) = preg_split('/[|]/', $content);
+                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }
                 echo '<td style="text-align:'.$textalign.'">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
                 $bg = 'c0';
