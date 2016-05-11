@@ -45,7 +45,9 @@ $strquestionnaires = get_string("modulenameplural", "questionnaire");
 $PAGE->navbar->add($strquestionnaires);
 $PAGE->set_title("$course->shortname: $strquestionnaires");
 $PAGE->set_heading(format_string($course->fullname));
-echo $OUTPUT->header();
+
+$output = $PAGE->get_renderer('mod_questionnaire');
+echo $output->header();
 
 // Get all the appropriate data.
 if (!$questionnaires = get_all_instances_in_course("questionnaire", $course)) {
@@ -92,9 +94,7 @@ if (has_capability('mod/questionnaire:viewsingleresponse', $coursecontext)) {
     $showing = 'responses';
 }
 
-$table = new html_table();
-$table->head = $headings;
-$table->align = $align;
+$content = array();
 
 // Populate the table with the list of instances.
 $currentsection = '';
@@ -208,10 +208,10 @@ foreach ($questionnaires as $questionnaire) {
             }
         }
     }
-    $table->data[] = $data;
+    $content[] = $data;
 } // End of loop over questionnaire instances.
 
-echo html_writer::table($table);
+echo $output->render_index($headings, $align, $content);
 
 // Finish the page.
-echo $OUTPUT->footer();
+echo $output->footer();
