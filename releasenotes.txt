@@ -1,3 +1,10 @@
 Release Notes
+
+Version 3.0.1 (Build - 2016051100)
+MDL-49360 - get_referer() is deprecated
+CONTRIB-5706 - Added a cast statement to ensure type matching for db call.
+CONTRIB-6069 - Removed erroneous 'break' statement. PHP7 should work fine.
+CONTRIB-6272 - Switch use of 'object' and 'Object' to 'stdClass()'.
+
 Version 3.0.0 (Build Build - 2015102800)
 CONTRIB-5972 - replaced 'add_intro_editor. Fixed css.
