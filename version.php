@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2015102800;  // The current module version (Date: YYYYMMDDXX)
+$plugin->version  = 2015102801;  // The current module version (Date: YYYYMMDDXX)
 $plugin->requires = 2015102800; // Moodle version.
 
 $plugin->component = 'mod_questionnaire';
