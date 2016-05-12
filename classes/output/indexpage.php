@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains class mod_questionnaire\output\renderer
+ * Contains class mod_questionnaire\output\indexpage
  *
  * @package    mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
@@ -27,33 +27,32 @@ namespace mod_questionnaire\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-class renderer extends \plugin_renderer_base {
+class indexpage implements \renderable, \templatable {
 
     /**
-     * Render a questionnaire index page.
+     * An array of headings
      *
-     * @param \templatable $indexpage
-     * @return string|boolean
+     * @var array
      */
-    public function render_indexpage(\templatable $indexpage) {
-        $data = $indexpage->export_for_template($this);
+    protected $headings;
 
-        return $this->render_from_template('mod_questionnaire/indexpage', $data);
+    /**
+     * Contruct
+     *
+     * @param array $headings An array of renderable headings
+     */
+    public function __construct(array $headings = array()) {
+        $this->headings = $headings;
     }
 
     /**
-     * Renders the HTML for the index page.
-     * @param array $headings Headings for the display columns.
-     * @param array $align Alignment for each column.
-     * @param array $data All of the table data.
-     * @return string
+     * Prepare data for use in a template
+     *
+     * @param \renderer_base $output
+     * @return array
      */
-/*    public function render_index($headings, $align, $data) {
-        $table = new \html_table();
-        $table->head = $headings;
-        $table->align = $align;
-        $table->data = $data;
-
-        return \html_writer::table($table);
-    } */
+    public function export_for_template(\renderer_base $output) {
+        $data = array('headings' => $this->headings);
+        return $data;
+    }
 }

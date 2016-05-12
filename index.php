@@ -211,7 +211,9 @@ foreach ($questionnaires as $questionnaire) {
     $content[] = $data;
 } // End of loop over questionnaire instances.
 
-echo $output->render_index($headings, $align, $content);
+//echo $output->render_index($headings, $align, $content);
+$indexpage = new \mod_questionnaire\output\indexpage($headings);
+echo $output->render_indexpage($indexpage);
 
 // Finish the page.
 echo $output->footer();
