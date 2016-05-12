@@ -24,7 +24,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-class mod_questionnaire_renderer extends plugin_renderer_base {
+namespace mod_questionnaire\output;
+
+class renderer extends \plugin_renderer_base {
 
     /**
      * Renders the HTML for the index page.
@@ -34,11 +36,11 @@ class mod_questionnaire_renderer extends plugin_renderer_base {
      * @return string
      */
     public function render_index($headings, $align, $data) {
-        $table = new html_table();
+        $table = new \html_table();
         $table->head = $headings;
         $table->align = $align;
         $table->data = $data;
 
-        return html_writer::table($table);
+        return \html_writer::table($table);
     }
 }
