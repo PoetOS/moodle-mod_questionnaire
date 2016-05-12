@@ -212,7 +212,7 @@ foreach ($questionnaires as $questionnaire) {
 } // End of loop over questionnaire instances.
 
 //echo $output->render_index($headings, $align, $content);
-$indexpage = new \mod_questionnaire\output\indexpage($headings);
+$indexpage = new \mod_questionnaire\output\indexpage($headings, $align);
 echo $output->render_indexpage($indexpage);
 
 // Finish the page.

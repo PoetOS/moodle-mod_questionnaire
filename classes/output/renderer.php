@@ -37,7 +37,6 @@ class renderer extends \plugin_renderer_base {
      */
     public function render_indexpage(\templatable $indexpage) {
         $data = $indexpage->export_for_template($this);
-
         return $this->render_from_template('mod_questionnaire/indexpage', $data);
     }
 

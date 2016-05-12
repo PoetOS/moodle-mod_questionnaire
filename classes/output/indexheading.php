@@ -27,26 +27,30 @@ namespace mod_questionnaire\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-class indexpage implements \renderable, \templatable {
+class indexheading implements \renderable, \templatable {
 
     /**
-     * An array of headings
+     * The title
      *
-     * @var array
+     * @var string
      */
-    protected $headings;
+    protected $title;
+
+    /**
+     * The alignment
+     *
+     * @var string
+     */
+    protected $alignment;
 
     /**
      * Contruct
      *
      * @param array $headings An array of renderable headings
      */
-    public function __construct(array $titles = array(), array $alignments = array()) {
-        $this->headings = array();
-        foreach ($titles as $key => $title) {
-            $align = isset($alignments[$key]) ? $alignments[$key] : '';
-            $this->headings[] = new \mod_questionnaire\output\indexheading($title, $alignments[$key]);
-        }
+    public function __construct($title, $alignment) {
+        $this->title = $title;
+        $this->alignment = $alignment;
     }
 
     /**
@@ -56,10 +60,7 @@ class indexpage implements \renderable, \templatable {
      * @return array
      */
     public function export_for_template(\renderer_base $output) {
-        $data = array('headings' => array());
-        foreach ($this->headings as $heading) {
-            $data['headings'][] = $heading->export_for_template($output);
-        }
+        $data = array('title' => $this->title, 'align' => $this->alignment);
         return $data;
     }
 }
