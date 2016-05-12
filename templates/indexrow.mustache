@@ -86,19 +86,7 @@
         ]
     }
 }}
-<table class="generaltable">
-  <thead>
-    <tr>
-{{#headings}}
-      {{> mod_questionnaire/indexheading}}
-{{/headings}}
-    </tr>
-  </thead>
-  <tbody>
-{{#rows}}
-    <tr>
-      {{> mod_questionnaire/indexrow}}
-    </tr>
-{{/rows}}
-  </tbody>
-</table>
+      <td class="cell" style="text-align:{{align}};" scope="col">{{topic}}</td>
+      <td class="cell" style="text-align:{{align}};" scope="col">{{name}}</td>
+      <td class="cell" style="text-align:{{align}};" scope="col">{{responses}}</td>
+      <td class="cell" style="text-align:{{align}};" scope="col">{{type}}</td>

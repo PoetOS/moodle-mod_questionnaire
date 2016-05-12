@@ -27,37 +27,44 @@ namespace mod_questionnaire\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-class indexpage implements \renderable, \templatable {
+class indexrow implements \renderable, \templatable {
 
     /**
-     * An array of headings
+     * The title
      *
-     * @var array
+     * @var string
      */
-    protected $headings;
+    protected $topic;
 
     /**
-     * An array of rows
+     * The alignment
      *
-     * @var array
+     * @var string
      */
-    protected $rows;
+    protected $name;
 
     /**
-     * Contruct
+     * The alignment
+     *
+     * @var string
+     */
+    protected $responses;
+
+    /**
+     * The alignment
+     *
+     * @var string
+     */
+    protected $type;
+
+    /**
+     * Construct
      *
      * @param array $headings An array of renderable headings
      */
-    public function __construct(array $titles = array(), array $alignments = array(), $content = array()) {
-        $this->headings = array();
-        foreach ($titles as $key => $title) {
-            $align = isset($alignments[$key]) ? $alignments[$key] : '';
-            $this->headings[] = new \mod_questionnaire\output\indexheading($title, $align);
-        }
-        foreach ($content as $key => $row) {
-            $align = isset($alignments[$key]) ? $alignments[$key] : '';
-            $this->rows[] = new \mod_questionnaire\output\indexrow($row, $align);
-        }
+    public function __construct($row, $alignment) {
+        list($this->topic, $this->name, $this->responses, $this->type) = $row;
+        $this->alignment = $alignment;
     }
 
     /**
@@ -67,13 +74,8 @@ class indexpage implements \renderable, \templatable {
      * @return array
      */
     public function export_for_template(\renderer_base $output) {
-        $data = array('headings' => array());
-        foreach ($this->headings as $heading) {
-            $data['headings'][] = $heading->export_for_template($output);
-        }
-        foreach ($this->rows as $row) {
-            $data['rows'][] = $row->export_for_template($output);
-        }
+        $data = array('topic' => $this->topic, 'name' => $this->name,
+            'responses' => $this->responses, 'type' => $this->type);
         return $data;
     }
 }
