@@ -48,15 +48,14 @@ class indexpage implements \renderable, \templatable {
      *
      * @param array $headings An array of renderable headings
      */
-    public function __construct(array $titles = array(), array $alignments = array(), $content = array()) {
+    public function __construct(array $titles = array(), $content = array()) {
         $this->headings = array();
+        $colnum = 1;
         foreach ($titles as $key => $title) {
-            $align = isset($alignments[$key]) ? $alignments[$key] : '';
-            $this->headings[] = new \mod_questionnaire\output\indexheading($title, $align);
+            $this->headings['title'.$colnum++] = $title;
         }
         foreach ($content as $key => $row) {
-            $align = isset($alignments[$key]) ? $alignments[$key] : '';
-            $this->rows[] = new \mod_questionnaire\output\indexrow($row, $align);
+            $this->rows[] = $row;
         }
     }
 
@@ -68,11 +67,13 @@ class indexpage implements \renderable, \templatable {
      */
     public function export_for_template(\renderer_base $output) {
         $data = array('headings' => array());
-        foreach ($this->headings as $heading) {
-            $data['headings'][] = $heading->export_for_template($output);
+        foreach ($this->headings as $key => $heading) {
+            $data['headings'][$key] = $heading;
         }
         foreach ($this->rows as $row) {
-            $data['rows'][] = $row->export_for_template($output);
+            list($topic, $name, $responses, $type) = $row;
+            $data['rows'][] = array('topic' => $topic, 'name' => $name,
+            'responses' => $responses, 'type' => $type);
         }
         return $data;
     }

@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template block_rss_client/block
+    @template mod_questionnaire/indexpage
 
-    Template which defines an RSS Feeds block
+    Template which defines a questionnaire index page.
 
     Classes required for JS:
     * none
@@ -26,78 +26,55 @@
     * none
 
     Context variables required for this template:
-    * feeds - array: An array of RSS feeds.
+    * headings - array: An array of table headings.
+    * rows - array: An array of content rows for the table.
 
     Example context (json):
     {
-        "feeds": [
+        "headings": [
             {
-                "title": "News from around my living room",
-                "image": {
-                    "url": "https://www.example.com/feeds/news/poster.jpg",
-                    "title": "Example News Logo",
-                    "link": "https://www.example.com/feeds/news/"
-                },
-                "items": [
-                    {
-                        "id": "https://www.example.com/node/12",
-                        "link": "https://www.example.com/my-turtle-story.html",
-                        "title": "My Turtle Story",
-                        "description": "This is a story about my turtle.",
-                        "permalink": "https://www.example.com/my-turtle-story.html",
-                        "datepublished": "11 January 2016, 7:11 pm"
-                    },
-                    {
-                        "id": "https://www.example.com/node/12",
-                        "link": "https://www.example.com/my-cat-story.html",
-                        "title": "My Story",
-                        "description": "This is a story about my cats.",
-                        "permalink": "https://www.example.com/my-cat-story.html",
-                        "datepublished": "12 January 2016, 9:12 pm"
-                    }
-                ]
+                "title1": "Topic",
+                "title2": "Name",
+                "title3": "Responses",
+                "title4": "Questionnaire Type"
+            }
+        ]
+    },
+    {
+        "rows": [
+            {
+                "topic": "General",
+                "name": <a href="view.php?id=44">Questionnaire: Course Feedback</a>,
+                "responses": 2,
+                "type": Private
             },
             {
-                "title": "News from around my kitchen",
-                "image": {
-                    "url": "https://www.example.com/feeds/news/kitchen.jpg",
-                    "title": "Picture of My Kitchen",
-                    "link": "https://www.example.com/feeds/news/kitchen/"
-                },
-                "items": [
-                    {
-                        "id": "https://www.example.com/node/10",
-                        "link": "https://www.example.com/oven-smoke.html",
-                        "title": "Why is the Oven Smoking?",
-                        "description": "There is something smoking in the oven.",
-                        "permalink": "https://www.example.com/oven-smoke.html",
-                        "datepublished": "10 January 2016, 1:13 pm"
-                    },
-                    {
-                        "id": "https://www.example.com/node/13",
-                        "link": "https://www.example.com/coffee-is-good.html",
-                        "title": "Why My Coffee Machine is So Great!",
-                        "description": "Don't be fancy; drips are best.",
-                        "permalink": "https://www.example.com/oven-smoke.html",
-                        "datepublished": "13 January 2016, 8:25 pm"
-                    }
-                ]
+                "topic": "Topic 1",
+                "name": <a href="view.php?id=23">Test Questionnaire</a>,
+                "responses": 6,
+                "type": Private
             }
         ]
     }
-}}
+    }}
 <table class="generaltable">
   <thead>
     <tr>
 {{#headings}}
-      {{> mod_questionnaire/indexheading}}
+      <th class="header" style="text-align:left;" scope="col">{{title1}}</th>
+      <th class="header" style="text-align:left;" scope="col">{{title2}}</th>
+      <th class="header" style="text-align:center;" scope="col">{{title3}}</th>
+      <th class="header" style="text-align:left;" scope="col">{{title4}}</th>
 {{/headings}}
     </tr>
   </thead>
   <tbody>
 {{#rows}}
     <tr>
-      {{> mod_questionnaire/indexrow}}
+      <td class="cell" style="text-align:left;" scope="col">{{topic}}</td>
+      <td class="cell" style="text-align:left;" scope="col">{{{name}}}</td>
+      <td class="cell" style="text-align:center;" scope="col">{{responses}}</td>
+      <td class="cell" style="text-align:left;" scope="col">{{type}}</td>
     </tr>
 {{/rows}}
   </tbody>
