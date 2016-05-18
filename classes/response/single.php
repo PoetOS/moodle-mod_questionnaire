@@ -132,10 +132,85 @@ class single extends base {
     }
 
     /**
+     * Return all the fields to be used for users in bulk questionnaire sql.
+     *
+     * @author: Guy Thomas
+     * @return string
+     */
+    protected function user_fields_sql() {
+        $userfieldsarr = get_all_user_name_fields();
+        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution']);
+        $userfields = '';
+        foreach ($userfieldsarr as $field) {
+            $userfields .= $userfields === '' ? '' : ', ';
+            $userfields .= 'u.'.$field;
+        }
+        $userfields .= ', u.id as userid';
+        return $userfields;
+    }
+
+    /**
+     * Return sql and params for getting responses in bulk.
+     * @author Guy Thomas
+     * @param int $surveyid
+     * @param bool|int $responseid
+     * @param bool|int $userid
+     * @return array
+     */
+    public function get_bulk_sql($surveyid, $responseid = false, $userid = false) {
+        global $DB;
+
+        $usernamesql = $DB->sql_cast_char2int('qr.username');
+
+        $sql = $this->bulk_sql($surveyid, $responseid, $userid);
+        $sql .= "
+            AND qr.survey_id = ? AND qr.complete = ?
+      LEFT JOIN {questionnaire_response_other} qro ON qro.response_id = qr.id AND qro.choice_id = qrs.choice_id
+      LEFT JOIN {user} u ON u.id = $usernamesql
+        ";
+        $params = [$surveyid, 'y'];
+        if ($responseid) {
+            $sql .= " AND qr.id = ?";
+            $params[] = $responseid;
+        } else if ($userid) {
+            $sql .= " AND qr.username = ?"; // Note: username is the userid.
+            $params[] = $userid;
+        }
+
+        return [$sql, $params];
+    }
+
+    /**
      * Configure bulk sql
      * @return bulk_sql_config
      */
     protected function bulk_sql_config() {
         return new bulk_sql_config('questionnaire_resp_single', 'qrs', true, false, false);
+    }
+
+    /**
+     * Return sql for getting responses in bulk.
+     * @author Guy Thomas
+     * @return string
+     */
+    protected function bulk_sql() {
+        global $DB;
+        $userfields = $this->user_fields_sql();
+
+        $config = $this->bulk_sql_config();
+        $alias = $config->tablealias;
+
+        $extraselectfields = $config->get_extra_select();
+        $extraselect = '';
+        $extraselect .= 'qrs.choice_id, qro.response, 0 AS rank';
+
+        return "
+            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
+                   qr.submitted, qr.complete, qr.grade, qr.username, $userfields, qr.id AS rid, $alias.question_id,
+                   $extraselect
+              FROM {questionnaire_response} qr
+              JOIN {".$config->table."} $alias
+                ON $alias.response_id = qr.id
+        ";
     }
 }
