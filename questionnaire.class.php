@@ -2771,14 +2771,6 @@ class questionnaire {
                         foreach ($choices as $choice) {
                             $content = $choice->content;
                             $modality = '';
-                            // If "Other" add a column for the "other" checkbox. Then add a column for the actual "other" text entered.
-                            if (preg_match('/^!other/', $content)) {
-                                $content = $stringother;
-                                $col = $choice->name.'->['.$content.']';
-                                $columns[][$qpos] = $col;
-                                $questionidcols[][$qpos] = null;
-                                array_push($types, '0');
-                            }
                             $contents = questionnaire_choice_values($content);
                             if ($contents->modname) {
                                 $modality = $contents->modname;
@@ -2791,6 +2783,14 @@ class questionnaire {
                             $columns[][$qpos] = $col;
                             $questionidcols[][$qpos] = $qid.'_'.$choice->cid;
                             array_push($types, '0');
+                            // If "Other" add a column for the "other" checkbox. Then add a column for the actual "other" text entered.
+                            if (preg_match('/^!other/', $content)) {
+                                $content = $stringother;
+                                $col = $choice->name.'->['.$content.']';
+                                $columns[][$qpos] = $col;
+                                $questionidcols[][$qpos] = null;
+                                array_push($types, '0');
+                            }
                         }
                         break;
 
@@ -2909,10 +2909,9 @@ class questionnaire {
                 } else {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
                     if (preg_match('/^!other/', $content)) {
-                        // If this is an "other" column, put the selection results in the previous position.
-                        $row[$position-1] = empty($responserow->choice_id) ? '0' : '1';
-                        // If this has an "other" text, use it.
-                        $choicetxt = $responserow->response;
+                        // If this is an "other" column, put the text entered in the next position.
+                        $row[$position + 1] = $responserow->response;
+                        $choicetxt = empty($responserow->choice_id) ? '0' : '1';
                     } else if (!empty($responserow->choice_id)) {
                         $choicetxt = '1';
                     } else {
@@ -2963,7 +2962,7 @@ class questionnaire {
                 $row[$position] = $responsetxt;
                 // Check for "other" text and set it to the next position if present.
                 if (!empty($responsetxt1)) {
-                    $row[$position+1] = $responsetxt1;
+                    $row[$position + 1] = $responsetxt1;
                     unset($responsetxt1);
                 }
             }
