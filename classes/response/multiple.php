@@ -138,36 +138,24 @@ class multiple extends single {
     }
 
     /**
-     * Configure bulk sql
-     * @return bulk_sql_config
-     */
-    protected function bulk_sql_config() {
-        return new bulk_sql_config($this->response_table(), 'qrm', true, false, false);
-    }
-
-    /**
      * Return sql for getting responses in bulk.
      * @author Guy Thomas
      * @return string
      */
     protected function bulk_sql() {
         global $DB;
+
         $userfields = $this->user_fields_sql();
-
-        $config = $this->bulk_sql_config();
-        $alias = $config->tablealias;
-
-        $extraselectfields = $config->get_extra_select();
         $extraselect = '';
         $extraselect .= 'qrm.choice_id, qro.response, 0 AS rank';
+        $alias = 'qrm';
 
         return "
             SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.username, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".$config->table."} $alias
-                ON $alias.response_id = qr.id
+              JOIN {".$this->response_table()."} $alias ON $alias.response_id = qr.id
         ";
     }
 }
