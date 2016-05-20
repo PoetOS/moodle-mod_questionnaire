@@ -1,3 +1,0 @@
-Release Notes
-Version 3.0.0 (Build Build - 2015102800)
-CONTRIB-5972 - replaced 'add_intro_editor. Fixed css.
