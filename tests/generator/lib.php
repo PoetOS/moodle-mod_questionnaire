@@ -219,7 +219,7 @@ class mod_questionnaire_generator extends testing_module_generator {
     public function create_test_questionnaire($course, $qtype = null, $questiondata = array(), $choicedata = null) {
         $questionnaire = $this->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-        if (!is_null($qtype)) {
+        if ($qtype !== null) {
             $questiondata['type_id'] = $qtype;
             $questiondata['survey_id'] = $questionnaire->sid;
             $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
@@ -327,12 +327,12 @@ class mod_questionnaire_generator extends testing_module_generator {
     protected function add_question_choices($question, $data) {
         foreach ($data as $content) {
             if (!is_object($content)) {
-                $content = (object) [
+                $content = (object)[
                     'content' => $content,
                     'value' => $content
                 ];
             }
-            $record = (object) [
+            $record = (object)[
                 'question_id' => $question->id,
                 'content' => $content->content,
                 'value' => $content->value
@@ -522,7 +522,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         // Increment the response count.
         $this->responsecount++;
 
-        $record = (array) $record;
+        $record = (array)$record;
 
         if (!isset($record['survey_id'])) {
             throw new coding_exception('survey_id must be present in phpunit_util::create_response() $record');

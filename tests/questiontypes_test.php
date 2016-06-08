@@ -138,7 +138,7 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
     }
 
     private function create_test_question_with_choices($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
-        if (is_null($choicedata)) {
+        if ($choicedata === null) {
             $choicedata = array(
                 (object)array('content' => 'One', 'value' => 1),
                 (object)array('content' => 'Two', 'value' => 2),

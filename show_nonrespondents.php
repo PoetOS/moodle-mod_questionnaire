@@ -83,7 +83,7 @@ if (!$coursecontext = context_course::instance($course->id)) {
 
 require_login($course, true, $cm);
 
-if (($formdata = data_submitted()) AND !confirm_sesskey()) {
+if (($formdata = data_submitted()) && !confirm_sesskey()) {
     print_error('invalidsesskey');
 }
 
