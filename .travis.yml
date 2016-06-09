@@ -14,7 +14,7 @@ env:
  global:
   - MOODLE_BRANCH=MOODLE_31_STABLE
 # Temporarily turn off checking for this file. It will be replaced.
-  - IGNORE_PATHS=module.js
+  - IGNORE_PATHS=module.js,tests
  matrix:
   - DB=pgsql
   - DB=mysqli
