@@ -213,7 +213,9 @@ foreach ($questionnaires as $questionnaire) {
 
 //echo $output->render_index($headings, $align, $content);
 $indexpage = new \mod_questionnaire\output\indexpage($headings, $content);
-echo $output->render_indexpage($indexpage);
+// Note that $output->render($indexpage) is the same as $output->render_indexpage($indexpage). Automagic looks for a renderer
+// with the name "render_indexpage" when you call "render()" due to the passed in argument being the classname "indexpage".
+echo $output->render($indexpage);
 
 // Finish the page.
 echo $output->footer();
