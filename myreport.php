@@ -212,7 +212,7 @@ switch ($action) {
                        'WHERE r.survey_id = ? AND r.complete = \'y\' AND gm.groupid = ? AND '.
                        $castsql . ' = gm.userid '.
                        'ORDER BY r.id';
-                $currentgroupresps = $DB->get_records_sql($sql, array($sid, $currentgroupid);
+                $currentgroupresps = $DB->get_records_sql($sql, array($sid, $currentgroupid));
 
             } else {
                 // Groupmode = separate groups but user is not member of any group
