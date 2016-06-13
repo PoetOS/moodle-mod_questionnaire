@@ -38,3 +38,4 @@ removed from the lang folder. All translations are now available from AMOS.
 --------------------------------------------------------------------------------
 Please read the releasenotes.txt file for more info about successive changes
 --------------------------------------------------------------------------------
+
