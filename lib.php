@@ -489,7 +489,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
     $fullpath = "/$context->id/mod_questionnaire/$filearea/$componentid/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
         return false;
     }
 
@@ -548,7 +548,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     $keys = $questionnairenode->get_children_key_list();
     $beforekey = null;
     $i = array_search('modedit', $keys);
-    if ($i === false and array_key_exists(0, $keys)) {
+    if (($i === false) && array_key_exists(0, $keys)) {
         $beforekey = $keys[0];
     } else if (array_key_exists($i + 1, $keys)) {
         $beforekey = $keys[$i + 1];
@@ -791,7 +791,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     $viewfullnames   = has_capability('moodle/site:viewfullnames', $context);
     $groupmode       = groups_get_activity_groupmode($cm, $course);
 
-    if (is_null($modinfo->groups)) {
+    if ($modinfo->groups === null) {
         // Load all my groups and cache it in modinfo.
         $modinfo->groups = groups_get_user_groups($course->id);
     }
@@ -813,8 +813,8 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
                 continue;
             }
 
-            if ($groupmode == SEPARATEGROUPS and !$accessallgroups) {
-                if (is_null($usersgroups)) {
+            if (($groupmode == SEPARATEGROUPS) && !$accessallgroups) {
+                if ($usersgroups === null) {
                     $usersgroups = groups_get_all_groups($course->id,
                     $attempt->userid, $cm->groupingid);
                     if (is_array($usersgroups)) {
@@ -983,11 +983,11 @@ function questionnaire_print_overview($courses, &$htmlarray) {
     foreach ($questionnaires as $questionnaire) {
 
         // The questionnaire has a deadline.
-        if ($questionnaire->closedate != 0
+        if (($questionnaire->closedate != 0)
                         // And it is before the deadline has been met.
-                        and $questionnaire->closedate >= $now
+                        && ($questionnaire->closedate >= $now)
                         // And the questionnaire is available.
-                        and ($questionnaire->opendate == 0 or $questionnaire->opendate <= $now)) {
+                        && (($questionnaire->opendate == 0) || ($questionnaire->opendate <= $now))) {
             if (!$questionnaire->visible) {
                 $class = ' class="dimmed"';
             } else {
