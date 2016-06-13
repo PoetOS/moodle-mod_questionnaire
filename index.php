@@ -40,14 +40,11 @@ $event = \mod_questionnaire\event\course_module_instance_list_viewed::create(arr
                 'context' => context_course::instance($course->id)));
 $event->trigger();
 
-// Print the header.
-$strquestionnaires = get_string("modulenameplural", "questionnaire");
-$PAGE->navbar->add($strquestionnaires);
-$PAGE->set_title("$course->shortname: $strquestionnaires");
-$PAGE->set_heading(format_string($course->fullname));
-
 $output = $PAGE->get_renderer('mod_questionnaire');
-echo $output->header();
+
+// Print the header.
+$header = new \mod_questionnaire\output\header($course, $coursecontext, null);
+echo $output->render($header);
 
 // Get all the appropriate data.
 if (!$questionnaires = get_all_instances_in_course("questionnaire", $course)) {

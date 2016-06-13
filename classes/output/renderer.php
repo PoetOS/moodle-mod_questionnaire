@@ -41,6 +41,22 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Render a questionnaire index page header.
+     *
+     * @param \renderable $header
+     * @return string
+     */
+    public function render_header(header $header) {
+        $o = '';
+        $strquestionnaires = get_string("modulenameplural", "questionnaire");
+        $this->page->navbar->add($strquestionnaires);
+        $this->page->set_title("{$header->course->shortname}: $strquestionnaires");
+        $this->page->set_heading(format_string($header->course->fullname));
+        $o .= $this->output->header();
+        return $o;
+    }
+
+    /**
      * Renders the HTML for the index page.
      * @param array $headings Headings for the display columns.
      * @param array $align Alignment for each column.
