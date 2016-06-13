@@ -405,8 +405,8 @@ class questionnaire {
     public function user_time_for_new_attempt($userid) {
         global $DB;
 
-        $select = 'qid = '.$this->id.' AND userid = '.$userid;
-        if (!($attempts = $DB->get_records_select('questionnaire_attempts', $select, null, 'timemodified DESC'))) {
+        $params = array('qid' => $this->id, 'userid' => $userid);
+        if (!($attempts = $DB->get_records('questionnaire_attempts', $params, 'timemodified DESC'))) {
             return true;
         }
 
