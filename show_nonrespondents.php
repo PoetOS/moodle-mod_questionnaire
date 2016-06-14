@@ -96,7 +96,7 @@ if (!$fullname) {
     if ($resume) {
         $countstarted = 0;
         $countnotstarted = 0;
-        $params = array('survey_id' => $sid, 'complete' = 'n');
+        $params = array('survey_id' => $sid, 'complete' => 'n');
         if ($startedusers = $DB->get_records('questionnaire_response', $params, '', 'username')) {
             $startedusers = array_keys($startedusers);
             $countstarted = count($startedusers);
