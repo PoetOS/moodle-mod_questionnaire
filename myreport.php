@@ -23,7 +23,7 @@ $instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $userid = optional_param('user', $USER->id, PARAM_INT);
 $rid = optional_param('rid', null, PARAM_INT);
 $byresponse = optional_param('byresponse', 0, PARAM_INT);
-$action = optional_param('action', 'summary', PARAM_RAW);
+$action = optional_param('action', 'summary', PARAM_ALPHA);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
@@ -81,11 +81,8 @@ switch ($action) {
             print_error('surveynotexists', 'questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'mysummary';
-        $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
-        $resps = $DB->get_records_select('questionnaire_response', $select);
-        if (!$resps = $DB->get_records_select('questionnaire_response', $select)) {
-            $resps = array();
-        }
+        $params = array('survey_id' => $questionnaire->sid, 'username' => $userid, 'complete' => 'y');
+        $resps = $DB->get_records('questionnaire_response', $params);
         $rids = array_keys($resps);
         if (count($resps) > 1) {
             $titletext = get_string('myresponsetitle', 'questionnaire', count($resps));
@@ -113,9 +110,8 @@ switch ($action) {
             print_error('surveynotexists', 'questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'myvall';
-        $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
-        $sort = 'submitted ASC';
-        $resps = $DB->get_records_select('questionnaire_response', $select, $params = null, $sort);
+        $params = array('survey_id' => $questionnaire->sid, 'username' => $userid, 'complete' => 'y');
+        $resps = $DB->get_records('questionnaire_response', $params, 'submitted ASC');
         $titletext = get_string('myresponses', 'questionnaire');
 
         // Print the page header.
@@ -161,23 +157,19 @@ switch ($action) {
                 }
             }
         }
-        $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
-        $sort = 'submitted ASC';
-        $resps = $DB->get_records_select('questionnaire_response', $select, $params = null, $sort);
+        $params = array('survey_id' => $questionnaire->sid, 'username' => $userid, 'complete' => 'y');
+        $resps = $DB->get_records('questionnaire_response', $params, 'submitted ASC');
+
         // All participants.
-        $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-         FROM {questionnaire_response} R
-         WHERE R.survey_id = ? AND
-               R.complete='y'
-         ORDER BY R.id";
-        if (!($respsallparticipants = $DB->get_records_sql($sql, array($sid)))) {
-            $respsallparticipants = array();
-        }
-        $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
-        $fields = "id,survey_id,submitted,username";
-        $params = array();
-        $respsuser = $DB->get_records_select('questionnaire_response', $select, $params, $sort = '', $fields);
-        $SESSION->questionnaire->numrespsallparticipants = count ($respsallparticipants);
+        $params = array('survey_id' => $sid, 'complete' => 'y');
+        $fields = 'id,survey_id,submitted,username';
+        $respsallparticipants = $DB->get_records('questionnaire_response', $params, 'id', $fields);
+
+        $params = array('survey_id' => $questionnaire->sid, 'username' => $userid, 'complete' => 'y');
+        $fields = 'id,survey_id,submitted,username';
+        $respsuser = $DB->get_records('questionnaire_response', $params, '', $fields);
+
+        $SESSION->questionnaire->numrespsallparticipants = count($respsallparticipants);
         $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
         $iscurrentgroupmember = false;
 
@@ -214,17 +206,13 @@ switch ($action) {
                     $iscurrentgroupmember = true;
                 }
                 // Current group members.
-                $castsql = $DB->sql_cast_char2int('R.username');
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-            FROM {questionnaire_response} R,
-                {groups_members} GM
-             WHERE R.survey_id= ? AND
-               R.complete='y' AND
-               GM.groupid = ? AND " . $castsql . "=GM.userid
-            ORDER BY R.id";
-                if (!($currentgroupresps = $DB->get_records_sql($sql, array($sid, $currentgroupid)))) {
-                    $currentgroupresps = array();
-                }
+                $castsql = $DB->sql_cast_char2int('r.username');
+                $sql = 'SELECT r.id, r.survey_id, r.submitted, r.username '.
+                       'FROM {questionnaire_response} r, {groups_members} gm '.
+                       'WHERE r.survey_id = ? AND r.complete = \'y\' AND gm.groupid = ? AND '.
+                       $castsql . ' = gm.userid '.
+                       'ORDER BY r.id';
+                $currentgroupresps = $DB->get_records_sql($sql, array($sid, $currentgroupid));
 
             } else {
                 // Groupmode = separate groups but user is not member of any group

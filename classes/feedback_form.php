@@ -142,7 +142,7 @@ class mod_questionnaire_feedback_form extends moodleform {
                     $this->context->id,     // Context.
                     'mod_questionnaire',    // Component.
                     'feedback',             // Filarea.
-                    !empty($feedback->id) ? (int) $feedback->id : null, // Itemid.
+                    !empty($feedback->id) ? (int)$feedback->id : null, // Itemid.
                     null,
                     $feedback->feedbacktext // Text.
                 );

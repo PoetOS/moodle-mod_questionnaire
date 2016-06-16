@@ -50,7 +50,6 @@ class behat_mod_questionnaire extends behat_base {
      *
      * @param string $questiontype The question type by text name to enter.
      * @param TableNode $fielddata
-     * @return Given[]
      */
     public function i_add_a_question_and_i_fill_the_form_with($questiontype, TableNode $fielddata) {
         $validtypes = array(
@@ -94,5 +93,278 @@ class behat_mod_questionnaire extends behat_base {
         $this->execute('behat_forms::press_button', 'Add selected question type');
         $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $fielddata);
         $this->execute('behat_forms::press_button', 'Save changes');
+    }
+
+    /**
+     * Adds a questions and responses to the questionnaire with the provided name.
+     *
+     * @Given /^"([^"]*)" has questions and responses$/
+     *
+     * @param string $questionnairename The name of an existing questionnaire.
+     */
+    public function has_questions_and_responses($questionnairename) {
+        global $DB;
+
+        if (!$questionnaire = $DB->get_record('questionnaire', array('name' => $questionnairename), 'id,sid')) {
+            throw new ExpectationException('Invalid questionnaire name specified.', $this->getSession());
+        }
+
+        if (!$DB->record_exists('questionnaire_survey', array('id' => $questionnaire->sid))) {
+            throw new ExpectationException('Questionnaire survey does not exist.', $this->getSession());
+        }
+
+        $this->add_question_data($questionnaire->sid);
+        $this->add_response_data($questionnaire->id, $questionnaire->sid);
+    }
+
+    /**
+     * Adds a question data to the given survey id.
+     *
+     * @param int $sid The id field of an existing questionnaire_survey record.
+     * @return null
+     */
+    private function add_question_data($sid) {
+        $questiondata = array(
+            array("id","survey_id","name","type_id","result_id","length","precise","position","content","required",
+                  "deleted","dependquestion","dependchoice"),
+            array("1",$sid,"own car","1",NULL,"0","0","1","<p>Do you own a car?</p>","y","n","0","0"),
+            array("2",$sid,"optional","2",NULL,"20","25","3","<p>What is the colour of your car?</p>","y","n","121","0"),
+            array("3",$sid,NULL,"99",NULL,"0","0","2","break","n","n","0","0"),
+            array("4",$sid,"optional2","1",NULL,"0","0","5","<p>Do you sometimes use public transport to go to work?</p>",
+                  "y","n","0","0"),
+            array("5",$sid,NULL,"99",NULL,"0","0","4","break","n","n","0","0"),
+            array("6",$sid,"entertext","2",NULL,"20","10","6","<p>Enter no more than 10 characters.<br></p>","n","n","0","0"),
+            array("7",$sid,"q7","5",NULL,"0","0","7","<p>Check all that apply<br></p>","n","n","0","0"),
+            array("8",$sid,"q8","9",NULL,"0","0","8","<p>Enter today's date<br></p>","n","n","0","0"),
+            array("9",$sid,"q9","6",NULL,"0","0","9","<p>Choose One<br></p>","n","n","0","0"),
+            array("10",$sid,"q10","3",NULL,"5","0","10","<p>Write an essay<br></p>","n","n","0","0"),
+            array("11",$sid,"q11","10",NULL,"10","0","11","<p>Enter a number<br></p>","n","n","0","0"),
+            array("12",$sid,"q12","4",NULL,"1","0","13","<p>Choose a colour<br></p>","n","n","0","0"),
+            array("13",$sid,"q13","8",NULL,"5","1","14","<p>Rate this.<br></p>","n","n","0","0"),
+            array("14",$sid,NULL,"99",NULL,"0","0","12","break","n","y","0","0"),
+            array("15",$sid,NULL,"99",NULL,"0","0","12","break","n","n","0","0"),
+            array("16",$sid,"Q1","10",NULL,"3","2","15","Enter a number<br><p><br></p>","y","n","0","0")
+        );
+
+        $choicedata = array(
+            array("id","question_id","content","value"),
+            array("1","7","1",NULL),
+            array("2","7","2",NULL),
+            array("3","7","3",NULL),
+            array("4","7","4",NULL),
+            array("5","7","5",NULL),
+            array("6","9","1",NULL),
+            array("7","9","One",NULL),
+            array("8","9","2",NULL),
+            array("9","9","Two",NULL),
+            array("10","9","3",NULL),
+            array("11","9","Three",NULL),
+            array("12","12","Red",NULL),
+            array("13","12","Toyota",NULL),
+            array("14","12","Bird",NULL),
+            array("15","12","Blew",NULL),
+            array("16","13","Good",NULL),
+            array("17","13","Great",NULL),
+            array("18","13","So-so",NULL),
+            array("19","13","Lamp",NULL),
+            array("20","13","Huh?",NULL),
+            array("21","7","!other=Another number",NULL),
+            array("22","12","!other=Something else",NULL)
+        );
+
+        $this->add_data($questiondata, 'questionnaire_question', 'questionmap');
+        $this->add_data($choicedata, 'questionnaire_quest_choice', 'choicemap', array('questionmap' => 'question_id'));
+    }
+
+    /**
+     * Adds response data to the given questionnaire and survey id.
+     *
+     * @param int $qid The id field of an existing questionnaire record.
+     * @param int $sid The id field of an existing questionnaire_survey record.
+     * @return null
+     */
+    private function add_response_data($qid, $sid) {
+        $responses = array(
+            array("id","survey_id","submitted","complete","grade","username"),
+            array("1",$sid,"1419011935","y","0","2"),
+            array("2",$sid,"1449064371","y","0","2"),
+            array("3",$sid,"1449258520","y","0","2"),
+            array("4",$sid,"1452020444","y","0","2"),
+            array("5",$sid,"1452804783","y","0","2"),
+            array("6",$sid,"1452806547","y","0","2"),
+            array("7",$sid,"1465415731","n","0","2")
+        );
+
+        $this->add_data($responses, 'questionnaire_response', 'responsemap');
+
+        $attempts = array(
+            array("id","qid","userid","rid","timemodified"),
+            array("",$qid,"2","1","1419011935"),
+            array("",$qid,"2","2","1449064371"),
+            array("",$qid,"2","3","1449258520"),
+            array("",$qid,"2","4","1452020444"),
+            array("",$qid,"2","5","1452804783"),
+            array("",$qid,"2","6","1452806547")
+        );
+        $this->add_data($attempts, 'questionnaire_attempts', '', array('responsemap' => 'rid'));
+
+        $response_bool = array(
+            array("id","response_id","question_id","choice_id"),
+            array("","1","1","y"),
+            array("","1","4","n"),
+            array("","2","1","y"),
+            array("","2","4","n"),
+            array("","3","1","n"),
+            array("","3","4","y"),
+            array("","4","1","y"),
+            array("","4","4","n"),
+            array("","5","1","n"),
+            array("","5","4","n"),
+            array("","6","1","n"),
+            array("","6","4","n"),
+            array("","7","1","y"),
+            array("","7","4","y")
+        );
+        $this->add_data($response_bool, 'questionnaire_response_bool', '',
+            array('responsemap' => 'response_id', 'questionmap' => 'question_id'));
+
+        $response_date = array(
+            array("id","response_id","question_id","response"),
+            array("","1","8","2014-12-19"),
+            array("","2","8","2015-12-02"),
+            array("","3","8","2015-12-04"),
+            array("","4","8","2016-01-06"),
+            array("","5","8","2016-01-13"),
+            array("","6","8","2016-01-13")
+        );
+        $this->add_data($response_date, 'questionnaire_response_date', '',
+            array('responsemap' => 'response_id', 'questionmap' => 'question_id'));
+
+        $response_other = array(
+            array("id","response_id","question_id","choice_id","response"),
+            array("","5","7","21","Forty-four"),
+            array("","6","12","22","Green"),
+            array("","7","7","21","5")
+        );
+        $this->add_data($response_other, 'questionnaire_response_other', '',
+            array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
+
+        $response_rank = array(
+            array("id","response_id","question_id","choice_id","rank"),
+            array("","1","13","16","0"),
+            array("","1","13","17","1"),
+            array("","1","13","18","2"),
+            array("","1","13","19","3"),
+            array("","1","13","20","4"),
+            array("","2","13","16","0"),
+            array("","2","13","17","1"),
+            array("","2","13","18","2"),
+            array("","2","13","19","3"),
+            array("","2","13","20","4"),
+            array("","3","13","16","4"),
+            array("","3","13","17","0"),
+            array("","3","13","18","3"),
+            array("","3","13","19","1"),
+            array("","3","13","20","2"),
+            array("","4","13","16","2"),
+            array("","4","13","17","2"),
+            array("","4","13","18","2"),
+            array("","4","13","19","2"),
+            array("","4","13","20","2"),
+            array("","5","13","16","1"),
+            array("","5","13","17","1"),
+            array("","5","13","18","1"),
+            array("","5","13","19","1"),
+            array("","5","13","20","-1"),
+            array("","6","13","16","2"),
+            array("","6","13","17","3"),
+            array("","6","13","18","-1"),
+            array("","6","13","19","1"),
+            array("","6","13","20","-1"),
+            array("","7","13","16","-999"),
+            array("","7","13","17","-999"),
+            array("","7","13","18","-999"),
+            array("","7","13","19","-999"),
+            array("","7","13","20","-999")
+        );
+        $this->add_data($response_rank, 'questionnaire_response_rank', '',
+            array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
+
+        $resp_multiple = array(
+            array("id","response_id","question_id","choice_id"),
+            array("","1","7","1"),
+            array("","1","7","3"),
+            array("","1","7","5"),
+            array("","2","7","4"),
+            array("","3","7","2"),
+            array("","3","7","4"),
+            array("","4","7","2"),
+            array("","4","7","4"),
+            array("","4","7","5"),
+            array("","5","7","2"),
+            array("","5","7","3"),
+            array("","5","7","21"),
+            array("","6","7","2"),
+            array("","6","7","5"),
+            array("","7","7","21")
+        );
+        $this->add_data($resp_multiple, 'questionnaire_resp_multiple', '',
+            array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
+
+        $resp_single = array(
+            array("id","response_id","question_id","choice_id"),
+            array("","1","9","7"),
+            array("","1","12","15"),
+            array("","2","9","7"),
+            array("","2","12","14"),
+            array("","3","9","11"),
+            array("","3","12","15"),
+            array("","4","9","6"),
+            array("","4","12","12"),
+            array("","5","9","6"),
+            array("","5","12","13"),
+            array("","6","9","7"),
+            array("","6","12","22")
+        );
+        $this->add_data($resp_single, 'questionnaire_resp_single', '',
+            array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
+    }
+
+    /**
+     * Helper function to insert record data, save mapping data and remap data where necessary.
+     *
+     * @param array $data Array of data record row arrays. The first row contains the field names.
+     * @param string $datatable The name of the data table to insert records into.
+     * @param string $mapvar The name of the object variable to store oldid / newid mappings (optional).
+     * @param string $replvars Array of key/value pairs where key is the mapvar and value is the record field
+     *                         to replace with mapped values.
+     * @return null
+     */
+    private function add_data(array $data, $datatable, $mapvar = '', array $replvars = null) {
+        global $DB;
+
+        if ($replvars === null) {
+            $replvars = array();
+        }
+        $fields = array_shift($data);
+        foreach ($data as $row) {
+            $record = new stdClass();
+            foreach ($row as $key => $fieldvalue) {
+                if ($fields[$key] == 'id') {
+                    if (!empty($mapvar)) {
+                        $oldid = $fieldvalue;
+                    }
+                } else if (($replvar = array_search($fields[$key], $replvars)) !== false) {
+                    $record->{$fields[$key]} = $this->{$replvar}[$fieldvalue];
+                } else {
+                    $record->{$fields[$key]} = $fieldvalue;
+                }
+            }
+            $newid = $DB->insert_record($datatable, $record);
+            if (!empty($mapvar)) {
+                $this->{$mapvar}[$oldid] = $newid;
+            }
+        }
+
     }
 }

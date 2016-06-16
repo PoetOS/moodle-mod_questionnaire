@@ -111,14 +111,8 @@ $SESSION->questionnaire->current_tab = 'allreport';
 
 // Get all responses for further use in viewbyresp and deleteall etc.
 // All participants.
-$sql = "SELECT r.id, r.survey_id, r.submitted, r.username
-         FROM {questionnaire_response} r
-         WHERE r.survey_id = ? AND
-               r.complete='y'
-         ORDER BY r.id";
-if (!($respsallparticipants = $DB->get_records_sql($sql, array($sid)))) {
-    $respsallparticipants = array();
-}
+$params = array('survey_id' => $sid, 'complete' => 'y');
+$respsallparticipants = $DB->get_records('questionnaire_response', $params, 'id', 'id,survey_id,submitted,username');
 $SESSION->questionnaire->numrespsallparticipants = count ($respsallparticipants);
 $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
 $castsql = $DB->sql_cast_char2int('r.username');

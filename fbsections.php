@@ -74,7 +74,7 @@ if ($fbsections = $DB->get_records('questionnaire_fb_sections',
     }
 }
 if (data_submitted()) {
-    $vf = (array) $viewform;
+    $vf = (array)$viewform;
     if (isset($vf['savesettings'])) {
         $action = 'savesettings';
         unset($vf['savesettings']);

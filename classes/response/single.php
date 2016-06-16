@@ -42,7 +42,7 @@ class single extends base {
         if (!empty($val)) {
             foreach ($this->question->choices as $cid => $choice) {
                 if (strpos($choice->content, '!other') === 0) {
-                    $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_CLEAN);
+                    $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_TEXT);
                     if (!isset($other)) {
                         continue;
                     }
@@ -62,7 +62,7 @@ class single extends base {
         if (preg_match("/other_q([0-9]+)/", (isset($val) ? $val : ''), $regs)) {
             $cid = $regs[1];
             if (!isset($other)) {
-                $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_CLEAN);
+                $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_TEXT);
             }
             if (preg_match("/[^ \t\n]/", $other)) {
                 $record = new \stdClass();

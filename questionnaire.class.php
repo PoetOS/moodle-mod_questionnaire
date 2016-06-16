@@ -405,8 +405,8 @@ class questionnaire {
     public function user_time_for_new_attempt($userid) {
         global $DB;
 
-        $select = 'qid = '.$this->id.' AND userid = '.$userid;
-        if (!($attempts = $DB->get_records_select('questionnaire_attempts', $select, null, 'timemodified DESC'))) {
+        $params = array('qid' => $this->id, 'userid' => $userid);
+        if (!($attempts = $DB->get_records('questionnaire_attempts', $params, 'timemodified DESC'))) {
             return true;
         }
 
@@ -527,7 +527,7 @@ class questionnaire {
             $owner = true;
         }
         $numresp = $this->count_submissions();
-        if (is_null($usernumresp)) {
+        if ($usernumresp === null) {
             $usernumresp = $questionnaire->count_submissions($USER->id);
         }
 
@@ -543,7 +543,7 @@ class questionnaire {
         $canviewgroups = true;
         $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
         if ($groupmode == 1) {
-            $canviewgroups = groups_has_membership($this->cm, $USER->id);;
+            $canviewgroups = groups_has_membership($this->cm, $USER->id);
         }
 
         $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
@@ -1596,7 +1596,10 @@ class questionnaire {
             $col = explode(',', preg_replace("/\s/", '', $col));
         }
         if (is_array($col) && count($col) > 0) {
-            $col = ',' . implode(',', array_map(create_function('$a', 'return "q.$a";'), $col));
+            $callback = function($a) {
+                return 'q.'.$a;
+            };
+            $col = ',' . implode(',', array_map($callback, $col));
         }
 
         // Response_bool (yes/no).
@@ -2655,7 +2658,7 @@ class questionnaire {
     public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid) {
         global $DB;
 
-        ini_set('memory_limit', '1G');
+        raise_memory_limit('1G');
 
         $output = array();
         $stringother = get_string('other', 'questionnaire');
@@ -3125,7 +3128,7 @@ class questionnaire {
             $qid = $question->id;
             $qtype = $question->type_id;
             $required = $question->required;
-            if (($qtype == QUESRADIO || $qtype == QUESDROP || $qtype == QUESRATE) and $required == 'y') {
+            if ((($qtype == QUESRADIO) || ($qtype == QUESDROP) || ($qtype == QUESRATE)) && ($required == 'y')) {
                 if (!isset($qmax[$qid])) {
                     $qmax[$qid] = 0;
                 }
@@ -3146,7 +3149,7 @@ class questionnaire {
                 $qmax[$qid] = $qmax[$qid] * $nbchoices;
                 $maxtotalscore += $qmax[$qid];
             }
-            if ($qtype == QUESYESNO and $required == 'y') {
+            if (($qtype == QUESYESNO) && ($required == 'y')) {
                 $qmax[$qid] = 1;
                 $maxtotalscore += 1;
             }
@@ -3343,11 +3346,20 @@ class questionnaire {
         // Now process scores for more than one section.
 
         // Initialize scores and maxscores to 0.
-        $score = array(); $allscore = array(); $maxscore = array(); $scorepercent = array();
-        $allscorepercent = array(); $oppositescorepercent = array(); $alloppositescorepercent = array();
-        $chartlabels = array(); $chartscore = array();
+        $score = array();
+        $allscore = array();
+        $maxscore = array();
+        $scorepercent = array();
+        $allscorepercent = array();
+        $oppositescorepercent = array();
+        $alloppositescorepercent = array();
+        $chartlabels = array();
+        $chartscore = array();
         for ($i = 1; $i <= $feedbacksections; $i++) {
-            $score[$i] = 0; $allscore[$i] = 0; $maxscore[$i] = 0; $scorepercent[$i] = 0;
+            $score[$i] = 0;
+            $allscore[$i] = 0;
+            $maxscore[$i] = 0;
+            $scorepercent[$i] = 0;
         }
 
         for ($section = 1; $section <= $feedbacksections; $section++) {
