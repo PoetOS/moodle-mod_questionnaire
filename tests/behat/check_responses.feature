@@ -21,6 +21,11 @@ Feature: Review responses
       | activity | name | description | course | idnumber |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
     And "Test questionnaire" has questions and responses
+    And I log in as "admin"
+    And I navigate to "Location settings" node in "Site administration > Location"
+    And I set the field "id_s__timezone" to "Australia/Perth"
+    And I press "Save changes"
+    And I log out
     And I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Test questionnaire"
