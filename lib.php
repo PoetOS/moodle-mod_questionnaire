@@ -482,14 +482,15 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
         }
     }
 
-    if ($DB->get_record('questionnaire', array('id' => $cm->instance))) {
+    if (!$DB->get_record('questionnaire', array('id' => $cm->instance))) {
         return false;
     }
 
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
     $fullpath = "/$context->id/mod_questionnaire/$filearea/$componentid/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+    $file = $fs->get_file_by_hash(sha1($fullpath));
+    if (!$file || $file->is_directory()) {
         return false;
     }
 
