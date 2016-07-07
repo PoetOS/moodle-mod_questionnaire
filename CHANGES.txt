@@ -1,4 +1,9 @@
 Release Notes
+
+Version 3.1.0 (Build Build - 2016070700)
+CONTRIB-6431 - Fixed typo and logic error from 3.1 optimizations preventing question images from displaying.
+CONTRIB-6432 - Fixed string parameters in query for db improvements in 3.1 casuing errors on "yes/no" dependencies.
+
 Version 3.1.0 (Build Build - 2016052000)
 CONTRIB-5575 - Beginning display refactoring.
 CONTRIB-5706 - Bug fix for DML Read exception on activity report.
