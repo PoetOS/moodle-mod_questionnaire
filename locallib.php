@@ -700,9 +700,9 @@ function questionnaire_nb_questions_on_page ($questionsinquestionnaire, $questio
             switch ($questionsinquestionnaire[$question->dependquestion]->type_id) {
                 case QUESYESNO:
                     if ($question->dependchoice == 0) {
-                        $questiondependchoice = "'y'";
+                        $questiondependchoice = 'y';
                     } else {
-                        $questiondependchoice = "'n'";
+                        $questiondependchoice = 'n';
                     }
                     $responsetable = 'response_bool';
                     break;
