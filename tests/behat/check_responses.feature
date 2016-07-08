@@ -26,6 +26,9 @@ Feature: Review responses
     And I set the field "id_s__timezone" to "Europe/London"
     And I set the field "id_s__forcetimezone" to "Europe/London"
     And I press "Save changes"
+    And I navigate to "Language settings" node in "Site administration > Language"
+    And I set the field "id_s__autolang" to "0"
+#    And I set the field "id_s__lang" to "en‎"
     And I log out
     And I log in as "teacher1"
     And I follow "Course 1"
