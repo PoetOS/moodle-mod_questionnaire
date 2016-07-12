@@ -2952,7 +2952,9 @@ class questionnaire {
                         $responsetxt = $content;
                     }
                 } else if (intval($qtype) === QUESYESNO) {
-                    $responsetxt = $responserow->choice_id === 'y' ? "1" : "0";
+                    // At this point, the boolean responses are returned as characters in the "response"
+                    // field instead of "choice_id" for csv exports (CONTRIB-6436).
+                    $responsetxt = $responserow->response === 'y' ? "1" : "0";
                 } else {
                     // Strip potential html tags from modality name.
                     $responsetxt = $responserow->response;

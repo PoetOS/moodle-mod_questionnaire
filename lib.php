@@ -473,16 +473,16 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
     $componentid = (int)array_shift($args);
 
     if ($filearea != 'question') {
-        if (!$DB->get_record('questionnaire_survey', array('id' => $componentid))) {
+        if (!$DB->record_exists('questionnaire_survey', array('id' => $componentid))) {
             return false;
         }
     } else {
-        if (!$DB->get_record('questionnaire_question', array('id' => $componentid))) {
+        if (!$DB->record_exists('questionnaire_question', array('id' => $componentid))) {
             return false;
         }
     }
 
-    if (!$DB->get_record('questionnaire', array('id' => $cm->instance))) {
+    if (!$DB->record_exists('questionnaire', array('id' => $cm->instance))) {
         return false;
     }
 
