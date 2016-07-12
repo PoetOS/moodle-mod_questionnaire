@@ -187,8 +187,7 @@ class single extends base {
         global $DB;
 
         $userfields = $this->user_fields_sql();
-        $extraselect = '';
-        $extraselect .= 'qrs.choice_id, qro.response, 0 AS rank';
+        $extraselect = 'qrs.choice_id, qro.response, 0 AS rank';
         $alias = 'qrs';
 
         return "
