@@ -1,8 +1,12 @@
 Release Notes
 
+Version 3.1.2 (Build - 2016071300)
+CONTRIB-6439 - Emailed submission is always the same submission. Corrected 'get_bulk_sql' functions to limit by response or user if specified.
+CONTRIB-6436 - CSV export fails using Postgres. Modified boolean response type to use 'response' field instead of 'choice_id' field to meet Postgres' tight type requirements.
+
 Version 3.1.1 (Build Build - 2016070700)
-CONTRIB-6431 - Fixed typo and logic error from 3.1 optimizations preventing question images from displaying.
-CONTRIB-6432 - Fixed string parameters in query for db improvements in 3.1 casuing errors on "yes/no" dependencies.
+CONTRIB-6431 - Question images not displaying in 3.1. Fixed typo and logic error from 3.1 optimizations preventing question images from displaying.
+CONTRIB-6432 - Yes/No questions not working as dependent questions. Fixed string parameters in query for db improvements in 3.1 casuing errors on "yes/no" dependencies.
 
 Version 3.1.0 (Build Build - 2016052000)
 CONTRIB-5575 - Beginning display refactoring.
