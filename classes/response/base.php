@@ -143,10 +143,10 @@ abstract class base {
         ";
         $params = [$surveyid, 'y'];
         if ($responseid) {
-            $sql .= " AND qr.id = ?";
+            $sql .= " WHERE qr.id = ?";
             $params[] = $responseid;
         } else if ($userid) {
-            $sql .= " AND qr.username = ?"; // Note: username is the userid.
+            $sql .= " WHERE qr.username = ?"; // Note: username is the userid.
             $params[] = $userid;
         }
 
