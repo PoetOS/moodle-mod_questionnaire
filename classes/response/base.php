@@ -178,7 +178,11 @@ abstract class base {
         foreach ($extraselectfields as $field => $include) {
             $extraselect .= $extraselect === '' ? '' : ', ';
             if ($include) {
+                if ($field === 'response') {
+                    $extraselect .= $DB->sql_compare_text($alias . '.' . $field, 1000).' AS '.$field;
+                } else {
                 $extraselect .= $alias . '.' . $field;
+                }
             } else {
                 $default = $field === 'response' ? 'null' : 0;
                 $extraselect .= $default.' AS ' . $field;
