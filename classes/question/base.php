@@ -702,7 +702,7 @@ abstract class base {
         // Dependence fields.
 
         if ($questionnaire->navigate) {
-            $position = isset($this->position) ? $this->position : count($questionnaire->questions) + 1;
+            $position = ($this->position !== 0) ? $this->position : count($questionnaire->questions) + 1;
             $dependencies = questionnaire_get_dependencies($questionnaire->questions, $position);
             $canchangeparent = true;
             if (count($dependencies) > 1) {

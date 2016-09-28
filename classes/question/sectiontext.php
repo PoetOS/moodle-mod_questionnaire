@@ -68,8 +68,4 @@ class sectiontext extends base {
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         return base::form_precise_hidden($mform);
     }
-
-    protected function form_dependencies(\MoodleQuickForm $mform, $questionnaire) {
-        return $mform;
-    }
 }
