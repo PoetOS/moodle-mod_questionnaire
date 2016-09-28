@@ -47,7 +47,7 @@
         <FIELD NAME="thank_body" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="feedbacksections" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="feedbacknotes" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="feedbackscores" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="feedbackscores" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="chart_type" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

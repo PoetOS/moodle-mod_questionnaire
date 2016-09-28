@@ -530,6 +530,21 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2015051102, 'questionnaire');
     }
 
+    if ($oldversion < 2016020204) {
+        // Ensure the feedbackscores field can be null (CONTRIB-6445).
+        $table = new xmldb_table('questionnaire_survey');
+        $field = new xmldb_field('feedbackscores', XMLDB_TYPE_INTEGER, '1', null, null, null, '0');
+        $dbman->change_field_notnull($table, $field);
+
+        // Ensure the feddbacklabel field is 50 characters (CONTRIB-6445).
+        $table = new xmldb_table('questionnaire_feedback');
+        $field = new xmldb_field('feedbacklabel', XMLDB_TYPE_CHAR, '50', null, null, null, null);
+        $dbman->change_field_precision($table, $field);
+
+        // Questionnaire savepoint reached.
+         upgrade_mod_savepoint(true, 2016020204, 'questionnaire');
+    }
+
     return $result;
 }
 
