@@ -791,11 +791,6 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     $viewfullnames   = has_capability('moodle/site:viewfullnames', $context);
     $groupmode       = groups_get_activity_groupmode($cm, $course);
 
-    if ($modinfo->groups === null) {
-        // Load all my groups and cache it in modinfo.
-        $modinfo->groups = groups_get_user_groups($course->id);
-    }
-
     $usersgroups = null;
     $aname = format_string($cm->name, true);
     $userattempts = array();
