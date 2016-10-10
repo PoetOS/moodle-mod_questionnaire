@@ -82,7 +82,7 @@ class display_support {
                     $percent = 100;
                 }
                 if ($num) {
-                    if('ltr' === get_string('thisdirection', 'langconfig')) {
+                    if(!right_to_left()) {
                         $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'hbar_l.gif" />'.
                                '<img style="height:9px; width:'.($percent * 1.4).'px;" alt="'.$alt.'" src="'.
                                $imageurl.'hbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'hbar_r.gif" />'.
@@ -113,7 +113,7 @@ class display_support {
                 if ($percent > 100) {
                     $percent = 100;
                 }
-                if('ltr' === get_string('thisdirection', 'langconfig')) {
+                if(!right_to_left()) {
                     $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'thbar_l.gif" />'.
                                 '<img style="height:9px;  width:'.($percent * 1.4).'px;" alt="'.$alt.'" src="'.
                                 $imageurl.'thbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'thbar_r.gif" />'.
@@ -355,7 +355,7 @@ class display_support {
                         if (($j = $avg * $width) > 0) {
                             $marginposition = ($avg - 0.5 ) / ($length + $isrestricted) * 100;
                         }
-                        if('ltr' === get_string('thisdirection', 'langconfig')){
+                        if(!right_to_left()){
                             $out .= '<img style="height:12px; width: 6px; margin-left: '.$marginposition.
                                 '%;" alt="" src="'.$imageurl.'hbar.gif" />';
                         } else {
