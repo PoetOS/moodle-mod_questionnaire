@@ -131,21 +131,21 @@ class behat_mod_questionnaire extends behat_base {
             array("2", $sid, "optional", "2", null, "20", "25", "3", "<p>What is the colour of your car?</p>", "y", "n", "121",
                   "0"),
             array("3", $sid, null, "99", null, "0", "0", "2", "break", "n", "n", "0", "0"),
-            array("4", $sid,"optional2", "1", null, "0", "0", "5", "<p>Do you sometimes use public transport to go to work?</p>",
+            array("4", $sid, "optional2", "1", null, "0", "0", "5", "<p>Do you sometimes use public transport to go to work?</p>",
                   "y", "n", "0", "0"),
             array("5", $sid, null, "99", null, "0", "0", "4", "break", "n", "n", "0", "0"),
-            array("6", $sid,"entertext", "2", null, "20", "10", "6", "<p>Enter no more than 10 characters.<br></p>", "n", "n", "0",
+            array("6", $sid, "entertext", "2", null, "20", "10", "6", "<p>Enter no more than 10 characters.<br></p>", "n", "n", "0",
                   "0"),
-            array("7", $sid,"q7", "5", null, "0", "0", "7", "<p>Check all that apply<br></p>", "n", "n", "0", "0"),
-            array("8", $sid,"q8", "9", null, "0", "0", "8", "<p>Enter today's date<br></p>", "n", "n", "0", "0"),
-            array("9", $sid,"q9", "6", null, "0", "0", "9", "<p>Choose One<br></p>", "n", "n", "0", "0"),
-            array("10", $sid,"q10", "3", null, "5", "0", "10", "<p>Write an essay<br></p>", "n", "n", "0", "0"),
-            array("11", $sid,"q11", "10", null, "10", "0", "11", "<p>Enter a number<br></p>", "n", "n", "0", "0"),
-            array("12", $sid,"q12", "4", null, "1", "0", "13", "<p>Choose a colour<br></p>", "n", "n", "0", "0"),
-            array("13", $sid,"q13", "8", null, "5", "1", "14", "<p>Rate this.<br></p>", "n", "n", "0", "0"),
+            array("7", $sid, "q7", "5", null, "0", "0", "7", "<p>Check all that apply<br></p>", "n", "n", "0", "0"),
+            array("8", $sid, "q8", "9", null, "0", "0", "8", "<p>Enter today's date<br></p>", "n", "n", "0", "0"),
+            array("9", $sid, "q9", "6", null, "0", "0", "9", "<p>Choose One<br></p>", "n", "n", "0", "0"),
+            array("10", $sid, "q10", "3", null, "5", "0", "10", "<p>Write an essay<br></p>", "n", "n", "0", "0"),
+            array("11", $sid, "q11", "10", null, "10", "0", "11", "<p>Enter a number<br></p>", "n", "n", "0", "0"),
+            array("12", $sid, "q12", "4", null, "1", "0", "13", "<p>Choose a colour<br></p>", "n", "n", "0", "0"),
+            array("13", $sid, "q13", "8", null, "5", "1", "14", "<p>Rate this.<br></p>", "n", "n", "0", "0"),
             array("14", $sid, null, "99", null, "0", "0", "12", "break", "n", "y", "0", "0"),
             array("15", $sid, null, "99", null, "0", "0", "12", "break", "n", "n", "0", "0"),
-            array("16", $sid,"Q1", "10", null, "3", "2", "15", "Enter a number<br><p><br></p>", "y", "n", "0", "0")
+            array("16", $sid, "Q1", "10", null, "3", "2", "15", "Enter a number<br><p><br></p>", "y", "n", "0", "0")
         );
 
         $choicedata = array(
@@ -188,25 +188,25 @@ class behat_mod_questionnaire extends behat_base {
     private function add_response_data($qid, $sid) {
         $responses = array(
             array("id", "survey_id", "submitted", "complete", "grade", "username"),
-            array("1", $sid,"1419011935", "y", "0", "2"),
-            array("2", $sid,"1449064371", "y", "0", "2"),
-            array("3", $sid,"1449258520", "y", "0", "2"),
-            array("4", $sid,"1452020444", "y", "0", "2"),
-            array("5", $sid,"1452804783", "y", "0", "2"),
-            array("6", $sid,"1452806547", "y", "0", "2"),
-            array("7", $sid,"1465415731", "n", "0", "2")
+            array("1", $sid, "1419011935", "y", "0", "2"),
+            array("2", $sid, "1449064371", "y", "0", "2"),
+            array("3", $sid, "1449258520", "y", "0", "2"),
+            array("4", $sid, "1452020444", "y", "0", "2"),
+            array("5", $sid, "1452804783", "y", "0", "2"),
+            array("6", $sid, "1452806547", "y", "0", "2"),
+            array("7", $sid, "1465415731", "n", "0", "2")
         );
 
         $this->add_data($responses, 'questionnaire_response', 'responsemap');
 
         $attempts = array(
             array("id", "qid", "userid", "rid", "timemodified"),
-            array("",$qid,"2", "1", "1419011935"),
-            array("",$qid,"2", "2", "1449064371"),
-            array("",$qid,"2", "3", "1449258520"),
-            array("",$qid,"2", "4", "1452020444"),
-            array("",$qid,"2", "5", "1452804783"),
-            array("",$qid,"2", "6", "1452806547")
+            array("",$qid, "2", "1", "1419011935"),
+            array("",$qid, "2", "2", "1449064371"),
+            array("",$qid, "2", "3", "1449258520"),
+            array("",$qid, "2", "4", "1452020444"),
+            array("",$qid, "2", "5", "1452804783"),
+            array("",$qid, "2", "6", "1452806547")
         );
         $this->add_data($attempts, 'questionnaire_attempts', '', array('responsemap' => 'rid'));
 
