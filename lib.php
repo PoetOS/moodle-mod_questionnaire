@@ -59,7 +59,7 @@ function questionnaire_add_instance($questionnaire) {
     // (defined by the form in mod.html) this function
     // will create a new instance and return the id number
     // of the new instance.
-    global $COURSE, $DB, $CFG;
+    global $DB, $CFG;
     require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
     require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
@@ -67,8 +67,9 @@ function questionnaire_add_instance($questionnaire) {
 
     if (empty($questionnaire->sid)) {
         // Create a new survey.
+        $course = get_course($questionnaire->course);
         $cm = new Object();
-        $qobject = new questionnaire(0, $questionnaire, $COURSE, $cm);
+        $qobject = new questionnaire(0, $questionnaire, $course, $cm);
 
         if ($questionnaire->create == 'new-0') {
             $sdata = new Object();
@@ -83,7 +84,7 @@ function questionnaire_add_instance($questionnaire) {
             $sdata->thank_body = '';
             $sdata->email = '';
             $sdata->feedbacknotes = '';
-            $sdata->owner = $COURSE->id;
+            $sdata->owner = $course->id;
             if (!($sid = $qobject->survey_update($sdata))) {
                 print_error('couldnotcreatenewsurvey', 'questionnaire');
             }
@@ -99,7 +100,7 @@ function questionnaire_add_instance($questionnaire) {
             if ($copyrealm == 'public') {
                 $sid = $copyid;
             } else {
-                $sid = $qobject->sid = $qobject->survey_copy($COURSE->id);
+                $sid = $qobject->sid = $qobject->survey_copy($course->id);
                 // All new questionnaires should be created as "private".
                 // Even if they are *copies* of public or template questionnaires.
                 $DB->set_field('questionnaire_survey', 'realm', 'private', array('id' => $sid));
