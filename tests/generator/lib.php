@@ -81,8 +81,6 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @return questionnaire
      */
     public function create_instance($record = array(), array $options = array()) {
-        global $COURSE; // Needed for add_instance.
-
         if (is_array($record)) {
             $record = (object)$record;
         }
@@ -112,13 +110,10 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
         }
 
-        if (isset($record->course)) {
-            $COURSE->id = $record->course;
-        }
-
         $instance = parent::create_instance($record, $options);
         $cm = get_coursemodule_from_instance('questionnaire', $instance->id);
-        $questionnaire = new questionnaire(0, $instance, $COURSE, $cm, false);
+        $course = get_course($cm->course);
+        $questionnaire = new questionnaire(0, $instance, $course, $cm, false);
 
         $this->questionnaires[$instance->id] = $questionnaire;
 

@@ -201,7 +201,6 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
     }
 
     public function test_questionnaire_user_complete() {
-        // This only performs screen output. How do we unit test this?
         $this->resetAfterTest();
         $this->setAdminUser();
         $user = $this->getDataGenerator()->create_user();
@@ -210,6 +209,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO);
 
         $this->assertTrue(questionnaire_user_complete($course, $user, null, $questionnaire));
+        $this->expectOutputString(get_string('noresponses', 'questionnaire'));
     }
 
     public function test_questionnaire_print_recent_activity() {
