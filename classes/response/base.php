@@ -178,7 +178,13 @@ abstract class base {
         foreach ($extraselectfields as $field => $include) {
             $extraselect .= $extraselect === '' ? '' : ', ';
             if ($include) {
-                $extraselect .= $alias . '.' . $field;
+                // The 'response' field can be varchar or text, which doesn't work for all DB's (Oracle).
+                // So convert the text if needed.
+                if ($field === 'response') {
+                    $extraselect .= $DB->sql_order_by_text($alias . '.' . $field, 1000).' AS '.$field;
+                } else {
+                    $extraselect .= $alias . '.' . $field;
+                }
             } else {
                 $default = $field === 'response' ? 'null' : 0;
                 $extraselect .= $default.' AS ' . $field;
