@@ -85,7 +85,7 @@ class single extends base {
         }
     }
 
-    protected function get_results($rids=false) {
+    protected function get_results($rids=false, $anonymous=false) {
         global $DB;
 
         $rsql = '';
@@ -125,8 +125,8 @@ class single extends base {
         return $rows;
     }
 
-    public function display_results($rids=false, $sort='') {
-        $this->display_response_choice_results($this->get_results($rids), $rids, $sort);
+    public function display_results($rids=false, $sort='', $anonymous=false) {
+        $this->display_response_choice_results($this->get_results($rids, $anonymous), $rids, $sort);
     }
 
     /**

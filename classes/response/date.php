@@ -55,7 +55,7 @@ class date extends base {
         return $DB->insert_record($this->response_table(), $record);
     }
 
-    protected function get_results($rids=false) {
+    protected function get_results($rids=false, $anonymous=false) {
         global $DB;
 
         $rsql = '';
@@ -73,13 +73,13 @@ class date extends base {
         return $DB->get_records_sql($sql, $params);
     }
 
-    public function display_results($rids=false, $sort='') {
+    public function display_results($rids=false, $sort='', $anonymous=false) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
             $prtotal = 0;
         }
-        if ($rows = $this->get_results($rids)) {
+        if ($rows = $this->get_results($rids, $anonymous)) {
             foreach ($rows as $row) {
                 // Count identical answers (case insensitive).
                 $this->text = $row->response;

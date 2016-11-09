@@ -2401,6 +2401,8 @@ class questionnaire {
 
         $qnum = 0;
 
+        $anonymous = $this->respondenttype == 'anonymous';
+
         foreach ($this->questions as $question) {
             if ($question->type_id == QUESPAGEBREAK) {
                 continue;
@@ -2424,7 +2426,7 @@ class questionnaire {
                 $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
             echo html_writer::end_tag('div'); // End qn-question.
 
-            $question->display_results($rids, $sort);
+            $question->display_results($rids, $sort, $anonymous);
             echo html_writer::end_tag('div'); // End qn-content.
 
             echo html_writer::end_tag('div'); // End qn-container.

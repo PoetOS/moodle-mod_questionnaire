@@ -236,10 +236,10 @@ abstract class base {
     /**
      * Display results method.
      */
-    public function display_results($rids=false, $sort='') {
+    public function display_results($rids=false, $sort='', $anonymous=false) {
         if (isset ($this->response) && is_object($this->response) &&
             is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->display_results($rids, $sort);
+            return $this->response->display_results($rids, $sort, $anonymous);
         } else {
             return false;
         }

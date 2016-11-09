@@ -76,7 +76,7 @@ class rank extends base {
         }
     }
 
-    protected function get_results($rids=false) {
+    protected function get_results($rids=false, $anonymous=false) {
         global $DB;
 
         $rsql = '';
@@ -171,14 +171,14 @@ class rank extends base {
         }
     }
 
-    public function display_results($rids=false, $sort='') {
+    public function display_results($rids=false, $sort='', $anonymous=false) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
             $prtotal = 0;
         }
 
-        if ($rows = $this->get_results($rids, $sort)) {
+        if ($rows = $this->get_results($rids, $sort, $anonymous)) {
             $stravgvalue = ''; // For printing table heading.
             foreach ($this->counts as $key => $value) {
                 $ccontent = $key;
