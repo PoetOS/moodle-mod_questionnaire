@@ -62,18 +62,20 @@ abstract class base {
      * Provide the result information for the specified result records.
      *
      * @param int|array $rids - A single response id, or array.
+     * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return array - Array of data records.
      */
-    abstract protected function get_results($rids=false);
+    abstract protected function get_results($rids=false, $anonymous=false);
 
     /**
      * Provide the result information for the specified result records.
      *
      * @param int|array $rids - A single response id, or array.
      * @param string $sort - Optional display sort.
+     * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    abstract public function display_results($rids=false, $sort='');
+    abstract public function display_results($rids=false, $sort='', $anonymous=false);
 
     protected function display_response_choice_results($rows, $rids, $sort) {
         if (is_array($rids)) {

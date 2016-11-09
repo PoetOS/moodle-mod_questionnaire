@@ -53,7 +53,7 @@ class boolean extends base {
         }
     }
 
-    protected function get_results($rids=false) {
+    protected function get_results($rids=false, $anonymous=false) {
         global $DB;
 
         $rsql = '';
@@ -72,7 +72,7 @@ class boolean extends base {
         return $DB->get_records_sql($sql, $params);
     }
 
-    public function display_results($rids=false, $sort='') {
+    public function display_results($rids=false, $sort='', $anonymous=false) {
         if (empty($this->stryes)) {
             $this->stryes = get_string('yes');
             $this->strno = get_string('no');
@@ -85,7 +85,7 @@ class boolean extends base {
         }
 
          $this->counts = array($this->stryes => 0, $this->strno => 0);
-        if ($rows = $this->get_results($rids)) {
+        if ($rows = $this->get_results($rids, $anonymous)) {
             foreach ($rows as $row) {
                 $this->choice = $row->choice_id;
                 $count = $row->num;
