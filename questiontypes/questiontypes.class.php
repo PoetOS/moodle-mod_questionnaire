@@ -1633,13 +1633,13 @@ class questionnaire_question {
     }
 
     public function text_response_display($data) {
-        $response = isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '';
+        $response = isset($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '';
         echo '<div class="response text"><span class="selected">'.$response.'</span></div>';
     }
 
     public function essay_response_display($data) {
         echo '<div class="response text">';
-        echo((!empty($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '&nbsp;'));
+        echo((!empty($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '&nbsp;'));
         echo '</div>';
     }
 
