@@ -54,7 +54,7 @@ class text extends base {
     }
 
     protected function response_survey_display($data) {
-        $response = isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '';
+        $response = isset($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}) : '';
         echo '<div class="response text"><span class="selected">'.$response.'</span></div>';
     }
 

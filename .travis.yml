@@ -7,7 +7,7 @@ cache:
     - $HOME/.composer/cache
 
 php:
-# For 3.1 forward, only test PHP7.
+ - 5.6
  - 7.0
 
 env:
@@ -41,4 +41,4 @@ script:
   - moodle-plugin-ci validate
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
-  - moodle-plugin-ci phpunit --coverage-text
+#  - moodle-plugin-ci phpunit --coverage-text
