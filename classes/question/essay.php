@@ -71,7 +71,7 @@ class essay extends base {
 
     protected function response_survey_display($data) {
         echo '<div class="response text">';
-        echo((!empty($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}) : '&nbsp;'));
+        echo((!empty($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '&nbsp;'));
         echo '</div>';
     }
 
