@@ -22,7 +22,7 @@ Feature: Numeric questions can specify a maximum number of digits, and minimum n
     And I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Test questionnaire"
-    And I follow "Questions"
+    And I navigate to "Questions" node in "Questionnaire administration"
     And I add a "Numeric" question and I fill the form with:
       | Question Name | Q1 |
       | Yes | y |
@@ -39,7 +39,7 @@ Feature: Numeric questions can specify a maximum number of digits, and minimum n
     And I log in as "student1"
     And I follow "Course 1"
     And I follow "Test questionnaire"
-    And I follow "Answer the questions..."
+    And I navigate to "Answer the questions..." node in "Questionnaire administration"
     Then I should see "Enter no more than six digits including the decimal point"
     And I set the field "Enter no more than six digits including the decimal point" to "1.23456"
     And I press "Submit questionnaire"

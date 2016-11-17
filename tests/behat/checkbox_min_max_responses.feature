@@ -22,7 +22,7 @@ Feature: Checkbox questions can have forced minimum and maximum numbers of boxes
     And I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Test questionnaire"
-    And I follow "Questions"
+    And I navigate to "Questions" node in "Questionnaire administration"
     And I add a "Check Boxes" question and I fill the form with:
       | Question Name | Q1 |
       | Yes | y |
@@ -40,7 +40,7 @@ Feature: Checkbox questions can have forced minimum and maximum numbers of boxes
     And I log in as "student1"
     And I follow "Course 1"
     And I follow "Test questionnaire"
-    And I follow "Answer the questions..."
+    And I navigate to "Answer the questions..." node in "Questionnaire administration"
     Then I should see "Select one or two choices only"
     And I press "Submit questionnaire"
     Then I should see "Please answer Required question #1."
