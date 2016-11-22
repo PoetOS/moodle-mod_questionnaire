@@ -12,7 +12,7 @@ php:
 
 env:
  global:
-  - MOODLE_BRANCH=MOODLE_31_STABLE
+  - MOODLE_BRANCH=master
 # Temporarily turn off checking for this file. It will be replaced.
   - IGNORE_PATHS=module.js,tests
  matrix:
