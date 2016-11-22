@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains class mod_questionnaire\output\renderer
+ * Contains class mod_questionnaire\output\viewpage
  *
  * @package    mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
@@ -27,14 +27,44 @@ namespace mod_questionnaire\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-class renderer extends \plugin_renderer_base {
+class viewpage implements \renderable, \templatable {
+
     /**
-     * Main view page.
-     * @param \templateable $page
-     * @return string | boolean
+     * The questionnaire object
+     *
+     * @var object
      */
-    public function render_viewpage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/viewpage', $data);
+    protected $questionnaire;
+
+    /**
+     * The data to be exported.
+     * @var array
+     */
+    protected $data;
+
+    /**
+     * Construct the renderable.
+     * @param array $content The array of rows.
+     */
+    public function __construct($questionnaire) {
+        $this->questionnaire = $questionnaire;
     }
+
+    /**
+     * Add data for export.
+     * @param string The index for the data.
+     * @param string The content for the index.
+     */
+    public function add_to_page($index, $content) {
+        $this->data[$index][] = ['content' => $content];
+    }
+
+    /**
+     * Export the data for template.
+     * @param \renderer_base $output
+     */
+    public function export_for_template(\renderer_base $output) {
+        return $this->data;
+    }
+
 }
