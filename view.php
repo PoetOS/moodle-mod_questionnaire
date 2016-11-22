@@ -53,10 +53,6 @@ $PAGE->set_title(format_string($questionnaire->name));
 
 $PAGE->set_heading(format_string($course->fullname));
 
-//echo $OUTPUT->header();
-
-//echo $OUTPUT->heading(format_text($questionnaire->name));
-
 $output = $PAGE->get_renderer('mod_questionnaire');
 echo $output->header();
 echo $output->heading(format_text($questionnaire->name));
@@ -73,20 +69,20 @@ if (!groups_is_member($currentgroupid, $USER->id)) {
     $currentgroupid = 0;
 }
 
-if ($questionnaire->survey->realm == 'template') {
-    // If this is a template survey, notify and exit.
-    $viewpage->add_to_page('message', get_string('templatenotviewable', 'questionnaire'));
-    echo $output->render($viewpage);
-    echo $output->footer($questionnaire->course);
-    exit();
-
-} else if (!$questionnaire->is_active()) {
+if (!$questionnaire->is_active()) {
     if ($questionnaire->capabilities->manage) {
         $msg = 'removenotinuse';
     } else {
         $msg = 'notavail';
     }
     $viewpage->add_to_page('message', get_string($msg, 'questionnaire'));
+
+} else if ($questionnaire->survey->realm == 'template') {
+    // If this is a template survey, notify and exit.
+    $viewpage->add_to_page('message', get_string('templatenotviewable', 'questionnaire'));
+    echo $output->render($viewpage);
+    echo $output->footer($questionnaire->course);
+    exit();
 
 } else if (!$questionnaire->is_open()) {
     $viewpage->add_to_page('message', get_string('notopen', 'questionnaire', userdate($questionnaire->opendate)));

@@ -407,8 +407,8 @@ $string['realm_help'] = '* **There are  three types of questionnaires:**
 $string['realm_link'] = 'mod/questionnaire/qsettings#Questionnaire_Type';
 $string['redirecturl'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['remove'] = 'Delete';
-$string['removenotinuse'] = 'This questionnaire used to depend on a Public questionnaire which has been deleted.
-                It can no longer be used and should be deleted.';
+$string['removenotinuse'] = 'This questionnaire used to depend on a Public questionnaire which has been deleted. '.
+    'It can no longer be used and should be deleted.';
 $string['required'] = 'Response is required';
 $string['required_help'] = 'If you select ***Yes***, response to this question will be required, i.e.
 the respondent will not be able to submit the questionnaire
