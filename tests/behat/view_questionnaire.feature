@@ -42,11 +42,14 @@ Feature: Questionnaires can be public, private or template
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1 | 0 |
+      | Course 2 | C2 | 0 |
     And the following "course enrolments" exist:
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
       | manager1 | C1 | manager |
+      | manager1 | C2 | manager |
+      | student1 | C2 | student |
     And the following "activities" exist:
       | activity | name | description | course | idnumber |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
@@ -54,7 +57,29 @@ Feature: Questionnaires can be public, private or template
     And I am on site homepage
     And I follow "Course 1"
     And I follow "Test questionnaire"
+    And I follow "Test questionnaire"
+    And I navigate to "Questions" node in "Questionnaire administration"
+    And I add a "Check Boxes" question and I fill the form with:
+      | Question Name | Q1 |
+      | Yes | y |
+      | Min. forced responses | 1 |
+      | Max. forced responses | 2 |
+      | Question Text | Select one or two choices only |
+      | Possible answers | One,Two,Three,Four |
     And I navigate to "Advanced settings" node in "Questionnaire administration"
     And I should see "Content options"
     And I set the field "id_realm" to "public"
     And I press "Save and return to course"
+    And I am on site homepage
+    And I follow "Course 2"
+    And I turn editing mode on
+    And I add a "Questionnaire" to section "1"
+    And I expand all fieldsets
+    And I set the field "name" to "Questionnaire from public"
+    And I click on "Use public Test questionnaire [Course 1]" "radio"
+    And I press "Save and return to course"
+    And I log out
+    And I log in as "student1"
+    And I follow "Course 2"
+    And I follow "Questionnaire from public"
+    Then I should see "Answer the questions..."
