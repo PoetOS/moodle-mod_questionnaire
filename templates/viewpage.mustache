@@ -28,32 +28,30 @@
     Context variables required for this template:
     * intro - string: The intro text.
     * message - string: Any message text.
+    * complete - string: The text and link to complete the questionnaire.
+    * guestuser - string: Any content for a guest user.
+    * yourresponse - string: Content for responses by you.
+    * allresponses - string: Content for responses by other users.
 
     Example context (json):
     {
-        "headings": [
+        "intro": [
             {
-                "title1": "Topic",
-                "title2": "Name",
-                "title3": "Responses",
-                "title4": "Questionnaire Type"
-            }
+                "content": "Intro1",
+            },
+            {
+                "content": "Intro2",
+            },
         ]
     },
     {
-        "rows": [
+        "message": [
             {
-                "topic": "General",
-                "name": <a href="view.php?id=44">Questionnaire: Course Feedback</a>,
-                "responses": 2,
-                "type": Private
+                "content": "Message 1",
             },
             {
-                "topic": "Topic 1",
-                "name": <a href="view.php?id=23">Test Questionnaire</a>,
-                "responses": 6,
-                "type": Private
-            }
+                "content": "Message 2",
+            },
         ]
     }
     }}
