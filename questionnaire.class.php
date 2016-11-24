@@ -402,6 +402,13 @@ class questionnaire {
         return ($this->capabilities->view && $this->capabilities->submit);
     }
 
+    public function user_has_saved_response($userid) {
+        global $DB;
+
+        return $DB->record_exists('questionnaire_response',
+            ['survey_id' => $this->survey->id, 'username' => $userid, 'complete' => 'n']);
+    }
+
     public function user_time_for_new_attempt($userid) {
         global $DB;
 

@@ -113,17 +113,16 @@ if (!$questionnaire->is_active()) {
     $viewpage->add_to_page('message', get_string("alreadyfilled", "questionnaire", $msgstring));
 
 } else if ($questionnaire->user_can_take($USER->id)) {
-    $select = ['survey_id' => $questionnaire->survey->id, 'username' => $USER->id, 'complete' => 'n'];
-    $resume = $DB->record_exists('questionnaire_response', $select);
-    if (!$resume) {
-        $complete = get_string('answerquestions', 'questionnaire');
-    } else {
-        $complete = get_string('resumesurvey', 'questionnaire');
-    }
     if ($questionnaire->questions) { // Sanity check.
-        $viewpage->add_to_page('complete',
-            '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
-            'id='.$questionnaire->cm->id.'&resume='.$resume).'">'.$complete.'</a>');
+        if (!$questionnaire->user_has_saved_response($USER->id)) {
+            $viewpage->add_to_page('complete',
+                '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
+                'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>');
+        } else {
+            $viewpage->add_to_page('complete',
+                '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
+                'id='.$questionnaire->cm->id.'&resume=1').'">'.get_string('resumesurvey', 'questionnaire').'</a>');
+        }
     } else {
         $viewpage->add_to_page('message', get_string('noneinuse', 'questionnaire'));
     }
