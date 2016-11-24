@@ -114,16 +114,16 @@ if (!$questionnaire->is_active()) {
     }
     echo ('<div class="message">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
 } else if ($questionnaire->user_can_take($USER->id)) {
-    $select = 'survey_id = '.$questionnaire->survey->id.' AND username = \''.$USER->id.'\' AND complete = \'n\'';
-    $resume = $DB->get_record_select('questionnaire_response', $select, null) !== false;
-    if (!$resume) {
-        $complete = get_string('answerquestions', 'questionnaire');
-    } else {
-        $complete = get_string('resumesurvey', 'questionnaire');
-    }
     if ($questionnaire->questions) { // Sanity check.
-        echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
-        'id='.$questionnaire->cm->id.'&resume='.$resume).'">'.$complete.'</a>';
+        if (!$questionnaire->user_has_saved_response($USER->id)) {
+            echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
+            'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>';
+        } else {
+            echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
+            'id='.$questionnaire->cm->id.'&resume=1').'">'.get_string('resumesurvey', 'questionnaire').'</a>';
+        }
+    } else {
+        echo '<p>'.get_string('noneinuse', 'questionnaire').'</p>';
     }
 }
 if ($questionnaire->is_active() && !$questionnaire->questions) {

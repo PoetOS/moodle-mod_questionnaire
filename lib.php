@@ -584,10 +584,15 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 
     if ($questionnaire->user_can_take($USER->id)) {
         $url = '/mod/questionnaire/complete.php';
-        $node = navigation_node::create(get_string('answerquestions', 'questionnaire'),
-            new moodle_url($url, array('id' => $cmid)),
-            navigation_node::TYPE_SETTING, null, '',
-            new pix_icon('i/info', 'answerquestions'));
+        if ($questionnaire->user_has_saved_response($USER->id)) {
+            $args = ['id' => $cmid, 'resume' => 1];
+            $text = get_string('resumesurvey', 'questionnaire');
+        } else {
+            $args = ['id' => $cmid];
+            $text = get_string('answerquestions', 'questionnaire');
+        }
+        $node = navigation_node::create($text, new moodle_url($url, $args),
+            navigation_node::TYPE_SETTING, null, '', new pix_icon('i/info', 'answerquestions'));
         $questionnairenode->add_node($node, $beforekey);
     }
     $usernumresp = $questionnaire->count_submissions($USER->id);
