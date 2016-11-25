@@ -190,11 +190,9 @@ function questionnaire_check_date ($thisdate, $insert=false) {
 
 // A variant of Moodle's notify function, with a different formatting.
 function questionnaire_notify($message) {
-    $message = clean_text($message);
-    $errorstart = '<div class="notifyproblem">';
-    $errorend = '</div>';
-    $output = $errorstart.$message.$errorend;
-    echo $output;
+    global $OUTPUT;
+
+    echo $OUTPUT->notification(clean_text($message), \core\output\notification::NOTIFY_ERROR);
 }
 
 function questionnaire_choice_values($content) {

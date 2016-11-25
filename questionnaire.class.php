@@ -31,6 +31,11 @@ class questionnaire {
      */
      // Todo var $survey; TODO.
 
+    /**
+     * @var $renderer Contains the page renderer when loaded, or false if not.
+     */
+    public $renderer = false;
+
     // Class Methods.
 
     /*
@@ -152,48 +157,33 @@ class questionnaire {
         // Initialise the JavaScript.
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
 
-        echo $OUTPUT->header();
+        // Add renderer and page objects to the main object for use throughout.
+        $this->renderer = $PAGE->get_renderer('mod_questionnaire');
+        $this->page = new \mod_questionnaire\output\completepage($this);
+        echo $this->renderer->header();
+
+        echo $this->renderer->container_start('mod_questionnaire_completepage');
 
         $questionnaire = $this;
 
-        if (!$this->cm->visible && !$this->capabilities->viewhiddenactivities) {
-                notice(get_string("activityiscurrentlyhidden"));
-        }
-
         if (!$this->capabilities->view) {
-            echo('<br/>');
-            questionnaire_notify(get_string("noteligible", "questionnaire", $this->name));
-            echo('<div><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
-                get_string("continue").'</a></div>');
-            exit;
-        }
-
-        // Print the main part of the page.
-
-        if (!$this->is_active()) {
-            echo '<div class="notifyproblem">'
-            .get_string('notavail', 'questionnaire')
-            .'</div>';
+            echo $this->renderer->notification(get_string('noteligible', 'questionnaire', $this->name),
+                \core\output\notification::NOTIFY_ERROR);
+        } else if (!$this->is_active()) {
+            echo $this->renderer->notification(get_string('notavail', 'questionnaire'), \core\output\notification::NOTIFY_ERROR);
         } else if (!$this->is_open()) {
-                echo '<div class="notifyproblem">'
-                .get_string('notopen', 'questionnaire', userdate($this->opendate))
-                .'</div>';
+            echo $this->renderer->notification(get_string('notopen', 'questionnaire', userdate($this->opendate)),
+                \core\output\notification::NOTIFY_ERROR);
         } else if ($this->is_closed()) {
-            echo '<div class="notifyproblem">'
-            .get_string('closed', 'questionnaire', userdate($this->closedate))
-            .'</div>';
+            echo $this->renderer->notification(get_string('closed', 'questionnaire', userdate($this->closedate)),
+                \core\output\notification::NOTIFY_ERROR);
         } else if (!$this->user_is_eligible($USER->id)) {
-            echo '<div class="notifyproblem">'
-            .get_string('noteligible', 'questionnaire')
-            .'</div>';
+            echo $this->renderer->notification(get_string('noteligible', 'questionnaire'), \core\output\notification::NOTIFY_ERROR);
+        } else if ($this->survey->realm == 'template') {
+            echo $this->renderer->notification(get_string('templatenotviewable', 'questionnaire'),
+                \core\output\notification::NOTIFY_ERROR);
         } else if ($this->user_can_take($USER->id)) {
             $quser = $USER->id;
-
-            if ($this->survey->realm == 'template') {
-                print_string('templatenotviewable', 'questionnaire');
-                echo $OUTPUT->footer($this->course);
-                exit();
-            }
 
             $msg = $this->print_survey($USER->id, $quser);
 
@@ -271,11 +261,13 @@ class questionnaire {
                     $msgstring = '';
                     break;
             }
-            echo ('<div class="notifyproblem">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
+            echo $this->renderer->notification(get_string('alreadyfilled', 'questionnaire', $msgstring),
+                \core\output\notification::NOTIFY_ERROR);
         }
 
         // Finish the page.
-        echo $OUTPUT->footer($this->course);
+        echo $this->renderer->container_end();
+        echo $this->renderer->footer($this->course);
     }
 
     /*
@@ -600,7 +592,11 @@ class questionnaire {
     // Display Methods.
 
     public function print_survey($userid=false, $quser) {
-        global $SESSION, $DB, $CFG;
+        global $SESSION, $DB, $CFG, $PAGE;
+
+        if ($this->renderer === false) {
+            $this->renderer = $PAGE->get_renderer('mod_questionnaire');
+        }
 
         $formdata = new stdClass();
         if (data_submitted() && confirm_sesskey()) {
@@ -806,8 +802,13 @@ class questionnaire {
     }
 
     private function print_survey_start($message, $section, $numsections, $hasrequired, $rid='', $blankquestionnaire=false) {
-        global $CFG, $DB, $OUTPUT;
+        global $CFG, $DB, $OUTPUT, $PAGE;
         require_once($CFG->libdir.'/filelib.php');
+
+        if ($this->renderer === false) {
+            $this->renderer = $PAGE->get_renderer('mod_questionnaire');
+        }
+
         $userid = '';
         $resp = '';
         $groupname = '';
@@ -867,7 +868,7 @@ class questionnaire {
             }
         }
         if ($ruser) {
-            echo (get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>');
+            $respinfo = get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>';
             if ($this->survey->realm == 'public') {
                 // For a public questionnaire, look for the course that used it.
                 $coursename = '';
@@ -877,12 +878,13 @@ class questionnaire {
                 if ($record = $DB->get_record_sql($sql, array($rid))) {
                     $coursename = $record->fullname;
                 }
-                echo (' '.get_string('course'). ': '.$coursename);
+                $respinfo .= ' '.get_string('course'). ': '.$coursename;
             }
-            echo ($groupname);
-            echo ($timesubmitted);
+            $respinfo .= $groupname;
+            $respinfo .= $timesubmitted;
+            echo $this->renderer->respondent_info($respinfo);
         }
-        echo '<h3 class="surveyTitle">'.format_text($this->survey->title, FORMAT_HTML).'</h3>';
+        echo $this->renderer->heading(format_text($this->survey->title, FORMAT_HTML), 3, 'surveyTitle');
 
         // We don't want to display the print icon in the print popup window itself!
         if ($this->capabilities->printblank && $blankquestionnaire && $section == 1) {
@@ -896,26 +898,31 @@ class questionnaire {
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
             $class = "floatprinticon";
-            echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
+            echo $this->renderer->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
                     new pix_icon('t/print', $title));
         }
         if ($section == 1) {
             if ($this->survey->subtitle) {
-                echo '<h4 class="surveySubtitle">'.(format_text($this->survey->subtitle, FORMAT_HTML)).'</h4>';
+                echo $this->renderer->heading(format_text($this->survey->subtitle, FORMAT_HTML), 4, 'surveySubTitle');
             }
             if ($this->survey->info) {
                 $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
                                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
-                echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
+                echo $this->renderer->container(format_text($infotext, FORMAT_HTML), 'addInfo');
             }
         }
 
         if ($message) {
-            echo '<div class="notifyproblem">'.$message.'</div>';
+            echo $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR);
         }
     }
 
     private function print_survey_end($section, $numsections) {
+        global $PAGE;
+
+        if ($this->renderer === false) {
+            $this->renderer = $PAGE->get_renderer('mod_questionnaire');
+        }
         $autonum = $this->autonum;
         // If no questions autonumbering.
         if ($autonum < 3) {
@@ -925,15 +932,16 @@ class questionnaire {
             $a = new stdClass();
             $a->page = $section;
             $a->totpages = $numsections;
-            echo ('<div class="surveyPage">');
-            echo get_string('pageof', 'questionnaire', $a).'&nbsp;&nbsp;';
-            echo '</div>';
-        }
+            echo $this->renderer->container(get_string('pageof', 'questionnaire', $a).'&nbsp;&nbsp;', 'surveyPage');        }
     }
 
     // Blankquestionnaire : if we are printing a blank questionnaire.
     public function survey_print_render($message = '', $referer='', $courseid, $rid=0, $blankquestionnaire=false) {
-        global $USER, $DB, $OUTPUT, $CFG;
+        global $USER, $DB, $OUTPUT, $CFG, $PAGE;
+
+        if ($this->renderer === false) {
+            $this->renderer = $PAGE->get_renderer('mod_questionnaire');
+        }
 
         if (! $course = $DB->get_record("course", array("id" => $courseid))) {
             print_error('incorrectcourseid', 'questionnaire');
