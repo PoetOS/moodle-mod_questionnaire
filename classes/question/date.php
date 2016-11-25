@@ -66,11 +66,13 @@ class date extends base {
     }
 
     protected function response_survey_display($data) {
+        $output = '';
         if (isset($data->{'q'.$this->id})) {
-            echo '<div class="response date">';
-            echo('<span class="selected">'.$data->{'q'.$this->id}.'</span>');
-            echo '</div>';
+            $output .= '<div class="response date">';
+            $output .= '<span class="selected">'.$data->{'q'.$this->id}.'</span>';
+            $output .= '</div>';
         }
+        return $output;
     }
 
     /**

@@ -55,7 +55,7 @@ class text extends base {
 
     protected function response_survey_display($data) {
         $response = isset($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '';
-        echo '<div class="response text"><span class="selected">'.$response.'</span></div>';
+        return '<div class="response text"><span class="selected">'.$response.'</span></div>';
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {

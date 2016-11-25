@@ -40,7 +40,7 @@ class pagebreak extends base {
     }
 
     protected function response_survey_display($data) {
-        return;
+        return '';
     }
 
     public function edit_form(\MoodleQuickForm $qform, $questionnaire, $modcontext) {

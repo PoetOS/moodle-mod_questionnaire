@@ -90,15 +90,19 @@ class numeric extends base {
     }
 
     protected function response_survey_display($data) {
+        $output = '';
+
         $this->length++; // For sign.
         if ($this->precise) {
             $this->length += 1 + $this->precise;
         }
-        echo '<div class="response numeric">';
+        $output .= '<div class="response numeric">';
         if (isset($data->{'q'.$this->id})) {
-            echo('<span class="selected">'.$data->{'q'.$this->id}.'</span>');
+            $output .= '<span class="selected">'.$data->{'q'.$this->id}.'</span>';
         }
-        echo '</div>';
+        $output .= '</div>';
+
+        return $output;
     }
 
     /**

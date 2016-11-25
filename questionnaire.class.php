@@ -276,7 +276,11 @@ class questionnaire {
     */
     public function view_response($rid, $referer= '', $blankquestionnaire = false, $resps = '', $compare = false,
                         $isgroupmember = false, $allresponses = false, $currentgroupid = 0) {
-        global $OUTPUT;
+        global $OUTPUT, $PAGE;
+
+        if ($this->renderer === false) {
+            $this->renderer = $PAGE->get_renderer('mod_questionnaire');
+        }
 
         $this->print_survey_start('', 1, 1, 0, $rid, false);
 
@@ -287,7 +291,7 @@ class questionnaire {
             $feedbackmessages = $this->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
 
             if ($feedbackmessages) {
-                echo $OUTPUT->heading(get_string('feedbackreport', 'questionnaire'), 3);
+                echo $this->renderer->heading(get_string('feedbackreport', 'questionnaire'), 3);
                 foreach ($feedbackmessages as $msg) {
                     echo $msg;
                 }
@@ -296,9 +300,7 @@ class questionnaire {
             if ($this->survey->feedbacknotes) {
                 $text = file_rewrite_pluginfile_urls($this->survey->feedbacknotes, 'pluginfile.php',
                                 $this->context->id, 'mod_questionnaire', 'feedbacknotes', $this->survey->id);
-                echo $OUTPUT->box_start();
-                echo format_text($text, FORMAT_HTML);
-                echo $OUTPUT->box_end();
+                echo $this->renderer->box(format_text($text, FORMAT_HTML));
             }
         }
         foreach ($this->questions as $question) {
@@ -306,7 +308,7 @@ class questionnaire {
                 $i++;
             }
             if ($question->type_id != QUESPAGEBREAK) {
-                $question->response_display($data, $i);
+                echo $this->renderer->response_output($question, $data, $i);
             }
         }
     }
@@ -319,7 +321,12 @@ class questionnaire {
     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
     */
     public function view_all_responses($resps) {
-        global $OUTPUT;
+        global $OUTPUT, $PAGE;
+
+        if ($this->renderer === false) {
+            $this->renderer = $PAGE->get_renderer('mod_questionnaire');
+        }
+
         $this->print_survey_start('', 1, 1, 0);
 
         // If a student's responses have been deleted by teacher while student was viewing the report,
@@ -332,14 +339,15 @@ class questionnaire {
 
             $i = 0;
 
+            $allrespdata = [];
             foreach ($this->questions as $question) {
                 if ($question->type_id < QUESPAGEBREAK) {
                     $i++;
                 }
                 $qid = preg_quote('q'.$question->id, '/');
                 if ($question->type_id != QUESPAGEBREAK) {
-                    echo $OUTPUT->box_start('individualresp');
-                    $question->questionstart_survey_display($i);
+                    $allrespdata[$i] = [];
+                    $allrespdata[$i]['question'] = $question;
                     foreach ($data as $respid => $respdata) {
                         $hasresp = false;
                         foreach ($respdata as $key => $value) {
@@ -349,16 +357,17 @@ class questionnaire {
                         }
                         // Do not display empty responses.
                         if ($hasresp) {
-                            echo '<div class="respdate">'.userdate($resps[$respid]->submitted).'</div>';
-                            $question->response_display($respdata);
+                            $allrespdata[$i][] = [
+                                'respdate' => userdate($resps[$respid]->submitted),
+                                'respdata' => $respdata
+                            ];
                         }
                     }
-                    $question->questionend_survey_display($i);
-                    echo $OUTPUT->box_end();
                 }
             }
+            echo $this->renderer->all_response_output($allrespdata);
         } else {
-            echo (get_string('noresponses', 'questionnaire'));
+            echo $this->renderer->all_response_output(get_string('noresponses', 'questionnaire'));
         }
 
         $this->print_survey_end(1, 1);
@@ -1035,7 +1044,6 @@ class questionnaire {
                 }
 
                 echo $this->renderer->question_output($question, $formdata, $descendantsdata, $i++, null);
-//                $question->survey_display($formdata, $descendantsdata, $i++, $usehtmleditor = null, $blankquestionnaire, $referer);
             }
         }
         // End of questions.

@@ -477,9 +477,11 @@ abstract class base {
     }
 
     public function response_display($data, $qnum='') {
-        echo $this->questionstart_survey_display($qnum, $data);
-        $this->response_survey_display($data);
-        echo $this->questionend_survey_display($qnum);
+        $output = '';
+        $output .= $this->questionstart_survey_display($qnum, $data);
+        $output .= $this->response_survey_display($data);
+        $output .= $this->questionend_survey_display($qnum);
+        return $output;
     }
 
     public function questionstart_survey_display($qnum, $formdata='') {

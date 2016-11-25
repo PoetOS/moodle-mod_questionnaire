@@ -57,7 +57,7 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Render a question type.
+     * Render a question for a survey.
      * @param mod_questionnaire\question\base $question The question object.
      * @param array $formdata Any returned form data.
      * @param array $descendantsdata Question dependency data.
@@ -67,5 +67,43 @@ class renderer extends \plugin_renderer_base {
      */
     public function question_output($question, $formdata, $descendantsdata, $qnum, $blankquestionnaire) {
         return $question->survey_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+    }
+
+    /**
+     * Render a question response.
+     * @param mod_questionnaire\question\base $question The question object.
+     * @param stdClass $data All of the response data.
+     * @param int $qnum The question number.
+     * @return string The output for the page.
+     */
+    public function response_output($question, $data, $qnum=null) {
+        return $question->response_display($data, $qnum);
+    }
+
+    /**
+     * Render all responses for a question.
+     * @param stdClass $data All of the response data.
+     * @return string The output for the page.
+     */
+    public function all_response_output($data=null) {
+        $output = '';
+        if (is_string($data)) {
+            $output .= $data;
+        } else {
+            foreach ($data as $qnum => $responses) {
+                $question = $responses['question'];
+                $output .= $this->box_start('individualresp');
+                $output .= $question->questionstart_survey_display($qnum);
+                foreach ($responses as $item => $response) {
+                    if ($item != 'question') {
+                        $output .= $this->container($response['respdate'], 'respdate');
+                        $output .= $question->response_display($response['respdata']);
+                    }
+                }
+                $output .= $question->questionend_survey_display($qnum);
+                $output .= $this->box_end();
+            }
+        }
+        return $output;
     }
 }
