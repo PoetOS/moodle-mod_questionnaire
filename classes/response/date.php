@@ -74,6 +74,7 @@ class date extends base {
     }
 
     public function display_results($rids=false, $sort='', $anonymous=false) {
+        $output = '';
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -90,10 +91,12 @@ class date extends base {
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            \mod_questionnaire\response\display_support::mkreslistdate($this->counts, count($rids), $this->question->precise, $prtotal);
+            $output .= \mod_questionnaire\response\display_support::mkreslistdate($this->counts, count($rids),
+                $this->question->precise, $prtotal);
         } else {
-            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
+            $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
+        return $output;
     }
 
     /**

@@ -126,7 +126,7 @@ class single extends base {
     }
 
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        $this->display_response_choice_results($this->get_results($rids, $anonymous), $rids, $sort);
+        return $this->display_response_choice_results($this->get_results($rids, $anonymous), $rids, $sort);
     }
 
     /**

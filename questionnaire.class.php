@@ -2311,7 +2311,11 @@ class questionnaire {
 
     public function survey_results($precision = 1, $showtotals = 1, $qid = '', $cids = '', $rid = '',
                 $uid=false, $currentgroupid='', $sort='') {
-        global $SESSION, $DB;
+        global $SESSION, $DB, $PAGE;
+
+        if ($this->renderer === false) {
+            $this->renderer = $PAGE->get_renderer('mod_questionnaire');
+        }
 
         $SESSION->questionnaire->noresponses = false;
         if (empty($precision)) {
@@ -2392,7 +2396,8 @@ class questionnaire {
                          ORDER BY r.id";
             }
             if (!($rows = $DB->get_records_sql($sql))) {
-                echo (get_string('noresponses', 'questionnaire'));
+                echo $this->renderer->notification(get_string('noresponses', 'questionnaire'),
+                    \core\output\notification::NOTIFY_ERROR);
                 $SESSION->questionnaire->noresponses = true;
                 return;
             }
@@ -2414,14 +2419,14 @@ class questionnaire {
             $this->survey_results_navbar($rid);
         }
 
-        echo '<h3 class="surveyTitle">'.s($this->survey->title).'</h3>';
+        echo $this->renderer->heading(format_text($this->survey->title, FORMAT_HTML), 3, 'surveyTitle');
         if ($this->survey->subtitle) {
-            echo('<h4>'.$this->survey->subtitle.'</h4>');
+            echo $this->renderer->heading(format_text($this->survey->subtitle, FORMAT_HTML), 4, 'surveySubTitle');
         }
         if ($this->survey->info) {
             $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
-            echo '<div class="addInfo">'.format_text($infotext, FORMAT_HTML).'</div>';
+            echo $this->renderer->container(format_text($infotext, FORMAT_HTML), 'addInfo');
         }
 
         $qnum = 0;
@@ -2432,29 +2437,25 @@ class questionnaire {
             if ($question->type_id == QUESPAGEBREAK) {
                 continue;
             }
-            echo html_writer::start_tag('div', array('class' => 'qn-container'));
+            echo $this->renderer->container_start('qn-container');
             if ($question->type_id != QUESSECTIONTEXT) {
                 $qnum++;
-                echo html_writer::start_tag('div', array('class' => 'qn-info'));
+                echo $this->renderer->container_start('qn-info');
                 if ($question->type_id != QUESSECTIONTEXT) {
-                    echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
+                    echo $this->renderer->heading($qnum, 2, 'qn-number');
                 }
-                echo html_writer::end_tag('div'); // End qn-info.
+                echo $this->renderer->container_end(); // End qn-info.
             }
-            echo html_writer::start_tag('div', array('class' => 'qn-content'));
+            echo $this->renderer->container_start('qn-content');
             // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
             if ($question->content == '<p>  </p>') {
                 $question->content = '';
             }
-            echo html_writer::start_tag('div', array('class' => 'qn-question'));
-            echo format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
-                $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML);
-            echo html_writer::end_tag('div'); // End qn-question.
-
-            $question->display_results($rids, $sort, $anonymous);
-            echo html_writer::end_tag('div'); // End qn-content.
-
-            echo html_writer::end_tag('div'); // End qn-container.
+            echo $this->renderer->container(format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
+                $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML), 'qn-question');
+            echo $this->renderer->results_output($question, $rids, $sort, $anonymous);
+            echo $this->renderer->container_end(); // End qn-content.
+            echo $this->renderer->container_end(); // End qn-container.
         }
 
         return;

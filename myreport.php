@@ -64,6 +64,7 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
+$output = $PAGE->get_renderer('mod_questionnaire');
 
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 $sid = $questionnaire->survey->id;
@@ -91,18 +92,19 @@ switch ($action) {
         }
 
         // Print the page header.
-        echo $OUTPUT->header();
+        echo $output->header();
+        echo $output->container_start('mod_questionnaire_myreport');
 
         // Print the tabs.
         include('tabs.php');
 
-        echo $OUTPUT->heading($titletext);
-        echo '<div class = "generalbox">';
+        echo $output->heading($titletext);
+        echo $output->container_start('generalbox');
         $questionnaire->survey_results(1, 1, '', '', $rids, $USER->id);
-        echo '</div>';
-
+        echo $output->container_end();
+        echo $output->container_end();
         // Finish the page.
-        echo $OUTPUT->footer($course);
+        echo $output->footer($course);
         break;
 
     case 'vall':
@@ -115,16 +117,17 @@ switch ($action) {
         $titletext = get_string('myresponses', 'questionnaire');
 
         // Print the page header.
-        echo $OUTPUT->header();
+        echo $output->header();
+        echo $output->container_start('mod_questionnaire_myreport');
 
         // Print the tabs.
         include('tabs.php');
 
-        echo $OUTPUT->heading($titletext.':');
+        echo $output->heading($titletext.':');
         $questionnaire->view_all_responses($resps);
-
+        echo $output->container_end();
         // Finish the page.
-        echo $OUTPUT->footer($course);
+        echo $output->footer($course);
         break;
 
     case 'vresp':
@@ -243,19 +246,21 @@ switch ($action) {
 
         $compare = false;
         // Print the page header.
-        echo $OUTPUT->header();
+        echo $output->header();
+        echo $output->container_start('mod_questionnaire_myreport');
 
         // Print the tabs.
         include('tabs.php');
-        echo $OUTPUT->box_start();
+        echo $output->box_start();
 
-        echo $OUTPUT->heading($titletext);
+        echo $output->heading($titletext);
 
         if (count($resps) > 1) {
             $userresps = $resps;
-            echo '<div style="text-align:center; padding-bottom:5px;">';
+            echo $output->container_start();
+            // echo '<div style="text-align:center; padding-bottom:5px;">';
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $userresps);
-            echo '</div>';
+            echo $output->container_end();
         }
         $resps = array();
         // Determine here which "global" responses should get displayed for comparison with current user.
@@ -277,13 +282,16 @@ switch ($action) {
         $questionnaire->view_response($rid, null, null, $resps, $compare, $iscurrentgroupmember,
                         $allresponses = false, $currentgroupid);
         if (isset($userresps) && count($userresps) > 1) {
-            echo '<div style="text-align:center; padding-bottom:5px;">';
+            echo $output->container_start();
+            // echo '<div style="text-align:center; padding-bottom:5px;">';
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $userresps);
-            echo '</div>';
+            echo $output->container_end();
         }
-        echo $OUTPUT->box_end();
+        echo $output->box_end();
+
+        echo $output->container_end();
         // Finish the page.
-        echo $OUTPUT->footer($course);
+        echo $output->footer($course);
         break;
 
     case get_string('return', 'questionnaire'):

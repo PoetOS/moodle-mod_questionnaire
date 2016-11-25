@@ -106,4 +106,16 @@ class renderer extends \plugin_renderer_base {
         }
         return $output;
     }
+
+    /**
+     * Render a question results summary.
+     * @param mod_questionnaire\question\base $question The question object.
+     * @param array $rids The response ids.
+     * @param string $sort The sort order being used.
+     * @param string $anonymous The value of the anonymous setting.
+     * @return string The output for the page.
+     */
+    public function results_output($question, $rids, $sort, $anonymous) {
+        return $question->display_results($rids, $sort, $anonymous);
+    }
 }

@@ -102,6 +102,7 @@ if ($currentgroupid !== null) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
+$output = $PAGE->get_renderer('mod_questionnaire');
 
 // Tab setup.
 if (!isset($SESSION->questionnaire)) {
@@ -215,8 +216,9 @@ switch ($action) {
         // Print the page header.
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $OUTPUT->header();
+        echo $output->header();
 
+        echo $output->container_start('mod_questionnaire_report');
         // Print the tabs.
         $SESSION->questionnaire->current_tab = 'deleteresp';
         include('tabs.php');
@@ -228,7 +230,6 @@ switch ($action) {
         }
 
         // Print the confirmation.
-        echo '<p>&nbsp;</p>';
         $msg = '<div class="warning centerpara">';
         $msg .= get_string('confirmdelresp', 'questionnaire', $ruser.$timesubmitted);
         $msg .= '</div>';
@@ -238,10 +239,11 @@ switch ($action) {
                 'rid' => $rid, 'individualresponse' => 1, 'group' => $currentgroupid));
         $buttonyes = new single_button($urlyes, get_string('yes'), 'post');
         $buttonno = new single_button($urlno, get_string('no'), 'get');
-        echo $OUTPUT->confirm($msg, $buttonyes, $buttonno);
+        echo $output->confirm($msg, $buttonyes, $buttonno);
 
+        echo $output->container_end();
         // Finish the page.
-        echo $OUTPUT->footer($course);
+        echo $output->footer($course);
         break;
 
     case 'delallresp': // Delete all responses? Ask for confirmation.
@@ -252,14 +254,14 @@ switch ($action) {
             // Print the page header.
             $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
             $PAGE->set_heading(format_string($course->fullname));
-            echo $OUTPUT->header();
+            echo $output->header();
 
+            echo $output->container_start('mod_questionnaire_report');
             // Print the tabs.
             $SESSION->questionnaire->current_tab = 'deleteall';
             include('tabs.php');
 
             // Print the confirmation.
-            echo '<p>&nbsp;</p>';
             $msg = '<div class="warning centerpara">';
             if ($groupmode == 0) {   // No groups or visible groups.
                 $msg .= get_string('confirmdelallresp', 'questionnaire');
@@ -274,10 +276,11 @@ switch ($action) {
             $buttonyes = new single_button($urlyes, get_string('yes'), 'post');
             $buttonno = new single_button($urlno, get_string('no'), 'get');
 
-            echo $OUTPUT->confirm($msg, $buttonyes, $buttonno);
+            echo $output->confirm($msg, $buttonyes, $buttonno);
 
+            echo $output->container_end();
             // Finish the page.
-            echo $OUTPUT->footer($course);
+            echo $output->footer($course);
         }
         break;
 
@@ -415,8 +418,9 @@ switch ($action) {
 
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $OUTPUT->header();
+        echo $output->header();
 
+        echo $output->container_start('mod_questionnaire_report');
         // Print the tabs.
         // Tab setup.
         if (empty($user)) {
@@ -439,10 +443,10 @@ switch ($action) {
             }
         }
         echo "<br /><br />\n";
-        echo $OUTPUT->help_icon('downloadtextformat', 'questionnaire');
+        echo $output->help_icon('downloadtextformat', 'questionnaire');
         echo '&nbsp;'.(get_string('downloadtext')).':&nbsp;'.get_string('responses', 'questionnaire').'&nbsp;'.$groupname;
-        echo $OUTPUT->heading(get_string('textdownloadoptions', 'questionnaire'));
-        echo $OUTPUT->box_start();
+        echo $output->heading(get_string('textdownloadoptions', 'questionnaire'));
+        echo $output->box_start();
         echo "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";
         echo "<input type=\"hidden\" name=\"instance\" value=\"$instance\" />\n";
         echo "<input type=\"hidden\" name=\"user\" value=\"$user\" />\n";
@@ -456,9 +460,10 @@ switch ($action) {
         echo "<br />\n";
         echo "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
         echo "</form>\n";
-        echo $OUTPUT->box_end();
+        echo $output->box_end();
 
-        echo $OUTPUT->footer('none');
+        echo $output->container_end();
+        echo $output->footer('none');
 
         // Log saved as text action.
         $params = array('objectid' => $questionnaire->id,
@@ -502,14 +507,16 @@ switch ($action) {
 
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $OUTPUT->header();
+        echo $output->header();
+        echo $output->container_start('mod_questionnaire_report');
         if (!$questionnaire->capabilities->readallresponses && !$questionnaire->capabilities->readallresponseanytime) {
 
             // Should never happen, unless called directly by a snoop.
             print_error('nopermissions', '', '', get_string('viewallresponses', 'questionnaire'));
 
+            echo $output->container_end();
             // Finish the page.
-            echo $OUTPUT->footer($course);
+            echo $output->footer($course);
             break;
         }
 
@@ -597,17 +604,18 @@ switch ($action) {
         $event = \mod_questionnaire\event\all_responses_viewed::create($params);
         $event->trigger();
 
-        echo'<div class = "generalbox">';
+        echo $output->box_start();
         echo (get_string('viewallresponses', 'questionnaire').'. '.$groupname.'. ');
         $strsort = get_string('order_'.$sort, 'questionnaire');
         echo $strsort;
-        echo $OUTPUT->help_icon('orderresponses', 'questionnaire');
+        echo $output->help_icon('orderresponses', 'questionnaire');
 
         $ret = $questionnaire->survey_results(1, 1, '', '', '', $uid = false, $currentgroupid, $sort);
-        echo '</div>';
+        echo $output->box_end();
 
+        echo $output->container_end();
         // Finish the page.
-        echo $OUTPUT->footer($course);
+        echo $output->footer($course);
         break;
 
     case 'vresp': // View by response.
@@ -691,8 +699,9 @@ switch ($action) {
         // Print the page header.
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $OUTPUT->header();
+        echo $output->header();
 
+        echo $output->container_start('mod_questionnaire_report');
         // Print the tabs.
         if ($byresponse) {
             $SESSION->questionnaire->current_tab = 'vrespsummary';
@@ -705,7 +714,7 @@ switch ($action) {
         // Print the main part of the page.
         // TODO provide option to select how many columns and/or responses per page.
 
-        echo $OUTPUT->box_start();
+        echo $output->box_start();
 
         if ($noresponses) {
             echo (get_string('group').' <strong>'.groups_get_group_name($currentgroupid).'</strong>: '.
@@ -716,10 +725,10 @@ switch ($action) {
                 $groupname = get_string('allparticipants');
             }
             if ($byresponse) {
-                echo $OUTPUT->box_start();
-                echo $OUTPUT->help_icon('viewindividualresponse', 'questionnaire').'&nbsp;';
+                echo $output->box_start();
+                echo $output->help_icon('viewindividualresponse', 'questionnaire').'&nbsp;';
                 echo (get_string('viewindividualresponse', 'questionnaire').' <strong> : '.$groupname.'</strong>');
-                echo $OUTPUT->box_end();
+                echo $output->box_end();
             }
             $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
             if (!$byresponse) { // Show respondents individual responses.
@@ -727,9 +736,10 @@ switch ($action) {
                     $isgroupmember = true, $allresponses = false, $currentgroupid);
             }
         }
-        echo $OUTPUT->box_end();
+        echo $output->box_end();
 
+        echo $output->container_end();
         // Finish the page.
-        echo $OUTPUT->footer($course);
+        echo $output->footer($course);
         break;
 }

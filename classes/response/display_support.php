@@ -135,7 +135,7 @@ class display_support {
             $table->data[] = $tabledata;
         }
 
-        echo html_writer::table($table);
+        return html_writer::table($table);
     }
 
     public static function mkreslisttext($rows) {
@@ -172,14 +172,14 @@ class display_support {
                 $table->data[] = array($text);
             }
         }
-        echo html_writer::table($table);
+        return html_writer::table($table);
     }
 
     public static function mkreslistdate($counts, $total, $precision, $showtotals) {
         $dateformat = get_string('strfdate', 'questionnaire');
 
         if ($total == 0) {
-            return;
+            return '';
         }
         $strresponse = get_string('response', 'questionnaire');
         $strnum = get_string('num', 'questionnaire');
@@ -199,12 +199,12 @@ class display_support {
             $table->data[] = array('', get_string('noresponsedata', 'questionnaire'));
         }
 
-        echo html_writer::table($table);
+        return html_writer::table($table);
     }
 
     public static function mkreslistnumeric($counts, $total, $precision) {
         if ($total == 0) {
-            return;
+            return '';
         }
         $nbresponses = 0;
         $sum = 0;
@@ -234,7 +234,7 @@ class display_support {
             $table->data[] = array('', $strnoresponsedata);
         }
 
-        echo html_writer::table($table);
+        return html_writer::table($table);
     }
 
     /* {{{ proto void mkresavg(array weights, int total, int precision, bool show_totals)
@@ -401,7 +401,7 @@ class display_support {
         } else {
             $table->data[] = array('', get_string('noresponsedata', 'questionnaire'));
         }
-        echo html_writer::table($table);
+        return html_writer::table($table);
     }
 
     public static function mkrescount($counts, $rids, $rows, $question, $precision, $length, $sort) {
@@ -593,7 +593,7 @@ class display_support {
             } // End named degrees.
             $table->data[] = $data;
         }
-        echo html_writer::table($table);
+        return html_writer::table($table);
     }
 
     /**

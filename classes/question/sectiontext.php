@@ -40,7 +40,7 @@ class sectiontext extends base {
     }
 
     protected function response_survey_display($data) {
-        return '';;
+        return '';
     }
 
     /**
