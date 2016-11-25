@@ -45,6 +45,8 @@ class numeric extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+        $output = '';
+
         // Numeric.
         $precision = $this->precise;
         $a = '';
@@ -79,10 +81,12 @@ class numeric extends base {
             }
         }
 
-        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.
+        $output .= '<input onkeypress="return event.keyCode != 13;" type="text" size="'.
             $this->length.'" name="q'.$this->id.'" maxlength="'.$this->length.
              '" value="'.(isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').
             '" id="' . $this->type . $this->id . '" />';
+
+        return $output;
     }
 
     protected function response_survey_display($data) {

@@ -107,7 +107,7 @@ class yesno extends base {
         // End CONTRIB-846.
 
         $output .= '</span>' . "\n";
-        echo $output;
+        return $output;
     }
 
     protected function response_survey_display($data) {

@@ -55,4 +55,17 @@ class renderer extends \plugin_renderer_base {
     public function respondent_info($text) {
         return \html_writer::tag('span', $text, ['class' => 'respondentinfo']);
     }
+
+    /**
+     * Render a question type.
+     * @param mod_questionnaire\question\base $question The question object.
+     * @param array $formdata Any returned form data.
+     * @param array $descendantsdata Question dependency data.
+     * @param int $qnum The question number.
+     * @param boolean $blankquestionnaire Used for printing a blank one.
+     * @return string The output for the page.
+     */
+    public function question_output($question, $formdata, $descendantsdata, $qnum, $blankquestionnaire) {
+        return $question->survey_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+    }
 }

@@ -175,10 +175,10 @@ class radio extends base {
         }
         // End CONTRIB-846.
 
-        echo $output;
         if ($otherempty) {
-            questionnaire_notify (get_string('otherempty', 'questionnaire'));
+            questionnaire_notify(get_string('otherempty', 'questionnaire'));
         }
+        return $output;
     }
 
     protected function response_survey_display($data) {

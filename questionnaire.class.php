@@ -766,7 +766,7 @@ class questionnaire {
         $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
         if ($section > $numsections) {
             $formdata->sec = $numsections;
-            echo '<div class=warning>'.get_string('finished', 'questionnaire').'</div>';
+            echo $this->renderer->notification(get_string('finished', 'questionnaire'), \core\output\notification::NOTIFY_WARNING);
             return(false);  // Invalid section.
         }
 
@@ -790,7 +790,7 @@ class questionnaire {
             if ($question->type_id != QUESSECTIONTEXT) {
                 $i++;
             }
-            $question->survey_display($formdata, $descendantsdata = '', $i, $this->usehtmleditor);
+            echo $this->renderer->question_output($question, $formdata, '', $i, $this->usehtmleditor);
             // Bug MDL-7292 - Don't count section text as a question number.
             // Process each question.
         }
@@ -932,7 +932,8 @@ class questionnaire {
             $a = new stdClass();
             $a->page = $section;
             $a->totpages = $numsections;
-            echo $this->renderer->container(get_string('pageof', 'questionnaire', $a).'&nbsp;&nbsp;', 'surveyPage');        }
+            echo $this->renderer->container(get_string('pageof', 'questionnaire', $a).'&nbsp;&nbsp;', 'surveyPage');
+        }
     }
 
     // Blankquestionnaire : if we are printing a blank questionnaire.
@@ -1033,7 +1034,8 @@ class questionnaire {
                     }
                 }
 
-                $question->survey_display($formdata, $descendantsdata, $i++, $usehtmleditor = null, $blankquestionnaire, $referer);
+                echo $this->renderer->question_output($question, $formdata, $descendantsdata, $i++, null);
+//                $question->survey_display($formdata, $descendantsdata, $i++, $usehtmleditor = null, $blankquestionnaire, $referer);
             }
         }
         // End of questions.

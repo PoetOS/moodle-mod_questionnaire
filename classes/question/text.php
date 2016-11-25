@@ -47,10 +47,10 @@ class text extends base {
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Text Box.
-        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'"'.
-             ($this->precise > 0 ? ' maxlength="'.$this->precise.'"' : '').' value="'.
-             (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '').
-             '" id="' . $this->type . $this->id . '" />';
+        return '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'"'.
+            ($this->precise > 0 ? ' maxlength="'.$this->precise.'"' : '').' value="'.
+            (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '').
+            '" id="' . $this->type . $this->id . '" />';
     }
 
     protected function response_survey_display($data) {

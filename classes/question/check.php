@@ -44,6 +44,8 @@ class check extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+        $output = '';
+
         // Check boxes.
         $otherempty = false;
         if (!empty($data) ) {
@@ -106,9 +108,9 @@ class check extends base {
                 if (!empty($data) ) {
                     $checked = in_array($id, $data->{'q'.$this->id});
                 }
-                echo html_writer::checkbox('q'.$this->id.'[]', $id, $checked,
+                $output .= html_writer::checkbox('q'.$this->id.'[]', $id, $checked,
                                                format_text($contents->text, FORMAT_HTML).$contents->image);
-                echo '<br />';
+                $output .= '<br />';
             } else {             // Check box with associated !other text field.
                 // In case length field has been used to enter max number of choices, set it to 20.
                 $othertext = preg_replace(
@@ -124,18 +126,20 @@ class check extends base {
                 $name = 'q'.$this->id.'[]';
                 $value = 'other_'.$id;
 
-                echo html_writer::checkbox($name, $value, $checked, format_text($othertext.'', FORMAT_HTML));
+                $output .= html_writer::checkbox($name, $value, $checked, format_text($othertext.'', FORMAT_HTML));
                 $othertext = '&nbsp;<input type="text" size="25" name="'.$cid.'" onclick="other_check(name)"';
                 if ($cid) {
                     $othertext .= ' value="'. (!empty($data->$cid) ? stripslashes($data->$cid) : '') .'"';
                 }
                 $othertext .= ' />';
-                echo $othertext.'<br />';
+                $output .= $othertext.'<br />';
             }
         }
         if ($otherempty) {
             questionnaire_notify (get_string('otherempty', 'questionnaire'));
         }
+
+        return $output;
     }
 
     protected function response_survey_display($data) {

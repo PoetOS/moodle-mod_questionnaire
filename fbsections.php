@@ -243,7 +243,7 @@ foreach ($questionnaire->questions as $question) {
             }
         }
         if ($qhasvalues || $qtype == QUESSECTIONTEXT) {
-            $question->survey_display($formdata, $descendantsdata = '', $qnum = $n, $blankquestionnaire = true);
+            $question->survey_display($formdata, '', $n, true);
         }
     } else {
         echo '<div class="notifyproblem">';

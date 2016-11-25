@@ -37,6 +37,8 @@ class essay extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+        $output = '';
+
         // Essay.
         // Columns and rows default values.
         $cols = 80;
@@ -66,7 +68,9 @@ class essay extends base {
             $texteditor = html_writer::tag('textarea', $value,
                             array('id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols));
         }
-        echo $texteditor;
+        $output .= $texteditor;
+
+        return $output;
     }
 
     protected function response_survey_display($data) {
