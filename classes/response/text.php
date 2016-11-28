@@ -108,10 +108,10 @@ class text extends base {
             }
             $isnumeric = $this->question->type_id == QUESNUMERIC;
             if ($isnumeric) {
-                $output .=\mod_questionnaire\response\display_support::mkreslistnumeric($this->counts, count($rids),
+                $output .= \mod_questionnaire\response\display_support::mkreslistnumeric($this->counts, count($rids),
                     $this->question->precise);
             } else {
-                $output .=\mod_questionnaire\response\display_support::mkreslisttext($rows);
+                $output .= \mod_questionnaire\response\display_support::mkreslisttext($rows);
             }
         } else {
             $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
