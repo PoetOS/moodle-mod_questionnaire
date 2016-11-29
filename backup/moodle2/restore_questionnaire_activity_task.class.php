@@ -56,7 +56,7 @@ class restore_questionnaire_activity_task extends restore_activity_task {
 
         $contents[] = new restore_decode_content('questionnaire', array('intro'), 'questionnaire');
         $contents[] = new restore_decode_content('questionnaire_survey',
-                        array('info', 'thank_head', 'thank_body'), 'questionnaire_survey');
+                        array('info', 'thank_head', 'thank_body', 'thanks_page'), 'questionnaire_survey');
         $contents[] = new restore_decode_content('questionnaire_question', array('content'), 'questionnaire_question');
 
         return $contents;
