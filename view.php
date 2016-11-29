@@ -48,6 +48,9 @@ if (isset($sid)) {
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\viewpage($questionnaire));
 
 $PAGE->set_title(format_string($questionnaire->name));
 

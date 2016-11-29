@@ -27,7 +27,7 @@ namespace mod_questionnaire\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-class viewpage implements \renderable, \templatable {
+class reportpage implements \renderable, \templatable {
 
     /**
      * The questionnaire object
@@ -57,7 +57,20 @@ class viewpage implements \renderable, \templatable {
      * @param string The content for the index.
      */
     public function add_to_page($element, $content) {
-        $this->data->{$element}[] = ['content' => $content];
+        if ($element === 'responses') {
+            $this->data->{$element}[] = ['response' => $content];
+        } else if ($element === 'myheaders') {
+            $this->data->{$element}['myheader'] = empty($this->data->{$element}['myheader']) ? $content :
+                ($this->data->{$element}['myheader'] . $content);
+        } else if ($element === 'feedbacknotes') {
+            $this->data->{$element}['feedbacknote'] = empty($this->data->{$element}['feedbacknote']) ? $content :
+                ($this->data->{$element}['feedbacknote'] . $content);
+        } else if ($element === 'feedbackmessages') {
+            $this->data->{$element}['feedbackmessage'] = empty($this->data->{$element}['feedbackmessage']) ? $content :
+                ($this->data->{$element}['feedbackmessage'] . $content);
+        } else {
+            $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
+        }
     }
 
     /**

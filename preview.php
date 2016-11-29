@@ -81,6 +81,10 @@ $PAGE->set_cm($cm);   // CONTRIB-5872 - I don't know why this is needed.
 
 $questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
 
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\previewpage($questionnaire));
+
 $canpreview = (!isset($questionnaire->capabilities) &&
                has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
               (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
@@ -114,11 +118,11 @@ $PAGE->requires->js('/mod/questionnaire/module.js');
 // Print the tabs.
 
 
-echo $OUTPUT->header();
+echo $questionnaire->renderer->header();
 if (!$popup) {
     require('tabs.php');
 }
-echo $OUTPUT->heading($pq);
+$questionnaire->page->add_to_page('heading', clean_text($pq));
 
 if ($questionnaire->capabilities->printblank) {
     // Open print friendly as popup window.
@@ -140,6 +144,7 @@ $questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup
 if ($popup) {
     echo $OUTPUT->close_window_button();
 }
+echo $questionnaire->renderer->render($questionnaire->page);
 echo $OUTPUT->footer($course);
 
 // Log this questionnaire preview.

@@ -48,6 +48,10 @@ class completepage implements \renderable, \templatable {
      */
     public function __construct($questionnaire) {
         $this->questionnaire = $questionnaire;
+        $this->data = new \stdClass();
+        $this->data->title = format_text($questionnaire->survey->title, FORMAT_HTML);
+        $this->data->subtitle = format_text($questionnaire->survey->subtitle, FORMAT_HTML);
+        $this->data->addinfo = format_text($questionnaire->survey->info, FORMAT_HTML);
     }
 
     /**
@@ -55,8 +59,12 @@ class completepage implements \renderable, \templatable {
      * @param string The index for the data.
      * @param string The content for the index.
      */
-    public function add_to_page($index, $content) {
-        $this->data[$index][] = ['content' => $content];
+    public function add_to_page($element, $content) {
+        if ($element !== 'questions') {
+            $this->data->{$element} = $content;
+        } else {
+            $this->data->{$element}[] = ['question' => $content];
+        }
     }
 
     /**

@@ -52,6 +52,10 @@ $PAGE->set_context($context);
 
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\questionspage($questionnaire));
+
 if (!$questionnaire->capabilities->editquestions) {
     print_error('nopermissions', 'error', 'mod:questionnaire:edit');
 }
@@ -360,7 +364,7 @@ if ($action == 'question') {
 $PAGE->set_title($streditquestion);
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add($streditquestion);
-echo $OUTPUT->header();
+echo $questionnaire->renderer->header();
 require('tabs.php');
 
 if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
@@ -424,9 +428,10 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
                             '</div></div>';
         }
     }
-    echo $OUTPUT->confirm($msg, $buttonyes, $buttonno);
+    $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
 
 } else {
-    $questionsform->display();
+    $questionnaire->page->add_to_page('formarea', $questionsform->render());
 }
-echo $OUTPUT->footer();
+echo $questionnaire->renderer->render($questionnaire->page);
+echo $questionnaire->renderer->footer();

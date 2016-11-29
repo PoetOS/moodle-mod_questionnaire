@@ -27,7 +27,7 @@ namespace mod_questionnaire\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-class viewpage implements \renderable, \templatable {
+class qsettingspage implements \renderable, \templatable {
 
     /**
      * The questionnaire object
@@ -57,7 +57,7 @@ class viewpage implements \renderable, \templatable {
      * @param string The content for the index.
      */
     public function add_to_page($element, $content) {
-        $this->data->{$element}[] = ['content' => $content];
+        $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
     }
 
     /**

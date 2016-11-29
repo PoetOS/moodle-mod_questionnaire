@@ -49,6 +49,46 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Fill out the report page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_reportpage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/reportpage', $data);
+    }
+
+    /**
+     * Fill out the qsettings page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_qsettingspage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/qsettingspage', $data);
+    }
+
+    /**
+     * Fill out the questions page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_questionspage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/questionspage', $data);
+    }
+
+    /**
+     * Fill out the preview page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_previewpage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/previewpage', $data);
+    }
+
+    /**
      * Render the respondent information line.
      * @param string $text The respondent information.
      */

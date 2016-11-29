@@ -64,9 +64,12 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
-$output = $PAGE->get_renderer('mod_questionnaire');
 
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\reportpage($questionnaire));
+
 $sid = $questionnaire->survey->id;
 $courseid = $course->id;
 
@@ -92,19 +95,18 @@ switch ($action) {
         }
 
         // Print the page header.
-        echo $output->header();
-        echo $output->container_start('mod_questionnaire_myreport');
+        echo $questionnaire->renderer->header();
 
         // Print the tabs.
         include('tabs.php');
 
-        echo $output->heading($titletext);
-        echo $output->container_start('generalbox');
+        $questionnaire->page->add_to_page('myheaders', $titletext);
         $questionnaire->survey_results(1, 1, '', '', $rids, $USER->id);
-        echo $output->container_end();
-        echo $output->container_end();
+
+        echo $questionnaire->renderer->render($questionnaire->page);
+
         // Finish the page.
-        echo $output->footer($course);
+        echo $questionnaire->renderer->footer($course);
         break;
 
     case 'vall':
@@ -117,17 +119,16 @@ switch ($action) {
         $titletext = get_string('myresponses', 'questionnaire');
 
         // Print the page header.
-        echo $output->header();
-        echo $output->container_start('mod_questionnaire_myreport');
+        echo $questionnaire->renderer->header();
 
         // Print the tabs.
         include('tabs.php');
 
-        echo $output->heading($titletext.':');
+        $questionnaire->page->add_to_page('myheaders', $titletext);
         $questionnaire->view_all_responses($resps);
-        echo $output->container_end();
+        echo $questionnaire->renderer->render($questionnaire->page);
         // Finish the page.
-        echo $output->footer($course);
+        echo $questionnaire->renderer->footer($course);
         break;
 
     case 'vresp':
@@ -246,21 +247,15 @@ switch ($action) {
 
         $compare = false;
         // Print the page header.
-        echo $output->header();
-        echo $output->container_start('mod_questionnaire_myreport');
+        echo $questionnaire->renderer->header();
 
         // Print the tabs.
         include('tabs.php');
-        echo $output->box_start();
-
-        echo $output->heading($titletext);
+        $questionnaire->page->add_to_page('myheaders', $titletext);
 
         if (count($resps) > 1) {
             $userresps = $resps;
-            echo $output->container_start();
-            // echo '<div style="text-align:center; padding-bottom:5px;">';
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $userresps);
-            echo $output->container_end();
         }
         $resps = array();
         // Determine here which "global" responses should get displayed for comparison with current user.
@@ -279,19 +274,10 @@ switch ($action) {
             $resps = $respsallparticipants;
         }
         $compare = true;
-        $questionnaire->view_response($rid, null, null, $resps, $compare, $iscurrentgroupmember,
-                        $allresponses = false, $currentgroupid);
-        if (isset($userresps) && count($userresps) > 1) {
-            echo $output->container_start();
-            // echo '<div style="text-align:center; padding-bottom:5px;">';
-            $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $userresps);
-            echo $output->container_end();
-        }
-        echo $output->box_end();
-
-        echo $output->container_end();
+        $questionnaire->view_response($rid, null, null, $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
         // Finish the page.
-        echo $output->footer($course);
+        echo $questionnaire->renderer->render($questionnaire->page);
+        echo $questionnaire->renderer->footer($course);
         break;
 
     case get_string('return', 'questionnaire'):

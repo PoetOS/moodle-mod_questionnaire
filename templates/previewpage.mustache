@@ -15,12 +15,12 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/completepage
+    @template mod_questionnaire/viewpage
 
-    Template which defines a questionnaire completion page.
+    Template which defines a questionnaire view page.
 
     Classes required for JS:
-    * /mod/questionnaire/module.js
+    * none
 
     Data attributes required for JS:
     * none
@@ -55,17 +55,16 @@
         ]
     }
     }}
-<div class="mod_questionnaire_completepage generalbox">
-    {{{respondentinfo}}}
-    <h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}
-    <h4 class="surveySubTitle">{{{subtitle}}}</h4>
-    <div class="addInfo">{{{addinfo}}}</div>
-    {{{message}}}
-    <div class="generalbox">
-        {{{formstart}}}
+<div class="mod_questionnaire_previewpage">
+    <h2>{{{heading}}}</h2>
+    {{{formstart}}}
+    {{#notifications}}{{{notifications}}}{{/notifications}}
+    <div class="box generalbox">
+        <h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}
+        <h4 class="surveySubTitle">{{{subtitle}}}</h4>
+        <div class="addInfo">{{{addinfo}}}</div>
+        {{#message}}{{{message}}}{{/message}}
         {{#questions}}{{{question}}}{{/questions}}
-        {{{pageinfo}}}
-        <div class="notice" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">
-        {{{controlbuttons}}}
-        {{{formend}}}
+    </div>
+    {{{formend}}}
 </div>

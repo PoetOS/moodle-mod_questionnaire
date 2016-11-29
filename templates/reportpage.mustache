@@ -55,17 +55,21 @@
         ]
     }
     }}
-<div class="mod_questionnaire_completepage generalbox">
-    {{{respondentinfo}}}
-    <h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}
-    <h4 class="surveySubTitle">{{{subtitle}}}</h4>
-    <div class="addInfo">{{{addinfo}}}</div>
-    {{{message}}}
-    <div class="generalbox">
-        {{{formstart}}}
-        {{#questions}}{{{question}}}{{/questions}}
-        {{{pageinfo}}}
-        <div class="notice" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">
-        {{{controlbuttons}}}
-        {{{formend}}}
+<div class="mod_questionnaire_reportpage generalbox">
+    {{{tabsarea}}}
+    <div class="box generalbox">
+        {{#myheaders}}<h2>{{{myheader}}}</h2>{{/myheaders}}
+        {{#navigationbar}}<div class="box respondentsnavbar">{{{navigationbar}}}</div>{{/navigationbar}}
+        {{{respondentinfo}}}
+        {{#title}}<h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}{{/title}}
+        {{#subtitle}}<h4 class="surveySubTitle">{{{subtitle}}}</h4>{{/subtitle}}
+        {{#addinfo}}<div class="addInfo">{{{addinfo}}}</div>{{/addinfo}}
+        {{#feedbackmessages}}
+        <h3>{{# str }} feedbackreport, mod_questionnaire {{/ str }}</h3>
+        {{{feedbackmessage}}}
+        {{/feedbackmessages}}
+        {{#feedbacknotes}}{{{feedbacknote}}}{{/feedbacknotes}}
+        {{#responses}}{{{response}}}{{/responses}}
+        {{#bottomnavigationbar}}<div class="box respondentsnavbar">{{{bottomnavigationbar}}}</div>{{/bottomnavigationbar}}
+    </div>
 </div>

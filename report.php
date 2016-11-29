@@ -63,6 +63,10 @@ require_course_login($course, true, $cm);
 
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\reportpage($questionnaire));
+
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = context_module::instance($cm->id);
 if (!has_capability('mod/questionnaire:readallresponseanytime', $context) &&
@@ -102,7 +106,6 @@ if ($currentgroupid !== null) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-$output = $PAGE->get_renderer('mod_questionnaire');
 
 // Tab setup.
 if (!isset($SESSION->questionnaire)) {
@@ -216,9 +219,9 @@ switch ($action) {
         // Print the page header.
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $output->header();
+        echo $questionnaire->renderer->header();
 
-        echo $output->container_start('mod_questionnaire_report');
+        echo $questionnaire->renderer->container_start('mod_questionnaire_report');
         // Print the tabs.
         $SESSION->questionnaire->current_tab = 'deleteresp';
         include('tabs.php');
@@ -239,11 +242,11 @@ switch ($action) {
                 'rid' => $rid, 'individualresponse' => 1, 'group' => $currentgroupid));
         $buttonyes = new single_button($urlyes, get_string('yes'), 'post');
         $buttonno = new single_button($urlno, get_string('no'), 'get');
-        echo $output->confirm($msg, $buttonyes, $buttonno);
+        echo $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno);
 
-        echo $output->container_end();
+        echo $questionnaire->renderer->container_end();
         // Finish the page.
-        echo $output->footer($course);
+        echo $questionnaire->renderer->footer($course);
         break;
 
     case 'delallresp': // Delete all responses? Ask for confirmation.
@@ -254,9 +257,9 @@ switch ($action) {
             // Print the page header.
             $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
             $PAGE->set_heading(format_string($course->fullname));
-            echo $output->header();
+            echo $questionnaire->renderer->header();
 
-            echo $output->container_start('mod_questionnaire_report');
+            echo $questionnaire->renderer->container_start('mod_questionnaire_report');
             // Print the tabs.
             $SESSION->questionnaire->current_tab = 'deleteall';
             include('tabs.php');
@@ -276,11 +279,11 @@ switch ($action) {
             $buttonyes = new single_button($urlyes, get_string('yes'), 'post');
             $buttonno = new single_button($urlno, get_string('no'), 'get');
 
-            echo $output->confirm($msg, $buttonyes, $buttonno);
+            echo $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno);
 
-            echo $output->container_end();
+            echo $questionnaire->renderer->container_end();
             // Finish the page.
-            echo $output->footer($course);
+            echo $questionnaire->renderer->footer($course);
         }
         break;
 
@@ -418,9 +421,9 @@ switch ($action) {
 
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $output->header();
+        echo $questionnaire->renderer->header();
 
-        echo $output->container_start('mod_questionnaire_report');
+        echo $questionnaire->renderer->container_start('mod_questionnaire_report');
         // Print the tabs.
         // Tab setup.
         if (empty($user)) {
@@ -443,10 +446,10 @@ switch ($action) {
             }
         }
         echo "<br /><br />\n";
-        echo $output->help_icon('downloadtextformat', 'questionnaire');
+        echo $questionnaire->renderer->help_icon('downloadtextformat', 'questionnaire');
         echo '&nbsp;'.(get_string('downloadtext')).':&nbsp;'.get_string('responses', 'questionnaire').'&nbsp;'.$groupname;
-        echo $output->heading(get_string('textdownloadoptions', 'questionnaire'));
-        echo $output->box_start();
+        echo $questionnaire->renderer->heading(get_string('textdownloadoptions', 'questionnaire'));
+        echo $questionnaire->renderer->box_start();
         echo "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";
         echo "<input type=\"hidden\" name=\"instance\" value=\"$instance\" />\n";
         echo "<input type=\"hidden\" name=\"user\" value=\"$user\" />\n";
@@ -460,10 +463,10 @@ switch ($action) {
         echo "<br />\n";
         echo "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
         echo "</form>\n";
-        echo $output->box_end();
+        echo $questionnaire->renderer->box_end();
 
-        echo $output->container_end();
-        echo $output->footer('none');
+        echo $questionnaire->renderer->container_end();
+        echo $questionnaire->renderer->footer('none');
 
         // Log saved as text action.
         $params = array('objectid' => $questionnaire->id,
@@ -507,16 +510,12 @@ switch ($action) {
 
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $output->header();
-        echo $output->container_start('mod_questionnaire_report');
+        echo $questionnaire->renderer->header();
         if (!$questionnaire->capabilities->readallresponses && !$questionnaire->capabilities->readallresponseanytime) {
-
             // Should never happen, unless called directly by a snoop.
             print_error('nopermissions', '', '', get_string('viewallresponses', 'questionnaire'));
-
-            echo $output->container_end();
             // Finish the page.
-            echo $output->footer($course);
+            echo $questionnaire->renderer->footer($course);
             break;
         }
 
@@ -533,6 +532,7 @@ switch ($action) {
         }
         include('tabs.php');
 
+        $respinfo = '';
         $resps = array();
         // Enable choose_group if there are questionnaire groups and groupmode is not set to "no groups"
         // and if there are more goups than 1 (or if user can view all groups).
@@ -557,10 +557,10 @@ switch ($action) {
                             '<\/option>/', '', $groupselect);
                 }
             }
-            echo isset($groupselect) ? $groupselect : '';
+            $respinfo .= isset($groupselect) ? $groupselect : '';
             $currentgroupid = groups_get_activity_group($cm);
         } else {
-            echo ('<br />');
+            $respinfo .= '<br />';
         }
         if ($currentgroupid > 0) {
              $groupname = get_string('group').': <strong>'.groups_get_group_name($currentgroupid).'</strong>';
@@ -604,18 +604,18 @@ switch ($action) {
         $event = \mod_questionnaire\event\all_responses_viewed::create($params);
         $event->trigger();
 
-        echo $output->box_start();
-        echo (get_string('viewallresponses', 'questionnaire').'. '.$groupname.'. ');
+        $respinfo .= get_string('viewallresponses', 'questionnaire').'. '.$groupname.'. ';
         $strsort = get_string('order_'.$sort, 'questionnaire');
-        echo $strsort;
-        echo $output->help_icon('orderresponses', 'questionnaire');
+        $respinfo .= $strsort;
+        $respinfo .= $questionnaire->renderer->help_icon('orderresponses', 'questionnaire');
+        $questionnaire->page->add_to_page('respondentinfo', $respinfo);
 
         $ret = $questionnaire->survey_results(1, 1, '', '', '', $uid = false, $currentgroupid, $sort);
-        echo $output->box_end();
 
-        echo $output->container_end();
+        echo $questionnaire->renderer->render($questionnaire->page);
+
         // Finish the page.
-        echo $output->footer($course);
+        echo $questionnaire->renderer->footer($course);
         break;
 
     case 'vresp': // View by response.
@@ -699,9 +699,8 @@ switch ($action) {
         // Print the page header.
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $output->header();
+        echo $questionnaire->renderer->header();
 
-        echo $output->container_start('mod_questionnaire_report');
         // Print the tabs.
         if ($byresponse) {
             $SESSION->questionnaire->current_tab = 'vrespsummary';
@@ -714,10 +713,9 @@ switch ($action) {
         // Print the main part of the page.
         // TODO provide option to select how many columns and/or responses per page.
 
-        echo $output->box_start();
-
         if ($noresponses) {
-            echo (get_string('group').' <strong>'.groups_get_group_name($currentgroupid).'</strong>: '.
+            $questionnaire->page->add_to_page('respondentinfo',
+                get_string('group').' <strong>'.groups_get_group_name($currentgroupid).'</strong>: '.
                 get_string('noresponses', 'questionnaire'));
         } else {
             $groupname = get_string('group').': <strong>'.groups_get_group_name($currentgroupid).'</strong>';
@@ -725,10 +723,12 @@ switch ($action) {
                 $groupname = get_string('allparticipants');
             }
             if ($byresponse) {
-                echo $output->box_start();
-                echo $output->help_icon('viewindividualresponse', 'questionnaire').'&nbsp;';
-                echo (get_string('viewindividualresponse', 'questionnaire').' <strong> : '.$groupname.'</strong>');
-                echo $output->box_end();
+                $respinfo = '';
+                $respinfo .= $questionnaire->renderer->box_start();
+                $respinfo .= $questionnaire->renderer->help_icon('viewindividualresponse', 'questionnaire').'&nbsp;';
+                $respinfo .= get_string('viewindividualresponse', 'questionnaire').' <strong> : '.$groupname.'</strong>';
+                $respinfo .= $questionnaire->renderer->box_end();
+                $questionnaire->page->add_to_page('respondentinfo', $respinfo);
             }
             $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
             if (!$byresponse) { // Show respondents individual responses.
@@ -736,10 +736,10 @@ switch ($action) {
                     $isgroupmember = true, $allresponses = false, $currentgroupid);
             }
         }
-        echo $output->box_end();
 
-        echo $output->container_end();
+        echo $questionnaire->renderer->render($questionnaire->page);
+
         // Finish the page.
-        echo $output->footer($course);
+        echo $questionnaire->renderer->footer($course);
         break;
 }
