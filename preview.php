@@ -137,15 +137,16 @@ if ($questionnaire->capabilities->printblank) {
     $link = new moodle_url($url);
     $action = new popup_action('click', $link, $name, $options);
     $class = "floatprinticon";
-    echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
-            new pix_icon('t/print', $title));
+    $questionnaire->page->add_to_page('printblank',
+        $questionnaire->renderer->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
+            new pix_icon('t/print', $title)));
 }
 $questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup);
 if ($popup) {
-    echo $OUTPUT->close_window_button();
+    $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
 }
 echo $questionnaire->renderer->render($questionnaire->page);
-echo $OUTPUT->footer($course);
+echo $questionnaire->renderer->footer($course);
 
 // Log this questionnaire preview.
 $context = context_module::instance($questionnaire->cm->id);

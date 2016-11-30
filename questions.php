@@ -330,6 +330,9 @@ if ($action == 'main') {
 if ($reload) {
     unset($questionsform);
     $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm);
+    // Add renderer and page objects to the questionnaire object for display use.
+    $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+    $questionnaire->add_page(new \mod_questionnaire\output\questionspage($questionnaire));
     if ($action == 'main') {
         $questionsform = new mod_questionnaire_questions_form('questions.php', $moveq);
         $sdata = clone($questionnaire->survey);

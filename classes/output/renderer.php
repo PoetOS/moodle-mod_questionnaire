@@ -89,6 +89,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Fill out the non-respondents page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_nonrespondentspage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/nonrespondentspage', $data);
+    }
+
+    /**
      * Render the respondent information line.
      * @param string $text The respondent information.
      */
@@ -157,5 +167,22 @@ class renderer extends \plugin_renderer_base {
      */
     public function results_output($question, $rids, $sort, $anonymous) {
         return $question->display_results($rids, $sort, $anonymous);
+    }
+
+    /**
+     * Helper method dealing with the fact we can not just fetch the output of flexible_table
+     *
+     * @param flexible_table $table
+     * @return string HTML
+     */
+    public function flexible_table(\flexible_table $table) {
+
+        $o = '';
+        ob_start();
+        $table->print_html();
+        $o = ob_get_contents();
+        ob_end_clean();
+
+        return $o;
     }
 }

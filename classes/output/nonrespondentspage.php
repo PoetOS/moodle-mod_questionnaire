@@ -27,7 +27,7 @@ namespace mod_questionnaire\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-class myreportpage implements \renderable, \templatable {
+class nonrespondentspage implements \renderable, \templatable {
 
     /**
      * The questionnaire object
@@ -49,9 +49,6 @@ class myreportpage implements \renderable, \templatable {
     public function __construct($questionnaire) {
         $this->questionnaire = $questionnaire;
         $this->data = new \stdClass();
-        $this->data->title = format_text($questionnaire->survey->title, FORMAT_HTML);
-        $this->data->subtitle = format_text($questionnaire->survey->subtitle, FORMAT_HTML);
-        $this->data->addinfo = format_text($questionnaire->survey->info, FORMAT_HTML);
     }
 
     /**
@@ -60,11 +57,7 @@ class myreportpage implements \renderable, \templatable {
      * @param string The content for the index.
      */
     public function add_to_page($element, $content) {
-        if ($element !== 'questions') {
-            $this->data->{$element} = $content;
-        } else {
-            $this->data->{$element}[] = ['question' => $content];
-        }
+        $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
     }
 
     /**

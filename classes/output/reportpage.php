@@ -60,14 +60,15 @@ class reportpage implements \renderable, \templatable {
         if ($element === 'responses') {
             $this->data->{$element}[] = ['response' => $content];
         } else if ($element === 'myheaders') {
-            $this->data->{$element}['myheader'] = empty($this->data->{$element}['myheader']) ? $content :
-                ($this->data->{$element}['myheader'] . $content);
+            $this->data->{$element}['myheader'] =
+                empty($this->data->{$element}['myheader']) ? $content : ($this->data->{$element}['myheader'] . $content);
         } else if ($element === 'feedbacknotes') {
-            $this->data->{$element}['feedbacknote'] = empty($this->data->{$element}['feedbacknote']) ? $content :
-                ($this->data->{$element}['feedbacknote'] . $content);
+            $this->data->{$element}['feedbacknote'] =
+                empty($this->data->{$element}['feedbacknote']) ? $content : ($this->data->{$element}['feedbacknote'] . $content);
         } else if ($element === 'feedbackmessages') {
-            $this->data->{$element}['feedbackmessage'] = empty($this->data->{$element}['feedbackmessage']) ? $content :
-                ($this->data->{$element}['feedbackmessage'] . $content);
+            $this->data->{$element}['feedbackmessage'] =
+                empty($this->data->{$element}['feedbackmessage']) ? $content : ($this->data->{$element}['feedbackmessage'] .
+                    $content);
         } else {
             $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
         }

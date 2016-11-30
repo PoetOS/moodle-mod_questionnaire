@@ -238,5 +238,4 @@ if ((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {
     }
 
     $questionnaire->page->add_to_page('tabsarea', print_tabs($tabs, $currenttab, $inactive, $activated, true));
-
 }
