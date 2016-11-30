@@ -48,10 +48,10 @@ class date extends base {
             $setdate = questionnaire_check_date ($dateentered, false);
             if ($setdate == 'wrongdateformat') {
                 $msg = get_string('wrongdateformat', 'questionnaire', $dateentered);
-                questionnaire_notify($msg);
+                $this->add_notification($msg);
             } else if ($setdate == 'wrongdaterange') {
                 $msg = get_string('wrongdaterange', 'questionnaire');
-                questionnaire_notify($msg);
+                $this->add_notification($msg);
             } else {
                 $data->{'q'.$this->id} = $setdate;
             }

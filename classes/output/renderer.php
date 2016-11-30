@@ -116,7 +116,14 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function question_output($question, $formdata, $descendantsdata, $qnum, $blankquestionnaire) {
-        return $question->survey_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+        // Calling "survey_display" may generate per question notifications. If present, add them to the question output.
+        $qoutput = $question->survey_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+        if (($notifications = $question->get_notifications()) !== false) {
+            foreach ($notifications as $notification) {
+                $qoutput .= $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
+            }
+        }
+        return $qoutput;
     }
 
     /**

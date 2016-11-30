@@ -26,6 +26,7 @@
     * none
 
     Context variables required for this template:
+    * motifications - string: HTML of any notifications loaded.
     * intro - string: The intro text.
     * message - string: Any message text.
     * complete - string: The text and link to complete the questionnaire.
@@ -56,6 +57,7 @@
     }
     }}
 <div class="mod_questionnaire_completepage generalbox">
+    {{#notifications}}{{{notifications}}}{{/notifications}}
     {{{respondentinfo}}}
     <h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}
     <h4 class="surveySubTitle">{{{subtitle}}}</h4>

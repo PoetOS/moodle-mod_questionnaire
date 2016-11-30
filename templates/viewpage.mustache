@@ -26,7 +26,8 @@
     * none
 
     Context variables required for this template:
-    * intro - string: The intro text.
+    * questionnairename - string: The name of the questionnaire (no HTML).
+    * intro - string: The intro text (may have HTML).
     * message - string: Any message text.
     * complete - string: The text and link to complete the questionnaire.
     * guestuser - string: Any content for a guest user.
@@ -35,31 +36,18 @@
 
     Example context (json):
     {
-        "intro": [
-            {
-                "content": "Intro1",
-            },
-            {
-                "content": "Intro2",
-            },
-        ]
+        "questionnairename"
     },
     {
-        "message": [
-            {
-                "content": "Message 1",
-            },
-            {
-                "content": "Message 2",
-            },
-        ]
+        "intro"
     }
     }}
 <div class="mod_questionnaire_viewpage">
-    {{#intro}}<div class="intro">{{{content}}}</div>{{/intro}}
-    {{#message}}<div class="message">{{{content}}}</div>{{/message}}
-    {{#complete}}<div class="complete">{{{content}}}</div>{{/complete}}
-    {{#guestuser}}<div class="guestuser">{{{content}}}</div>{{/guestuser}}
-    {{#yourresponse}}<div class="yourresponse">{{{content}}}</div>{{/yourresponse}}
-    {{#allresponses}}<div class="allresponses">{{{content}}}</div>{{/allresponses}}
+    <h2>{{questionnairename}}</h2>
+    {{#intro}}<div class="intro">{{{intro}}}</div>{{/intro}}
+    {{#message}}<div class="message">{{{message}}}</div>{{/message}}
+    {{#complete}}<div class="complete">{{{complete}}}</div>{{/complete}}
+    {{#guestuser}}<div class="guestuser">{{{guestuser}}}</div>{{/guestuser}}
+    {{#yourresponse}}<div class="yourresponse">{{{yourresponse}}}</div>{{/yourresponse}}
+    {{#allresponses}}<div class="allresponses">{{{allresponses}}}</div>{{/allresponses}}
 </div>

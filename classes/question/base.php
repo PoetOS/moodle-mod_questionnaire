@@ -95,7 +95,7 @@ abstract class base {
     public $deleted     = 'n';
 
     /** @var array $qtypenames List of all question names. */
-    private static $qtypenames = array(
+    private static $qtypenames = [
         QUESYESNO => 'yesno',
         QUESTEXT => 'text',
         QUESESSAY => 'essay',
@@ -107,7 +107,10 @@ abstract class base {
         QUESNUMERIC => 'numeric',
         QUESPAGEBREAK => 'pagebreak',
         QUESSECTIONTEXT => 'sectiontext'
-    );
+    ];
+
+    /** @var array $notifications Array of extra messages for display purposes. */
+    private $notifications = [];
 
     // Class Methods.
 
@@ -242,6 +245,26 @@ abstract class base {
             return $this->response->display_results($rids, $sort, $anonymous);
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Add a notification.
+     * @param string $message
+     */
+    public function add_notification($message) {
+        $this->notifications[] = $message;
+    }
+
+    /**
+     * Get any notifications.
+     * @return array | boolean The notifications array or false.
+     */
+    public function get_notifications() {
+        if (empty($this->notifications)) {
+            return false;
+        } else {
+            return $this->notifications;
         }
     }
 

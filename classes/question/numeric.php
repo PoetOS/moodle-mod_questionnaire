@@ -56,7 +56,7 @@ class numeric extends base {
                 $mynumber0 = $mynumber;
                 if (!is_numeric($mynumber) ) {
                     $msg = get_string('notanumber', 'questionnaire', $mynumber);
-                    questionnaire_notify ($msg);
+                    $this->add_notification($msg);
                 } else {
                     if ($precision) {
                         $pos = strpos($mynumber, '.');
@@ -72,7 +72,7 @@ class numeric extends base {
                         $a->number = $mynumber0;
                         $a->precision = $precision;
                         $msg = get_string('numberfloat', 'questionnaire', $a);
-                        questionnaire_notify ($msg);
+                        $this->add_notification($msg);
                     }
                 }
             }

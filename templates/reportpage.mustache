@@ -56,7 +56,8 @@
     }
     }}
 <div class="mod_questionnaire_reportpage generalbox">
-    {{{tabsarea}}}
+    {{#tabsarea}}{{{tabsarea}}}{{/tabsarea}}
+    {{#notifications}}{{{notifications}}}{{/notifications}}
     <div class="box generalbox">
         {{#myheaders}}<h2>{{{myheader}}}</h2>{{/myheaders}}
         {{#navigationbar}}<div class="box respondentsnavbar">{{{navigationbar}}}</div>{{/navigationbar}}
@@ -64,6 +65,8 @@
         {{#title}}<h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}{{/title}}
         {{#subtitle}}<h4 class="surveySubTitle">{{{subtitle}}}</h4>{{/subtitle}}
         {{#addinfo}}<div class="addInfo">{{{addinfo}}}</div>{{/addinfo}}
+        {{#feedbackcharts}}{{{feedbackcharts}}}{{/feedbackcharts}}
+        {{#feedbackscores}}{{{feedbackscores}}}{{/feedbackscores}}
         {{#feedbackmessages}}
         <h3>{{# str }} feedbackreport, mod_questionnaire {{/ str }}</h3>
         {{{feedbackmessage}}}

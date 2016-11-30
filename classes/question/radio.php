@@ -176,7 +176,7 @@ class radio extends base {
         // End CONTRIB-846.
 
         if ($otherempty) {
-            questionnaire_notify(get_string('otherempty', 'questionnaire'));
+            $this->add_notification(get_string('otherempty', 'questionnaire'));
         }
         return $output;
     }

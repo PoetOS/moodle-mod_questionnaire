@@ -148,7 +148,7 @@ echo '<form id="fbsections" method="post">';
 $feedbacksections = $questionnaire->survey->feedbacksections + 1;
 
 if ($errormsg != '') {
-    questionnaire_notify($errormsg);
+    echo $OUTPUT->notification($errormsg);
 }
 $n = 0;
 $bg = 'c0';

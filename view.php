@@ -53,17 +53,14 @@ $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\viewpage($questionnaire));
 
 $PAGE->set_title(format_string($questionnaire->name));
-
 $PAGE->set_heading(format_string($course->fullname));
 
-$output = $PAGE->get_renderer('mod_questionnaire');
-echo $output->header();
-echo $output->heading(format_text($questionnaire->name));
-$viewpage = new \mod_questionnaire\output\viewpage($questionnaire);
+echo $questionnaire->renderer->header();
+$questionnaire->page->add_to_page('questionnairename', clean_text($questionnaire->name));
 
 // Print the main part of the page.
 if ($questionnaire->intro) {
-    $viewpage->add_to_page('intro', format_module_intro('questionnaire', $questionnaire, $cm->id));
+    $questionnaire->page->add_to_page('intro', format_module_intro('questionnaire', $questionnaire, $cm->id));
 }
 
 $cm = $questionnaire->cm;
@@ -78,24 +75,24 @@ if (!$questionnaire->is_active()) {
     } else {
         $msg = 'notavail';
     }
-    $viewpage->add_to_page('message', get_string($msg, 'questionnaire'));
+    $questionnaire->page->add_to_page('message', get_string($msg, 'questionnaire'));
 
 } else if ($questionnaire->survey->realm == 'template') {
     // If this is a template survey, notify and exit.
-    $viewpage->add_to_page('message', get_string('templatenotviewable', 'questionnaire'));
-    echo $output->render($viewpage);
-    echo $output->footer($questionnaire->course);
+    $questionnaire->page->add_to_page('message', get_string('templatenotviewable', 'questionnaire'));
+    echo $questionnaire->renderer->render($questionnaire->page);
+    echo $questionnaire->renderer->footer($questionnaire->course);
     exit();
 
 } else if (!$questionnaire->is_open()) {
-    $viewpage->add_to_page('message', get_string('notopen', 'questionnaire', userdate($questionnaire->opendate)));
+    $questionnaire->page->add_to_page('message', get_string('notopen', 'questionnaire', userdate($questionnaire->opendate)));
 
 } else if ($questionnaire->is_closed()) {
-    $viewpage->add_to_page('message', get_string('closed', 'questionnaire', userdate($questionnaire->closedate)));
+    $questionnaire->page->add_to_page('message', get_string('closed', 'questionnaire', userdate($questionnaire->closedate)));
 
 } else if (!$questionnaire->user_is_eligible($USER->id)) {
     if ($questionnaire->questions) {
-        $viewpage->add_to_page('message', get_string('noteligible', 'questionnaire'));
+        $questionnaire->page->add_to_page('message', get_string('noteligible', 'questionnaire'));
     }
 
 } else if (!$questionnaire->user_can_take($USER->id)) {
@@ -113,26 +110,26 @@ if (!$questionnaire->is_active()) {
             $msgstring = '';
             break;
     }
-    $viewpage->add_to_page('message', get_string("alreadyfilled", "questionnaire", $msgstring));
+    $questionnaire->page->add_to_page('message', get_string("alreadyfilled", "questionnaire", $msgstring));
 
 } else if ($questionnaire->user_can_take($USER->id)) {
     if ($questionnaire->questions) { // Sanity check.
         if (!$questionnaire->user_has_saved_response($USER->id)) {
-            $viewpage->add_to_page('complete',
+            $questionnaire->page->add_to_page('complete',
                 '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
                 'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>');
         } else {
-            $viewpage->add_to_page('complete',
+            $questionnaire->page->add_to_page('complete',
                 '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
                 'id='.$questionnaire->cm->id.'&resume=1').'">'.get_string('resumesurvey', 'questionnaire').'</a>');
         }
     } else {
-        $viewpage->add_to_page('message', get_string('noneinuse', 'questionnaire'));
+        $questionnaire->page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
     }
 }
 
 if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
-    $viewpage->add_to_page('complete',
+    $questionnaire->page->add_to_page('complete',
         '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
         'id='.$questionnaire->cm->id).'">'.'<strong>'.get_string('addquestions', 'questionnaire').'</strong></a>');
 }
@@ -140,8 +137,8 @@ if ($questionnaire->capabilities->editquestions && !$questionnaire->questions &&
 if (isguestuser()) {
     $guestno = html_writer::tag('p', get_string('noteligible', 'questionnaire'));
     $liketologin = html_writer::tag('p', get_string('liketologin'));
-    $viewpage->add_to_page('guestuser',
-        $output->confirm($guestno."\n\n".$liketologin."\n", get_login_url(), get_local_referer(false)));
+    $questionnaire->page->add_to_page('guestuser',
+        $questionnaire->renderer->confirm($guestno."\n\n".$liketologin."\n", get_login_url(), get_local_referer(false)));
 }
 
 // Log this course module view.
@@ -166,16 +163,16 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         $titletext = get_string('yourresponse', 'questionnaire');
         $argstr .= '&byresponse=1&action=vresp';
     }
-    $viewpage->add_to_page('yourresponse',
+    $questionnaire->page->add_to_page('yourresponse',
         '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr).'">'.$titletext.'</a>');
 }
 
 if ($questionnaire->can_view_all_responses($usernumresp)) {
     $argstr = 'instance='.$questionnaire->id.'&group='.$currentgroupid;
-    $viewpage->add_to_page('allresponses',
+    $questionnaire->page->add_to_page('allresponses',
         '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr).'">'.
         get_string('viewallresponses', 'questionnaire').'</a>');
 }
 
-echo $output->render($viewpage);
-echo $output->footer();
+echo $questionnaire->renderer->render($questionnaire->page);
+echo $questionnaire->renderer->footer();

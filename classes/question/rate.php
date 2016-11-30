@@ -175,7 +175,7 @@ class rate extends base {
 
         $notcomplete = false;
         if ( ($num != $nbchoices) && ($num != 0) ) {
-            questionnaire_notify(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
+            $this->add_notification(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
             $notcomplete = true;
         }
 

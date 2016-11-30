@@ -94,7 +94,7 @@ class check extends base {
                             }
                         }
                     }
-                    questionnaire_notify($msg);
+                    $this->add_notification($msg);
                 }
             }
         }
@@ -136,7 +136,7 @@ class check extends base {
             }
         }
         if ($otherempty) {
-            questionnaire_notify (get_string('otherempty', 'questionnaire'));
+            $this->add_notification(get_string('otherempty', 'questionnaire'));
         }
 
         return $output;

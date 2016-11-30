@@ -183,21 +183,27 @@ class questionnaire {
         $questionnaire = $this;
 
         if (!$this->capabilities->view) {
-            echo $this->renderer->notification(get_string('noteligible', 'questionnaire', $this->name),
-                \core\output\notification::NOTIFY_ERROR);
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('noteligible', 'questionnaire', $this->name),
+                \core\output\notification::NOTIFY_ERROR));
         } else if (!$this->is_active()) {
-            echo $this->renderer->notification(get_string('notavail', 'questionnaire'), \core\output\notification::NOTIFY_ERROR);
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('notavail', 'questionnaire'), \core\output\notification::NOTIFY_ERROR));
         } else if (!$this->is_open()) {
-            echo $this->renderer->notification(get_string('notopen', 'questionnaire', userdate($this->opendate)),
-                \core\output\notification::NOTIFY_ERROR);
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('notopen', 'questionnaire', userdate($this->opendate)),
+                \core\output\notification::NOTIFY_ERROR));
         } else if ($this->is_closed()) {
-            echo $this->renderer->notification(get_string('closed', 'questionnaire', userdate($this->closedate)),
-                \core\output\notification::NOTIFY_ERROR);
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('closed', 'questionnaire', userdate($this->closedate)),
+                \core\output\notification::NOTIFY_ERROR));
         } else if (!$this->user_is_eligible($USER->id)) {
-            echo $this->renderer->notification(get_string('noteligible', 'questionnaire'), \core\output\notification::NOTIFY_ERROR);
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('noteligible', 'questionnaire'), \core\output\notification::NOTIFY_ERROR));
         } else if ($this->survey->realm == 'template') {
-            echo $this->renderer->notification(get_string('templatenotviewable', 'questionnaire'),
-                \core\output\notification::NOTIFY_ERROR);
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('templatenotviewable', 'questionnaire'),
+                \core\output\notification::NOTIFY_ERROR));
         } else if ($this->user_can_take($USER->id)) {
             $quser = $USER->id;
 
@@ -277,9 +283,12 @@ class questionnaire {
                     $msgstring = '';
                     break;
             }
-            echo $this->renderer->notification(get_string('alreadyfilled', 'questionnaire', $msgstring),
-                \core\output\notification::NOTIFY_ERROR);
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('alreadyfilled', 'questionnaire', $msgstring),
+                \core\output\notification::NOTIFY_ERROR));
         }
+
+        echo $this->renderer->render($this->page);
 
         // Finish the page.
         echo $this->renderer->footer($this->course);
@@ -763,8 +772,6 @@ class questionnaire {
         }
         $this->page->add_to_page('formend', '</form>');
 
-        echo $this->renderer->render($this->page);
-
         return $msg;
     }
 
@@ -778,7 +785,8 @@ class questionnaire {
         $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
         if ($section > $numsections) {
             $formdata->sec = $numsections;
-            echo $this->renderer->notification(get_string('finished', 'questionnaire'), \core\output\notification::NOTIFY_WARNING);
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('finished', 'questionnaire'), \core\output\notification::NOTIFY_WARNING));
             return(false);  // Invalid section.
         }
 
@@ -1998,9 +2006,10 @@ class questionnaire {
         if (empty($thankhead)) {
             $thankhead = get_string('thank_head', 'questionnaire');
         }
-        $message = '<h3>'.$thankhead.'</h3>'.format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
-                        $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML);
-        echo ($message);
+        $this->page->add_to_page('title', $thankhead);
+        $this->page->add_to_page('addinfo',
+            format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
+            $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML));
         // Default set currentgroup to view all participants.
         // TODO why not set to current respondent's groupid (if any)?
         $currentgroupid = 0;
@@ -2009,12 +2018,14 @@ class questionnaire {
             $currentgroupid = 0;
         }
         if ($this->capabilities->readownresponses) {
-            echo('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
-            $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'&byresponse=0&action=vresp">'.
-            get_string("continue").'</a>');
+            $this->page->add_to_page('message',
+                ('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
+                $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'&byresponse=0&action=vresp">'.
+                get_string("continue").'</a>'));
         } else {
-            echo('<a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
-            get_string("continue").'</a>');
+            $this->page->add_to_page('message',
+                ('<a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
+                get_string("continue").'</a>'));
         }
         return;
     }
@@ -2024,11 +2035,11 @@ class questionnaire {
         $resumesurvey = get_string('resumesurvey', 'questionnaire');
         $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>'.$resumesurvey.'</strong>');
 
-        echo '
-                <div class="thankbody">'.$savedprogress.'</div>
-                <div class="homelink"><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">&nbsp;&nbsp;'
-                    .get_string("backto", "moodle", $this->course->fullname).'&nbsp;&nbsp;</a></div>
-             ';
+        $this->page->add_to_page('notifications',
+            $this->renderer->notification($savedprogress, \core\output\notification::NOTIFY_SUCCESS));
+        $this->page->add_to_page('respondentinfo',
+            '<div class="homelink"><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">&nbsp;&nbsp;'
+            .get_string("backto", "moodle", $this->course->fullname).'&nbsp;&nbsp;</a></div>');
         return;
     }
 
@@ -3347,8 +3358,9 @@ class questionnaire {
             }
             $usergraph = get_config('questionnaire', 'usergraph');
             if ($usergraph && $this->survey->chart_type) {
-                draw_chart ($feedbacktype = 'global', $this->survey->chart_type, $labels,
-                                    $score, $allscore, $sectionlabel, $groupname, $allresponses);
+                $this->page->add_to_page('feedbackcharts',
+                    draw_chart ($feedbacktype = 'global', $this->survey->chart_type, $labels,
+                                $score, $allscore, $sectionlabel, $groupname, $allresponses));
             }
             // Display class or group score. Pending chart library decision to display?
             // Find out if this feedback sectionlabel has a pipe separator.
@@ -3367,7 +3379,7 @@ class questionnaire {
                     $table->data[] = array($sectionlabel, $allscore[0].'%'.$oppositeallscore);
                 }
 
-                echo html_writer::table($table);
+                $this->page->add_to_page('feedbackscores', html_writer::table($table));
             }
 
             return $feedbackmessages;
@@ -3487,11 +3499,12 @@ class questionnaire {
         }
         $usergraph = get_config('questionnaire', 'usergraph');
         if ($usergraph && $this->survey->chart_type) {
-            draw_chart($feedbacktype = 'sections', $this->survey->chart_type, array_values($chartlabels),
-                array_values($scorepercent), array_values($allscorepercent), $sectionlabel, $groupname, $allresponses);
+            $this->page->add_to_page('feedbackcharts',
+                draw_chart($feedbacktype = 'sections', $this->survey->chart_type, array_values($chartlabels),
+                array_values($scorepercent), array_values($allscorepercent), $sectionlabel, $groupname, $allresponses));
         }
         if ($this->survey->feedbackscores) {
-            echo html_writer::table($table);
+            $this->page->add_to_page('feedbackscores', html_writer::table($table));
         }
 
         return $feedbackmessages;

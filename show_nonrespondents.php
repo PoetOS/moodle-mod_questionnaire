@@ -390,7 +390,7 @@ if (!$nonrespondents) {
                 if ($perpage >= $countnonrespondents) {
                     $questionnaire->page->add_to_page('formarea',
                         '<input type="button" id="checkstarted" value="'.get_string('checkstarted', 'questionnaire').'" />'."\n");
-                    $questionnaire->page->add_to_page('formarea','<input type="button" id="checknotstarted" value="'.
+                    $questionnaire->page->add_to_page('formarea', '<input type="button" id="checknotstarted" value="'.
                         get_string('checknotstarted', 'questionnaire').'" />'."\n");
                 }
             }

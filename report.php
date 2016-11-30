@@ -221,7 +221,6 @@ switch ($action) {
         $PAGE->set_heading(format_string($course->fullname));
         echo $questionnaire->renderer->header();
 
-        echo $questionnaire->renderer->container_start('mod_questionnaire_report');
         // Print the tabs.
         $SESSION->questionnaire->current_tab = 'deleteresp';
         include('tabs.php');
@@ -240,11 +239,10 @@ switch ($action) {
                 'rid' => $rid, 'individualresponse' => 1, 'instance' => $instance, 'group' => $currentgroupid));
         $urlno = new moodle_url('report.php', array('action' => 'vresp', 'instance' => $instance,
                 'rid' => $rid, 'individualresponse' => 1, 'group' => $currentgroupid));
-        $buttonyes = new single_button($urlyes, get_string('yes'), 'post');
-        $buttonno = new single_button($urlno, get_string('no'), 'get');
-        echo $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno);
-
-        echo $questionnaire->renderer->container_end();
+        $buttonyes = new single_button($urlyes, get_string('delete'), 'post');
+        $buttonno = new single_button($urlno, get_string('cancel'), 'get');
+        $questionnaire->page->add_to_page('notifications', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
+        echo $questionnaire->renderer->render($questionnaire->page);
         // Finish the page.
         echo $questionnaire->renderer->footer($course);
         break;
@@ -259,7 +257,6 @@ switch ($action) {
             $PAGE->set_heading(format_string($course->fullname));
             echo $questionnaire->renderer->header();
 
-            echo $questionnaire->renderer->container_start('mod_questionnaire_report');
             // Print the tabs.
             $SESSION->questionnaire->current_tab = 'deleteall';
             include('tabs.php');
@@ -276,12 +273,11 @@ switch ($action) {
             $urlyes = new moodle_url('report.php', array('action' => 'dvallresp', 'sid' => $sid,
                              'instance' => $instance, 'group' => $currentgroupid));
             $urlno = new moodle_url('report.php', array('instance' => $instance, 'group' => $currentgroupid));
-            $buttonyes = new single_button($urlyes, get_string('yes'), 'post');
-            $buttonno = new single_button($urlno, get_string('no'), 'get');
+            $buttonyes = new single_button($urlyes, get_string('delete'), 'post');
+            $buttonno = new single_button($urlno, get_string('cancel'), 'get');
 
-            echo $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno);
-
-            echo $questionnaire->renderer->container_end();
+            $questionnaire->page->add_to_page('notifications', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
+            echo $questionnaire->renderer->render($questionnaire->page);
             // Finish the page.
             echo $questionnaire->renderer->footer($course);
         }
@@ -423,7 +419,6 @@ switch ($action) {
         $PAGE->set_heading(format_string($course->fullname));
         echo $questionnaire->renderer->header();
 
-        echo $questionnaire->renderer->container_start('mod_questionnaire_report');
         // Print the tabs.
         // Tab setup.
         if (empty($user)) {
@@ -445,27 +440,30 @@ switch ($action) {
                         $questionnairegroups[$currentgroupid]->name;
             }
         }
-        echo "<br /><br />\n";
-        echo $questionnaire->renderer->help_icon('downloadtextformat', 'questionnaire');
-        echo '&nbsp;'.(get_string('downloadtext')).':&nbsp;'.get_string('responses', 'questionnaire').'&nbsp;'.$groupname;
-        echo $questionnaire->renderer->heading(get_string('textdownloadoptions', 'questionnaire'));
-        echo $questionnaire->renderer->box_start();
-        echo "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";
-        echo "<input type=\"hidden\" name=\"instance\" value=\"$instance\" />\n";
-        echo "<input type=\"hidden\" name=\"user\" value=\"$user\" />\n";
-        echo "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
-        echo "<input type=\"hidden\" name=\"action\" value=\"dcsv\" />\n";
-        echo "<input type=\"hidden\" name=\"group\" value=\"$currentgroupid\" />\n";
-        echo html_writer::checkbox('choicecodes', 1, true, get_string('includechoicecodes', 'questionnaire'));
-        echo "<br />\n";
-        echo html_writer::checkbox('choicetext', 1, true, get_string('includechoicetext', 'questionnaire'));
-        echo "<br />\n";
-        echo "<br />\n";
-        echo "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
-        echo "</form>\n";
-        echo $questionnaire->renderer->box_end();
+        $output = '';
+        $output .= "<br /><br />\n";
+        $output .= $questionnaire->renderer->help_icon('downloadtextformat', 'questionnaire');
+        $output .= '&nbsp;'.(get_string('downloadtext')).':&nbsp;'.get_string('responses', 'questionnaire').'&nbsp;'.$groupname;
+        $output .= $questionnaire->renderer->heading(get_string('textdownloadoptions', 'questionnaire'));
+        $output .= $questionnaire->renderer->box_start();
+        $output .= "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";
+        $output .= "<input type=\"hidden\" name=\"instance\" value=\"$instance\" />\n";
+        $output .= "<input type=\"hidden\" name=\"user\" value=\"$user\" />\n";
+        $output .= "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
+        $output .= "<input type=\"hidden\" name=\"action\" value=\"dcsv\" />\n";
+        $output .= "<input type=\"hidden\" name=\"group\" value=\"$currentgroupid\" />\n";
+        $output .= html_writer::checkbox('choicecodes', 1, true, get_string('includechoicecodes', 'questionnaire'));
+        $output .= "<br />\n";
+        $output .= html_writer::checkbox('choicetext', 1, true, get_string('includechoicetext', 'questionnaire'));
+        $output .= "<br />\n";
+        $output .= "<br />\n";
+        $output .= "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
+        $output .= "</form>\n";
+        $output .= $questionnaire->renderer->box_end();
 
-        echo $questionnaire->renderer->container_end();
+        $questionnaire->page->add_to_page('respondentinfo', $output);
+        echo $questionnaire->renderer->render($questionnaire->page);
+
         echo $questionnaire->renderer->footer('none');
 
         // Log saved as text action.
@@ -592,8 +590,16 @@ switch ($action) {
         if (!empty($resps)) {
             // NOTE: response_analysis uses $resps to get the id's of the responses only.
             // Need to figure out what this function does.
-            $ret = $questionnaire->response_analysis($rid = 0, $resps, $compare = false,
-                            $isgroupmember = false, $allresponses = true, $currentgroupid);
+            $feedbackmessages = $questionnaire->response_analysis($rid = 0, $resps, $compare = false,
+                $isgroupmember = false, $allresponses = true, $currentgroupid);
+
+            if ($feedbackmessages) {
+                $msgout = '';
+                foreach ($feedbackmessages as $msg) {
+                    $msgout .= $msg;
+                }
+                $questionnaire->page->add_to_page('feedbackmessages', $msgout);
+            }
         }
 
         $params = array('objectid' => $questionnaire->id,
