@@ -54,7 +54,7 @@ $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\questionspage($questionnaire));
+$questionnaire->add_page(new \mod_questionnaire\output\questionspage());
 
 if (!$questionnaire->capabilities->editquestions) {
     print_error('nopermissions', 'error', 'mod:questionnaire:edit');
@@ -332,7 +332,7 @@ if ($reload) {
     $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm);
     // Add renderer and page objects to the questionnaire object for display use.
     $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-    $questionnaire->add_page(new \mod_questionnaire\output\questionspage($questionnaire));
+    $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
     if ($action == 'main') {
         $questionsform = new mod_questionnaire_questions_form('questions.php', $moveq);
         $sdata = clone($questionnaire->survey);

@@ -30,13 +30,6 @@ defined('MOODLE_INTERNAL') || die();
 class qsettingspage implements \renderable, \templatable {
 
     /**
-     * The questionnaire object
-     *
-     * @var object
-     */
-    protected $questionnaire;
-
-    /**
      * The data to be exported.
      * @var array
      */
@@ -44,11 +37,14 @@ class qsettingspage implements \renderable, \templatable {
 
     /**
      * Construct the renderable.
-     * @param array $content The array of rows.
+     * @param object $data The template data for export.
      */
-    public function __construct($questionnaire) {
-        $this->questionnaire = $questionnaire;
-        $this->data = new \stdClass();
+    public function __construct($data = null) {
+        if ($data !== null) {
+            $this->data = $data;
+        } else {
+            $this->data = new \stdClass();
+        }
     }
 
     /**

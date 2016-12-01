@@ -65,7 +65,7 @@ $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\reportpage($questionnaire));
+$questionnaire->add_page(new \mod_questionnaire\output\reportpage());
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = context_module::instance($cm->id);
