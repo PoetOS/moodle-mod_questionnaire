@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/viewpage
+    @template mod_questionnaire/previewpage
 
     Template which defines a questionnaire view page.
 
@@ -26,12 +26,18 @@
     * none
 
     Context variables required for this template:
-    * intro - string: The intro text.
-    * message - string: Any message text.
-    * complete - string: The text and link to complete the questionnaire.
-    * guestuser - string: Any content for a guest user.
-    * yourresponse - string: Content for responses by you.
-    * allresponses - string: Content for responses by other users.
+    * tabsarea - string: HTML of the tabs management area.
+    * heading - string: HTML of the page heading.
+    * formstart - string: Form start HTML.
+    * notifications - string: HTML of any notifications loaded.
+    * title - string: Text title of the questionnaire.
+    * printblank - string: HTML of optional print blank questionnaire control.
+    * subtitle - string: Optional text subtitle.
+    * addinfo - string: Optional HTML additional information.
+    * message - string: Any message HTML text.
+    * questions - array: Array of questions HTML.
+    * formend - string: Form end HTML.
+    * closebutton - string: Close button HTML.
 
     Example context (json):
     {
@@ -59,14 +65,14 @@
     {{{tabsarea}}}
     <h2>{{{heading}}}</h2>
     {{{formstart}}}
-    {{#notifications}}{{{notifications}}}{{/notifications}}
+    {{#notifications}}{{{.}}}{{/notifications}}
     <div class="box generalbox">
         <h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}
-        <h4 class="surveySubTitle">{{{subtitle}}}</h4>
-        <div class="addInfo">{{{addinfo}}}</div>
-        {{#message}}{{{message}}}{{/message}}
-        {{#questions}}{{{question}}}{{/questions}}
+        {{#subtitle}}<h4 class="surveySubTitle">{{.}}</h4>{{/subtitle}}
+        {{#addinfo}}<div class="addInfo">{{{.}}}</div>{{/addinfo}}
+        {{#message}}{{{.}}}{{/message}}
+        {{#questions}}{{{.}}}{{/questions}}
     </div>
     {{{formend}}}
 </div>
-{{#closebutton}}{{{closebutton}}}{{/closebutton}}
+{{#closebutton}}{{{.}}}{{/closebutton}}

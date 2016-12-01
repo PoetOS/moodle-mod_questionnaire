@@ -25,49 +25,52 @@
     Data attributes required for JS:
     * none
 
-    Context variables required for this template:
-    * motifications - string: HTML of any notifications loaded.
-    * intro - string: The intro text.
-    * message - string: Any message text.
-    * complete - string: The text and link to complete the questionnaire.
-    * guestuser - string: Any content for a guest user.
-    * yourresponse - string: Content for responses by you.
-    * allresponses - string: Content for responses by other users.
+    Context variables required for this template: (Note sections have been used to allow non-inclusion)
+    * notifications - string: HTML of any notifications loaded.
+    * respondentinfo - string: HTML of any specific response/respondent information.
+    * title - string: Text title of the questionnaire.
+    * printblank - string: HTML of optional print blank questionnaire control.
+    * subtitle - string: Optional text subtitle.
+    * addinfo - string: Optional HTML additional information.
+    * message - string: Any message HTML text.
+    * formstart - string: Form start HTML.
+    * questions - array: Array of questions HTML.
+    * pageinfo - string: Page navigation HTML if present.
+    * controlbuttons - string: Questionnaire response management control HTML.
+    * formend - string: Form end HTML.
 
     Example context (json):
     {
-        "intro": [
+        "title":
             {
-                "content": "Intro1",
+                "Test Questionnaire",
             },
-            {
-                "content": "Intro2",
-            },
-        ]
     },
     {
-        "message": [
+        "questions": [
             {
-                "content": "Message 1",
+                "Question 1 HTML",
             },
             {
-                "content": "Message 2",
+                "Question 2 HTML",
             },
         ]
     }
     }}
 <div class="mod_questionnaire_completepage generalbox">
-    {{#notifications}}{{{notifications}}}{{/notifications}}
+    {{#notifications}}{{{.}}}{{/notifications}}
     {{{respondentinfo}}}
-    <h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}
-    <h4 class="surveySubTitle">{{{subtitle}}}</h4>
-    <div class="addInfo">{{{addinfo}}}</div>
-    {{{message}}}
+    {{#title}}<h3 class="surveyTitle">{{.}}</h3>{{/title}}{{{printblank}}}
+    {{#subtitle}}<h4 class="surveySubTitle">{{.}}</h4>{{/subtitle}}
+    {{#addinfo}}<div class="addInfo">{{{.}}}</div>{{/addinfo}}
+    {{#message}}{{{.}}}{{/message}}
     <div class="generalbox">
         {{{formstart}}}
-        {{#questions}}{{{question}}}{{/questions}}
-        {{{pageinfo}}}
+        {{#questions}}{{{.}}}{{/questions}}
+        {{#pageinfo}}{{{.}}}{{/pageinfo}}
         <div class="notice" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">
-        {{{controlbuttons}}}
-        {{{formend}}}
+            {{{controlbuttons}}}
+            {{{formend}}}
+        </div></div>
+    </div>
 </div>

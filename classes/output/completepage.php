@@ -60,7 +60,7 @@ class completepage implements \renderable, \templatable {
         if ($element !== 'questions') {
             $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
         } else {
-            $this->data->{$element}[] = ['question' => $content];
+            $this->data->{$element}[] = $content;
         }
     }
 

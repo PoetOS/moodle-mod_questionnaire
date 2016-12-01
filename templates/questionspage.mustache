@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/completepage
+    @template mod_questionnaire/questionspage
 
     Template which defines a questionnaire completion page.
 
@@ -26,12 +26,8 @@
     * none
 
     Context variables required for this template:
-    * intro - string: The intro text.
-    * message - string: Any message text.
-    * complete - string: The text and link to complete the questionnaire.
-    * guestuser - string: Any content for a guest user.
-    * yourresponse - string: Content for responses by you.
-    * allresponses - string: Content for responses by other users.
+    * tabsarea - string: HTML of the tabs management area.
+    * formarea - string: HTML of the management form.
 
     Example context (json):
     {

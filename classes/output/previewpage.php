@@ -58,7 +58,7 @@ class previewpage implements \renderable, \templatable {
      */
     public function add_to_page($element, $content) {
         if ($element === 'questions') {
-            $this->data->{$element}[] = ['question' => $content];
+            $this->data->{$element}[] = $content;
         } else {
             $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
         }

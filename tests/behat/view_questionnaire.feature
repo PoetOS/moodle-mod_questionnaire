@@ -84,7 +84,7 @@ Feature: Questionnaires can be public, private or template
     And I add a "Questionnaire" to section "1"
     And I expand all fieldsets
     And I set the field "name" to "Questionnaire from public"
-    And I click on "Use public Test questionnaire [Course 1]" "radio"
+    And I click on "Test questionnaire [Course 1]" "radio"
     And I press "Save and return to course"
     And I log out
     And I log in as "student1"
