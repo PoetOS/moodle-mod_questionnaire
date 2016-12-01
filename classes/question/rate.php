@@ -53,6 +53,8 @@ class rate extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+        $output = '';
+
         $disabled = '';
         if ($blankquestionnaire) {
             $disabled = ' disabled="disabled"';
@@ -96,9 +98,9 @@ class rate extends base {
         // The 0.1% right margin is needed to avoid the horizontal scrollbar in Chrome!
         // A one-line rate question (no content) does not need to span more than 50%.
         $width = $nocontent ? "50%" : "99.9%";
-        echo '<table style="width:'.$width.'">';
-        echo '<tbody>';
-        echo '<tr>';
+        $output .= '<table style="width:'.$width.'">';
+        $output .= '<tbody>';
+        $output .= '<tr>';
         // If Osgood, adjust central columns to width of named degrees if any.
         if ($osgood) {
             if ($maxndlen < 4) {
@@ -121,7 +123,7 @@ class rate extends base {
             $textalign = 'left';
         }
 
-        echo '<td style="width: '.$width.'"></td>';
+        $output .= '<td style="width: '.$width.'"></td>';
 
         if ($isna) {
             $na = get_string('notapplicable', 'questionnaire');
@@ -142,7 +144,7 @@ class rate extends base {
 
         // Display empty td for Not yet answered column.
         if ($nbchoices > 1 && $this->precise != 2 && !$blankquestionnaire) {
-            echo '<td></td>';
+            $output .= '<td></td>';
         }
 
         for ($j = 0; $j < $this->length; $j++) {
@@ -158,12 +160,12 @@ class rate extends base {
             } else {
                 $val = '';
             }
-            echo '<td style="width:'.$colwidth.'; text-align:center;" class="smalltext">'.$str.$val.'</td>';
+            $output .= '<td style="width:'.$colwidth.'; text-align:center;" class="smalltext">'.$str.$val.'</td>';
         }
         if ($na) {
-            echo '<td style="width:'.$colwidth.'; text-align:center;" class="smalltext">'.$na.'</td>';
+            $output .= '<td style="width:'.$colwidth.'; text-align:center;" class="smalltext">'.$na.'</td>';
         }
-        echo '</tr>';
+        $output .= '</tr>';
 
         $num = 0;
         foreach ($this->choices as $cid => $choice) {
@@ -173,7 +175,7 @@ class rate extends base {
 
         $notcomplete = false;
         if ( ($num != $nbchoices) && ($num != 0) ) {
-            questionnaire_notify(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
+            $this->add_notification(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
             $notcomplete = true;
         }
 
@@ -182,12 +184,12 @@ class rate extends base {
             if (isset($choice->content)) {
                 $row++;
                 $str = 'q'."{$this->id}_$cid";
-                echo '<tr class="raterow">';
+                $output .= '<tr class="raterow">';
                 $content = $choice->content;
                 if ($osgood) {
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }
-                echo '<td style="text-align: '.$textalign.';">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
+                $output .= '<td style="text-align: '.$textalign.';">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
                 $bg = 'c0 raterow';
                 if ($nbchoices > 1 && $this->precise != 2  && !$blankquestionnaire) {
                     $checked = ' checked="checked"';
@@ -198,7 +200,7 @@ class rate extends base {
                         $title = get_string('pleasecomplete', 'questionnaire');
                     }
                     // Set value of notanswered button to -999 in order to eliminate it from form submit later on.
-                    echo '<td title="'.$title.'" class="'.$completeclass.'" style="width:1%;"><input name="'.
+                    $output .= '<td title="'.$title.'" class="'.$completeclass.'" style="width:1%;"><input name="'.
                         $str.'" type="radio" value="-999" '.$checked.$order.' /></td>';
                 }
                 for ($j = 0; $j < $this->length + $isna; $j++) {
@@ -208,13 +210,13 @@ class rate extends base {
                     if (isset($data->$str) && ($j == $data->$str || $j == $this->length && $data->$str == -1)) {
                         $checked = ' checked="checked"';
                     }
-                    echo '<td style="text-align:center" class="'.$bg.'">';
+                    $output .= '<td style="text-align:center" class="'.$bg.'">';
                     $i = $j + 1;
-                    echo html_writer::tag('span', get_string('option', 'questionnaire', $i),
+                    $output .= html_writer::tag('span', get_string('option', 'questionnaire', $i),
                         array('class' => 'accesshide'));
                     // If isna column then set na choice to -1 value.
                     $value = ($j < $this->length ? $j : - 1);
-                    echo '<input name="'.$str.'" type="radio" value="'.$value .'"'.$checked.$disabled.$order.
+                    $output .= '<input name="'.$str.'" type="radio" value="'.$value .'"'.$checked.$disabled.$order.
                         ' id="'.$str.'_'.$value.'" />'.'<label for="'.$str.'_'.$value.
                         '" class="accesshide">Choice '.$i.' for row '.$row.'</label></td>';
                     if ($bg == 'c0 raterow') {
@@ -224,17 +226,22 @@ class rate extends base {
                     }
                 }
                 if ($osgood) {
-                    echo '<td>&nbsp;'.format_text($contentright, FORMAT_HTML).'</td>';
+                    $output .= '<td>&nbsp;'.format_text($contentright, FORMAT_HTML).'</td>';
                 }
-                echo '</tr>';
+                $output .= '</tr>';
             }
         }
-        echo '</tbody>';
-        echo '</table>';
+        $output .= '</tbody>';
+        $output .= '</table>';
+
+        return $output;
     }
 
     protected function response_survey_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
+
+        $output = '';
+
         if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
             $data->{'q'.$this->id} = array();
         }
@@ -249,8 +256,8 @@ class rate extends base {
         }
         $width = $nocontent ? "50%" : "99.9%";
 
-        echo '<table class="individual" border="0" cellspacing="1" cellpadding="0" style="width:'.$width.'">';
-        echo '<tbody><tr>';
+        $output .= '<table class="individual" border="0" cellspacing="1" cellpadding="0" style="width:'.$width.'">';
+        $output .= '<tbody><tr>';
         $osgood = $this->precise == 3;
         $bg = 'c0';
         $nameddegrees = 0;
@@ -278,12 +285,12 @@ class rate extends base {
             } else {
                 $sidecolwidth = '30%';
             }
-            echo '<td style="width: '.$sidecolwidth.'; text-align: right;"></td>';
+            $output .= '<td style="width: '.$sidecolwidth.'; text-align: right;"></td>';
             $nn = 100 - ($sidecolwidth * 2);
             $colwidth = ($nn / $this->length).'%';
             $textalign = 'right';
         } else {
-            echo '<td style="width: 49%"></td>';
+            $output .= '<td style="width: 49%"></td>';
             $colwidth = (50 / $this->length).'%';
             $textalign = 'left';
         }
@@ -293,7 +300,7 @@ class rate extends base {
             } else {
                 $str = $j + 1;
             }
-            echo '<td style="width:'.$colwidth.'; text-align:center" class="'.$bg.' smalltext">'.$str.'</td>';
+            $output .= '<td style="width:'.$colwidth.'; text-align:center" class="'.$bg.' smalltext">'.$str.'</td>';
             if ($bg == 'c0') {
                 $bg = 'c1';
             } else {
@@ -301,19 +308,19 @@ class rate extends base {
             }
         }
         if ($this->precise == 1) {
-            echo '<td style="width:'.$colwidth.'; text-align:center" class="'.$bg.'">'.
+            $output .= '<td style="width:'.$colwidth.'; text-align:center" class="'.$bg.'">'.
                 get_string('notapplicable', 'questionnaire').'</td>';
         }
         if ($osgood) {
-            echo '<td style="width:'.$sidecolwidth.'%;"></td>';
+            $output .= '<td style="width:'.$sidecolwidth.'%;"></td>';
         }
-        echo '</tr>';
+        $output .= '</tr>';
 
         foreach ($this->choices as $cid => $choice) {
             // Do not print column names if named column exist.
             if (!array_key_exists($cid, $cidnamed)) {
                 $str = 'q'."{$this->id}_$cid";
-                echo '<tr>';
+                $output .= '<tr>';
                 $content = $choice->content;
                 $contents = questionnaire_choice_values($content);
                 if ($contents->modname) {
@@ -322,7 +329,7 @@ class rate extends base {
                 if ($osgood) {
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }
-                echo '<td style="text-align:'.$textalign.'">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
+                $output .= '<td style="text-align:'.$textalign.'">'.format_text($content, FORMAT_HTML).'&nbsp;</td>';
                 $bg = 'c0';
                 for ($j = 0; $j < $this->length; $j++) {
                     $checked = ((isset($data->$str) && ($j == $data->$str)) ? ' checked="checked"' : '');
@@ -330,16 +337,16 @@ class rate extends base {
                     $checkedna = ((isset($data->$str) && ($data->$str == -1)) ? ' checked="checked"' : '');
 
                     if ($checked) {
-                        echo '<td style="text-align:center;" class="selected">';
-                        echo '<span class="selected">'.
+                        $output .= '<td style="text-align:center;" class="selected">';
+                        $output .= '<span class="selected">'.
                              '<input type="radio" name="'.$str.$j.$uniquetag++.'" checked="checked" /></span>';
                     } else {
-                        echo '<td style="text-align:center;" class="'.$bg.'">';
-                            echo '<span class="unselected">'.
-                                 '<input type="radio" disabled="disabled" name="'.$str.$j.
-                                    $uniquetag++.'" onclick="this.checked=false;" /></span>';
+                        $output .= '<td style="text-align:center;" class="'.$bg.'">';
+                        $output .= '<span class="unselected">'.
+                            '<input type="radio" disabled="disabled" name="'.$str.$j.
+                            $uniquetag++.'" onclick="this.checked=false;" /></span>';
                     }
-                    echo '</td>';
+                    $output .= '</td>';
                     if ($bg == 'c0') {
                         $bg = 'c1';
                     } else {
@@ -347,23 +354,25 @@ class rate extends base {
                     }
                 }
                 if ($this->precise == 1) { // N/A column.
-                    echo '<td style="width:auto; text-align:center;" class="'.$bg.'">';
+                    $output .= '<td style="width:auto; text-align:center;" class="'.$bg.'">';
                     if ($checkedna) {
-                        echo '<span class="selected">'.
-                             '<input type="radio" name="'.$str.$j.$uniquetag++.'na" checked="checked" /></span>';
+                        $output .= '<span class="selected">'.
+                            '<input type="radio" name="'.$str.$j.$uniquetag++.'na" checked="checked" /></span>';
                     } else {
-                        echo '<span class="unselected">'.
-                             '<input type="radio" name="'.$str.$uniquetag++.'na" onclick="this.checked=false;" /></span>';
+                        $output .= '<span class="unselected">'.
+                            '<input type="radio" name="'.$str.$uniquetag++.'na" onclick="this.checked=false;" /></span>';
                     }
-                    echo '</td>';
+                    $output .= '</td>';
                 }
                 if ($osgood) {
-                    echo '<td>&nbsp;'.format_text($contentright, FORMAT_HTML).'</td>';
+                    $output .= '<td>&nbsp;'.format_text($contentright, FORMAT_HTML).'</td>';
                 }
-                echo '</tr>';
+                $output .= '</tr>';
             }
         }
-        echo '</tbody></table>';
+        $output .= '</tbody></table>';
+
+        return $output;
     }
 
     /**

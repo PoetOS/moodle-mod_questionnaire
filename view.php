@@ -48,21 +48,20 @@ if (isset($sid)) {
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\viewpage());
 
 $PAGE->set_title(format_string($questionnaire->name));
-
 $PAGE->set_heading(format_string($course->fullname));
 
-echo $OUTPUT->header();
-
-echo $OUTPUT->heading(format_text($questionnaire->name));
+echo $questionnaire->renderer->header();
+$questionnaire->page->add_to_page('questionnairename', clean_text($questionnaire->name));
 
 // Print the main part of the page.
 if ($questionnaire->intro) {
-    echo $OUTPUT->box(format_module_intro('questionnaire', $questionnaire, $cm->id), 'generalbox', 'intro');
+    $questionnaire->page->add_to_page('intro', format_module_intro('questionnaire', $questionnaire, $cm->id));
 }
-
-echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
 
 $cm = $questionnaire->cm;
 $currentgroupid = groups_get_activity_group($cm);
@@ -76,27 +75,26 @@ if (!$questionnaire->is_active()) {
     } else {
         $msg = 'notavail';
     }
-    echo '<div class="message">'
-    .get_string($msg, 'questionnaire')
-    .'</div>';
+    $questionnaire->page->add_to_page('message', get_string($msg, 'questionnaire'));
+
+} else if ($questionnaire->survey->realm == 'template') {
+    // If this is a template survey, notify and exit.
+    $questionnaire->page->add_to_page('message', get_string('templatenotviewable', 'questionnaire'));
+    echo $questionnaire->renderer->render($questionnaire->page);
+    echo $questionnaire->renderer->footer($questionnaire->course);
+    exit();
 
 } else if (!$questionnaire->is_open()) {
-    echo '<div class="message">'
-    .get_string('notopen', 'questionnaire', userdate($questionnaire->opendate))
-    .'</div>';
+    $questionnaire->page->add_to_page('message', get_string('notopen', 'questionnaire', userdate($questionnaire->opendate)));
+
 } else if ($questionnaire->is_closed()) {
-    echo '<div class="message">'
-    .get_string('closed', 'questionnaire', userdate($questionnaire->closedate))
-    .'</div>';
-} else if ($questionnaire->survey->realm == 'template') {
-    print_string('templatenotviewable', 'questionnaire');
-    echo $OUTPUT->box_end();
-    echo $OUTPUT->footer($questionnaire->course);
-    exit();
+    $questionnaire->page->add_to_page('message', get_string('closed', 'questionnaire', userdate($questionnaire->closedate)));
+
 } else if (!$questionnaire->user_is_eligible($USER->id)) {
     if ($questionnaire->questions) {
-        echo '<div class="message">'.get_string('noteligible', 'questionnaire').'</div>';
+        $questionnaire->page->add_to_page('message', get_string('noteligible', 'questionnaire'));
     }
+
 } else if (!$questionnaire->user_can_take($USER->id)) {
     switch ($questionnaire->qtype) {
         case QUESTIONNAIREDAILY:
@@ -112,35 +110,35 @@ if (!$questionnaire->is_active()) {
             $msgstring = '';
             break;
     }
-    echo ('<div class="message">'.get_string("alreadyfilled", "questionnaire", $msgstring).'</div>');
+    $questionnaire->page->add_to_page('message', get_string("alreadyfilled", "questionnaire", $msgstring));
+
 } else if ($questionnaire->user_can_take($USER->id)) {
     if ($questionnaire->questions) { // Sanity check.
         if (!$questionnaire->user_has_saved_response($USER->id)) {
-            echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
-            'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>';
+            $questionnaire->page->add_to_page('complete',
+                '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
+                'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>');
         } else {
-            echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?'.
-            'id='.$questionnaire->cm->id.'&resume=1').'">'.get_string('resumesurvey', 'questionnaire').'</a>';
+            $questionnaire->page->add_to_page('complete',
+                '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
+                'id='.$questionnaire->cm->id.'&resume=1').'">'.get_string('resumesurvey', 'questionnaire').'</a>');
         }
     } else {
-        echo '<p>'.get_string('noneinuse', 'questionnaire').'</p>';
+        $questionnaire->page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
     }
 }
-if ($questionnaire->is_active() && !$questionnaire->questions) {
-    echo '<p>'.get_string('noneinuse', 'questionnaire').'</p>';
+
+if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
+    $questionnaire->page->add_to_page('complete',
+        '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
+        'id='.$questionnaire->cm->id).'">'.'<strong>'.get_string('addquestions', 'questionnaire').'</strong></a>');
 }
-if ($questionnaire->is_active() && $questionnaire->capabilities->editquestions && !$questionnaire->questions) { // Sanity check.
-    echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
-                'id='.$questionnaire->cm->id).'">'.'<strong>'.get_string('addquestions', 'questionnaire').'</strong></a>';
-}
-echo $OUTPUT->box_end();
+
 if (isguestuser()) {
-    $output = '';
     $guestno = html_writer::tag('p', get_string('noteligible', 'questionnaire'));
     $liketologin = html_writer::tag('p', get_string('liketologin'));
-    $output .= $OUTPUT->confirm($guestno."\n\n".$liketologin."\n", get_login_url(),
-            get_local_referer(false));
-    echo $output;
+    $questionnaire->page->add_to_page('guestuser',
+        $questionnaire->renderer->confirm($guestno."\n\n".$liketologin."\n", get_login_url(), get_local_referer(false)));
 }
 
 // Log this course module view.
@@ -158,7 +156,6 @@ $event->trigger();
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
 if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
-    echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
     $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
     if ($usernumresp > 1) {
         $titletext = get_string('viewyourresponses', 'questionnaire', $usernumresp);
@@ -166,18 +163,16 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         $titletext = get_string('yourresponse', 'questionnaire');
         $argstr .= '&byresponse=1&action=vresp';
     }
-
-    echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
-        $argstr).'">'.$titletext.'</a>';
-    echo $OUTPUT->box_end();
+    $questionnaire->page->add_to_page('yourresponse',
+        '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr).'">'.$titletext.'</a>');
 }
 
 if ($questionnaire->can_view_all_responses($usernumresp)) {
-    echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
     $argstr = 'instance='.$questionnaire->id.'&group='.$currentgroupid;
-    echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
-            $argstr).'">'.get_string('viewallresponses', 'questionnaire').'</a>';
-    echo $OUTPUT->box_end();
+    $questionnaire->page->add_to_page('allresponses',
+        '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr).'">'.
+        get_string('viewallresponses', 'questionnaire').'</a>');
 }
 
-echo $OUTPUT->footer();
+echo $questionnaire->renderer->render($questionnaire->page);
+echo $questionnaire->renderer->footer();

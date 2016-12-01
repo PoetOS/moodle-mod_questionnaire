@@ -95,7 +95,7 @@ abstract class base {
     public $deleted     = 'n';
 
     /** @var array $qtypenames List of all question names. */
-    private static $qtypenames = array(
+    private static $qtypenames = [
         QUESYESNO => 'yesno',
         QUESTEXT => 'text',
         QUESESSAY => 'essay',
@@ -107,7 +107,10 @@ abstract class base {
         QUESNUMERIC => 'numeric',
         QUESPAGEBREAK => 'pagebreak',
         QUESSECTIONTEXT => 'sectiontext'
-    );
+    ];
+
+    /** @var array $notifications Array of extra messages for display purposes. */
+    private $notifications = [];
 
     // Class Methods.
 
@@ -242,6 +245,26 @@ abstract class base {
             return $this->response->display_results($rids, $sort, $anonymous);
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Add a notification.
+     * @param string $message
+     */
+    public function add_notification($message) {
+        $this->notifications[] = $message;
+    }
+
+    /**
+     * Get any notifications.
+     * @return array | boolean The notifications array or false.
+     */
+    public function get_notifications() {
+        if (empty($this->notifications)) {
+            return false;
+        } else {
+            return $this->notifications;
         }
     }
 
@@ -465,23 +488,29 @@ abstract class base {
      *
      */
     private function question_display($formdata, $descendantsdata, $qnum='', $blankquestionnaire) {
-        $this->questionstart_survey_display($qnum, $formdata, $descendantsdata);
-        $this->question_survey_display($formdata, $descendantsdata, $blankquestionnaire);
-        $this->questionend_survey_display($qnum);
+        $output = '';
+        $output .= $this->questionstart_survey_display($qnum, $formdata);
+        $output .= $this->question_survey_display($formdata, $descendantsdata, $blankquestionnaire);
+        $output .= $this->questionend_survey_display($qnum);
+        return $output;
     }
 
     public function survey_display($formdata, $descendantsdata, $qnum='', $blankquestionnaire=false) {
-        $this->question_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+        return $this->question_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
     }
 
     public function response_display($data, $qnum='') {
-        $this->questionstart_survey_display($qnum, $data);
-        $this->response_survey_display($data);
-        $this->questionend_survey_display($qnum);
+        $output = '';
+        $output .= $this->questionstart_survey_display($qnum, $data);
+        $output .= $this->response_survey_display($data);
+        $output .= $this->questionend_survey_display($qnum);
+        return $output;
     }
 
     public function questionstart_survey_display($qnum, $formdata='') {
         global $OUTPUT, $SESSION, $questionnaire, $PAGE;
+
+        $output = '';
         $currenttab = $SESSION->questionnaire->current_tab;
         $pagetype = $PAGE->pagetype;
         $skippedquestion = false;
@@ -540,18 +569,18 @@ abstract class base {
             }
         }
 
-        echo html_writer::start_tag('fieldset', array('class' => $displayclass, 'id' => 'qn-'.$this->id));
-        echo html_writer::start_tag('legend', array('class' => 'qn-legend'));
+        $output .= html_writer::start_tag('fieldset', array('class' => $displayclass, 'id' => 'qn-'.$this->id));
+        $output .= html_writer::start_tag('legend', array('class' => 'qn-legend'));
 
         // Do not display the info box for the label question type.
         if ($this->type_id != QUESSECTIONTEXT) {
             if (!$nonumbering) {
-                echo html_writer::start_tag('div', array('class' => 'qn-info'));
-                echo html_writer::start_tag('div', array('class' => 'accesshide'));
-                echo get_string('questionnum', 'questionnaire');
-                echo html_writer::end_tag('div');
-                echo html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
-                echo html_writer::end_tag('div');
+                $output .= html_writer::start_tag('div', array('class' => 'qn-info'));
+                $output .= html_writer::start_tag('div', array('class' => 'accesshide'));
+                $output .= get_string('questionnum', 'questionnaire');
+                $output .= html_writer::end_tag('div');
+                $output .= html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
+                $output .= html_writer::end_tag('div');
             }
             $required = '';
             if ($this->required == 'y') {
@@ -564,36 +593,40 @@ abstract class base {
                                 'alt' => get_string('required', 'questionnaire'),
                                 'src' => $OUTPUT->pix_url('req')));
             }
-            echo $required;
+            $output .= $required;
         }
         // If question text is "empty", i.e. 2 non-breaking spaces were inserted, empty it.
         if ($this->content == '<p>  </p>') {
             $this->content = '';
         }
-        echo html_writer::end_tag('legend');
-        echo html_writer::start_tag('div', array('class' => 'qn-content'));
-        echo html_writer::start_tag('div', array('class' => 'qn-question '.$skippedclass));
+        $output .= html_writer::end_tag('legend');
+        $output .= html_writer::start_tag('div', array('class' => 'qn-content'));
+        $output .= html_writer::start_tag('div', array('class' => 'qn-question '.$skippedclass));
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
             $this->type_id == QUESDROP) {
-            echo html_writer::start_tag('label', array('for' => $this->type . $this->id));
+            $output .= html_writer::start_tag('label', array('for' => $this->type . $this->id));
         }
         if ($this->type_id == QUESESSAY) {
-            echo html_writer::start_tag('label', array('for' => 'edit-q' . $this->id));
+            $output .= html_writer::start_tag('label', array('for' => 'edit-q' . $this->id));
         }
         $options = array('noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true);
-        echo format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
+        $output .= format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
             $this->context->id, 'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options);
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
             $this->type_id == QUESESSAY || $this->type_id == QUESDROP) {
-            echo html_writer::end_tag('label');
+            $output .= html_writer::end_tag('label');
         }
-        echo html_writer::end_tag('div');
-        echo html_writer::start_tag('div', array('class' => 'qn-answer'));
+        $output .= html_writer::end_tag('div');
+        $output .= html_writer::start_tag('div', array('class' => 'qn-answer'));
+
+        return $output;
     }
 
     public function questionend_survey_display() {
-        echo html_writer::end_tag('div');
-        echo html_writer::end_tag('fieldset');
+        $output = '';
+        $output .= html_writer::end_tag('div');
+        $output .= html_writer::end_tag('fieldset');
+        return $output;
     }
 
     private function response_check_required ($data) {

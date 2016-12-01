@@ -81,6 +81,10 @@ $PAGE->set_cm($cm);   // CONTRIB-5872 - I don't know why this is needed.
 
 $questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
 
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\previewpage());
+
 $canpreview = (!isset($questionnaire->capabilities) &&
                has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
               (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
@@ -114,11 +118,11 @@ $PAGE->requires->js('/mod/questionnaire/module.js');
 // Print the tabs.
 
 
-echo $OUTPUT->header();
+echo $questionnaire->renderer->header();
 if (!$popup) {
     require('tabs.php');
 }
-echo $OUTPUT->heading($pq);
+$questionnaire->page->add_to_page('heading', clean_text($pq));
 
 if ($questionnaire->capabilities->printblank) {
     // Open print friendly as popup window.
@@ -133,14 +137,16 @@ if ($questionnaire->capabilities->printblank) {
     $link = new moodle_url($url);
     $action = new popup_action('click', $link, $name, $options);
     $class = "floatprinticon";
-    echo $OUTPUT->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
-            new pix_icon('t/print', $title));
+    $questionnaire->page->add_to_page('printblank',
+        $questionnaire->renderer->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
+            new pix_icon('t/print', $title)));
 }
 $questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup);
 if ($popup) {
-    echo $OUTPUT->close_window_button();
+    $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
 }
-echo $OUTPUT->footer($course);
+echo $questionnaire->renderer->render($questionnaire->page);
+echo $questionnaire->renderer->footer($course);
 
 // Log this questionnaire preview.
 $context = context_module::instance($questionnaire->cm->id);

@@ -90,6 +90,7 @@ class text extends base {
     }
 
     public function display_results($rids=false, $sort='', $anonymous=false) {
+        $output = '';
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -107,13 +108,15 @@ class text extends base {
             }
             $isnumeric = $this->question->type_id == QUESNUMERIC;
             if ($isnumeric) {
-                \mod_questionnaire\response\display_support::mkreslistnumeric($this->counts, count($rids), $this->question->precise);
+                $output .= \mod_questionnaire\response\display_support::mkreslistnumeric($this->counts, count($rids),
+                    $this->question->precise);
             } else {
-                \mod_questionnaire\response\display_support::mkreslisttext($rows);
+                $output .= \mod_questionnaire\response\display_support::mkreslisttext($rows);
             }
         } else {
-            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
+            $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
+        return $output;
     }
 
     /**

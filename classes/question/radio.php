@@ -175,31 +175,34 @@ class radio extends base {
         }
         // End CONTRIB-846.
 
-        echo $output;
         if ($otherempty) {
-            questionnaire_notify (get_string('otherempty', 'questionnaire'));
+            $this->add_notification(get_string('otherempty', 'questionnaire'));
         }
+        return $output;
     }
 
     protected function response_survey_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
+
+        $output = '';
+
         $horizontal = $this->length;
         $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
         foreach ($this->choices as $id => $choice) {
             if ($horizontal) {
-                echo ' <span style="white-space:nowrap;">';
+                $output .= ' <span style="white-space:nowrap;">';
             }
             if (strpos($choice->content, '!other') !== 0) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
                 if ($id == $checked) {
-                    echo '<span class="selected">'.
-                         '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.
-                         ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
+                    $output .= '<span class="selected">'.
+                        '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.
+                        ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
                 } else {
-                    echo '<span class="unselected">'.
-                         '<input type="radio" disabled="disabled" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
-                         ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
+                    $output .= '<span class="unselected">'.
+                        '<input type="radio" disabled="disabled" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
+                        ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
                 }
 
             } else {
@@ -210,23 +213,25 @@ class radio extends base {
                 $cid = 'q'.$this->id.'_'.$id;
 
                 if (isset($data->{'q'.$this->id.'_'.$id})) {
-                    echo '<span class="selected">'.
-                         '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.$othertext.' ';
-                    echo '<span class="response text">';
-                    echo (!empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;');
-                    echo '</span></span>';
+                    $output .= '<span class="selected">'.
+                        '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.$othertext.' ';
+                    $output .= '<span class="response text">';
+                    $output .= !empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;';
+                    $output .= '</span></span>';
                 } else {
-                    echo '<span class="unselected"><input type="radio" name="'.$id.$uniquetag++.
-                                    '" onclick="this.checked=false;" /> '.
-                         $othertext.'</span>';
+                    $output .= '<span class="unselected"><input type="radio" name="'.$id.$uniquetag++.
+                        '" onclick="this.checked=false;" /> '.
+                        $othertext.'</span>';
                 }
             }
             if ($horizontal) {
-                echo '</span>';
+                $output .= '</span>';
             } else {
-                echo '<br />';
+                $output .= '<br />';
             }
         }
+
+        return $output;
     }
 
     /**

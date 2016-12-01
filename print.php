@@ -39,6 +39,10 @@ require_login($courseid);
 
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\previewpage());
+
 // If you can't view the questionnaire, or can't view a specified response, error out.
 if (!($questionnaire->capabilities->view && (($rid == 0) || $questionnaire->can_view_response($rid)))) {
     // Should never happen, unless called directly by a snoop...
@@ -56,7 +60,8 @@ $url->param('sec', $sec);
 $PAGE->set_url($url);
 $PAGE->set_title($questionnaire->survey->title);
 $PAGE->set_pagelayout('popup');
-echo $OUTPUT->header();
-$questionnaire->survey_print_render($message = '', $referer = 'print', $courseid, $rid, $blankquestionnaire);
-echo $OUTPUT->close_window_button();
-echo $OUTPUT->footer();
+echo $questionnaire->renderer->header();
+$questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
+$questionnaire->survey_print_render('', 'print', $courseid, $rid, $blankquestionnaire);
+echo $questionnaire->renderer->render($questionnaire->page);
+echo $questionnaire->renderer->footer();

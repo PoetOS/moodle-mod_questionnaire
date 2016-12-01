@@ -47,6 +47,11 @@ if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\qsettingspage());
+
 $SESSION->questionnaire->current_tab = 'settings';
 
 if (!$questionnaire->capabilities->manage) {
@@ -185,7 +190,8 @@ if ($settings = $settingsform->get_data()) {
 $PAGE->set_title(get_string('editingquestionnaire', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(get_string('editingquestionnaire', 'questionnaire'));
-echo $OUTPUT->header();
+echo $questionnaire->renderer->header();
 require('tabs.php');
-$settingsform->display();
-echo $OUTPUT->footer($course);
+$questionnaire->page->add_to_page('formarea', $settingsform->render());
+echo $questionnaire->renderer->render($questionnaire->page);
+echo $questionnaire->renderer->footer($course);

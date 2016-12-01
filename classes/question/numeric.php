@@ -45,6 +45,8 @@ class numeric extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+        $output = '';
+
         // Numeric.
         $precision = $this->precise;
         $a = '';
@@ -54,7 +56,7 @@ class numeric extends base {
                 $mynumber0 = $mynumber;
                 if (!is_numeric($mynumber) ) {
                     $msg = get_string('notanumber', 'questionnaire', $mynumber);
-                    questionnaire_notify ($msg);
+                    $this->add_notification($msg);
                 } else {
                     if ($precision) {
                         $pos = strpos($mynumber, '.');
@@ -70,7 +72,7 @@ class numeric extends base {
                         $a->number = $mynumber0;
                         $a->precision = $precision;
                         $msg = get_string('numberfloat', 'questionnaire', $a);
-                        questionnaire_notify ($msg);
+                        $this->add_notification($msg);
                     }
                 }
             }
@@ -79,22 +81,28 @@ class numeric extends base {
             }
         }
 
-        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="'.
+        $output .= '<input onkeypress="return event.keyCode != 13;" type="text" size="'.
             $this->length.'" name="q'.$this->id.'" maxlength="'.$this->length.
              '" value="'.(isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').
             '" id="' . $this->type . $this->id . '" />';
+
+        return $output;
     }
 
     protected function response_survey_display($data) {
+        $output = '';
+
         $this->length++; // For sign.
         if ($this->precise) {
             $this->length += 1 + $this->precise;
         }
-        echo '<div class="response numeric">';
+        $output .= '<div class="response numeric">';
         if (isset($data->{'q'.$this->id})) {
-            echo('<span class="selected">'.$data->{'q'.$this->id}.'</span>');
+            $output .= '<span class="selected">'.$data->{'q'.$this->id}.'</span>';
         }
-        echo '</div>';
+        $output .= '</div>';
+
+        return $output;
     }
 
     /**

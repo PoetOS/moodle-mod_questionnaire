@@ -37,8 +37,9 @@ class date extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        // Date.
+        $output = '';
 
+        // Date.
         $datemess = html_writer::start_tag('div', array('class' => 'qn-datemsg'));
         $datemess .= get_string('dateformatting', 'questionnaire');
         $datemess .= html_writer::end_tag('div');
@@ -47,27 +48,31 @@ class date extends base {
             $setdate = questionnaire_check_date ($dateentered, false);
             if ($setdate == 'wrongdateformat') {
                 $msg = get_string('wrongdateformat', 'questionnaire', $dateentered);
-                questionnaire_notify($msg);
+                $this->add_notification($msg);
             } else if ($setdate == 'wrongdaterange') {
                 $msg = get_string('wrongdaterange', 'questionnaire');
-                questionnaire_notify($msg);
+                $this->add_notification($msg);
             } else {
                 $data->{'q'.$this->id} = $setdate;
             }
         }
-        echo $datemess;
-        echo html_writer::start_tag('div', array('class' => 'qn-date'));
-        echo '<input onkeypress="return event.keyCode != 13;" type="text" size="12" name="q'.$this->id.'" maxlength="10" value="'.
-             (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').'" />';
-        echo html_writer::end_tag('div');
+        $output .= $datemess;
+        $output .= html_writer::start_tag('div', array('class' => 'qn-date'));
+        $output .= '<input onkeypress="return event.keyCode != 13;" type="text" size="12" name="q'.$this->id.
+            '" maxlength="10" value="'.(isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').'" />';
+        $output .= html_writer::end_tag('div');
+
+        return $output;
     }
 
     protected function response_survey_display($data) {
+        $output = '';
         if (isset($data->{'q'.$this->id})) {
-            echo '<div class="response date">';
-            echo('<span class="selected">'.$data->{'q'.$this->id}.'</span>');
-            echo '</div>';
+            $output .= '<div class="response date">';
+            $output .= '<span class="selected">'.$data->{'q'.$this->id}.'</span>';
+            $output .= '</div>';
         }
+        return $output;
     }
 
     /**

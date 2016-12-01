@@ -37,6 +37,8 @@ class essay extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+        $output = '';
+
         // Essay.
         // Columns and rows default values.
         $cols = 80;
@@ -66,13 +68,17 @@ class essay extends base {
             $texteditor = html_writer::tag('textarea', $value,
                             array('id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols));
         }
-        echo $texteditor;
+        $output .= $texteditor;
+
+        return $output;
     }
 
     protected function response_survey_display($data) {
-        echo '<div class="response text">';
-        echo((!empty($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '&nbsp;'));
-        echo '</div>';
+        $output = '';
+        $output .= '<div class="response text">';
+        $output .= !empty($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '&nbsp;';
+        $output .= '</div>';
+        return $output;
     }
 
     // Note - intentianally returning 'precise' for length and 'length' for precise.

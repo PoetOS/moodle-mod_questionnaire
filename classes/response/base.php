@@ -78,6 +78,7 @@ abstract class base {
     abstract public function display_results($rids=false, $sort='', $anonymous=false);
 
     protected function display_response_choice_results($rows, $rids, $sort) {
+        $output = '';
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -100,11 +101,12 @@ abstract class base {
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            \mod_questionnaire\response\display_support::mkrespercent($this->counts, count($rids),
+            $output .= \mod_questionnaire\response\display_support::mkrespercent($this->counts, count($rids),
                 $this->question->precise, $prtotal, $sort);
         } else {
-            echo '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
+            $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
+        return $output;
     }
 
     /**

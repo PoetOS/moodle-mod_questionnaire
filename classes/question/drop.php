@@ -44,8 +44,10 @@ class drop extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        // Drop.
         global $OUTPUT;
+
+        // Drop.
+        $output = '';
         $options = array();
 
         // To display or hide dependent questions on Preview page.
@@ -67,7 +69,7 @@ class drop extends base {
                 $options[$value] = $choice->content;
             }
             $dependdrop = "dependdrop('$qdropid', '$descendants')";
-            echo html_writer::select($options, $qdropid, (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''),
+            $output .= html_writer::select($options, $qdropid, (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''),
                             array('' => 'choosedots'), array('id' => $qdropid, 'onchange' => $dependdrop));
             // End dependents.
         } else {
@@ -77,27 +79,33 @@ class drop extends base {
                 }
                 $options[$key] = $choice->content;
             }
-            echo html_writer::select($options, 'q'.$this->id,
+            $output .= html_writer::select($options, 'q'.$this->id,
                 (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''),
                 array('' => 'choosedots'), array('id' => $this->type . $this->id));
         }
+
+        return $output;
     }
 
     protected function response_survey_display($data) {
         global $OUTPUT;
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
+        $output = '';
+
         $options = array();
         foreach ($this->choices as $id => $choice) {
             $contents = questionnaire_choice_values($choice->content);
             $options[$id] = format_text($contents->text, FORMAT_HTML);
         }
-        echo '<div class="response drop">';
-        echo html_writer::select($options, 'q'.$this->id.$uniquetag++,
-                        (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''));
+        $output .= '<div class="response drop">';
+        $output .= html_writer::select($options, 'q'.$this->id.$uniquetag++,
+            (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''));
         if (isset($data->{'q'.$this->id}) ) {
-            echo ': <span class="selected">'.$options[$data->{'q'.$this->id}].'</span></div>';
+            $output .= ': <span class="selected">'.$options[$data->{'q'.$this->id}].'</span></div>';
         }
+
+        return $output;
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {

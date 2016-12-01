@@ -107,13 +107,15 @@ class yesno extends base {
         // End CONTRIB-846.
 
         $output .= '</span>' . "\n";
-        echo $output;
+        return $output;
     }
 
     protected function response_survey_display($data) {
         static $stryes = null;
         static $strno = null;
         static $uniquetag = 0;  // To make sure all radios have unique names.
+
+        $output = '';
 
         if ($stryes === null) {
              $stryes = get_string('yes');
@@ -123,22 +125,24 @@ class yesno extends base {
         $val1 = 'y';
         $val2 = 'n';
 
-        echo '<div class="response yesno">';
+        $output .= '<div class="response yesno">';
         if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == $val1)) {
-            echo '<span class="selected">' .
-                 '<input type="radio" name="q'.$this->id.$uniquetag++.'y" checked="checked" /> '.$stryes.'</span>';
+            $output .= '<span class="selected">' .
+                '<input type="radio" name="q'.$this->id.$uniquetag++.'y" checked="checked" /> '.$stryes.'</span>';
         } else {
-            echo '<span class="unselected">' .
-                 '<input type="radio" name="q'.$this->id.$uniquetag++.'y" onclick="this.checked=false;" /> '.$stryes.'</span>';
+            $output .= '<span class="unselected">' .
+                '<input type="radio" name="q'.$this->id.$uniquetag++.'y" onclick="this.checked=false;" /> '.$stryes.'</span>';
         }
         if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == $val2)) {
-            echo ' <span class="selected">' .
-                 '<input type="radio" name="q'.$this->id.$uniquetag++.'n" checked="checked" /> '.$strno.'</span>';
+            $output .= ' <span class="selected">' .
+                '<input type="radio" name="q'.$this->id.$uniquetag++.'n" checked="checked" /> '.$strno.'</span>';
         } else {
-            echo ' <span class="unselected">' .
-                 '<input type="radio" name="q'.$this->id.$uniquetag++.'n" onclick="this.checked=false;" /> '.$strno.'</span>';
+            $output .= ' <span class="unselected">' .
+                '<input type="radio" name="q'.$this->id.$uniquetag++.'n" onclick="this.checked=false;" /> '.$strno.'</span>';
         }
-        echo '</div>';
+        $output .= '</div>';
+
+        return $output;
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {

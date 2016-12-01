@@ -36,11 +36,11 @@ class sectiontext extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        return;
+        return '';
     }
 
     protected function response_survey_display($data) {
-        return;
+        return '';
     }
 
     /**
