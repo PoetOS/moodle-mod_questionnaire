@@ -40,5 +40,5 @@ script:
   - moodle-plugin-ci jshint
   - moodle-plugin-ci validate
   - moodle-plugin-ci phpunit
-  - moodle-plugin-ci behat
-#  - moodle-plugin-ci phpunit --coverage-text
+  - travis_wait 30 moodle-plugin-ci behat
+  - moodle-plugin-ci phpunit --coverage-text
