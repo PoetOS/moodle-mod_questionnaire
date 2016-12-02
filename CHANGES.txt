@@ -1,5 +1,18 @@
 Release Notes
 
+Version 3.1.3 (Build - 2016120200)
+Github PR-74 - Ensure internal links used in submission confirmation URL or restored properly from backup.
+CONTRIB-6611 - Ensure "resume" text is shown in navigation menu when resuming a questionnaire.
+CONTRIB-6603 - Ensure summary replies for anonymous questionnaires are not ordered alphabetically by user name.
+CONTRIB-6602 - Fixed incorrect use of $COURSE global in add_instance (Github PR-72).
+CONTRIB-6562 - Allow editing of parent question for label questions with parent questions already set.
+CONTRIB-6561 - Allow editing of parent question when creating a new question.
+CONTRIB-6515 - Fixed downloading response database problem for Oracle and other databases (Github PR-73).
+CONTRIB-6475 - Removed redundant ->groups code.
+CONTRIB-6471 - Fixed support for "rtl" languages in response report pages (Github PR-66).
+CONTRIB-6445 - Added upgrade statements to ensure alignment with db definition.
+CONTRIB-6142 - Added correct formatting of text responses so that filtering occurs for enabled Moodle filters.
+
 Version 3.1.2 (Build - 2016071300)
 CONTRIB-6439 - Emailed submission is always the same submission. Corrected 'get_bulk_sql' functions to limit by response or user if specified.
 CONTRIB-6436 - CSV export fails using Postgres. Modified boolean response type to use 'response' field instead of 'choice_id' field to meet Postgres' tight type requirements.
