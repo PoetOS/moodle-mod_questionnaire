@@ -1,22 +1,22 @@
 Release Notes
 
-Version 3.1.2 (Build - 2016071300)
-CONTRIB-6439 - Emailed submission is always the same submission. Corrected 'get_bulk_sql' functions to limit by response or user if specified.
-CONTRIB-6436 - CSV export fails using Postgres. Modified boolean response type to use 'response' field instead of 'choice_id' field to meet Postgres' tight type requirements.
+Version 3.2.0
 
-Version 3.1.1 (Build Build - 2016070700)
-CONTRIB-6431 - Question images not displaying in 3.1. Fixed typo and logic error from 3.1 optimizations preventing question images from displaying.
-CONTRIB-6432 - Yes/No questions not working as dependent questions. Fixed string parameters in query for db improvements in 3.1 casuing errors on "yes/no" dependencies.
+Improvements/features:
+CONTRIB-6093 - Upated Behat tests to work with 3.2.
+CONTRIB-5575 - Refactored code to use renderers and templates.
 
-Version 3.1.0 (Build Build - 2016052000)
-CONTRIB-5575 - Beginning display refactoring.
-CONTRIB-5706 - Bug fix for DML Read exception on activity report.
-CONTRIB-5900 - Added unit tests.
-CONTRIB-6035 - Integrate Travis CI testing.
-CONTRIB-6036 - Report code optimization.
-CONTRIB-6041 - Refactoring of question and response code into class-based API's.
-CONTRIB-6069 - PHP7 code fixes.
-CONTRIB-6093 - Added Behat tests.
-CONTRIB-6126 - Speed performance improvements for CSV export function.
-CONTRIB-6272 - PHP7 code fix.
-CONTRIB-6352 - CSV export bug fix.
+Bug fixes:
+Github PR-74 - Ensure internal links used in submission confirmation URL or restored properly from backup.
+CONTRIB-6611 - Ensure "resume" text is shown in navigation menu when resuming a questionnaire.
+CONTRIB-6603 - Ensure summary replies for anonymous questionnaires are not ordered alphabetically by user name.
+CONTRIB-6602 - Fixed incorrect use of $COURSE global in add_instance (Github PR-72).
+CONTRIB-6562 - Allow editing of parent question for label questions with parent questions already set.
+CONTRIB-6561 - Allow editing of parent question when creating a new question.
+CONTRIB-6515 - Fixed downloading response database problem for Oracle and other databases (Github PR-73).
+CONTRIB-6475 - Removed redundant ->groups code.
+CONTRIB-6471 - Fixed support for "rtl" languages in response report pages (Github PR-66).
+CONTRIB-6445 - Added upgrade statements to ensure alignment with db definition.
+CONTRIB-6142 - Added correct formatting of text responses so that filtering occurs for enabled Moodle filters.
+
+(see CHANGES.TXT in release 3.1 for earlier changes.)
