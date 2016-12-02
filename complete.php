@@ -71,4 +71,10 @@ if ($resume) {
     $event->trigger();
 }
 
+// Generate the view HTML in the page.
 $questionnaire->view();
+
+// Output the page.
+echo $questionnaire->renderer->header();
+echo $questionnaire->renderer->render($questionnaire->page);
+echo $questionnaire->renderer->footer($course);

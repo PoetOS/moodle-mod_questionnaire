@@ -107,6 +107,52 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Render the completion form start HTML.
+     * @param string $action The action URL.
+     * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
+     * @return string The output for the page.
+     */
+    public function complete_formstart($action, $hiddeninputs=[]) {
+        $output = '';
+        $output .= \html_writer::start_tag('form', ['id' => 'php_response', 'method' => 'post', 'action' => $action]) . "\n";
+        foreach ($hiddeninputs as $name => $value) {
+            $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
+        }
+        return $output;
+    }
+
+    /**
+     * Render the completion form end HTML.
+     * @param array $inputs Type/attribute array of inputs and values used by the form.
+     * @return string The output for the page.
+     */
+    public function complete_formend($inputs=[]) {
+        $output = '';
+        foreach ($inputs as $type => $attributes) {
+            $output .= \html_writer::empty_tag('input', array_merge(['type' => $type], $attributes)) . "\n";
+        }
+        $output .= \html_writer::end_tag('form') . "\n";
+        return $output;
+    }
+
+    /**
+     * Render the completion form control buttons.
+     * @param array | string $inputs Name/(Type/attribute) array of input types and values used by the form.
+     * @return string The output for the page.
+     */
+    public function complete_controlbuttons($inputs=null) {
+        $output = '';
+        if (is_array($inputs)) {
+            foreach ($inputs as $name => $attributes) {
+                $output .= \html_writer::empty_tag('input', array_merge(['name' => $name], $attributes));
+            }
+        } else if (is_string($inputs)) {
+            $output .= \html_writer::tag('p', $inputs);
+        }
+        return $output;
+    }
+
+    /**
      * Render a question for a survey.
      * @param mod_questionnaire\question\base $question The question object.
      * @param array $formdata Any returned form data.
@@ -174,6 +220,56 @@ class renderer extends \plugin_renderer_base {
      */
     public function results_output($question, $rids, $sort, $anonymous) {
         return $question->display_results($rids, $sort, $anonymous);
+    }
+
+    /**
+     * Render the reporting navigation bar.
+     * @param array $navbar All of the data needed for the template.
+     * @return string The rendered HTML.
+     */
+    public function navigationbar($navbar) {
+        return $this->render_from_template('mod_questionnaire/navbaralpha', $navbar);
+    }
+
+    /**
+     * Render a print/preview page number line.
+     * @param string $content The content to render.
+     * @return string The rendered HTML.
+     */
+    public function print_preview_pagenumber($content) {
+        return \html_writer::tag('div', $content, ['class' => 'surveyPage']);
+    }
+
+    /**
+     * Render the print/preview completion form end HTML.
+     * @param string $url The url to call.
+     * @param string $submitstr The submit text.
+     * @param string $resetstr The reset text.
+     * @return string The output for the page.
+     */
+    public function print_preview_formend($url, $submitstr, $resetstr) {
+        $output = '';
+        $output .= \html_writer::start_tag('div');
+        $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr]);
+        $output .= ' ';
+        $output .= \html_writer::tag('a', $resetstr, ['href' => $url]);
+        $output .= \html_writer::end_tag('div') . "\n";
+        $output .= \html_writer::end_tag('form') . "\n";
+        return $output;
+    }
+
+    /**
+     * Render the back to home link on the save page.
+     * @param string $url The url to link to.
+     * @param string $text The text to apply the link to.
+     * @return string The rendered HTML.
+     */
+    public function homelink($url, $text) {
+        $output = '';
+        $output .= \html_writer::start_tag('div', ['class' => 'homelink']);
+        $output .= \html_writer::tag('a', $text, ['href' => $url]);
+        $output .= \html_writer::end_tag('div');
+        return $output;
     }
 
     /**

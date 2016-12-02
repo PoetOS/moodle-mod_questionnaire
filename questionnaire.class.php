@@ -178,8 +178,6 @@ class questionnaire {
         // Initialise the JavaScript.
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
 
-        echo $this->renderer->header();
-
         $questionnaire = $this;
 
         if (!$this->capabilities->view) {
@@ -204,7 +202,27 @@ class questionnaire {
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('templatenotviewable', 'questionnaire'),
                 \core\output\notification::NOTIFY_ERROR));
-        } else if ($this->user_can_take($USER->id)) {
+        } else if (!$this->user_can_take($USER->id)) {
+            switch ($this->qtype) {
+                case QUESTIONNAIREDAILY:
+                    $msgstring = ' '.get_string('today', 'questionnaire');
+                    break;
+                case QUESTIONNAIREWEEKLY:
+                    $msgstring = ' '.get_string('thisweek', 'questionnaire');
+                    break;
+                case QUESTIONNAIREMONTHLY:
+                    $msgstring = ' '.get_string('thismonth', 'questionnaire');
+                    break;
+                default:
+                    $msgstring = '';
+                    break;
+            }
+            $this->page->add_to_page('notifications',
+                $this->renderer->notification(get_string('alreadyfilled', 'questionnaire', $msgstring),
+                \core\output\notification::NOTIFY_ERROR));
+
+        // Handle the main questionnaire completion page.
+        } else {
             $quser = $USER->id;
 
             $msg = $this->print_survey($USER->id, $quser);
@@ -267,31 +285,7 @@ class questionnaire {
                 $this->response_send_email($this->rid);
                 $this->response_goto_thankyou();
             }
-
-        } else {
-            switch ($this->qtype) {
-                case QUESTIONNAIREDAILY:
-                    $msgstring = ' '.get_string('today', 'questionnaire');
-                    break;
-                case QUESTIONNAIREWEEKLY:
-                    $msgstring = ' '.get_string('thisweek', 'questionnaire');
-                    break;
-                case QUESTIONNAIREMONTHLY:
-                    $msgstring = ' '.get_string('thismonth', 'questionnaire');
-                    break;
-                default:
-                    $msgstring = '';
-                    break;
-            }
-            $this->page->add_to_page('notifications',
-                $this->renderer->notification(get_string('alreadyfilled', 'questionnaire', $msgstring),
-                \core\output\notification::NOTIFY_ERROR));
         }
-
-        echo $this->renderer->render($this->page);
-
-        // Finish the page.
-        echo $this->renderer->footer($this->course);
     }
 
     /*
@@ -735,42 +729,38 @@ class questionnaire {
         $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
         $formdatarid = isset($formdata->rid) ? $formdata->rid : '0';
         $this->page->add_to_page('formstart',
-            '<form id="phpesp_response" method="post" action="'.$action.'">
-                <div>
-                <input type="hidden" name="referer" value="'.$formdatareferer.'" />
-                <input type="hidden" name="a" value="'.$this->id.'" />
-                <input type="hidden" name="sid" value="'.$this->survey->id.'" />
-                <input type="hidden" name="rid" value="'.$formdatarid.'" />
-                <input type="hidden" name="sec" value="'.$formdata->sec.'" />
-                <input type="hidden" name="sesskey" value="'.sesskey().'" />
-                </div>
-            ');
+            $this->renderer->complete_formstart($action,
+                ['referer' => $formdatareferer,
+                 'a' => $this->id,
+                 'sid' => $this->survey->id,
+                 'rid' => $formdatarid,
+                 'sec' => $formdata->sec,
+                 'sesskey' => sesskey()
+                ]));
         if (isset($this->questions) && $numsections) { // Sanity check.
             $this->survey_render($formdata->sec, $msg, $formdata);
-            $controlbuttons = '';
+            $controlbuttons = [];
             if ($formdata->sec > 1) {
-                $controlbuttons .= '<input type="submit" name="prev" value="<<&nbsp;'.
-                    get_string('previouspage', 'questionnaire').'" />';
+                $controlbuttons['prev'] = ['type' => 'submit', 'value' => '<< '.get_string('previouspage', 'questionnaire')];
             }
             if ($this->resume) {
-                $controlbuttons .= '<input type="submit" name="resume" value="'.get_string('save', 'questionnaire').'" />';
+                $controlbuttons['resume'] = ['type' => 'submit', 'value' => get_string('save', 'questionnaire')];
             }
 
             // Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
 
             if ($formdata->sec == $numsections) {
-                $controlbuttons .= '
-                    <div><input type="hidden" name="submittype" value="Submit Survey" />
-                    <input type="submit" name="submit" value="'.get_string('submitsurvey', 'questionnaire').'" /></div>';
+                $controlbuttons['submittype'] = ['type' => 'hidden', 'value' => 'Submit Survey'];
+                $controlbuttons['submit'] = ['type' => 'submit', 'value' => get_string('submitsurvey', 'questionnaire')];
             } else {
-                $controlbuttons .= '&nbsp;<div><input type="submit" name="next" value="'.
-                                get_string('nextpage', 'questionnaire').'&nbsp;>>" /></div>';
+                $controlbuttons['next'] = ['type' => 'submit', 'value' => get_string('nextpage', 'questionnaire').' >>'];
             }
-            $this->page->add_to_page('controlbuttons', $controlbuttons);
+            $this->page->add_to_page('controlbuttons', $this->renderer->complete_controlbuttons($controlbuttons));
         } else {
-            $this->page->add_to_page('controlbuttons', '<p>'.get_string('noneinuse', 'questionnaire').'</p>');
+            $this->page->add_to_page('controlbuttons',
+                $this->renderer->complete_controlbuttons(get_string('noneinuse', 'questionnaire')));
         }
-        $this->page->add_to_page('formend', '</form>');
+        $this->page->add_to_page('formend', $this->renderer->complete_formend());
 
         return $msg;
     }
@@ -990,7 +980,8 @@ class questionnaire {
         }
 
         $action = $CFG->wwwroot.'/mod/questionnaire/preview.php?id='.$this->cm->id;
-        $this->page->add_to_page('formstart', '<form id="phpesp_response" method="post" action="'.$action.'">');
+        $this->page->add_to_page('formstart',
+            $this->renderer->complete_formstart($action));
         // Print all sections.
         $formdata = new stdClass();
         $errors = 1;
@@ -1005,7 +996,8 @@ class questionnaire {
                     if ($numsections > 1) {
                         $pageerror = get_string('page', 'questionnaire').' '.$s.' : ';
                     }
-                    $this->page->add_to_page('notifications', '<div class="notifyproblem">'.$pageerror.$errormessage.'</div>');
+                    $this->page->add_to_page('notifications',
+                        $this->renderer->notification($pageerror.$errormessage, \core\output\notification::NOTIFY_ERROR));
                     $errors++;
                 }
                 $s ++;
@@ -1021,14 +1013,15 @@ class questionnaire {
         }
         if ($errors == 0) {
             $this->page->add_to_page('message',
-                '<div class="message">'.get_string('submitpreviewcorrect', 'questionnaire').'</div>');
+                $this->renderer->notification(get_string('submitpreviewcorrect', 'questionnaire'),
+                    \core\output\notification::NOTIFY_SUCCESS));
         }
 
         $page = 1;
         foreach ($this->questionsbysec as $section) {
             $output = '';
             if ($numsections > 1) {
-                $output .= ('<div class="surveyPage">'.get_string('page', 'questionnaire').' '.$page.'</div>');
+                $output .= $this->renderer->print_preview_pagenumber(get_string('page', 'questionnaire').' '.$page);
                 $page++;
             }
             foreach ($section as $question) {
@@ -1052,12 +1045,8 @@ class questionnaire {
         // End of questions.
         if ($referer == 'preview' && !$blankquestionnaire) {
             $url = $CFG->wwwroot.'/mod/questionnaire/preview.php?id='.$this->cm->id;
-            $this->page->add_to_page('formend', '
-                    <div>
-                        <input type="submit" name="submit" value="'.get_string('submitpreview', 'questionnaire').'" />
-                        <a href="'.$url.'">'.get_string('reset').'</a>
-                    </div>
-                ');
+            $this->page->add_to_page('formend',
+                $this->renderer->print_preview_formend($url, get_string('submitpreview', 'questionnaire'), get_string('reset')));
         }
         return;
     }
@@ -2038,8 +2027,8 @@ class questionnaire {
         $this->page->add_to_page('notifications',
             $this->renderer->notification($savedprogress, \core\output\notification::NOTIFY_SUCCESS));
         $this->page->add_to_page('respondentinfo',
-            '<div class="homelink"><a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">&nbsp;&nbsp;'
-            .get_string("backto", "moodle", $this->course->fullname).'&nbsp;&nbsp;</a></div>');
+            $this->renderer->homelink($CFG->wwwroot.'/course/view.php?id='.$this->course->id,
+                get_string("backto", "moodle", $this->course->fullname)));
         return;
     }
 
@@ -2113,7 +2102,8 @@ class questionnaire {
         }
 
         $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;group='.$currentgroupid;
-        $linkarr = array();
+        $navbar = new \stdClass();
+        $linkarr = [];
         if (!$byresponse) {     // Display navbar.
             // Build navbar.
             $prevrid = ($currpos > 0) ? $rids[$currpos - 1] : null;
@@ -2123,6 +2113,10 @@ class questionnaire {
             $displaypos = 1;
             if ($prevrid != null) {
                 $pos = $currpos - 1;
+                $title = '';
+                $firstuserfullname = '';
+                $navbar->firstrespondent = ['url' => $url, 'rid' => $firstrid];
+                $navbar->previous = ['url' => $url, 'rid' => $prevrid];
                 if ($isfullname) {
                     $responsedate = userdate($ridssub[$pos]);
                     $title = $ridsuserfullname[$pos];
@@ -2131,25 +2125,18 @@ class questionnaire {
                         $title .= ' | '.$responsedate;
                     }
                     $firstuserfullname = $ridsuserfullname[0];
-                    array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$firstrid.'&amp;individualresponse=1" title="'.
-                                    $firstuserfullname.'">'.
-                                    get_string('firstrespondent', 'questionnaire').'</a>');
-                    array_push($linkarr, '<b><&nbsp;</b><a href="'.$url.'&amp;rid='.$prevrid.'&amp;individualresponse=1"
-                                    title="'.$title.'">'.get_string('previous').'</a>');
-                } else {
-                    $title = '';
-                    array_push($linkarr, '<b><<</b> <a href="'.$url.'&amp;rid='.$firstrid.'&amp;individualresponse=1" title="'.
-                        $title.'">'.get_string('firstrespondent', 'questionnaire').'</a>');
-                    array_push($linkarr, '<b><&nbsp;</b><a href="'.$url.'&amp;rid='.$prevrid.'&amp;individualresponse=1"
-                                title="'.$title.'">'.get_string('previous').'</a>');
                 }
+                $navbar->firstrespondent['title'] = $firstuserfullname;
+                $navbar->previous['title'] = $title;
             }
-            array_push($linkarr, '<b>'.($currpos + 1).' / '.$total.'</b>');
+            $navbar->respnumber = ['currpos' => ($currpos + 1), 'total' => $total];
             if ($nextrid != null) {
                 $pos = $currpos + 1;
                 $responsedate = '';
                 $title = '';
                 $lastuserfullname = '';
+                $navbar->lastrespondent = ['url' => $url, 'rid' => $lastrid];
+                $navbar->next = ['url' => $url, 'rid' => $nextrid];
                 if ($isfullname) {
                     $responsedate = userdate($ridssub[$pos]);
                     $title = $ridsuserfullname[$pos];
@@ -2159,16 +2146,12 @@ class questionnaire {
                     }
                     $lastuserfullname = $ridsuserfullname[$total - 1];
                 }
-                array_push($linkarr, '<a href="'.$url.'&amp;rid='.$nextrid.'&amp;individualresponse=1"
-                                title="'.$title.'">'.get_string('next').'</a>&nbsp;<b>></b>');
-                array_push($linkarr, '<a href="'.$url.'&amp;rid='.$lastrid.'&amp;individualresponse=1"
-                                title="'.$lastuserfullname .'">'.
-                                get_string('lastrespondent', 'questionnaire').'</a>&nbsp;<b>>></b>');
+                $navbar->lastrespondent['title'] = $lastuserfullname;
+                $navbar->next['title'] = $title;
             }
             $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&byresponse=1&group='.$currentgroupid;
             // Display navbar.
-            $output .= implode(' | ', $linkarr);
-            $output .= '<br /><b><<< <a href="'.$url.'">'.get_string('viewbyresponse', 'questionnaire').'</a></b>';
+            $navbar->listlink = $url;
 
             // Display a "print this response" icon here in prevision of total removal of tabs in version 2.6.
             $linkname = '&nbsp;'.get_string('print', 'questionnaire');
@@ -2182,9 +2165,8 @@ class questionnaire {
             $action = new popup_action('click', $link, $name, $options);
             $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title),
                     new pix_icon('t/print', $title));
-            $output .= '&nbsp;|&nbsp;'.$actionlink;
-
-            $this->page->add_to_page('navigationbar', $output);
+            $navbar->printaction = $actionlink;
+            $this->page->add_to_page('navigationbar', $this->renderer->navigationbar($navbar));
 
         } else { // Display respondents list.
             for ($i = 0; $i < $total; $i++) {
