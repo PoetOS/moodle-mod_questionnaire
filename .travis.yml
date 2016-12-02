@@ -7,8 +7,7 @@ cache:
     - $HOME/.composer/cache
 
 php:
-# Temporarily turing off 5.6 checking as it is causing a Behat error not reproducable locally.
-# - 5.6
+ - 5.6
  - 7.0
 
 env:
