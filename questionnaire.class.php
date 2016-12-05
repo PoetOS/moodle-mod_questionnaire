@@ -727,10 +727,8 @@ class questionnaire {
 
         $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
         $formdatarid = isset($formdata->rid) ? $formdata->rid : '0';
-        $this->page->add_to_page('formstart',
-            $this->renderer->complete_formstart($action,
-            ['referer' => $formdatareferer, 'a' => $this->id, 'sid' => $this->survey->id, 'rid' => $formdatarid,
-            'sec' => $formdata->sec, 'sesskey' => sesskey()]));
+        $this->page->add_to_page('formstart', $this->renderer->complete_formstart($action, ['referer' => $formdatareferer,
+            'a' => $this->id, 'sid' => $this->survey->id, 'rid' => $formdatarid, 'sec' => $formdata->sec, 'sesskey' => sesskey()]));
         if (isset($this->questions) && $numsections) { // Sanity check.
             $this->survey_render($formdata->sec, $msg, $formdata);
             $controlbuttons = [];
