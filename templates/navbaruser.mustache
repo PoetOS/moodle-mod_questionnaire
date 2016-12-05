@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/reportpage
+    @template mod_questionnaire/myreportpage
 
-    Template which defines a questionnaire all responses navigation bar for the report page.
+    Template which defines a questionnaire user responses navigation bar for the report page.
 
     Classes required for JS:
     * /mod/questionnaire/module.js
@@ -26,13 +26,11 @@
     * none
 
     Context variables required for this template:
-    * firstrespondent - object: "url" and "title" strings for first respondent link.
     * previous - object: "url" and "title" strings for previous link.
-    * respnumber - object: Current positio ("currpos") and "total" number of responses.
-    * next - object: "url" and "title" strings for next link.
-    * lastrespondent - object: "url" and "title" strings for last respondent link.
-    * listlink - string: Url of the link back to the response list.
-    * printaction - string: HTML to launch the print function.
+    * prevrespnumbers - object: Array of "url"'s, "title"'s and response text ("respnumber") for each previous response link.
+    * currrespnumber - string: The current response number text.
+    * nextrespnumbers - object: Array of "url"'s, "title"'s and response text ("respnumber") for each next response link.
+    * next - object: "url" and "title" strings for "next" link.
 
     Example context (json):
     {
@@ -57,11 +55,9 @@
     }
     }}
 <div class="box respondentsnavbar">
-    {{#firstrespondent}}<b>&lt;&lt;</b> <a href="{{url}}" title="{{title}}">{{# str }}firstrespondent, mod_questionnaire{{/ str }}</a> |{{/firstrespondent}}
-    {{#previous}}<b>&lt;</b> <a href="{{url}}" title="{{title}}">{{# str }}previous, moodle{{/ str }}</a> | {{/previous}}
-    {{#respnumber}}<b>{{currpos}} / {{total}}</b>{{/respnumber}}
-    {{#next}} | <a href="{{url}}" title="{{title}}">{{# str}}next, moodle{{/ str }}</a> <b>&gt;</b>{{/next}}
-    {{#lastrespondent}} | <a href="{{url}}" title="{{title}}">{{# str }}lastrespondent, mod_questionnaire{{/ str }}</a> <b>&gt;&gt;</b>
-    {{/lastrespondent}}
-    <br /><b>&lt;&lt;&lt; <a href="{{listlink}}">{{# str }}viewbyresponse, mod_questionnaire{{/ str }}</a></b> | {{{printaction}}}
+    {{#previous}}<a href="{{url}}" title="{{title}}">{{# str }}previous, moodle{{/ str }}</a> | {{/previous}}
+    {{#prevrespnumbers}}<a href="{{url}}" title="{{title}}">{{respnumber}}</a> | {{/prevrespnumbers}}
+    {{#currrespnumber}}<b>{{.}}</b>{{/currrespnumber}}
+    {{#nextrespnumbers}} | <a href="{{url}}" title="{{title}}">{{respnumber}}</a>{{/nextrespnumbers}}
+    {{#next}} | <a href="{{url}}" title="{{title}}">{{# str}}next, moodle{{/ str }}</a>{{/next}}
 </div>

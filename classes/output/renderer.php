@@ -232,6 +232,24 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Render the reporting navigation bar for one user.
+     * @param array $navbar All of the data needed for the template.
+     * @return string The rendered HTML.
+     */
+    public function usernavigationbar($navbar) {
+        return $this->render_from_template('mod_questionnaire/navbaruser', $navbar);
+    }
+
+    /**
+     * Render the response list for a number of users.
+     * @param array $navbar All of the data needed for the template.
+     * @return string The rendered HTML.
+     */
+    public function responselist($navbar) {
+        return $this->render_from_template('mod_questionnaire/responselist', $navbar);
+    }
+
+    /**
      * Render a print/preview page number line.
      * @param string $content The content to render.
      * @return string The rendered HTML.

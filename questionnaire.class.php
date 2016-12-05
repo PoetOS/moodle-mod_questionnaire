@@ -2093,11 +2093,10 @@ class questionnaire {
             $i++;
         }
 
-        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;group='.$currentgroupid;
-        $navbar = new \stdClass();
-        $linkarr = [];
+        $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&group='.$currentgroupid.'&individualresponse=1';
         if (!$byresponse) {     // Display navbar.
             // Build navbar.
+            $navbar = new \stdClass();
             $prevrid = ($currpos > 0) ? $rids[$currpos - 1] : null;
             $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
             $firstrid = $rids[0];
@@ -2107,8 +2106,8 @@ class questionnaire {
                 $pos = $currpos - 1;
                 $title = '';
                 $firstuserfullname = '';
-                $navbar->firstrespondent = ['url' => $url, 'rid' => $firstrid];
-                $navbar->previous = ['url' => $url, 'rid' => $prevrid];
+                $navbar->firstrespondent = ['url' => ($url.'&rid='.$firstrid)];
+                $navbar->previous = ['url' => ($url.'&rid='.$prevrid)];
                 if ($isfullname) {
                     $responsedate = userdate($ridssub[$pos]);
                     $title = $ridsuserfullname[$pos];
@@ -2127,8 +2126,8 @@ class questionnaire {
                 $responsedate = '';
                 $title = '';
                 $lastuserfullname = '';
-                $navbar->lastrespondent = ['url' => $url, 'rid' => $lastrid];
-                $navbar->next = ['url' => $url, 'rid' => $nextrid];
+                $navbar->lastrespondent = ['url' => ($url.'&rid='.$lastrid)];
+                $navbar->next = ['url' => ($url.'&rid='.$nextrid)];
                 if ($isfullname) {
                     $responsedate = userdate($ridssub[$pos]);
                     $title = $ridsuserfullname[$pos];
@@ -2147,35 +2146,36 @@ class questionnaire {
 
             // Display a "print this response" icon here in prevision of total removal of tabs in version 2.6.
             $linkname = '&nbsp;'.get_string('print', 'questionnaire');
-            $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid='.$currrid.
-            '&amp;courseid='.$this->course->id.'&amp;sec=1';
+            $url = '/mod/questionnaire/print.php?qid='.$this->id.'&rid='.$currrid.
+            '&courseid='.$this->course->id.'&sec=1';
             $title = get_string('printtooltip', 'questionnaire');
             $options = array('menubar' => true, 'location' => false, 'scrollbars' => true,
                             'resizable' => true, 'height' => 600, 'width' => 800);
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
-            $actionlink = $OUTPUT->action_link($link, $linkname, $action, array('title' => $title),
-                    new pix_icon('t/print', $title));
+            $actionlink = $this->renderer->action_link($link, $linkname, $action, ['title' => $title],
+                new pix_icon('t/print', $title));
             $navbar->printaction = $actionlink;
             $this->page->add_to_page('navigationbar', $this->renderer->navigationbar($navbar));
 
         } else { // Display respondents list.
+            $resparr = [];
             for ($i = 0; $i < $total; $i++) {
                 if ($isfullname) {
                     $responsedate = userdate($ridssub[$i]);
-                    array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
-                        $rids[$i].'&amp;individualresponse=1" >'.$ridsuserfullname[$i].'</a>'.'&nbsp;');
+                    $resparr[] = '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
+                        $rids[$i].'&amp;individualresponse=1" >'.$ridsuserfullname[$i].'</a> ';
                 } else {
                     $responsedate = '';
-                    array_push($linkarr, '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
+                    $resparr[] = '<a title = "'.$responsedate.'" href="'.$url.'&amp;rid='.
                         $rids[$i].'&amp;individualresponse=1" >'.
-                        get_string('response', 'questionnaire').($i + 1).'</a>'.'&nbsp;');
+                        get_string('response', 'questionnaire').($i + 1).'</a> ';
                 }
             }
             // Table formatting from http://wikkawiki.org/PageAndCategoryDivisionInACategory.
-            $total = count($linkarr);
-            $entries = count($linkarr);
+            $total = count($resparr);
+            $entries = count($resparr);
             // Default max 3 columns, max 25 lines per column.
             // TODO make this setting customizable.
             $maxlines = 20;
@@ -2187,33 +2187,28 @@ class questionnaire {
             }
             $lines = 0;
             $a = 0;
-            $str = '';
             // How many lines with an entry in every column do we have?
             while ($entries / $colnumber > 1) {
                 $lines++;
                 $entries = $entries - $colnumber;
             }
             // Prepare output.
+            $respcols = new stdClass();
             for ($i = 0; $i < $colnumber; $i++) {
-                $str .= '<div id="respondentscolumn">'."\n";
+                $colname = 'respondentscolumn'.$i;
                 for ($j = 0; $j < $lines; $j++) {
-                    $str .= $linkarr[$a].'<br />'."\n";
+                    $respcols->{$colname}->respondentlink[] = $resparr[$a];
                     $a++;
                 }
                 // The rest of the entries (less than the number of cols).
                 if ($entries) {
-                    $str .= $linkarr[$a].'<br />'."\n";
+                    $respcols->{$colname}->respondentlink[] = $resparr[$a];
                     $entries--;
                     $a++;
                 }
-                $str .= "</div>\n";
             }
-            $str .= '<div style="clear: both;">'."</div>\n";
-            $output .= $OUTPUT->box_start();
-            $output .= ($str);
-            $output .= $OUTPUT->box_end();
 
-            $this->page->add_to_page('responses', $output);
+            $this->page->add_to_page('responses', $this->renderer->responselist($respcols));
         }
     }
 
@@ -2254,36 +2249,37 @@ class questionnaire {
         $rowsperpage = 1;
 
         if ($reporttype == 'myreport') {
-            $url = 'myreport.php?instance='.$instance.'&amp;user='.$userid.'&amp;action=vresp&amp;byresponse=1';
+            $url = 'myreport.php?instance='.$instance.'&user='.$userid.'&action=vresp&byresponse=1&individualresponse=1';
         } else {
-            $url = 'report.php?instance='.$instance.'&amp;user='.$userid.'&amp;action=vresp&amp;byresponse=1&amp;sid='.$sid;
+            $url = 'report.php?instance='.$instance.'&user='.$userid.'&action=vresp&byresponse=1&individualresponse=1&sid='.$sid;
         }
         $linkarr = array();
+        $navbar = new \stdClass();
         $displaypos = 1;
         if ($prevrid != null) {
             $title = userdate($ridssub[$currpos - 1].$ridsusers[$currpos - 1]);
-            array_push($linkarr, '<a href="'.$url.'&amp;rid='.$prevrid.'" title="'.$title.'">'.get_string('previous').'</a>');
+            $navbar->previous = ['url' => ($url.'&rid='.$prevrid), 'title' => $title];
         }
         for ($i = 0; $i < $currpos; $i++) {
             $title = userdate($ridssub[$i]).$ridsusers[$i];
-            array_push($linkarr, '<a href="'.$url.'&amp;rid='.$rids[$i].'" title="'.$title.'">'.$displaypos.'</a>');
+            $navbar->prevrespnumbers[] = ['url' => ($url.'&rid='.$rids[$i]), 'title' => $title, 'respnumber' => $displaypos];
             $displaypos++;
         }
-        array_push($linkarr, '<b>'.$displaypos.'</b>');
+        $navbar->currrespnumber = $displaypos;
         for (++$i; $i < $total; $i++) {
             $displaypos++;
             $title = userdate($ridssub[$i]).$ridsusers[$i];
-            array_push($linkarr, '<a href="'.$url.'&amp;rid='.$rids[$i].'" title="'.$title.'">'.$displaypos.'</a>');
+            $navbar->nextrespnumbers[] = ['url' => ($url.'&rid='.$rids[$i]), 'title' => $title, 'respnumber' => $displaypos];
         }
         if ($nextrid != null) {
             $title = userdate($ridssub[$currpos + 1]).$ridsusers[$currpos + 1];
-            array_push($linkarr, '<a href="'.$url.'&amp;rid='.$nextrid.'" title="'.$title.'">'.get_string('next').'</a>');
+            $navbar->next = ['url' => ($url.'&rid='.$nextrid), 'title' => $title];
         }
         $output .= $OUTPUT->box_start('respondentsnavbar');
         $output .= implode(' | ', $linkarr);
         $output .= $OUTPUT->box_end('respondentsnavbar');
-        $this->page->add_to_page('navigationbar', $output);
-        $this->page->add_to_page('bottomnavigationbar', $output);
+        $this->page->add_to_page('navigationbar', $this->renderer->usernavigationbar($navbar));
+        $this->page->add_to_page('bottomnavigationbar', $this->renderer->usernavigationbar($navbar));
     }
 
     /* {{{ proto string survey_results(int survey_id, int precision, bool show_totals, int question_id,
