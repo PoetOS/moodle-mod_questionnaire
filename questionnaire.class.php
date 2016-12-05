@@ -220,9 +220,8 @@ class questionnaire {
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('alreadyfilled', 'questionnaire', $msgstring),
                 \core\output\notification::NOTIFY_ERROR));
-
-        // Handle the main questionnaire completion page.
         } else {
+            // Handle the main questionnaire completion page.
             $quser = $USER->id;
 
             $msg = $this->print_survey($USER->id, $quser);
@@ -730,13 +729,8 @@ class questionnaire {
         $formdatarid = isset($formdata->rid) ? $formdata->rid : '0';
         $this->page->add_to_page('formstart',
             $this->renderer->complete_formstart($action,
-                ['referer' => $formdatareferer,
-                 'a' => $this->id,
-                 'sid' => $this->survey->id,
-                 'rid' => $formdatarid,
-                 'sec' => $formdata->sec,
-                 'sesskey' => sesskey()
-                ]));
+                ['referer' => $formdatareferer, 'a' => $this->id, 'sid' => $this->survey->id, 'rid' => $formdatarid,
+                'sec' => $formdata->sec, 'sesskey' => sesskey()]));
         if (isset($this->questions) && $numsections) { // Sanity check.
             $this->survey_render($formdata->sec, $msg, $formdata);
             $controlbuttons = [];
