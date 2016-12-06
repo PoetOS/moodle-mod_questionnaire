@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/complete
+    @template mod_questionnaire/[my]report
 
-    Template which defines a check type question survey display.
+    Template which defines a survey response display.
 
     Classes required for JS:
     * /mod/questionnaire/module.js
@@ -39,7 +39,8 @@
         ]
     },
     }}
-<!-- Begin fieldset generated from question_container template. -->
+<!-- Begin fieldset generated from response_container template. -->
+<div class="box individualresp">
 <fieldset id="{{fieldset.id}}" class="{{fieldset.class}}">
     {{#qnum}}
     <legend class="qn-legend">
@@ -57,9 +58,30 @@
             {{#label}}</label>{{/label}}
         </div>
         <div class="qn-answer">
-            {{{qformelement}}}
+            {{#responses}}
+            {{#respdate}}<div class="respdate">{{respdate}}</div>{{/respdate}}
+            <fieldset id="{{fieldset.id}}" class="{{fieldset.class}}">
+                <legend class="qn-legend">
+                    <div class="qn-info">
+                        <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</div>
+                        <h2 class="qn-number"></h2>
+                    </div>
+                    {{{required}}}
+                </legend>
+                <div class="qn-content">
+                    <div class="qn-question {{skippedclass}}">
+                        {{#label}}<label for="{{label.for}}">{{/label}}
+                        {{{qcontent}}}
+                        {{#label}}</label>{{/label}}
+                    </div>
+                    <div class="qn-answer">
+                    {{{qformelement}}}
+                    </div>
+                </div>
+            </fieldset>
+            {{/responses}}
         </div>
     </div>
 </fieldset>
-{{#notifications}}{{{.}}}{{/notifications}}
-<!-- End fieldset generated from question_container template. -->
+</div>
+<!-- End fieldset generated from response_container template. -->

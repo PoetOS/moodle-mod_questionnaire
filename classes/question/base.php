@@ -277,26 +277,6 @@ abstract class base {
     abstract protected function responseclass();
 
     /**
-     * Question specific display method.
-     *
-     * @param object $formdata
-     * @param string $descendantdata
-     * @param integer $qnum
-     * @param boolean $blankquestionnaire
-     *
-     */
-    abstract protected function question_survey_display($formdata, $descendantsdata, $blankquestionnaire);
-
-    /**
-     * Question specific response display method.
-     *
-     * @param object $data
-     * @param integer $qnum
-     *
-     */
-    abstract protected function response_survey_display($data);
-
-    /**
      * Check question's form data for complete response.
      *
      * @param object $responsedata The data entered into the response.
@@ -478,8 +458,9 @@ abstract class base {
         $this->required = $rval;
         return $DB->set_field('questionnaire_question', 'required', $rval, array('id' => $qid));
     }
+
     /**
-     * Main function for displaying a question.
+     * Question specific display method.
      *
      * @param object $formdata
      * @param string $descendantdata
@@ -487,30 +468,51 @@ abstract class base {
      * @param boolean $blankquestionnaire
      *
      */
-    private function question_display($formdata, $descendantsdata, $qnum='', $blankquestionnaire) {
-        $output = '';
-        $output .= $this->questionstart_survey_display($qnum, $formdata);
-        $output .= $this->question_survey_display($formdata, $descendantsdata, $blankquestionnaire);
-        $output .= $this->questionend_survey_display($qnum);
-        return $output;
+    abstract protected function question_survey_display($formdata, $descendantsdata, $blankquestionnaire);
+
+    /**
+     * Question specific response display method.
+     *
+     * @param object $data
+     * @param integer $qnum
+     *
+     */
+    abstract protected function response_survey_display($data);
+
+    /**
+     * Get the output for question renderers / templates.
+     * @param object $formdata
+     * @param string $descendantdata
+     * @param integer $qnum
+     * @param boolean $blankquestionnaire
+     */
+    public function question_output($formdata, $descendantsdata, $qnum='', $blankquestionnaire) {
+        $pagetags = $this->questionstart_survey_display($qnum, $formdata);
+        $pagetags->qformelement = $this->question_survey_display($formdata, $descendantsdata, $blankquestionnaire);
+        return $pagetags;
+    }
+
+    /**
+     * Get the output for question renderers / templates.
+     * @param object $formdata
+     * @param string $descendantdata
+     * @param integer $qnum
+     * @param boolean $blankquestionnaire
+     */
+    public function response_output($data, $qnum='') {
+        $pagetags = $this->questionstart_survey_display($qnum, $data);
+        $pagetags->qformelement = $this->response_survey_display($data);
+        return $pagetags;
     }
 
     public function survey_display($formdata, $descendantsdata, $qnum='', $blankquestionnaire=false) {
         return $this->question_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
     }
 
-    public function response_display($data, $qnum='') {
-        $output = '';
-        $output .= $this->questionstart_survey_display($qnum, $data);
-        $output .= $this->response_survey_display($data);
-        $output .= $this->questionend_survey_display($qnum);
-        return $output;
-    }
-
     public function questionstart_survey_display($qnum, $formdata='') {
         global $OUTPUT, $SESSION, $questionnaire, $PAGE;
 
-        $output = '';
+        $pagetags = new \stdClass();
         $currenttab = $SESSION->questionnaire->current_tab;
         $pagetype = $PAGE->pagetype;
         $skippedquestion = false;
@@ -569,18 +571,12 @@ abstract class base {
             }
         }
 
-        $output .= html_writer::start_tag('fieldset', array('class' => $displayclass, 'id' => 'qn-'.$this->id));
-        $output .= html_writer::start_tag('legend', array('class' => 'qn-legend'));
+        $pagetags->fieldset['class'] = $displayclass;
 
         // Do not display the info box for the label question type.
         if ($this->type_id != QUESSECTIONTEXT) {
             if (!$nonumbering) {
-                $output .= html_writer::start_tag('div', array('class' => 'qn-info'));
-                $output .= html_writer::start_tag('div', array('class' => 'accesshide'));
-                $output .= get_string('questionnum', 'questionnaire');
-                $output .= html_writer::end_tag('div');
-                $output .= html_writer::tag('h2', $qnum, array('class' => 'qn-number'));
-                $output .= html_writer::end_tag('div');
+                $pagetags->qnum = $qnum;
             }
             $required = '';
             if ($this->required == 'y') {
@@ -593,40 +589,26 @@ abstract class base {
                                 'alt' => get_string('required', 'questionnaire'),
                                 'src' => $OUTPUT->pix_url('req')));
             }
-            $output .= $required;
+            $pagetags->required = $required; // Need to replace this with better renderer / template?
         }
         // If question text is "empty", i.e. 2 non-breaking spaces were inserted, empty it.
         if ($this->content == '<p>  </p>') {
             $this->content = '';
         }
-        $output .= html_writer::end_tag('legend');
-        $output .= html_writer::start_tag('div', array('class' => 'qn-content'));
-        $output .= html_writer::start_tag('div', array('class' => 'qn-question '.$skippedclass));
+        $pagetags->skippedclass = $skippedclass;
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
             $this->type_id == QUESDROP) {
-            $output .= html_writer::start_tag('label', array('for' => $this->type . $this->id));
+            $pagetags->label['for'] = $this->type . $this->id;
         }
         if ($this->type_id == QUESESSAY) {
-            $output .= html_writer::start_tag('label', array('for' => 'edit-q' . $this->id));
+            $pagetags->label['for'] = 'edit-q' . $this->id;
         }
         $options = array('noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true);
-        $output .= format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
+        $content = format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
             $this->context->id, 'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options);
-        if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
-            $this->type_id == QUESESSAY || $this->type_id == QUESDROP) {
-            $output .= html_writer::end_tag('label');
-        }
-        $output .= html_writer::end_tag('div');
-        $output .= html_writer::start_tag('div', array('class' => 'qn-answer'));
+        $pagetags->qcontent = $content;
 
-        return $output;
-    }
-
-    public function questionend_survey_display() {
-        $output = '';
-        $output .= html_writer::end_tag('div');
-        $output .= html_writer::end_tag('fieldset');
-        return $output;
+        return $pagetags;
     }
 
     private function response_check_required ($data) {

@@ -162,14 +162,15 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function question_output($question, $formdata, $descendantsdata, $qnum, $blankquestionnaire) {
-        // Calling "survey_display" may generate per question notifications. If present, add them to the question output.
-        $qoutput = $question->survey_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+        $pagetags = $question->question_output($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+        $pagetags->fieldset['id'] = $question->id;
+        // Calling "question_output" may generate per question notifications. If present, add them to the question output.
         if (($notifications = $question->get_notifications()) !== false) {
             foreach ($notifications as $notification) {
-                $qoutput .= $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
+                $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
             }
         }
-        return $qoutput;
+        return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }
 
     /**
@@ -180,7 +181,15 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function response_output($question, $data, $qnum=null) {
-        return $question->response_display($data, $qnum);
+        $pagetags = $question->response_output($data, $qnum);
+        $pagetags->fieldset['id'] = $question->id;
+        // Calling "question_output" may generate per question notifications. If present, add them to the question output.
+        if (($notifications = $question->get_notifications()) !== false) {
+            foreach ($notifications as $notification) {
+                $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
+            }
+        }
+        return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }
 
     /**
@@ -195,16 +204,17 @@ class renderer extends \plugin_renderer_base {
         } else {
             foreach ($data as $qnum => $responses) {
                 $question = $responses['question'];
-                $output .= $this->box_start('individualresp');
-                $output .= $question->questionstart_survey_display($qnum);
+                $pagetags = $question->questionstart_survey_display($qnum);
+                $pagetags->fieldset['id'] = $question->id;
                 foreach ($responses as $item => $response) {
-                    if ($item != 'question') {
-                        $output .= $this->container($response['respdate'], 'respdate');
-                        $output .= $question->response_display($response['respdata']);
+                    if ($item !== 'question') {
+                        $resptags = $question->response_output($response['respdata']);
+                        $resptags->respdate = $response['respdate'];
+                        $resptags->fieldset['id'] = $question->id;
+                        $pagetags->responses[] = $resptags;
                     }
                 }
-                $output .= $question->questionend_survey_display($qnum);
-                $output .= $this->box_end();
+                $output .= $this->render_from_template('mod_questionnaire/response_container', $pagetags);
             }
         }
         return $output;
