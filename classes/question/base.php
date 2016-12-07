@@ -288,7 +288,7 @@ abstract class base {
     }
 
     /**
-     * Check question's form data for valid response. Override this is type has specific format requirements.
+     * Check question's form data for valid response. Override this if type has specific format requirements.
      *
      * @param object $responsedata The data entered into the response.
      * @return boolean
@@ -464,7 +464,6 @@ abstract class base {
      *
      * @param object $formdata
      * @param string $descendantdata
-     * @param integer $qnum
      * @param boolean $blankquestionnaire
      *
      */
@@ -478,6 +477,14 @@ abstract class base {
      *
      */
     abstract protected function response_survey_display($data);
+
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return false;
+    }
 
     /**
      * Get the output for question renderers / templates.

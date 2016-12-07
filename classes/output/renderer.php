@@ -114,7 +114,7 @@ class renderer extends \plugin_renderer_base {
      */
     public function complete_formstart($action, $hiddeninputs=[]) {
         $output = '';
-        $output .= \html_writer::start_tag('form', ['id' => 'php_response', 'method' => 'post', 'action' => $action]) . "\n";
+        $output .= \html_writer::start_tag('form', ['id' => 'phpesp_response', 'method' => 'post', 'action' => $action]) . "\n";
         foreach ($hiddeninputs as $name => $value) {
             $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
         }
@@ -162,8 +162,16 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function question_output($question, $formdata, $descendantsdata, $qnum, $blankquestionnaire) {
+
         $pagetags = $question->question_output($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+
+        // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
+        // already contains HTML.
+        if (($template = $question->question_template())) {
+            $pagetags->qformelement = $this->render_from_template($template, $pagetags->qformelement);
+        }
         $pagetags->fieldset['id'] = $question->id;
+
         // Calling "question_output" may generate per question notifications. If present, add them to the question output.
         if (($notifications = $question->get_notifications()) !== false) {
             foreach ($notifications as $notification) {

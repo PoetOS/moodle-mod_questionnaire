@@ -17,7 +17,7 @@
 {{!
     @template mod_questionnaire/complete
 
-    Template which defines a check type question survey display.
+    Template which defines a text type question survey display.
 
     Classes required for JS:
     * /mod/questionnaire/module.js
@@ -32,27 +32,8 @@
     {
     },
     }}
-<!-- Begin fieldset generated from question_container template. -->
-<fieldset id="{{fieldset.id}}" class="{{fieldset.class}}">
-    {{#qnum}}
-    <legend class="qn-legend">
-        <div class="qn-info">
-            <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</div>
-            <h2 class="qn-number">{{{qnum}}}</h2>
-        </div>
-        {{{required}}}
-    </legend>
-    {{/qnum}}
-    <div class="qn-content">
-        <div class="qn-question {{skippedclass}}">
-            {{#label}}<label for="{{label.for}}">{{/label}}
-            {{{qcontent}}}
-            {{#label}}</label>{{/label}}
-        </div>
-        <div class="qn-answer">
-            {{{qformelement}}}
-        </div>
-    </div>
-</fieldset>
-{{#notifications}}{{{.}}}{{/notifications}}
-<!-- End fieldset generated from question_container template. -->
+<!-- Begin HTML generated from question_text template. -->
+{{#text}}
+<input {{#text.onkeypress}}onkeypress="{{.}}"{{/text.onkeypress}} type="text" size="{{text.size}}" name="{{text.name}}" {{#text.maxlength}}maxlength="{{text.maxlength}}"{{/text.maxlength}} value="{{text.value}}" id="{{text.id}}" />
+{{/text}}
+<!-- End HTML generated from question_text template. -->

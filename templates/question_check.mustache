@@ -32,27 +32,18 @@
     {
     },
     }}
-<!-- Begin fieldset generated from question_container template. -->
-<fieldset id="{{fieldset.id}}" class="{{fieldset.class}}">
-    {{#qnum}}
-    <legend class="qn-legend">
-        <div class="qn-info">
-            <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</div>
-            <h2 class="qn-number">{{{qnum}}}</h2>
-        </div>
-        {{{required}}}
-    </legend>
-    {{/qnum}}
-    <div class="qn-content">
-        <div class="qn-question {{skippedclass}}">
-            {{#label}}<label for="{{label.for}}">{{/label}}
-            {{{qcontent}}}
-            {{#label}}</label>{{/label}}
-        </div>
-        <div class="qn-answer">
-            {{{qformelement}}}
-        </div>
-    </div>
-</fieldset>
-{{#notifications}}{{{.}}}{{/notifications}}
-<!-- End fieldset generated from question_container template. -->
+<!-- Begin HTML generated from question_check template. -->
+{{#choices}}
+{{#checkbox}}
+<input id="{{checkbox.id}}" value="{{checkbox.value}}" name="{{checkbox.name}}" type="checkbox" {{#checkbox.checked}}checked="checked"{{/checkbox.checked}} />
+<label for="{{checkbox.id}}">{{{checkbox.label}}}</label>
+<br />
+{{/checkbox}}
+{{#other}}
+<input id="{{other.id}}" value="{{other.value}}" name="{{other.name}}" type="checkbox" {{#other.checked}}checked="checked"{{/other.checked}} />
+<label for="{{other.id}}">{{{other.label}}}</label>
+<input size="25" name="{{other.oname}}" onclick="other_check(name)" value="{{other.ovalue}}" type="text" />
+<br />
+{{/other}}
+{{/choices}}
+<!-- End HTML generated from question_check template. -->

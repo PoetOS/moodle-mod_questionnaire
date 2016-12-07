@@ -43,9 +43,23 @@ class check extends base {
         return true;
     }
 
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        $output = '';
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return 'mod_questionnaire/question_check';
+    }
 
+    /**
+     * Return the context tags for the check question template.
+     * @param object $data
+     * @param string $descendantdata
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
+    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Check boxes.
         $otherempty = false;
         if (!empty($data) ) {
@@ -99,19 +113,28 @@ class check extends base {
             }
         }
 
+        $choicetags = new \stdClass();
+        $choicetags->choices = [];
         foreach ($this->choices as $id => $choice) {
 
             $other = strpos($choice->content, '!other');
             if ($other !== 0) { // This is a normal check box.
+                $checkbox = [];
                 $contents = questionnaire_choice_values($choice->content);
                 $checked = false;
                 if (!empty($data) ) {
                     $checked = in_array($id, $data->{'q'.$this->id});
                 }
-                $output .= html_writer::checkbox('q'.$this->id.'[]', $id, $checked,
-                                               format_text($contents->text, FORMAT_HTML).$contents->image);
-                $output .= '<br />';
+                $checkbox['name'] = 'q'.$this->id.'[]';
+                $checkbox['value'] = $id;
+                $checkbox['id'] = 'checkbox_'.$id;
+                $checkbox['label'] = format_text($contents->text, FORMAT_HTML).$contents->image;
+                if ($checked) {
+                    $checkbox['checked'] = $checked;
+                }
+                $choicetags->choices[] = ['checkbox' => $checkbox];
             } else {             // Check box with associated !other text field.
+                $other = [];
                 // In case length field has been used to enter max number of choices, set it to 20.
                 $othertext = preg_replace(
                         array("/^!other=/", "/^!other/"),
@@ -126,20 +149,23 @@ class check extends base {
                 $name = 'q'.$this->id.'[]';
                 $value = 'other_'.$id;
 
-                $output .= html_writer::checkbox($name, $value, $checked, format_text($othertext.'', FORMAT_HTML));
-                $othertext = '&nbsp;<input type="text" size="25" name="'.$cid.'" onclick="other_check(name)"';
-                if ($cid) {
-                    $othertext .= ' value="'. (!empty($data->$cid) ? stripslashes($data->$cid) : '') .'"';
+                $other['name'] = $name;
+                $other['oname'] = $cid;
+                $other['value'] = $value;
+                $other['ovalue'] = (!empty($data->$cid) ? stripslashes($data->$cid) : '');
+                $other['id'] = 'checkbox_'.$id;
+                $other['label'] = format_text($othertext.'', FORMAT_HTML);
+                if ($checked) {
+                    $other['checked'] = $checked;
                 }
-                $othertext .= ' />';
-                $output .= $othertext.'<br />';
+                $choicetags->choices[] = ['other' => $other];
             }
         }
         if ($otherempty) {
             $this->add_notification(get_string('otherempty', 'questionnaire'));
         }
 
-        return $output;
+        return $choicetags;
     }
 
     protected function response_survey_display($data) {

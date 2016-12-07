@@ -44,8 +44,6 @@ class drop extends base {
     }
 
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        global $OUTPUT;
-
         // Drop.
         $output = '';
         $options = array();
@@ -88,7 +86,6 @@ class drop extends base {
     }
 
     protected function response_survey_display($data) {
-        global $OUTPUT;
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $output = '';

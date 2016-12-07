@@ -45,12 +45,34 @@ class text extends base {
         return 'textbox';
     }
 
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return 'mod_questionnaire/question_text';
+    }
+
+    /**
+     * Return the context tags for the check question template.
+     * @param object $data
+     * @param string $descendantdata
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Text Box.
-        return '<input onkeypress="return event.keyCode != 13;" type="text" size="'.$this->length.'" name="q'.$this->id.'"'.
-            ($this->precise > 0 ? ' maxlength="'.$this->precise.'"' : '').' value="'.
-            (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '').
-            '" id="' . $this->type . $this->id . '" />';
+        $questiontags = new \stdClass();
+        $questiontags->text['onkeypress'] = 'return event.keyCode != 13;';
+        $questiontags->text['size'] = $this->length;
+        $questiontags->text['name'] = 'q'.$this->id;
+        if ($this->precise > 0) {
+            $questiontags->text['maxlength'] = $this->precise;
+        }
+        $questiontags->text['value'] = (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '');
+        $questiontags->text['id'] = $this->type . $this->id;
+        return $questiontags;
     }
 
     protected function response_survey_display($data) {

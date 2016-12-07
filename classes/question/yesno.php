@@ -35,6 +35,22 @@ class yesno extends base {
         return 'yesno';
     }
 
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return 'mod_questionnaire/question_yesno';
+    }
+
+    /**
+     * Return the context tags for the check question template.
+     * @param object $data
+     * @param string $descendantdata
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Moved choose_from_radio() here to fix unwanted selection of yesno buttons and radio buttons with identical ID.
 
@@ -52,8 +68,8 @@ class yesno extends base {
             } else {
                 $choices['n'] = '';
             }
-            $onclickdepend['y'] = ' onclick="depend(\''.$descendants.'\', \''.$choices['y'].'\')"';
-            $onclickdepend['n'] = ' onclick="depend(\''.$descendants.'\', \''.$choices['n'].'\')"';
+            $onclickdepend['y'] = 'depend(\''.$descendants.'\', \''.$choices['y'].'\')';
+            $onclickdepend['n'] = 'depend(\''.$descendants.'\', \''.$choices['n'].'\')';
         }
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
@@ -74,40 +90,50 @@ class yesno extends base {
         $output = '';
         $ischecked = false;
 
+        $choicetags = new \stdClass();
+        $choicetags->choices = [];
+
         foreach ($options as $value => $label) {
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
-            $output .= '<input name="'.$name.'" id="'.$htmlid.'" type="radio" value="'.$value.'"';
+            $option = [];
+            $option['name'] = $name;
+            $option['id'] = $htmlid;
+            $option['value'] = $value;
+            $option['label'] = $label;
             if ($value == $checked) {
-                $output .= ' checked="checked"';
+                $option['checked'] = true;
                 $ischecked = true;
             }
             if ($blankquestionnaire) {
-                $output .= ' disabled="disabled"';
+                $option['disabled'] = true;
             }
             if (isset($onclickdepend[$value])) {
-                $output .= $onclickdepend[$value];
+                $option['onclick'] = $onclickdepend[$value];
             }
-            $output .= ' /><label for="'.$htmlid.'">'. $label .'</label>' . "\n";
+            $element = ($value === 'y' ? 'yes' : 'no');
+            $choicetags->choices[] = [$element => $option];
         }
         // CONTRIB-846.
         if ($this->required == 'n') {
             $id = '';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
-            $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="'.$id.'"';
+            $content = get_string('noanswer', 'questionnaire');
+            $option = [];
+            $option['name'] = $name;
+            $option['id'] = $htmlid;
+            $option['value'] = $id;
+            $option['label'] = format_text($content, FORMAT_HTML);
             if (!$ischecked && !$blankquestionnaire) {
-                $output .= ' checked="checked"';
+                $option['checked'] = true;
             }
             if ($onclickdepend) {
-                $output .= ' onclick="depend(\''.$descendants.'\', \'\')"';
+                $option['onclick'] = 'depend(\''.$descendants.'\', \'\')';
             }
-            $content = get_string('noanswer', 'questionnaire');
-            $output .= ' /><label for="'.$htmlid.'" >'.
-                format_text($content, FORMAT_HTML).'</label>';
+            $choicetags->choices[] = ['noanswer' => $option];
         }
         // End CONTRIB-846.
 
-        $output .= '</span>' . "\n";
-        return $output;
+        return $choicetags;
     }
 
     protected function response_survey_display($data) {

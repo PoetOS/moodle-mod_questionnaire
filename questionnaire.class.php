@@ -110,7 +110,6 @@ class questionnaire {
      * @return \mod_questionnaire\question\base|mixed
      */
     public static function question_factory($typename, $id = 0, $record = null, $context = null, $params = []) {
-        global $CFG;
         $questionclass = '\\mod_questionnaire\\question\\'.$typename;
         return new $questionclass($id, $record, $context, $params);
     }
@@ -119,7 +118,7 @@ class questionnaire {
      * Adding questions to the object.
      */
     public function add_questions($sid = false) {
-        global $CFG, $DB;
+        global $DB;
 
         if ($sid === false) {
             $sid = $this->sid;
@@ -170,7 +169,7 @@ class questionnaire {
     }
 
     public function view() {
-        global $CFG, $USER, $PAGE, $OUTPUT;
+        global $CFG, $USER, $PAGE;
 
         $PAGE->set_title(format_string($this->name));
         $PAGE->set_heading(format_string($this->course->fullname));
@@ -293,8 +292,6 @@ class questionnaire {
     */
     public function view_response($rid, $referer= '', $blankquestionnaire = false, $resps = '', $compare = false,
                         $isgroupmember = false, $allresponses = false, $currentgroupid = 0) {
-        global $OUTPUT, $PAGE;
-
         $this->print_survey_start('', 1, 1, 0, $rid, false);
 
         $data = new stdClass();
@@ -335,8 +332,6 @@ class questionnaire {
     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
     */
     public function view_all_responses($resps) {
-        global $OUTPUT, $PAGE;
-
         $this->print_survey_start('', 1, 1, 0);
 
         // If a student's responses have been deleted by teacher while student was viewing the report,
@@ -611,7 +606,7 @@ class questionnaire {
     // Display Methods.
 
     public function print_survey($userid=false, $quser) {
-        global $SESSION, $DB, $CFG, $PAGE;
+        global $SESSION, $CFG;
 
         $formdata = new stdClass();
         if (data_submitted() && confirm_sesskey()) {
@@ -802,7 +797,7 @@ class questionnaire {
     }
 
     private function print_survey_start($message, $section, $numsections, $hasrequired, $rid='', $blankquestionnaire=false) {
-        global $CFG, $DB, $OUTPUT, $PAGE;
+        global $CFG, $DB;
         require_once($CFG->libdir.'/filelib.php');
 
         $userid = '';
@@ -917,8 +912,6 @@ class questionnaire {
     }
 
     private function print_survey_end($section, $numsections) {
-        global $PAGE;
-
         $autonum = $this->autonum;
         // If no questions autonumbering.
         if ($autonum < 3) {
@@ -935,7 +928,7 @@ class questionnaire {
 
     // Blankquestionnaire : if we are printing a blank questionnaire.
     public function survey_print_render($message = '', $referer='', $courseid, $rid=0, $blankquestionnaire=false) {
-        global $USER, $DB, $OUTPUT, $CFG, $PAGE;
+        global $DB, $CFG;
 
         if (! $course = $DB->get_record("course", array("id" => $courseid))) {
             print_error('incorrectcourseid', 'questionnaire');
@@ -1189,7 +1182,6 @@ class questionnaire {
     // RESPONSE LIBRARY.
 
     private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
-        global $PAGE, $OUTPUT;
         $missing = 0;
         $strmissing = '';     // Missing questions.
         $wrongformat = 0;
@@ -1471,7 +1463,7 @@ class questionnaire {
     }
 
     private function response_send_email($rid, $userid=false) {
-        global $CFG, $USER, $DB;
+        global $CFG, $DB;
 
         require_once($CFG->libdir.'/phpmailer/class.phpmailer.php');
 
@@ -1546,7 +1538,7 @@ class questionnaire {
     }
 
     public function response_insert($sid, $section, $rid, $userid, $resume=false) {
-        global $DB, $USER;
+        global $DB;
 
         $record = new stdClass();
         $record->submitted = time();
@@ -2027,7 +2019,7 @@ class questionnaire {
     // Survey Results Methods.
 
     public function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
-        global $CFG, $DB, $OUTPUT;
+        global $CFG, $DB;
 
         $output = '';
 
@@ -2214,7 +2206,7 @@ class questionnaire {
 
     // Display responses for current user (your responses).
     public function survey_results_navbar_student($currrid, $userid, $instance, $resps, $reporttype='myreport', $sid='') {
-        global $DB, $OUTPUT;
+        global $DB;
         $stranonymous = get_string('anonymous', 'questionnaire');
         $output = '';
 
@@ -2275,9 +2267,6 @@ class questionnaire {
             $title = userdate($ridssub[$currpos + 1]).$ridsusers[$currpos + 1];
             $navbar->next = ['url' => ($url.'&rid='.$nextrid), 'title' => $title];
         }
-        $output .= $OUTPUT->box_start('respondentsnavbar');
-        $output .= implode(' | ', $linkarr);
-        $output .= $OUTPUT->box_end('respondentsnavbar');
         $this->page->add_to_page('navigationbar', $this->renderer->usernavigationbar($navbar));
         $this->page->add_to_page('bottomnavigationbar', $this->renderer->usernavigationbar($navbar));
     }
@@ -2293,7 +2282,7 @@ class questionnaire {
 
     public function survey_results($precision = 1, $showtotals = 1, $qid = '', $cids = '', $rid = '',
                 $uid=false, $currentgroupid='', $sort='') {
-        global $SESSION, $DB, $PAGE;
+        global $SESSION, $DB;
 
         $SESSION->questionnaire->noresponses = false;
         if (empty($precision)) {
@@ -3085,7 +3074,7 @@ class questionnaire {
     }
 
     public function response_analysis ($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid) {
-        global $DB, $CFG, $OUTPUT, $SESSION, $USER;
+        global $DB, $CFG;
         $action = optional_param('action', 'vall', PARAM_ALPHA);
 
         require_once($CFG->libdir.'/tablelib.php');
@@ -3306,9 +3295,9 @@ class questionnaire {
             $sectionheading = sprintf($sectionheading , $scorepercent, $oppositescorepercent);
             $sectionheading = file_rewrite_pluginfile_urls($sectionheading, 'pluginfile.php',
                             $this->context->id, 'mod_questionnaire', 'sectionheading', $sectionid);
-            $feedbackmessages[] = $OUTPUT->box_start();
+            $feedbackmessages[] = $this->renderer->box_start();
             $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML);
-            $feedbackmessages[] = $OUTPUT->box_end();
+            $feedbackmessages[] = $this->renderer->box_end();
 
             if (!empty($feedback->feedbacktext)) {
                 // Clean the text, ready for display.
@@ -3317,9 +3306,9 @@ class questionnaire {
                 $feedbacktext = file_rewrite_pluginfile_urls($feedback->feedbacktext, 'pluginfile.php',
                                 $this->context->id, 'mod_questionnaire', 'feedback', $feedback->id);
                 $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, $formatoptions);
-                $feedbackmessages[] = $OUTPUT->box_start();
+                $feedbackmessages[] = $this->renderer->box_start();
                 $feedbackmessages[] = $feedbacktext;
-                $feedbackmessages[] = $OUTPUT->box_end();
+                $feedbackmessages[] = $this->renderer->box_end();
             }
             $score = array($scorepercent, 100 - $scorepercent);
             $allscore = null;
@@ -3417,13 +3406,13 @@ class questionnaire {
                 $sectionheading = file_rewrite_pluginfile_urls($sectionheading, 'pluginfile.php',
                                 $this->context->id, 'mod_questionnaire', 'sectionheading', $imageid);
                 $sectionheading = format_text($sectionheading, 1, $formatoptions);
-                $feedbackmessages[] = $OUTPUT->box_start('reportQuestionTitle');
+                $feedbackmessages[] = $this->renderer->box_start('reportQuestionTitle');
                 $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML);
                 $feedback = $DB->get_record_select('questionnaire_feedback',
                                 'section_id = ? AND minscore <= ? AND ? < maxscore',
                                 array($feedbacksectionid, $scorepercent[$section], $scorepercent[$section]),
                                 'id,feedbacktext,feedbacktextformat');
-                $feedbackmessages[] = $OUTPUT->box_end();
+                $feedbackmessages[] = $this->renderer->box_end();
                 if (!empty($feedback->feedbacktext)) {
                     // Clean the text, ready for display.
                     $formatoptions = new stdClass();
@@ -3431,9 +3420,9 @@ class questionnaire {
                     $feedbacktext = file_rewrite_pluginfile_urls($feedback->feedbacktext, 'pluginfile.php',
                                     $this->context->id, 'mod_questionnaire', 'feedback', $feedback->id);
                     $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, $formatoptions);
-                    $feedbackmessages[] = $OUTPUT->box_start('feedbacktext');
+                    $feedbackmessages[] = $this->renderer->box_start('feedbacktext');
                     $feedbackmessages[] = $feedbacktext;
-                    $feedbackmessages[] = $OUTPUT->box_end();
+                    $feedbackmessages[] = $this->renderer->box_end();
                 }
             }
         }

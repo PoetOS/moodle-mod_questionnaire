@@ -326,7 +326,7 @@ if (!$nonrespondents) {
             // Userpicture and link to the profilepage.
             $profileurl = $CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id;
             $profilelink = '<strong><a href="'.$profileurl.'">'.fullname($user).'</a></strong>';
-            $data = array ($OUTPUT->user_picture($user, array('courseid' => $course->id)), $profilelink);
+            $data = array ($questionnaire->renderer->user_picture($user, array('courseid' => $course->id)), $profilelink);
             if (in_array('email', $tablecolumns)) {
                 $data[] = $user->email;
             }
