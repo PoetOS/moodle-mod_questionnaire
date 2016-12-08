@@ -86,7 +86,7 @@ class radio extends base {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
         foreach ($this->choices as $id => $choice) {
-            $radio=[];
+            $radio = [];
             $other = strpos($choice->content, '!other');
             if ($horizontal) {
                 $radio['horizontal'] = $horizontal;
@@ -161,7 +161,7 @@ class radio extends base {
 
         // CONTRIB-846.
         if ($this->required == 'n') {
-            $radio=[];
+            $radio = [];
             $id = '';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             if ($horizontal) {
