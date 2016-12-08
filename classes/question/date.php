@@ -36,13 +36,25 @@ class date extends base {
         return 'date';
     }
 
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        $output = '';
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return 'mod_questionnaire/question_date';
+    }
 
+    /**
+     * Return the context tags for the check question template.
+     * @param object $data
+     * @param string $descendantdata
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
+    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Date.
-        $datemess = html_writer::start_tag('div', array('class' => 'qn-datemsg'));
-        $datemess .= get_string('dateformatting', 'questionnaire');
-        $datemess .= html_writer::end_tag('div');
+        $questiontags = new \stdClass();
         if (!empty($data->{'q'.$this->id})) {
             $dateentered = $data->{'q'.$this->id};
             $setdate = questionnaire_check_date ($dateentered, false);
@@ -56,13 +68,10 @@ class date extends base {
                 $data->{'q'.$this->id} = $setdate;
             }
         }
-        $output .= $datemess;
-        $output .= html_writer::start_tag('div', array('class' => 'qn-date'));
-        $output .= '<input onkeypress="return event.keyCode != 13;" type="text" size="12" name="q'.$this->id.
-            '" maxlength="10" value="'.(isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').'" />';
-        $output .= html_writer::end_tag('div');
-
-        return $output;
+        $questiontags->qelements['choice']['onkeypress'] = 'return event.keyCode != 13;';
+        $questiontags->qelements['choice']['name'] = 'q'.$this->id;
+        $questiontags->qelements['choice']['value'] = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        return $questiontags;
     }
 
     protected function response_survey_display($data) {

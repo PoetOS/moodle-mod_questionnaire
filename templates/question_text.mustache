@@ -33,7 +33,9 @@
     },
     }}
 <!-- Begin HTML generated from question_text template. -->
-{{#text}}
-<input {{#text.onkeypress}}onkeypress="{{.}}"{{/text.onkeypress}} type="text" size="{{text.size}}" name="{{text.name}}" {{#text.maxlength}}maxlength="{{text.maxlength}}"{{/text.maxlength}} value="{{text.value}}" id="{{text.id}}" />
-{{/text}}
+{{#qelements}}
+{{#choice}}
+<input {{#choice.onkeypress}}onkeypress="{{.}}"{{/choice.onkeypress}} type="text" size="{{choice.size}}" name="{{choice.name}}" {{#choice.maxlength}}maxlength="{{choice.maxlength}}"{{/choice.maxlength}} value="{{choice.value}}" id="{{choice.id}}" />
+{{/choice}}
+{{/qelements}}
 <!-- End HTML generated from question_text template. -->

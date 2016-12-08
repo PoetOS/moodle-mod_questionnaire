@@ -114,12 +114,12 @@ class check extends base {
         }
 
         $choicetags = new \stdClass();
-        $choicetags->choices = [];
+        $choicetags->qelements = [];
         foreach ($this->choices as $id => $choice) {
 
             $other = strpos($choice->content, '!other');
+            $checkbox = [];
             if ($other !== 0) { // This is a normal check box.
-                $checkbox = [];
                 $contents = questionnaire_choice_values($choice->content);
                 $checked = false;
                 if (!empty($data) ) {
@@ -132,9 +132,7 @@ class check extends base {
                 if ($checked) {
                     $checkbox['checked'] = $checked;
                 }
-                $choicetags->choices[] = ['checkbox' => $checkbox];
             } else {             // Check box with associated !other text field.
-                $other = [];
                 // In case length field has been used to enter max number of choices, set it to 20.
                 $othertext = preg_replace(
                         array("/^!other=/", "/^!other/"),
@@ -149,17 +147,17 @@ class check extends base {
                 $name = 'q'.$this->id.'[]';
                 $value = 'other_'.$id;
 
-                $other['name'] = $name;
-                $other['oname'] = $cid;
-                $other['value'] = $value;
-                $other['ovalue'] = (!empty($data->$cid) ? stripslashes($data->$cid) : '');
-                $other['id'] = 'checkbox_'.$id;
-                $other['label'] = format_text($othertext.'', FORMAT_HTML);
+                $checkbox['name'] = $name;
+                $checkbox['oname'] = $cid;
+                $checkbox['value'] = $value;
+                $checkbox['ovalue'] = (!empty($data->$cid) ? stripslashes($data->$cid) : '');
+                $checkbox['id'] = 'checkbox_'.$id;
+                $checkbox['label'] = format_text($othertext.'', FORMAT_HTML);
                 if ($checked) {
-                    $other['checked'] = $checked;
+                    $checkbox['checked'] = $checked;
                 }
-                $choicetags->choices[] = ['other' => $other];
             }
+            $choicetags->qelements[] = ['choice' => $checkbox];
         }
         if ($otherempty) {
             $this->add_notification(get_string('otherempty', 'questionnaire'));

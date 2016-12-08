@@ -17,7 +17,7 @@
 {{!
     @template mod_questionnaire/complete
 
-    Template which defines a check type question survey display.
+    Template which defines a date type question survey display.
 
     Classes required for JS:
     * /mod/questionnaire/module.js
@@ -32,13 +32,13 @@
     {
     },
     }}
-<!-- Begin HTML generated from question_check template. -->
+<!-- Begin HTML generated from question_date template. -->
 {{#qelements}}
 {{#choice}}
-<input id="{{choice.id}}" value="{{choice.value}}" name="{{choice.name}}" type="checkbox" {{#choice.checked}}checked="checked"{{/choice.checked}} />
-<label for="{{choice.id}}">{{{choice.label}}}</label>
-{{#choice.oname}}<input size="25" name="{{choice.oname}}" onclick="other_check(name)" value="{{choice.ovalue}}" type="text" />{{/choice.oname}}
-<br />
+<div class="qn-datemsg">{{# str }}dateformatting, mod_questionnaire{{/ str}}</div>
+<div class="qn-date">
+    <input {{#choice.onkeypress}}onkeypress="{{.}}"{{/choice.onkeypress}} type="text" size="12" name="{{choice.name}}" maxlength="10" value="{{choice.value}}" />
+</div>
 {{/choice}}
 {{/qelements}}
-<!-- End HTML generated from question_check template. -->
+<!-- End HTML generated from question_date template. -->

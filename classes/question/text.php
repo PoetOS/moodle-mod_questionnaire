@@ -64,14 +64,14 @@ class text extends base {
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Text Box.
         $questiontags = new \stdClass();
-        $questiontags->text['onkeypress'] = 'return event.keyCode != 13;';
-        $questiontags->text['size'] = $this->length;
-        $questiontags->text['name'] = 'q'.$this->id;
+        $questiontags->qelements['choice']['onkeypress'] = 'return event.keyCode != 13;';
+        $questiontags->qelements['choice']['size'] = $this->length;
+        $questiontags->qelements['choice']['name'] = 'q'.$this->id;
         if ($this->precise > 0) {
-            $questiontags->text['maxlength'] = $this->precise;
+            $questiontags->qelements['choice']['maxlength'] = $this->precise;
         }
-        $questiontags->text['value'] = (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '');
-        $questiontags->text['id'] = $this->type . $this->id;
+        $questiontags->qelements['choice']['value'] = (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '');
+        $questiontags->qelements['choice']['id'] = $this->type . $this->id;
         return $questiontags;
     }
 

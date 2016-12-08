@@ -42,6 +42,22 @@ class radio extends base {
         return true;
     }
 
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return 'mod_questionnaire/question_radio';
+    }
+
+    /**
+     * Return the context tags for the check question template.
+     * @param object $data
+     * @param string $descendantdata
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Radio buttons
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
@@ -63,47 +79,50 @@ class radio extends base {
             $descendants = implode(',', $descendantsdata['descendants']);
             foreach ($descendantsdata['choices'] as $key => $choice) {
                 $choices[$key] = implode(',', $choice);
-                $onclickdepend[$key] = ' onclick="depend(\''.$descendants.'\', \''.$choices[$key].'\')"';
+                $onclickdepend[$key] = 'depend(\''.$descendants.'\', \''.$choices[$key].'\')';
             }
         } // End dependents.
 
+        $choicetags = new \stdClass();
+        $choicetags->qelements = [];
         foreach ($this->choices as $id => $choice) {
+            $radio=[];
             $other = strpos($choice->content, '!other');
             if ($horizontal) {
-                $output .= ' <span style="white-space:nowrap;">';
+                $radio['horizontal'] = $horizontal;
             }
 
             // To display or hide dependent questions on Preview page.
-            $onclick = '';
             if ($onclickdepend) {
                 if (isset($onclickdepend[$id])) {
-                    $onclick = $onclickdepend[$id];
+                    $radio['onclick'] = $onclickdepend[$id];
                 } else {
                     // In case this dependchoice is not used by any child question.
-                    $onclick = ' onclick="depend(\''.$descendants.'\', \'\')"';
+                    $radio['onclick'] = 'depend(\''.$descendants.'\', \'\')';
                 }
 
             } else {
-                $onclick = ' onclick="other_check_empty(name, value)"';
+                $radio['onclick'] = 'other_check_empty(name, value)';
             } // End dependents.
 
             if ($other !== 0) { // This is a normal radio button.
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
-                $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="'.$id.'"'.$onclick;
+                $radio['name'] = 'q'.$this->id;
+                $radio['id'] = $htmlid;
+                $radio['value'] = $id;
                 if ($id == $checked) {
-                    $output .= ' checked="checked"';
+                    $radio['checked'] = true;
                     $ischecked = true;
                 }
                 $value = '';
                 if ($blankquestionnaire) {
-                    $output .= ' disabled="disabled"';
+                    $radio['disabled'] = true;
                     $value = ' ('.$choice->value.') ';
                 }
                 $content = $choice->content;
                 $contents = questionnaire_choice_values($choice->content);
-                $output .= ' /><label for="'.$htmlid.'" >'.$value.
-                    format_text($contents->text, FORMAT_HTML).$contents->image.'</label>';
+                $radio['label'] = $value.format_text($contents->text, FORMAT_HTML).$contents->image;
             } else {             // Radio button with associated !other text field.
                 $othertext = preg_replace(
                         array("/^!other=/", "/^!other/"),
@@ -117,68 +136,64 @@ class radio extends base {
                 }
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
-                $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="other_'.$id.'"'.$onclick;
+                $radio['name'] = 'q'.$this->id;
+                $radio['id'] = $htmlid;
+                $radio['value'] = 'other_'.$id;
                 if (($id == $checked) || !empty($data->$cid)) {
-                    $output .= ' checked="checked"';
+                    $radio['checked'] = true;
                     $ischecked = true;
                     if (!$data->$cid) {
                         $otherempty = true;
                     }
                 }
-                $output .= ' /><label for="'.$htmlid.'" >'.format_text($othertext, FORMAT_HTML).'</label>';
+                $radio['label'] = format_text($othertext, FORMAT_HTML);
 
-                $choices['other_'.$cid] = $othertext;
                 $output .= '<input type="text" size="25" name="'.$cid.'" id="'.$htmlid.'-other" onclick="other_check(name)"';
+                $radio['oname'] = $cid;
+                $radio['oid'] = $htmlid.'-other';
                 if (isset($data->$cid)) {
-                    $output .= ' value="'.stripslashes($data->$cid) .'"';
+                    $radio['ovalue'] = stripslashes($data->$cid);
                 }
-                $output .= ' />';
-                $output .= '<label for="'.$htmlid.'-other" class="accesshide">Text for '.
-                    format_text($othertext, FORMAT_HTML).'</label>&nbsp;';
+                $radio['olabel'] = 'Text for '.format_text($othertext, FORMAT_HTML);
             }
-            if ($horizontal) {
-                // Added a zero-width space character to make MSIE happy!
-                $output .= '</span>&#8203;';
-            } else {
-                $output .= '<br />';
-            }
+            $choicetags->qelements[] = ['choice' => $radio];
         }
 
         // CONTRIB-846.
         if ($this->required == 'n') {
+            $radio=[];
             $id = '';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             if ($horizontal) {
-                $output .= ' <span style="white-space:nowrap;">';
+                $radio['horizontal'] = $horizontal;
             }
 
             // To display or hide dependent questions on Preview page.
             $onclick = '';
             if ($onclickdepend) {
-                $onclick = ' onclick="depend(\''.$descendants.'\', \'\')"';
+                $onclick = 'depend(\''.$descendants.'\', \'\')';
             } else {
-                $onclick = ' onclick="other_check_empty(name, value)"';
+                $onclick = 'other_check_empty(name, value)';
             } // End dependents.
-            $output .= '<input name="q'.$this->id.'" id="'.$htmlid.'" type="radio" value="'.$id.'"'.$onclick;
+            $radio['name'] = 'q'.$this->id;
+            $radio['id'] = $htmlid;
+            $radio['value'] = $id;
+            $radio['onclick'] = $onclick;
+
             if (!$ischecked && !$blankquestionnaire) {
-                $output .= ' checked="checked"';
+                $radio['checked'] = true;
             }
             $content = get_string('noanswer', 'questionnaire');
-            $output .= ' /><label for="'.$htmlid.'" >'.
-                format_text($content, FORMAT_HTML).'</label>';
+            $radio['label'] = format_text($content, FORMAT_HTML);
 
-            if ($horizontal) {
-                $output .= '</span>&nbsp;&nbsp;';
-            } else {
-                $output .= '<br />';
-            }
+            $choicetags->qelements[] = ['choice' => $radio];
         }
         // End CONTRIB-846.
 
         if ($otherempty) {
             $this->add_notification(get_string('otherempty', 'questionnaire'));
         }
-        return $output;
+        return $choicetags;
     }
 
     protected function response_survey_display($data) {

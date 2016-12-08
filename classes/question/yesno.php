@@ -91,7 +91,7 @@ class yesno extends base {
         $ischecked = false;
 
         $choicetags = new \stdClass();
-        $choicetags->choices = [];
+        $choicetags->qelements = [];
 
         foreach ($options as $value => $label) {
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
@@ -110,8 +110,7 @@ class yesno extends base {
             if (isset($onclickdepend[$value])) {
                 $option['onclick'] = $onclickdepend[$value];
             }
-            $element = ($value === 'y' ? 'yes' : 'no');
-            $choicetags->choices[] = [$element => $option];
+            $choicetags->qelements[] = ['choice' => $option];
         }
         // CONTRIB-846.
         if ($this->required == 'n') {
@@ -129,7 +128,7 @@ class yesno extends base {
             if ($onclickdepend) {
                 $option['onclick'] = 'depend(\''.$descendants.'\', \'\')';
             }
-            $choicetags->choices[] = ['noanswer' => $option];
+            $choicetags->qelements[] = ['choice' => $option];
         }
         // End CONTRIB-846.
 

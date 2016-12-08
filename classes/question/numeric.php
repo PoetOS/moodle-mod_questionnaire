@@ -44,10 +44,25 @@ class numeric extends base {
         return 'numeric';
     }
 
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        $output = '';
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return 'mod_questionnaire/question_numeric';
+    }
 
+    /**
+     * Return the context tags for the check question template.
+     * @param object $data
+     * @param string $descendantdata
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
+    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Numeric.
+        $questiontags = new \stdClass();
         $precision = $this->precise;
         $a = '';
         if (isset($data->{'q'.$this->id})) {
@@ -81,12 +96,13 @@ class numeric extends base {
             }
         }
 
-        $output .= '<input onkeypress="return event.keyCode != 13;" type="text" size="'.
-            $this->length.'" name="q'.$this->id.'" maxlength="'.$this->length.
-             '" value="'.(isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').
-            '" id="' . $this->type . $this->id . '" />';
-
-        return $output;
+        $questiontags->qelements['choice']['onkeypress'] = 'return event.keyCode != 13;';
+        $questiontags->qelements['choice']['size'] = $this->length;
+        $questiontags->qelements['choice']['name'] = 'q'.$this->id;
+        $questiontags->qelements['choice']['maxlength'] = $this->length;
+        $questiontags->qelements['choice']['value'] = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $questiontags->qelements['choice']['id'] = $this->type . $this->id;
+        return $questiontags;
     }
 
     protected function response_survey_display($data) {

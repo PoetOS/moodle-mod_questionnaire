@@ -33,18 +33,10 @@
     },
     }}
 <!-- Begin HTML generated from question_yesno template. -->
-{{#choices}}
-{{#yes}}
-<input id="{{yes.id}}" value="{{yes.value}}" name="{{yes.name}}" type="radio" {{#yes.checked}}checked="checked"{{/yes.checked}} {{#yes.disabled}}disabled="disabled"{{/yes.disabled}} {{#yes.onclick}}onclick="{{yes.onclick}}"{{/yes.onclick}}/>
-<label for="{{yes.id}}">{{{yes.label}}}</label>
-{{/yes}}
-{{#no}}
-<input id="{{no.id}}" value="{{no.value}}" name="{{no.name}}" type="radio" {{#no.checked}}checked="checked"{{/no.checked}} {{#no.disabled}}disabled="disabled"{{/no.disabled}} {{#no.onclick}}onclick="{{no.onclick}}"{{/no.onclick}}/>
-<label for="{{no.id}}">{{{no.label}}}</label>
-{{/no}}
-{{#noanswer}}
-<input id="{{noanswer.id}}" value="{{noanswer.value}}" name="{{noanswer.name}}" type="radio" {{#noanswer.checked}}checked="checked"{{/noanswer.checked}} {{#noanswer.disabled}}disabled="disabled"{{/noanswer.disabled}} {{#noanswer.onclick}}onclick="{{noanswer.onclick}}"{{/noanswer.onclick}}/>
-<label for="{{noanswer.id}}">{{{noanswer.label}}}</label>
-{{/noanswer}}
-{{/choices}}
+{{#qelements}}
+{{#choice}}
+<input id="{{choice.id}}" value="{{choice.value}}" name="{{choice.name}}" type="radio" {{#choice.checked}}checked="checked"{{/choice.checked}} {{#choice.disabled}}disabled="disabled"{{/choice.disabled}} {{#choice.onclick}}onclick="{{choice.onclick}}"{{/choice.onclick}}/>
+<label for="{{choice.id}}">{{{choice.label}}}</label>
+{{/choice}}
+{{/qelements}}
 <!-- End HTML generated from question_yesno template. -->

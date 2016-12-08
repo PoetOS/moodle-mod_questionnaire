@@ -43,11 +43,30 @@ class drop extends base {
         return true;
     }
 
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return 'mod_questionnaire/question_drop';
+    }
+
+    /**
+     * Return the context tags for the check question template.
+     * @param object $data
+     * @param string $descendantdata
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Drop.
         $output = '';
-        $options = array();
+        $options = [];
 
+        $choicetags = new \stdClass();
+        $choicetags->qelements = [];
+        $selected = isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : false;
         // To display or hide dependent questions on Preview page.
         if ($descendantsdata) {
             $qdropid = 'q'.$this->id;
@@ -55,6 +74,7 @@ class drop extends base {
             foreach ($descendantsdata['choices'] as $key => $choice) {
                 $choices[$key] = implode(',', $choice);
             }
+            $options[] = ['value' => '', 'label' => get_string('choosedots')];
             foreach ($this->choices as $key => $choice) {
                 if ($pos = strpos($choice->content, '=')) {
                     $choice->content = substr($choice->content, $pos + 1);
@@ -64,25 +84,42 @@ class drop extends base {
                 } else {
                     $value = $key;
                 }
-                $options[$value] = $choice->content;
+                $option = [];
+                $option['value'] = $value;
+                $option['label'] = $choice->content;
+                if (($selected !== false) && ($value == $selected)) {
+                    $option['selected'] = true;
+                }
+                $options[] = $option;
             }
             $dependdrop = "dependdrop('$qdropid', '$descendants')";
-            $output .= html_writer::select($options, $qdropid, (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''),
-                            array('' => 'choosedots'), array('id' => $qdropid, 'onchange' => $dependdrop));
+            $choicetags->qelements['choice']['name'] = $qdropid;
+            $choicetags->qelements['choice']['id'] = $qdropid;
+            $choicetags->qelements['choice']['class'] = 'select custom-select menu'.$qdropid;
+            $choicetags->qelements['choice']['onchange'] = $dependdrop;
+            $choicetags->qelements['choice']['options'] = $options;
             // End dependents.
         } else {
+            $options[] = ['value' => '', 'label' => get_string('choosedots')];
             foreach ($this->choices as $key => $choice) {
                 if ($pos = strpos($choice->content, '=')) {
                     $choice->content = substr($choice->content, $pos + 1);
                 }
-                $options[$key] = $choice->content;
+                $option = [];
+                $option['value'] = $key;
+                $option['label'] = $choice->content;
+                if (($selected !== false) && ($key == $selected)) {
+                    $option['selected'] = true;
+                }
+                $options[] = $option;
             }
-            $output .= html_writer::select($options, 'q'.$this->id,
-                (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''),
-                array('' => 'choosedots'), array('id' => $this->type . $this->id));
+            $choicetags->qelements['choice']['name'] = 'q'.$this->id;
+            $choicetags->qelements['choice']['id'] = $this->type . $this->id;
+            $choicetags->qelements['choice']['class'] = 'select custom-select menu q'.$this->id;
+            $choicetags->qelements['choice']['options'] = $options;
         }
 
-        return $output;
+        return $choicetags;
     }
 
     protected function response_survey_display($data) {
