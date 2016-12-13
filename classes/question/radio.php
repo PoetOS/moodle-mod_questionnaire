@@ -63,7 +63,6 @@ class radio extends base {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $otherempty = false;
-        $output = '';
         // Find out which radio button is checked (if any); yields choice ID.
         if (isset($data->{'q'.$this->id})) {
             $checked = $data->{'q'.$this->id};
@@ -147,8 +146,6 @@ class radio extends base {
                     }
                 }
                 $radio['label'] = format_text($othertext, FORMAT_HTML);
-
-                $output .= '<input type="text" size="25" name="'.$cid.'" id="'.$htmlid.'-other" onclick="other_check(name)"';
                 $radio['oname'] = $cid;
                 $radio['oid'] = $htmlid.'-other';
                 if (isset($data->$cid)) {

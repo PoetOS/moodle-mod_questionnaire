@@ -1,0 +1,62 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_questionnaire/complete
+
+    Template which defines a rate type question survey display.
+
+    Classes required for JS:
+    * /mod/questionnaire/module.js
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * respondentlink - array: HTML list of all respondent links.
+
+    Example context (json):
+    {
+    },
+    }}
+<!-- Begin HTML generated from question_rate template. -->
+{{#qelements}}
+<table style="width:{{qelements.twidth}}">
+  <tbody>
+    {{#qelements.headerrow}}
+    <tr>
+      <td style="width:{{col1width}}"></td>
+      {{#colnya}}<td title="nya"></td>{{/colnya}}
+      {{#cols}}
+      <td style="width:{{colwidth}}; text-align:center;" class="smalltext">{{{coltext}}}</td>
+      {{/cols}}
+    {{/qelements.headerrow}}
+    {{#qelements.rows}}
+    <tr class="raterow">
+      {{#cols}}
+      <td {{#colstyle}}style="{{.}}"{{/colstyle}}{{#colclass}} class="{{.}}"{{/colclass}}{{#coltitle}} title="{{.}}"{{/coltitle}}>
+        {{#coltext}}{{{.}}}{{/coltext}}
+        {{#colhiddentext}}<span class="accesshide">{{{.}}}</span>{{/colhiddentext}}
+        {{#colinput}}<input type="radio" name="{{name}}" id="{{id}}"{{#checked}} checked="checked"{{/checked}}{{#disabled}} disabled="disabled"{{/disabled}}{{#onclick}} onclick="{{.}}"{{/onclick}}>
+        {{#label}}<label for="{{id}}" class="accesshide">{{{.}}}</label>{{/label}}{{/colinput}}
+      </td>
+      {{/cols}}
+    </tr>
+    {{/qelements.rows}}
+  </tbody>
+</table>
+{{/qelements}}
+<!-- End HTML generated from question_rate template. -->
