@@ -46,4 +46,6 @@ script:
 
 after_script:
 # See: https://github.com/moodlerooms/moodle-plugin-ci/issues/32
+  - killall -9 php
   - killall -9 java
+  - killall -9 Xvfb
