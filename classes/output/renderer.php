@@ -312,13 +312,16 @@ class renderer extends \plugin_renderer_base {
      * Helper method dealing with the fact we can not just fetch the output of flexible_table
      *
      * @param flexible_table $table
+     * @param boolean $buffering True if already buffering.
      * @return string HTML
      */
-    public function flexible_table(\flexible_table $table) {
+    public function flexible_table(\flexible_table $table, $buffering = false) {
 
         $o = '';
-        ob_start();
-        $table->print_html();
+        if (!$buffering) {
+            ob_start();
+        }
+        $table->finish_output();
         $o = ob_get_contents();
         ob_end_clean();
 

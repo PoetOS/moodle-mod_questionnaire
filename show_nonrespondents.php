@@ -148,7 +148,8 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
     if (is_array($messageuser)) {
         foreach ($messageuser as $userid) {
             $senduser = $DB->get_record('user', array('id' => $userid));
-            $eventdata = new stdClass();
+            $eventdata = new \core\message\message();
+            $eventdata->courseid         = $course->id;
             $eventdata->name             = 'message';
             $eventdata->component        = 'mod_questionnaire';
             $eventdata->userfrom         = $USER;
@@ -249,7 +250,7 @@ if ($fullname) {
                 ));
 
     $table->no_sorting('status');
-        $table->no_sorting('select');
+    $table->no_sorting('select');
 
     $table->setup();
 
@@ -290,7 +291,7 @@ $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid, $s
 // Print the list of students.
 
 $questionnaire->page->add_to_page('formarea', (isset($groupselect) ? $groupselect : ''));
-$questionnaire->page->add_to_page('formarea', '<div class="clearer"></div>');
+$questionnaire->page->add_to_page('formarea', html_writer::tag('div', ['class' => 'clearer']));
 $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->box_start('left-align'));
 
 $countries = get_string_manager()->get_list_of_countries();
@@ -318,9 +319,14 @@ if (!$nonrespondents) {
     if (!$fullname) {
         $questionnaire->page->add_to_page('formarea', ' ['.get_string('anonymous', 'questionnaire').']');
     }
-    $questionnaire->page->add_to_page('formarea',
-        '<form class="mform" action="show_nonrespondents.php" method="post" id="questionnaire_sendmessageform">');
+    $questionnaire->page->add_to_page('formarea', html_writer::start_tag('form',
+        ['class' => 'mform', 'action' => 'show_nonrespondents.php', 'method' => 'post', 'id' => 'questionnaire_sendmessageform']));
+
+    $buffering = false;
     if ($fullname) {
+        // Since flexible tables only writes out directly, we need to start buffering in case anything gets written...
+        ob_start();
+        $buffering = true;
         foreach ($nonrespondents as $nonrespondent) {
             $user = $DB->get_record('user', array('id' => $nonrespondent));
             // Userpicture and link to the profilepage.
@@ -364,7 +370,9 @@ if (!$nonrespondents) {
         }
 
         if (isset($table)) {
-            $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->flexible_table($table));
+            $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->flexible_table($table, $buffering));
+        } else if ($buffering) {
+            ob_end_clean();
         }
         $allurl = new moodle_url($baseurl);
         if ($showall) {
@@ -482,7 +490,8 @@ if (!$nonrespondents) {
         $questionnaire->page->add_to_page('formarea', '<input type="hidden" name="id" value="'.$cm->id.'" />');
 
         $questionnaire->page->add_to_page('formarea', '</fieldset>');
-        $questionnaire->page->add_to_page('formarea', '</form>');
+
+        $questionnaire->page->add_to_page('formarea', html_writer::end_tag('form'));
 
         // Include the needed js.
         $module = array('name' => 'mod_questionnaire', 'fullpath' => '/mod/questionnaire/module.js');

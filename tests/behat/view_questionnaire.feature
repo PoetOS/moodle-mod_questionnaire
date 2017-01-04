@@ -69,8 +69,6 @@ Feature: Questionnaires can be public, private or template
       | Question Text | Select one or two choices only |
       | Possible answers | One,Two,Three,Four |
 # Neither of the following steps work in 3.2, since the admin options are not available on any page but "view".
-#    And I navigate to "Advanced settings" node in "Questionnaire administration"
-#    And I navigate to "Advanced settings" in current page administration
     And I follow "Advanced settings"
     And I should see "Content options"
     And I set the field "id_realm" to "public"
