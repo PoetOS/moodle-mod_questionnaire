@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/complete
+    @template mod_questionnaire/question_date
 
     Template which defines a date type question survey display.
 
@@ -26,11 +26,17 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-    },
+        "qelements": {
+            "choice": {
+                "onkeypress": "dosomething()",
+                "name": "choiceid1",
+                "value": "10/10/2010"
+            }
+        }
+    }
     }}
 <!-- Begin HTML generated from question_date template. -->
 {{#qelements}}

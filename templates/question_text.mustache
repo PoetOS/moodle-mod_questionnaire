@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/complete
+    @template mod_questionnaire/question_text
 
     Template which defines a text type question survey display.
 
@@ -26,11 +26,20 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-    },
+        "qelements": {
+            "choice": {
+                "onkeypress": "dosomething()",
+                "size": 30,
+                "name": "choiceid1",
+                "maxlength": 50,
+                "value": "Answer text",
+                "id": "choiceid1"
+            }
+        }
+    }
     }}
 <!-- Begin HTML generated from question_text template. -->
 {{#qelements}}

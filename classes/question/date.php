@@ -68,9 +68,12 @@ class date extends base {
                 $data->{'q'.$this->id} = $setdate;
             }
         }
-        $questiontags->qelements['choice']['onkeypress'] = 'return event.keyCode != 13;';
-        $questiontags->qelements['choice']['name'] = 'q'.$this->id;
-        $questiontags->qelements['choice']['value'] = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $choice = new \stdClass();
+        $choice->onkeypress = 'return event.keyCode != 13;';
+        $choice->name = 'q'.$this->id;
+        $choice->value = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $questiontags->qelements = new \stdClass();
+        $questiontags->qelements->choice = $choice;
         return $questiontags;
     }
 

@@ -118,19 +118,19 @@ class check extends base {
         foreach ($this->choices as $id => $choice) {
 
             $other = strpos($choice->content, '!other');
-            $checkbox = [];
+            $checkbox = new \stdClass();
             if ($other !== 0) { // This is a normal check box.
                 $contents = questionnaire_choice_values($choice->content);
                 $checked = false;
                 if (!empty($data) ) {
                     $checked = in_array($id, $data->{'q'.$this->id});
                 }
-                $checkbox['name'] = 'q'.$this->id.'[]';
-                $checkbox['value'] = $id;
-                $checkbox['id'] = 'checkbox_'.$id;
-                $checkbox['label'] = format_text($contents->text, FORMAT_HTML).$contents->image;
+                $checkbox->name = 'q'.$this->id.'[]';
+                $checkbox->value = $id;
+                $checkbox->id = 'checkbox_'.$id;
+                $checkbox->label = format_text($contents->text, FORMAT_HTML).$contents->image;
                 if ($checked) {
-                    $checkbox['checked'] = $checked;
+                    $checkbox->checked = $checked;
                 }
             } else {             // Check box with associated !other text field.
                 // In case length field has been used to enter max number of choices, set it to 20.
@@ -147,17 +147,17 @@ class check extends base {
                 $name = 'q'.$this->id.'[]';
                 $value = 'other_'.$id;
 
-                $checkbox['name'] = $name;
-                $checkbox['oname'] = $cid;
-                $checkbox['value'] = $value;
-                $checkbox['ovalue'] = (!empty($data->$cid) ? stripslashes($data->$cid) : '');
-                $checkbox['id'] = 'checkbox_'.$id;
-                $checkbox['label'] = format_text($othertext.'', FORMAT_HTML);
+                $checkbox->name = $name;
+                $checkbox->oname = $cid;
+                $checkbox->value = $value;
+                $checkbox->ovalue = (!empty($data->$cid) ? stripslashes($data->$cid) : '');
+                $checkbox->id = 'checkbox_'.$id;
+                $checkbox->label = format_text($othertext.'', FORMAT_HTML);
                 if ($checked) {
-                    $checkbox['checked'] = $checked;
+                    $checkbox->checked = $checked;
                 }
             }
-            $choicetags->qelements[] = ['choice' => $checkbox];
+            $choicetags->qelements[] = (object)['choice' => $checkbox];
         }
         if ($otherempty) {
             $this->add_notification(get_string('otherempty', 'questionnaire'));

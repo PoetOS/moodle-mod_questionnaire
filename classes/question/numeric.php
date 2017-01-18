@@ -31,7 +31,7 @@ class numeric extends base {
      * Constructor. Use to set any default properties.
      *
      */
-    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+    public function __construct($id = 0, $question = null, $context = null, $params = []) {
         $this->length = 10;
         return parent::__construct($id, $question, $context, $params);
     }
@@ -96,12 +96,15 @@ class numeric extends base {
             }
         }
 
-        $questiontags->qelements['choice']['onkeypress'] = 'return event.keyCode != 13;';
-        $questiontags->qelements['choice']['size'] = $this->length;
-        $questiontags->qelements['choice']['name'] = 'q'.$this->id;
-        $questiontags->qelements['choice']['maxlength'] = $this->length;
-        $questiontags->qelements['choice']['value'] = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
-        $questiontags->qelements['choice']['id'] = $this->type . $this->id;
+        $choice = new \stdClass();
+        $choice->onkeypress = 'return event.keyCode != 13;';
+        $choice->size = $this->length;
+        $choice->name = 'q'.$this->id;
+        $choice->maxlength = $this->length;
+        $choice->value = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $choice->id = $this->type . $this->id;
+        $questiontags->qelements = new \stdClass();
+        $questiontags->qelements->choice = $choice;
         return $questiontags;
     }
 

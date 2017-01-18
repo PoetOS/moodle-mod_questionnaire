@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/myreportpage
+    @template mod_questionnaire/navbaruser
 
     Template which defines a questionnaire user responses navigation bar for the report page.
 
@@ -34,24 +34,25 @@
 
     Example context (json):
     {
-        "intro": [
-            {
-                "content": "Intro1",
-            },
-            {
-                "content": "Intro2",
-            },
-        ]
-    },
-    {
-        "message": [
-            {
-                "content": "Message 1",
-            },
-            {
-                "content": "Message 2",
-            },
-        ]
+        "previous": {
+            "url": "http://somelink.com",
+            "title": "Link title"
+        },
+        "prevrespnumbers": {
+            "url": "http://somelink.com",
+            "title": "Link title",
+            "respnumber": "3"
+        },
+        "currrespnumber": "4",
+        "nextrespnumbers": {
+            "url": "http://somelink.com",
+            "title": "Link title",
+            "respnumber": "5"
+        },
+        "next": {
+            "url": "http://somelink.com",
+            "title": "Link title"
+        }
     }
     }}
 <div class="box respondentsnavbar">

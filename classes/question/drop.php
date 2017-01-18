@@ -65,7 +65,7 @@ class drop extends base {
         $options = [];
 
         $choicetags = new \stdClass();
-        $choicetags->qelements = [];
+        $choicetags->qelements = new \stdClass();
         $selected = isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : false;
         // To display or hide dependent questions on Preview page.
         if ($descendantsdata) {
@@ -74,7 +74,7 @@ class drop extends base {
             foreach ($descendantsdata['choices'] as $key => $choice) {
                 $choices[$key] = implode(',', $choice);
             }
-            $options[] = ['value' => '', 'label' => get_string('choosedots')];
+            $options[] = (object)['value' => '', 'label' => get_string('choosedots')];
             foreach ($this->choices as $key => $choice) {
                 if ($pos = strpos($choice->content, '=')) {
                     $choice->content = substr($choice->content, $pos + 1);
@@ -84,39 +84,43 @@ class drop extends base {
                 } else {
                     $value = $key;
                 }
-                $option = [];
-                $option['value'] = $value;
-                $option['label'] = $choice->content;
+                $option = new \stdClass();
+                $option->value = $value;
+                $option->label = $choice->content;
                 if (($selected !== false) && ($value == $selected)) {
-                    $option['selected'] = true;
+                    $option->selected = true;
                 }
                 $options[] = $option;
             }
             $dependdrop = "dependdrop('$qdropid', '$descendants')";
-            $choicetags->qelements['choice']['name'] = $qdropid;
-            $choicetags->qelements['choice']['id'] = $qdropid;
-            $choicetags->qelements['choice']['class'] = 'select custom-select menu'.$qdropid;
-            $choicetags->qelements['choice']['onchange'] = $dependdrop;
-            $choicetags->qelements['choice']['options'] = $options;
+            $chobj = new \stdClass();
+            $chobj->name = $qdropid;
+            $chobj->id = $qdropid;
+            $chobj->class = 'select custom-select menu'.$qdropid;
+            $chobj->onchange = $dependdrop;
+            $chobj->options = $options;
+            $choicetags->qelements->choice = $chobj;
             // End dependents.
         } else {
-            $options[] = ['value' => '', 'label' => get_string('choosedots')];
+            $options[] = (object)['value' => '', 'label' => get_string('choosedots')];
             foreach ($this->choices as $key => $choice) {
                 if ($pos = strpos($choice->content, '=')) {
                     $choice->content = substr($choice->content, $pos + 1);
                 }
-                $option = [];
-                $option['value'] = $key;
-                $option['label'] = $choice->content;
+                $option = new \stdClass();
+                $option->value = $key;
+                $option->label = $choice->content;
                 if (($selected !== false) && ($key == $selected)) {
-                    $option['selected'] = true;
+                    $option->selected = true;
                 }
                 $options[] = $option;
             }
-            $choicetags->qelements['choice']['name'] = 'q'.$this->id;
-            $choicetags->qelements['choice']['id'] = $this->type . $this->id;
-            $choicetags->qelements['choice']['class'] = 'select custom-select menu q'.$this->id;
-            $choicetags->qelements['choice']['options'] = $options;
+            $chobj = new \stdClass();
+            $chobj->name = 'q'.$this->id;
+            $chobj->id = $this->type . $this->id;
+            $chobj->class = 'select custom-select menu q'.$this->id;
+            $chobj->options = $options;
+            $choicetags->qelements->choice = $chobj;
         }
 
         return $choicetags;
@@ -127,7 +131,7 @@ class drop extends base {
 
         $output = '';
 
-        $options = array();
+        $options = [];
         foreach ($this->choices as $id => $choice) {
             $contents = questionnaire_choice_values($choice->content);
             $options[$id] = format_text($contents->text, FORMAT_HTML);

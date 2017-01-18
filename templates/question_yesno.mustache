@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/complete
+    @template mod_questionnaire/question_yesno
 
     Template which defines a yes/no type question survey display.
 
@@ -26,11 +26,32 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-    },
+        "qelements": {
+            "choice": [
+                {
+                    "id": "choice1",
+                    "value": "y",
+                    "name": "q23",
+                    "checked": 1,
+                    "disabled": "",
+                    "onclick": "dosomething()",
+                    "label": "Yes"
+                },
+                {
+                    "id": "choice1",
+                    "value": "n",
+                    "name": "q23",
+                    "checked": 0,
+                    "disabled": "",
+                    "onclick": "dosomething()",
+                    "label": "No"
+                }
+            ]
+        }
+    }
     }}
 <!-- Begin HTML generated from question_yesno template. -->
 {{#qelements}}

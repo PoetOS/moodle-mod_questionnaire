@@ -73,7 +73,7 @@ class radio extends base {
         $ischecked = false;
 
         // To display or hide dependent questions on Preview page.
-        $onclickdepend = array();
+        $onclickdepend = [];
         if ($descendantsdata) {
             $descendants = implode(',', $descendantsdata['descendants']);
             foreach ($descendantsdata['choices'] as $key => $choice) {
@@ -85,48 +85,46 @@ class radio extends base {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
         foreach ($this->choices as $id => $choice) {
-            $radio = [];
+            $radio = new \stdClass();
             $other = strpos($choice->content, '!other');
             if ($horizontal) {
-                $radio['horizontal'] = $horizontal;
+                $radio->horizontal = $horizontal;
             }
 
             // To display or hide dependent questions on Preview page.
             if ($onclickdepend) {
                 if (isset($onclickdepend[$id])) {
-                    $radio['onclick'] = $onclickdepend[$id];
+                    $radio->onclick = $onclickdepend[$id];
                 } else {
                     // In case this dependchoice is not used by any child question.
-                    $radio['onclick'] = 'depend(\''.$descendants.'\', \'\')';
+                    $radio->onclick = 'depend(\''.$descendants.'\', \'\')';
                 }
 
             } else {
-                $radio['onclick'] = 'other_check_empty(name, value)';
+                $radio->onclick = 'other_check_empty(name, value)';
             } // End dependents.
 
             if ($other !== 0) { // This is a normal radio button.
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
-                $radio['name'] = 'q'.$this->id;
-                $radio['id'] = $htmlid;
-                $radio['value'] = $id;
+                $radio->name = 'q'.$this->id;
+                $radio->id = $htmlid;
+                $radio->value = $id;
                 if ($id == $checked) {
-                    $radio['checked'] = true;
+                    $radio->checked = true;
                     $ischecked = true;
                 }
                 $value = '';
                 if ($blankquestionnaire) {
-                    $radio['disabled'] = true;
+                    $radio->disabled = true;
                     $value = ' ('.$choice->value.') ';
                 }
                 $content = $choice->content;
                 $contents = questionnaire_choice_values($choice->content);
-                $radio['label'] = $value.format_text($contents->text, FORMAT_HTML).$contents->image;
+                $radio->label = $value.format_text($contents->text, FORMAT_HTML).$contents->image;
             } else {             // Radio button with associated !other text field.
-                $othertext = preg_replace(
-                        array("/^!other=/", "/^!other/"),
-                        array('', get_string('other', 'questionnaire')),
-                        $choice->content);
+                $othertext = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')],
+                    $choice->content);
                 $cid = 'q'.$this->id.'_'.$id;
                 $otherempty = false;
                 $otherid = 'q'.$this->id.'_'.$checked;
@@ -135,34 +133,34 @@ class radio extends base {
                 }
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
-                $radio['name'] = 'q'.$this->id;
-                $radio['id'] = $htmlid;
-                $radio['value'] = 'other_'.$id;
+                $radio->name = 'q'.$this->id;
+                $radio->id = $htmlid;
+                $radio->value = 'other_'.$id;
                 if (($id == $checked) || !empty($data->$cid)) {
-                    $radio['checked'] = true;
+                    $radio->checked = true;
                     $ischecked = true;
                     if (!$data->$cid) {
                         $otherempty = true;
                     }
                 }
-                $radio['label'] = format_text($othertext, FORMAT_HTML);
-                $radio['oname'] = $cid;
-                $radio['oid'] = $htmlid.'-other';
+                $radio->label = format_text($othertext, FORMAT_HTML);
+                $radio->oname = $cid;
+                $radio->oid = $htmlid.'-other';
                 if (isset($data->$cid)) {
-                    $radio['ovalue'] = stripslashes($data->$cid);
+                    $radio->ovalue = stripslashes($data->$cid);
                 }
-                $radio['olabel'] = 'Text for '.format_text($othertext, FORMAT_HTML);
+                $radio->olabel = 'Text for '.format_text($othertext, FORMAT_HTML);
             }
-            $choicetags->qelements[] = ['choice' => $radio];
+            $choicetags->qelements[] = (object)['choice' => $radio];
         }
 
         // CONTRIB-846.
         if ($this->required == 'n') {
-            $radio = [];
+            $radio = new \stdClass();
             $id = '';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             if ($horizontal) {
-                $radio['horizontal'] = $horizontal;
+                $radio->horizontal = $horizontal;
             }
 
             // To display or hide dependent questions on Preview page.
@@ -172,18 +170,18 @@ class radio extends base {
             } else {
                 $onclick = 'other_check_empty(name, value)';
             } // End dependents.
-            $radio['name'] = 'q'.$this->id;
-            $radio['id'] = $htmlid;
-            $radio['value'] = $id;
-            $radio['onclick'] = $onclick;
+            $radio->name = 'q'.$this->id;
+            $radio->id = $htmlid;
+            $radio->value = $id;
+            $radio->onclick = $onclick;
 
             if (!$ischecked && !$blankquestionnaire) {
-                $radio['checked'] = true;
+                $radio->checked = true;
             }
             $content = get_string('noanswer', 'questionnaire');
-            $radio['label'] = format_text($content, FORMAT_HTML);
+            $radio->label = format_text($content, FORMAT_HTML);
 
-            $choicetags->qelements[] = ['choice' => $radio];
+            $choicetags->qelements[] = (object)['choice' => $radio];
         }
         // End CONTRIB-846.
 
@@ -218,10 +216,8 @@ class radio extends base {
                 }
 
             } else {
-                $othertext = preg_replace(
-                        array("/^!other=/", "/^!other/"),
-                        array('', get_string('other', 'questionnaire')),
-                        $choice->content);
+                $othertext = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')],
+                    $choice->content);
                 $cid = 'q'.$this->id.'_'.$id;
 
                 if (isset($data->{'q'.$this->id.'_'.$id})) {
@@ -277,7 +273,7 @@ class radio extends base {
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
-        $lengroup = array();
+        $lengroup = [];
         $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('vertical', 'questionnaire'), '0');
         $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('horizontal', 'questionnaire'), '1');
         $mform->addGroup($lengroup, 'lengroup', get_string('alignment', 'questionnaire'), ' ', false);

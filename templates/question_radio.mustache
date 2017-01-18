@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/complete
+    @template mod_questionnaire/question_radio
 
     Template which defines a radio button type question survey display.
 
@@ -26,11 +26,39 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-    },
+        "qelements": [
+            {
+                "choice": {
+                    "horizontal": 1,
+                    "id": "choiceid1",
+                    "value": "1",
+                    "name": "choiceid1",
+                    "checked": "",
+                    "disabled": 1,
+                    "onclick": 1,
+                    "label": "<div>Choice question label</div>"
+                }
+            },
+            {
+                "choice": {
+                    "horizontal": 1,
+                    "id": "choiceid2",
+                    "value": "2",
+                    "name": "choiceid2",
+                    "checked": "1",
+                    "onclick": 1,
+                    "label": "<div>Choice question label</div>",
+                    "oid": "choiceid2_7",
+                    "olabel": "<div>Choice question other label</div>",
+                    "oname": "Other",
+                    "ovalue": "another choice"
+                }
+            }
+        ]
+    }
     }}
 <!-- Begin HTML generated from question_radio template. -->
 {{#qelements}}

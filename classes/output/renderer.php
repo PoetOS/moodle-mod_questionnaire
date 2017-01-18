@@ -170,7 +170,6 @@ class renderer extends \plugin_renderer_base {
         if (($template = $question->question_template())) {
             $pagetags->qformelement = $this->render_from_template($template, $pagetags->qformelement);
         }
-        $pagetags->fieldset['id'] = $question->id;
 
         // Calling "question_output" may generate per question notifications. If present, add them to the question output.
         if (($notifications = $question->get_notifications()) !== false) {
@@ -190,7 +189,6 @@ class renderer extends \plugin_renderer_base {
      */
     public function response_output($question, $data, $qnum=null) {
         $pagetags = $question->response_output($data, $qnum);
-        $pagetags->fieldset['id'] = $question->id;
         // Calling "question_output" may generate per question notifications. If present, add them to the question output.
         if (($notifications = $question->get_notifications()) !== false) {
             foreach ($notifications as $notification) {
@@ -213,12 +211,10 @@ class renderer extends \plugin_renderer_base {
             foreach ($data as $qnum => $responses) {
                 $question = $responses['question'];
                 $pagetags = $question->questionstart_survey_display($qnum);
-                $pagetags->fieldset['id'] = $question->id;
                 foreach ($responses as $item => $response) {
                     if ($item !== 'question') {
                         $resptags = $question->response_output($response['respdata']);
                         $resptags->respdate = $response['respdate'];
-                        $resptags->fieldset['id'] = $question->id;
                         $pagetags->responses[] = $resptags;
                     }
                 }

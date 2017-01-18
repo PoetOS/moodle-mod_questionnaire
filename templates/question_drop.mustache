@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/complete
+    @template mod_questionnaire/question_drop
 
     Template which defines a radio button type question survey display.
 
@@ -26,11 +26,31 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-    },
+        "qelements": {
+            "choice": {
+                "id": "choiceid1",
+                "label": "<div>Choice question label</div>",
+                "name": "choiceid1",
+                "class": "classname",
+                "onchange": "dosomething()",
+                "options": [
+                    {
+                        "selected": 1,
+                        "value": "34",
+                        "label": "Option 1"
+                    },
+                    {
+                        "selected": 0,
+                        "value": "35",
+                        "label": "Option 2"
+                    }
+                ]
+            }
+        }
+    }
     }}
 <!-- Begin HTML generated from question_drop template. -->
 {{#qelements}}

@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/[my]report
+    @template mod_questionnaire/response_container
 
     Template which defines a survey response display.
 
@@ -26,18 +26,37 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-        "respondentscolumn0" : [
-            "respondentlink": [
-                {
-                    <a title="Friday, 19 December 2014, 5:58 pm" href="http://localhost/moodlehq.git/mod/questionnaire/report.php?action=vresp&amp;group=0&amp;individualresponse=1&amp;rid=12&amp;individualresponse=1">Admin User</a>
+        "fieldset": {
+            "id": "7",
+            "class": "responseclass"
+        },
+        "qnum": "<div>7</div>",
+        "required": "<div>*</div>",
+        "skippedclass": "skippedclass",
+        "label": {
+            "for": "qn-7"
+        },
+        "qcontent": "<div>HTML for the response content</div>",
+        "responses": [
+            {
+                "respdate": "Friday, 19 December 2014, 5:58pm",
+                "fieldset": {
+                    "id": "10",
+                    "class": "fieldsetclass"
                 },
-            ]
+                "required": "required html",
+                "skippedclass": "skippedclass",
+                "label": {
+                    "for": "qn-7"
+                },
+                "qcontent": "<div>HTML for the response content</div>",
+                "qformelement": "<div>HTML for the question form element</div>"
+            }
         ]
-    },
+    }
     }}
 <!-- Begin fieldset generated from response_container template. -->
 <div class="box individualresp">

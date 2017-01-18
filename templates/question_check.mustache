@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/complete
+    @template mod_questionnaire/question_check
 
     Template which defines a check type question survey display.
 
@@ -26,11 +26,32 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-    },
+        "qelements": [
+            {
+                "choice": {
+                    "id": "choiceid1",
+                    "value": "1",
+                    "name": "choiceid1",
+                    "checked": "",
+                    "label": "<div>Choice question label</div>"
+                }
+            },
+            {
+                "choice": {
+                    "id": "choiceid7",
+                    "value": "7",
+                    "name": "choiceid7",
+                    "checked": "1",
+                    "label": "<div>Choice question label</div>",
+                    "oname": "Other",
+                    "ovalue": "another choice"
+                }
+            }
+        ]
+    }
     }}
 <!-- Begin HTML generated from question_check template. -->
 {{#qelements}}

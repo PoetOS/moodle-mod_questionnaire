@@ -68,7 +68,7 @@ abstract class base {
     public $type        = '';
 
     /** @var array $choices Array holding any choices for this question. */
-    public $choices     = array();
+    public $choices     = [];
 
     /** @var string $response_table The table name for responses. */
     public $responsetable = '';
@@ -123,12 +123,12 @@ abstract class base {
         static $qtypes = null;
 
         if ($qtypes === null) {
-            $qtypes = $DB->get_records('questionnaire_question_type', array(), 'typeid',
+            $qtypes = $DB->get_records('questionnaire_question_type', [], 'typeid',
                                        'typeid, type, has_choices, response_table');
         }
 
         if ($id) {
-            $question = $DB->get_record('questionnaire_question', array('id' => $id));
+            $question = $DB->get_record('questionnaire_question', ['id' => $id]);
         }
 
         if (is_object($question)) {
@@ -176,7 +176,7 @@ abstract class base {
         if (!empty($params) && is_array($params)) {
             $params = (object)$params;
         }
-        return new $qclassname(0, $params, null, array('type_id' => $qtype));
+        return new $qclassname(0, $params, null, ['type_id' => $qtype]);
     }
 
     /**
@@ -201,14 +201,14 @@ abstract class base {
     private function get_choices() {
         global $DB;
 
-        if ($choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $this->id), 'id ASC')) {
+        if ($choices = $DB->get_records('questionnaire_quest_choice', ['question_id' => $this->id], 'id ASC')) {
             foreach ($choices as $choice) {
                 $this->choices[$choice->id] = new \stdClass();
                 $this->choices[$choice->id]->content = $choice->content;
                 $this->choices[$choice->id]->value = $choice->value;
             }
         } else {
-            $this->choices = array();
+            $this->choices = [];
         }
     }
 
@@ -356,7 +356,7 @@ abstract class base {
             $sql = 'SELECT MAX(position) as maxpos '.
                    'FROM {questionnaire_question} '.
                    'WHERE survey_id = ? AND deleted = ?';
-            $params = array('survey_id' => $questionrecord->survey_id, 'deleted' => 'n');
+            $params = ['survey_id' => $questionrecord->survey_id, 'deleted' => 'n'];
             if ($record = $DB->get_record_sql($sql, $params)) {
                 $questionrecord->position = $record->maxpos + 1;
             } else {
@@ -433,7 +433,7 @@ abstract class base {
         } else {
             $cid = $choice->id;
         }
-        if ($DB->delete_records('questionnaire_quest_choice', array('id' => $cid))) {
+        if ($DB->delete_records('questionnaire_quest_choice', ['id' => $cid])) {
             unset($this->choices[$cid]);
         } else {
             $retvalue = false;
@@ -456,7 +456,7 @@ abstract class base {
             $qid = $this->id;
         }
         $this->required = $rval;
-        return $DB->set_field('questionnaire_question', 'required', $rval, array('id' => $qid));
+        return $DB->set_field('questionnaire_question', 'required', $rval, ['id' => $qid]);
     }
 
     /**
@@ -578,7 +578,7 @@ abstract class base {
             }
         }
 
-        $pagetags->fieldset['class'] = $displayclass;
+        $pagetags->fieldset = (object)['id' => $this->id, 'class' => $displayclass];
 
         // Do not display the info box for the label question type.
         if ($this->type_id != QUESSECTIONTEXT) {
@@ -587,14 +587,11 @@ abstract class base {
             }
             $required = '';
             if ($this->required == 'y') {
-                $required = html_writer::start_tag('div', array('class' => 'accesshide'));
+                $required = html_writer::start_tag('div', ['class' => 'accesshide']);
                 $required .= get_string('required', 'questionnaire');
                 $required .= html_writer::end_tag('div');
-                $required .= html_writer::empty_tag('img',
-                        array('class' => 'req',
-                                'title' => get_string('required', 'questionnaire'),
-                                'alt' => get_string('required', 'questionnaire'),
-                                'src' => $OUTPUT->pix_url('req')));
+                $required .= html_writer::empty_tag('img', ['class' => 'req', 'title' => get_string('required', 'questionnaire'),
+                    'alt' => get_string('required', 'questionnaire'), 'src' => $OUTPUT->pix_url('req')]);
             }
             $pagetags->required = $required; // Need to replace this with better renderer / template?
         }
@@ -605,12 +602,12 @@ abstract class base {
         $pagetags->skippedclass = $skippedclass;
         if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
             $this->type_id == QUESDROP) {
-            $pagetags->label['for'] = $this->type . $this->id;
+            $pagetags->label = (object)['for' => $this->type . $this->id];
         }
         if ($this->type_id == QUESESSAY) {
-            $pagetags->label['for'] = 'edit-q' . $this->id;
+            $pagetags->label = (object)['for' => 'edit-q' . $this->id];
         }
-        $options = array('noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true);
+        $options = ['noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
         $content = format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
             $this->context->id, 'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options);
         $pagetags->qcontent = $content;
@@ -675,7 +672,7 @@ abstract class base {
             $buttonarray[] = &$mform->createElement('submit', 'makecopy', get_string('saveasnew', 'questionnaire'));
         }
         $buttonarray[] = &$mform->createElement('cancel');
-        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
 
         return true;
     }
@@ -697,14 +694,14 @@ abstract class base {
 
     protected function form_name(\MoodleQuickForm $mform) {
         $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'),
-                        array('size' => '30', 'maxlength' => '30'));
+                        ['size' => '30', 'maxlength' => '30']);
         $mform->setType('name', PARAM_TEXT);
         $mform->addHelpButton('name', 'optionalname', 'questionnaire');
         return $mform;
     }
 
     protected function form_required(\MoodleQuickForm $mform) {
-        $reqgroup = array();
+        $reqgroup = [];
         $reqgroup[] =& $mform->createElement('radio', 'required', '', get_string('yes'), 'y');
         $reqgroup[] =& $mform->createElement('radio', 'required', '', get_string('no'), 'n');
         $mform->addGroup($reqgroup, 'reqgroup', get_string('required', 'questionnaire'), ' ', false);
@@ -739,7 +736,7 @@ abstract class base {
                 if ($canchangeparent) {
                     $this->dependquestion = isset($this->dependquestion) ? $this->dependquestion.','.
                                     $this->dependchoice : '0,0';
-                    $group = array($mform->createElement('selectgroups', 'dependquestion', '', $dependencies) );
+                    $group = [$mform->createElement('selectgroups', 'dependquestion', '', $dependencies)];
                     $mform->addGroup($group, 'selectdependency', get_string('dependquestion', 'questionnaire'), '', false);
                     $mform->addHelpButton('selectdependency', 'dependquestion', 'questionnaire');
                 } else {
@@ -752,7 +749,7 @@ abstract class base {
     }
 
     protected function form_question_text(\MoodleQuickForm $mform, $context) {
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true, 'context' => $context);
+        $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true, 'context' => $context];
         $mform->addElement('editor', 'content', get_string('text', 'questionnaire'), null, $editoroptions);
         $mform->setType('content', PARAM_RAW);
         $mform->addRule('content', null, 'required', null, 'client');
@@ -793,7 +790,7 @@ abstract class base {
     }
 
     static public function form_length_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
-        $mform->addElement('text', 'length', get_string($helpname, 'questionnaire'), array('size' => '1'), $value);
+        $mform->addElement('text', 'length', get_string($helpname, 'questionnaire'), ['size' => '1'], $value);
         $mform->setType('length', PARAM_INT);
         if (!empty($helpname)) {
             $mform->addHelpButton('length', $helpname, 'questionnaire');
@@ -808,7 +805,7 @@ abstract class base {
     }
 
     static public function form_precise_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
-        $mform->addElement('text', 'precise', get_string($helpname, 'questionnaire'), array('size' => '1'));
+        $mform->addElement('text', 'precise', get_string($helpname, 'questionnaire'), ['size' => '1']);
         $mform->setType('precise', PARAM_INT);
         if (!empty($helpname)) {
             $mform->addHelpButton('precise', $helpname, 'questionnaire');
@@ -832,9 +829,9 @@ abstract class base {
             $formdata->format  = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
             $formdata->content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
-                'question', $formdata->qid, array('subdirs' => true), $formdata->content);
+                'question', $formdata->qid, ['subdirs' => true], $formdata->content);
 
-            $fields = array('name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice');
+            $fields = ['name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice'];
             $questionrecord = new \stdClass();
             $questionrecord->id = $formdata->qid;
             foreach ($fields as $f) {
@@ -851,8 +848,8 @@ abstract class base {
             // Create new question:
             // Need to update any image content after the question is created, so create then update the content.
             $formdata->survey_id = $formdata->sid;
-            $fields = array('survey_id', 'name', 'type_id', 'length', 'precise', 'required', 'position',
-                            'dependquestion', 'dependchoice');
+            $fields = ['survey_id', 'name', 'type_id', 'length', 'precise', 'required', 'position', 'dependquestion',
+                'dependchoice'];
             $questionrecord = new \stdClass();
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {
@@ -868,8 +865,8 @@ abstract class base {
             $formdata->format  = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
             $content           = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
-                'question', $this->qid, array('subdirs' => true), $formdata->content);
-            $result = $DB->set_field('questionnaire_question', 'content', $content, array('id' => $this->qid));
+                'question', $this->qid, ['subdirs' => true], $formdata->content);
+            $result = $DB->set_field('questionnaire_question', 'content', $content, ['id' => $this->qid]);
         }
 
         if ($this->has_choices()) {
@@ -943,7 +940,7 @@ abstract class base {
             $formdata->allchoices = trim($formdata->allchoices);
             $this->form_preprocess_choicedata($formdata);
         }
-        $dependency = array();
+        $dependency = [];
         if (isset($formdata->dependquestion) && $formdata->dependquestion != 0) {
             $dependency = explode(",", $formdata->dependquestion);
             $formdata->dependquestion = $dependency[0];

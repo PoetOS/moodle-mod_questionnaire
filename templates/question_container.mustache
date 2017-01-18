@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/complete
+    @template mod_questionnaire/question_container
 
     Template which defines a check type question survey display.
 
@@ -26,11 +26,23 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-    },
+        "fieldset": {
+            "id": "7",
+            "class": "questionclass"
+        },
+        "qnum": "<div>7</div>",
+        "required": "<div>*</div>",
+        "skippedclass": "skippedclass",
+        "label": {
+            "for": "qn-7"
+        },
+        "qcontent": "<div>HTML for the question content</div>",
+        "qformelement": "<div>HTML for the question form element</div>",
+        "notifications": "<div>HTML for the notifications area</div>"
+    }
     }}
 <!-- Begin fieldset generated from question_container template. -->
 <fieldset id="qn-{{fieldset.id}}" class="{{fieldset.class}}">

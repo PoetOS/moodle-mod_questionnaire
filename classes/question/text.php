@@ -31,7 +31,7 @@ class text extends base {
      * Constructor. Use to set any default properties.
      *
      */
-    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+    public function __construct($id = 0, $question = null, $context = null, $params = []) {
         $this->length = 20;
         $this->precise = 25;
         return parent::__construct($id, $question, $context, $params);
@@ -64,14 +64,17 @@ class text extends base {
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Text Box.
         $questiontags = new \stdClass();
-        $questiontags->qelements['choice']['onkeypress'] = 'return event.keyCode != 13;';
-        $questiontags->qelements['choice']['size'] = $this->length;
-        $questiontags->qelements['choice']['name'] = 'q'.$this->id;
+        $questiontags->qelements = new \stdClass();
+        $choice = new \stdClass();
+        $choice->onkeypress = 'return event.keyCode != 13;';
+        $choice->size = $this->length;
+        $choice->name = 'q'.$this->id;
         if ($this->precise > 0) {
-            $questiontags->qelements['choice']['maxlength'] = $this->precise;
+            $choice->maxlength = $this->precise;
         }
-        $questiontags->qelements['choice']['value'] = (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '');
-        $questiontags->qelements['choice']['id'] = $this->type . $this->id;
+        $choice->value = (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '');
+        $choice->id = $this->type . $this->id;
+        $questiontags->qelements->choice = $choice;
         return $questiontags;
     }
 

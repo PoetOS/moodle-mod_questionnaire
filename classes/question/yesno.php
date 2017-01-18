@@ -52,10 +52,10 @@ class yesno extends base {
      *
      */
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        // Moved choose_from_radio() here to fix unwanted selection of yesno buttons and radio buttons with identical ID.
+        global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         // To display or hide dependent questions on Preview page.
-        $onclickdepend = array();
+        $onclickdepend = [];
         if ($descendantsdata) {
             $descendants = implode(',', $descendantsdata['descendants']);
             if (isset($descendantsdata['choices'][0])) {
@@ -71,7 +71,6 @@ class yesno extends base {
             $onclickdepend['y'] = 'depend(\''.$descendants.'\', \''.$choices['y'].'\')';
             $onclickdepend['n'] = 'depend(\''.$descendants.'\', \''.$choices['n'].'\')';
         }
-        global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $stryes = get_string('yes');
         $strno = get_string('no');
@@ -84,51 +83,52 @@ class yesno extends base {
             $strno = ' (0) '.$strno;
         }
 
-        $options = array($val1 => $stryes, $val2 => $strno);
+        $options = [$val1 => $stryes, $val2 => $strno];
         $name = 'q'.$this->id;
         $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
         $output = '';
         $ischecked = false;
 
         $choicetags = new \stdClass();
-        $choicetags->qelements = [];
+        $choicetags->qelements = new \stdClass();
+        $choicetags->qelements->choice = [];
 
         foreach ($options as $value => $label) {
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
-            $option = [];
-            $option['name'] = $name;
-            $option['id'] = $htmlid;
-            $option['value'] = $value;
-            $option['label'] = $label;
+            $option = new \stdClass();
+            $option->name = $name;
+            $option->id = $htmlid;
+            $option->value = $value;
+            $option->label = $label;
             if ($value == $checked) {
-                $option['checked'] = true;
+                $option->checked = true;
                 $ischecked = true;
             }
             if ($blankquestionnaire) {
-                $option['disabled'] = true;
+                $option->disabled = true;
             }
             if (isset($onclickdepend[$value])) {
-                $option['onclick'] = $onclickdepend[$value];
+                $option->onclick = $onclickdepend[$value];
             }
-            $choicetags->qelements[] = ['choice' => $option];
+            $choicetags->qelements->choice[] = $option;
         }
         // CONTRIB-846.
         if ($this->required == 'n') {
             $id = '';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             $content = get_string('noanswer', 'questionnaire');
-            $option = [];
-            $option['name'] = $name;
-            $option['id'] = $htmlid;
-            $option['value'] = $id;
-            $option['label'] = format_text($content, FORMAT_HTML);
+            $option = new \stdClass();
+            $option->name = $name;
+            $option->id = $htmlid;
+            $option->value = $id;
+            $option->label = format_text($content, FORMAT_HTML);
             if (!$ischecked && !$blankquestionnaire) {
-                $option['checked'] = true;
+                $option->checked = true;
             }
             if ($onclickdepend) {
-                $option['onclick'] = 'depend(\''.$descendants.'\', \'\')';
+                $option->onclick = 'depend(\''.$descendants.'\', \'\')';
             }
-            $choicetags->qelements[] = ['choice' => $option];
+            $choicetags->qelements->choice[] = $option;
         }
         // End CONTRIB-846.
 

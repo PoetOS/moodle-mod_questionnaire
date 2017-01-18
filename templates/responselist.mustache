@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/myreportpage
+    @template mod_questionnaire/responselist
 
     Template which defines a questionnaire response list on the report page.
 
@@ -26,18 +26,22 @@
     * none
 
     Context variables required for this template:
-    * respondentlink - array: HTML list of all respondent links.
 
     Example context (json):
     {
-        "respondentscolumn0" : [
-            "respondentlink": [
-                {
-                    <a title="Friday, 19 December 2014, 5:58 pm" href="http://localhost/moodlehq.git/mod/questionnaire/report.php?action=vresp&amp;group=0&amp;individualresponse=1&amp;rid=12&amp;individualresponse=1">Admin User</a>
-                },
-            ]
+        "respondentscolumn0": [
+            "HTML of respondent link1",
+            "HTML of respondent link2"
+        ],
+        "respondentscolumn1": [
+            "HTML of respondent link3",
+            "HTML of respondent link4"
+        ],
+        "respondentscolumn2": [
+            "HTML of respondent link5",
+            "HTML of respondent link6"
         ]
-    },
+    }
     }}
 <div class="box generalbox">
     {{#respondentscolumn0}}
