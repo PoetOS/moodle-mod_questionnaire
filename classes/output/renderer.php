@@ -189,6 +189,13 @@ class renderer extends \plugin_renderer_base {
      */
     public function response_output($question, $data, $qnum=null) {
         $pagetags = $question->response_output($data, $qnum);
+
+        // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
+        // already contains HTML.
+        if (($template = $question->response_template())) {
+            $pagetags->qformelement = $this->render_from_template($template, $pagetags->qformelement);
+        }
+
         // Calling "question_output" may generate per question notifications. If present, add them to the question output.
         if (($notifications = $question->get_notifications()) !== false) {
             foreach ($notifications as $notification) {
@@ -214,6 +221,11 @@ class renderer extends \plugin_renderer_base {
                 foreach ($responses as $item => $response) {
                     if ($item !== 'question') {
                         $resptags = $question->response_output($response['respdata']);
+                        // If the response has a template, then render it from the 'qformelement' context.
+                        // If no template, then 'qformelement' already contains HTML.
+                        if (($template = $question->response_template())) {
+                            $resptags->qformelement = $this->render_from_template($template, $resptags->qformelement);
+                        }
                         $resptags->respdate = $response['respdate'];
                         $pagetags->responses[] = $resptags;
                     }

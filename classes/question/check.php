@@ -52,6 +52,14 @@ class check extends base {
     }
 
     /**
+     * Override and return a form template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return 'mod_questionnaire/response_check';
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param object $data
      * @param string $descendantdata
@@ -166,30 +174,32 @@ class check extends base {
         return $choicetags;
     }
 
+    /**
+     * Return the context tags for the check response template.
+     * @param object $data
+     * @return object The check question response context tags.
+     *
+     */
     protected function response_survey_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
-        $output = '';
+        $resptags = new \stdClass();
+        $resptags->choices = [];
 
         if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
             $data->{'q'.$this->id} = array();
         }
 
-        $output .= '<div class="response check">';
         foreach ($this->choices as $id => $choice) {
+            $chobj = new \stdClass();
             if (strpos($choice->content, '!other') !== 0) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
-
                 if (in_array($id, $data->{'q'.$this->id})) {
-                    $output .= '<span class="selected">'.
-                        '<input type="checkbox" name="'.$id.$uniquetag++.'" checked="checked" onclick="this.checked=true;" /> '.
-                        ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span><br />';
-                } else {
-                    $output .= '<span class="unselected">'.
-                        '<input type="checkbox" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
-                        ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span><br />';
+                    $chobj->selected = 1;
                 }
+                $chobj->name = $id.$uniquetag++;
+                $chobj->content = (($choice->content === '') ? $id : format_text($choice->content, FORMAT_HTML));
             } else {
                 $othertext = preg_replace(
                         array("/^!other=/", "/^!other/"),
@@ -198,22 +208,15 @@ class check extends base {
                 $cid = 'q'.$this->id.'_'.$id;
 
                 if (isset($data->$cid)) {
-                    $output .= '<span class="selected">'.
-                        '<input type="checkbox" name="'.$id.$uniquetag++.'" checked="checked" onclick="this.checked=true;" /> '.
-                        ($othertext === '' ? $id : $othertext).' ';
-                    $output .= '<span class="response text">';
-                    $output .= (!empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;');
-                    $output .= '</span></span><br />';
-                } else {
-                    $output .= '<span class="unselected">'.
-                        '<input type="checkbox" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
-                        ($othertext === '' ? $id : $othertext).'</span><br />';
+                    $chobj->selected = 1;
+                    $chobj->othercontent = (!empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;');
                 }
+                $chobj->name = $id.$uniquetag++;
+                $chobj->content = (($othertext === '') ? $id : $othertext);
             }
+            $resptags->choices[] = $chobj;
         }
-        $output .= '</div>';
-
-        return $output;
+        return $resptags;
     }
 
     /**

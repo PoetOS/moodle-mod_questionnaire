@@ -44,6 +44,14 @@ class yesno extends base {
     }
 
     /**
+     * Override and return a response template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return 'mod_questionnaire/response_yesno';
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param object $data
      * @param string $descendantdata
@@ -135,39 +143,29 @@ class yesno extends base {
         return $choicetags;
     }
 
+    /**
+     * Return the context tags for the text response template.
+     * @param object $data
+     * @return object The radio question response context tags.
+     *
+     */
     protected function response_survey_display($data) {
-        static $stryes = null;
-        static $strno = null;
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
-        $output = '';
+        $resptags = new \stdClass();
 
-        if ($stryes === null) {
-             $stryes = get_string('yes');
-             $strno = get_string('no');
+        $resptags->yesname = 'q'.$this->id.$uniquetag++.'y';
+        $resptags->noname = 'q'.$this->id.$uniquetag++.'n';
+        $resptags->stryes = get_string('yes');
+        $resptags->strno = get_string('no');
+        if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == 'y')) {
+            $resptags->yesselected = 1;
+        }
+        if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == 'n')) {
+            $resptags->noselected = 1;
         }
 
-        $val1 = 'y';
-        $val2 = 'n';
-
-        $output .= '<div class="response yesno">';
-        if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == $val1)) {
-            $output .= '<span class="selected">' .
-                '<input type="radio" name="q'.$this->id.$uniquetag++.'y" checked="checked" /> '.$stryes.'</span>';
-        } else {
-            $output .= '<span class="unselected">' .
-                '<input type="radio" name="q'.$this->id.$uniquetag++.'y" onclick="this.checked=false;" /> '.$stryes.'</span>';
-        }
-        if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == $val2)) {
-            $output .= ' <span class="selected">' .
-                '<input type="radio" name="q'.$this->id.$uniquetag++.'n" checked="checked" /> '.$strno.'</span>';
-        } else {
-            $output .= ' <span class="unselected">' .
-                '<input type="radio" name="q'.$this->id.$uniquetag++.'n" onclick="this.checked=false;" /> '.$strno.'</span>';
-        }
-        $output .= '</div>';
-
-        return $output;
+        return $resptags;
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {

@@ -45,6 +45,14 @@ class date extends base {
     }
 
     /**
+     * Override and return a form template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return 'mod_questionnaire/response_date';
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param object $data
      * @param string $descendantdata
@@ -77,14 +85,18 @@ class date extends base {
         return $questiontags;
     }
 
+    /**
+     * Return the context tags for the check response template.
+     * @param object $data
+     * @return object The check question response context tags.
+     *
+     */
     protected function response_survey_display($data) {
-        $output = '';
+        $resptags = new \stdClass();
         if (isset($data->{'q'.$this->id})) {
-            $output .= '<div class="response date">';
-            $output .= '<span class="selected">'.$data->{'q'.$this->id}.'</span>';
-            $output .= '</div>';
+            $resptags->content = $data->{'q'.$this->id};
         }
-        return $output;
+        return $resptags;
     }
 
     /**

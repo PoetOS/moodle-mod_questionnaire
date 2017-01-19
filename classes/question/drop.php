@@ -52,6 +52,14 @@ class drop extends base {
     }
 
     /**
+     * Override and return a form template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return 'mod_questionnaire/response_drop';
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param object $data
      * @param string $descendantdata
@@ -126,24 +134,33 @@ class drop extends base {
         return $choicetags;
     }
 
+    /**
+     * Return the context tags for the drop response template.
+     * @param object $data
+     * @return object The check question response context tags.
+     *
+     */
     protected function response_survey_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
-        $output = '';
-
-        $options = [];
+        $resptags = new \stdClass();
+        $resptags->name = 'q' . $this->id.$uniquetag++;
+        $resptags->id = 'menu' . $resptags->name;
+        $resptags->class = 'select custom-select ' . $resptags->id;
+        $resptags->options = [];
         foreach ($this->choices as $id => $choice) {
             $contents = questionnaire_choice_values($choice->content);
-            $options[$id] = format_text($contents->text, FORMAT_HTML);
-        }
-        $output .= '<div class="response drop">';
-        $output .= html_writer::select($options, 'q'.$this->id.$uniquetag++,
-            (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : ''));
-        if (isset($data->{'q'.$this->id}) ) {
-            $output .= ': <span class="selected">'.$options[$data->{'q'.$this->id}].'</span></div>';
+            $chobj = new \stdClass();
+            $chobj->value = $id;
+            $chobj->label = format_text($contents->text, FORMAT_HTML);
+            if (isset($data->{'q'.$this->id}) && ($id == $data->{'q'.$this->id})) {
+                $chobj->selected = 1;
+                $resptags->selectedlabel = $chobj->label;
+            }
+            $resptags->options[] = $chobj;
         }
 
-        return $output;
+        return $resptags;
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {

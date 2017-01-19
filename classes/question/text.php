@@ -54,6 +54,14 @@ class text extends base {
     }
 
     /**
+     * Override and return a response template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return 'mod_questionnaire/response_text';
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param object $data
      * @param string $descendantdata
@@ -78,9 +86,18 @@ class text extends base {
         return $questiontags;
     }
 
+    /**
+     * Return the context tags for the text response template.
+     * @param object $data
+     * @return object The radio question response context tags.
+     *
+     */
     protected function response_survey_display($data) {
-        $response = isset($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '';
-        return '<div class="response text"><span class="selected">'.$response.'</span></div>';
+        $resptags = new \stdClass();
+        if (isset($data->{'q'.$this->id})) {
+            $resptags->content = format_text($data->{'q'.$this->id}, FORMAT_HTML);
+        }
+        return $resptags;
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {

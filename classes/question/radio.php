@@ -51,6 +51,14 @@ class radio extends base {
     }
 
     /**
+     * Override and return a response template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return 'mod_questionnaire/response_radio';
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param object $data
      * @param string $descendantdata
@@ -191,55 +199,48 @@ class radio extends base {
         return $choicetags;
     }
 
+    /**
+     * Return the context tags for the radio response template.
+     * @param object $data
+     * @return object The radio question response context tags.
+     *
+     */
     protected function response_survey_display($data) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
+        $resptags = new \stdClass();
+        $resptags->choices = [];
         $output = '';
 
         $horizontal = $this->length;
         $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
         foreach ($this->choices as $id => $choice) {
+            $chobj = new \stdClass();
             if ($horizontal) {
-                $output .= ' <span style="white-space:nowrap;">';
+                $chobj->horizontal = 1;
             }
+            $chobj->name = $id.$uniquetag++;
             if (strpos($choice->content, '!other') !== 0) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
                 if ($id == $checked) {
-                    $output .= '<span class="selected">'.
-                        '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.
-                        ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
-                } else {
-                    $output .= '<span class="unselected">'.
-                        '<input type="radio" disabled="disabled" name="'.$id.$uniquetag++.'" onclick="this.checked=false;" /> '.
-                        ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML)).'</span>&nbsp;';
+                    $chobj->selected = 1;
                 }
-
+                $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML));
             } else {
                 $othertext = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')],
                     $choice->content);
                 $cid = 'q'.$this->id.'_'.$id;
-
                 if (isset($data->{'q'.$this->id.'_'.$id})) {
-                    $output .= '<span class="selected">'.
-                        '<input type="radio" name="'.$id.$uniquetag++.'" checked="checked" /> '.$othertext.' ';
-                    $output .= '<span class="response text">';
-                    $output .= !empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;';
-                    $output .= '</span></span>';
-                } else {
-                    $output .= '<span class="unselected"><input type="radio" name="'.$id.$uniquetag++.
-                        '" onclick="this.checked=false;" /> '.
-                        $othertext.'</span>';
+                    $chobj->selected = 1;
+                    $chobj->othercontent = (!empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;');
                 }
+                $chobj->content = $othertext;
             }
-            if ($horizontal) {
-                $output .= '</span>';
-            } else {
-                $output .= '<br />';
-            }
+            $resptags->choices[] = $chobj;
         }
 
-        return $output;
+        return $resptags;
     }
 
     /**

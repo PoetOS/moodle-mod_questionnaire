@@ -487,6 +487,14 @@ abstract class base {
     }
 
     /**
+     * Override and return a form template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return false;
+    }
+
+    /**
      * Get the output for question renderers / templates.
      * @param object $formdata
      * @param string $descendantdata

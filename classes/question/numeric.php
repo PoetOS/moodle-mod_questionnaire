@@ -53,6 +53,14 @@ class numeric extends base {
     }
 
     /**
+     * Override and return a response template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return 'mod_questionnaire/response_numeric';
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param object $data
      * @param string $descendantdata
@@ -108,20 +116,18 @@ class numeric extends base {
         return $questiontags;
     }
 
+    /**
+     * Return the context tags for the numeric response template.
+     * @param object $data
+     * @return object The numeric question response context tags.
+     *
+     */
     protected function response_survey_display($data) {
-        $output = '';
-
-        $this->length++; // For sign.
-        if ($this->precise) {
-            $this->length += 1 + $this->precise;
-        }
-        $output .= '<div class="response numeric">';
+        $resptags = new \stdClass();
         if (isset($data->{'q'.$this->id})) {
-            $output .= '<span class="selected">'.$data->{'q'.$this->id}.'</span>';
+            $resptags->content = $data->{'q'.$this->id};
         }
-        $output .= '</div>';
-
-        return $output;
+        return $resptags;
     }
 
     /**
