@@ -520,10 +520,11 @@ abstract class base {
         return $pagetags;
     }
 
-    public function survey_display($formdata, $descendantsdata, $qnum='', $blankquestionnaire=false) {
-        return $this->question_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
-    }
-
+    /**
+     * Get the output for the start of the questions in a survey.
+     * @param integer $qnum
+     * @param object $formdata
+     */
     public function questionstart_survey_display($qnum, $formdata='') {
         global $OUTPUT, $SESSION, $questionnaire, $PAGE;
 

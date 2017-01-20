@@ -143,20 +143,23 @@ $PAGE->set_url($url);
 $PAGE->set_title(get_string('feedbackeditingsections', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(get_string('feedbackeditingsections', 'questionnaire'));
-echo $OUTPUT->header();
-echo '<form id="fbsections" method="post">';
+
+// Add renderer and page objects to the questionnaire object for display use.
+$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnaire->add_page(new \mod_questionnaire\output\fbsectionspage());
+
 $feedbacksections = $questionnaire->survey->feedbacksections + 1;
 
 if ($errormsg != '') {
-    echo $OUTPUT->notification($errormsg);
+    $questionnaire->page->add_to_page('notifications', $questionnaire->renderer->notification($errormsg));
 }
 $n = 0;
 $bg = 'c0';
 
-echo $OUTPUT->box_start();
+$questionnaire->page->add_to_page('formarea', $questionnaire->renderer->box_start());
 
-echo $OUTPUT->help_icon('feedbacksectionsselect', 'questionnaire');
-echo '<b>Sections:</b><br /><br />';
+$questionnaire->page->add_to_page('formarea', $questionnaire->renderer->help_icon('feedbacksectionsselect', 'questionnaire'));
+$questionnaire->page->add_to_page('formarea', '<b>Sections:</b><br /><br />');
 $formdata = new stdClass();
 $descendantsdata = array();
 
@@ -216,7 +219,7 @@ foreach ($questionnaire->questions as $question) {
 
         if ($qhasvalues) {
             $emptyisglobalfeedback = $questionnaire->survey->feedbacksections == 1 && empty($questionsinsections);
-            echo '<div style="margin-bottom:5px;">['.$qname.']</div>';
+            $questionnaire->page->add_to_page('formarea', '<div style="margin-bottom:5px;">['.$qname.']</div>');
             for ($i = 0; $i < $feedbacksections; $i++) {
                 $output = '<div style="float:left; padding-right:5px;">';
                 if ($i != 0) {
@@ -234,7 +237,7 @@ foreach ($questionnaire->questions as $question) {
                 }
                 $output .= ' />';
                 $output .= '<label for="'.$qid.'_'.$i.'">'.'<div style="padding-left: 2px;">'.$i.'</div>'.'</label></div></div>';
-                echo $output;
+                $questionnaire->page->add_to_page('formarea', $output);
                 if ($bg == 'c0') {
                     $bg = 'c1';
                 } else {
@@ -243,20 +246,21 @@ foreach ($questionnaire->questions as $question) {
             }
         }
         if ($qhasvalues || $qtype == QUESSECTIONTEXT) {
-            $question->survey_display($formdata, '', $n, true);
+            $questionnaire->page->add_to_page('formarea',
+                $questionnaire->renderer->question_output($question, $formdata, '', $n, true));
         }
     } else {
-        echo '<div class="notifyproblem">';
-        echo $strcannotuse;
-        echo '</div>';
-        echo '<div class="qn-question">'.$question->content.'</div>';
+        $questionnaire->page->add_to_page('formarea', '<div class="notifyproblem">');
+        $questionnaire->page->add_to_page('formarea', $strcannotuse);
+        $questionnaire->page->add_to_page('formarea', '</div>');
+        $questionnaire->page->add_to_page('formarea', '<div class="qn-question">'.$question->content.'</div>');
     }
 }
 // Submit/Cancel buttons.
 $url = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
-echo '<div><input type="submit" name="savesettings" value="'.get_string('feedbackeditmessages', 'questionnaire').'" />
-          <a href="'.$url.'">'.get_string('cancel').'</a>
-      </div>';
-echo '</form>';
-echo $OUTPUT->box_end();
-echo $OUTPUT->footer($course);
+$questionnaire->page->add_to_page('formarea', '<div><input type="submit" name="savesettings" value="'.
+    get_string('feedbackeditmessages', 'questionnaire').'" /><a href="'.$url.'">'.get_string('cancel').'</a></div>');
+$questionnaire->page->add_to_page('formarea', $questionnaire->renderer->box_end());
+echo $questionnaire->renderer->header();
+echo $questionnaire->renderer->render($questionnaire->page);
+echo $questionnaire->renderer->footer($course);

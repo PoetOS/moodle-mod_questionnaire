@@ -99,6 +99,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Fill out the fbsections page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_fbsectionspage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/fbsectionspage', $data);
+    }
+
+    /**
      * Render the respondent information line.
      * @param string $text The respondent information.
      */
