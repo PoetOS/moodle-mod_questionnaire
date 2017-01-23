@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/nonrespondentspage
+    @template mod_questionnaire/response_text
 
-    Template which defines a questionnaire completion page.
+    Template which defines a text type question survey display.
 
     Classes required for JS:
     * /mod/questionnaire/module.js
@@ -26,16 +26,14 @@
     * none
 
     Context variables required for this template:
-    * tabsarea - string: HTML of the tabs management area.
-    * formarea - string: HTML of the management form.
 
     Example context (json):
     {
-        "tabsarea": "<div>HTML of the tabs area.",
-        "formarea": "<div>HTML of the form area"
+        "content": "HTML for numeric",
     }
     }}
-<div class="mod_questionnaire_nonrespondentspage generalbox">
-    {{{tabsarea}}}
-    {{{formarea}}}
+<!-- Begin HTML generated from response_text template. -->
+<div class="response text">
+    <span class="selected">{{{content}}}</span>
 </div>
+<!-- End HTML generated from response_text template. -->

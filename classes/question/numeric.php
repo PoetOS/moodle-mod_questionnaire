@@ -31,7 +31,7 @@ class numeric extends base {
      * Constructor. Use to set any default properties.
      *
      */
-    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+    public function __construct($id = 0, $question = null, $context = null, $params = []) {
         $this->length = 10;
         return parent::__construct($id, $question, $context, $params);
     }
@@ -44,10 +44,33 @@ class numeric extends base {
         return 'numeric';
     }
 
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
-        $output = '';
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return 'mod_questionnaire/question_numeric';
+    }
 
+    /**
+     * Override and return a response template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return 'mod_questionnaire/response_numeric';
+    }
+
+    /**
+     * Return the context tags for the check question template.
+     * @param object $data
+     * @param string $descendantdata
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
+    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         // Numeric.
+        $questiontags = new \stdClass();
         $precision = $this->precise;
         $a = '';
         if (isset($data->{'q'.$this->id})) {
@@ -81,28 +104,30 @@ class numeric extends base {
             }
         }
 
-        $output .= '<input onkeypress="return event.keyCode != 13;" type="text" size="'.
-            $this->length.'" name="q'.$this->id.'" maxlength="'.$this->length.
-             '" value="'.(isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '').
-            '" id="' . $this->type . $this->id . '" />';
-
-        return $output;
+        $choice = new \stdClass();
+        $choice->onkeypress = 'return event.keyCode != 13;';
+        $choice->size = $this->length;
+        $choice->name = 'q'.$this->id;
+        $choice->maxlength = $this->length;
+        $choice->value = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $choice->id = $this->type . $this->id;
+        $questiontags->qelements = new \stdClass();
+        $questiontags->qelements->choice = $choice;
+        return $questiontags;
     }
 
+    /**
+     * Return the context tags for the numeric response template.
+     * @param object $data
+     * @return object The numeric question response context tags.
+     *
+     */
     protected function response_survey_display($data) {
-        $output = '';
-
-        $this->length++; // For sign.
-        if ($this->precise) {
-            $this->length += 1 + $this->precise;
-        }
-        $output .= '<div class="response numeric">';
+        $resptags = new \stdClass();
         if (isset($data->{'q'.$this->id})) {
-            $output .= '<span class="selected">'.$data->{'q'.$this->id}.'</span>';
+            $resptags->content = $data->{'q'.$this->id};
         }
-        $output .= '</div>';
-
-        return $output;
+        return $resptags;
     }
 
     /**

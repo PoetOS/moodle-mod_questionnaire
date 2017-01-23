@@ -99,11 +99,67 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Fill out the fbsections page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_fbsectionspage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/fbsectionspage', $data);
+    }
+
+    /**
      * Render the respondent information line.
      * @param string $text The respondent information.
      */
     public function respondent_info($text) {
         return \html_writer::tag('span', $text, ['class' => 'respondentinfo']);
+    }
+
+    /**
+     * Render the completion form start HTML.
+     * @param string $action The action URL.
+     * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
+     * @return string The output for the page.
+     */
+    public function complete_formstart($action, $hiddeninputs=[]) {
+        $output = '';
+        $output .= \html_writer::start_tag('form', ['id' => 'phpesp_response', 'method' => 'post', 'action' => $action]) . "\n";
+        foreach ($hiddeninputs as $name => $value) {
+            $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
+        }
+        return $output;
+    }
+
+    /**
+     * Render the completion form end HTML.
+     * @param array $inputs Type/attribute array of inputs and values used by the form.
+     * @return string The output for the page.
+     */
+    public function complete_formend($inputs=[]) {
+        $output = '';
+        foreach ($inputs as $type => $attributes) {
+            $output .= \html_writer::empty_tag('input', array_merge(['type' => $type], $attributes)) . "\n";
+        }
+        $output .= \html_writer::end_tag('form') . "\n";
+        return $output;
+    }
+
+    /**
+     * Render the completion form control buttons.
+     * @param array | string $inputs Name/(Type/attribute) array of input types and values used by the form.
+     * @return string The output for the page.
+     */
+    public function complete_controlbuttons($inputs=null) {
+        $output = '';
+        if (is_array($inputs)) {
+            foreach ($inputs as $name => $attributes) {
+                $output .= \html_writer::empty_tag('input', array_merge(['name' => $name], $attributes));
+            }
+        } else if (is_string($inputs)) {
+            $output .= \html_writer::tag('p', $inputs);
+        }
+        return $output;
     }
 
     /**
@@ -116,14 +172,22 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function question_output($question, $formdata, $descendantsdata, $qnum, $blankquestionnaire) {
-        // Calling "survey_display" may generate per question notifications. If present, add them to the question output.
-        $qoutput = $question->survey_display($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+
+        $pagetags = $question->question_output($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+
+        // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
+        // already contains HTML.
+        if (($template = $question->question_template())) {
+            $pagetags->qformelement = $this->render_from_template($template, $pagetags->qformelement);
+        }
+
+        // Calling "question_output" may generate per question notifications. If present, add them to the question output.
         if (($notifications = $question->get_notifications()) !== false) {
             foreach ($notifications as $notification) {
-                $qoutput .= $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
+                $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
             }
         }
-        return $qoutput;
+        return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }
 
     /**
@@ -134,7 +198,21 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function response_output($question, $data, $qnum=null) {
-        return $question->response_display($data, $qnum);
+        $pagetags = $question->response_output($data, $qnum);
+
+        // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
+        // already contains HTML.
+        if (($template = $question->response_template())) {
+            $pagetags->qformelement = $this->render_from_template($template, $pagetags->qformelement);
+        }
+
+        // Calling "question_output" may generate per question notifications. If present, add them to the question output.
+        if (($notifications = $question->get_notifications()) !== false) {
+            foreach ($notifications as $notification) {
+                $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
+            }
+        }
+        return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }
 
     /**
@@ -149,16 +227,20 @@ class renderer extends \plugin_renderer_base {
         } else {
             foreach ($data as $qnum => $responses) {
                 $question = $responses['question'];
-                $output .= $this->box_start('individualresp');
-                $output .= $question->questionstart_survey_display($qnum);
+                $pagetags = $question->questionstart_survey_display($qnum);
                 foreach ($responses as $item => $response) {
-                    if ($item != 'question') {
-                        $output .= $this->container($response['respdate'], 'respdate');
-                        $output .= $question->response_display($response['respdata']);
+                    if ($item !== 'question') {
+                        $resptags = $question->response_output($response['respdata']);
+                        // If the response has a template, then render it from the 'qformelement' context.
+                        // If no template, then 'qformelement' already contains HTML.
+                        if (($template = $question->response_template())) {
+                            $resptags->qformelement = $this->render_from_template($template, $resptags->qformelement);
+                        }
+                        $resptags->respdate = $response['respdate'];
+                        $pagetags->responses[] = $resptags;
                     }
                 }
-                $output .= $question->questionend_survey_display($qnum);
-                $output .= $this->box_end();
+                $output .= $this->render_from_template('mod_questionnaire/response_container', $pagetags);
             }
         }
         return $output;
@@ -174,6 +256,74 @@ class renderer extends \plugin_renderer_base {
      */
     public function results_output($question, $rids, $sort, $anonymous) {
         return $question->display_results($rids, $sort, $anonymous);
+    }
+
+    /**
+     * Render the reporting navigation bar.
+     * @param array $navbar All of the data needed for the template.
+     * @return string The rendered HTML.
+     */
+    public function navigationbar($navbar) {
+        return $this->render_from_template('mod_questionnaire/navbaralpha', $navbar);
+    }
+
+    /**
+     * Render the reporting navigation bar for one user.
+     * @param array $navbar All of the data needed for the template.
+     * @return string The rendered HTML.
+     */
+    public function usernavigationbar($navbar) {
+        return $this->render_from_template('mod_questionnaire/navbaruser', $navbar);
+    }
+
+    /**
+     * Render the response list for a number of users.
+     * @param array $navbar All of the data needed for the template.
+     * @return string The rendered HTML.
+     */
+    public function responselist($navbar) {
+        return $this->render_from_template('mod_questionnaire/responselist', $navbar);
+    }
+
+    /**
+     * Render a print/preview page number line.
+     * @param string $content The content to render.
+     * @return string The rendered HTML.
+     */
+    public function print_preview_pagenumber($content) {
+        return \html_writer::tag('div', $content, ['class' => 'surveyPage']);
+    }
+
+    /**
+     * Render the print/preview completion form end HTML.
+     * @param string $url The url to call.
+     * @param string $submitstr The submit text.
+     * @param string $resetstr The reset text.
+     * @return string The output for the page.
+     */
+    public function print_preview_formend($url, $submitstr, $resetstr) {
+        $output = '';
+        $output .= \html_writer::start_tag('div');
+        $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr]);
+        $output .= ' ';
+        $output .= \html_writer::tag('a', $resetstr, ['href' => $url]);
+        $output .= \html_writer::end_tag('div') . "\n";
+        $output .= \html_writer::end_tag('form') . "\n";
+        return $output;
+    }
+
+    /**
+     * Render the back to home link on the save page.
+     * @param string $url The url to link to.
+     * @param string $text The text to apply the link to.
+     * @return string The rendered HTML.
+     */
+    public function homelink($url, $text) {
+        $output = '';
+        $output .= \html_writer::start_tag('div', ['class' => 'homelink']);
+        $output .= \html_writer::tag('a', $text, ['href' => $url]);
+        $output .= \html_writer::end_tag('div');
+        return $output;
     }
 
     /**

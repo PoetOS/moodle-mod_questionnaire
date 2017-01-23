@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/nonrespondentspage
+    @template mod_questionnaire/fbsectionspage
 
     Template which defines a questionnaire completion page.
 
@@ -35,7 +35,10 @@
         "formarea": "<div>HTML of the form area"
     }
     }}
-<div class="mod_questionnaire_nonrespondentspage generalbox">
+<div class="mod_questionnaire_fbsectionspage generalbox">
     {{{tabsarea}}}
+    <form id="fbsections" method="post">
+    {{{notifications}}}
     {{{formarea}}}
+    </form>
 </div>

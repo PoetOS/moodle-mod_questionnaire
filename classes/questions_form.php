@@ -29,7 +29,7 @@ class mod_questionnaire_questions_form extends moodleform {
     }
 
     public function definition() {
-        global $CFG, $questionnaire, $SESSION, $OUTPUT;
+        global $CFG, $questionnaire, $SESSION;
         global $DB;
 
         $sid = $questionnaire->survey->id;
@@ -150,7 +150,7 @@ class mod_questionnaire_questions_form extends moodleform {
             }
             $moveqgroup = array();
 
-            $spacer = $OUTPUT->pix_url('spacer');
+            $spacer = $questionnaire->renderer->pix_url('spacer');
 
             if (!$this->moveq) {
                 $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
@@ -175,9 +175,9 @@ class mod_questionnaire_questions_form extends moodleform {
                     $esrc = $spacer;
                     $eextra = array('disabled' => 'disabled');
                 } else {
-                    $esrc = $OUTPUT->pix_url('t/edit');
+                    $esrc = $questionnaire->renderer->pix_url('t/edit');
                 }
-                $rsrc = $OUTPUT->pix_url('t/delete');
+                $rsrc = $questionnaire->renderer->pix_url('t/delete');
 
                 // Question numbers.
                 $manageqgroup[] =& $mform->createElement('static', 'qnums', '',
@@ -185,7 +185,7 @@ class mod_questionnaire_questions_form extends moodleform {
 
                 // Need to index by 'id' since IE doesn't return assigned 'values' for image inputs.
                 $manageqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
-                $msrc = $OUTPUT->pix_url('t/move');
+                $msrc = $questionnaire->renderer->pix_url('t/move');
 
                 if ($questionnairehasdependencies) {
                     // Do not allow moving parent question at position #1 to be moved down if it has a child at position < 4.
@@ -194,7 +194,7 @@ class mod_questionnaire_questions_form extends moodleform {
                             $maxdown = $childpositions[$qid];
                             if ($maxdown < 4) {
                                 $strdisabled = get_string('movedisabled', 'questionnaire');
-                                $msrc = $OUTPUT->pix_url('t/block');
+                                $msrc = $questionnaire->renderer->pix_url('t/block');
                                 $mextra = array('value' => $question->id,
                                                 'alt' => $strdisabled,
                                                 'title' => $strdisabled);
@@ -214,7 +214,7 @@ class mod_questionnaire_questions_form extends moodleform {
                                                 || ($previousquestion->dependquestion != 0
                                                     && $nextquestion->dependquestion == 0) ) {
                                     $strdisabled = get_string('movedisabled', 'questionnaire');
-                                    $msrc = $OUTPUT->pix_url('t/block');
+                                    $msrc = $questionnaire->renderer->pix_url('t/block');
                                     $mextra = array('value' => $question->id,
                                                     'alt' => $strdisabled,
                                                     'title' => $strdisabled);
@@ -238,10 +238,10 @@ class mod_questionnaire_questions_form extends moodleform {
 
                 if ($tid != QUESPAGEBREAK && $tid != QUESSECTIONTEXT) {
                     if ($required == 'y') {
-                        $reqsrc = $OUTPUT->pix_url('t/stop');
+                        $reqsrc = $questionnaire->renderer->pix_url('t/stop');
                         $strrequired = get_string('required', 'questionnaire');
                     } else {
-                        $reqsrc = $OUTPUT->pix_url('t/go');
+                        $reqsrc = $questionnaire->renderer->pix_url('t/go');
                         $strrequired = get_string('notrequired', 'questionnaire');
                     }
                     $strrequired .= ' '.get_string('clicktoswitch', 'questionnaire');
@@ -288,7 +288,7 @@ class mod_questionnaire_questions_form extends moodleform {
                             $mextra = array('value' => $question->id,
                                             'alt' => $strmove,
                                             'title' => $strmovehere.' (position '.$pos.')');
-                            $msrc = $OUTPUT->pix_url('movehere');
+                            $msrc = $questionnaire->renderer->pix_url('movehere');
                             $moveqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
                             $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$pos.']', $msrc, $mextra);
                             $moveqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');

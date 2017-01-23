@@ -102,7 +102,8 @@ Feature: Questionnaires can be public, private or template
     And I am on site homepage
     And I follow "Course 2"
     And I follow "Questionnaire from public"
-    Then I should see "This questionnaire used to depend on a Public questionnaire which has been deleted. It can no longer be used and should be deleted."
+    Then I should see "This questionnaire used to depend on a Public questionnaire which has been deleted."
+    And I should see "It can no longer be used and should be deleted."
     And I log out
     And I log in as "student1"
     And I follow "Course 2"

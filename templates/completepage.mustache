@@ -41,20 +41,20 @@
 
     Example context (json):
     {
-        "title":
-            {
-                "Test Questionnaire",
-            },
-    },
-    {
+        "notifications": "<div>Notification one</div>",
+        "respondentinfo": "<div>This is respondent information</div>",
+        "title": "Test Questionnaire",
+        "subtitle": "This is a subtitle",
+        "addinfo": "<div>This is additional information.</div>",
+        "message": "<div>This is a message.</div>",
+        "formstart": "<form id=\"formid\" method=\"post\" action=\"\">",
         "questions": [
-            {
-                "Question 1 HTML",
-            },
-            {
-                "Question 2 HTML",
-            },
-        ]
+            "<div>Question 1 HTML</div>",
+            "<div>Question 2 HTML</div>"
+        ],
+        "pageinfo": "<div>This is the page information.",
+        "controlbuttons": "<div>control button HTML</div>",
+        "formend": "</form>"
     }
     }}
 <div class="mod_questionnaire_completepage generalbox">
@@ -63,7 +63,7 @@
     {{#title}}<h3 class="surveyTitle">{{.}}</h3>{{/title}}{{{printblank}}}
     {{#subtitle}}<h4 class="surveySubTitle">{{.}}</h4>{{/subtitle}}
     {{#addinfo}}<div class="addInfo">{{{.}}}</div>{{/addinfo}}
-    {{#message}}{{{.}}}{{/message}}
+    {{#message}}<div class="message">{{{.}}}</div>{{/message}}
     <div class="generalbox">
         {{{formstart}}}
         {{#questions}}{{{.}}}{{/questions}}
