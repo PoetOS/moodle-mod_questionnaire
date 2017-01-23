@@ -351,6 +351,16 @@ td.selected {
     width: 97%;
 }
 
-.dir-rtl.path-mod-questionnaire .qn-content {margin-right:55px; margin-left: 0;}
-.dir-rtl.path-mod-questionnaire .qn-legend {float: right;}
+/* RTL fixes */
+.dir-rtl#page-mod-questionnaire-questions .qcontainer .qnums,
+.dir-rtl .qn-legend, 
+.dir-rtl .qn-info { float: right; } 
+
+.dir-rtl#page-mod-questionnaire-questions .qn-question { 
+margin-right: 40px; margin-left:auto; 
+}
+.dir-rtl#page-mod-questionnaire-questions #region-main .mform .fitem .felement {margin:0;}
 .dir-rtl.path-mod-questionnaire .floatprinticon {float: left;}
+.dir-rtl.path-mod-questionnaire .raterow > td:first-child {
+    text-align: right !important;
+}
