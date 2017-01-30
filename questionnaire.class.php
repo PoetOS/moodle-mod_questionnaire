@@ -2495,7 +2495,7 @@ class questionnaire {
      * @param string $userid
      * @return array
      */
-    protected function get_survey_all_responses($rid = '', $userid = '') {
+    protected function get_survey_all_responses($rid = '', $userid = '', $groupid = false) {
         global $DB;
         $uniquetypes = $this->get_survey_questiontypes(true);
         $allresponsessql = "";
@@ -2508,7 +2508,7 @@ class questionnaire {
                 continue;
             }
             $allresponsessql .= $allresponsessql == '' ? '' : ' UNION ALL ';
-            list ($sql, $params) = $question->response->get_bulk_sql($this->survey->id, $rid, $userid);
+            list ($sql, $params) = $question->response->get_bulk_sql($this->survey->id, $rid, $userid, $groupid);
             $allresponsesparams = array_merge($allresponsesparams, $params);
             $allresponsessql .= $sql;
         }
@@ -2699,7 +2699,7 @@ class questionnaire {
         }
 
         // Get all responses for this survey in one go.
-        $allresponsesrs = $this->get_survey_all_responses($rid, $userid);
+        $allresponsesrs = $this->get_survey_all_responses($rid, $userid, $currentgroupid);
 
         // Do we have any questions of type RADIO, DROP, CHECKBOX OR RATE? If so lets get all their choices in one go.
         $choicetypes = $this->choice_types();
@@ -2976,8 +2976,12 @@ class questionnaire {
 
             $prevresprow = $responserow;
         }
-        // Add final row to output.
-        $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition, $nbinfocols, $numrespcols);
+
+        if ($prevresprow !== false) {
+            // Add final row to output. May not exist if no response data was ever present.
+            $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition,
+                $nbinfocols, $numrespcols);
+        }
 
         // Change table headers to incorporate actual question numbers.
         $numcol = 0;
