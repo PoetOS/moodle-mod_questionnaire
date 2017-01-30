@@ -133,19 +133,29 @@ abstract class base {
      * @param int $surveyid
      * @param bool|int $responseid
      * @param bool|int $userid
+     * @param bool|int $groupid
      * @return array
      */
-    public function get_bulk_sql($surveyid, $responseid = false, $userid = false) {
+    public function get_bulk_sql($surveyid, $responseid = false, $userid = false, $groupid = false) {
         global $DB;
 
         $usernamesql = $DB->sql_cast_char2int('qr.username');
 
         $sql = $this->bulk_sql($surveyid, $responseid, $userid);
+        $params = [];
+        if (($groupid !== false) && ($groupid > 0)) {
+            $groupsql = ' INNER JOIN {groups_members} gm ON gm.groupid = ? AND gm.userid = '.$usernamesql.' ';
+            $gparams = [$groupid];
+        } else {
+            $groupsql = '';
+            $gparams = [];
+        }
         $sql .= "
             AND qr.survey_id = ? AND qr.complete = ?
       LEFT JOIN {user} u ON u.id = $usernamesql
+      $groupsql
         ";
-        $params = [$surveyid, 'y'];
+        $params = array_merge([$surveyid, 'y'], $gparams);
         if ($responseid) {
             $sql .= " WHERE qr.id = ?";
             $params[] = $responseid;
