@@ -41,7 +41,11 @@ $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\previewpage());
+if (!empty($rid)) {
+    $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+} else {
+    $questionnaire->add_page(new \mod_questionnaire\output\previewpage());
+}
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 if (!($questionnaire->capabilities->view && (($rid == 0) || $questionnaire->can_view_response($rid)))) {
