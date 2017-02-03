@@ -136,15 +136,17 @@ class question extends \core_search\base_mod {
         }
         return \core_search\manager::ACCESS_GRANTED;
     }
+
     /**
      * Link to the module instance.
      *
      * @param \core_search\document $doc
      * @return \moodle_url
      */
-    public function get_doc_url(\core_search\document $doc) {;
+    public function get_doc_url(\core_search\document $doc) {
         return $this->get_context_url($doc);
     }
+
     /**
      * Link to the module instance.
      *

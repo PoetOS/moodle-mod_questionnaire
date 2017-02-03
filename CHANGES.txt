@@ -1,7 +1,17 @@
 Release Notes
 
-Version 3.2.0
+Version 3.2.1
+Improvements/features:
+CONTRIB-5575 - Added renderers and templates to all output code.
+CONTRIB-6430 - Added global search functions.
 
+Bug fixes:
+CONTRIB-6642 - Fixed non-respondents screen.
+CONTRIB-6729 - Fixed group selection on CSV export.
+CONTRIB-6730 - Fixed printing of individual response.
+
+
+Version 3.2.0
 Improvements/features:
 CONTRIB-6093 - Upated Behat tests to work with 3.2.
 CONTRIB-5575 - Refactored code to use renderers and templates.
