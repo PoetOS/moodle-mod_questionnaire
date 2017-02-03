@@ -1,4 +1,6 @@
 Release Notes
+Version 3.1.4 (Build - 2017020200)
+CONTRIB-6729 - Fixed group selection on CSV export.
 
 Version 3.1.3 (Build - 2016120200)
 Github PR-74 - Ensure internal links used in submission confirmation URL or restored properly from backup.
