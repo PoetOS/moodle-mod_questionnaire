@@ -23,6 +23,8 @@
  */
 namespace mod_questionnaire\task;
 
+defined('MOODLE_INTERNAL') || die();
+
 class cleanup extends \core\task\scheduled_task {
 
     /**

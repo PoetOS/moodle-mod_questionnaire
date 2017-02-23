@@ -20,6 +20,9 @@
  * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
+
 // Because it exists (must).
 require_once($CFG->dirroot . '/mod/questionnaire/backup/moodle2/backup_questionnaire_stepslib.php');
 // Because it exists (optional).

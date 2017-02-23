@@ -3,7 +3,7 @@
 /* !important is needed in moodle 2.6 to override the display block when window width is reduced. */
 #page-mod-questionnaire-questions .qcontainer .fitemtitle,
 #page-mod-questionnaire-questions #id_questionhdr .fitemtitle {
-    display: none!important;
+    display: none !important;
 }
 
 #page-mod-questionnaire-questions .qcontainer .qnums {
@@ -23,18 +23,18 @@
 #page-mod-questionnaire-questions .mform .fitem fieldset.felement {
     margin-left: 0%;
     padding-left: 1%;
-    margin-bottom: 0px!important;
+    margin-bottom: 0px !important;
 }
 
 #page-mod-questionnaire-preview fieldset,
 #page-mod-questionnaire-complete fieldset {
-    margin-bottom: 0px!important;
+    margin-bottom: 0px !important;
 }
 
 #page-mod-questionnaire-questions .mform .fitem .fitemtitle {
     text-align: left;
     margin-left: 10px;
-    margin-bottom: 0px!important;
+    margin-bottom: 0px !important;
 }
 
 #page-mod-questionnaire-questions .moving {
@@ -45,7 +45,7 @@ div.qoptcontainer div.ftextarea {
     clear: all;
     float: none;
     width: 600px;
-    margin: 0pt auto 10px;
+    margin: 0px auto 10px;
 }
 
 div.qoptcontainer div.ftextarea textarea.qopts {
@@ -56,7 +56,7 @@ div.qoptcontainer div.ftextarea textarea.qopts {
 
 .response span.selected,
 .generalboxcontent span.selected {
-    font-weight:bold;
+    font-weight: bold;
 }
 
 td.selected {
@@ -66,7 +66,7 @@ td.selected {
 
 #page-mod-questionnaire-myreport div.respdate {
     font-size: 0.8em;
-    font-weight:bold;
+    font-weight: bold;
     margin-bottom: 6px;
     padding-top: 6px;
     border-bottom: 1px dashed gray;
@@ -78,11 +78,11 @@ td.selected {
 #page-mod-questionnaire-preview .notifyproblem,
 #page-mod-questionnaire-complete .thankbody,
 #page-mod-questionnaire-complete .thankhead {
-    background-color:#FFFFFF;
+    background-color: #FFFFFF;
     border-style: solid;
     border-width: 2px;
-    margin-bottom:10px;
-    padding:5px;
+    margin-bottom: 10px;
+    padding: 5px;
 }
 
 #page-mod-questionnaire-complete .notifyproblem,
@@ -105,21 +105,21 @@ td.selected {
 #page-mod-questionnaire-complete .surveyTitle,
 #page-mod-questionnaire-complete .surveySubtitle,
 #page-mod-questionnaire-complete .addInfo {
-    clear:both;
-    margin:0px;
-    margin-bottom:4px;
-    padding:10px;
+    clear: both;
+    margin: 0px;
+    margin-bottom: 4px;
+    padding: 10px;
 }
 
 .surveyPage {
     background-color: #eee;
-    border-bottom-color:#000000;
+    border-bottom-color: #000000;
     border-bottom-style: solid;
-    border-bottom-width:1px;
-    clear:right;
-    padding:3px;
-    margin-bottom:5px;
-    margin-top:0px;
+    border-bottom-width: 1px;
+    clear: right;
+    padding: 3px;
+    margin-bottom: 5px;
+    margin-top: 0px;
 }
 
 /* alternate columns formatting */
@@ -131,8 +131,8 @@ td.selected {
 #page-mod-questionnaire-myreport .individual .c0 {
     background-color: #fafafa;
     border: 1px solid silver;
-    padding-left:5px;
-    padding-right:5px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 #page-mod-questionnaire-complete .raterow:hover,
@@ -164,36 +164,36 @@ td.selected {
 #page-mod-questionnaire-myreport .individual .c1 {
     background-color: #eee;
     border: 1px solid silver;
-    padding-left:5px;
-    padding-right:5px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 #page-mod-questionnaire-myreport .individualresp,
 #page-mod-questionnaire-preview .individualresp,
 #page-mod-questionnaire-print .individualresp {
     border: #c0c0c0 1px solid;
-    padding-left:5px;
-    padding-right:5px;
-    padding-top:5px;
-    padding-bottom:0px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    padding-bottom: 0px;
     margin-bottom: 10px;
     margin-top: 10px;
 }
 
 #page-mod-questionnaire-complete .notice .buttons div,
 #page-mod-questionnaire-complete .notice .buttons form {
-    display:inline;
+    display: inline;
 }
 
 .floatprinticon {
-    margin-top:-30px;
-    float:right;
+    margin-top: -30px;
+    float: right;
 }
 
 .qn-legend {
-     float: left;
-     font-size:inherit;
-     width: auto;
+    float: left;
+    font-size: inherit;
+    width: auto;
 }
 
 /* format paragraph top and bottom margins for better vertical positioning in questions text */
@@ -222,14 +222,14 @@ td.selected {
 /*respondents list feature*/
 
 #respondentscolumn {
-    float:left;
-    margin-left:20px;
+    float: left;
+    margin-left: 20px;
 }
 .respondentsnavbar {
-    text-align:center;
-    padding-bottom:5px;
-    padding-top:5px;
-    margin-bottom:5px;
+    text-align: center;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    margin-bottom: 5px;
     background-color: #F2F2F2;
 }
 
@@ -260,7 +260,7 @@ td.selected {
 .qn-question,
 .qn-answer {
     margin: 0 0 0.5em;
-    overflow:auto;
+    overflow: auto;
 }
 
 #notice .qn-question {
@@ -273,7 +273,7 @@ td.selected {
 
 .qdepend {
     color: red;
-    padding-left:5px;
+    padding-left: 5px;
     margin-bottom: 5px;
 }
 
@@ -298,11 +298,11 @@ td.selected {
 }
 
 .hidedependquestion {
-    color:red;
+    color: red;
     display: none;
 }
 .qn-container {
-    color:black;
+    color: black;
     display: inherit;
     margin-left: 10px;
 }
@@ -310,7 +310,7 @@ td.selected {
 #page-mod-questionnaire-fbsections .c0,
 #page-mod-questionnaire-fbsections .c1 {
     border: 1px solid silver;
-    padding-left:4px;
+    padding-left: 4px;
     padding-right: 4px;
 }
 
@@ -331,7 +331,7 @@ td.selected {
 }
 
 #page-mod-questionnaire-fbsections .qcontainer.qcontent {
-    margin-bottom:-5em;
+    margin-bottom: -5em;
 }
 #page-mod-questionnaire-report div.chart {
     overflow: auto;
@@ -342,7 +342,9 @@ td.selected {
     border: 1px solid silver;
 }
 
-.qn-container .smalltext {font-size: 0.75em;}
+.qn-container .smalltext {
+    font-size: 0.75em;
+}
 
 /* !important is needed in moodle 2.6 to override the display block when window width is reduced. */
 #page-mod-questionnaire-questions #region-main .mform .fitem .felement {

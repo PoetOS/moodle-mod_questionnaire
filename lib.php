@@ -16,6 +16,8 @@
 
 // Library of functions and constants for module questionnaire.
 
+defined('MOODLE_INTERNAL') || die();
+
 define('QUESTIONNAIRE_RESETFORM_RESET', 'questionnaire_reset_data_');
 define('QUESTIONNAIRE_RESETFORM_DROP', 'questionnaire_drop_questionnaire_');
 

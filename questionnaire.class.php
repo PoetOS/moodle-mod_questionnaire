@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
 class questionnaire {
@@ -2784,7 +2786,8 @@ class questionnaire {
                             $columns[][$qpos] = $col;
                             $questionidcols[][$qpos] = $qid.'_'.$choice->cid;
                             array_push($types, '0');
-                            // If "Other" add a column for the "other" checkbox. Then add a column for the actual "other" text entered.
+                            // If "Other" add a column for the "other" checkbox.
+                            // Then add a column for the actual "other" text entered.
                             if (preg_match('/^!other/', $content)) {
                                 $content = $stringother;
                                 $col = $choice->name.'->['.$content.']';

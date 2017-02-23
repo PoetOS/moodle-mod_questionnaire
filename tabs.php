@@ -21,6 +21,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package questionnaire
  */
+
+defined('MOODLE_INTERNAL') || die();
+
 global $DB, $SESSION;
 $tabs = array();
 $row  = array();
