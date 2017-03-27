@@ -413,8 +413,8 @@ class rate extends base {
                 if ($osgood) {
                     $rowobj->osgoodstr = '&nbsp;'.format_text($contentright, FORMAT_HTML);
                 }
+                $resptags->rows[] = $rowobj;
             }
-            $resptags->rows[] = $rowobj;
         }
         return $resptags;
     }
