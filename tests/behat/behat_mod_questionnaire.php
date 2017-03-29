@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Steps definitions related with the database activity.
+ * Steps definitions related with the questionnaire activity.
  *
- * @package    mod_questuionnaire
+ * @package    mod_questionnaire
  * @category   test
  * @copyright  2016 Mike Churchward - The POET Group
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -34,7 +34,7 @@ use Behat\Behat\Context\Step\Given as Given,
     Behat\Mink\Exception\ExpectationException as ExpectationException;
 ;
 /**
- * Database-related steps definitions.
+ * Questionnaire-related steps definitions.
  *
  * @package    mod_questionnaire
  * @category   test
@@ -201,16 +201,16 @@ class behat_mod_questionnaire extends behat_base {
 
         $attempts = array(
             array("id", "qid", "userid", "rid", "timemodified"),
-            array("",$qid, "2", "1", "1419011935"),
-            array("",$qid, "2", "2", "1449064371"),
-            array("",$qid, "2", "3", "1449258520"),
-            array("",$qid, "2", "4", "1452020444"),
-            array("",$qid, "2", "5", "1452804783"),
-            array("",$qid, "2", "6", "1452806547")
+            array("", $qid, "2", "1", "1419011935"),
+            array("", $qid, "2", "2", "1449064371"),
+            array("", $qid, "2", "3", "1449258520"),
+            array("", $qid, "2", "4", "1452020444"),
+            array("", $qid, "2", "5", "1452804783"),
+            array("", $qid, "2", "6", "1452806547")
         );
         $this->add_data($attempts, 'questionnaire_attempts', '', array('responsemap' => 'rid'));
 
-        $response_bool = array(
+        $responsebool = array(
             array("id", "response_id", "question_id", "choice_id"),
             array("", "1", "1", "y"),
             array("", "1", "4", "n"),
@@ -227,10 +227,10 @@ class behat_mod_questionnaire extends behat_base {
             array("", "7", "1", "y"),
             array("", "7", "4", "y")
         );
-        $this->add_data($response_bool, 'questionnaire_response_bool', '',
+        $this->add_data($responsebool, 'questionnaire_response_bool', '',
             array('responsemap' => 'response_id', 'questionmap' => 'question_id'));
 
-        $response_date = array(
+        $responsedate = array(
             array("id", "response_id", "question_id", "response"),
             array("", "1", "8", "2014-12-19"),
             array("", "2", "8", "2015-12-02"),
@@ -239,19 +239,19 @@ class behat_mod_questionnaire extends behat_base {
             array("", "5", "8", "2016-01-13"),
             array("", "6", "8", "2016-01-13")
         );
-        $this->add_data($response_date, 'questionnaire_response_date', '',
+        $this->add_data($responsedate, 'questionnaire_response_date', '',
             array('responsemap' => 'response_id', 'questionmap' => 'question_id'));
 
-        $response_other = array(
+        $responseother = array(
             array("id", "response_id", "question_id", "choice_id", "response"),
             array("", "5", "7", "21", "Forty-four"),
             array("", "6", "12", "22", "Green"),
             array("", "7", "7", "21", "5")
         );
-        $this->add_data($response_other, 'questionnaire_response_other', '',
+        $this->add_data($responseother, 'questionnaire_response_other', '',
             array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
 
-        $response_rank = array(
+        $responserank = array(
             array("id", "response_id", "question_id", "choice_id", "rank"),
             array("", "1", "13", "16", "0"),
             array("", "1", "13", "17", "1"),
@@ -289,10 +289,10 @@ class behat_mod_questionnaire extends behat_base {
             array("", "7", "13", "19", "-999"),
             array("", "7", "13", "20", "-999")
         );
-        $this->add_data($response_rank, 'questionnaire_response_rank', '',
+        $this->add_data($responserank, 'questionnaire_response_rank', '',
             array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
 
-        $resp_multiple = array(
+        $respmultiple = array(
             array("id", "response_id", "question_id", "choice_id"),
             array("", "1", "7", "1"),
             array("", "1", "7", "3"),
@@ -310,10 +310,10 @@ class behat_mod_questionnaire extends behat_base {
             array("", "6", "7", "5"),
             array("", "7", "7", "21")
         );
-        $this->add_data($resp_multiple, 'questionnaire_resp_multiple', '',
+        $this->add_data($respmultiple, 'questionnaire_resp_multiple', '',
             array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
 
-        $resp_single = array(
+        $respsingle = array(
             array("id", "response_id", "question_id", "choice_id"),
             array("", "1", "9", "7"),
             array("", "1", "12", "15"),
@@ -328,7 +328,7 @@ class behat_mod_questionnaire extends behat_base {
             array("", "6", "9", "7"),
             array("", "6", "12", "22")
         );
-        $this->add_data($resp_single, 'questionnaire_resp_single', '',
+        $this->add_data($respsingle, 'questionnaire_resp_single', '',
             array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
     }
 

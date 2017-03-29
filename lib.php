@@ -16,6 +16,15 @@
 
 // Library of functions and constants for module questionnaire.
 
+/**
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
 define('QUESTIONNAIRE_RESETFORM_RESET', 'questionnaire_reset_data_');
 define('QUESTIONNAIRE_RESETFORM_DROP', 'questionnaire_drop_questionnaire_');
 

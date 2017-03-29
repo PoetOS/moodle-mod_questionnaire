@@ -17,10 +17,14 @@
 /**
  * prints the tabbed bar
  *
- * @author Mike Churchward
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questionnaire
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
+
 global $DB, $SESSION;
 $tabs = array();
 $row  = array();

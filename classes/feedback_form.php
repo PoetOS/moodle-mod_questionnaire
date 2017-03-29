@@ -17,10 +17,13 @@
 /**
  * Print the form to add or edit a questionnaire-instance
  *
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author Joseph Rezeau (based on Quiz by Tim Hunt)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questionnaire
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
