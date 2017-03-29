@@ -113,6 +113,8 @@ class rate extends base {
                 $this->choices[$cid] = '';
                 $nameddegrees++;
             } else {
+                // Something wrong here. $choice->content is being set, but it will never be used. This code exists as far back as
+                // 2.0.
                 $contents = questionnaire_choice_values($content);
                 if ($contents->modname) {
                     $choice->content = $contents->text;
