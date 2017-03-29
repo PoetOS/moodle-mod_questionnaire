@@ -1,5 +1,12 @@
 Release Notes
 
+Version 3.2.2
+Bug Fixes:
+CONTRIB-6787 - Restore doesn't recreate question dependencies properly in some cases.
+CONTRIB-6800 - Timing of questionnaire open/close doesn't update when course is restored.
+CONTRIB-6809 - Response display for rate questions using named degrees can display incorrectly.
+
+
 Version 3.2.1
 Improvements/features:
 CONTRIB-5575 - Added renderers and templates to all output code.

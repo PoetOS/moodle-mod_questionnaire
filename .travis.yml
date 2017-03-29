@@ -1,6 +1,5 @@
 language: php
 
-# sudo: required
 sudo: false
 
 cache:
@@ -43,9 +42,3 @@ script:
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
   - moodle-plugin-ci phpunit --coverage-text
-
-after_script:
-# See: https://github.com/moodlerooms/moodle-plugin-ci/issues/32
-  - killall -9 php
-  - killall -9 java
-  - killall -9 Xvfb
