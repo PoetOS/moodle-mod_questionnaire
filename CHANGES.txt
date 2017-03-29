@@ -1,5 +1,10 @@
 Release Notes
 
+Version 3.0.3 (Build - 2017032900)
+Bug Fixes:
+CONTRIB-6787 - Restore doesn't recreate question dependencies properly in some cases.
+CONTRIB-6800 - Timing of questionnaire open/close doesn't update when course is restored.
+
 Version 3.0.2 (Build - 2016120200)
 CONTRIB-6602 - Fixed incorrect use of $COURSE global in add_instance (Github PR-72).
 CONTRIB-6142 - Added correct formatting of text responses so that filtering occurs for enabled Moodle filters.
