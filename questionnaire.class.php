@@ -1705,6 +1705,8 @@ class questionnaire {
 
     private function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
         global $DB;
+        $qqc_cache = cache::make_from_params(cache_store::MODE_REQUEST, 'core', 'qqc',
+                array(), array('simplekeys' => true));
 
         $sid = $this->survey->id;
         $values = array();
@@ -1756,7 +1758,15 @@ class questionnaire {
                 $qtype = $row->q_type;
                 if ($csvexport) {
                     static $i = 1;
-                    $qrecords = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+                    $qrecords = $qqc_cache->get($qid);
+                    if (!$qrecords) {
+                        $qrecords = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+                        if (!$qrecords) {
+                            // Ensure query isn't repeatedly run
+                            $qrecords = array();
+                        }
+                        $qqc_cache->set($qid, $qrecords);
+                    }
                     foreach ($qrecords as $value) {
                         if ($value->id == $cid) {
                             $contents = questionnaire_choice_values($value->content);
@@ -1808,17 +1818,34 @@ class questionnaire {
         if ($csvexport) {
             $tmp = null;
             if (!empty($records)) {
+                $records2 = array();
                 $qids2 = array();
                 $oldqid = '';
                 foreach ($records as $qid => $row) {
                     if ($row->qid != $oldqid) {
-                        $qids2[] = $row->qid;
                         $oldqid = $row->qid;
+                        $temp = $qqc_cache->get($row->qid);
+                        if (!$temp) {
+                            $qids2[] = $row->qid;
+                        } else {
+                            $records2  = $records2 + $temp;
+                        }
                     }
                 }
-                list($qsql, $params) = $DB->get_in_or_equal($qids2);
-                $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE question_id ' . $qsql . 'ORDER BY id';
-                if ($records2 = $DB->get_records_sql($sql, $params)) {
+                if (!empty($qids2)) {
+                    $results = array();
+                    list($qsql, $params) = $DB->get_in_or_equal($qids2);
+                    $sql = 'SELECT * FROM {questionnaire_quest_choice} WHERE question_id '. $qsql . 'ORDER BY id';
+                    $temp1 = $DB->get_records_sql($sql, $params);
+                    foreach($temp1 as $id => $data) {
+                        $results[$data->question_id][$id] = $data;
+                    }
+                    foreach($results as $id => $data) {
+                        $qqc_cache->set($id, $data);
+                    }
+                    $records2 = $records2 + $temp1;
+                }
+                if (!empty($records2)) {
                     foreach ($records2 as $qid => $row2) {
                         $selected = '0';
                         $qid2 = $row2->question_id;
@@ -2706,6 +2733,8 @@ class questionnaire {
         }
         array_push($output, $columns);
         $numcols = count($output[0]);
+        $userfields = "U.username,U.institution,U.department," . get_all_user_name_fields(true, "U");
+        $castsql = $DB->sql_cast_char2int('R.username');
 
         if ($rid) {             // Send e-mail for a unique response ($rid).
             $select = 'survey_id = '.$this->survey->id.' AND complete=\'y\' AND id = '.$rid;
@@ -2714,8 +2743,9 @@ class questionnaire {
                 $records = array();
             }
         } else if ($userid) {    // Download CSV for one user's own responses'.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username AS uid, {$userfields}
                           FROM {questionnaire_response} R
+                     LEFT JOIN {user} U ON ({$castsql} = U.id)
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
                                R.username='$userid'
@@ -2725,16 +2755,17 @@ class questionnaire {
             }
 
         } else { // Download CSV for all participants (or groups if enabled).
-            $castsql = $DB->sql_cast_char2int('R.username');
             if ($currentgroupid == 0) { // All participants.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username AS uid, {$userfields}
                           FROM {questionnaire_response} R
+                     LEFT JOIN {user} U ON ({$castsql} = U.id)
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y'
                          ORDER BY R.id";
             } else {                 // Members of a specific group.
-                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
-                          FROM {questionnaire_response} R,
+                $sql = "SELECT R.id, R.survey_id, R.submitted, R.username AS uid, {$userfields}
+                          FROM {questionnaire_response} R
+                     LEFT JOIN {user} U ON ({$castsql} = U.id),
                                 {groups_members} GM
                          WHERE R.survey_id='{$this->survey->id}' AND
                                R.complete='y' AND
@@ -2757,10 +2788,13 @@ class questionnaire {
             $submitted = date(get_string('strfdateformatcsv', 'questionnaire'), $record->submitted);
             $institution = '';
             $department = '';
-            $username  = $record->username;
-            if ($user = $DB->get_record('user', array('id' => $username))) {
-                $institution = $user->institution;
-                $department = $user->department;
+            $username  = $record->uid;
+            if ($record->uid) {
+                $institution = $record->institution;
+                $department = $record->department;
+                $uid = $record->uid;
+                $fullname = fullname($record);
+                $username = $record->username;
             }
 
             // Moodle:
@@ -2779,15 +2813,6 @@ class questionnaire {
                 } else {
                     $courseid = $this->course->id;
                     $coursename = $this->course->fullname;
-                }
-            }
-            // Moodle:
-            //  If the username is numeric, try it as a Moodle user id.
-            if (is_numeric($username)) {
-                if ($user = $DB->get_record('user', array('id' => $username))) {
-                    $uid = $username;
-                    $fullname = fullname($user);
-                    $username = $user->username;
                 }
             }
 
