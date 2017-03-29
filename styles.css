@@ -350,3 +350,17 @@ td.selected {
     margin-left: 5px;
     width: 97%;
 }
+
+/* RTL fixes */
+.dir-rtl#page-mod-questionnaire-questions .qcontainer .qnums,
+.dir-rtl .qn-legend, 
+.dir-rtl .qn-info { float: right; } 
+
+.dir-rtl#page-mod-questionnaire-questions .qn-question { 
+margin-right: 40px; margin-left:auto; 
+}
+.dir-rtl#page-mod-questionnaire-questions #region-main .mform .fitem .felement {margin:0;}
+.dir-rtl.path-mod-questionnaire .floatprinticon {float: left;}
+.dir-rtl.path-mod-questionnaire .raterow > td:first-child {
+    text-align: right !important;
+}
