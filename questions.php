@@ -126,6 +126,12 @@ if ($delq) {
             $DB->delete_records('questionnaire_response', array('survey_id' => $sid));
             $DB->delete_records('questionnaire_attempts', array('qid' => $questionnaireid));
         }
+
+        // Delete this question, but also clean up choices from other improperly deleted questions
+        $not_deleted_questions = $DB->get_fieldset_select('questionnaire_question', 'id', 'deleted = ?', array('n'));
+        list($where, $params) = $DB->get_in_or_equal($not_deleted_questions ,SQL_PARAMS_QM, 'param', false);
+        $DB->delete_records_select('questionnaire_quest_choice', 'question_id ' . $where, $params);
+        $DB->delete_records('questionnaire_question', array('deleted' => 'y'));
     }
 
     // Log question deleted event.
