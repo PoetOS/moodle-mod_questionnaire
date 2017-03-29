@@ -45,13 +45,13 @@ function removeClass(el, aclass){
  * questionnaire with conditional branching.
  */
 
-function depend (children, choices) {
+function depend(children, choices) {
     children = children.split(',');
     choices = choices.split(',');
     var childrenlength = children.length;
     var choiceslength = choices.length;
-    child = null;
-    choice = null;
+    var child = null;
+    var choice = null;
     for (var i = 0; i < childrenlength; i++) {
         child = children[i];
         var q = document.getElementById(child);
@@ -74,11 +74,11 @@ function depend (children, choices) {
                         addClass(q, 'qn-container');
                     }
                     for (j = 0; j < radiolength; j++) {
-                        radio = radios[j];
+                        var radio = radios[j];
                         radio.disabled = false;
                     }
                     for (m = 0; m < droplistlength; m++) {
-                        droplist = droplists[m];
+                        var droplist = droplists[m];
                         droplist.disabled = false;
                     }
                     delete children[i];
@@ -91,19 +91,19 @@ function depend (children, choices) {
                     }
                     addClass(q, 'hidedependquestion');
                     for (j = 0; j < radiolength; j++) {
-                        radio = radios[j];
+                        var radio = radios[j];
                         radio.disabled = true;
                         radio.checked = false;
                         radio.value = '';
                     }
                     for (m = 0; m < droplistlength; m++) {
-                        droplist = droplists[m];
+                        var droplist = droplists[m];
                         droplist.selectedIndex = 0;
                         droplist.disabled = true;
                         droplist.checked = false;
                     }
                     for (n = 0; n < textarealength; n++) {
-                        textarea = textareas[n];
+                        var textarea = textareas[n];
                         textarea.value = '';
                     }
                 }
@@ -112,17 +112,20 @@ function depend (children, choices) {
     }
 }
 
+/* exported dependdrop */
+
 function dependdrop(qId, children) {
     var e = document.getElementById(qId);
     var choice = e.options[e.selectedIndex].value;
-    depend (children, choice);
+    depend(children, choice);
 }
 // End conditional branching functions.
 
 // When respondent enters text in !other field, corresponding
 // radio button OR check box is automatically checked.
+/* exported other_check */
 function other_check(name) {
-    other = name.split("_");
+    var other = name.split("_");
     var f = document.getElementById("phpesp_response");
     for (var i = 0; i <= f.elements.length; i++) {
         if (f.elements[i].value == "other_" + other[1]) {
@@ -133,20 +136,21 @@ function other_check(name) {
 }
 
 // Automatically empty an !other text input field if another Radio button is clicked.
+/* exported other_check_empty */
 function other_check_empty(name, value) {
     var f = document.getElementById("phpesp_response");
     var i;
     for (i = 0; i < f.elements.length; i++) {
-        if ((f.elements[i].name == name) && f.elements[i].value.substr(0,6) == "other_") {
+        if ((f.elements[i].name == name) && f.elements[i].value.substr(0, 6) == "other_") {
             f.elements[i].checked = true;
             var otherid = f.elements[i].name + "_" + f.elements[i].value.substring(6);
-            var other = document.getElementsByName (otherid);
+            var other = document.getElementsByName(otherid);
             if (value.substr(0,6) != "other_") {
                 other[0].value = "";
             } else {
                 other[0].focus();
             }
-            var actualbuttons = document.getElementsByName (name);
+            var actualbuttons = document.getElementsByName(name);
             for (i = 0; i <= actualbuttons.length; i++) {
                 if (actualbuttons[i].value == value) {
                     actualbuttons[i].checked = true;
@@ -160,11 +164,12 @@ function other_check_empty(name, value) {
 
 // In a Rate question type of sub-type Order : automatically uncheck a Radio button
 // when another radio button in the same column is clicked.
+/* exported other_rate_uncheck */
 function other_rate_uncheck(name, value) {
-    col_name = name.substr(0, name.indexOf("_"));
+    var col_name = name.substr(0, name.indexOf("_"));
     var inputbuttons = document.getElementsByTagName("input");
     for (var i = 0; i <= inputbuttons.length - 1; i++) {
-        button = inputbuttons[i];
+        var button = inputbuttons[i];
         if (button.type == "radio" && button.name != name && button.value == value
                     && button.name.substr(0, name.indexOf("_")) == col_name) {
             button.checked = false;
@@ -173,12 +178,13 @@ function other_rate_uncheck(name, value) {
 }
 
 // Empty an !other text input when corresponding Check Box is clicked (supposedly to empty it).
+/* exported checkbox_empty */
 function checkbox_empty(name) {
-    var actualbuttons = document.getElementsByName (name);
+    var actualbuttons = document.getElementsByName(name);
     for (var i = 0; i <= actualbuttons.length; i++) {
-        if (actualbuttons[i].value.substr(0,6) == "other_") {
-            name = name.substring(0,name.length - 2) + actualbuttons[i].value.substring(5);
-            var othertext = document.getElementsByName (name);
+        if (actualbuttons[i].value.substr(0, 6) == "other_") {
+            name = name.substring(0, name.length - 2) + actualbuttons[i].value.substring(5);
+            var othertext = document.getElementsByName(name);
             if (othertext[0].value == "" && actualbuttons[i].checked == true) {
                 othertext[0].focus();
             } else {
@@ -192,6 +198,8 @@ function checkbox_empty(name) {
 
 M.mod_questionnaire = M.mod_questionnaire || {};
 
+/* exported Y */
+/* exported e */
 M.mod_questionnaire.init_attempt_form = function(Y) {
     M.core_formchangechecker.init({formid: 'phpesp_response'});
 };
