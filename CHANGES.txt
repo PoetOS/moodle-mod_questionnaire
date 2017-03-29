@@ -1,4 +1,10 @@
 Release Notes
+
+Version 3.1.5 (Build - 2017032900)
+Bug Fixes:
+CONTRIB-6787 - Restore doesn't recreate question dependencies properly in some cases.
+CONTRIB-6800 - Timing of questionnaire open/close doesn't update when course is restored.
+
 Version 3.1.4 (Build - 2017020200)
 CONTRIB-6729 - Fixed group selection on CSV export.
 
