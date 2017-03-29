@@ -291,7 +291,7 @@ $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid, $s
 // Print the list of students.
 
 $questionnaire->page->add_to_page('formarea', (isset($groupselect) ? $groupselect : ''));
-$questionnaire->page->add_to_page('formarea', html_writer::tag('div', ['class' => 'clearer']));
+$questionnaire->page->add_to_page('formarea', html_writer::tag('div', '', ['class' => 'clearer']));
 $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->box_start('left-align'));
 
 $countries = get_string_manager()->get_list_of_countries();
