@@ -86,6 +86,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $data = (object)$data;
         $data->course = $this->get_courseid();
 
+        $data->opendate = $this->apply_date_offset($data->opendate);
+        $data->closedate = $this->apply_date_offset($data->closedate);
         $data->timemodified = $this->apply_date_offset($data->timemodified);
 
         // Insert the questionnaire record.
