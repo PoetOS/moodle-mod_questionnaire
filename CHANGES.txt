@@ -1,5 +1,11 @@
 Release Notes
 
+Version 3.2.3
+Bug Fixes:
+CONTRIB-6813 - Remove notification from "non-respondents" screen.
+CONTRIB-6815 - Fixed more alignment issues on rate response display.
+CONTRIB-6816 - Added a space after the group selector on "all responses" screen.
+
 Version 3.2.2
 Bug Fixes:
 CONTRIB-6787 - Restore doesn't recreate question dependencies properly in some cases.
