@@ -15,6 +15,7 @@
         <FIELD NAME="respondenttype" TYPE="char" LENGTH="9" NOTNULL="true" DEFAULT="fullname" SEQUENCE="false" COMMENT="Eligible respondents"/>
         <FIELD NAME="resp_eligible" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="all" SEQUENCE="false" COMMENT="Eligible respondents."/>
         <FIELD NAME="resp_view" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire viewed?"/>
+        <FIELD NAME="notifications" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Send submission notifications."/>
         <FIELD NAME="opendate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp to open access"/>
         <FIELD NAME="closedate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp to close access on"/>
         <FIELD NAME="resume" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire can be saved and resumed."/>
