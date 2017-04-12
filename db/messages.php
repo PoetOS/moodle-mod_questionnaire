@@ -25,10 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$messageproviders = array (
-
-// Message to nonrespondents.
-    'message' => array (
-    )
-
-);
+$messageproviders = [
+    // Message to nonrespondents.
+    'message' => [],
+    // Response submissions.
+    'notification' => []
+];
