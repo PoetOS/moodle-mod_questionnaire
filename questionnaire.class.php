@@ -289,7 +289,7 @@ class questionnaire {
                 $event = \mod_questionnaire\event\attempt_submitted::create($params);
                 $event->trigger();
 
-                $this->response_send_email($this->rid);
+                $this->submission_notify($this->rid);
                 $this->response_goto_thankyou();
             }
         }
@@ -1471,13 +1471,156 @@ class questionnaire {
         return $nam;
     }
 
-    private function response_send_email($rid, $userid=false) {
+    /**
+     * Handle all submission notification actions.
+     * @param int $rid The id of the response record.
+     * @return boolean Operation success.
+     *
+     */
+    private function submission_notify($rid) {
+        $success = true;
+
+        $success = $this->response_send_email($rid) && $success;
+
+        if ($this->notifications) {
+            // Handle notification of submissions.
+            $success = $this->send_submission_notifications($rid) && $success;
+        }
+
+        return $success;
+    }
+
+    /**
+     * Send submission notifications to users with "submissionnotification" capability.
+     * @param int $rid The id of the response record.
+     * @return boolean Operation success.
+     *
+     */
+    private function send_submission_notifications($rid) {
+        global $CFG, $USER;
+
+        $success = true;
+        if ($notifyusers = $this->get_notifiable_users($USER->id)) {
+            $info = new stdClass();
+            // Need to handle user differently for anonymous surveys.
+            if ($this->respondenttype != 'anonymous') {
+                $info->userfrom = $USER;
+                $info->username = fullname($info->userfrom, true);
+                $info->profileurl = $CFG->wwwroot.'/user/view.php?id='.$info->userfrom->id.'&course='.$this->course->id;
+                $langstringtext = 'submissionnotificationtextuser';
+                $langstringhtml = 'submissionnotificationhtmluser';
+            } else {
+                $info->userfrom = \core_user::get_noreply_user();
+                $info->username = '';
+                $info->profileurl = '';
+                $langstringtext = 'submissionnotificationtextanon';
+                $langstringhtml = 'submissionnotificationhtmlanon';
+            }
+            $info->name = format_string($this->name);
+            $info->submissionurl = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.
+                    '&amp;rid='.$rid.'&amp;instance='.$this->id;
+
+            $info->postsubject = get_string('submissionnotificationsubject', 'questionnaire');
+            $info->posttext = get_string($langstringtext, 'questionnaire', $info);
+            $info->posthtml = '<p>' . get_string($langstringhtml, 'questionnaire', $info) . '</p>';
+
+            foreach ($notifyusers as $notifyuser) {
+                $info->userto = $notifyuser;
+                $this->send_message($info, 'notification');
+            }
+        }
+
+        return $success;
+    }
+
+    /**
+     * Message someone about something.
+     *
+     * @param object $info The information for the message.
+     * @param string $eventtype
+     * @return void
+     */
+    private function send_message($info, $eventtype) {
+        global $USER;
+
+        $eventdata = new \core\message\message();
+        $eventdata->courseid         = $this->course->id;
+        $eventdata->modulename       = 'questionnaire';
+        $eventdata->userfrom         = $info->userfrom;
+        $eventdata->userto           = $info->userto;
+        $eventdata->subject          = $info->postsubject;
+        $eventdata->fullmessage      = $info->posttext;
+        $eventdata->fullmessageformat = FORMAT_PLAIN;
+        $eventdata->fullmessagehtml  = $info->posthtml;
+        $eventdata->smallmessage     = $info->postsubject;
+
+        $eventdata->name            = $eventtype;
+        $eventdata->component       = 'mod_questionnaire';
+        $eventdata->notification    = 1;
+        $eventdata->contexturl      = $info->submissionurl;
+        $eventdata->contexturlname  = $info->name;
+
+        message_send($eventdata);
+    }
+
+    /**
+     * Returns a list of users that should receive notification about given submission.
+     *
+     * @param int $userid The submission to grade
+     * @return array
+     */
+    protected function get_notifiable_users($userid) {
+        // Potential users should be active users only.
+        $potentialusers = get_enrolled_users($this->context, 'mod/questionnaire:submissionnotification',
+            null, 'u.*', null, null, null, true);
+
+        $notifiableusers = [];
+        if (groups_get_activity_groupmode($this->cm) == SEPARATEGROUPS) {
+            if ($groups = groups_get_all_groups($this->course->id, $userid, $this->cm->groupingid)) {
+                foreach ($groups as $group) {
+                    foreach ($potentialusers as $potentialuser) {
+                        if ($potentialuser->id == $userid) {
+                            // Do not send self.
+                            continue;
+                        }
+                        if (groups_is_member($group->id, $potentialuser->id)) {
+                            $notifiableusers[$potentialuser->id] = $potentialuser;
+                        }
+                    }
+                }
+            } else {
+                // User not in group, try to find graders without group.
+                foreach ($potentialusers as $potentialuser) {
+                    if ($potentialuser->id == $userid) {
+                        // Do not send self.
+                        continue;
+                    }
+                    if (!groups_has_membership($this->cm, $potentialuser->id)) {
+                        $notifiableusers[$potentialuser->id] = $potentialuser;
+                    }
+                }
+            }
+        } else {
+            foreach ($potentialusers as $potentialuser) {
+                if ($potentialuser->id == $userid) {
+                    // Do not send self.
+                    continue;
+                }
+                $notifiableusers[$potentialuser->id] = $potentialuser;
+            }
+        }
+        return $notifiableusers;
+    }
+
+    private function response_send_email($rid) {
         global $CFG, $DB;
 
         require_once($CFG->libdir.'/phpmailer/class.phpmailer.php');
 
         $name = s($this->name);
-        if ($record = $DB->get_record('questionnaire_survey', array('id' => $this->survey->id))) {
+        if (isset($this->survey) && isset($this->survey->email)) {
+            $email = $this->survey->email;
+        } else if ($record = $DB->get_record('questionnaire_survey', ['id' => $this->survey->id])) {
             $email = $record->email;
         } else {
             $email = '';
@@ -1486,7 +1629,7 @@ class questionnaire {
         if (empty($email)) {
             return(false);
         }
-        $answers = $this->generate_csv($rid, $userid = '', null, 1, $groupid = 0);
+        $answers = $this->generate_csv($rid, '', null, 1, $groupid = 0);
 
         // Line endings for html and plaintext emails.
         $endhtml = "\r\n<br>";
