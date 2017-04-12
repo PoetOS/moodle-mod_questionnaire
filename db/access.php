@@ -75,6 +75,18 @@ $capabilities = array(
          )
     ),
 
+    // Receive a notificaton for every submission.
+    'mod/questionnaire:submissionnotification' => array(
+
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+         )
+    ),
+
     // Ability to download responses in a CSV file.
     'mod/questionnaire:downloadresponses' => array(
 

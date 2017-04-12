@@ -551,6 +551,20 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
          upgrade_mod_savepoint(true, 2016020204, 'questionnaire');
     }
 
+    // Add the field for notifications from CONTRIB-6136.
+    if ($oldversion < 2016071101) {
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('notifications', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'resp_view');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Questionnaire savepoint reached.
+         upgrade_mod_savepoint(true, 2016071101, 'questionnaire');
+    }
+
     return $result;
 }
 

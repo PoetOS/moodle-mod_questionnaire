@@ -22,10 +22,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$messageproviders = array (
+defined('MOODLE_INTERNAL') || die();
 
-// Message to nonrespondents.
-    'message' => array (
-    )
-
-);
+$messageproviders = [
+    // Message to nonrespondents.
+    'message' => [],
+    // Response submissions.
+    'notification' => []
+];
