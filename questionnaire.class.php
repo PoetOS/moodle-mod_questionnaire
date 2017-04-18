@@ -1613,7 +1613,7 @@ class questionnaire {
     }
 
     private function response_send_email($rid) {
-        global $CFG, $DB;
+        global $CFG, $DB, $USER;
 
         require_once($CFG->libdir.'/phpmailer/class.phpmailer.php');
 
