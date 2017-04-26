@@ -1,5 +1,9 @@
 Release Notes
 
+Version 3.1.6 (Build - 2017042600)
+New Features:
+CONTRIB-6136 - Added submission notifications by capability.
+
 Version 3.1.5 (Build - 2017032900)
 Bug Fixes:
 CONTRIB-6787 - Restore doesn't recreate question dependencies properly in some cases.
