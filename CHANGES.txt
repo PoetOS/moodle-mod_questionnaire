@@ -1,5 +1,9 @@
 Release Notes
 
+Version 3.1.7 (Build - 2017042600)
+Bug fixes:
+CONTRIB-6136 - Fixed notification errors and URL.
+
 Version 3.1.6 (Build - 2017042600)
 New Features:
 CONTRIB-6136 - Added submission notifications by capability.
