@@ -1517,8 +1517,8 @@ class questionnaire {
                 $langstringhtml = 'submissionnotificationhtmlanon';
             }
             $info->name = format_string($this->name);
-            $info->submissionurl = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$this->survey->id.
-                    '&amp;rid='.$rid.'&amp;instance='.$this->id;
+            $info->submissionurl = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&sid='.$this->survey->id.
+                    '&rid='.$rid.'&instance='.$this->id;
 
             $info->postsubject = get_string('submissionnotificationsubject', 'questionnaire');
             $info->posttext = get_string($langstringtext, 'questionnaire', $info);
