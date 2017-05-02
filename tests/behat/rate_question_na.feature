@@ -21,9 +21,9 @@ Feature: Rate scale questions have options for displaing "N/A"
       | activity | name | description | course | idnumber |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Questions" node in "Questionnaire administration"
+    And I navigate to "Questions" in current page administration
     And I add a "Rate (scale 1..5)" question and I fill the form with:
       | Question Name | Q1 |
       | Yes | y |
@@ -35,18 +35,18 @@ Feature: Rate scale questions have options for displaing "N/A"
     And I log out
 
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Answer the questions..." node in "Questionnaire administration"
+    And I navigate to "Answer the questions..." in current page administration
     Then I should see "Test questionnaire"
     And I should see "Rate these movies from 1 to 5"
     And I should not see "N/A"
     And I log out
 
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Questions" node in "Questionnaire administration"
+    And I navigate to "Questions" in current page administration
     And I click on "input[title=Edit]" "css_element"
     And I should see "Editing Rate (scale 1..5) question"
     And I set the field "id_precise" to "1"
@@ -54,9 +54,9 @@ Feature: Rate scale questions have options for displaing "N/A"
     And I log out
 
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Answer the questions..." node in "Questionnaire administration"
+    And I navigate to "Answer the questions..." in current page administration
     Then I should see "Test questionnaire"
     And I should see "Rate these movies from 1 to 5"
     And I should see "N/A"

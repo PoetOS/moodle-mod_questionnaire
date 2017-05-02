@@ -20,9 +20,9 @@ Feature: Radio questions allow optional "other" responses with optional labels
       | activity | name | description | course | idnumber |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Questions" node in "Questionnaire administration"
+    And I navigate to "Questions" in current page administration
     And I add a "Radio Buttons" question and I fill the form with:
       | Question Name | Q1 |
       | Yes | y |
@@ -44,9 +44,9 @@ Feature: Radio questions allow optional "other" responses with optional labels
 @javascript
   Scenario: Student selects other options and enters their own text.
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Answer the questions..." node in "Questionnaire administration"
+    And I navigate to "Answer the questions..." in current page administration
     Then I should see "Test questionnaire"
     And I click on "Other:" "radio"
     And I set the field "Text for Other:" to "Yellow"

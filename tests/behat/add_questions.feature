@@ -21,9 +21,9 @@ Feature: Add questions to a questionnaire activity
       | activity | name | description | course | idnumber |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Questions" node in "Questionnaire administration"
+    And I navigate to "Questions" in current page administration
     And I add a "Check Boxes" question and I fill the form with:
       | Question Name | Q1 |
       | Yes | y |

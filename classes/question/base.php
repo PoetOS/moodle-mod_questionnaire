@@ -600,7 +600,7 @@ abstract class base {
                 $required .= get_string('required', 'questionnaire');
                 $required .= html_writer::end_tag('div');
                 $required .= html_writer::empty_tag('img', ['class' => 'req', 'title' => get_string('required', 'questionnaire'),
-                    'alt' => get_string('required', 'questionnaire'), 'src' => $OUTPUT->pix_url('req')]);
+                    'alt' => get_string('required', 'questionnaire'), 'src' => $OUTPUT->image_url('req')]);
             }
             $pagetags->required = $required; // Need to replace this with better renderer / template?
         }

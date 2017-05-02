@@ -21,6 +21,6 @@ Feature: Add a questionnaire activity
       | activity | name | description | course | idnumber |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
     Then I should see "This questionnaire does not contain any questions."
