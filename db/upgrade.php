@@ -574,6 +574,42 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
          upgrade_mod_savepoint(true, 2016111105, 'questionnaire');
     }
 
+    if ($oldversion < 2017050100) {
+        // Changing type of field username from char to int.
+        $table = new xmldb_table('questionnaire_response');
+        $field = new xmldb_field('username', XMLDB_TYPE_INTEGER, '10');
+
+        // Launch change of type for field username.
+        $dbman->change_field_type($table, $field);
+
+        // Change the name from username to userid.
+        $dbman->rename_field($table, $field, 'userid');
+
+        // Drop the old 'owner' index before modifying the field.
+        $table = new xmldb_table('questionnaire_survey');
+        $index = new xmldb_index('owner', XMLDB_INDEX_NOTUNIQUE, ['owner']);
+        $dbman->drop_index($table, $index);
+
+        // Changing type of field owner from char to int.
+        $table = new xmldb_table('questionnaire_survey');
+        $field = new xmldb_field('owner', XMLDB_TYPE_INTEGER, '10');
+
+        // Launch change of type for field owner.
+        $dbman->change_field_type($table, $field);
+
+        // Change the name from owner to courseid.
+        $dbman->rename_field($table, $field, 'courseid');
+
+        // Add the index back with the new name.
+        $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, ['courseid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2017050100, 'questionnaire');
+    }
+
     return $result;
 }
 

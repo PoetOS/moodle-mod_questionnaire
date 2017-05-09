@@ -141,7 +141,7 @@ if ($settings = $settingsform->get_data()) {
     } else {
         $sdata->feedbacksections = '';
     }
-    $sdata->owner = $settings->owner;
+    $sdata->courseid = $settings->courseid;
     if (!($sid = $questionnaire->survey_update($sdata))) {
         print_error('couldnotcreatenewsurvey', 'questionnaire');
     } else {

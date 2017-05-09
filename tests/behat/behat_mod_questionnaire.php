@@ -187,7 +187,7 @@ class behat_mod_questionnaire extends behat_base {
      */
     private function add_response_data($qid, $sid) {
         $responses = array(
-            array("id", "survey_id", "submitted", "complete", "grade", "username"),
+            array("id", "survey_id", "submitted", "complete", "grade", "userid"),
             array("1", $sid, "1419011935", "y", "0", "2"),
             array("2", $sid, "1449064371", "y", "0", "2"),
             array("3", $sid, "1449258520", "y", "0", "2"),

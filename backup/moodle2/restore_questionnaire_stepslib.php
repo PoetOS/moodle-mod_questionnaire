@@ -103,7 +103,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $data = (object)$data;
         $oldid = $data->id;
-        $data->owner = $this->get_courseid();
+        $data->courseid = $this->get_courseid();
 
         // Insert the questionnaire_survey record.
         $newitemid = $DB->insert_record('questionnaire_survey', $data);
@@ -213,9 +213,15 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         global $DB;
 
         $data = (object)$data;
+
+        // Older versions of questionnaire used 'username' instead of 'userid'. If 'username' exists, change it to 'userid'.
+        if (isset($data->username) && !isset($data->userid)) {
+            $data->userid = $data->username;
+        }
+
         $oldid = $data->id;
         $data->survey_id = $this->get_mappingid('questionnaire_survey', $data->survey_id);
-        $data->username = $this->get_mappingid('user', $data->username);
+        $data->userid = $this->get_mappingid('user', $data->userid);
 
         // Insert the questionnaire_response record.
         $newitemid = $DB->insert_record('questionnaire_response', $data);

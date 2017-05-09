@@ -1,5 +1,9 @@
 Release Notes
 
+Version 3.2.4 (Build - 2017042700)
+New Features:
+CONTRIB-6136 - Added submission notifications by capability.
+
 Version 3.2.3
 Bug Fixes:
 CONTRIB-6813 - Remove notification from "non-respondents" screen.

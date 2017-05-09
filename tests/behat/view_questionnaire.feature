@@ -24,9 +24,9 @@ Feature: Questionnaires can be public, private or template
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
     And I log in as "manager1"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Advanced settings" node in "Questionnaire administration"
+    And I navigate to "Advanced settings" in current page administration
     And I should see "Content options"
     And I set the field "id_realm" to "template"
     And I press "Save and display"
@@ -57,10 +57,10 @@ Feature: Questionnaires can be public, private or template
       | coursebinenable | 0 | tool_recyclebin |
     And I log in as "manager1"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
     And I follow "Test questionnaire"
-    And I navigate to "Questions" node in "Questionnaire administration"
+    And I navigate to "Questions" in current page administration
     And I add a "Check Boxes" question and I fill the form with:
       | Question Name | Q1 |
       | Yes | y |
@@ -81,7 +81,7 @@ Feature: Questionnaires can be public, private or template
     And I press "Cancel"
 # Verify that a public questionnaire can be used in a different course.
     And I am on site homepage
-    And I follow "Course 2"
+    And I am on "Course 2" course homepage
     And I add a "Questionnaire" to section "1"
     And I expand all fieldsets
     And I set the field "name" to "Questionnaire from public"
@@ -89,23 +89,23 @@ Feature: Questionnaires can be public, private or template
     And I press "Save and return to course"
     And I log out
     And I log in as "student1"
-    And I follow "Course 2"
+    And I am on "Course 2" course homepage
     And I follow "Questionnaire from public"
     Then I should see "Answer the questions..."
 # Verify message for public questionnaire that has been deleted.
     And I log out
     And I log in as "manager1"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     And I delete "Test questionnaire" activity
     And I am on site homepage
-    And I follow "Course 2"
+    And I am on "Course 2" course homepage
     And I follow "Questionnaire from public"
     Then I should see "This questionnaire used to depend on a Public questionnaire which has been deleted."
     And I should see "It can no longer be used and should be deleted."
     And I log out
     And I log in as "student1"
-    And I follow "Course 2"
+    And I am on "Course 2" course homepage
     And I follow "Questionnaire from public"
     Then I should see "This questionnaire is no longer available. Ask your teacher to delete it."

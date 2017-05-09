@@ -123,7 +123,7 @@ abstract class base {
             $userfields .= $userfields === '' ? '' : ', ';
             $userfields .= 'u.'.$field;
         }
-        $userfields .= ', u.id as userid';
+        $userfields .= ', u.id as uid';
         return $userfields;
     }
 
@@ -139,12 +139,10 @@ abstract class base {
     public function get_bulk_sql($surveyid, $responseid = false, $userid = false, $groupid = false) {
         global $DB;
 
-        $usernamesql = $DB->sql_cast_char2int('qr.username');
-
         $sql = $this->bulk_sql($surveyid, $responseid, $userid);
         $params = [];
         if (($groupid !== false) && ($groupid > 0)) {
-            $groupsql = ' INNER JOIN {groups_members} gm ON gm.groupid = ? AND gm.userid = '.$usernamesql.' ';
+            $groupsql = ' INNER JOIN {groups_members} gm ON gm.groupid = ? AND gm.userid = qr.userid ';
             $gparams = [$groupid];
         } else {
             $groupsql = '';
@@ -152,7 +150,7 @@ abstract class base {
         }
         $sql .= "
             AND qr.survey_id = ? AND qr.complete = ?
-      LEFT JOIN {user} u ON u.id = $usernamesql
+      LEFT JOIN {user} u ON u.id = qr.userid
       $groupsql
         ";
         $params = array_merge([$surveyid, 'y'], $gparams);
@@ -160,7 +158,7 @@ abstract class base {
             $sql .= " WHERE qr.id = ?";
             $params[] = $responseid;
         } else if ($userid) {
-            $sql .= " WHERE qr.username = ?"; // Note: username is the userid.
+            $sql .= " WHERE qr.userid = ?";
             $params[] = $userid;
         }
 
@@ -207,7 +205,7 @@ abstract class base {
 
         return "
             SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
-                   qr.submitted, qr.complete, qr.grade, qr.username, $userfields, qr.id AS rid, $alias.question_id,
+                   qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
               JOIN {".$config->table."} $alias

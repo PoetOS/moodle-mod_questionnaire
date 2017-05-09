@@ -31,10 +31,10 @@ Feature: Review responses
 #    And I set the field "id_s__lang" to "en‎"
     And I log out
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
     Then I should see "View All Responses"
-    And I navigate to "View All Responses" node in "Questionnaire administration"
+    And I navigate to "View All Responses" in current page administration
     Then I should see "View All Responses."
     And I should see "All participants."
     And I should see "View Default order"
