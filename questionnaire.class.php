@@ -481,7 +481,7 @@ class questionnaire {
     }
 
     public function is_survey_owner() {
-        return (!empty($this->survey->owner) && ($this->course->id == $this->survey->owner));
+        return (!empty($this->survey->courseid) && ($this->course->id == $this->survey->courseid));
     }
 
     public function can_view_response($rid) {
@@ -543,8 +543,8 @@ class questionnaire {
     public function can_view_all_responses($usernumresp = null) {
         global $USER, $DB, $SESSION;
 
-        if ($owner = $DB->get_field('questionnaire_survey', 'owner', array('id' => $this->sid))) {
-            $owner = (trim($owner) == trim($this->course->id));
+        if ($owner = $DB->get_field('questionnaire_survey', 'courseid', ['id' => $this->sid])) {
+            $owner = ($owner == $this->course->id);
         } else {
             $owner = true;
         }
@@ -1058,7 +1058,7 @@ class questionnaire {
             // Theme field deprecated.
             $record = new stdClass();
             $record->id = 0;
-            $record->owner = $sdata->owner;
+            $record->courseid = $sdata->courseid;
             foreach ($fields as $f) {
                 if (isset($sdata->$f)) {
                     $record->$f = $sdata->$f;
@@ -1120,7 +1120,7 @@ class questionnaire {
         $survey = clone($this->survey);
 
         unset($survey->id);
-        $survey->owner = $owner;
+        $survey->courseid = $owner;
         // Make sure that the survey name is not larger than the field size (CONTRIB-2999). Leave room for extra chars.
         $survey->name = core_text::substr($survey->name, 0, (64 - 10));
 

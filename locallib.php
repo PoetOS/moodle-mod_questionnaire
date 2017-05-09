@@ -458,7 +458,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
 
     if ($courseid == 0) {
         if (isadmin()) {
-            $sql = "SELECT id,name,owner,realm,status " .
+            $sql = "SELECT id,name,courseid,realm,status " .
                    "{questionnaire_survey} " .
                    "ORDER BY realm,name ";
             $params = null;
@@ -466,38 +466,37 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
             return false;
         }
     } else {
-        $castsql = $DB->sql_cast_char2int('s.owner');
         if ($type == 'public') {
-            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
+            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
                    "FROM {questionnaire} q " .
-                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
+                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
                    "WHERE realm = ? " .
                    "ORDER BY realm,name ";
-            $params = array($type);
+            $params = [$type];
         } else if ($type == 'template') {
-            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
+            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
                    "FROM {questionnaire} q " .
-                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
+                   "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
                    "WHERE (realm = ?) " .
                    "ORDER BY realm,name ";
-            $params = array($type);
+            $params = [$type];
         } else if ($type == 'private') {
-            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid,q.name as qname " .
+            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname " .
                 "FROM {questionnaire} q " .
                 "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
-                "WHERE owner = ? and realm = ? " .
+                "WHERE s.courseid = ? and realm = ? " .
                 "ORDER BY realm,name ";
-            $params = array($courseid, $type);
+            $params = [$courseid, $type];
 
         } else {
             // Current get_survey_list is called from function questionnaire_reset_userdata so we need to get a
             // complete list of all questionnaires in current course to reset them.
-            $sql = "SELECT s.id,s.name,s.owner,s.realm,s.status,q.id as qid,q.name as qname " .
+            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname " .
                    "FROM {questionnaire} q " .
-                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND ".$castsql." = q.course " .
-                   "WHERE owner = ? " .
+                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
+                   "WHERE s.courseid = ? " .
                    "ORDER BY realm,name ";
-            $params = array($courseid);
+            $params = [$courseid];
         }
     }
     return $DB->get_records_sql($sql, $params);
@@ -511,7 +510,7 @@ function questionnaire_get_survey_select($courseid=0, $type='') {
     if ($surveys = questionnaire_get_survey_list($courseid, $type)) {
         $strpreview = get_string('preview_questionnaire', 'questionnaire');
         foreach ($surveys as $survey) {
-            $originalcourse = $DB->get_record('course', array('id' => $survey->owner));
+            $originalcourse = $DB->get_record('course', ['id' => $survey->courseid]);
             if (!$originalcourse) {
                 // This should not happen, but we found a case where a public survey
                 // still existed in a course that had been deleted, and so this
@@ -521,7 +520,7 @@ function questionnaire_get_survey_select($courseid=0, $type='') {
             }
 
             // Prevent creating a copy of a public questionnaire IN THE SAME COURSE as the original.
-            if ($type == 'public' && $survey->owner == $courseid) {
+            if (($type == 'public') && ($survey->courseid == $courseid)) {
                 continue;
             } else {
                 $args = "sid={$survey->id}&popup=1";

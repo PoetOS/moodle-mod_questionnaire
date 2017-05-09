@@ -195,7 +195,7 @@ switch ($action) {
             $id = $questionnaire->survey;
             notify ("questionnaire->survey = /$id/");
             print_error('surveynotexists', 'questionnaire');
-        } else if ($questionnaire->survey->owner != $course->id) {
+        } else if ($questionnaire->survey->courseid != $course->id) {
             print_error('surveyowner', 'questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             print_error('invalidresponse', 'questionnaire');
@@ -287,7 +287,7 @@ switch ($action) {
 
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');
-        } else if ($questionnaire->survey->owner != $course->id) {
+        } else if ($questionnaire->survey->courseid != $course->id) {
             print_error('surveyowner', 'questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             print_error('invalidresponse', 'questionnaire');
@@ -336,7 +336,7 @@ switch ($action) {
 
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');
-        } else if ($questionnaire->survey->owner != $course->id) {
+        } else if ($questionnaire->survey->courseid != $course->id) {
             print_error('surveyowner', 'questionnaire');
         }
 
@@ -625,7 +625,7 @@ switch ($action) {
     default:
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');
-        } else if ($questionnaire->survey->owner != $course->id) {
+        } else if ($questionnaire->survey->courseid != $course->id) {
             print_error('surveyowner', 'questionnaire');
         }
         $ruser = false;

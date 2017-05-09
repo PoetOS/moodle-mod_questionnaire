@@ -41,7 +41,7 @@ if ($id) {
     if (! $survey = $DB->get_record("questionnaire_survey", array("id" => $sid))) {
         print_error('surveynotexists', 'questionnaire');
     }
-    if (! $course = $DB->get_record("course", array("id" => $survey->owner))) {
+    if (! $course = $DB->get_record("course", ["id" => $survey->courseid])) {
         print_error('coursemisconf');
     }
     // Dummy questionnaire object.

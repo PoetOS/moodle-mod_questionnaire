@@ -46,7 +46,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $surveys = new backup_nested_element('surveys');
 
         $survey = new backup_nested_element('survey', array('id'), array(
-            'name', 'owner', 'realm', 'status', 'title', 'email', 'subtitle',
+            'name', 'courseid', 'realm', 'status', 'title', 'email', 'subtitle',
             'info', 'theme', 'thanks_page', 'thank_head', 'thank_body', 'feedbacksections',
             'feedbacknotes', 'feedbackscores', 'chart_type'));
 
@@ -166,7 +166,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $currentquestionnaire = $DB->get_record("questionnaire", array ("id" => $qid));
         $currentsurvey = $DB->get_record("questionnaire_survey", array ("id" => $currentquestionnaire->sid));
         $haspublic = false;
-        if ($currentsurvey->realm == 'public' && $currentsurvey->owner != $currentquestionnaire->course) {
+        if ($currentsurvey->realm == 'public' && $currentsurvey->courseid != $currentquestionnaire->course) {
             $haspublic = true;
         }
 

@@ -196,8 +196,8 @@ class mod_questionnaire_settings_form extends moodleform {
         $mform->setType('sid', PARAM_INT);
         $mform->addElement('hidden', 'name', '');
         $mform->setType('name', PARAM_TEXT);
-        $mform->addElement('hidden', 'owner', '');
-        $mform->setType('owner', PARAM_RAW);
+        $mform->addElement('hidden', 'courseid', '');
+        $mform->setType('courseid', PARAM_RAW);
 
         // Buttons.
 
