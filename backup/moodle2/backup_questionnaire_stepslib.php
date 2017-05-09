@@ -79,7 +79,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $responses = new backup_nested_element('responses');
 
         $response = new backup_nested_element('response', array('id'), array(
-            'survey_id', 'submitted', 'complete', 'grade', 'username'));
+            'survey_id', 'submitted', 'complete', 'grade', 'userid'));
 
         $responsebools = new backup_nested_element('response_bools');
 

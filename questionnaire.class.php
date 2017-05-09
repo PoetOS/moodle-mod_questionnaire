@@ -421,7 +421,7 @@ class questionnaire {
         global $DB;
 
         return $DB->record_exists('questionnaire_response',
-            ['survey_id' => $this->survey->id, 'username' => $userid, 'complete' => 'n']);
+            ['survey_id' => $this->survey->id, 'userid' => $userid, 'complete' => 'n']);
     }
 
     public function user_time_for_new_attempt($userid) {
@@ -514,7 +514,7 @@ class questionnaire {
             }
 
              // If you can read your own response.
-            if (($response->username == $USER->id) && $this->capabilities->readownresponses &&
+            if (($response->userid == $USER->id) && $this->capabilities->readownresponses &&
                             ($this->count_submissions($USER->id) > 0)) {
                 return true;
             }
@@ -588,7 +588,7 @@ class questionnaire {
             // Provide for groups setting.
             return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'complete' => 'y'));
         } else {
-            return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'username' => $userid,
+            return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'userid' => $userid,
                                       'complete' => 'y'));
         }
     }
@@ -819,10 +819,10 @@ class questionnaire {
             $courseid = $this->course->id;
             if ($resp = $DB->get_record('questionnaire_response', array('id' => $rid)) ) {
                 if ($this->respondenttype == 'fullname') {
-                    $userid = $resp->username;
+                    $userid = $resp->userid;
                     // Display name of group(s) that student belongs to... if questionnaire is set to Groups separate or visible.
                     if (groups_get_activity_groupmode($this->cm, $this->course)) {
-                        if ($groups = groups_get_all_groups($courseid, $resp->username)) {
+                        if ($groups = groups_get_all_groups($courseid, $resp->userid)) {
                             if (count($groups) == 1) {
                                 $group = current($groups);
                                 $currentgroupid = $group->id;
@@ -1349,19 +1349,19 @@ class questionnaire {
         return $DB->update_record('questionnaire_response', $record);
     }
 
-    private function get_response($username, $rid = 0) {
+    private function get_response($userid, $rid = 0) {
         global $DB;
 
         $rid = intval($rid);
         if ($rid != 0) {
             // Check for valid rid.
-            $fields = 'id, username';
-            $select = 'id = '.$rid.' AND survey_id = '.$this->sid.' AND username = \''.$username.'\' AND complete = \'n\'';
+            $fields = 'id, userid';
+            $select = 'id = '.$rid.' AND survey_id = '.$this->sid.' AND userid = '.$userid.' AND complete = \'n\'';
             return ($DB->get_record_select('questionnaire_response', $select, null, $fields) !== false) ? $rid : '';
 
         } else {
             // Find latest in progress rid.
-            $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND username = \''.$username.'\'';
+            $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND userid = '.$userid;
             if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
                                               'id,survey_id', 0, 1)) {
                 $rec = reset($records);
@@ -1698,7 +1698,7 @@ class questionnaire {
         if (empty($rid)) {
             // Create a uniqe id for this response.
             $record->survey_id = $sid;
-            $record->username = $userid;
+            $record->userid = $userid;
             $rid = $DB->insert_record('questionnaire_response', $record);
         } else {
             $record->id = $rid;
@@ -2181,24 +2181,20 @@ class questionnaire {
             $selectgroupid = '';
             $gmuserid = ', GM.userid ';
             $groupmembers = ', {groups_members} GM ';
-            $castsql = $DB->sql_cast_char2int('R.username');
             switch ($currentgroupid) {
                 case 0:     // All participants.
                     $gmuserid = '';
                     $groupmembers = '';
                     break;
                 default:     // Members of a specific group.
-                    $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND '.$castsql.' = GM.userid ';
+                    $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND R.userid = GM.userid ';
             }
-            $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.username, U.username AS username,
+            $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.userid, U.username AS username,
                             U.id as userid '.$gmuserid.
             'FROM {questionnaire_response} R,
                   {user} U
                 '.$groupmembers.
-            'WHERE R.survey_id='.$this->survey->id.
-            ' AND complete = \'y\''.
-            ' AND U.id = '.$castsql.
-            $selectgroupid.
+            'WHERE R.survey_id=' . $this->survey->id . ' AND complete = \'y\' AND U.id = R.userid ' . $selectgroupid .
             'ORDER BY U.lastname, U.firstname, R.submitted DESC';
         } else {
             $sql = 'SELECT R.id AS responseid, R.submitted
@@ -2375,7 +2371,7 @@ class questionnaire {
             $ruser = '';
             if ($reporttype == 'report') {
                 if ($this->respondenttype != 'anonymous') {
-                    if ($user = $DB->get_record('user', array('id' => $response->username))) {
+                    if ($user = $DB->get_record('user', ['id' => $response->userid])) {
                         $ruser = ' | ' .fullname($user);
                     }
                 } else {
@@ -2489,17 +2485,16 @@ class questionnaire {
         } else {
             $navbar = false;
             $sql = "";
-            $castsql = $DB->sql_cast_char2int('r.username');
             if ($uid !== false) { // One participant only.
                 $sql = "SELECT r.id, r.survey_id
                           FROM {questionnaire_response} r
                          WHERE r.survey_id='{$this->survey->id}' AND
-                               r.username = $uid AND
+                               r.userid = $uid AND
                                r.complete='y'
                          ORDER BY r.id";
                 // All participants or all members of a group.
             } else if ($currentgroupid == 0) {
-                $sql = "SELECT r.id, r.survey_id, r.username as userid
+                $sql = "SELECT r.id, r.survey_id, r.userid as userid
                           FROM {questionnaire_response} r
                          WHERE r.survey_id='{$this->survey->id}' AND
                                r.complete='y'
@@ -2511,7 +2506,7 @@ class questionnaire {
                          WHERE r.survey_id='{$this->survey->id}' AND
                                r.complete='y' AND
                                gm.groupid=".$currentgroupid." AND
-                               ".$castsql."=gm.userid
+                               r.userid=gm.userid
                          ORDER BY r.id";
             }
             if (!($rows = $DB->get_records_sql($sql))) {
@@ -2661,7 +2656,7 @@ class questionnaire {
             $allresponsessql .= $sql;
         }
 
-        $allresponsessql .= " ORDER BY userid, id";
+        $allresponsessql .= " ORDER BY uid, id";
         $allresponses = $DB->get_recordset_sql($allresponsessql, $allresponsesparams);
         return $allresponses;
     }
@@ -3237,7 +3232,7 @@ class questionnaire {
         require_once($CFG->libdir.'/tablelib.php');
         require_once($CFG->dirroot.'/mod/questionnaire/drawchart.php');
         if ($resp = $DB->get_record('questionnaire_response', array('id' => $rid)) ) {
-            $userid = $resp->username;
+            $userid = $resp->userid;
             if ($user = $DB->get_record('user', array('id' => $userid))) {
                 $ruser = fullname($user);
             }
@@ -3322,8 +3317,6 @@ class questionnaire {
         $allqscore = array();
 
         // Get all response ids for all respondents.
-        $castsql = $DB->sql_cast_char2int('r.username');
-
         $rids = array();
         foreach ($resps as $key => $resp) {
             $rids[] = $key;

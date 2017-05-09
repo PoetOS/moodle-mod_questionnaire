@@ -277,7 +277,7 @@ function questionnaire_get_user_responses($surveyid, $userid, $complete=true) {
     return $DB->get_records_sql ("SELECT *
         FROM {questionnaire_response}
         WHERE survey_id = ?
-        AND username = ?
+        AND userid = ?
         ".$andcomplete."
         ORDER BY submitted ASC ", array($surveyid, $userid));
 }
@@ -426,7 +426,7 @@ function questionnaire_delete_response($response, $questionnaire='') {
         // Update completion state if necessary.
         $completion = new completion_info($questionnaire->course);
         if ($completion->is_enabled($cm) == COMPLETION_TRACKING_AUTOMATIC && $questionnaire->completionsubmit) {
-            $completion->update_state($cm, COMPLETION_INCOMPLETE, $response->username);
+            $completion->update_state($cm, COMPLETION_INCOMPLETE, $response->userid);
         }
     }
 
@@ -659,9 +659,9 @@ function questionnaire_get_incomplete_users($cm, $sid,
 
     // Nnow get all completed questionnaires.
     $params = array('survey_id' => $sid, 'complete' => 'y');
-    $sql = "SELECT username FROM {questionnaire_response} " .
+    $sql = "SELECT userid FROM {questionnaire_response} " .
            "WHERE survey_id = :survey_id AND complete = :complete " .
-           "GROUP BY username ";
+           "GROUP BY userid ";
 
     if (!$completedusers = $DB->get_records_sql($sql, $params)) {
         return $allusers;

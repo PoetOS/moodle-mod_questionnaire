@@ -787,12 +787,11 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     $params['questionnaireid'] = $questionnaire->sid;
 
     $ufields = user_picture::fields('u', null, 'useridagain');
-    $usernamesql = $DB->sql_cast_char2int('qr.username');
     if (!$attempts = $DB->get_records_sql("
                     SELECT qr.*,
                     {$ufields}
                     FROM {questionnaire_response} qr
-                    JOIN {user} u ON u.id = $usernamesql
+                    JOIN {user} u ON u.id = qr.userid
                     $groupjoin
                     WHERE qr.submitted > :timestart
                     AND qr.survey_id = :questionnaireid
@@ -817,7 +816,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
                 $userattempts[$attempt->lastname]++;
             }
         }
-        if ($attempt->username != $USER->id) {
+        if ($attempt->userid != $USER->id) {
             if (!$grader) {
                 // View complete individual responses permission required.
                 continue;
@@ -865,7 +864,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
         $tmpactivity->user = new stdClass();
         foreach ($userfields as $userfield) {
             if ($userfield == 'id') {
-                $tmpactivity->user->{$userfield} = $attempt->username;
+                $tmpactivity->user->{$userfield} = $attempt->userid;
             } else {
                 if (!empty($attempt->{$userfield})) {
                     $tmpactivity->user->{$userfield} = $attempt->{$userfield};
@@ -1095,7 +1094,7 @@ function questionnaire_reset_userdata($data) {
         // Delete responses.
         foreach ($surveys as $survey) {
             // Get all responses for this questionnaire.
-            $sql = "SELECT R.id, R.survey_id, R.submitted, R.username
+            $sql = "SELECT R.id, R.survey_id, R.submitted, R.userid
                  FROM {questionnaire_response} R
                  WHERE R.survey_id = ?
                  ORDER BY R.id";

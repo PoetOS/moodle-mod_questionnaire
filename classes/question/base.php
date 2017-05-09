@@ -982,7 +982,7 @@ abstract class base {
             $userfields .= $userfields === '' ? '' : ', ';
             $userfields .= 'u.'.$field;
         }
-        $userfields .= ', u.id as userid';
+        $userfields .= ', u.id as uid';
         return $userfields;
     }
 }

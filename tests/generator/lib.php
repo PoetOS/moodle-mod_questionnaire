@@ -238,7 +238,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         return $DB->get_record('questionnaire_response', array('id' => $responseid));
         // TO DO - look at the implementing Guy's code below.
         /* $responses[] = new question_response($question->id, 'Test answer');
-        return $this->create_response(['survey_id' => $questionnaire->sid, 'username' => $userid], $responses); */
+        return $this->create_response(['survey_id' => $questionnaire->sid, 'userid' => $userid], $responses); */
     }
 
     /**
@@ -523,9 +523,8 @@ class mod_questionnaire_generator extends testing_module_generator {
             throw new coding_exception('survey_id must be present in phpunit_util::create_response() $record');
         }
 
-        if (!isset($record['username'])) {
-            throw new coding_exception('username (actually the user id) must be present in '.
-                'phpunit_util::create_response() $record');
+        if (!isset($record['userid'])) {
+            throw new coding_exception('userid must be present in phpunit_util::create_response() $record');
         }
 
         $record['submitted'] = time() + $this->responsecount;
@@ -547,7 +546,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $DB->update_record('questionnaire_response', $record);
 
         // Create attempt record.
-        $attempt = ['qid' => $record['survey_id'], 'userid' => $record['username'], 'rid' => $record['id'],
+        $attempt = ['qid' => $record['survey_id'], 'userid' => $record['userid'], 'rid' => $record['id'],
             'timemodified' => time()];
         $DB->insert_record('questionnaire_attempts', $attempt);
 
@@ -644,7 +643,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
 
         }
-        return $this->create_response(['survey_id' => $questionnaire->sid, 'username' => $userid], $responses);
+        return $this->create_response(['survey_id' => $questionnaire->sid, 'userid' => $userid], $responses);
     }
 
     public function create_and_fully_populate($coursecount = 4, $studentcount = 20, $questionnairecount = 2,

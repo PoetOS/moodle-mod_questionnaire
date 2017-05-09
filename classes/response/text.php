@@ -75,15 +75,15 @@ class text extends base {
                     ' AND t.response_id = r.id ' .
                     'ORDER BY r.submitted DESC';
         } else {
-            $sql = 'SELECT t.id, t.response, r.submitted AS submitted, r.username, u.username AS username, ' .
-                    'u.id as userid, ' .
+            $sql = 'SELECT t.id, t.response, r.submitted AS submitted, r.userid, u.username AS username, ' .
+                    'u.id as uid, ' .
                     'r.survey_id, r.id AS rid ' .
                     'FROM {'.$this->response_table().'} t, ' .
                     '{questionnaire_response} r, ' .
                     '{user} u ' .
                     'WHERE question_id=' . $this->question->id . $rsql .
                     ' AND t.response_id = r.id' .
-                    ' AND u.id = ' . $DB->sql_cast_char2int('r.username') .
+                    ' AND u.id = r.userid ' .
                     'ORDER BY u.lastname, u.firstname, r.submitted';
         }
         return $DB->get_records_sql($sql, $params);
