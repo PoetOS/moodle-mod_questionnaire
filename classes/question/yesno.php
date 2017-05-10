@@ -129,7 +129,7 @@ class yesno extends base {
             $option->name = $name;
             $option->id = $htmlid;
             $option->value = $id;
-            $option->label = format_text($content, FORMAT_HTML);
+            $option->label = format_text($content, FORMAT_HTML, ['noclean' => true]);
             if (!$ischecked && !$blankquestionnaire) {
                 $option->checked = true;
             }

@@ -98,7 +98,7 @@ class display_support {
                 }
 
                 $tabledata = array();
-                $tabledata = array_merge($tabledata, array(format_text($content, FORMAT_HTML), $out, $num));
+                $tabledata = array_merge($tabledata, array(format_text($content, FORMAT_HTML, ['noclean' => true]), $out, $num));
                 $table->data[] = $tabledata;
                 $i += $num;
                 $pos++;
@@ -161,7 +161,7 @@ class display_support {
             $table->size = array('*');
         }
         foreach ($rows as $row) {
-            $text = format_text($row->response, FORMAT_HTML);
+            $text = format_text($row->response, FORMAT_HTML, ['noclean' => true]);
             if ($viewsingleresponse && $nonanonymous) {
                 $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
                 $title = userdate($row->submitted);
@@ -294,7 +294,7 @@ class display_support {
         $nameddegrees = 0;
         foreach ($choices as $choice) {
             // To take into account languages filter.
-            $content = (format_text($choice->content, FORMAT_HTML));
+            $content = (format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
             if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
                 $n[$nameddegrees] = substr($content, strlen($ndd[0]));
                 $nameddegrees++;
@@ -376,8 +376,9 @@ class display_support {
                         }
                     }
                     if ($osgood) {
-                        $table->data[] = array('<div class="mdl-right">'.format_text($content, FORMAT_HTML).'</div>', $out,
-                            '<div class="mdl-left">'.format_text($contentright, FORMAT_HTML).'</div>');
+                        $table->data[] = array('<div class="mdl-right">'.
+                            format_text($content, FORMAT_HTML, ['noclean' => true]).'</div>', $out,
+                            '<div class="mdl-left">'.format_text($contentright, FORMAT_HTML, ['noclean' => true]).'</div>');
                         // JR JUNE 2012 do not display meaningless average rank values for Osgood.
                     } else {
                         if ($avg) {
@@ -386,14 +387,14 @@ class display_support {
                                 $stravgval = '('.sprintf('%.1f', $avgvalue).')';
                             }
                             if ($isna) {
-                                $table->data[] = array(format_text($content, FORMAT_HTML), $out, sprintf('%.1f', $avg).
-                                        '&nbsp;'.$stravgval, $nbna);
+                                $table->data[] = [format_text($content, FORMAT_HTML, ['noclean' => true]), $out,
+                                    sprintf('%.1f', $avg).'&nbsp;'.$stravgval, $nbna];
                             } else {
-                                $table->data[] = array(format_text($content, FORMAT_HTML), $out, sprintf('%.1f', $avg).
-                                        '&nbsp;'.$stravgval);
+                                $table->data[] = [format_text($content, FORMAT_HTML, ['noclean' => true]), $out,
+                                    sprintf('%.1f', $avg).'&nbsp;'.$stravgval];
                             }
                         } else if ($nbna != 0) {
-                            $table->data[] = array(format_text($content, FORMAT_HTML), $out, '', $nbna);
+                            $table->data[] = array(format_text($content, FORMAT_HTML, ['noclean' => true]), $out, '', $nbna);
                         }
                     }
                 } // End if named degrees.
@@ -491,7 +492,7 @@ class display_support {
             $content = $choice->content;
             // Check for number from 1 to 3 digits, followed by the equal sign = (to accomodate named degrees).
             if (preg_match("/^([0-9]{1,3})=(.*)$/", $content, $ndd)) {
-                $n[$nameddegrees] = format_text($ndd[2], FORMAT_HTML);
+                $n[$nameddegrees] = format_text($ndd[2], FORMAT_HTML, ['noclean' => true]);
                 $nameddegrees++;
             } else {
                 $contents = questionnaire_choice_values($content);
@@ -551,14 +552,14 @@ class display_support {
                 if ($osgood) {
                     // Ensure there are two bits of content.
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
-                    $data[] = format_text($content, FORMAT_HTML);
+                    $data[] = format_text($content, FORMAT_HTML, ['noclean' => true]);
                 } else {
                     // Eliminate potentially short-named choices.
                     $contents = questionnaire_choice_values($content);
                     if ($contents->modname) {
                         $content = $contents->text;
                     }
-                    $data[] = format_text($content, FORMAT_HTML);
+                    $data[] = format_text($content, FORMAT_HTML, ['noclean' => true]);
                 }
                 // Display ranks/rates numbers.
                 $maxrank = max($rank);
@@ -579,7 +580,7 @@ class display_support {
                     $data[] = $str.$percent;
                 }
                 if ($osgood) {
-                    $data[] = format_text($contentright, FORMAT_HTML);
+                    $data[] = format_text($contentright, FORMAT_HTML, ['noclean' => true]);
                 }
                 $data[] = $nbresp;
                 if ($isrestricted) {

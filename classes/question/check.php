@@ -136,7 +136,7 @@ class check extends base {
                 $checkbox->name = 'q'.$this->id.'[]';
                 $checkbox->value = $id;
                 $checkbox->id = 'checkbox_'.$id;
-                $checkbox->label = format_text($contents->text, FORMAT_HTML).$contents->image;
+                $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
                 if ($checked) {
                     $checkbox->checked = $checked;
                 }
@@ -160,7 +160,7 @@ class check extends base {
                 $checkbox->value = $value;
                 $checkbox->ovalue = (!empty($data->$cid) ? stripslashes($data->$cid) : '');
                 $checkbox->id = 'checkbox_'.$id;
-                $checkbox->label = format_text($othertext.'', FORMAT_HTML);
+                $checkbox->label = format_text($othertext.'', FORMAT_HTML, ['noclean' => true]);
                 if ($checked) {
                     $checkbox->checked = $checked;
                 }
@@ -199,7 +199,8 @@ class check extends base {
                     $chobj->selected = 1;
                 }
                 $chobj->name = $id.$uniquetag++;
-                $chobj->content = (($choice->content === '') ? $id : format_text($choice->content, FORMAT_HTML));
+                $chobj->content = (($choice->content === '') ? $id : format_text($choice->content, FORMAT_HTML,
+                    ['noclean' => true]));
             } else {
                 $othertext = preg_replace(
                         array("/^!other=/", "/^!other/"),

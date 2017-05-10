@@ -2137,7 +2137,7 @@ class questionnaire {
         $this->page->add_to_page('title', $thankhead);
         $this->page->add_to_page('addinfo',
             format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
-            $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML));
+            $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML, ['noclean' => true]));
         // Default set currentgroup to view all participants.
         // TODO why not set to current respondent's groupid (if any)?
         $currentgroupid = 0;
@@ -2545,7 +2545,7 @@ class questionnaire {
         if ($this->survey->info) {
             $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
-            $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML));
+            $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
         }
 
         $qnum = 0;
@@ -2572,7 +2572,8 @@ class questionnaire {
             }
             $this->page->add_to_page('responses',
                 $this->renderer->container(format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
-                $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML), 'qn-question'));
+                $question->context->id, 'mod_questionnaire', 'question', $question->id),
+                FORMAT_HTML, ['noclean' => true]), 'qn-question'));
             $this->page->add_to_page('responses', $this->renderer->results_output($question, $rids, $sort, $anonymous));
             $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-content.
             $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-container.
@@ -3449,7 +3450,7 @@ class questionnaire {
             $sectionheading = file_rewrite_pluginfile_urls($sectionheading, 'pluginfile.php',
                             $this->context->id, 'mod_questionnaire', 'sectionheading', $sectionid);
             $feedbackmessages[] = $this->renderer->box_start();
-            $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML);
+            $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, ['noclean' => true]);
             $feedbackmessages[] = $this->renderer->box_end();
 
             if (!empty($feedback->feedbacktext)) {
@@ -3560,7 +3561,7 @@ class questionnaire {
                                 $this->context->id, 'mod_questionnaire', 'sectionheading', $imageid);
                 $sectionheading = format_text($sectionheading, 1, $formatoptions);
                 $feedbackmessages[] = $this->renderer->box_start('reportQuestionTitle');
-                $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML);
+                $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, $formatoptions);
                 $feedback = $DB->get_record_select('questionnaire_feedback',
                                 'section_id = ? AND minscore <= ? AND ? < maxscore',
                                 array($feedbacksectionid, $scorepercent[$section], $scorepercent[$section]),

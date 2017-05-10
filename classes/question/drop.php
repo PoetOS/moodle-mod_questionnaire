@@ -152,7 +152,7 @@ class drop extends base {
             $contents = questionnaire_choice_values($choice->content);
             $chobj = new \stdClass();
             $chobj->value = $id;
-            $chobj->label = format_text($contents->text, FORMAT_HTML);
+            $chobj->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]);
             if (isset($data->{'q'.$this->id}) && ($id == $data->{'q'.$this->id})) {
                 $chobj->selected = 1;
                 $resptags->selectedlabel = $chobj->label;
