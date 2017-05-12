@@ -104,7 +104,7 @@ abstract class base {
         QUESDROP => 'drop',
         QUESRATE => 'rate',
         QUESDATE => 'date',
-        QUESNUMERIC => 'numeric',
+        QUESNUMERIC => 'numerical',
         QUESPAGEBREAK => 'pagebreak',
         QUESSECTIONTEXT => 'sectiontext'
     ];
@@ -169,14 +169,22 @@ abstract class base {
      */
     abstract public function helpname();
 
-    static public function question_builder($qtype, $params = null) {
-        global $CFG;
-
+    /**
+     * Build a question from data.
+     * @var int $qtype The question type code.
+     * @var int|array|object $qdata Either the id of the record, or a structure containing the question data, or null.
+     * @var object $context The context for the question.
+     * @return A question object.
+     */
+    static public function question_builder($qtype, $qdata = null, $context = null) {
         $qclassname = '\\mod_questionnaire\\question\\'.self::qtypename($qtype);
-        if (!empty($params) && is_array($params)) {
-            $params = (object)$params;
+        $qid = 0;
+        if (!empty($qdata) && is_array($qdata)) {
+            $qdata = (object)$qdata;
+        } else if (!empty($qdata) && is_int($qdata)) {
+            $qid = $qdata;
         }
-        return new $qclassname(0, $params, null, ['type_id' => $qtype]);
+        return new $qclassname($qid, $qdata, $context, ['type_id' => $qtype]);
     }
 
     /**

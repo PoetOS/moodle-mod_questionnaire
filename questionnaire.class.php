@@ -108,22 +108,6 @@ class questionnaire {
     }
 
     /**
-     * Create question for type
-     *
-     * @author gthomas
-     * @param $typename
-     * @param int $id
-     * @param null $record
-     * @param null $context
-     * @param array $params
-     * @return \mod_questionnaire\question\base|mixed
-     */
-    public static function question_factory($typename, $id = 0, $record = null, $context = null, $params = []) {
-        $questionclass = '\\mod_questionnaire\\question\\'.$typename;
-        return new $questionclass($id, $record, $context, $params);
-    }
-
-    /**
      * Adding questions to the object.
      */
     public function add_questions($sid = false) {
@@ -144,8 +128,8 @@ class questionnaire {
             $isbreak = false;
             foreach ($records as $record) {
 
-                $typename = \mod_questionnaire\question\base::qtypename($record->type_id);
-                $this->questions[$record->id] = self::question_factory($typename, 0, $record, $this->context);
+                $this->questions[$record->id] = \mod_questionnaire\question\base::question_builder($record->type_id,
+                    $record, $this->context);
 
                 if ($record->type_id != QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][$record->id] = &$this->questions[$record->id];
@@ -2649,8 +2633,7 @@ class questionnaire {
         $allresponsesparams = [];
 
         foreach ($uniquetypes as $type) {
-            $typename = \mod_questionnaire\question\base::qtypename($type);
-            $question = self::question_factory($typename);
+            $question = \mod_questionnaire\question\base::question_builder($type);
             if (!isset($question->response)) {
                 continue;
             }

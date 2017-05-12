@@ -25,7 +25,7 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 
-class numeric extends base {
+class numerical extends base {
 
     /**
      * Constructor. Use to set any default properties.

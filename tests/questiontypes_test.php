@@ -66,7 +66,7 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
             'content' => 'Enter a number',
             'length' => 10,
             'precise' => 0);
-        $this->create_test_question(QUESNUMERIC, '\\mod_questionnaire\\question\\numeric', $questiondata);
+        $this->create_test_question(QUESNUMERIC, '\\mod_questionnaire\\question\\numerical', $questiondata);
     }
 
     public function test_create_question_radiobuttons() {

@@ -191,8 +191,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         // Add the question.
         $record->id = $DB->insert_record('questionnaire_question', $record);
 
-        $typename = \mod_questionnaire\question\base::qtypename($record->type_id);
-        $question = questionnaire::question_factory($typename, $record->id, $record);
+        $question = \mod_questionnaire\question\base::question_builder($record->type_id, $record->id, $record);
 
         // Add the question choices if required.
         if ($typeid !== QUESPAGEBREAK && $typeid !== QUESSECTIONTEXT) {
