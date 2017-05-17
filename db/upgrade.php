@@ -574,40 +574,60 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
          upgrade_mod_savepoint(true, 2016111105, 'questionnaire');
     }
 
-    if ($oldversion < 2017050100) {
+    // Redoing the 2017050100 upgrade in 2017050101. If it already completed in 2017050100, skip it.
+    if ($oldversion < 2017050101) {
         // Changing type of field username from char to int.
         $table = new xmldb_table('questionnaire_response');
         $field = new xmldb_field('username', XMLDB_TYPE_INTEGER, '10');
+        // If it already completed in 2017050100, skip it.
+        if ($dbman->field_exists($table, $field)) {
+            // Before we change the field 'username' to an int, ensure there are only numeric values there.
+            $sql = 'SELECT qr.id, qr.username, qa.rid, qa.userid ' .
+                   'FROM {questionnaire_response} qr ' .
+                   'INNER JOIN {questionnaire_attempts} qa ON qr.id = qa.rid ' .
+                   'WHERE qr.username = ?';
+            $rs = $DB->get_recordset_sql($sql, ["Anonymous"]);
+            // Set all "Anonymous" records to the userid in the matching attempt record.
+            foreach ($rs as $record) {
+                $DB->set_field('questionnaire_response', 'username', "{$record->userid}", ['id' => $record->id]);
+            }
+            // If there are any leftover "Anonymous" records, set them all to userid zero (there shouldn't be).
+            $rs = $DB->get_recordset('questionnaire_response', ['username' => 'Anonymous']);
+            foreach ($rs as $record) {
+                $DB->set_field('questionnaire_response', 'username', '0', ['id' => $record->id]);
+            }
 
-        // Launch change of type for field username.
-        $dbman->change_field_type($table, $field);
+            // Launch change of type for field username.
+            $dbman->change_field_type($table, $field);
 
-        // Change the name from username to userid.
-        $dbman->rename_field($table, $field, 'userid');
-
-        // Drop the old 'owner' index before modifying the field.
-        $table = new xmldb_table('questionnaire_survey');
-        $index = new xmldb_index('owner', XMLDB_INDEX_NOTUNIQUE, ['owner']);
-        $dbman->drop_index($table, $index);
+            // Change the name from username to userid.
+            $dbman->rename_field($table, $field, 'userid');
+        }
 
         // Changing type of field owner from char to int.
         $table = new xmldb_table('questionnaire_survey');
         $field = new xmldb_field('owner', XMLDB_TYPE_INTEGER, '10');
+        // If it already completed in 2017050100, skip it.
+        if ($dbman->field_exists($table, $field)) {
+            // Drop the old 'owner' index before modifying the field.
+            $index = new xmldb_index('owner', XMLDB_INDEX_NOTUNIQUE, ['owner']);
+            $dbman->drop_index($table, $index);
 
-        // Launch change of type for field owner.
-        $dbman->change_field_type($table, $field);
+            // Launch change of type for field owner.
+            $dbman->change_field_type($table, $field);
 
-        // Change the name from owner to courseid.
-        $dbman->rename_field($table, $field, 'courseid');
+            // Change the name from owner to courseid.
+            $dbman->rename_field($table, $field, 'courseid');
 
-        // Add the index back with the new name.
-        $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, ['courseid']);
-        if (!$dbman->index_exists($table, $index)) {
-            $dbman->add_index($table, $index);
+            // Add the index back with the new name.
+            $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, ['courseid']);
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
         }
 
         // Questionnaire savepoint reached.
-        upgrade_mod_savepoint(true, 2017050100, 'questionnaire');
+        upgrade_mod_savepoint(true, 2017050101, 'questionnaire');
     }
 
     return $result;
