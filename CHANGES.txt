@@ -1,8 +1,12 @@
 Release Notes
 
+Version 3.2.5 (Build - 2017051800)
+New Features:
+CONTRIB-5615 - 'Never' can be assigned to a questionnaire for viewing other users' responses.
+
 Version 3.2.4 (Build - 2017042700)
 New Features:
-CONTRIB-6136 - Added submission notifications by capability.
+CONTRIB-6136 - Assigned roles can receive Moodle notifications when a new submission is made.
 
 Version 3.2.3
 Bug Fixes:
