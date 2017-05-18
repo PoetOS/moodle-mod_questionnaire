@@ -30,5 +30,5 @@ $plugin->requires = 2017042800; // Moodle version.
 
 $plugin->component = 'mod_questionnaire';
 
-$plugin->release  = '3.3.0 (Build - 2017050100)';
+$plugin->release  = '3.3.1 (Build - 2017051800)';
 $plugin->maturity  = MATURITY_STABLE;

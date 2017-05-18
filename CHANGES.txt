@@ -1,5 +1,9 @@
 Release Notes
 
+Version 3.3.1 (Build - 2017051800)
+Bug fixes:
+CONTRIB-6903 For very old installations, response.username field may contain "Anonymous". Make this numeric before modifying field.
+
 Version 3.3.0 (Build - 2017050100)
 New Features:
 CONTRIB-6136 Assigned roles can receive Moodle notifications when a new submission is made.
