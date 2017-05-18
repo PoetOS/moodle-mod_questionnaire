@@ -383,6 +383,7 @@ $string['questionnaire:printblank'] = 'Print blank questionnaire';
 $string['questionnaire:readallresponseanytime'] = 'Read all responses any time';
 $string['questionnaire:readallresponses'] = 'Read response summaries, subject to open times';
 $string['questionnaire:readownresponses'] = 'Read own responses';
+$string['questionnaire:submissionnotification'] = 'Receive notification for each submission';
 $string['questionnaire:submit'] = 'Complete and submit a questionnaire';
 $string['questionnaire:view'] = 'View a questionnaire';
 $string['questionnaire:viewsingleresponse'] = 'View complete individual responses';

@@ -129,7 +129,7 @@ class radio extends base {
                 }
                 $content = $choice->content;
                 $contents = questionnaire_choice_values($choice->content);
-                $radio->label = $value.format_text($contents->text, FORMAT_HTML).$contents->image;
+                $radio->label = $value.format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
             } else {             // Radio button with associated !other text field.
                 $othertext = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')],
                     $choice->content);
@@ -151,13 +151,13 @@ class radio extends base {
                         $otherempty = true;
                     }
                 }
-                $radio->label = format_text($othertext, FORMAT_HTML);
+                $radio->label = format_text($othertext, FORMAT_HTML, ['noclean' => true]);
                 $radio->oname = $cid;
                 $radio->oid = $htmlid.'-other';
                 if (isset($data->$cid)) {
                     $radio->ovalue = stripslashes($data->$cid);
                 }
-                $radio->olabel = 'Text for '.format_text($othertext, FORMAT_HTML);
+                $radio->olabel = 'Text for '.format_text($othertext, FORMAT_HTML, ['noclean' => true]);
             }
             $choicetags->qelements[] = (object)['choice' => $radio];
         }
@@ -187,7 +187,7 @@ class radio extends base {
                 $radio->checked = true;
             }
             $content = get_string('noanswer', 'questionnaire');
-            $radio->label = format_text($content, FORMAT_HTML);
+            $radio->label = format_text($content, FORMAT_HTML, ['noclean' => true]);
 
             $choicetags->qelements[] = (object)['choice' => $radio];
         }
@@ -226,7 +226,7 @@ class radio extends base {
                 if ($id == $checked) {
                     $chobj->selected = 1;
                 }
-                $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML));
+                $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
             } else {
                 $othertext = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')],
                     $choice->content);

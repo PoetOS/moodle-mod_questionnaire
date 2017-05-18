@@ -108,22 +108,6 @@ class questionnaire {
     }
 
     /**
-     * Create question for type
-     *
-     * @author gthomas
-     * @param $typename
-     * @param int $id
-     * @param null $record
-     * @param null $context
-     * @param array $params
-     * @return \mod_questionnaire\question\base|mixed
-     */
-    public static function question_factory($typename, $id = 0, $record = null, $context = null, $params = []) {
-        $questionclass = '\\mod_questionnaire\\question\\'.$typename;
-        return new $questionclass($id, $record, $context, $params);
-    }
-
-    /**
      * Adding questions to the object.
      */
     public function add_questions($sid = false) {
@@ -144,8 +128,8 @@ class questionnaire {
             $isbreak = false;
             foreach ($records as $record) {
 
-                $typename = \mod_questionnaire\question\base::qtypename($record->type_id);
-                $this->questions[$record->id] = self::question_factory($typename, 0, $record, $this->context);
+                $this->questions[$record->id] = \mod_questionnaire\question\base::question_builder($record->type_id,
+                    $record, $this->context);
 
                 if ($record->type_id != QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][$record->id] = &$this->questions[$record->id];
@@ -506,6 +490,7 @@ class questionnaire {
             }
 
             // If you are allowed to view this response for another user.
+            // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
             if ($this->capabilities->readallresponses &&
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
@@ -526,6 +511,7 @@ class questionnaire {
             }
 
             // If you are allowed to view this response for another user.
+            // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
             if ($this->capabilities->readallresponses &&
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
@@ -573,11 +559,12 @@ class questionnaire {
                  ($canviewallgroups ||
                   // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
                   ($canviewgroups && $this->capabilities->readallresponseanytime)) &&
-                 $numresp > 0 && $owner && $numselectedresps > 0) ||
+                 ($numresp > 0) && $owner && ($numselectedresps > 0)) ||
                 ($this->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
+                 // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                   ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp > 0)) &&
+                  ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && ($usernumresp > 0))) &&
                  $this->is_survey_owner()));
     }
 
@@ -2134,7 +2121,7 @@ class questionnaire {
         $this->page->add_to_page('title', $thankhead);
         $this->page->add_to_page('addinfo',
             format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
-            $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML));
+            $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML, ['noclean' => true]));
         // Default set currentgroup to view all participants.
         // TODO why not set to current respondent's groupid (if any)?
         $currentgroupid = 0;
@@ -2542,7 +2529,7 @@ class questionnaire {
         if ($this->survey->info) {
             $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
-            $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML));
+            $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
         }
 
         $qnum = 0;
@@ -2569,7 +2556,8 @@ class questionnaire {
             }
             $this->page->add_to_page('responses',
                 $this->renderer->container(format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
-                $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML), 'qn-question'));
+                $question->context->id, 'mod_questionnaire', 'question', $question->id),
+                FORMAT_HTML, ['noclean' => true]), 'qn-question'));
             $this->page->add_to_page('responses', $this->renderer->results_output($question, $rids, $sort, $anonymous));
             $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-content.
             $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-container.
@@ -2645,8 +2633,7 @@ class questionnaire {
         $allresponsesparams = [];
 
         foreach ($uniquetypes as $type) {
-            $typename = \mod_questionnaire\question\base::qtypename($type);
-            $question = self::question_factory($typename);
+            $question = \mod_questionnaire\question\base::question_builder($type);
             if (!isset($question->response)) {
                 continue;
             }
@@ -3446,7 +3433,7 @@ class questionnaire {
             $sectionheading = file_rewrite_pluginfile_urls($sectionheading, 'pluginfile.php',
                             $this->context->id, 'mod_questionnaire', 'sectionheading', $sectionid);
             $feedbackmessages[] = $this->renderer->box_start();
-            $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML);
+            $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, ['noclean' => true]);
             $feedbackmessages[] = $this->renderer->box_end();
 
             if (!empty($feedback->feedbacktext)) {
@@ -3557,7 +3544,7 @@ class questionnaire {
                                 $this->context->id, 'mod_questionnaire', 'sectionheading', $imageid);
                 $sectionheading = format_text($sectionheading, 1, $formatoptions);
                 $feedbackmessages[] = $this->renderer->box_start('reportQuestionTitle');
-                $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML);
+                $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, $formatoptions);
                 $feedback = $DB->get_record_select('questionnaire_feedback',
                                 'section_id = ? AND minscore <= ? AND ? < maxscore',
                                 array($feedbacksectionid, $scorepercent[$section], $scorepercent[$section]),

@@ -1,49 +1,19 @@
 Release Notes
 
-Version 3.2.4 (Build - 2017042700)
+Version 3.3.1 (Build - 2017051800)
+Bug fixes:
+CONTRIB-6903 For very old installations, response.username field may contain "Anonymous". Make this numeric before modifying field.
+
+Version 3.3.0 (Build - 2017050100)
 New Features:
-CONTRIB-6136 - Added submission notifications by capability.
+CONTRIB-6136 Assigned roles can receive Moodle notifications when a new submission is made.
+CONTRIB-5615 'Never' can be assigned to a questionnaire for viewing other users' responses.
 
-Version 3.2.3
-Bug Fixes:
-CONTRIB-6813 - Remove notification from "non-respondents" screen.
-CONTRIB-6815 - Fixed more alignment issues on rate response display.
-CONTRIB-6816 - Added a space after the group selector on "all responses" screen.
-
-Version 3.2.2
-Bug Fixes:
-CONTRIB-6787 - Restore doesn't recreate question dependencies properly in some cases.
-CONTRIB-6800 - Timing of questionnaire open/close doesn't update when course is restored.
-CONTRIB-6809 - Response display for rate questions using named degrees can display incorrectly.
+Improvements / Bug fixes:
+CONTRIB-6896 Changed future reserved word 'numeric' to 'numerical' to avoid future problems.
+CONTRIB-6892 'owner' field is now properly 'courseid' and integer.
+CONTRIB-5655 Allowed for more text formatting for trusted users.
+CONTRIB-4761 Changed 'username' to 'userid' for response data.
 
 
-Version 3.2.1
-Improvements/features:
-CONTRIB-5575 - Added renderers and templates to all output code.
-CONTRIB-6430 - Added global search functions.
-
-Bug fixes:
-CONTRIB-6642 - Fixed non-respondents screen.
-CONTRIB-6729 - Fixed group selection on CSV export.
-CONTRIB-6730 - Fixed printing of individual response.
-
-
-Version 3.2.0
-Improvements/features:
-CONTRIB-6093 - Upated Behat tests to work with 3.2.
-CONTRIB-5575 - Refactored code to use renderers and templates.
-
-Bug fixes:
-Github PR-74 - Ensure internal links used in submission confirmation URL or restored properly from backup.
-CONTRIB-6611 - Ensure "resume" text is shown in navigation menu when resuming a questionnaire.
-CONTRIB-6603 - Ensure summary replies for anonymous questionnaires are not ordered alphabetically by user name.
-CONTRIB-6602 - Fixed incorrect use of $COURSE global in add_instance (Github PR-72).
-CONTRIB-6562 - Allow editing of parent question for label questions with parent questions already set.
-CONTRIB-6561 - Allow editing of parent question when creating a new question.
-CONTRIB-6515 - Fixed downloading response database problem for Oracle and other databases (Github PR-73).
-CONTRIB-6475 - Removed redundant ->groups code.
-CONTRIB-6471 - Fixed support for "rtl" languages in response report pages (Github PR-66).
-CONTRIB-6445 - Added upgrade statements to ensure alignment with db definition.
-CONTRIB-6142 - Added correct formatting of text responses so that filtering occurs for enabled Moodle filters.
-
-(see CHANGES.TXT in release 3.1 for earlier changes.)
+(see CHANGES.TXT in release 3.2 for earlier changes.)
