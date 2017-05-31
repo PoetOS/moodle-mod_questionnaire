@@ -1678,7 +1678,7 @@ class questionnaire {
         $mailaddresses = preg_split('/,|;/', $email);
         foreach ($mailaddresses as $email) {
             $userto = new stdClass();
-            $userto->email = $email;
+            $userto->email = trim($email);
             $userto->mailformat = 1;
             // Dummy userid to keep email_to_user happy in moodle 2.6.
             $userto->id = -10;
