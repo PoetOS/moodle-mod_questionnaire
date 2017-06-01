@@ -115,6 +115,7 @@ $capabilities = array(
     // Ability to create and edit surveys.
     'mod/questionnaire:manage' => array(
 
+        'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
@@ -127,6 +128,7 @@ $capabilities = array(
     // Ability to edit survey questions.
     'mod/questionnaire:editquestions' => array(
 
+        'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
@@ -237,4 +239,3 @@ $capabilities = array(
     )
 
 );
-
