@@ -80,7 +80,7 @@ $autonumbering = array (0 => get_string('autonumberno', 'questionnaire'),
 function questionnaire_check_date ($thisdate, $insert=false) {
     $dateformat = get_string('strfdate', 'questionnaire');
     if (preg_match('/(%[mdyY])(.+)(%[mdyY])(.+)(%[mdyY])/', $dateformat, $matches)) {
-        $datepieces = explode($matches[2], $thisdate);
+        $date_pieces = explode(str_replace('%','',$matches[2]), $thisdate);
         foreach ($datepieces as $datepiece) {
             if (!is_numeric($datepiece)) {
                 return 'wrongdateformat';
