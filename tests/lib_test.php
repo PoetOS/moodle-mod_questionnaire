@@ -43,7 +43,6 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->assertFalse(questionnaire_supports(FEATURE_GRADE_HAS_GRADE));
         $this->assertFalse(questionnaire_supports(FEATURE_GRADE_OUTCOMES));
         $this->assertTrue(questionnaire_supports(FEATURE_GROUPINGS));
-        $this->assertTrue(questionnaire_supports(FEATURE_GROUPMEMBERSONLY));
         $this->assertTrue(questionnaire_supports(FEATURE_GROUPS));
         $this->assertTrue(questionnaire_supports(FEATURE_MOD_INTRO));
         $this->assertTrue(questionnaire_supports(FEATURE_SHOW_DESCRIPTION));

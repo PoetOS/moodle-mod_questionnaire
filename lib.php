@@ -42,8 +42,6 @@ function questionnaire_supports($feature) {
             return false;
         case FEATURE_GROUPINGS:
             return true;
-        case FEATURE_GROUPMEMBERSONLY:
-            return true;
         case FEATURE_GROUPS:
             return true;
         case FEATURE_MOD_INTRO:
