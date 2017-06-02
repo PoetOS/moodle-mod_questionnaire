@@ -118,7 +118,7 @@ abstract class base {
      * The class constructor
      *
      */
-    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+    public function __construct($id = 0, $question = null, $context = null, $params = []) {
         global $DB;
         static $qtypes = null;
 
@@ -350,13 +350,8 @@ abstract class base {
      * @param array $choicerecords An array of choice records with 'content' and 'value' properties.
      * @param boolean $calcposition Whether or not to calculate the next available position in the survey.
      */
-    public function add($questionrecord, array $choicerecords = null, boolean $calcposition = null) {
+    public function add($questionrecord, array $choicerecords = null, $calcposition = true) {
         global $DB;
-
-        // Default boolean parameter to "true".
-        if ($calcposition === null) {
-            $calcposition = true;
-        }
 
         // Create new question.
         if ($calcposition) {
@@ -787,7 +782,7 @@ abstract class base {
         }
 
         $mform->addElement('html', '<div class="qoptcontainer">');
-        $options = array('wrap' => 'virtual', 'class' => 'qopts');
+        $options = ['wrap' => 'virtual', 'class' => 'qopts'];
         $mform->addElement('textarea', 'allchoices', get_string('possibleanswers', 'questionnaire'), $options);
         $mform->setType('allchoices', PARAM_RAW);
         $mform->addRule('allchoices', null, 'required', null, 'client');
