@@ -85,7 +85,7 @@ class date extends base {
                 // Count identical answers (case insensitive).
                 $this->text = $row->response;
                 if (!empty($this->text)) {
-                    $dateparts = preg_split('/-/', $this->text);
+                    $dateparts = preg_split('/-,\//', $this->text);
                     $this->text = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
                     $textidx = clean_text($this->text);
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
