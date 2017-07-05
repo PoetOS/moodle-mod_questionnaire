@@ -47,12 +47,12 @@
         "subtitle": "This is a subtitle",
         "addinfo": "<div>This is additional information.</div>",
         "message": "<div>This is a message.</div>",
-        "formstart": "<form id=\"formid\" method=\"post\" action=\"\">",
+        "formstart": "<form id=\"formid\" method=\"post\" action=\"index.php\">",
         "questions": [
             "<div>Question 1 HTML</div>",
             "<div>Question 2 HTML</div>"
         ],
-        "pageinfo": "<div>This is the page information.",
+        "pageinfo": "<div>This is the page information.</div>",
         "controlbuttons": "<div>control button HTML</div>",
         "formend": "</form>"
     }
@@ -68,9 +68,11 @@
         {{{formstart}}}
         {{#questions}}{{{.}}}{{/questions}}
         {{#pageinfo}}{{{.}}}{{/pageinfo}}
-        <div class="notice" style="padding: 0.5em 0 0.5em 0.2em;"><div class="buttons">
-            {{{controlbuttons}}}
-            {{{formend}}}
-        </div></div>
+        <div class="notice" style="padding: 0.5em 0 0.5em 0.2em;">
+            <div class="buttons">
+                {{{controlbuttons}}}
+            </div>
+        </div>
+        {{{formend}}}
     </div>
 </div>

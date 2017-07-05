@@ -33,13 +33,13 @@
             "id": "7",
             "class": "responseclass"
         },
-        "qnum": "<div>7</div>",
+        "qnum": "7",
         "required": "<div>*</div>",
         "skippedclass": "skippedclass",
         "label": {
             "for": "qn-7"
         },
-        "qcontent": "<div>HTML for the response content</div>",
+        "qcontent": "HTML for the response content",
         "responses": [
             {
                 "respdate": "Friday, 19 December 2014, 5:58pm",
@@ -52,7 +52,7 @@
                 "label": {
                     "for": "qn-7"
                 },
-                "qcontent": "<div>HTML for the response content</div>",
+                "qcontent": "HTML for the response content",
                 "qformelement": "<div>HTML for the question form element</div>"
             }
         ]
@@ -65,7 +65,7 @@
     <legend class="qn-legend">
         <div class="qn-info">
             <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</div>
-            <h2 class="qn-number">{{{qnum}}}</h2>
+            <h2 class="qn-number">{{{.}}}</h2>
         </div>
         {{{required}}}
     </legend>

@@ -23,18 +23,18 @@
 #page-mod-questionnaire-questions .mform .fitem fieldset.felement {
     margin-left: 0%;
     padding-left: 1%;
-    margin-bottom: 0px !important;
+    margin-bottom: 0 !important;
 }
 
 #page-mod-questionnaire-preview fieldset,
 #page-mod-questionnaire-complete fieldset {
-    margin-bottom: 0px !important;
+    margin-bottom: 0 !important;
 }
 
 #page-mod-questionnaire-questions .mform .fitem .fitemtitle {
     text-align: left;
     margin-left: 10px;
-    margin-bottom: 0px !important;
+    margin-bottom: 0 !important;
 }
 
 #page-mod-questionnaire-questions .moving {
@@ -45,7 +45,7 @@ div.qoptcontainer div.ftextarea {
     clear: all;
     float: none;
     width: 600px;
-    margin: 0px auto 10px;
+    margin: 0 auto 10px;
 }
 
 div.qoptcontainer div.ftextarea textarea.qopts {
@@ -78,7 +78,7 @@ td.selected {
 #page-mod-questionnaire-preview .notifyproblem,
 #page-mod-questionnaire-complete .thankbody,
 #page-mod-questionnaire-complete .thankhead {
-    background-color: #FFFFFF;
+    background-color: #fff;
     border-style: solid;
     border-width: 2px;
     margin-bottom: 10px;
@@ -92,7 +92,7 @@ td.selected {
 
 #page-mod-questionnaire-fbsections .notifyproblem {
     text-align: left;
-    padding: 0px;
+    padding: 0;
 }
 
 #page-mod-questionnaire-complete .message,
@@ -106,20 +106,20 @@ td.selected {
 #page-mod-questionnaire-complete .surveySubtitle,
 #page-mod-questionnaire-complete .addInfo {
     clear: both;
-    margin: 0px;
+    margin: 0;
     margin-bottom: 4px;
     padding: 10px;
 }
 
 .surveyPage {
     background-color: #eee;
-    border-bottom-color: #000000;
+    border-bottom-color: #000;
     border-bottom-style: solid;
     border-bottom-width: 1px;
     clear: right;
     padding: 3px;
     margin-bottom: 5px;
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 /* alternate columns formatting */
@@ -148,7 +148,7 @@ td.selected {
 #page-mod-questionnaire-complete td.notanswered,
 #page-mod-questionnaire-preview td.notanswered {
     /* border: none; */
-    background-color: #fafafa;;
+    background-color: #fafafa;
 }
 
 #page-mod-questionnaire-complete td.notcompleted,
@@ -175,7 +175,7 @@ td.selected {
     padding-left: 5px;
     padding-right: 5px;
     padding-top: 5px;
-    padding-bottom: 0px;
+    padding-bottom: 0;
     margin-bottom: 10px;
     margin-top: 10px;
 }
@@ -230,7 +230,7 @@ td.selected {
     padding-bottom: 5px;
     padding-top: 5px;
     margin-bottom: 5px;
-    background-color: #F2F2F2;
+    background-color: #f2f2f2;
 }
 
 /* new quiz-like formatting for 2.5 */
@@ -252,7 +252,7 @@ td.selected {
 }
 
 .qn-info h2.qn-number {
-    margin: 0px;
+    margin: 0;
     font-size: 1.5em;
     line-height: 1.2em;
 }
@@ -323,7 +323,7 @@ td.selected {
 }
 
 #page-mod-questionnaire-fbsections input[type="radio"] {
-    margin-right: 0px;
+    margin-right: 0;
 }
 
 #page-mod-questionnaire-fbsections .qn-legend {
@@ -348,5 +348,5 @@ td.selected {
 
 /* !important is needed in moodle 2.6 to override the display block when window width is reduced. */
 #page-mod-questionnaire-questions #region-main .mform .fitem .felement {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }

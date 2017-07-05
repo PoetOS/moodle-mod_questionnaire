@@ -80,10 +80,8 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param array $options
      * @return questionnaire
      */
-    public function create_instance($record = array(), array $options = array()) {
-        if (is_array($record)) {
-            $record = (object)$record;
-        }
+    public function create_instance($record = null, array $options = null) {
+        $record = (object)(array)$record;
 
         $defaultquestionnairesettings = array(
             'qtype'                 => 0,
@@ -110,7 +108,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
         }
 
-        $instance = parent::create_instance($record, $options);
+        $instance = parent::create_instance($record, (array)$options);
         $cm = get_coursemodule_from_instance('questionnaire', $instance->id);
         $course = get_course($cm->course);
         $questionnaire = new questionnaire(0, $instance, $course, $cm, false);
