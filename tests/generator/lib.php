@@ -651,19 +651,8 @@ class mod_questionnaire_generator extends testing_module_generator {
         $qdg = $this;
 
         $questiontypes = [QUESTEXT, QUESESSAY, QUESNUMERIC, QUESDATE, QUESRADIO, QUESDROP, QUESCHECK, QUESRATE];
-
-        $totalquestions = $coursecount * $questionnairecount * ($questionspertype * count($questiontypes));
-        $totalquestionresponses = $studentcount * $totalquestions;
-        mtrace($coursecount.' courses * '.$questionnairecount.' questionnaires * '.($questionspertype * count($questiontypes)).
-            ' questions = '.$totalquestions.' total questions');
-        mtrace($totalquestions.' total questions * '.$studentcount.' resondees = '.$totalquestionresponses.
-            ' total question responses');
-
-        $questionsprocessed = 0;
-
         $students = [];
         $courses = [];
-
         $questionnaires = [];
 
         for ($u = 0; $u < $studentcount; $u++) {
@@ -688,7 +677,6 @@ class mod_questionnaire_generator extends testing_module_generator {
         // Create questionnaires in each course.
         $qname = 1000;
         for ($q = 0; $q < $questionnairecount; $q++) {
-            $coursesprocessed = 0;
             foreach ($courses as $course) {
                 $questionnaire = $qdg->create_instance(['course' => $course->id]);
                 $questionnaires[] = $questionnaire;
@@ -728,20 +716,12 @@ class mod_questionnaire_generator extends testing_module_generator {
                             'type_id' => QUESPAGEBREAK
                         ]
                     );
-                    $questionsprocessed++;
-                    mtrace($questionsprocessed.' questions processed out of '.$totalquestions);
                 }
 
                 // Create responses.
-                mtrace('Creating responses');
                 foreach ($students as $student) {
                     $qdg->generate_response($questionnaire, $questions, $student->id);
                 }
-                mtrace('Responses created');
-
-                $coursesprocessed++;
-                mtrace($coursesprocessed.' courses processed out of '.$coursecount);
-
             }
         }
 
