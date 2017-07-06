@@ -671,7 +671,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $questionnaires = [];
 
         for ($u = 0; $u < $studentcount; $u++) {
-            $students[] = $dg->create_user();
+            $students[] = $dg->create_user(['firstname' => 'Testy']);
         }
 
         $manplugin = enrol_get_plugin('manual');
@@ -690,6 +690,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         }
 
         // Create questionnaires in each course.
+        $qname = 1000;
         for ($q = 0; $q < $questionnairecount; $q++) {
             $coursesprocessed = 0;
             foreach ($courses as $course) {
@@ -716,7 +717,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                             $questionnaire,
                             [
                                 'survey_id' => $questionnaire->sid,
-                                'name'      => uniqid($qdg->type_name($questiontype).' '),
+                                'name'      => $qdg->type_name($questiontype).' '.$qname++,
                                 'type_id'   => $questiontype
                             ],
                             $opts
@@ -727,7 +728,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         $questionnaire,
                         [
                             'survey_id' => $questionnaire->sid,
-                            'name' => uniqid('pagebreak '),
+                            'name' => 'pagebreak '.$qname++,
                             'type_id' => QUESPAGEBREAK
                         ]
                     );
