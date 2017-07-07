@@ -33,8 +33,6 @@ defined('MOODLE_INTERNAL') || die();
 
 class mod_questionnaire_csvexport_test extends advanced_testcase {
 
-    static private $noreset = false;
-
     public function setUp() {
         global $CFG;
 
@@ -65,7 +63,7 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
     public function test_csvexport() {
         global $DB;
 
-        $this->resetAfterTest(!static::$noreset);
+        $this->resetAfterTest();
         $dg = $this->getDataGenerator();
         $qdg = $dg->get_plugin_generator('mod_questionnaire');
         $qdg->create_and_fully_populate(1, 5, 1, 1);
@@ -79,12 +77,6 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
             foreach ($newoutput as $key => $output) {
                 $this->assertEquals($this->expected_output()[$key], $output);
             }
-        }
-    }
-
-    public static function tearDownAfterClass() {
-        if (!static::$noreset) {
-            self::resetAllData();
         }
     }
 
