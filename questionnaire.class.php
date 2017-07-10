@@ -2164,32 +2164,26 @@ class questionnaire {
 
         // Is this questionnaire set to fullname or anonymous?
         $isfullname = $this->respondenttype != 'anonymous';
-        if ($isfullname) {
-            $selectgroupid = '';
-            $gmuserid = ', GM.userid ';
-            $groupmembers = ', {groups_members} GM ';
-            switch ($currentgroupid) {
-                case 0:     // All participants.
-                    $gmuserid = '';
-                    $groupmembers = '';
-                    break;
-                default:     // Members of a specific group.
-                    $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND R.userid = GM.userid ';
-            }
-            $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.userid, U.username AS username,
-                            U.id as userid '.$gmuserid.
-            'FROM {questionnaire_response} R,
-                  {user} U
-                '.$groupmembers.
-            'WHERE R.survey_id=' . $this->survey->id . ' AND complete = \'y\' AND U.id = R.userid ' . $selectgroupid .
-            'ORDER BY U.lastname, U.firstname, R.submitted DESC';
-        } else {
-            $sql = 'SELECT R.id AS responseid, R.submitted
-                   FROM {questionnaire_response} R
-                   WHERE R.survey_id = ?
-                   AND complete = ?
-                   ORDER BY R.submitted DESC';
+
+        $selectgroupid = '';
+        $gmuserid = ', GM.userid ';
+        $groupmembers = ', {groups_members} GM ';
+        switch ($currentgroupid) {
+            case 0:     // All participants.
+                $gmuserid = '';
+                $groupmembers = '';
+                break;
+            default:     // Members of a specific group.
+                $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND R.userid = GM.userid ';
         }
+        $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.userid, U.username AS username,
+                        U.id as userid '.$gmuserid.
+        'FROM {questionnaire_response} R,
+              {user} U
+            '.$groupmembers.
+        'WHERE R.survey_id=' . $this->survey->id . ' AND complete = \'y\' AND U.id = R.userid ' . $selectgroupid .
+        'ORDER BY U.lastname, U.firstname, R.submitted DESC';
+
         if (!$responses = $DB->get_records_sql ($sql, array('survey_id' => $this->survey->id, 'complete' => 'y'))) {
             return;
         }
