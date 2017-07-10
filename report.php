@@ -129,6 +129,9 @@ $SESSION->questionnaire_survey_id = $sid;
 if ($groupmode > 0) {
     if ($groupmode == 1) {
         $questionnairegroups = groups_get_all_groups($course->id, $userid);
+        if (!array_key_exists($currentgroupid, $questionnairegroups)) {
+            print_error('Permission denied');
+        }
     }
     if ($groupmode == 2 || $questionnaire->canviewallgroups) {
         $questionnairegroups = groups_get_all_groups($course->id);
