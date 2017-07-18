@@ -193,6 +193,13 @@ function questionnaire_delete_instance($id) {
 
     $result = true;
 
+    if ($events = $DB->get_records('event', array("modulename" => 'questionnaire', "instance" => $questionnaire->id))) {
+        foreach ($events as $event) {
+            $event = calendar_event::load($event);
+            $event->delete();
+        }
+    }
+
     if (! $DB->delete_records('questionnaire', array('id' => $questionnaire->id))) {
         $result = false;
     }
@@ -201,13 +208,6 @@ function questionnaire_delete_instance($id) {
         // If this survey is owned by this course, delete all of the survey records and responses.
         if ($survey->courseid == $questionnaire->course) {
             $result = $result && questionnaire_delete_survey($questionnaire->sid, $questionnaire->id);
-        }
-    }
-
-    if ($events = $DB->get_records('event', array("modulename" => 'questionnaire', "instance" => $questionnaire->id))) {
-        foreach ($events as $event) {
-            $event = calendar_event::load($event);
-            $event->delete();
         }
     }
 
