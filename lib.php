@@ -475,24 +475,32 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
 
     require_course_login($course, true, $cm);
 
-    $fileareas = array('intro', 'info', 'thankbody', 'question', 'feedbacknotes');
+    $fileareas = ['intro', 'info', 'thankbody', 'question', 'feedbacknotes', 'sectionheading', 'feedback'];
     if (!in_array($filearea, $fileareas)) {
         return false;
     }
 
     $componentid = (int)array_shift($args);
 
-    if ($filearea != 'question') {
-        if (!$DB->record_exists('questionnaire_survey', array('id' => $componentid))) {
+    if ($filearea == 'question') {
+        if (!$DB->record_exists('questionnaire_question', ['id' => $componentid])) {
+            return false;
+        }
+    } else if ($filearea == 'sectionheading') {
+        if (!$DB->record_exists('questionnaire_fb_sections', ['id' => $componentid])) {
+            return false;
+        }
+    } else if ($filearea == 'feedback') {
+        if (!$DB->record_exists('questionnaire_feedback', ['id' => $componentid])) {
             return false;
         }
     } else {
-        if (!$DB->record_exists('questionnaire_question', array('id' => $componentid))) {
+        if (!$DB->record_exists('questionnaire_survey', ['id' => $componentid])) {
             return false;
         }
     }
 
-    if (!$DB->record_exists('questionnaire', array('id' => $cm->instance))) {
+    if (!$DB->record_exists('questionnaire', ['id' => $cm->instance])) {
         return false;
     }
 
