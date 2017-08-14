@@ -221,7 +221,9 @@ td.selected {
 
 /*respondents list feature*/
 
-#respondentscolumn {
+#respondentscolumn0,
+#respondentscolumn1,
+#respondentscolumn2 {
     float: left;
     margin-left: 20px;
 }
