@@ -29,37 +29,43 @@
 
     Example context (json):
     {
-        "respondentscolumn0": [
-            "HTML of respondent link1",
-            "HTML of respondent link2"
-        ],
-        "respondentscolumn1": [
-            "HTML of respondent link3",
-            "HTML of respondent link4"
-        ],
-        "respondentscolumn2": [
-            "HTML of respondent link5",
-            "HTML of respondent link6"
-        ]
+        "respondentscolumn0": {
+            "respondentlink": [
+                "HTML of respondent link1",
+                "HTML of respondent link2"
+            ]
+        },
+        "respondentscolumn1": {
+            "respondentlink": [
+                "HTML of respondent link3",
+                "HTML of respondent link4"
+            ]
+        },
+        "respondentscolumn2": {
+            "respondentlink": [
+                "HTML of respondent link5",
+                "HTML of respondent link6"
+            ]
+        }
     }
     }}
 <div class="box generalbox">
     {{#respondentscolumn0}}
-    <div id="respondentscolumn">
+    <div id="respondentscolumn0">
     {{#respondentlink}}
     {{{.}}}<br />
     {{/respondentlink}}
     </div>
     {{/respondentscolumn0}}
     {{#respondentscolumn1}}
-    <div id="respondentscolumn">
+    <div id="respondentscolumn1">
     {{#respondentlink}}
     {{{.}}}<br />
     {{/respondentlink}}
     </div>
     {{/respondentscolumn1}}
     {{#respondentscolumn2}}
-    <div id="respondentscolumn">
+    <div id="respondentscolumn2">
     {{#respondentlink}}
     {{{.}}}<br />
     {{/respondentlink}}
