@@ -1172,6 +1172,27 @@ class questionnaire {
             }
         }
 
+        // Replicate any feedback data.
+        // TODO: Need to handle image attachments (same for other copies above).
+        $fbsections = $DB->get_records('questionnaire_fb_sections', ['survey_id' => $this->survey->id], 'id');
+        foreach ($fbsections as $fbsid => $fbsection) {
+            $fbsection->survey_id = $newsid;
+            $scorecalculation = unserialize($fbsection->scorecalculation);
+            $newscorecalculation = [];
+            foreach ($scorecalculation as $qid => $val) {
+                $newscorecalculation[$qidarray[$qid]] = $val;
+            }
+            $fbsection->scorecalculation = serialize($newscorecalculation);
+            unset($fbsection->id);
+            $newfbsid = $DB->insert_record('questionnaire_fb_sections', $fbsection);
+            $feedbackrecs = $DB->get_records('questionnaire_feedback', ['section_id' => $fbsid], 'id');
+            foreach ($feedbackrecs as $feedbackrec) {
+                $feedbackrec->section_id = $newfbsid;
+                unset($feedbackrec->id);
+                $DB->insert_record('questionnaire_feedback', $feedbackrec);
+            }
+        }
+
         return($newsid);
     }
 
