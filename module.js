@@ -13,6 +13,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+
+
+$(window).ready(function () {
+    link_label_to_question_id();
+});
+
+/**
+ * links the label (usually the text of the question) to the div of the question.
+ */
+function link_label_to_question_id() {
+    $(".qn-container").each(function(elem) {
+        elem = elem+2;
+        var container = $(this);
+        var label = $(this).find(".qn-question>.no-overflow").children();
+        var t = label[0];
+        if(t != undefined) {
+            $(t).attr('id', 'question' + elem);
+            container.attr('aria-labelledby', $(t).attr('id'));
+        } else {
+            var label2 = $(this).find("label").attr('id', 'question' + elem);
+            container.attr('aria-labelledby', label2.attr('id'));
+        }
+
+    });
+}
+
+
 /**
  * JavaScript library for the quiz module.
  *

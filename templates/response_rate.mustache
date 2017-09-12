@@ -58,28 +58,28 @@
 }}
 <!-- Begin HTML generated from response_rate template. -->
 <div class="questionnaire_response questionnaire_radio">
-<table class="individual" border="0" cellspacing="1" cellpadding="0" style="width:{{twidth}}">
+<table role="presentation" class="individual" border="0" cellspacing="1" cellpadding="0" style="width:{{twidth}}">
   <tbody>
     <tr>
         {{#osgood}}<td style="width: {{sidecolwidth}}; text-align: right;"></td>{{/osgood}}
         {{^osgood}}<td style="width: {{sidecolwidth}}"></td>{{/osgood}}
         {{#headers}}
-        <td style="width:{{colwidth}}; text-align:center" class="{{bg}} smalltext">{{str}}</td>
+        <td style="width:{{colwidth}}; text-align:center" class="{{bg}} smalltext" id="{{index}}">{{str}}</td>
         {{/headers}}
         {{#osgood}}<td style="width:{{sidecolwidth}};"></td>{{/osgood}}
     </tr>
     {{#rows}}
-    <tr>
-        <td style="text-align:{{textalign}}">{{{content}}}</td>
+    <tr role="radiogroup group">
+        <td style="text-align:{{textalign}}"><legend class="choice-legend">{{{content}}}</legend></td>
         {{#cols}}
         {{#checked}}
         <td style="text-align:center;" class="selected">
-            <span class="selected"><input type="radio" name="{{str}}" checked="checked" /></span>
+            <input type="radio" name="{{str}}" checked="checked" aria-labelledby="{{index}}" />
         </td>
         {{/checked}}
         {{^checked}}
         <td style="text-align:center;" class="{{bg}}">
-            <span class="unselected"><input type="radio" disabled="disabled" name="{{str}}" onclick="this.checked=false;" /></span>
+            <input type="radio" disabled="disabled" name="{{str}}" aria-labelledby="{{index}}" onclick="this.checked=false;" />
         </td>
         {{/checked}}
         {{/cols}}

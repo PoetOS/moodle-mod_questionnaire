@@ -45,26 +45,28 @@
     }
     }}
 <!-- Begin fieldset generated from question_container template. -->
-<fieldset id="qn-{{fieldset.id}}" class="{{fieldset.class}}">
+<div id="qn-{{fieldset.id}}" class="{{fieldset.class}}" role="group" aria-labelledby="label-{{qnum}}">
     {{#qnum}}
-    <legend class="qn-legend">
-        <div class="qn-info">
-            <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</div>
-            <h2 class="qn-number">{{{qnum}}}</h2>
-        </div>
-        {{{required}}}
-    </legend>
+	{{! apparently, the required icon should be with the question and not with the number of the question }}
+    <legend class="qn-legend"> 
+        <div class="qn-info"> 
+            <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</div> 
+            <h2 class="qn-number">{{{qnum}}}</h2> 
+        </div> 
+    </legend> 
     {{/qnum}}
     <div class="qn-content">
         <div class="qn-question {{skippedclass}}">
             {{#label}}<label for="{{label.for}}">{{/label}}
             {{{qcontent}}}
             {{#label}}</label>{{/label}}
+                {{{required}}}
         </div>
         <div class="qn-answer">
             {{{qformelement}}}
         </div>
     </div>
-</fieldset>
+</div>
 {{#notifications}}{{{.}}}{{/notifications}}
+
 <!-- End fieldset generated from question_container template. -->
