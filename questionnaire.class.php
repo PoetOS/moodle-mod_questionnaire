@@ -898,6 +898,10 @@ class questionnaire {
             if ($this->survey->info) {
                 $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
                                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
+                $infotext .= '<br>'.get_string('requiredfield', 'mod_questionnaire').'<br>';
+                $this->page->add_to_page('addinfo', $infotext);
+            } else {
+                $infotext = get_string('requiredfield', 'mod_questionnaire').'<br>';
                 $this->page->add_to_page('addinfo', $infotext);
             }
         }
@@ -2529,6 +2533,10 @@ class questionnaire {
         if ($this->survey->info) {
             $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
                 $this->context->id, 'mod_questionnaire', 'info', $this->survey->id);
+            $infotext .= '<br>'.get_string('requiredfield', 'mod_questionnaire').'<br>';
+            $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
+        } else {
+            $infotext = get_string('requiredfield', 'mod_questionnaire').'<br>';
             $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
         }
 
