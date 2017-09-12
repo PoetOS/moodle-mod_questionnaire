@@ -122,24 +122,28 @@
     }}
 <!-- Begin HTML generated from question_rate template. -->
 {{#qelements}}
-<table style="width:{{qelements.twidth}}">
+<table style="width:{{qelements.twidth}}" role="presentation">
   <tbody>
     {{#qelements.headerrow}}
     <tr>
       <td style="width:{{col1width}}"></td>
       {{#colnya}}<td title="nya"></td>{{/colnya}}
       {{#cols}}
-      <td style="width:{{colwidth}}; text-align:center;" class="smalltext">{{{coltext}}}</td>
+      <td style="width:{{colwidth}}; text-align:center;" class="smalltext" id={{id}}>{{{coltext}}}</td>
       {{/cols}}
     {{/qelements.headerrow}}
     {{#qelements.rows}}
-    <tr class="raterow">
+    <tr class="raterow" role="radiogroup group" aria-labelledby="Q-{{qnum}}-{{uni}}">
       {{#cols}}
-      <td {{#colstyle}}style="{{.}}"{{/colstyle}}{{#colclass}} class="{{.}}"{{/colclass}}{{#coltitle}} title="{{.}}"{{/coltitle}}>
-        {{#coltext}}{{{.}}}{{/coltext}}
-        {{#colhiddentext}}<span class="accesshide">{{{.}}}</span>{{/colhiddentext}}
-        {{#colinput}}<input type="radio" name="{{name}}" id="{{id}}" value="{{value}}"{{#checked}} checked="checked"{{/checked}}{{#disabled}} disabled="disabled"{{/disabled}}{{#onclick}} onclick="{{.}}"{{/onclick}}>
-        {{#label}}<label for="{{id}}" class="accesshide">{{{.}}}</label>{{/label}}{{/colinput}}
+      <td
+	{{#first}}
+	    id="Q-{{qnum}}-{{unique_num}}"
+	{{/first}}
+        {{#colstyle}}style="{{.}}"{{/colstyle}}{{#colclass}} class="{{.}}"{{/colclass}}{{#coltitle}} title="{{.}}"{{/coltitle}}>
+
+        {{#coltext}}<span class="choice-legend">{{{.}}}</span>{{/coltext}}
+        {{#colinput}}<input type="radio" {{#arialabelledby}}aria-labelledby="{{.}}" {{/arialabelledby}} {{#arialabel}}aria-label="{{.}}"{{/arialabel}} name="{{name}}" id="{{id}}" value="{{value}}"{{#checked}} checked="checked"{{/checked}}{{#disabled}} disabled="disabled"{{/disabled}}{{#onclick}} onclick="{{.}}"{{/onclick}}>
+        {{/colinput}}
       </td>
       {{/cols}}
     </tr>

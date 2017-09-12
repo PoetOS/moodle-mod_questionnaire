@@ -178,6 +178,17 @@ class renderer extends \plugin_renderer_base {
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
         if (($template = $question->question_template())) {
+	     // here we add some informations to the row
+            $pagetags->qformelement->qnum = $pagetags->qnum;
+            if(isset($pagetags->qformelement->qelement) &&  is_array($pagetags->qformelement->qelement) && isset($pagetags->qformelement->qelement['rows']) && is_array($pagetags->qformelement->qelements['rows'][0]['cols'][0])) {
+                $i = 1;
+                foreach($pagetags->qformelement->qelements['rows'] as $key => $row) {
+                    $pagetags->qformelement->qelements['rows'][$key]['cols'][0]['first'] = true;
+                    $pagetags->qformelement->qelements['rows'][$key]['uni'] = (int)$i;
+                    $pagetags->qformelement->qelements['rows'][$key]['cols'][0]['unique_num'] = (int)$i;
+                    $i++;
+                }
+            }
             $pagetags->qformelement = $this->render_from_template($template, $pagetags->qformelement);
         }
 
