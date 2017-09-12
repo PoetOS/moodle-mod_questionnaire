@@ -45,6 +45,8 @@ class questionnaire {
      */
     public $renderer = false;
 
+    public $notifications = false;
+
     /**
      * @var $page Contains the renderable, templatable page when loaded, or false if not.
      */
@@ -105,6 +107,22 @@ class questionnaire {
         } else if (is_object($survey)) {
             $this->survey = clone($survey);
         }
+    }
+
+    /**
+     * Create question for type
+     *
+     * @author gthomas
+     * @param $typename
+     * @param int $id
+     * @param null $record
+     * @param null $context
+     * @param array $params
+     * @return \mod_questionnaire\question\base|mixed
+     */
+    public static function question_factory($typename, $id = 0, $record = null, $context = null, $params = []) {
+        $questionclass = '\\mod_questionnaire\\question\\'.$typename;
+        return new $questionclass($id, $record, $context, $params);
     }
 
     /**
