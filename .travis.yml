@@ -3,7 +3,8 @@ language: php
 sudo: false
 
 addons:
-  postgresql: 9.3
+  firefox: "47.0.1"
+  postgresql: "9.3"
   apt:
     packages:
       - oracle-java8-installer
