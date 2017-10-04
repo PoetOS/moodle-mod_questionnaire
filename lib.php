@@ -138,8 +138,10 @@ function questionnaire_add_instance($questionnaire) {
 
     questionnaire_set_events($questionnaire);
 
-    $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
-    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire', $questionnaire->id, $completiontimeexpected);
+    if (class_exists('\core_completion\api')) {
+        $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
+        \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire', $questionnaire->id, $completiontimeexpected);
+    }
 
     return $questionnaire->id;
 }
@@ -178,8 +180,10 @@ function questionnaire_update_instance($questionnaire) {
 
     questionnaire_set_events($questionnaire);
 
-    $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
-    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire', $questionnaire->id, $completiontimeexpected);
+    if (class_exists('\core_completion\api')) {
+        $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
+        \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire', $questionnaire->id, $completiontimeexpected);
+    }
 
     return $DB->update_record("questionnaire", $questionnaire);
 }
