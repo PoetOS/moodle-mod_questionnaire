@@ -67,6 +67,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         // Create test data as a record.
         $questdata = new stdClass();
         $questdata->course = $course->id;
+        $questdata->coursemodule = '';
         $questdata->name = 'Test questionnaire';
         $questdata->intro = 'Intro to test questionnaire.';
         $questdata->introformat = FORMAT_HTML;
@@ -119,6 +120,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $qrow->timemodified = 3;
         $qrow->completionsubmit = 1;
         $qrow->autonum = 1;
+        $qrow->coursemodule = $questionnaire->cm->id;
 
         // Moodle update form passes "instance" instead of "id" to [mod]_update_instance.
         $qrow->instance = $qid;
