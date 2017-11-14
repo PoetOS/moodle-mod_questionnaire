@@ -1623,8 +1623,6 @@ class questionnaire {
     private function response_send_email($rid) {
         global $CFG, $DB, $USER;
 
-        require_once($CFG->libdir.'/phpmailer/class.phpmailer.php');
-
         $name = s($this->name);
         if (isset($this->survey) && isset($this->survey->email)) {
             $email = $this->survey->email;
