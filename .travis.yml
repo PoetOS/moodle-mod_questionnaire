@@ -16,7 +16,6 @@ cache:
     - $HOME/.npm
 
 php:
-# - 5.6 Disaabling for release because of weired Behat error.
  - 5.6
  - 7.0
  - 7.1
@@ -24,8 +23,7 @@ php:
 env:
  global:
   - MOODLE_BRANCH=MOODLE_33_STABLE
-# Temporarily turn off checking for this file. It will be replaced.
-#  - IGNORE_PATHS=module.js,tests
+
  matrix:
   - DB=pgsql
   - DB=mysqli
@@ -33,9 +31,10 @@ env:
 before_install:
   - phpenv config-rm xdebug.ini
   - nvm install node
+  - nvm install 8.9
+  - nvm use 8.9
   - cd ../..
   - composer selfupdate
-#  - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci dev-poet
   - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
@@ -47,7 +46,6 @@ script:
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
-#  - moodle-plugin-ci codechecker --standard poet
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
   - moodle-plugin-ci mustache
