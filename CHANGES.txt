@@ -1,5 +1,14 @@
 Release Notes
 
+Version 3.3.2 (Build - 2017111400)
+Poet - Removing unused class file preventing error in 3.4 caused by MDL-60194.
+CONTRIB-7009 - Adding feedback data duplication to survey copying.
+CONTRIB-7021 - Allowed filtering on the activity name for the view page.
+GHPR #98 - Added 'sectionheading' and 'feedback' as pluginfile areas.
+GHPR #91 - "Download in text format" fails to include the response data for some question types in versions 3.1.5+ on Oracle DB.
+CONTRIB-6919 Adding XSS risk masks to appropriate capabilities.
+CONTRIB-6918 Remove spaces from email addresses if they exist.
+
 Version 3.3.1 (Build - 2017051800)
 Bug fixes:
 CONTRIB-6903 For very old installations, response.username field may contain "Anonymous". Make this numeric before modifying field.
