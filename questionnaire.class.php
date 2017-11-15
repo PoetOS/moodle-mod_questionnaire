@@ -702,7 +702,7 @@ class questionnaire {
                 if (questionnaire_has_dependencies($this->questions)) {
                     $nbquestionsonpage = questionnaire_nb_questions_on_page($this->questions,
                                     $this->questionsbysec[$formdata->sec], $formdata->rid);
-                    while (count($nbquestionsonpage) == 0) {
+                    while (count($nbquestionsonpage) == 0 && $formdata->sec > 0) {
                         $formdata->sec--;
                         $nbquestionsonpage = questionnaire_nb_questions_on_page($this->questions,
                                         $this->questionsbysec[$formdata->sec], $formdata->rid);
