@@ -355,12 +355,14 @@ class display_support {
                         if (($j = $avg * $width) > 0) {
                             $marginposition = ($avg - 0.5 ) / ($length + $isrestricted) * 100;
                         }
+                        $alt = $avg;
+                        // add an 'alt' property to '<img>' tag
                         if (!right_to_left()) {
                             $out .= '<img style="height:12px; width: 6px; margin-left: '.$marginposition.
-                                '%;" alt="" src="'.$imageurl.'hbar.gif" />';
+                                '%;" alt="'.$alt.'" src="'.$imageurl.'hbar.gif" />';
                         } else {
                             $out .= '<img style="height:12px; width: 6px; margin-right: '.$marginposition.
-                                '%;" alt="" src="'.$imageurl.'hbar.gif" />';
+                                '%;" alt="'.$alt.'" src="'.$imageurl.'hbar.gif" />';
                         }
                     } else {
                             $out = '';
