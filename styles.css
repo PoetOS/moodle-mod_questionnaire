@@ -352,3 +352,14 @@ td.selected {
 #page-mod-questionnaire-questions #region-main .mform .fitem .felement {
     margin-bottom: 0;
 }
+
+legend.choice-legend {
+    display: block;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: #333;
+    border: none;
+ }
+
