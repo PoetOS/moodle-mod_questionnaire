@@ -67,7 +67,7 @@ if ($section = $DB->get_record('questionnaire_fb_sections',
     $sdata->sectionheading = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
 }
 
-$feedbackform = new mod_questionnaire_feedback_form( null, array('currentsection' => $currentsection, 'sectionid' => $sectionid) );
+$feedbackform = new \mod_questionnaire\feedback_form( null, array('currentsection' => $currentsection, 'sectionid' => $sectionid) );
 $feedbackform->set_data($sdata);
 if ($feedbackform->is_cancelled()) {
     // Redirect to view questionnaire page.

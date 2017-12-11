@@ -21,11 +21,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_questionnaire;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
-class mod_questionnaire_settings_form extends moodleform {
+class settings_form extends \moodleform {
 
     public function definition() {
         global $questionnaire, $questionnairerealms;

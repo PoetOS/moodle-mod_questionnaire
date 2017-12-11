@@ -69,6 +69,45 @@ class rate extends base {
     }
 
     /**
+     * True if question type supports feedback options. False by default.
+     */
+    public function supports_feedback() {
+        return true;
+    }
+
+    /**
+     * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
+     */
+    public function valid_feedback() {
+        return parent::valid_feedback() && (($this->precise == 0) || ($this->precise == 3));
+    }
+
+    /**
+     * Get the maximum score possible for feedback if appropriate. Override if default behaviour is not correct.
+     * @return int | boolean
+     */
+    public function get_feedback_maxscore() {
+        if ($this->valid_feedback()) {
+            $maxscore = 0;
+            $nbchoices = 0;
+            foreach ($this->choices as $choice) {
+                if (isset($choice->value) && ($choice->value != null)) {
+                    if ($choice->value > $maxscore) {
+                        $maxscore = $choice->value;
+                    }
+                } else {
+                    $nbchoices++;
+                }
+            }
+            // The maximum score needs to be multiplied by the number of items to rate.
+            $maxscore = $maxscore * $nbchoices;
+        } else {
+            $maxscore = false;
+        }
+        return $maxscore;
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param object $data
      * @param string $descendantdata
@@ -173,6 +212,7 @@ class rate extends base {
             $choicetags->qelements['headerrow']['colnya'] = true;
         }
 
+        $collabel = [];
         for ($j = 0; $j < $this->length; $j++) {
             $col = [];
             if (isset($n[$j])) {
@@ -189,10 +229,12 @@ class rate extends base {
             }
             $col['colwidth'] = $colwidth;
             $col['coltext'] = $str.$val;
+            $collabel[$j] = $col['coltext'];
             $choicetags->qelements['headerrow']['cols'][] = $col;
         }
         if ($na) {
             $choicetags->qelements['headerrow']['cols'][] = ['colwidth' => $colwidth, 'coltext' => $na];
+            $collabel[$j] = $na;
         }
 
         $num = 0;
@@ -267,7 +309,7 @@ class rate extends base {
                     if (!empty($order)) {
                         $col['colinput']['onclick'] = $order;
                     }
-                    $col['colinput']['label'] = 'Choice '.$i.' for row '.$row;
+                    $col['colinput']['label'] = 'Choice '.$collabel[$j].' for row '.format_text($content, FORMAT_PLAIN);
                     if ($bg == 'c0 raterow') {
                         $bg = 'c1 raterow';
                     } else {
@@ -452,13 +494,8 @@ class rate extends base {
         }
 
         if ($num == 0) {
-            if ($this->dependquestion == 0) {
-                if ($this->required == 'y') {
-                    $complete = false;
-                }
-            } else {
-                if (isset($responsedata->{'q'.$this->dependquestion})
-                        && $responsedata->{'q'.$this->dependquestion} == $this->dependchoice) {
+            if (!$this->has_dependencies()) {
+                if ($this->required()) {
                     $complete = false;
                 }
             }

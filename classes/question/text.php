@@ -81,7 +81,7 @@ class text extends base {
             $choice->maxlength = $this->precise;
         }
         $choice->value = (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '');
-        $choice->id = $this->type . $this->id;
+        $choice->id = self::qtypename($this->type_id) . $this->id;
         $questiontags->qelements->choice = $choice;
         return $questiontags;
     }

@@ -384,8 +384,11 @@ function questionnaire_delete_survey($sid, $questionnaireid) {
     if ($questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid), 'id')) {
         foreach ($questions as $question) {
             $DB->delete_records('questionnaire_quest_choice', array('question_id' => $question->id));
+            questionnaire_delete_dependencies($question->id);
         }
         $status = $status && $DB->delete_records('questionnaire_question', array('survey_id' => $sid));
+        // Just to make sure.
+        $status = $status && $DB->delete_records('questionnaire_dependency', ['surveyid' => $sid]);
     }
 
     // Delete all feedback sections and feedback messages for the survey.
@@ -450,6 +453,18 @@ function questionnaire_delete_responses($qid) {
 
     $status = $status && $DB->delete_records('questionnaire_response', array('id' => $qid));
     $status = $status && $DB->delete_records('questionnaire_attempts', array('rid' => $qid));
+
+    return $status;
+}
+
+function questionnaire_delete_dependencies($qid) {
+    global $DB;
+
+    $status = true;
+
+    // Delete all dependencies for this question.
+    $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
 
     return $status;
 }
@@ -691,81 +706,21 @@ function questionnaire_get_editor_options($context) {
     );
 }
 
-// Skip logic: we need to find out how many questions will actually be displayed on next page/section.
-function questionnaire_nb_questions_on_page ($questionsinquestionnaire, $questionsinsection, $rid) {
-    global $DB;
-    $questionstodisplay = array();
-    foreach ($questionsinsection as $question) {
-        if ($question->dependquestion != 0) {
-            switch ($questionsinquestionnaire[$question->dependquestion]->type_id) {
-                case QUESYESNO:
-                    if ($question->dependchoice == 0) {
-                        $questiondependchoice = 'y';
-                    } else {
-                        $questiondependchoice = 'n';
-                    }
-                    $responsetable = 'response_bool';
-                    break;
-                default:
-                    $questiondependchoice = $question->dependchoice;
-                    $responsetable = 'resp_single';
-            }
-            $params = array('response_id' => $rid,
-                            'question_id' => $question->dependquestion,
-                            'choice_id' => $questiondependchoice);
-            if ($DB->record_exists('questionnaire_'.$responsetable, $params)) {
-                $questionstodisplay [] = $question->id;
-            }
-        } else {
-            $questionstodisplay [] = $question->id;
-        }
-    }
-    return $questionstodisplay;
-}
-
-function questionnaire_get_dependencies($questions, $position) {
-    $dependencies = array();
-    $dependencies[''][0] = get_string('choosedots');
-
-    foreach ($questions as $question) {
-        if (($question->type_id == QUESRADIO || $question->type_id == QUESDROP || $question->type_id == QUESYESNO)
-                        && $question->position < $position) {
-            if (($question->type_id == QUESRADIO || $question->type_id == QUESDROP) && $question->name != '') {
-                foreach ($question->choices as $key => $choice) {
-                    $contents = questionnaire_choice_values($choice->content);
-                    if ($contents->modname) {
-                        $choice->content = $contents->modname;
-                    } else if ($contents->title) { // Must be an image; use its title for the dropdown list.
-                        $choice->content = $contents->title;
-                    } else {
-                        $choice->content = $contents->text;
-                    }
-                    $dependencies[$question->name][$question->id.','.$key] = $question->name.'->'.$choice->content;
-                }
-            }
-            if ($question->type_id == QUESYESNO && $question->name != '') {
-                $dependencies[$question->name][$question->id.',0'] = $question->name.'->'.get_string('yes');
-                $dependencies[$question->name][$question->id.',1'] = $question->name.'->'.get_string('no');
-            }
-        }
-    }
-    return $dependencies;
-}
-
 // Get the parent of a child question.
+// TODO - This needs to be refactored or removed.
 function questionnaire_get_parent ($question) {
     global $DB;
     $qid = $question->id;
     $parent = array();
-    $dependquestion = $DB->get_record('questionnaire_question', array('id' => $question->dependquestion),
-                    $fields = 'id, position, name, type_id');
+    $dependquestion = $DB->get_record('questionnaire_question', ['id' => $question->dependquestionid],
+        'id, position, name, type_id');
     if (is_object($dependquestion)) {
         $qdependchoice = '';
         switch ($dependquestion->type_id) {
             case QUESRADIO:
             case QUESDROP:
-                $dependchoice = $DB->get_record('questionnaire_quest_choice', array('id' => $question->dependchoice),
-                    $fields = 'id,content');
+            case QUESCHECK:
+                $dependchoice = $DB->get_record('questionnaire_quest_choice', ['id' => $question->dependchoiceid], 'id,content');
                 $qdependchoice = $dependchoice->id;
                 $dependchoice = $dependchoice->content;
 
@@ -775,7 +730,7 @@ function questionnaire_get_parent ($question) {
                 }
                 break;
             case QUESYESNO:
-                switch ($question->dependchoice) {
+                switch ($question->dependchoiceid) {
                     case 0:
                         $dependchoice = get_string('yes');
                         $qdependchoice = 'y';
@@ -801,46 +756,61 @@ function questionnaire_get_parent ($question) {
     return $parent;
 }
 
-// Get parent position of all child questions in current questionnaire.
+/**
+ * Get parent position of all child questions in current questionnaire.
+ * Use the parent with the largest position value.
+ *
+ * @param array $questions
+ * @return array An array with Child-ID->Parentposition.
+ */
 function questionnaire_get_parent_positions ($questions) {
     $parentpositions = array();
     foreach ($questions as $question) {
-        $dependquestion = $question->dependquestion;
-        if ($dependquestion != 0) {
-            $childid = $question->id;
-            $parentpos = $questions[$dependquestion]->position;
-            $parentpositions[$childid] = $parentpos;
+        foreach ($question->dependencies as $dependency) {
+            $dependquestion = $dependency->dependquestionid;
+            if (isset($dependquestion) && $dependquestion != 0) {
+                $childid = $question->id;
+                $parentpos = $questions[$dependquestion]->position;
+
+                if (!isset($parentpositions[$childid])) {
+                    $parentpositions[$childid] = $parentpos;
+                }
+                if (isset ($parentpositions[$childid]) && $parentpos > $parentpositions[$childid]) {
+                    $parentpositions[$childid] = $parentpos;
+                }
+            }
         }
     }
     return $parentpositions;
 }
 
-// Get child position of all parent questions in current questionnaire.
+/**
+ * Get child position of all parent questions in current questionnaire.
+ * Use the child with the smallest position value.
+ *
+ * @param array $questions
+ * @return array An array with Parent-ID->Childposition.
+ */
 function questionnaire_get_child_positions ($questions) {
     $childpositions = array();
     foreach ($questions as $question) {
-        $dependquestion = $question->dependquestion;
-        if ($dependquestion != 0) {
-            $parentid = $questions[$dependquestion]->id;
-            if (!isset($firstchildfound[$parentid])) {
-                $firstchildfound[$parentid] = true;
+        foreach ($question->dependencies as $dependency) {
+            $dependquestion = $dependency->dependquestionid;
+            if (isset($dependquestion) && $dependquestion != 0) {
+                $parentid = $questions[$dependquestion]->id; // Equals $dependquestion?.
                 $childpos = $question->position;
-                $childpositions[$parentid] = $childpos;
+
+                if (!isset($childpositions[$parentid])) {
+                    $childpositions[$parentid] = $childpos;
+                }
+
+                if (isset ($childpositions[$parentid]) && $childpos < $childpositions[$parentid]) {
+                    $childpositions[$parentid] = $childpos;
+                }
             }
         }
     }
     return $childpositions;
-}
-
-// Check if current questionnaire contains child questions.
-function questionnaire_has_dependencies($questions) {
-    foreach ($questions as $question) {
-        if ($question->dependquestion != 0) {
-            return true;
-            break;
-        }
-    }
-    return false;
 }
 
 // Check that the needed page breaks are present to separate child questions.
@@ -855,11 +825,13 @@ function questionnaire_check_page_breaks($questionnaire) {
     $positions = array();
     foreach ($questions as $key => $qu) {
         $positions[$qu->position]['question_id'] = $key;
-        $positions[$qu->position]['dependquestion'] = $qu->dependquestion;
-        $positions[$qu->position]['dependchoice'] = $qu->dependchoice;
         $positions[$qu->position]['type_id'] = $qu->type_id;
         $positions[$qu->position]['qname'] = $qu->name;
         $positions[$qu->position]['qpos'] = $qu->position;
+
+        $dependencies = $DB->get_records('questionnaire_dependency', array('questionid' => $key , 'surveyid' => $sid),
+                'id ASC', 'id, dependquestionid, dependchoiceid, dependlogic');
+        $positions[$qu->position]['dependencies'] = $dependencies;
     }
     $count = count($positions);
 
@@ -897,13 +869,28 @@ function questionnaire_check_page_breaks($questionnaire) {
             $j = $i - 1;
             if ($j != 0) {
                 $prevtypeid = $positions[$j]['type_id'];
-                $prevdependquestion = $positions[$j]['dependquestion'];
-                $prevdependchoice = $positions[$j]['dependchoice'];
-                if (($prevtypeid != QUESPAGEBREAK && ($prevdependquestion != $qu['dependquestion']
-                                || $prevdependchoice != $qu['dependchoice']))
-                                || ($qu['dependquestion'] == 0 && $prevdependquestion != 0)) {
-                    $sql = 'SELECT MAX(position) as maxpos FROM {questionnaire_question} '.
-                                    'WHERE survey_id = '.$questionnaire->survey->id.' AND deleted = \'n\'';
+                $prevdependencies = $positions[$j]['dependencies'];
+
+                $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ? $qu['dependencies'] : $prevdependencies;
+                $innerdependencies = count($qu['dependencies']) < count($prevdependencies) ? $qu['dependencies'] : $prevdependencies;
+
+                foreach ($outerdependencies as $okey => $outerdependency) {
+                    foreach ($innerdependencies as $ikey => $innerdependency) {
+                        if ($outerdependency->dependquestionid === $innerdependency->dependquestionid &&
+                            $outerdependency->dependchoiceid === $innerdependency->dependchoiceid &&
+                            $outerdependency->dependlogic === $innerdependency->dependlogic) {
+                            unset($outerdependencies[$okey]);
+                            unset($innerdependencies[$ikey]);
+                        }
+                    }
+                }
+
+                $diffdependencies = count($outerdependencies) + count($innerdependencies);
+
+                if (($prevtypeid != QUESPAGEBREAK && $diffdependencies != 0)
+                        || (!isset($qu['dependencies']) && isset($prevdependencies))) {
+                    $sql = 'SELECT MAX(position) as maxpos FROM {questionnaire_question} ' .
+                        'WHERE survey_id = ' . $questionnaire->survey->id . ' AND deleted = \'n\'';
                     if ($record = $DB->get_record_sql($sql)) {
                         $pos = $record->maxpos + 1;
                     } else {
@@ -914,8 +901,9 @@ function questionnaire_check_page_breaks($questionnaire) {
                     $question->type_id = QUESPAGEBREAK;
                     $question->position = $pos;
                     $question->content = 'break';
+
                     if (!($newqid = $DB->insert_record('questionnaire_question', $question))) {
-                        return(false);
+                        return (false);
                     }
                     $newpbids[] = $newqid;
                     $movetopos = $i;
@@ -938,66 +926,6 @@ function questionnaire_check_page_breaks($questionnaire) {
     return($msg);
 }
 
-// Get all descendants and choices for questions with descendants.
-function questionnaire_get_descendants_and_choices ($questions) {
-    $questions = array_reverse($questions, true);
-    $qu = array();
-    foreach ($questions as $question) {
-        if ($question->dependquestion) {
-            $dq = $question->dependquestion;
-            $dc = $question->dependchoice;
-            $qid = $question->id;
-
-            $qu['descendants'][$dq][] = 'qn-'.$qid;
-            if (array_key_exists($qid, $qu['descendants'])) {
-                foreach ($qu['descendants'][$qid] as $q) {
-                    $qu['descendants'][$dq][] = $q;
-                }
-            }
-            $qu['choices'][$dq][$dc][] = 'qn-'.$qid;
-        }
-    }
-    return($qu);
-}
-
-// Get all descendants for a question to be deleted.
-function questionnaire_get_descendants ($questions, $questionid) {
-    $questions = array_reverse($questions, true);
-    $qu = array();
-    foreach ($questions as $question) {
-        if ($question->dependquestion) {
-            $dq = $question->dependquestion;
-            $qid = $question->id;
-            $qu[$dq][] = $qid;
-            if (array_key_exists($qid, $qu)) {
-                foreach ($qu[$qid] as $q) {
-                    $qu[$dq][] = $q;
-                }
-            }
-        }
-    }
-    $descendants = array();
-    if (isset($qu[$questionid])) {
-        foreach ($qu[$questionid] as $descendant) {
-            $childquestion = $questions[$descendant];
-            $descendants += questionnaire_get_parent ($childquestion);
-        }
-        uasort($descendants, 'questionnaire_cmp');
-    }
-    return($descendants);
-}
-
-// Function to sort descendants array in questionnaire_get_descendants function.
-function questionnaire_cmp($a, $b) {
-    if ($a == $b) {
-        return 0;
-    } else if ($a < $b) {
-        return -1;
-    } else {
-        return 1;
-    }
-}
-
 /**
  * Code snippet used to set up the questionform.
  */
@@ -1012,6 +940,18 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
         $content = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'question',
                                            $qid, array('subdirs' => true), $question->content);
         $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
+
+        if (isset($question->dependencies)) {
+            foreach ($question->dependencies as $dependencies) {
+                if ($dependencies->dependandor === "and") {
+                    $question->dependquestions_and[] = $dependencies->dependquestionid.','.$dependencies->dependchoiceid;
+                    $question->dependlogic_and[] = $dependencies->dependlogic;
+                } else if ($dependencies->dependandor === "or") {
+                    $question->dependquestions_or[] = $dependencies->dependquestionid.','.$dependencies->dependchoiceid;
+                    $question->dependlogic_or[] = $dependencies->dependlogic;
+                }
+            }
+        }
     } else {
         $question = \mod_questionnaire\question\base::question_builder($qtype);
         $question->sid = $questionnaire->survey->id;

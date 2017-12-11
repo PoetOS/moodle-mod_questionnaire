@@ -22,15 +22,25 @@
  * @package questionnaire
  */
 
+namespace mod_questionnaire;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
-class mod_questionnaire_edit_question_form extends moodleform {
+/**
+ * Class edit_question_form
+ * @package mod_questionnaire
+ * @property \MoodleQuickForm _form
+ * @property array _customdata
+ */
+class edit_question_form extends \moodleform {
 
     public function definition() {
+        // TODO - Find a way to not use globals. Maybe the base class allows more parameters to be passed?
         global $questionnaire, $question, $SESSION;
 
+        // TODO - Is there a better way to do this without session global?
         // The 'sticky' required response value for further new questions.
         if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
             $question->required = $SESSION->questionnaire->required;
@@ -39,10 +49,8 @@ class mod_questionnaire_edit_question_form extends moodleform {
             print_error('undefinedquestiontype', 'questionnaire');
         }
 
-        $mform =& $this->_form;
-
         // Each question can provide its own form elements to the provided form, or use the default ones.
-        if (!$question->edit_form($mform, $questionnaire, $this->_customdata['modcontext'])) {
+        if (!$question->edit_form($this, $questionnaire)) {
             print_error("Question type had an unknown error in the edit_form method.");
         }
     }
@@ -72,5 +80,21 @@ class mod_questionnaire_edit_question_form extends moodleform {
         }
 
         return $errors;
+    }
+
+    /**
+     * Magic method for getting the protected $_form MoodleQuickForm and $_customdata array properties.
+     * @param string $name
+     * @return mixed
+     * @throws \coding_exception
+     */
+    public function __get($name) {
+        if ($name == '_form') {
+            return $this->_form;
+        } else if ($name == '_customdata') {
+            return $this->_customdata;
+        } else {
+            throw new \coding_exception($name.' is not a publicly accessible property of '.get_class($this));
+        }
     }
 }

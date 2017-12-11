@@ -68,7 +68,7 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
         $qdg = $dg->get_plugin_generator('mod_questionnaire');
         $qdg->create_and_fully_populate(1, 5, 1, 1);
 
-        // The following line simply
+        // The following line simply.
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
             list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);

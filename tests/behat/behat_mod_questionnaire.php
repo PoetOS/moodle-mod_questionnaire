@@ -91,8 +91,28 @@ class behat_mod_questionnaire extends behat_base {
 
         $this->execute('behat_forms::i_set_the_field_to', array('id_type_id', $questiontype));
         $this->execute('behat_forms::press_button', 'Add selected question type');
+        if (isset($hashrows['id_dependquestions_and_1'])) {
+            $this->execute('behat_forms::press_button', 'id_adddependencies_and');
+        }
+        if (isset($hashrows['id_dependquestions_or_1'])) {
+            $this->execute('behat_forms::press_button', 'id_adddependencies_or');
+        }
         $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $fielddata);
         $this->execute('behat_forms::press_button', 'Save changes');
+    }
+
+    /**
+     * Selects a radio button option in the named radio button group.
+     *
+     * @Given /^I click the "([^"]*)" radio button$/
+     *
+     * @param string $radiogroupname The "id" attribute of the radio button.
+     */
+    public function i_click_the_radio_button($radioid) {
+        $session = $this->getSession();
+        $page = $session->getPage();
+        $radios = $page->findAll('xpath', '//input[@type="radio" and @id="'.$radioid.'"]');
+        $radios[0]->click();
     }
 
     /**

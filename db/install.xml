@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/questionnaire/db" VERSION="20131005" COMMENT="XMLDB file for Moodle mod/questionnaire"
+<XMLDB PATH="mod/questionnaire/db" VERSION="20170404" COMMENT="XMLDB file for Moodle mod/questionnaire"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -231,33 +231,50 @@
         <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="questionnaire_fb_sections" COMMENT="questionnaire_fb_sections table retrofitted from MySQL" PREVIOUS="questionnaire_response_text" NEXT="questionnaire_feedback">
+    <TABLE NAME="questionnaire_fb_sections" COMMENT="questionnaire_fb_sections table retrofitted from MySQL">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="true" NEXT="survey_id"/>
-        <FIELD NAME="survey_id" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="section"/>
-        <FIELD NAME="section" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" PREVIOUS="survey_id" NEXT="scorecalculation"/>
-        <FIELD NAME="scorecalculation" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="section" NEXT="sectionlabel"/>
-        <FIELD NAME="sectionlabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" PREVIOUS="scorecalculation" NEXT="sectionheading"/>
-        <FIELD NAME="sectionheading" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="sectionlabel" NEXT="sectionheadingformat"/>
-        <FIELD NAME="sectionheadingformat" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false" PREVIOUS="sectionheading"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="survey_id" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="section" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="scorecalculation" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sectionlabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sectionheading" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sectionheadingformat" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="questionnaire_feedback" COMMENT="questionnaire_feedback table retrofitted from MySQL" PREVIOUS="questionnaire_fb_sections">
+    <TABLE NAME="questionnaire_feedback" COMMENT="questionnaire_feedback table retrofitted from MySQL">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="true" NEXT="section_id"/>
-        <FIELD NAME="section_id" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="feedbacklabel"/>
-        <FIELD NAME="feedbacklabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" PREVIOUS="section_id" NEXT="feedbacktext"/>
-        <FIELD NAME="feedbacktext" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="feedbacklabel" NEXT="feedbacktextformat"/>
-        <FIELD NAME="feedbacktextformat" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false" PREVIOUS="feedbacktext" NEXT="minscore"/>
-        <FIELD NAME="minscore" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="0.00000" SEQUENCE="false" DECIMALS="5" PREVIOUS="feedbacktextformat" NEXT="maxscore"/>
-        <FIELD NAME="maxscore" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="101.00000" SEQUENCE="false" DECIMALS="5" PREVIOUS="minscore"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="section_id" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="feedbacklabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="feedbacktext" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="feedbacktextformat" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="minscore" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="0.00000" SEQUENCE="false" DECIMALS="5"/>
+        <FIELD NAME="maxscore" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="101.00000" SEQUENCE="false" DECIMALS="5"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+    </TABLE>
+    <TABLE NAME="questionnaire_dependency" COMMENT="Holds the combined dependencies per question to navigate in the test">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of question with dependency."/>
+        <FIELD NAME="surveyid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of survey question contained in."/>
+        <FIELD NAME="dependquestionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of question dependent on."/>
+        <FIELD NAME="dependchoiceid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of question choice dependent on."/>
+        <FIELD NAME="dependlogic" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="dependandor" TYPE="char" LENGTH="4" NOTNULL="true" SEQUENCE="false" COMMENT="Mandatory or obligatory dependency"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="quest_dependency_quesidx" UNIQUE="false" FIELDS="questionid"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 
 class single extends base {
-    public function response_table() {
+    static public function response_table() {
         return 'questionnaire_resp_single';
     }
 
@@ -79,13 +79,13 @@ class single extends base {
         $record->question_id = $this->question->id;
         $record->choice_id = isset($val) ? $val : 0;
         if ($record->choice_id) {// If "no answer" then choice_id is empty (CONTRIB-846).
-            return $DB->insert_record($this->response_table(), $record);
+            return $DB->insert_record(self::response_table(), $record);
         } else {
             return false;
         }
     }
 
-    protected function get_results($rids=false, $anonymous=false) {
+    public function get_results($rids=false, $anonymous=false) {
         global $DB;
 
         $rsql = '';
@@ -98,7 +98,7 @@ class single extends base {
         // Added qc.id to preserve original choices ordering.
         $sql = 'SELECT rt.id, qc.id as cid, qc.content ' .
                'FROM {questionnaire_quest_choice} qc, ' .
-               '{'.$this->response_table().'} rt ' .
+               '{'.self::response_table().'} rt ' .
                'WHERE qc.question_id= ? AND qc.content NOT LIKE \'!other%\' AND ' .
                      'rt.question_id=qc.question_id AND rt.choice_id=qc.id' . $rsql . ' ' .
                'ORDER BY qc.id';
@@ -125,8 +125,106 @@ class single extends base {
         return $rows;
     }
 
+    /**
+     * Provide the feedback scores for all requested response id's. This should be provided only by questions that provide feedback.
+     * @param array $rids
+     * @return array | boolean
+     */
+    public function get_feedback_scores(array $rids) {
+        global $DB;
+
+        $rsql = '';
+        $params = [$this->question->id];
+        if (!empty($rids)) {
+            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
+            $params = array_merge($params, $rparams);
+            $rsql = ' AND response_id ' . $rsql;
+        }
+        $params[] = 'y';
+
+        $sql = 'SELECT response_id as rid, c.value AS score ' .
+            'FROM {'.$this->response_table().'} r ' .
+            'INNER JOIN {questionnaire_quest_choice} c ON r.choice_id = c.id ' .
+            'WHERE r.question_id= ? ' . $rsql . ' ' .
+            'ORDER BY response_id ASC';
+        return $DB->get_recordset_sql($sql, $params);
+    }
+
+    /**
+     * @param bool $rids
+     * @param string $sort
+     * @param bool $anonymous
+     * @return string
+     */
     public function display_results($rids=false, $sort='', $anonymous=false) {
         return $this->display_response_choice_results($this->get_results($rids, $anonymous), $rids, $sort);
+    }
+
+    /**
+     * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
+     *
+     * @param int $rid The response id.
+     * @param null $col Other data columns to return.
+     * @param bool $csvexport Using for CSV export.
+     * @param int $choicecodes CSV choicecodes are required.
+     * @param int $choicetext CSV choicetext is required.
+     * @return array
+     */
+    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+        global $DB;
+
+        $values = [];
+        $sql = 'SELECT q.id '.$col.', q.type_id as q_type, c.content as ccontent,c.id as cid '.
+            'FROM {'.self::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
+            'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id ';
+        $records = $DB->get_records_sql($sql, [$rid]);
+        foreach ($records as $qid => $row) {
+            $cid = $row->cid;
+            if ($csvexport) {
+                static $i = 1;
+                $qrecords = $DB->get_records('questionnaire_quest_choice', ['question_id' => $qid]);
+                foreach ($qrecords as $value) {
+                    if ($value->id == $cid) {
+                        $contents = questionnaire_choice_values($value->content);
+                        if ($contents->modname) {
+                            $row->ccontent = $contents->modname;
+                        } else {
+                            $content = $contents->text;
+                            if (preg_match('/^!other/', $content)) {
+                                $row->ccontent = get_string('other', 'questionnaire');
+                            } else if (($choicecodes == 1) && ($choicetext == 1)) {
+                                $row->ccontent = "$i : $content";
+                            } else if ($choicecodes == 1) {
+                                $row->ccontent = "$i";
+                            } else {
+                                $row->ccontent = $content;
+                            }
+                        }
+                        $i = 1;
+                        break;
+                    }
+                    $i++;
+                }
+            }
+            unset($row->id);
+            unset($row->cid);
+            unset($row->q_type);
+            $arow = get_object_vars($row);
+            $newrow = [];
+            foreach ($arow as $key => $val) {
+                if (!is_numeric($key)) {
+                    $newrow[] = $val;
+                }
+            }
+            if (preg_match('/^!other/', $row->ccontent)) {
+                $newrow[] = 'other_' . $cid;
+            } else {
+                $newrow[] = (int)$cid;
+            }
+            $values[$qid] = $newrow;
+        }
+
+        return $values;
     }
 
     /**
@@ -184,7 +282,7 @@ class single extends base {
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".$this->response_table()."} $alias ON $alias.response_id = qr.id
+              JOIN {".self::response_table()."} $alias ON $alias.response_id = qr.id
         ";
     }
 }

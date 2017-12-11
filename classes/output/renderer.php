@@ -166,14 +166,14 @@ class renderer extends \plugin_renderer_base {
      * Render a question for a survey.
      * @param mod_questionnaire\question\base $question The question object.
      * @param array $formdata Any returned form data.
-     * @param array $descendantsdata Question dependency data.
+     * @param array $dependants Array of all questions/choices depending on $question.
      * @param int $qnum The question number.
      * @param boolean $blankquestionnaire Used for printing a blank one.
      * @return string The output for the page.
      */
-    public function question_output($question, $formdata, $descendantsdata, $qnum, $blankquestionnaire) {
+    public function question_output($question, $formdata, $dependants=[], $qnum, $blankquestionnaire) {
 
-        $pagetags = $question->question_output($formdata, $descendantsdata, $qnum, $blankquestionnaire);
+        $pagetags = $question->question_output($formdata, $dependants, $qnum, $blankquestionnaire);
 
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -187,6 +187,7 @@ class renderer extends \plugin_renderer_base {
                 $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
             }
         }
+
         return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }
 
@@ -324,6 +325,104 @@ class renderer extends \plugin_renderer_base {
         $output .= \html_writer::tag('a', $text, ['href' => $url]);
         $output .= \html_writer::end_tag('div');
         return $output;
+    }
+
+
+    /**
+     * @param $children
+     * @param $langstring
+     * @param $strnum
+     * @return string
+     */
+    public function dependency_warnings($children, $langstring, $strnum) {
+        $msg = '<div class="warning">' . get_string($langstring, 'questionnaire') . '</div><br />';
+        foreach ($children as $child) {
+            $loopindicator = array();
+            foreach ($child as $subchild) {
+                $childname = '';
+                if ($subchild->name) {
+                    $childname = ' ('.$subchild->name.')';
+                }
+
+                // Add conditions.
+                switch ($subchild->dependlogic) {
+                    case 0:
+                        $logic = get_string('notset', 'questionnaire');
+                        break;
+                    case 1:
+                        $logic = get_string('set', 'questionnaire');
+                        break;
+                    default:
+                        $logic = '';
+                }
+
+                // Different colouring for and/or.
+                switch ($subchild->dependandor) {
+                    case 'or':
+                        $color = 'qdepend-or';
+                        break;
+                    case 'and':
+                        $color = "qdepend";
+                        break;
+                    default:
+                        $color = "";
+                }
+
+                if (!in_array($subchild->qdependquestion, $loopindicator)) {
+                    $msg .= '<div class = "qn-container">'.$strnum.' '.$subchild->position.$childname.
+                        '<br/><span class="'.$color.'"><strong>'.
+                        get_string('dependquestion', 'questionnaire').'</strong>'.
+                        ' ('.$strnum.' '.$subchild->parentposition.') '.
+                        '&nbsp;:&nbsp;'.$subchild->parent.' '.$logic.'</span>';
+                } else {
+                    $msg .= '<br/><span class="'.$color.'"><strong>'.
+                        get_string('dependquestion', 'questionnaire').'</strong>'.
+                        ' ('.$strnum.' '.$subchild->parentposition.') '.
+                        '&nbsp;:&nbsp;'.$subchild->parent.' '.$logic.'</span>';
+                }
+                $loopindicator[] = $subchild->qdependquestion;
+            }
+            $msg .= '<div class="qn-question">'.
+                $subchild->content.
+                '</div></div>';
+        }
+        return $msg;
+    }
+
+    /**
+     * Get displayable list of parents for the question in questions_form.
+     * @param $qid The question id.
+     * @param $dependencies Array of dependency records for a question.
+     * @return string
+     */
+    public function get_dependency_html($qid, $dependencies) {
+        $html = '';
+        foreach ($dependencies as $dependency) {
+            switch ($dependency->dependlogic) {
+                case 0:
+                    $logic = get_string('notset', 'questionnaire');
+                    break;
+                case 1:
+                    $logic = get_string('set', 'questionnaire');
+                    break;
+                default:
+                    $logic = '';
+            }
+
+            // TODO - Move the HTML generation to the renderer.
+            if ($dependency->dependandor == "and") {
+                $html .= '<div id="qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' .
+                    $dependency->dependchoiceid . '" class="qdepend">' . '<strong>' .
+                    get_string('dependquestion', 'questionnaire') . '</strong> : '. get_string('position', 'questionnaire') . ' ' .
+                    $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
+            } else {
+                $html .= '<div id="qdepend_or_' . $qid . '_' . $dependency->dependquestionid . '_' .
+                    $dependency->dependchoiceid . '" class="qdepend-or">' . '<strong>' .
+                    get_string('dependquestion', 'questionnaire') . '</strong> : '. get_string('position', 'questionnaire') . ' ' .
+                    $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
+            }
+        }
+        return $html;
     }
 
     /**

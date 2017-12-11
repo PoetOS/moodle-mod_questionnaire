@@ -535,6 +535,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
+
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2015051102, 'questionnaire');
     }
@@ -628,6 +629,69 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2017050101, 'questionnaire');
+    }
+
+    // Converting to new dependency system.
+    if ($oldversion < 2017111101) {
+        // MOD Multiparent Advanceddependencies START.
+        // Define table questionnaire_dependency to be created.
+        $table = new xmldb_table('questionnaire_dependency');
+
+        // Adding fields to table questionnaire_depenencies.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('questionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('surveyid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('dependquestionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('dependchoiceid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('dependlogic', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('dependandor', XMLDB_TYPE_CHAR, '4', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table questionnaire_depenencies.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table questionnaire_dependency.
+        $table->add_index('quest_dependency_quesidx', XMLDB_INDEX_NOTUNIQUE, array('questionid'));
+
+        // Conditionally launch create table for questionnaire_dependencies.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+
+            // Copy all existing branching data into new branching structure.
+            $branchingrs = $DB->get_recordset_select('questionnaire_question', 'dependquestion > 0 AND deleted = \'n\'',
+                null, '', 'id, survey_id, dependquestion, dependchoice');
+            foreach ($branchingrs as $qid => $qinfo) {
+                $newrec = new stdClass();
+                $newrec->questionid = $qid;
+                $newrec->surveyid = $qinfo->survey_id;
+                $newrec->dependquestionid = $qinfo->dependquestion;
+                $newrec->dependchoiceid = $qinfo->dependchoice;
+                $newrec->dependlogic = 1; // Set to "answer given", previously the only option.
+                $newrec->dependandor = 'and'; // Not used previously.
+                $DB->insert_record('questionnaire_dependency', $newrec);
+            }
+            $branchingrs->close();
+
+            // After copying all old data, remove the unused fields.
+            $table = new xmldb_table('questionnaire_question');
+            $field1 = new xmldb_field('dependquestion');
+            $field2 = new xmldb_field('dependchoice');
+            if ($dbman->field_exists($table, $field1)) {
+                $dbman->drop_field($table, $field1);
+            }
+            if ($dbman->field_exists($table, $field2)) {
+                $dbman->drop_field($table, $field2);
+            }
+            // MOD Multiparent Advanceddependencies END.
+
+            // Add a new index for survey_id to the question table.
+            $index = new xmldb_index('quest_question_sididx', XMLDB_INDEX_NOTUNIQUE, ['survey_id', 'deleted']);
+            // Only add the index if it does not exist.
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+        }
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2017111101, 'questionnaire');
     }
 
     return $result;

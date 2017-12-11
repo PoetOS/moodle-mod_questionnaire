@@ -233,9 +233,6 @@ class mod_questionnaire_generator extends testing_module_generator {
         $this->response_commit($questionnaire, $responseid);
         questionnaire_record_submission($questionnaire, $userid, $responseid);
         return $DB->get_record('questionnaire_response', array('id' => $responseid));
-        // TO DO - look at the implementing Guy's code below.
-        /* $responses[] = new question_response($question->id, 'Test answer');
-        return $this->create_response(['survey_id' => $questionnaire->sid, 'userid' => $userid], $responses); */
     }
 
     /**

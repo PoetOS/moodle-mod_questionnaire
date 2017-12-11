@@ -42,7 +42,7 @@ Feature: Rate scale questions can be used to uniquely rank options
     And I navigate to "Answer the questions..." in current page administration
     Then I should see "Test questionnaire"
     And I should see "What are your top three movies?"
-    And I click on "Choice 1 for row 1" "radio"
-    And I click on "Choice 2 for row 3" "radio"
-    And I click on "Choice 3 for row 2" "radio"
+    And I click on "Choice 1 for row Star Wars" "radio"
+    And I click on "Choice 2 for row Airplane" "radio"
+    And I click on "Choice 3 for row Casablanca" "radio"
     And I press "Submit questionnaire"

@@ -47,7 +47,9 @@ abstract class base {
      *
      * @return string response table name.
      */
-    abstract public function response_table();
+    static public function response_table() {
+        return 'Must be implemented!';
+    }
 
     /**
      * Insert a provided response to the question.
@@ -65,7 +67,7 @@ abstract class base {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return array - Array of data records.
      */
-    abstract protected function get_results($rids=false, $anonymous=false);
+    abstract public function get_results($rids=false, $anonymous=false);
 
     /**
      * Provide the result information for the specified result records.
@@ -77,6 +79,30 @@ abstract class base {
      */
     abstract public function display_results($rids=false, $sort='', $anonymous=false);
 
+    /**
+     * If the choice id needs to be transformed into a different value, override this in the child class.
+     * @param $choiceid
+     * @return mixed
+     */
+    public function transform_choiceid($choiceid) {
+        return $choiceid;
+    }
+
+    /**
+     * Provide the feedback scores for all requested response id's. This should be provided only by questions that provide feedback.
+     * @param array $rids
+     * @return array | boolean
+     */
+    public function get_feedback_scores(array $rids) {
+        return false;
+    }
+
+    /**
+     * @param $rows
+     * @param $rids
+     * @param $sort
+     * @return string
+     */
     protected function display_response_choice_results($rows, $rids, $sort) {
         $output = '';
         if (is_array($rids)) {
@@ -107,6 +133,20 @@ abstract class base {
             $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
         return $output;
+    }
+
+    /**
+     * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
+     *
+     * @param int $rid The response id.
+     * @param null $col Other data columns to return.
+     * @param bool $csvexport Using for CSV export.
+     * @param int $choicecodes CSV choicecodes are required.
+     * @param int $choicetext CSV choicetext is required.
+     * @return array
+     */
+    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+        return [];
     }
 
     /**

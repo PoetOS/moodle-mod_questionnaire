@@ -33,12 +33,9 @@
             "id": "7",
             "class": "questionclass"
         },
-        "qnum": "<div>7</div>",
+        "qnum": "7",
         "required": "<div>*</div>",
         "skippedclass": "skippedclass",
-        "label": {
-            "for": "qn-7"
-        },
         "qcontent": "HTML for the question content",
         "qformelement": "<div>HTML for the question form element</div>",
         "notifications": "<div>HTML for the notifications area</div>"
@@ -46,14 +43,15 @@
     }}
 <!-- Begin fieldset generated from question_container template. -->
 <fieldset id="qn-{{fieldset.id}}" class="{{fieldset.class}}">
+    {{{dependencylist}}}
     {{#qnum}}
-    <legend class="qn-legend">
+    <legend class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}}</legend>
+    <div class="qn-legend">
         <div class="qn-info">
-            <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</div>
             <h2 class="qn-number">{{{qnum}}}</h2>
         </div>
         {{{required}}}
-    </legend>
+    </div>
     {{/qnum}}
     <div class="qn-content">
         <div class="qn-question {{skippedclass}}">

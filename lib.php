@@ -112,6 +112,10 @@ function questionnaire_add_instance($questionnaire) {
                 // Even if they are *copies* of public or template questionnaires.
                 $DB->set_field('questionnaire_survey', 'realm', 'private', array('id' => $sid));
             }
+            // If the survey has dependency data, need to set the questionnaire to allow dependencies.
+            if ($DB->count_records('questionnaire_dependency', ['surveyid' => $sid]) > 0) {
+                $questionnaire->navigate = 1;
+            }
         }
         $questionnaire->sid = $sid;
     }

@@ -23,12 +23,14 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
+namespace mod_questionnaire;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 
-class mod_questionnaire_feedback_form extends moodleform {
+class feedback_form extends \moodleform {
 
     protected $_feedbacks;
 
@@ -124,7 +126,7 @@ class mod_questionnaire_feedback_form extends moodleform {
         // Buttons.
         if ($currentsection < $feedbacksections) {
             $currentsection ++;
-            $sectionsnav = ' ('.$currentsection.'/'.$feedbacksections.')';
+            $sectionsnav = '('.$currentsection.'/'.$feedbacksections.')';
             $buttonarray[] = &$mform->createElement('submit', 'submitbutton',
                 get_string('feedbacknextsection', 'questionnaire', $sectionsnav));
         } else {
