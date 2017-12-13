@@ -1,28 +1,34 @@
 Release Notes
 
-Version 3.3.2 (Build - 2017111400)
-Poet - Removing unused class file preventing error in 3.4 caused by MDL-60194.
-CONTRIB-7009 - Adding feedback data duplication to survey copying.
-CONTRIB-7021 - Allowed filtering on the activity name for the view page.
-GHPR #98 - Added 'sectionheading' and 'feedback' as pluginfile areas.
-GHPR #91 - "Download in text format" fails to include the response data for some question types in versions 3.1.5+ on Oracle DB.
-CONTRIB-6919 Adding XSS risk masks to appropriate capabilities.
-CONTRIB-6918 Remove spaces from email addresses if they exist.
+The 3.4 release of questionnaire includes new new feature improvements:
 
-Version 3.3.1 (Build - 2017051800)
-Bug fixes:
-CONTRIB-6903 For very old installations, response.username field may contain "Anonymous". Make this numeric before modifying field.
+1. Branching questions. Previously, questions could be assigned one parent question answer as a dependency. Now, multiple question
+answers can be defined as dependencies. One or more parent question answers can be assigned such that all answers must be met to
+make a question available. Additionally, one or more parent question answers can be assigned such that any one (or more) of the
+answers must be met to make a question available. And any question answer can be defined as having been selected or not selected.
+See https://docs.moodle.org/34/en/Questionnaire_Conditional_branching#Organization for the new interface.
 
-Version 3.3.0 (Build - 2017050100)
+2. Feedback scoring (personality test). Previously, questions could be assigned to be scored in one feedback section. Now, any
+valid question can be assigned to score in one or more feedback sections. Additionally, a weight can be assigned per section for a
+question, such that it can impact the score differently for any feedback section.
+See https://docs.moodle.org/34/en/Questionnaire_Personality_test#Editing_Questionnaire_Feedback_Sections_2 for the new interface.
+
+Thanks to C. Jobst & Y. Annanias of the University of Leipzig and the Online-Self-Assessment project for the Faculty of Economics
+and Management Science, funded by the EU/ESF (The European Social Fund in Germany) for the resources and efforts for this feature.
+
+Note, this release can also be installed in Moodle 3.3, if you want the new features prior to upgrading to Moodle 3.4. This release
+does make database structure changes, so it cannot be downgraded after installation.
+
+
+Version 3.4.0 (Build - 2017121100)
 New Features:
-CONTRIB-6136 Assigned roles can receive Moodle notifications when a new submission is made.
-CONTRIB-5615 'Never' can be assigned to a questionnaire for viewing other users' responses.
+GHPR #105 - Added support for overview block.
+Added feature to allow multiple dependencies to be defined for a question.
+Added feature to allow multiple feedback sections to be assigned to appropriate questions.
+    (Thanks to C. Jobst & Y. Annanias (University of Leipzig, Project Online-Self-Assessment for the Faculty of Economics and
+     Management Science, funded by EU/ESF))
 
-Improvements / Bug fixes:
-CONTRIB-6896 Changed future reserved word 'numeric' to 'numerical' to avoid future problems.
-CONTRIB-6892 'owner' field is now properly 'courseid' and integer.
-CONTRIB-5655 Allowed for more text formatting for trusted users.
-CONTRIB-4761 Changed 'username' to 'userid' for response data.
+Bug fixes:
+GHPR #97 - Fixed calendar event deletion.
 
-
-(see CHANGES.TXT in release 3.2 for earlier changes.)
+(see CHANGES.TXT in release 3.3 for earlier changes.)
