@@ -1,34 +1,5 @@
 Release Notes
 
-The 3.4 release of questionnaire includes new new feature improvements:
+Version 3.5.0 Alpha (Build - 2017121300)
 
-1. Branching questions. Previously, questions could be assigned one parent question answer as a dependency. Now, multiple question
-answers can be defined as dependencies. One or more parent question answers can be assigned such that all answers must be met to
-make a question available. Additionally, one or more parent question answers can be assigned such that any one (or more) of the
-answers must be met to make a question available. And any question answer can be defined as having been selected or not selected.
-See https://docs.moodle.org/34/en/Questionnaire_Conditional_branching#Organization for the new interface.
-
-2. Feedback scoring (personality test). Previously, questions could be assigned to be scored in one feedback section. Now, any
-valid question can be assigned to score in one or more feedback sections. Additionally, a weight can be assigned per section for a
-question, such that it can impact the score differently for any feedback section.
-See https://docs.moodle.org/34/en/Questionnaire_Personality_test#Editing_Questionnaire_Feedback_Sections_2 for the new interface.
-
-Thanks to C. Jobst & Y. Annanias of the University of Leipzig and the Online-Self-Assessment project for the Faculty of Economics
-and Management Science, funded by the EU/ESF (The European Social Fund in Germany) for the resources and efforts for this feature.
-
-Note, this release can also be installed in Moodle 3.3, if you want the new features prior to upgrading to Moodle 3.4. This release
-does make database structure changes, so it cannot be downgraded after installation.
-
-
-Version 3.4.0 (Build - 2017121100)
-New Features:
-GHPR #105 - Added support for overview block.
-Added feature to allow multiple dependencies to be defined for a question.
-Added feature to allow multiple feedback sections to be assigned to appropriate questions.
-    (Thanks to C. Jobst & Y. Annanias (University of Leipzig, Project Online-Self-Assessment for the Faculty of Economics and
-     Management Science, funded by EU/ESF))
-
-Bug fixes:
-GHPR #97 - Fixed calendar event deletion.
-
-(see CHANGES.TXT in release 3.3 for earlier changes.)
+(see CHANGES.TXT in release 3.4 for earlier changes.)
