@@ -96,17 +96,15 @@ class radio extends base {
         $ischecked = false;
 
         // To display or hide dependent questions on Preview page.
-        $onclickdepend = [];
         $dqids = '';
         $choices = [];
         foreach ($dependants as $did => $dependant) {
             $dqids .= empty($dqids) ? 'qn-' . $did : ',qn-' . $did;
             foreach ($dependant as $choice) {
-                $choices[$choice->id] .= isset($choices[$choice->id]) ? ',qn-' . $did : 'qn-' . $did;
+                if (isset($choice->id)) {
+                    $choices[$choice->id] .= isset($choices[$choice->id]) ? ',qn-' . $did : 'qn-' . $did;
+                }
             }
-        }
-        foreach ($choices as $key => $choice) {
-            $onclickdepend[$key] = 'depend(\''.$dqids.'\', \''.$choice.'\')';
         }
 
         $choicetags = new \stdClass();
@@ -117,19 +115,6 @@ class radio extends base {
             if ($horizontal) {
                 $radio->horizontal = $horizontal;
             }
-
-            // To display or hide dependent questions on Preview page.
-            if ($onclickdepend) {
-                if (isset($onclickdepend[$id])) {
-                    $radio->onclick = $onclickdepend[$id];
-                } else {
-                    // In case this dependchoice is not used by any child question.
-                    $radio->onclick = 'depend(\''.$dependants.'\', \'\')';
-                }
-
-            } else {
-                $radio->onclick = 'other_check_empty(name, value)';
-            } // End dependents.
 
             if ($other !== 0) { // This is a normal radio button.
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
@@ -190,17 +175,9 @@ class radio extends base {
                 $radio->horizontal = $horizontal;
             }
 
-            // To display or hide dependent questions on Preview page.
-            $onclick = '';
-            if ($onclickdepend) {
-                $onclick = 'depend(\''.$dependants.'\', \'\')';
-            } else {
-                $onclick = 'other_check_empty(name, value)';
-            } // End dependents.
             $radio->name = 'q'.$this->id;
             $radio->id = $htmlid;
             $radio->value = $id;
-            $radio->onclick = $onclick;
 
             if (!$ischecked && !$blankquestionnaire) {
                 $radio->checked = true;

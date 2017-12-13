@@ -112,7 +112,6 @@ class yesno extends base {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         // To display or hide dependent questions on Preview page.
-        $onclickdepend = [];
         $dqids = '';
         $choices['y'] = '';
         $choices['n'] = '';
@@ -125,8 +124,6 @@ class yesno extends base {
                     $choices['n'] .= empty($choices['n']) ? 'qn-'.$did : ',qn-'.$did;
                 }
             }
-            $onclickdepend['y'] = 'depend(\''.$dqids.'\', \''.$choices['y'].'\')';
-            $onclickdepend['n'] = 'depend(\''.$dqids.'\', \''.$choices['n'].'\')';
         }
 
         $stryes = get_string('yes');
@@ -164,9 +161,6 @@ class yesno extends base {
             if ($blankquestionnaire) {
                 $option->disabled = true;
             }
-            if (isset($onclickdepend[$value])) {
-                $option->onclick = $onclickdepend[$value];
-            }
             $choicetags->qelements->choice[] = $option;
         }
         // CONTRIB-846.
@@ -181,9 +175,6 @@ class yesno extends base {
             $option->label = format_text($content, FORMAT_HTML, ['noclean' => true]);
             if (!$ischecked && !$blankquestionnaire) {
                 $option->checked = true;
-            }
-            if ($onclickdepend) {
-                $option->onclick = 'depend(\''.$dependants.'\', \'\')';
             }
             $choicetags->qelements->choice[] = $option;
         }

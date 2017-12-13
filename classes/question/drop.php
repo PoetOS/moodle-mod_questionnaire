@@ -90,8 +90,6 @@ class drop extends base {
         $choicetags = new \stdClass();
         $choicetags->qelements = new \stdClass();
         $selected = isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : false;
-        // To display or hide dependent questions on Preview page.
-        $onclickdepend = [];
         $dqids = '';
         $choices = [];
         if (!empty($dependants)) {
