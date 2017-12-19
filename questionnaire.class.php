@@ -1486,11 +1486,25 @@ class questionnaire {
      *
      */
     private function submission_notify($rid) {
+        global $DB;
+
         $success = true;
 
-        $success = $this->response_send_email($rid) && $success;
+        if (isset($this->survey)) {
+            if (isset($this->survey->email)) {
+                $email = $this->survey->email;
+            } else {
+                $email = $DB->get_field('questionnaire_survey', 'email', ['id' => $this->survey->id]);
+            }
+        } else {
+            $email = '';
+        }
 
-        if ($this->notifications) {
+        if (!empty($email)) {
+            $success = $this->response_send_email($rid, $email);
+        }
+
+        if (!empty($this->notifications)) {
             // Handle notification of submissions.
             $success = $this->send_submission_notifications($rid) && $success;
         }
@@ -1506,6 +1520,14 @@ class questionnaire {
      */
     private function send_submission_notifications($rid) {
         global $CFG, $USER;
+
+        $answers = new stdClass();
+        $this->response_import_all($rid, $answers);
+        $message = '';
+
+        if ($this->notifications == 2) {
+            $message .= $this->get_full_submission_for_notifications($answers);
+        }
 
         $success = true;
         if ($notifyusers = $this->get_notifiable_users($USER->id)) {
@@ -1527,10 +1549,15 @@ class questionnaire {
             $info->name = format_string($this->name);
             $info->submissionurl = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&sid='.$this->survey->id.
                     '&rid='.$rid.'&instance='.$this->id;
+            $info->coursename = $this->course->fullname;
 
             $info->postsubject = get_string('submissionnotificationsubject', 'questionnaire');
             $info->posttext = get_string($langstringtext, 'questionnaire', $info);
             $info->posthtml = '<p>' . get_string($langstringhtml, 'questionnaire', $info) . '</p>';
+            if (!empty($message)) {
+                $info->posttext .= html_to_text($message);
+                $info->posthtml .= $message;
+            }
 
             foreach ($notifyusers as $notifyuser) {
                 $info->userto = $notifyuser;
@@ -1620,22 +1647,141 @@ class questionnaire {
         return $notifiableusers;
     }
 
-    private function response_send_email($rid) {
-        global $CFG, $DB, $USER;
+    /**
+     * Return a formatted string containing all the questions and answers for a specific submission.
+     * @param $answers The array of answers from import_all_responses.
+     * @return string
+     * @throws coding_exception
+     */
+    private function get_full_submission_for_notifications($answers) {
+        $message = '';
+        foreach ($this->questions as $question) {
+            $rqid = 'q' . $question->id;
+            $message .= $question->position . '. ' . html_to_text($question->name) . "<br />\n";
+            $message .= get_string('question') . ': ' . html_to_text($question->content) . "<br />\n";
+            if ($question->type_id == 8) {
+                $message .= get_string('answers', 'questionnaire') . ":<br />\n";
+                $choices = [];
+                $cids = [];
+                foreach ($question->choices as $cid => $choice) {
+                    if (!empty($choice->value)) {
+                        $choices[$choice->value] = substr($choice->content, (strpos($choice->content, '=') + 1));
+                    } else {
+                        $cids[$rqid . '_' . $cid] = $choice->content;
+                    }
+                }
+                foreach ($cids as $rqid => $choice) {
+                    if (isset($answers->$rqid)) {
+                        $cid = substr($rqid, (strpos($rqid, '_') + 1));
+                        if (isset($question->choices[$cid])) {
+                            $message .= $question->choices[$cid]->content . ' = ' . $choices[$answers->$rqid + 1] . "<br />\n";
+                        }
+                    }
+                }
+            } else if ($question->has_choices()) {
+                // Check for "other".
+                foreach ($question->choices as $cid => $choice) {
+                    if (strpos($choice->content, '!other=') !== false) {
+                        $other = $cid;
+                        break;
+                    }
+                }
+                if (is_array($answers->$rqid)) {
+                    $message .= get_string('answers', 'questionnaire') . ': ';
+                    $i = 0;
+                    foreach ($answers->$rqid as $answer) {
+                        if ($i > 0) {
+                            $message .= '; ';
+                        }
+                        if ($answer == ('other_' . $other)) {
+                            $message .= $answers->{$rqid . '_' . $other};
+                        } else {
+                            $message .= $question->choices[$answer]->content;
+                        }
+                        $i++;
+                    }
+                    $message .= "<br />\n";
+                } else if ($answers->$rqid == ('other_' . $other)) {
+                    $message .= get_string('answer', 'questionnaire') . ': ';
+                    $message .= $answers->{$rqid . '_' . $other} . "<br />\n";
+                } else {
+                    $message .= get_string('answer', 'questionnaire') . ': ';
+                    $message .= $question->choices[$answers->$rqid]->content . "<br />\n";
+                }
 
-        $name = s($this->name);
-        if (isset($this->survey) && isset($this->survey->email)) {
-            $email = $this->survey->email;
-        } else if ($record = $DB->get_record('questionnaire_survey', ['id' => $this->survey->id])) {
-            $email = $record->email;
-        } else {
-            $email = '';
+            } else if (isset($answers->$rqid)) {
+                $message .= get_string('answer', 'questionnaire') . ': ';
+                $message .= html_to_text($answers->$rqid) . "<br />\n";
+            }
+            $message .= "<br />\n";
         }
 
+        return $message;
+    }
+
+    /**
+     * Format the submission answers for legacy email delivery.
+     * @param array $answers The array of response answers.
+     * @return array The formatted set of answers as plain text and HTML.
+     */
+    private function get_formatted_answers_for_emails($answers) {
+        global $USER;
+
+        // Line endings for html and plaintext emails.
+        $endhtml = "\r\n<br />";
+        $endplaintext = "\r\n";
+
+        reset($answers);
+
+        $formatted = array('plaintext' => '', 'html' => '');
+        for ($i = 0; $i < count($answers[0]); $i++) {
+            $sep = ' : ';
+
+            switch($i) {
+                case 1:
+                    $sep = ' ';
+                    break;
+                case 4:
+                    $formatted['plaintext'] .= get_string('user').' ';
+                    $formatted['html'] .= get_string('user').' ';
+                    break;
+                case 6:
+                    if ($this->respondenttype != 'anonymous') {
+                        $formatted['html'] .= get_string('email').$sep.$USER->email. $endhtml;
+                        $formatted['plaintext'] .= get_string('email'). $sep. $USER->email. $endplaintext;
+                    }
+            }
+            $formatted['html'] .= $answers[0][$i].$sep.$answers[1][$i]. $endhtml;
+            $formatted['plaintext'] .= $answers[0][$i].$sep.$answers[1][$i]. $endplaintext;
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Send the full response submission to the defined email addresses.
+     * @param int $rid The id of the response record.
+     * @param string $email The comma separated list of emails to send to.
+     * @return bool
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    private function response_send_email($rid, $email) {
+        global $CFG, $USER;
+
+        require_once($CFG->libdir.'/phpmailer/class.phpmailer.php');
+
+        $submission = $this->generate_csv($rid, '', null, 1, 0);
+        if (!empty($submission)) {
+            $answers = $this->get_formatted_answers_for_emails($submission);
+        } else {
+            $answers = ['html' => '', 'plaintext' => ''];
+        }
+
+        $name = s($this->name);
         if (empty($email)) {
             return(false);
         }
-        $answers = $this->generate_csv($rid, '', null, 1, 0);
 
         // Line endings for html and plaintext emails.
         $endhtml = "\r\n<br>";
@@ -1651,28 +1797,8 @@ class questionnaire {
         $bodyhtml       .= get_string('surveyresponse', 'questionnaire') .' "'.$name.'"'.$endhtml;
         $bodyplaintext  .= get_string('surveyresponse', 'questionnaire') .' "'.$name.'"'.$endplaintext;
 
-        reset($answers);
-
-        for ($i = 0; $i < count($answers[0]); $i++) {
-            $sep = ' : ';
-
-            switch($i) {
-                case 1:
-                    $sep = ' ';
-                    break;
-                case 4:
-                    $bodyhtml        .= get_string('user').' ';
-                    $bodyplaintext   .= get_string('user').' ';
-                    break;
-                case 6:
-                    if ($this->respondenttype != 'anonymous') {
-                        $bodyhtml         .= get_string('email').$sep.$USER->email. $endhtml;
-                        $bodyplaintext    .= get_string('email').$sep.$USER->email. $endplaintext;
-                    }
-            }
-            $bodyhtml         .= $answers[0][$i].$sep.$answers[1][$i]. $endhtml;
-            $bodyplaintext    .= $answers[0][$i].$sep.$answers[1][$i]. $endplaintext;
-        }
+        $bodyhtml .= $answers['html'];
+        $bodyplaintext .= $answers['plaintext'];
 
         // Use plaintext version for altbody.
         $altbody = "\n$bodyplaintext\n";
