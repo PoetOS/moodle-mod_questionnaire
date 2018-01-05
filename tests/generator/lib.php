@@ -606,7 +606,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $responses[] = new question_response($question->id, 83);
                     break;
                 case QUESDATE :
-                    $date = mktime(0, 0, 0, 12, 28, date('Y'));
+                    $date = mktime(0, 0, 0, 12, 28, 2017);
                     $dateformat = get_string('strfdate', 'questionnaire');
                     $datestr = userdate ($date, $dateformat, '1', false);
                     $responses[] = new question_response($question->id, $datestr);
