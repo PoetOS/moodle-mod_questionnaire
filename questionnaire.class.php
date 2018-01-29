@@ -1668,7 +1668,7 @@ class questionnaire {
                 foreach ($cids as $rqid => $choice) {
                     if (isset($answers->$rqid)) {
                         $cid = substr($rqid, (strpos($rqid, '_') + 1));
-                        if (isset($question->choices[$cid])) {
+                        if (isset($question->choices[$cid]) && isset($choices[$answers->$rqid + 1])) {
                             $message .= $question->choices[$cid]->content . ' = ' . $choices[$answers->$rqid + 1] . "<br />\n";
                         }
                     }
@@ -1681,7 +1681,7 @@ class questionnaire {
                         break;
                     }
                 }
-                if (is_array($answers->$rqid)) {
+                if (isset($answers->$rqid) && is_array($answers->$rqid)) {
                     $message .= get_string('answers', 'questionnaire') . ': ';
                     $i = 0;
                     foreach ($answers->$rqid as $answer) {
@@ -1696,10 +1696,10 @@ class questionnaire {
                         $i++;
                     }
                     $message .= "<br />\n";
-                } else if ($answers->$rqid == ('other_' . $other)) {
+                } else if (isset($answers->$rqid) && ($answers->$rqid == ('other_' . $other))) {
                     $message .= get_string('answer', 'questionnaire') . ': ';
                     $message .= $answers->{$rqid . '_' . $other} . "<br />\n";
-                } else {
+                } else if (isset($answers->$rqid)) {
                     $message .= get_string('answer', 'questionnaire') . ': ';
                     $message .= $question->choices[$answers->$rqid]->content . "<br />\n";
                 }
@@ -1763,8 +1763,6 @@ class questionnaire {
      */
     private function response_send_email($rid, $email) {
         global $CFG, $USER;
-
-        require_once($CFG->libdir.'/phpmailer/class.phpmailer.php');
 
         $submission = $this->generate_csv($rid, '', null, 1, 0);
         if (!empty($submission)) {
