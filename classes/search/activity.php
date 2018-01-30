@@ -67,6 +67,9 @@ class activity extends \core_search\base_activity {
     public function get_document($record, $options = []) {
         // Get the default implementation.
         $doc = parent::get_document($record, $options);
+        if (!$doc) {
+            return false;
+        }
 
         // Add the subtitle and additional info fields.
         $doc->set('description1', content_to_text($record->subtitle, false));
