@@ -2753,7 +2753,7 @@ class questionnaire {
         // Get unique list of question types used in this survey.
         $uniquetypes = $this->get_survey_questiontypes();
 
-        if (count(array_intersect($choicetypes, $uniquetypes) > 0 )) {
+        if (count(array_intersect($choicetypes, $uniquetypes)) > 0) {
             $choiceparams = [$this->survey->id];
             $choicesql = "
                 SELECT DISTINCT c.id as cid, q.id as qid, q.precise AS precise, q.name, c.content
