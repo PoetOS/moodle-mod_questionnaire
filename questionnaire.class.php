@@ -2388,7 +2388,6 @@ class questionnaire {
             $total = 1;
         } else {
             $navbar = false;
-            $sql = "";
             if ($uid !== false) { // One participant only.
                 $sql = "SELECT r.id, r.survey_id
                           FROM {questionnaire_response} r
@@ -3129,8 +3128,8 @@ class questionnaire {
         return false;
     }
 
-    public function response_analysis ($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid,
-                                       $filteredsections = null) {
+    public function response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid,
+                                      $filteredsections = null) {
         global $DB, $CFG;
         require_once($CFG->libdir.'/tablelib.php');
         require_once($CFG->dirroot.'/mod/questionnaire/drawchart.php');
