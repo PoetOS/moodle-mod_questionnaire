@@ -440,33 +440,26 @@ function questionnaire_delete_response($response, $questionnaire='') {
 function questionnaire_delete_responses($qid) {
     global $DB;
 
-    $status = true;
-
     // Delete all of the response data for a question.
-    $DB->delete_records('questionnaire_response_bool', array('question_id' => $qid));
-    $DB->delete_records('questionnaire_response_date', array('question_id' => $qid));
-    $DB->delete_records('questionnaire_resp_multiple', array('question_id' => $qid));
-    $DB->delete_records('questionnaire_response_other', array('question_id' => $qid));
-    $DB->delete_records('questionnaire_response_rank', array('question_id' => $qid));
-    $DB->delete_records('questionnaire_resp_single', array('question_id' => $qid));
-    $DB->delete_records('questionnaire_response_text', array('question_id' => $qid));
+    $DB->delete_records('questionnaire_response_bool', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_response_date', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_resp_multiple', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_response_other', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_response_rank', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_resp_single', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_response_text', ['question_id' => $qid]);
 
-    $status = $status && $DB->delete_records('questionnaire_response', array('id' => $qid));
-    $status = $status && $DB->delete_records('questionnaire_attempts', array('rid' => $qid));
-
-    return $status;
+    return true;
 }
 
 function questionnaire_delete_dependencies($qid) {
     global $DB;
 
-    $status = true;
-
     // Delete all dependencies for this question.
     $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
     $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
 
-    return $status;
+    return true;
 }
 
 function questionnaire_get_survey_list($courseid=0, $type='') {
