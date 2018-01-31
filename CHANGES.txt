@@ -1,5 +1,15 @@
 Release Notes
 
+Release 3.1.8 (Build - 2018013100)
+New Features:
+GHI #126 - Added enhanced notification feature for full submission data (backported from 3.4).
+
+Bug fixes:
+GHI #91 - Fixed response export data for Oracle.
+GHI #119 - Fixed code that was incorrectly removing data records when questions with responses were deleted.
+CONTRIB-7140 - Fixed code that was counting elements of an array incorrectly.
+CONTRIB-6136 - Added missing capability strings.
+
 Version 3.1.7 (Build - 2017042600)
 Bug fixes:
 CONTRIB-6136 - Fixed notification errors and URL.
