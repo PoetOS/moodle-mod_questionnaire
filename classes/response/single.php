@@ -79,7 +79,11 @@ class single extends base {
         $record->question_id = $this->question->id;
         $record->choice_id = isset($val) ? $val : 0;
         if ($record->choice_id) {// If "no answer" then choice_id is empty (CONTRIB-846).
-            return $DB->insert_record(static::response_table(), $record);
+            try {
+                return $DB->insert_record(static::response_table(), $record);
+            } catch (\dml_write_exception $ex) {
+                return false;
+            }
         } else {
             return false;
         }

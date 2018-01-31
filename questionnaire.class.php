@@ -822,12 +822,12 @@ class questionnaire {
 
         // Save each section 's $formdata somewhere in case user returns to that page when navigating the questionnaire.
         if (!empty($formdata->next)) {
-            $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
             $msg = $this->response_check_format($formdata->sec, $formdata);
-            if ( $msg ) {
+            if ($msg) {
                 $formdata->next = '';
             } else {
+                $this->response_delete($formdata->rid, $formdata->sec);
+                $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
                 // Skip logic.
                 $formdata->sec++;
                 if ($this->has_dependencies()) {
@@ -845,8 +845,6 @@ class questionnaire {
         }
 
         if (!empty($formdata->prev)) {
-            $this->response_delete($formdata->rid, $formdata->sec);
-
             // If skip logic and this is last page reached with no questions,
             // unlock questionnaire->end to allow navigate back to previous page.
             if (isset($SESSION->questionnaire->end) && ($SESSION->questionnaire->end == true)) {
@@ -854,12 +852,13 @@ class questionnaire {
                 $formdata->sec--;
             }
 
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
             // Prevent navigation to previous page if wrong format in answered questions).
             $msg = $this->response_check_format($formdata->sec, $formdata, $checkmissing = false, $checkwrongformat = true);
-            if ( $msg ) {
+            if ($msg) {
                 $formdata->prev = '';
             } else {
+                $this->response_delete($formdata->rid, $formdata->sec);
+                $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
                 $formdata->sec--;
                 // Skip logic.
                 if ($this->has_dependencies()) {

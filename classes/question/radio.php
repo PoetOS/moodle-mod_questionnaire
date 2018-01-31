@@ -151,7 +151,7 @@ class radio extends base {
                 if (($id == $checked) || !empty($data->$cid)) {
                     $radio->checked = true;
                     $ischecked = true;
-                    if (!$data->$cid) {
+                    if (isset($data->$cid) && (trim($data->$cid) == false)) {
                         $otherempty = true;
                     }
                 }
@@ -248,7 +248,7 @@ class radio extends base {
     public function response_complete($responsedata) {
         if (isset($responsedata->{'q'.$this->id}) && ($this->required()) &&
                 (strpos($responsedata->{'q'.$this->id}, 'other_') !== false)) {
-            return !empty($responsedata->{'q'.$this->id.''.substr($responsedata->{'q'.$this->id}, 5)});
+            return (trim($responsedata->{'q'.$this->id.''.substr($responsedata->{'q'.$this->id}, 5)}) != false);
         } else {
             return parent::response_complete($responsedata);
         }
@@ -263,7 +263,7 @@ class radio extends base {
     public function response_valid($responsedata) {
         if (isset($responsedata->{'q'.$this->id}) && (strpos($responsedata->{'q'.$this->id}, 'other_') !== false)) {
             // False if "other" choice is checked but text box is empty.
-            return !empty($responsedata->{'q'.$this->id.''.substr($responsedata->{'q'.$this->id}, 5)});
+            return (trim($responsedata->{'q'.$this->id.''.substr($responsedata->{'q'.$this->id}, 5)}) != false);
         } else {
             return parent::response_valid($responsedata);
         }
