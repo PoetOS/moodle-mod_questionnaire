@@ -2559,7 +2559,7 @@ class questionnaire {
             $allresponsessql .= $sql;
         }
 
-        $allresponsessql .= " ORDER BY uid, id";
+        $allresponsessql .= " ORDER BY usrid, id";
         $allresponses = $DB->get_recordset_sql($allresponsessql, $allresponsesparams);
         return $allresponses;
     }
