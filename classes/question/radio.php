@@ -95,18 +95,6 @@ class radio extends base {
         $horizontal = $this->length;
         $ischecked = false;
 
-        // To display or hide dependent questions on Preview page.
-        $dqids = '';
-        $choices = [];
-        foreach ($dependants as $did => $dependant) {
-            $dqids .= empty($dqids) ? 'qn-' . $did : ',qn-' . $did;
-            foreach ($dependant as $choice) {
-                if (isset($choice->id)) {
-                    $choices[$choice->id] .= isset($choices[$choice->id]) ? ',qn-' . $did : 'qn-' . $did;
-                }
-            }
-        }
-
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
         foreach ($this->choices as $id => $choice) {
@@ -131,7 +119,6 @@ class radio extends base {
                     $radio->disabled = true;
                     $value = ' ('.$choice->value.') ';
                 }
-                $content = $choice->content;
                 $contents = questionnaire_choice_values($choice->content);
                 $radio->label = $value.format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
             } else {             // Radio button with associated !other text field.
@@ -139,7 +126,6 @@ class radio extends base {
                     $choice->content);
                 $cid = 'q'.$this->id.'_'.$id;
                 $otherempty = false;
-                $otherid = 'q'.$this->id.'_'.$checked;
                 if (substr($checked, 0, 6) == 'other_') { // Fix bug CONTRIB-222.
                     $checked = substr($checked, 6);
                 }

@@ -90,64 +90,25 @@ class drop extends base {
         $choicetags = new \stdClass();
         $choicetags->qelements = new \stdClass();
         $selected = isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : false;
-        $dqids = '';
-        $choices = [];
-        if (!empty($dependants)) {
-            foreach ($dependants as $did => $dependant) {
-                $qdropid = 'q' . $this->id;
-                $dqids .= empty($dqids) ? 'qn-' . $did : ',qn-' . $did;
-                foreach ($dependant as $choice) {
-                    $choices[$choice->id] .= isset($choices[$choice->id]) ? ',qn-' . $did : 'qn-' . $did;
-                }
-                $options[] = (object)['value' => '', 'label' => get_string('choosedots')];
-                foreach ($this->choices as $key => $choice) {
-                    if ($pos = strpos($choice->content, '=')) {
-                        $choice->content = substr($choice->content, $pos + 1);
-                    }
-                    if (isset($choices[$key])) {
-                        $value = $choices[$key];
-                    } else {
-                        $value = $key;
-                    }
-                    $option = new \stdClass();
-                    $option->value = $value;
-                    $option->label = $choice->content;
-                    if (($selected !== false) && ($value == $selected)) {
-                        $option->selected = true;
-                    }
-                    $options[] = $option;
-                }
-                $dependdrop = "dependdrop('$qdropid', '$dqids')";
-                $chobj = new \stdClass();
-                $chobj->name = $qdropid;
-                $chobj->id = $qdropid;
-                $chobj->class = 'select custom-select menu' . $qdropid;
-                $chobj->onchange = $dependdrop;
-                $chobj->options = $options;
-                $choicetags->qelements->choice = $chobj;
-                // End dependents.
+        $options[] = (object)['value' => '', 'label' => get_string('choosedots')];
+        foreach ($this->choices as $key => $choice) {
+            if ($pos = strpos($choice->content, '=')) {
+                $choice->content = substr($choice->content, $pos + 1);
             }
-        } else {
-            $options[] = (object)['value' => '', 'label' => get_string('choosedots')];
-            foreach ($this->choices as $key => $choice) {
-                if ($pos = strpos($choice->content, '=')) {
-                    $choice->content = substr($choice->content, $pos + 1);
-                }
-                $option = new \stdClass();
-                $option->value = $key;
-                $option->label = $choice->content;
-                if (($selected !== false) && ($key == $selected)) {
-                    $option->selected = true;
-                }
-                $options[] = $option;
+            $option = new \stdClass();
+            $option->value = $key;
+            $option->label = $choice->content;
+            if (($selected !== false) && ($key == $selected)) {
+                $option->selected = true;
             }
-            $chobj = new \stdClass();
-            $chobj->name = 'q'.$this->id;
-            $chobj->id = self::qtypename($this->type_id) . $this->id;
-            $chobj->class = 'select custom-select menu q'.$this->id;
-            $chobj->options = $options;
-            $choicetags->qelements->choice = $chobj;
+            $options[] = $option;
         }
+        $chobj = new \stdClass();
+        $chobj->name = 'q'.$this->id;
+        $chobj->id = self::qtypename($this->type_id) . $this->name;
+        $chobj->class = 'select custom-select menu q'.$this->id;
+        $chobj->options = $options;
+        $choicetags->qelements->choice = $chobj;
 
         return $choicetags;
     }

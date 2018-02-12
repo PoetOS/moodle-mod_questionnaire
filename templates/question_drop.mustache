@@ -32,7 +32,6 @@
         "qelements": {
             "choice": {
                 "id": "choiceid1",
-                "label": "Choice question label",
                 "name": "choiceid1",
                 "class": "classname",
                 "onchange": "dosomething()",
@@ -55,7 +54,6 @@
 <!-- Begin HTML generated from question_drop template. -->
 {{#qelements}}
 {{#choice}}
-<label for="{{choice.id}}">{{{choice.label}}}</label>
 <select id="{{choice.id}}" name="{{choice.name}}" class="{{choice.class}}" {{#choice.onchange}}onchange="{{.}}"{{/choice.onchange}}>
 {{#choice.options}}
 <option {{#selected}}selected="selected" {{/selected}}value="{{value}}">{{label}}</option>

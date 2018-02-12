@@ -111,21 +111,6 @@ class yesno extends base {
     protected function question_survey_display($data, $dependants=[], $blankquestionnaire=false) {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
-        // To display or hide dependent questions on Preview page.
-        $dqids = '';
-        $choices['y'] = '';
-        $choices['n'] = '';
-        foreach ($dependants as $did => $dependant) {
-            $dqids .= empty($dqids) ? 'qn-'.$did : ',qn-'.$did;
-            foreach ($dependant as $choice) {
-                if ($choice->choiceid == 0) {
-                    $choices['y'] .= empty($choices['y']) ? 'qn-'.$did : ',qn-'.$did;
-                } else {
-                    $choices['n'] .= empty($choices['n']) ? 'qn-'.$did : ',qn-'.$did;
-                }
-            }
-        }
-
         $stryes = get_string('yes');
         $strno = get_string('no');
 
@@ -140,7 +125,6 @@ class yesno extends base {
         $options = [$val1 => $stryes, $val2 => $strno];
         $name = 'q'.$this->id;
         $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
-        $output = '';
         $ischecked = false;
 
         $choicetags = new \stdClass();
