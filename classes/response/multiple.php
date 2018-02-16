@@ -52,7 +52,7 @@ class multiple extends single {
                 if (empty($other)) {
                     continue;
                 }
-                if (!isset($val)) {
+                if (!isset($val) || !is_array($val)) {
                     $val = array($cid);
                 } else {
                     array_push($val, $cid);

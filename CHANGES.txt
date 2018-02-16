@@ -1,5 +1,5 @@
 Release Notes
 
-Version 3.5.0 Alpha (Build - 2017121300)
+Version 3.5.0 Alpha (Build - 2018013100)
 
 (see CHANGES.TXT in release 3.4 for earlier changes.)

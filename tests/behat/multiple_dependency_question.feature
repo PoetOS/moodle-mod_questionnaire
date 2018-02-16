@@ -67,11 +67,28 @@ Feature: Questions can be defined to be dependent on answers to previous questio
       | Question Text | Are you taking an apprenticeship? |
       | id_dependquestions_and_0  | Q1->No |
     Then I should see "[Yes/No] (N.1)"
-    And I add a "Yes/No" question and I fill the form with:
+    And I add a "Dropdown Box" question and I fill the form with:
       | Question Name | Q2 |
+      | No | n |
+      | Question Text | Select one choice |
+      | Possible answers | One,Two,Three,Four |
+    Then I should see "[Dropdown Box] (Q2)"
+    And I add a "Label" question and I fill the form with:
+      | Question Text | You answered one |
+      | id_dependquestions_and_0  | Q2->One |
+    Then I should see "[Label]"
+    And I add a "Label" question and I fill the form with:
+      | Question Text | You did not answer one |
+      | id_dependquestions_and_0  | Q2->One |
+      | id_dependlogic_and_0  | This answer not given |
+    Then I should see "[Label]"
+    And I add a "Yes/No" question and I fill the form with:
+      | Question Name | Q3 |
       | Yes | y |
       | Question Text | Are you happy? |
-    Then I should see "[Yes/No] (Q2)"
+    Then I should see "[Yes/No] (Q3)"
+    And I follow "Preview"
+    And I should see "Previewing Questionnaire"
     And I log out
 
 @javascript
@@ -92,7 +109,7 @@ Feature: Questions can be defined to be dependent on answers to previous questio
     Then I should see "Do you plan to take a B.Sc.?"
     And I click on "Yes" "radio"
     And I press "Next Page >>"
-    Then I should see "Are you happy?"
+    Then I should see "Select one choice"
     And I press "<< Previous Page"
     And I press "<< Previous Page"
     And I press "<< Previous Page"
@@ -105,7 +122,7 @@ Feature: Questions can be defined to be dependent on answers to previous questio
     Then I should see "Do you plan to take a B.A.?"
     And I click on "No" "radio"
     And I press "Next Page >>"
-    Then I should see "Are you happy?"
+    Then I should see "Select one choice"
     And I press "<< Previous Page"
     And I press "<< Previous Page"
     And I press "<< Previous Page"
@@ -116,7 +133,7 @@ Feature: Questions can be defined to be dependent on answers to previous questio
     And I press "<< Previous Page"
     And I click on "Art" "checkbox"
     And I press "Next Page >>"
-    Then I should see "Are you happy?"
+    Then I should see "Select one choice"
     And I press "<< Previous Page"
     And I press "<< Previous Page"
     Then I should see "Are you still in School?"
@@ -124,5 +141,14 @@ Feature: Questions can be defined to be dependent on answers to previous questio
     And I press "Next Page >>"
     Then I should see "Are you taking an apprenticeship?"
     And I click on "No" "radio"
+    And I press "Next Page >>"
+    Then I should see "Select one choice"
+    And I set the field "dropQ2" to "One"
+    And I press "Next Page >>"
+    Then I should see "You answered one"
+    And I press "<< Previous Page"
+    And I set the field "dropQ2" to "Three"
+    And I press "Next Page >>"
+    Then I should see "You did not answer one"
     And I press "Next Page >>"
     Then I should see "Are you happy?"

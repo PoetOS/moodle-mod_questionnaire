@@ -846,11 +846,11 @@ abstract class base {
             $this->content = '';
         }
         $pagetags->skippedclass = $skippedclass;
-        if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT ||
-            $this->type_id == QUESDROP) {
+        if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT) {
             $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->id];
-        }
-        if ($this->type_id == QUESESSAY) {
+        } else if ($this->type_id == QUESDROP) {
+            $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->name];
+        } else if ($this->type_id == QUESESSAY) {
             $pagetags->label = (object)['for' => 'edit-q' . $this->id];
         }
         $options = ['noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
@@ -1377,7 +1377,7 @@ abstract class base {
             $userfields .= $userfields === '' ? '' : ', ';
             $userfields .= 'u.'.$field;
         }
-        $userfields .= ', u.id as uid';
+        $userfields .= ', u.id as usrid';
         return $userfields;
     }
 }

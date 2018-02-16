@@ -76,7 +76,7 @@ class text extends base {
                     'ORDER BY r.submitted DESC';
         } else {
             $sql = 'SELECT t.id, t.response, r.submitted AS submitted, r.userid, u.username AS username, ' .
-                    'u.id as uid, ' .
+                    'u.id as usrid, ' .
                     'r.survey_id, r.id AS rid ' .
                     'FROM {'.self::response_table().'} t, ' .
                     '{questionnaire_response} r, ' .

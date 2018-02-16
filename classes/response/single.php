@@ -79,7 +79,11 @@ class single extends base {
         $record->question_id = $this->question->id;
         $record->choice_id = isset($val) ? $val : 0;
         if ($record->choice_id) {// If "no answer" then choice_id is empty (CONTRIB-846).
-            return $DB->insert_record(self::response_table(), $record);
+            try {
+                return $DB->insert_record(static::response_table(), $record);
+            } catch (\dml_write_exception $ex) {
+                return false;
+            }
         } else {
             return false;
         }
@@ -95,10 +99,11 @@ class single extends base {
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
+
         // Added qc.id to preserve original choices ordering.
         $sql = 'SELECT rt.id, qc.id as cid, qc.content ' .
                'FROM {questionnaire_quest_choice} qc, ' .
-               '{'.self::response_table().'} rt ' .
+               '{'.static::response_table().'} rt ' .
                'WHERE qc.question_id= ? AND qc.content NOT LIKE \'!other%\' AND ' .
                      'rt.question_id=qc.question_id AND rt.choice_id=qc.id' . $rsql . ' ' .
                'ORDER BY qc.id';
@@ -175,7 +180,7 @@ class single extends base {
 
         $values = [];
         $sql = 'SELECT q.id '.$col.', q.type_id as q_type, c.content as ccontent,c.id as cid '.
-            'FROM {'.self::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
+            'FROM {'.static::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
             'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {
@@ -282,7 +287,7 @@ class single extends base {
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".self::response_table()."} $alias ON $alias.response_id = qr.id
+              JOIN {".static::response_table()."} $alias ON $alias.response_id = qr.id
         ";
     }
 }

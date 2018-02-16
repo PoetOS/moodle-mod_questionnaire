@@ -109,7 +109,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
     And I follow "Test questionnaire"
     And I navigate to "Answer the questions..." in current page administration
     Then I should see "Select one dropdown"
-    And I set the field "Select one dropdown" to "Three"
+    And I set the field "dropQ1" to "Three"
     And I click on "Three" "radio"
     And I click on "Choice Three for row Cheese" "radio"
     And I click on "Choice Three for row Bread" "radio"
@@ -139,7 +139,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
     And I follow "Test questionnaire"
     And I navigate to "Answer the questions..." in current page administration
     Then I should see "Select one dropdown"
-    And I set the field "Select one dropdown" to "One"
+    And I set the field "dropQ1" to "One"
     And I click on "One" "radio"
     And I click on "Choice Two for row Cheese" "radio"
     And I click on "Choice Two for row Bread" "radio"

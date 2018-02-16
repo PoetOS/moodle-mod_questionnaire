@@ -586,8 +586,7 @@ switch ($action) {
         if (!empty($resps)) {
             // NOTE: response_analysis uses $resps to get the id's of the responses only.
             // Need to figure out what this function does.
-            $feedbackmessages = $questionnaire->response_analysis($rid = 0, $resps, $compare = false,
-                $isgroupmember = false, $allresponses = true, $currentgroupid);
+            $feedbackmessages = $questionnaire->response_analysis(0, $resps, false, false, true, $currentgroupid);
 
             if ($feedbackmessages) {
                 $msgout = '';
@@ -612,7 +611,7 @@ switch ($action) {
         $respinfo .= $questionnaire->renderer->help_icon('orderresponses', 'questionnaire');
         $questionnaire->page->add_to_page('respondentinfo', $respinfo);
 
-        $ret = $questionnaire->survey_results(1, 1, '', '', '', $uid = false, $currentgroupid, $sort);
+        $ret = $questionnaire->survey_results(1, 1, '', '', '', false, $currentgroupid, $sort);
 
         echo $questionnaire->renderer->render($questionnaire->page);
 
@@ -668,7 +667,7 @@ switch ($action) {
                                'INNER JOIN {groups_members} gm ON r.userid = gm.userid ' .
                                'WHERE r.survey_id = ? AND r.complete = ? AND gm.groupid = ? ' .
                                'ORDER BY r.id';
-                        $resps = $DB->get_records_sql($sql, array($sid, 'y', $currentgroupid));
+                        $resps = $DB->get_records_sql($sql, [$sid, 'y', $currentgroupid]);
                 }
                 if (empty($resps)) {
                     $noresponses = true;
@@ -677,7 +676,7 @@ switch ($action) {
                         $resp = current($resps);
                         $rid = $resp->id;
                     } else {
-                        $resp = $DB->get_record('questionnaire_response', array('id' => $rid));
+                        $resp = $DB->get_record('questionnaire_response', ['id' => $rid]);
                     }
                     if (!empty($resp->userid)) {
                         if ($user = $DB->get_record('user', ['id' => $resp->userid])) {
@@ -734,8 +733,7 @@ switch ($action) {
             }
             $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->view_response($rid, $referer = '', $blankquestionnaire = false, $resps, $compare = true,
-                    $isgroupmember = true, $allresponses = false, $currentgroupid);
+                $questionnaire->view_response($rid, '', false, $resps, true, true, false, $currentgroupid);
             }
         }
 
