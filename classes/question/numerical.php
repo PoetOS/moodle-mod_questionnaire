@@ -138,7 +138,9 @@ class numerical extends base {
      */
     public function response_valid($responsedata) {
         if (isset($responsedata->{'q'.$this->id})) {
-            return (($responsedata->{'q'.$this->id} == '') || is_numeric($responsedata->{'q'.$this->id}));
+            // If commas are present, replace them with periods, in case that was meant as the European decimal place.
+            $responseval = str_replace(',', '.', $responsedata->{'q'.$this->id});
+            return (($responseval == '') || is_numeric($responseval));
         } else {
             return parent::response_valid($responsedata);
         }

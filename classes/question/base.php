@@ -758,6 +758,19 @@ abstract class base {
     }
 
     /**
+     * Override and return a form template if provided. Output of results_output is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function results_template() {
+        if (isset ($this->response) && is_object($this->response) &&
+            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            return $this->response->results_template();
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Get the output for question renderers / templates.
      * @param object $formdata
      * @param array $dependants Array of all questions/choices depending on this question.

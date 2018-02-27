@@ -2418,7 +2418,7 @@ class questionnaire {
             } else {
                 $navbar = true;
             }
-            $total = 1;
+            $numresps = 1;
         } else {
             $navbar = false;
             if ($uid !== false) { // One participant only.
@@ -2452,9 +2452,9 @@ class questionnaire {
                 $SESSION->questionnaire->noresponses = true;
                 return;
             }
-            $total = count($rows);
+            $numresps = count($rows);
             $this->page->add_to_page('respondentinfo',
-                ' '.get_string('responses', 'questionnaire').': <strong>'.$total.'</strong>');
+                ' '.get_string('responses', 'questionnaire').': <strong>'.$numresps.'</strong>');
             if (empty($rows)) {
                 $errmsg = get_string('erroropening', 'questionnaire') .' '. get_string('noresponsedata', 'questionnaire');
                     return($errmsg);

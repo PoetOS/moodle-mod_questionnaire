@@ -125,6 +125,7 @@ $string['dependquestion'] = 'Parent Question';
 $string['dependquestion_help'] = 'You can select a parent question and a choice option for this question. A child question will only be displayed
                 to the student if its parent question and parent choice have been previously selected.';
 $string['dependquestion_link'] = 'mod/questionnaire/questions#Parent_Question';
+$string['didnotrespondtoquestion'] = 'Did not respond to question';
 $string['directwarnings'] = 'Direct dependencies to this question will be removed. This will affect:';
 $string['displaymethod'] = 'Display method not defined for question.';
 $string['download'] = 'Download';
@@ -580,6 +581,8 @@ $string['title'] = 'Title';
 $string['title_help'] = 'Title of this questionnaire, which will appear at the top of every page. By default Title is set to the questionnaire Name, but you can edit it as you like.';
 $string['today'] = 'today';
 $string['total'] = 'Total';
+$string['totalofnumbers'] = 'Total of numbers entered';
+$string['totalresponses'] = 'Total responses to question';
 $string['type'] = 'Question Type';
 $string['undefinedquestiontype'] = 'Undefined question type!';
 $string['unknown'] = 'Unknown';

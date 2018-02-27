@@ -75,12 +75,9 @@ class date extends base {
 
     public function display_results($rids=false, $sort='', $anonymous=false) {
         $output = '';
-        if (is_array($rids)) {
-            $prtotal = 1;
-        } else if (is_int($rids)) {
-            $prtotal = 0;
-        }
         if ($rows = $this->get_results($rids, $anonymous)) {
+            $numrespondents = count($rids);
+            $noresponsecount = $numrespondents - count($rows);
             foreach ($rows as $row) {
                 // Count identical answers (case insensitive).
                 $this->text = $row->response;
@@ -91,8 +88,7 @@ class date extends base {
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            $output .= \mod_questionnaire\response\display_support::mkreslistdate($this->counts, count($rids),
-                $this->question->precise, $prtotal);
+            $output .= \mod_questionnaire\response\display_support::mkreslistdate($this->counts, $numrespondents, $noresponsecount);
         } else {
             $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
