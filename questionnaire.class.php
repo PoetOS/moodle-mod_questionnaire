@@ -574,7 +574,19 @@ class questionnaire {
 
         if (!$userid) {
             // Provide for groups setting.
-            return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'complete' => 'y'));
+            $select = "survey_id = ? AND complete = ?";
+            $params = array($this->sid, 'y');
+            if (!empty($this->excludeinactive)) {
+                if ($users = get_enrolled_users($this->context, 'mod/questionnaire:submit', 0, 'u.id', null, 0, 0, true)) {
+                    $userids = array_map(function($u) {
+                        return $u->id;
+                    }, $users);
+                    list($usersql, $userparams) = $DB->get_in_or_equal($userids);
+                    $select .= " AND userid $usersql ";
+                    $params = array_merge($params, $userparams);
+                }
+            }
+            return $DB->count_records_select('questionnaire_response', $select, $params);
         } else {
             return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'userid' => $userid,
                                       'complete' => 'y'));
@@ -2078,6 +2090,20 @@ class questionnaire {
 
         $output = '';
 
+        $usersql = '';
+        $params = array($this->survey->id, 'y');
+        if (!empty($this->excludeinactive)) {
+            if ($users = get_enrolled_users($this->context, 'mod/questionnaire:submit', $currentgroupid, 'u.id',
+                    null, 0, 0, true)) {
+                $userids = array_map(function($u) {
+                    return $u->id;
+                }, $users);
+                list($usersql, $userparams) = $DB->get_in_or_equal($userids);
+                $usersql = " AND R.userid $usersql ";
+                $params = array_merge($params, $userparams);
+            }
+        }
+
         // Is this questionnaire set to fullname or anonymous?
         $isfullname = $this->respondenttype != 'anonymous';
         if ($isfullname) {
@@ -2097,16 +2123,17 @@ class questionnaire {
             'FROM {questionnaire_response} R,
                   {user} U
                 '.$groupmembers.
-            'WHERE R.survey_id=' . $this->survey->id . ' AND complete = \'y\' AND U.id = R.userid ' . $selectgroupid .
+            'WHERE R.survey_id = ? AND R.complete = ? AND U.id = R.userid ' . $selectgroupid . $usersql .
             'ORDER BY U.lastname, U.firstname, R.submitted DESC';
         } else {
             $sql = 'SELECT R.id AS responseid, R.submitted
                    FROM {questionnaire_response} R
                    WHERE R.survey_id = ?
                    AND complete = ?
+                   ' . $usersql . '
                    ORDER BY R.submitted DESC';
         }
-        if (!$responses = $DB->get_records_sql ($sql, array('survey_id' => $this->survey->id, 'complete' => 'y'))) {
+        if (!$responses = $DB->get_records_sql ($sql, $params)) {
             return;
         }
         $total = count($responses);
@@ -2387,6 +2414,7 @@ class questionnaire {
             $total = 1;
         } else {
             $navbar = false;
+            $params = array();
             if ($uid !== false) { // One participant only.
                 $sql = "SELECT r.id, r.survey_id
                           FROM {questionnaire_response} r
@@ -2394,24 +2422,39 @@ class questionnaire {
                                r.userid = $uid AND
                                r.complete='y'
                          ORDER BY r.id";
+            } else {
+                $usersql = '';
+                if (!empty($this->excludeinactive)) {
+                    if ($users = get_enrolled_users($this->context, 'mod/questionnaire:submit', $currentgroupid, 'u.id',
+                            null, 0, 0, true)) {
+                        $userids = array_map(function($u) {
+                            return $u->id;
+                        }, $users);
+                        list($usersql, $params) = $DB->get_in_or_equal($userids);
+                        $usersql = " AND r.userid $usersql ";
+                    }
+                }
                 // All participants or all members of a group.
-            } else if ($currentgroupid == 0) {
-                $sql = "SELECT r.id, r.survey_id, r.userid as userid
+                if ($currentgroupid == 0) {
+                    $sql = "SELECT r.id, r.survey_id, r.userid as userid
                           FROM {questionnaire_response} r
                          WHERE r.survey_id='{$this->survey->id}' AND
                                r.complete='y'
+                               $usersql
                          ORDER BY r.id";
-            } else { // Members of a specific group.
-                $sql = "SELECT r.id, r.survey_id
+                } else { // Members of a specific group.
+                    $sql = "SELECT r.id, r.survey_id
                           FROM {questionnaire_response} r,
                                 {groups_members} gm
                          WHERE r.survey_id='{$this->survey->id}' AND
                                r.complete='y' AND
                                gm.groupid=".$currentgroupid." AND
                                r.userid=gm.userid
+                               $usersql
                          ORDER BY r.id";
+                }
             }
-            if (!($rows = $DB->get_records_sql($sql))) {
+            if (!($rows = $DB->get_records_sql($sql, $params))) {
                 $this->page->add_to_page('respondentinfo',
                     $this->renderer->notification(get_string('noresponses', 'questionnaire'),
                     \core\output\notification::NOTIFY_ERROR));
@@ -2553,7 +2596,8 @@ class questionnaire {
                 continue;
             }
             $allresponsessql .= $allresponsessql == '' ? '' : ' UNION ALL ';
-            list ($sql, $params) = $question->response->get_bulk_sql($this->survey->id, $rid, $userid, $groupid);
+            list ($sql, $params) = $question->response->get_bulk_sql($this->survey->id, $rid, $userid, $groupid,
+                    !empty($this->excludeinactive), $this->context);
             $allresponsesparams = array_merge($allresponsesparams, $params);
             $allresponsessql .= $sql;
         }

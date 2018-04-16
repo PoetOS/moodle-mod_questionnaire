@@ -76,6 +76,10 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
+        $mform->addElement('selectyesno', 'excludeinactive', get_string('excludeinactive', 'questionnaire'));
+        $mform->addHelpButton('excludeinactive', 'excludeinactive', 'questionnaire');
+        $mform->setDefault('excludeinactive', get_config('questionnaire', 'defaultexcludeinactive'));
+
         $notificationoptions = array(0 => get_string('no'), 1 => get_string('notificationsimple', 'questionnaire'),
             2 => get_string('notificationfull', 'questionnaire'));
         $mform->addElement('select', 'notifications', get_string('notifications', 'questionnaire'), $notificationoptions);

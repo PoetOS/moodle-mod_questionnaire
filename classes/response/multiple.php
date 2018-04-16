@@ -262,9 +262,13 @@ class multiple extends single {
      * @param int $surveyid
      * @param bool|int $responseid
      * @param bool|int $userid
+     * @param bool|int $groupid
+     * @param bool $excludeinactive Exclude responses from inactive users
+     * @param \context $context Context of questionnaire
      * @return array
      */
-    public function get_bulk_sql($surveyid, $responseid = false, $userid = false, $groupid = false) {
+    public function get_bulk_sql($surveyid, $responseid = false, $userid = false, $groupid = false, $excludeinactive = false,
+                                 \context $context = null) {
         global $DB;
 
         $sql = $this->bulk_sql($surveyid, $responseid, $userid);
@@ -290,6 +294,15 @@ class multiple extends single {
         } else if ($userid) {
             $sql .= " WHERE qr.userid = ?";
             $params[] = $userid;
+        } else if ($excludeinactive) {
+            if ($users = get_enrolled_users($context, 'mod/questionnaire:submit', 0, 'u.id', null, 0, 0, true)) {
+                $userids = array_map(function($u) {
+                    return $u->id;
+                }, $users);
+                list($usersql, $userparams) = $DB->get_in_or_equal($userids);
+                $sql .= " WHERE qr.userid $usersql ";
+                $params = array_merge($params, $userparams);
+            }
         }
 
         return [$sql, $params];
