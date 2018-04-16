@@ -56,4 +56,12 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('questionnaire/allowemailreporting',
         get_string('configemailreporting', 'questionnaire'), get_string('configemailreportinglong', 'questionnaire'), 0));
+
+    $name = get_string('defaultexcludeinactive', 'questionnaire');
+    $desc = get_string('defaultexcludeinactive_desc', 'questionnaire');
+    $options = array(
+        0 => get_string('no'),
+        1 => get_string('yes')
+    );
+    $settings->add(new admin_setting_configselect('questionnaire/defaultexcludeinactive', $name, $desc, 0, $options));
 }

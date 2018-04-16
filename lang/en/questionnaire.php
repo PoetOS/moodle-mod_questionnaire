@@ -125,6 +125,8 @@ $string['dateformatting'] = 'Use the year-month-day format, e.g. for March 4th, 
 // Prior to release 3.6.0, you could specify an input date format in the above string. Now, the format must be as below. This
 // string is used now in case sites modified the above string.
 $string['strictdateformatting'] = 'Use the year-month-day format, e.g. for March 4th, 1945:&nbsp; <strong>1945-03-04</strong>';
+$string['defaultexcludeinactive'] = 'Exclude inactive users\' responses by default';
+$string['defaultexcludeinactive_desc'] = 'By default, should responses from users with inactive or suspended enrolments be excluded from reports?';
 $string['deleteallresponses'] = 'Delete ALL Responses';
 $string['deletecurrentquestion'] = 'Delete question {$a}';
 $string['deletedallgroupresp'] = 'Deleted ALL Responses in group {$a}';
@@ -187,6 +189,8 @@ $string['event_response_deleted'] = 'Individual Response deleted';
 $string['event_resumed'] = 'Attempt resumed';
 $string['event_saved'] = 'Responses saved';
 $string['event_submitted'] = 'Responses submitted';
+$string['excludeinactive'] = 'Exclude inactive users\' responses';
+$string['excludeinactive_help'] = 'Should responses from users with inactive or suspended enrolments be excluded from reports?<br>Note: this option will also exclude any responses from users with only non-student roles, such as teachers.';
 $string['feedback'] = 'Feedback';
 $string['feedback_help'] = 'Feedback Help';
 $string['feedback_link'] = 'mod/questionnaire/personality_test#Editing_Questionnaire_Feedback_Messages';

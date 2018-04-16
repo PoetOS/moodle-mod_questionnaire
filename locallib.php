@@ -534,23 +534,25 @@ function questionnaire_get_incomplete_users($cm, $sid,
     // First get all users who can complete this questionnaire.
     $cap = 'mod/questionnaire:submit';
     $fields = 'u.id, u.username';
-    if (!$allusers = get_users_by_capability($context,
-                    $cap,
-                    $fields,
-                    $sort,
-                    '',
-                    '',
-                    $group,
-                    '',
-                    true)) {
+    $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance), '*', MUST_EXIST);
+    if (!$users = get_enrolled_users($context, $cap, $group, $fields, $sort, 0, 0, !empty($questionnaire->excludeinactive))) {
         return false;
     }
-    $allusers = array_keys($allusers);
+    $allusers = array_keys($users);
 
     // Nnow get all completed questionnaires.
     $params = array('questionnaireid' => $cm->instance, 'complete' => 'y');
+    $usersql = '';
+    if (!empty($questionnaire->excludeinactive)) {
+        $userids = array_map(function($u) {
+            return $u->id;
+        }, $users);
+        list($usersql, $userparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        $usersql = " AND userid $usersql ";
+        $params = array_merge($params, $userparams);
+    }
     $sql = "SELECT userid FROM {questionnaire_response} " .
-           "WHERE questionnaireid = :questionnaireid AND complete = :complete " .
+           "WHERE questionnaireid = :questionnaireid AND complete = :complete " . $usersql .
            "GROUP BY userid ";
 
     if (!$completedusers = $DB->get_records_sql($sql, $params)) {
