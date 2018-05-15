@@ -694,6 +694,24 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2017111101, 'questionnaire');
     }
 
+    // Converting to new dependency system.
+    if ($oldversion < 2017111103) {
+
+        // If these fields exist, possibly due to incorrect creation from a new install (see CONTRIB-7300), remove them.
+        $table = new xmldb_table('questionnaire_question');
+        $field1 = new xmldb_field('dependquestion');
+        $field2 = new xmldb_field('dependchoice');
+        if ($dbman->field_exists($table, $field1)) {
+            $dbman->drop_field($table, $field1);
+        }
+        if ($dbman->field_exists($table, $field2)) {
+            $dbman->drop_field($table, $field2);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2017111103, 'questionnaire');
+    }
+
     return $result;
 }
 
