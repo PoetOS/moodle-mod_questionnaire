@@ -40,8 +40,7 @@ class provider implements
      * @param   collection $items The collection to add metadata to.
      * @return  collection  The array of metadata
      */
-    public static function get_metadata(\core_privacy\local\metadata\collection $collection):
-        \core_privacy\local\metadata\collection {
+    public static function get_metadata(\core_privacy\local\metadata\collection $collection): \core_privacy\local\metadata\collection {
 
         // Add all of the relevant tables and fields to the collection.
         $collection->add_database_table('questionnaire_attempts', [
@@ -89,7 +88,64 @@ class provider implements
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
     public static function export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {
+        global $DB;
 
+        if (empty($contextlist->count())) {
+            return;
+        }
+
+        $user = $contextlist->get_user();
+
+        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+
+        $sql = "SELECT cm.id AS cmid,
+                       qa.rid as responseid,
+                       qa.timemodified
+                  FROM {context} c
+            INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+            INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+            INNER JOIN {questionnaire} q ON q.id = cm.instance
+            INNER JOIN {questionnaire_attempts} qa ON qa.qid = q.id
+                 WHERE c.id {$contextsql}
+                       AND qa.userid = :userid
+              ORDER BY cm.id, qa.rid ASC";
+
+        $params = ['modname' => 'questionnaire', 'contextlevel' => CONTEXT_MODULE, 'userid' => $user->id] + $contextparams;
+
+        // There can be more than one attempt per instance, so we'll gather them by cmid.
+        $lastcmid = 0;
+        $attemptdata = [];
+        $attempts = $DB->get_recordset_sql($sql, $params);
+        foreach ($attempts as $attempt) {
+            // If we've moved to a new choice, then write the last choice data and reinit the choice data array.
+            if ($lastcmid != $attempt->cmid) {
+                if (!empty($attemptdata)) {
+                    $context = \context_module::instance($lastcmid);
+                    // Fetch the generic module data for the questionnaire.
+                    $contextdata = \core_privacy\local\request\helper::get_context_data($context, $user);
+                    // Merge with attempt data and write it.
+                    $contextdata = (object)array_merge((array)$contextdata, $attemptdata);
+                    \core_privacy\local\request\writer::with_context($context)->export_data([], $contextdata);
+                }
+                $attemptdata = [];
+                $lastcmid = $attempt->cmid;
+            }
+            $attemptdata['attempts'][] = [
+                'responseid' => $attempt->responseid,
+                'timemodified' => \core_privacy\local\request\transform::datetime($attempt->timemodified),
+            ];
+        }
+        $attempts->close();
+
+        // The data for the last activity won't have been written yet, so make sure to write it now!
+        if (!empty($attemptdata)) {
+            $context = \context_module::instance($lastcmid);
+            // Fetch the generic module data for the questionnaire.
+            $contextdata = \core_privacy\local\request\helper::get_context_data($context, $user);
+            // Merge with attempt data and write it.
+            $contextdata = (object)array_merge((array)$contextdata, $attemptdata);
+            \core_privacy\local\request\writer::with_context($context)->export_data([], $contextdata);
+        }
     }
 
     /**
@@ -107,6 +163,6 @@ class provider implements
      * @param   approved_contextlist    $contextlist    The approved contexts and user information to delete information for.
      */
     public static function delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {
-        
+
     }
 }
