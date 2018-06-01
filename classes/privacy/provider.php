@@ -42,6 +42,15 @@ class provider implements
      */
     public static function get_metadata(\core_privacy\local\metadata\collection $collection):
         \core_privacy\local\metadata\collection {
+
+        // Add all of the relevant tables and fields to the collection.
+        $collection->add_database_table('questionnaire_attempts', [
+            'userid' => 'privacy:metadata:questionnaire_attempts:userid',
+            'rid' => 'privacy:metadata:questionnaire_attempts:rid',
+            'qid' => 'privacy:metadata:questionnaire_attempts:qid',
+            'timemodified' => 'privacy:metadata:questionnaire_attempts:timemodified',
+        ], 'privacy:metadata:questionnaire_attempts');
+
         return $collection;
     }
 
@@ -53,6 +62,24 @@ class provider implements
      */
     public static function get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
         $contextlist = new \core_privacy\local\request\contextlist();
+
+        $sql = "SELECT c.id
+                 FROM {context} c
+           INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+           INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+           INNER JOIN {questionnaire} q ON q.id = cm.instance
+            LEFT JOIN {questionnaire_attempts} qa ON qa.qid = q.id
+                WHERE qa.userid = :attemptuserid
+        ";
+
+        $params = [
+            'modname' => 'questionnaire',
+            'contextlevel' => CONTEXT_MODULE,
+            'attemptuserid' => $userid,
+        ];
+
+        $contextlist->add_from_sql($sql, $params);
+
         return $contextlist;
     }
 
@@ -61,19 +88,25 @@ class provider implements
      *
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
-    public static function export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {}
+    public static function export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {
+
+    }
 
     /**
      * Delete all personal data for all users in the specified context.
      *
      * @param context $context Context to delete data from.
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {}
+    public static function delete_data_for_all_users_in_context(\context $context) {
+
+    }
 
     /**
      * Delete all user data for the specified user, in the specified contexts.
      *
      * @param   approved_contextlist    $contextlist    The approved contexts and user information to delete information for.
      */
-    public static function delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {}
+    public static function delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {
+        
+    }
 }

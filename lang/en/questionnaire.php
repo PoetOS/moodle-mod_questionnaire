@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'questionnaire', language 'en', branch 'MOODLE_24_STABLE'
+ * Strings for component 'questionnaire', language 'en'
  *
- * @package    mod
- * @subpackage quiz
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @package    mod_questionnaire
+ * @copyright  2018 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -372,6 +372,13 @@ $string['print'] = 'Print this Response';
 $string['printblank'] = 'Print Blank';
 $string['printblanktooltip'] = 'Opens printer-friendly window with blank Questionnaire';
 $string['printtooltip'] = 'Opens printer-friendly window with current Response';
+
+$string['privacy:metadata:questionnaire_attempts'] = 'Details about each submission of a questionnaire by a user.';
+$string['privacy:metadata:questionnaire_attempts:userid'] = 'The ID of the user for this attempt.';
+$string['privacy:metadata:questionnaire_attempts:rid'] = 'The ID of the user\'s response record for this attempt.';
+$string['privacy:metadata:questionnaire_attempts:qid'] = 'The ID of the questionnaire record for this attempt.';
+$string['privacy:metadata:questionnaire_attempts:timemodified'] = 'The timestamp for the latest submission of this attempt.';
+
 $string['private'] = 'Private';
 $string['public'] = 'Public';
 $string['publiccopy'] = 'Copy:';
