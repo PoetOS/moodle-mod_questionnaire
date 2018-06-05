@@ -154,7 +154,15 @@ class provider implements
      * @param context $context Context to delete data from.
      */
     public static function delete_data_for_all_users_in_context(\context $context) {
+        global $DB;
 
+        if (!($context instanceof \context_module)) {
+            return;
+        }
+
+        if ($cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
+            $DB->delete_records('questionnaire_attempts', ['qid' => $cm->instance]);
+        }
     }
 
     /**
@@ -163,6 +171,20 @@ class provider implements
      * @param   approved_contextlist    $contextlist    The approved contexts and user information to delete information for.
      */
     public static function delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {
+        global $DB;
 
+        if (empty($contextlist->count())) {
+            return;
+        }
+
+        $userid = $contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            if (!($context instanceof \context_module)) {
+                continue;
+            }
+            if ($cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
+                $DB->delete_records('questionnaire_attempts', ['qid' => $cm->instance, 'userid' => $userid]);
+            }
+        }
     }
 }
