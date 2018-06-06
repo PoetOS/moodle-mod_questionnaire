@@ -379,6 +379,50 @@ $string['privacy:metadata:questionnaire_attempts:rid'] = 'The ID of the user\'s 
 $string['privacy:metadata:questionnaire_attempts:qid'] = 'The ID of the questionnaire record for this attempt.';
 $string['privacy:metadata:questionnaire_attempts:timemodified'] = 'The timestamp for the latest submission of this attempt.';
 
+$string['privacy:metadata:questionnaire_response'] = 'A response in progress or submitted';
+$string['privacy:metadata:questionnaire_response:userid'] = 'The ID of the user for this response.';
+$string['privacy:metadata:questionnaire_response:survey_id'] = 'The ID of the survey record for this response.';
+$string['privacy:metadata:questionnaire_response:complete'] = 'The response completion status.';
+$string['privacy:metadata:questionnaire_response:grade'] = 'The grade for this response.';
+$string['privacy:metadata:questionnaire_response:submitted'] = 'The timestamp for the most recent save for this response.';
+
+$string['privacy:metadata:questionnaire_response_bool'] = 'A boolean (yes/no) question response.';
+$string['privacy:metadata:questionnaire_response_bool:response_id'] = 'The ID of the response record for this response.';
+$string['privacy:metadata:questionnaire_response_bool:question_id'] = 'The ID of the question record for this response.';
+$string['privacy:metadata:questionnaire_response_bool:choice_id'] = 'The specific boolean answer.';
+
+$string['privacy:metadata:questionnaire_response_date'] = 'A date question response.';
+$string['privacy:metadata:questionnaire_response_date:response_id'] = 'The ID of the response record for this response.';
+$string['privacy:metadata:questionnaire_response_date:question_id'] = 'The ID of the question record for this response.';
+$string['privacy:metadata:questionnaire_response_date:response'] = 'The specific date answer.';
+
+$string['privacy:metadata:questionnaire_response_other'] = 'An \'other\' choice text response.';
+$string['privacy:metadata:questionnaire_response_other:response_id'] = 'The ID of the response record for this response.';
+$string['privacy:metadata:questionnaire_response_other:question_id'] = 'The ID of the question record for this response.';
+$string['privacy:metadata:questionnaire_response_other:choice_id'] = 'The ID of the choice record for this response.';
+$string['privacy:metadata:questionnaire_response_other:response'] = 'The specific text answer.';
+
+$string['privacy:metadata:questionnaire_response_rank'] = 'A rank question response.';
+$string['privacy:metadata:questionnaire_response_rank:response_id'] = 'The ID of the response record for this response.';
+$string['privacy:metadata:questionnaire_response_rank:question_id'] = 'The ID of the question record for this response.';
+$string['privacy:metadata:questionnaire_response_rank:choice_id'] = 'The ID of the choice record for this response.';
+$string['privacy:metadata:questionnaire_response_rank:rank'] = 'The specific rank answer.';
+
+$string['privacy:metadata:questionnaire_response_text'] = 'A text question response.';
+$string['privacy:metadata:questionnaire_response_text:response_id'] = 'The ID of the response record for this response.';
+$string['privacy:metadata:questionnaire_response_text:question_id'] = 'The ID of the question record for this response.';
+$string['privacy:metadata:questionnaire_response_text:response'] = 'The specific text answer.';
+
+$string['privacy:metadata:questionnaire_resp_multiple'] = 'A multiple choice question response.';
+$string['privacy:metadata:questionnaire_resp_multiple:response_id'] = 'The ID of the response record for this response.';
+$string['privacy:metadata:questionnaire_resp_multiple:question_id'] = 'The ID of the question record for this response.';
+$string['privacy:metadata:questionnaire_resp_multiple:choice_id'] = 'The ID of a choice record for this response.';
+
+$string['privacy:metadata:questionnaire_resp_single'] = 'A single choice question response.';
+$string['privacy:metadata:questionnaire_resp_single:response_id'] = 'The ID of the response record for this response.';
+$string['privacy:metadata:questionnaire_resp_single:question_id'] = 'The ID of the question record for this response.';
+$string['privacy:metadata:questionnaire_resp_single:choice_id'] = 'The ID of the choice record for this response.';
+
 $string['private'] = 'Private';
 $string['public'] = 'Public';
 $string['publiccopy'] = 'Copy:';

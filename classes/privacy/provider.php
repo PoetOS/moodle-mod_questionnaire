@@ -50,6 +50,58 @@ class provider implements
             'timemodified' => 'privacy:metadata:questionnaire_attempts:timemodified',
         ], 'privacy:metadata:questionnaire_attempts');
 
+        $collection->add_database_table('questionnaire_response', [
+            'userid' => 'privacy:metadata:questionnaire_response:userid',
+            'survey_id' => 'privacy:metadata:questionnaire_response:survey_id',
+            'complete' => 'privacy:metadata:questionnaire_response:complete',
+            'grade' => 'privacy:metadata:questionnaire_response:grade',
+            'submitted' => 'privacy:metadata:questionnaire_response:submitted',
+        ], 'privacy:metadata:questionnaire_response');
+
+        $collection->add_database_table('questionnaire_response_bool', [
+            'response_id' => 'privacy:metadata:questionnaire_response_bool:response_id',
+            'question_id' => 'privacy:metadata:questionnaire_response_bool:question_id',
+            'choice_id' => 'privacy:metadata:questionnaire_response_bool:choice_id',
+        ], 'privacy:metadata:questionnaire_response_bool');
+
+        $collection->add_database_table('questionnaire_response_date', [
+            'response_id' => 'privacy:metadata:questionnaire_response_date:response_id',
+            'question_id' => 'privacy:metadata:questionnaire_response_date:question_id',
+            'response' => 'privacy:metadata:questionnaire_response_date:response',
+        ], 'privacy:metadata:questionnaire_response_date');
+
+        $collection->add_database_table('questionnaire_response_other', [
+            'response_id' => 'privacy:metadata:questionnaire_response_other:response_id',
+            'question_id' => 'privacy:metadata:questionnaire_response_other:question_id',
+            'choice_id' => 'privacy:metadata:questionnaire_response_other:choice_id',
+            'response' => 'privacy:metadata:questionnaire_response_other:response',
+        ], 'privacy:metadata:questionnaire_response_other');
+
+        $collection->add_database_table('questionnaire_response_rank', [
+            'response_id' => 'privacy:metadata:questionnaire_response_rank:response_id',
+            'question_id' => 'privacy:metadata:questionnaire_response_rank:question_id',
+            'choice_id' => 'privacy:metadata:questionnaire_response_rank:choice_id',
+            'rank' => 'privacy:metadata:questionnaire_response_rank:rank',
+        ], 'privacy:metadata:questionnaire_response_rank');
+
+        $collection->add_database_table('questionnaire_response_text', [
+            'response_id' => 'privacy:metadata:questionnaire_response_text:response_id',
+            'question_id' => 'privacy:metadata:questionnaire_response_text:question_id',
+            'response' => 'privacy:metadata:questionnaire_response_text:response',
+        ], 'privacy:metadata:questionnaire_response_text');
+
+        $collection->add_database_table('questionnaire_resp_multiple', [
+            'response_id' => 'privacy:metadata:questionnaire_resp_multiple:response_id',
+            'question_id' => 'privacy:metadata:questionnaire_resp_multiple:question_id',
+            'choice_id' => 'privacy:metadata:questionnaire_resp_multiple:choice_id',
+        ], 'privacy:metadata:questionnaire_resp_multiple');
+
+        $collection->add_database_table('questionnaire_resp_single', [
+            'response_id' => 'privacy:metadata:questionnaire_resp_single:response_id',
+            'question_id' => 'privacy:metadata:questionnaire_resp_single:question_id',
+            'choice_id' => 'privacy:metadata:questionnaire_resp_single:choice_id',
+        ], 'privacy:metadata:questionnaire_resp_single');
+
         return $collection;
     }
 
@@ -67,7 +119,7 @@ class provider implements
            INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
            INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
            INNER JOIN {questionnaire} q ON q.id = cm.instance
-            LEFT JOIN {questionnaire_attempts} qa ON qa.qid = q.id
+            LEFT JOIN {questionnaire_response} qr ON qr.qid = q.id
                 WHERE qa.userid = :attemptuserid
         ";
 
