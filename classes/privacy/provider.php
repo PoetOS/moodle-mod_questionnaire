@@ -119,8 +119,8 @@ class provider implements
            INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
            INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
            INNER JOIN {questionnaire} q ON q.id = cm.instance
-            LEFT JOIN {questionnaire_response} qr ON qr.qid = q.id
-                WHERE qa.userid = :attemptuserid
+           INNER JOIN {questionnaire_response} qr ON qr.survey_id = q.sid
+                WHERE qr.userid = :attemptuserid
         ";
 
         $params = [
@@ -140,7 +140,8 @@ class provider implements
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
     public static function export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {
-        global $DB;
+        global $DB, $CFG;
+        require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
         if (empty($contextlist->count())) {
             return;
@@ -151,51 +152,56 @@ class provider implements
         list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT cm.id AS cmid,
-                       qa.rid as responseid,
-                       qa.timemodified
+                       q.id AS qid, q.course AS qcourse,
+                       qr.id AS responseid, qr.submitted AS lastsaved, qr.complete AS complete
                   FROM {context} c
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
             INNER JOIN {questionnaire} q ON q.id = cm.instance
-            INNER JOIN {questionnaire_attempts} qa ON qa.qid = q.id
+            INNER JOIN {questionnaire_response} qr ON qr.survey_id = q.sid
+            LEFT JOIN {questionnaire_attempts} qa ON qa.rid = qr.id
                  WHERE c.id {$contextsql}
-                       AND qa.userid = :userid
-              ORDER BY cm.id, qa.rid ASC";
+                       AND qr.userid = :userid
+              ORDER BY cm.id, qr.id ASC";
 
         $params = ['modname' => 'questionnaire', 'contextlevel' => CONTEXT_MODULE, 'userid' => $user->id] + $contextparams;
 
         // There can be more than one attempt per instance, so we'll gather them by cmid.
         $lastcmid = 0;
-        $attemptdata = [];
-        $attempts = $DB->get_recordset_sql($sql, $params);
-        foreach ($attempts as $attempt) {
+        $responsedata = [];
+        $responses = $DB->get_recordset_sql($sql, $params);
+        foreach ($responses as $response) {
             // If we've moved to a new choice, then write the last choice data and reinit the choice data array.
-            if ($lastcmid != $attempt->cmid) {
-                if (!empty($attemptdata)) {
+            if ($lastcmid != $response->cmid) {
+                if (!empty($responsedata)) {
                     $context = \context_module::instance($lastcmid);
                     // Fetch the generic module data for the questionnaire.
                     $contextdata = \core_privacy\local\request\helper::get_context_data($context, $user);
                     // Merge with attempt data and write it.
-                    $contextdata = (object)array_merge((array)$contextdata, $attemptdata);
+                    $contextdata = (object)array_merge((array)$contextdata, $responsedata);
                     \core_privacy\local\request\writer::with_context($context)->export_data([], $contextdata);
                 }
-                $attemptdata = [];
-                $lastcmid = $attempt->cmid;
+                $responsedata = [];
+                $lastcmid = $response->cmid;
+                $course = $DB->get_record("course", ["id" => $response->qcourse]);
+                $cm = get_coursemodule_from_instance("questionnaire", $response->qid, $course->id);
+                $questionnaire = new \questionnaire($response->qid, null, $course, $cm);
             }
-            $attemptdata['attempts'][] = [
-                'responseid' => $attempt->responseid,
-                'timemodified' => \core_privacy\local\request\transform::datetime($attempt->timemodified),
+            $responsedata['responses'][] = [
+                'complete' => (($response->complete == 'y') ? get_string('yes') : get_string('no')),
+                'lastsaved' => \core_privacy\local\request\transform::datetime($response->lastsaved),
+                'questions' => $questionnaire->get_structured_response($response->responseid),
             ];
         }
-        $attempts->close();
+        $responses->close();
 
         // The data for the last activity won't have been written yet, so make sure to write it now!
-        if (!empty($attemptdata)) {
+        if (!empty($responsedata)) {
             $context = \context_module::instance($lastcmid);
             // Fetch the generic module data for the questionnaire.
             $contextdata = \core_privacy\local\request\helper::get_context_data($context, $user);
             // Merge with attempt data and write it.
-            $contextdata = (object)array_merge((array)$contextdata, $attemptdata);
+            $contextdata = (object)array_merge((array)$contextdata, $responsedata);
             \core_privacy\local\request\writer::with_context($context)->export_data([], $contextdata);
         }
     }
@@ -212,9 +218,19 @@ class provider implements
             return;
         }
 
-        if ($cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
-            $DB->delete_records('questionnaire_attempts', ['qid' => $cm->instance]);
+        if (!$cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
+            return;
         }
+
+        if (!($questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance]))) {
+            return;
+        }
+
+        if ($responses = $DB->get_recordset('questionnaire_response', ['survey_id' => $questionnaire->sid])) {
+            self::delete_responses($responses);
+        }
+        $responses->close();
+        $DB->delete_records('questionnaire_response', ['survey_id' => $questionnaire->sid]);
     }
 
     /**
@@ -234,9 +250,40 @@ class provider implements
             if (!($context instanceof \context_module)) {
                 continue;
             }
-            if ($cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
-                $DB->delete_records('questionnaire_attempts', ['qid' => $cm->instance, 'userid' => $userid]);
+            if (!$cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
+                continue;
             }
+
+            if (!($questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance]))) {
+                continue;
+            }
+
+            if ($responses = $DB->get_recordset('questionnaire_response',
+                ['survey_id' => $questionnaire->sid, 'userid' => $userid])) {
+                self::delete_responses($responses);
+            }
+            $responses->close();
+            $DB->delete_records('questionnaire_response', ['survey_id' => $questionnaire->sid, 'userid' => $userid]);
+        }
+    }
+
+    /**
+     * Helper function to delete all the response records for a recordset array of responses.
+     *
+     * @param   recordset    $responses    The list of response records to delete for.
+     */
+    private static function delete_responses($responses) {
+        global $DB;
+
+        foreach ($responses as $response) {
+            $DB->delete_records('questionnaire_response_bool', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_response_date', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_resp_multiple', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_response_other', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_response_rank', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_resp_single', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_response_text', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_attempts', ['rid' => $response->id]);
         }
     }
 }
