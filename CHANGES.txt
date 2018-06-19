@@ -26,6 +26,13 @@ enhanced notification feature.
 Note, this release can also be installed in Moodle 3.3, if you want the new features prior to upgrading to Moodle 3.4. This release
 does make database structure changes, so it cannot be downgraded after installation.
 
+Release 3.4.2 (Build - 2018061900)
+New features:
+This is an early release providing the GDPR Privacy API implementation.
+
+Bug fixes:
+CONTRIB-7187 - Fixed preview mode with dependencies bug and added tests to verify.
+CONTRIB-7300 - Removed database columns from install.xml and readded the upgrade step for them.
 
 Release 3.4.1 (Build - 2018013100)
 New Features:
