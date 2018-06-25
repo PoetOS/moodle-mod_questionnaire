@@ -97,13 +97,13 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     And I am on "Course 2" course homepage
     And I follow "Questionnaire instance 1"
     Then I should see "Your response"
-    And I follow "Your response"
+    And I navigate to "Your response" in current page administration
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='1']" "xpath_element" should exist
 
     And I am on "Course 3" course homepage
     And I follow "Questionnaire instance 2"
     Then I should see "Your response"
-    And I follow "Your response"
+    And I navigate to "Your response" in current page administration
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='2']" "xpath_element" should exist
