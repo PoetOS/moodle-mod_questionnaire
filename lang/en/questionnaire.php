@@ -373,15 +373,9 @@ $string['printblank'] = 'Print Blank';
 $string['printblanktooltip'] = 'Opens printer-friendly window with blank Questionnaire';
 $string['printtooltip'] = 'Opens printer-friendly window with current Response';
 
-$string['privacy:metadata:questionnaire_attempts'] = 'Details about each submission of a questionnaire by a user.';
-$string['privacy:metadata:questionnaire_attempts:userid'] = 'The ID of the user for this attempt.';
-$string['privacy:metadata:questionnaire_attempts:rid'] = 'The ID of the user\'s response record for this attempt.';
-$string['privacy:metadata:questionnaire_attempts:qid'] = 'The ID of the questionnaire record for this attempt.';
-$string['privacy:metadata:questionnaire_attempts:timemodified'] = 'The timestamp for the latest submission of this attempt.';
-
 $string['privacy:metadata:questionnaire_response'] = 'A response in progress or submitted';
 $string['privacy:metadata:questionnaire_response:userid'] = 'The ID of the user for this response.';
-$string['privacy:metadata:questionnaire_response:survey_id'] = 'The ID of the survey record for this response.';
+$string['privacy:metadata:questionnaire_response:questionnaireid'] = 'The ID of the questionnaire record for this response.';
 $string['privacy:metadata:questionnaire_response:complete'] = 'The response completion status.';
 $string['privacy:metadata:questionnaire_response:grade'] = 'The grade for this response.';
 $string['privacy:metadata:questionnaire_response:submitted'] = 'The timestamp for the most recent save for this response.';

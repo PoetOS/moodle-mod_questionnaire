@@ -1090,8 +1090,7 @@ function questionnaire_reset_course_form_defaults($course) {
 
 /**
  * Actual implementation of the reset course functionality, delete all the
- * questionnaire responses for course $data->courseid, if $data->reset_questionnaire_attempts is
- * set and true.
+ * questionnaire responses for course $data->courseid.
  *
  * @param object $data the data submitted from the reset course.
  * @return array status array
