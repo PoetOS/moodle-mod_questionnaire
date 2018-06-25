@@ -107,4 +107,3 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     And I follow "Your response"
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='2']" "xpath_element" should exist
-

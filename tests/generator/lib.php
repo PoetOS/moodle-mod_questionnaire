@@ -229,9 +229,8 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $DB;
         $currentrid = 0;
         $_POST['q'.$question->id] = $respval;
-        $responseid = $questionnaire->response_insert($question->survey_id, $section, $currentrid, $userid);
+        $responseid = $questionnaire->response_insert($section, $currentrid, $userid);
         $this->response_commit($questionnaire, $responseid);
-        questionnaire_record_submission($questionnaire, $userid, $responseid);
         return $DB->get_record('questionnaire_response', array('id' => $responseid));
     }
 
@@ -513,8 +512,8 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $record = (array)$record;
 
-        if (!isset($record['survey_id'])) {
-            throw new coding_exception('survey_id must be present in phpunit_util::create_response() $record');
+        if (!isset($record['questionnaireid'])) {
+            throw new coding_exception('questionnaireid must be present in phpunit_util::create_response() $record');
         }
 
         if (!isset($record['userid'])) {
@@ -538,11 +537,6 @@ class mod_questionnaire_generator extends testing_module_generator {
         // Mark response as complete.
         $record['complete'] = 'y';
         $DB->update_record('questionnaire_response', $record);
-
-        // Create attempt record.
-        $attempt = ['qid' => $record['survey_id'], 'userid' => $record['userid'], 'rid' => $record['id'],
-            'timemodified' => time()];
-        $DB->insert_record('questionnaire_attempts', $attempt);
 
         return $record;
     }
@@ -637,7 +631,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
 
         }
-        return $this->create_response(['survey_id' => $questionnaire->sid, 'userid' => $userid], $responses);
+        return $this->create_response(['questionnaireid' => $questionnaire->id, 'userid' => $userid], $responses);
     }
 
     public function create_and_fully_populate($coursecount = 4, $studentcount = 20, $questionnairecount = 2,

@@ -207,28 +207,16 @@ class behat_mod_questionnaire extends behat_base {
      */
     private function add_response_data($qid, $sid) {
         $responses = array(
-            array("id", "survey_id", "submitted", "complete", "grade", "userid"),
-            array("1", $sid, "1419011935", "y", "0", "2"),
-            array("2", $sid, "1449064371", "y", "0", "2"),
-            array("3", $sid, "1449258520", "y", "0", "2"),
-            array("4", $sid, "1452020444", "y", "0", "2"),
-            array("5", $sid, "1452804783", "y", "0", "2"),
-            array("6", $sid, "1452806547", "y", "0", "2"),
-            array("7", $sid, "1465415731", "n", "0", "2")
+            array("id", "questionnaireid", "submitted", "complete", "grade", "userid"),
+            array("1", $qid, "1419011935", "y", "0", "2"),
+            array("2", $qid, "1449064371", "y", "0", "2"),
+            array("3", $qid, "1449258520", "y", "0", "2"),
+            array("4", $qid, "1452020444", "y", "0", "2"),
+            array("5", $qid, "1452804783", "y", "0", "2"),
+            array("6", $qid, "1452806547", "y", "0", "2"),
+            array("7", $qid, "1465415731", "n", "0", "2")
         );
-
         $this->add_data($responses, 'questionnaire_response', 'responsemap');
-
-        $attempts = array(
-            array("id", "qid", "userid", "rid", "timemodified"),
-            array("", $qid, "2", "1", "1419011935"),
-            array("", $qid, "2", "2", "1449064371"),
-            array("", $qid, "2", "3", "1449258520"),
-            array("", $qid, "2", "4", "1452020444"),
-            array("", $qid, "2", "5", "1452804783"),
-            array("", $qid, "2", "6", "1452806547")
-        );
-        $this->add_data($attempts, 'questionnaire_attempts', '', array('responsemap' => 'rid'));
 
         $responsebool = array(
             array("id", "response_id", "question_id", "choice_id"),

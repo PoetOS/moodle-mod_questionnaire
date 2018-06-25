@@ -712,6 +712,50 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2017111103, 'questionnaire');
     }
 
+    // Get rid of questionnaire_attempts table and migrate necessary data to the questionnaire_response table
+    if ($oldversion < 2018050102) {
+        $table = new xmldb_table('questionnaire_response');
+        $field1 = new xmldb_field('questionnaireid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $field2 = new xmldb_field('survey_id');
+
+        // Create the new questionnaireid field, if it doesn't already exist (it shouldn't).
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+
+        // Get all of the attempts records, and add the questionnaire id to the corresponding response record.
+        $rs = $DB->get_recordset('questionnaire_attempts');
+        foreach ($rs as $attempt) {
+            $DB->set_field('questionnaire_response', 'questionnaireid', $attempt->qid, ['id' => $attempt->rid]);
+        }
+        $rs->close();
+
+        // Get all of the response records with a '0' questionnaireid, and extract the questionnaireid from the survey_id field.
+        $rs = $DB->get_recordset('questionnaire_response', ['questionnaireid' => 0]);
+        foreach ($rs as $response) {
+            if ($questionnaire = $DB->get_record('questionnaire', ['sid' => $response->survey_id], 'id,sid', IGNORE_MULTIPLE)) {
+                $DB->set_field('questionnaire_response', 'questionnaireid', $questionnaire->id, ['id' => $response->id]);
+            }
+        }
+        $rs->close();
+
+        // Remove the survey_id field from the response table. It is now redundant.
+        if ($dbman->field_exists($table, $field2)) {
+            $dbman->drop_field($table, $field2);
+        }
+
+        // Add an index for the new questionnaireid field.
+        $index = new xmldb_index('questionnaireidx');
+        $index->set_attributes(XMLDB_INDEX_NOTUNIQUE, ['questionnaireid']);
+        $dbman->add_index($table, $index);
+
+        // Now drop the unnecessary attempts table.
+        $table = new xmldb_table('questionnaire_attempts');
+        $dbman->drop_table($table);
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2018050102, 'questionnaire');
+    }
     return $result;
 }
 

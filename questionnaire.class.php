@@ -231,7 +231,7 @@ class questionnaire {
             if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
                 $this->response_delete($viewform->rid, $viewform->sec);
-                $this->rid = $this->response_insert($this->survey->id, $viewform->sec, $viewform->rid, $quser);
+                $this->rid = $this->response_insert($viewform->sec, $viewform->rid, $quser);
                 $this->response_commit($this->rid);
 
                 // If it was a previous save, rid is in the form...
@@ -242,8 +242,6 @@ class questionnaire {
                 } else {
                     $rid = $this->rid;
                 }
-
-                questionnaire_record_submission($this, $USER->id, $rid);
 
                 if ($this->grade != 0) {
                     $questionnaire = new stdClass();
@@ -406,14 +404,14 @@ class questionnaire {
         global $DB;
 
         return $DB->record_exists('questionnaire_response',
-            ['survey_id' => $this->survey->id, 'userid' => $userid, 'complete' => 'n']);
+            ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n']);
     }
 
     public function user_time_for_new_attempt($userid) {
         global $DB;
 
-        $params = array('qid' => $this->id, 'userid' => $userid);
-        if (!($attempts = $DB->get_records('questionnaire_attempts', $params, 'timemodified DESC'))) {
+        $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'y'];
+        if (!($attempts = $DB->get_records('questionnaire_response', $params, 'timemodified DESC'))) {
             return true;
         }
 
@@ -481,7 +479,7 @@ class questionnaire {
             }
 
             // If the response belongs to a different survey than this one, can't view it.
-            if ($response->survey_id != $this->survey->id) {
+            if ($response->questionnaireid != $this->id) {
                 return false;
             }
 
@@ -574,9 +572,9 @@ class questionnaire {
 
         if (!$userid) {
             // Provide for groups setting.
-            return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'complete' => 'y'));
+            return $DB->count_records('questionnaire_response', array('questionnaireid' => $this->id, 'complete' => 'y'));
         } else {
-            return $DB->count_records('questionnaire_response', array('survey_id' => $this->sid, 'userid' => $userid,
+            return $DB->count_records('questionnaire_response', array('questionnaireid' => $this->id, 'userid' => $userid,
                                       'complete' => 'y'));
         }
     }
@@ -815,7 +813,7 @@ class questionnaire {
 
         if (!empty($formdata->resume) && ($this->resume)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser, $resume = true);
+            $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser, true);
             $this->response_goto_saved($action);
             return;
         }
@@ -827,7 +825,7 @@ class questionnaire {
                 $formdata->next = '';
             } else {
                 $this->response_delete($formdata->rid, $formdata->sec);
-                $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
+                $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser);
                 // Skip logic.
                 $formdata->sec++;
                 if ($this->has_dependencies()) {
@@ -858,7 +856,7 @@ class questionnaire {
                 $formdata->prev = '';
             } else {
                 $this->response_delete($formdata->rid, $formdata->sec);
-                $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
+                $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser);
                 $formdata->sec--;
                 // Skip logic.
                 if ($this->has_dependencies()) {
@@ -1018,10 +1016,12 @@ class questionnaire {
             if ($this->survey->realm == 'public') {
                 // For a public questionnaire, look for the course that used it.
                 $coursename = '';
-                $sql = 'SELECT q.id, q.course, c.fullname '.
-                       'FROM {questionnaire} q, {questionnaire_attempts} qa, {course} c '.
-                       'WHERE qa.rid = ? AND q.id = qa.qid AND c.id = q.course';
-                if ($record = $DB->get_record_sql($sql, array($rid))) {
+                $sql = 'SELECT q.id, q.course, c.fullname ' .
+                       'FROM {questionnaire_response} qr ' .
+                       'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
+                       'INNER JOIN {course} c ON q.course = c.id ' .
+                       'WHERE qr.id = ? AND qr.complete = ? ';
+                if ($record = $DB->get_record_sql($sql, [$rid, 'y'])) {
                     $coursename = $record->fullname;
                 }
                 $respinfo .= ' '.get_string('course'). ': '.$coursename;
@@ -1523,14 +1523,13 @@ class questionnaire {
         if ($rid != 0) {
             // Check for valid rid.
             $fields = 'id, userid';
-            $select = 'id = '.$rid.' AND survey_id = '.$this->sid.' AND userid = '.$userid.' AND complete = \'n\'';
-            return ($DB->get_record_select('questionnaire_response', $select, null, $fields) !== false) ? $rid : '';
+            $params = ['id' => $rid, 'questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
+            return ($DB->get_record('questionnaire_response', $params, $fields) !== false) ? $rid : '';
 
         } else {
             // Find latest in progress rid.
-            $select = 'survey_id = '.$this->sid.' AND complete = \'n\' AND userid = '.$userid;
-            if ($records = $DB->get_records_select('questionnaire_response', $select, null, 'submitted DESC',
-                                              'id,survey_id', 0, 1)) {
+            $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
+            if ($records = $DB->get_records('questionnaire_response', $params, 'submitted DESC', 'id,questionnaireid', 0, 1)) {
                 $rec = reset($records);
                 return $rec->id;
             } else {
@@ -1949,7 +1948,7 @@ class questionnaire {
         return $return;
     }
 
-    public function response_insert($sid, $section, $rid, $userid, $resume=false) {
+    public function response_insert($section, $rid, $userid, $resume=false) {
         global $DB;
 
         $record = new stdClass();
@@ -1957,7 +1956,7 @@ class questionnaire {
 
         if (empty($rid)) {
             // Create a uniqe id for this response.
-            $record->survey_id = $sid;
+            $record->questionnaireid = $this->id;
             $record->userid = $userid;
             $rid = $DB->insert_record('questionnaire_response', $record);
         } else {
@@ -2132,16 +2131,16 @@ class questionnaire {
             'FROM {questionnaire_response} R,
                   {user} U
                 '.$groupmembers.
-            'WHERE R.survey_id=' . $this->survey->id . ' AND complete = \'y\' AND U.id = R.userid ' . $selectgroupid .
+            'WHERE R.questionnaireid= :questionnaireid AND complete = :complete AND U.id = R.userid ' . $selectgroupid .
             'ORDER BY U.lastname, U.firstname, R.submitted DESC';
         } else {
             $sql = 'SELECT R.id AS responseid, R.submitted
                    FROM {questionnaire_response} R
-                   WHERE R.survey_id = ?
-                   AND complete = ?
+                   WHERE R.questionnaireid = :questionnaireid
+                   AND complete = :complete
                    ORDER BY R.submitted DESC';
         }
-        if (!$responses = $DB->get_records_sql ($sql, array('survey_id' => $this->survey->id, 'complete' => 'y'))) {
+        if (!$responses = $DB->get_records_sql ($sql, array('questionnaireid' => $this->id, 'complete' => 'y'))) {
             return;
         }
         $total = count($responses);
@@ -2423,24 +2422,24 @@ class questionnaire {
         } else {
             $navbar = false;
             if ($uid !== false) { // One participant only.
-                $sql = "SELECT r.id, r.survey_id
+                $sql = "SELECT r.id, r.questionnaireid
                           FROM {questionnaire_response} r
-                         WHERE r.survey_id='{$this->survey->id}' AND
+                         WHERE r.questionnaireid='{$this->id}' AND
                                r.userid = $uid AND
                                r.complete='y'
                          ORDER BY r.id";
                 // All participants or all members of a group.
             } else if ($currentgroupid == 0) {
-                $sql = "SELECT r.id, r.survey_id, r.userid as userid
+                $sql = "SELECT r.id, r.questionnaireid, r.userid as userid
                           FROM {questionnaire_response} r
-                         WHERE r.survey_id='{$this->survey->id}' AND
+                         WHERE r.questionnaireid='{$this->id}' AND
                                r.complete='y'
                          ORDER BY r.id";
             } else { // Members of a specific group.
-                $sql = "SELECT r.id, r.survey_id
+                $sql = "SELECT r.id, r.questionnaireid
                           FROM {questionnaire_response} r,
                                 {groups_members} gm
-                         WHERE r.survey_id='{$this->survey->id}' AND
+                         WHERE r.questionnaireid='{$this->id}' AND
                                r.complete='y' AND
                                gm.groupid=".$currentgroupid." AND
                                r.userid=gm.userid
@@ -2588,7 +2587,7 @@ class questionnaire {
                 continue;
             }
             $allresponsessql .= $allresponsessql == '' ? '' : ' UNION ALL ';
-            list ($sql, $params) = $question->response->get_bulk_sql($this->survey->id, $rid, $userid, $groupid);
+            list ($sql, $params) = $question->response->get_bulk_sql($this->id, $rid, $userid, $groupid);
             $allresponsesparams = array_merge($allresponsesparams, $params);
             $allresponsessql .= $sql;
         }
@@ -2643,10 +2642,12 @@ class questionnaire {
             $coursename = $this->course->fullname;
         } else {
             // For a public questionnaire, look for the course that used it.
-            $sql = 'SELECT q.id, q.course, c.fullname '.
-                'FROM {questionnaire} q, {questionnaire_attempts} qa, {course} c '.
-                'WHERE qa.rid = ? AND q.id = qa.qid AND c.id = q.course';
-            if ($record = $DB->get_record_sql($sql, [$resprow->rid])) {
+            $sql = 'SELECT q.id, q.course, c.fullname ' .
+                   'FROM {questionnaire_response} qr ' .
+                   'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
+                   'INNER JOIN {course} c ON q.course = c.id ' .
+                   'WHERE qr.id = ? AND qr.complete = ? ';
+            if ($record = $DB->get_record_sql($sql, [$resprow->rid, 'y'])) {
                 $courseid = $record->course;
                 $coursename = $record->fullname;
             } else {

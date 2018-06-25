@@ -101,7 +101,7 @@ if (!$fullname) {
     if ($resume) {
         $countstarted = 0;
         $countnotstarted = 0;
-        $params = ['survey_id' => $sid, 'complete' => 'n'];
+        $params = ['questionnaireid' => $questionnaire->id, 'complete' => 'n'];
         if ($startedusers = $DB->get_records('questionnaire_response', $params, '', 'userid')) {
             $startedusers = array_keys($startedusers);
             $countstarted = count($startedusers);
@@ -353,7 +353,7 @@ if (!$nonrespondents) {
                 // we use the alt attribute of the checkboxes to store the started/not started value!
                 $checkboxaltvalue = '';
                 if ($resume) {
-                    if ($DB->record_exists('questionnaire_response', ['survey_id' => $sid,
+                    if ($DB->record_exists('questionnaire_response', ['questionnaireid' => $questionnaire->id,
                             'userid' => $nonrespondent, 'complete' => 'n']) ) {
                         $data[] = get_string('started', 'questionnaire');
                         $checkboxaltvalue = 1;

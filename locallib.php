@@ -269,7 +269,7 @@ function questionnaire_get_js_module() {
 /**
  * Get all the questionnaire responses for a user
  */
-function questionnaire_get_user_responses($surveyid, $userid, $complete=true) {
+function questionnaire_get_user_responses($questionnaireid, $userid, $complete=true) {
     global $DB;
     $andcomplete = '';
     if ($complete) {
@@ -277,10 +277,10 @@ function questionnaire_get_user_responses($surveyid, $userid, $complete=true) {
     }
     return $DB->get_records_sql ("SELECT *
         FROM {questionnaire_response}
-        WHERE survey_id = ?
+        WHERE questionnaireid = ?
         AND userid = ?
         ".$andcomplete."
-        ORDER BY submitted ASC ", array($surveyid, $userid));
+        ORDER BY submitted ASC ", array($questionnaireid, $userid));
 }
 
 /**
@@ -356,29 +356,18 @@ function questionnaire_cleanup() {
     return true;
 }
 
-function questionnaire_record_submission(&$questionnaire, $userid, $rid=0) {
-    global $DB;
-
-    $attempt['qid'] = $questionnaire->id;
-    $attempt['userid'] = $userid;
-    $attempt['rid'] = $rid;
-    $attempt['timemodified'] = time();
-    return $DB->insert_record("questionnaire_attempts", (object)$attempt, false);
-}
-
 function questionnaire_delete_survey($sid, $questionnaireid) {
     global $DB;
     $status = true;
     // Delete all survey attempts and responses.
-    if ($responses = $DB->get_records('questionnaire_response', array('survey_id' => $sid), 'id')) {
+    if ($responses = $DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaireid], 'id')) {
         foreach ($responses as $response) {
             $status = $status && questionnaire_delete_response($response);
         }
     }
 
     // There really shouldn't be any more, but just to make sure...
-    $DB->delete_records('questionnaire_response', array('survey_id' => $sid));
-    $DB->delete_records('questionnaire_attempts', array('qid' => $questionnaireid));
+    $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaireid]);
 
     // Delete all question data for the survey.
     if ($questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid), 'id')) {
@@ -424,7 +413,6 @@ function questionnaire_delete_response($response, $questionnaire='') {
     $DB->delete_records('questionnaire_response_text', array('response_id' => $rid));
 
     $status = $status && $DB->delete_records('questionnaire_response', array('id' => $rid));
-    $status = $status && $DB->delete_records('questionnaire_attempts', array('rid' => $rid));
 
     if ($status && $cm) {
         // Update completion state if necessary.
@@ -666,9 +654,9 @@ function questionnaire_get_incomplete_users($cm, $sid,
     $allusers = array_keys($allusers);
 
     // Nnow get all completed questionnaires.
-    $params = array('survey_id' => $sid, 'complete' => 'y');
+    $params = array('questionnaireid' => $cm->instance, 'complete' => 'y');
     $sql = "SELECT userid FROM {questionnaire_response} " .
-           "WHERE survey_id = :survey_id AND complete = :complete " .
+           "WHERE questionnaireid = :questionnaireid AND complete = :complete " .
            "GROUP BY userid ";
 
     if (!$completedusers = $DB->get_records_sql($sql, $params)) {

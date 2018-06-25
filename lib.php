@@ -237,7 +237,7 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $result = new stdClass();
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, true)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->id, $user->id, true)) {
         $n = count($responses);
         if ($n == 1) {
             $result->info = $n.' '.get_string("response", "questionnaire");
@@ -263,7 +263,7 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, false)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->id, $user->id, false)) {
         foreach ($responses as $response) {
             if ($response->complete == 'y') {
                 echo get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
@@ -317,9 +317,9 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
         $params[] = $userid;
     }
 
-    $sql = "SELECT a.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
-            FROM {user} u, {questionnaire_attempts} a, {questionnaire_response} r
-            WHERE u.id = a.userid AND a.qid = $questionnaire->id AND r.id = a.rid $usersql";
+    $sql = "SELECT r.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
+            FROM {user} u, {questionnaire_response} r
+            WHERE u.id = r.userid AND r.questionnaireid = $questionnaire->id AND r.complete = 'y' $usersql";
     return $DB->get_records_sql($sql, $params);
 }
 
@@ -799,7 +799,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     }
 
     $params['timestart'] = $timestart;
-    $params['questionnaireid'] = $questionnaire->sid;
+    $params['questionnaireid'] = $questionnaire->id;
 
     $ufields = user_picture::fields('u', null, 'useridagain');
     if (!$attempts = $DB->get_records_sql("
@@ -809,7 +809,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
                     JOIN {user} u ON u.id = qr.userid
                     $groupjoin
                     WHERE qr.submitted > :timestart
-                    AND qr.survey_id = :questionnaireid
+                    AND qr.questionnaireid = :questionnaireid
                     $userselect
                     $groupselect
                     ORDER BY qr.submitted ASC", $params)) {
@@ -1023,8 +1023,8 @@ function questionnaire_print_overview($courses, &$htmlarray) {
 
             // Deadline.
             $str .= $OUTPUT->box(get_string('closeson', 'questionnaire', userdate($questionnaire->closedate)), 'info');
-            $select = 'qid = '.$questionnaire->id.' AND userid = '.$USER->id;
-            $attempts = $DB->get_records_select('questionnaire_attempts', $select);
+            $attempts = $DB->get_records('questionnaire_response',
+                ['questionnaireid' => $questionnaire->id, 'userid' => $USER->id, 'complete' => 'y']);
             $nbattempts = count($attempts);
 
             // Do not display a questionnaire as due if it can only be sumbitted once and it has already been submitted!
@@ -1035,10 +1035,11 @@ function questionnaire_print_overview($courses, &$htmlarray) {
             // Attempt information.
             if (has_capability('mod/questionnaire:manage', context_module::instance($questionnaire->coursemodule))) {
                 // Number of user attempts.
-                $attempts = $DB->count_records('questionnaire_attempts', array('id' => $questionnaire->id));
+                $attempts = $DB->count_records('questionnaire_response',
+                    ['questionnaireid' => $questionnaire->id, 'complete' => 'y']);
                 $str .= $OUTPUT->box(get_string('numattemptsmade', 'questionnaire', $attempts), 'info');
             } else {
-                if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, false)) {
+                if ($responses = questionnaire_get_user_responses($questionnaire->id, $USER->id, false)) {
                     foreach ($responses as $response) {
                         if ($response->complete == 'y') {
                             $str .= $OUTPUT->box($strattempted, 'info');
@@ -1109,11 +1110,12 @@ function questionnaire_reset_userdata($data) {
         // Delete responses.
         foreach ($surveys as $survey) {
             // Get all responses for this questionnaire.
-            $sql = "SELECT R.id, R.survey_id, R.submitted, R.userid
-                 FROM {questionnaire_response} R
-                 WHERE R.survey_id = ?
-                 ORDER BY R.id";
-            $resps = $DB->get_records_sql($sql, array($survey->id));
+            $sql = "SELECT qr.id, qr.questionnaireid, qr.submitted, qr.userid, q.sid
+                 FROM {questionnaire} q
+                 INNER JOIN {questionnaire_response} qr ON q.id = qr.questionnaireid
+                 WHERE q.sid = ?
+                 ORDER BY qr.id";
+            $resps = $DB->get_records_sql($sql, [$survey->id]);
             if (!empty($resps)) {
                 $questionnaire = $DB->get_record("questionnaire", ["sid" => $survey->id, "course" => $survey->courseid]);
                 $questionnaire->course = $DB->get_record("course", array("id" => $questionnaire->course));
@@ -1165,8 +1167,8 @@ function questionnaire_get_completion_state($course, $cm, $userid, $type) {
 
     // If completion option is enabled, evaluate it and return true/false.
     if ($questionnaire->completionsubmit) {
-        $params = array('userid' => $userid, 'qid' => $questionnaire->id);
-        return $DB->record_exists('questionnaire_attempts', $params);
+        $params = ['userid' => $userid, 'questionnaireid' => $questionnaire->id, 'complete' => 'y'];
+        return $DB->record_exists('questionnaire_response', $params);
     } else {
         // Completion option is not enabled so just return $type.
         return $type;

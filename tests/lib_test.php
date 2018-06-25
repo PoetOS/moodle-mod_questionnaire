@@ -175,8 +175,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->assertEmpty($DB->get_record('questionnaire', array('id' => $questionnaire->id)));
         $this->assertEmpty($DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid)));
         $this->assertEmpty($DB->get_records('questionnaire_question', array('survey_id' => $survey->id)));
-        $this->assertEmpty($DB->get_records('questionnaire_response', array('survey_id' => $survey->id)));
-        $this->assertEmpty($DB->get_records('questionnaire_attempts', array('qid' => $questionnaire->id)));
+        $this->assertEmpty($DB->get_records('questionnaire_response', array('questionnaireid' => $questionnaire->id)));
         $this->assertEmpty($DB->get_records('questionnaire_response_bool', array('response_id' => $response->id)));
         $this->assertEmpty($DB->get_records('event', array("modulename" => 'questionnaire', "instance" => $questionnaire->id)));
     }

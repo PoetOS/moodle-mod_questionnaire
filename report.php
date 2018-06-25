@@ -114,8 +114,8 @@ $SESSION->questionnaire->current_tab = 'allreport';
 
 // Get all responses for further use in viewbyresp and deleteall etc.
 // All participants.
-$params = array('survey_id' => $sid, 'complete' => 'y');
-$respsallparticipants = $DB->get_records('questionnaire_response', $params, 'id', 'id,survey_id,submitted,userid');
+$params = array('questionnaireid' => $questionnaire->id, 'complete' => 'y');
+$respsallparticipants = $DB->get_records('questionnaire_response', $params, 'id', 'id,questionnaireid,submitted,userid');
 $SESSION->questionnaire->numrespsallparticipants = count ($respsallparticipants);
 $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
 
@@ -248,7 +248,7 @@ switch ($action) {
     case 'delallresp': // Delete all responses? Ask for confirmation.
         require_capability('mod/questionnaire:deleteresponses', $context);
 
-        if ($DB->count_records('questionnaire_response', array('survey_id' => $sid, 'complete' => 'y'))) {
+        if ($DB->count_records('questionnaire_response', array('questionnaireid' => $questionnaire->id, 'complete' => 'y'))) {
 
             // Print the page header.
             $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
@@ -296,7 +296,7 @@ switch ($action) {
         }
 
         if (questionnaire_delete_response($response, $questionnaire)) {
-            if (!$DB->count_records('questionnaire_response', array('survey_id' => $sid, 'complete' => 'y'))) {
+            if (!$DB->count_records('questionnaire_response', array('questionnaireid' => $questionnaire->id, 'complete' => 'y'))) {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
             } else {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='.
@@ -347,14 +347,14 @@ switch ($action) {
                     $resps = $respsallparticipants;
                     break;
                 default:     // Members of a specific group.
-                    $sql = "SELECT r.id, r.survey_id, r.submitted, r.userid
+                    $sql = "SELECT r.id, r.questionnaireid, r.submitted, r.userid
                         FROM {questionnaire_response} r,
                             {groups_members} gm
-                         WHERE r.survey_id = ? AND
+                         WHERE r.questionnaireid = ? AND
                            r.complete ='y' AND
                            gm.groupid = ? AND r.userid = gm.userid
                         ORDER BY r.id";
-                    if (!($resps = $DB->get_records_sql($sql, array($sid, $currentgroupid)))) {
+                    if (!($resps = $DB->get_records_sql($sql, array($questionnaire->id, $currentgroupid)))) {
                         $resps = array();
                     }
             }
@@ -385,7 +385,7 @@ switch ($action) {
             foreach ($resps as $response) {
                 questionnaire_delete_response($response, $questionnaire);
             }
-            if (!$DB->count_records('questionnaire_response', array('survey_id' => $sid, 'complete' => 'y'))) {
+            if (!$DB->count_records('questionnaire_response', array('questionnaireid' => $questionnaire->id, 'complete' => 'y'))) {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
             } else {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vall&amp;sid='.$sid.'&amp;instance='.$instance;
@@ -539,8 +539,8 @@ switch ($action) {
                 $sql = 'SELECT COUNT(r.id) ' .
                        'FROM {questionnaire_response} r ' .
                        'INNER JOIN {groups_members} gm ON r.userid = gm.userid ' .
-                       'WHERE r.survey_id = ? AND r.complete = ? AND gm.groupid = ?';
-                $respscount = $DB->count_records_sql($sql, array($sid, 'y', $group->id));
+                       'WHERE r.questionnaireid = ? AND r.complete = ? AND gm.groupid = ?';
+                $respscount = $DB->count_records_sql($sql, array($questionnaire->id, 'y', $group->id));
                 $thisgroupname = groups_get_group_name($group->id);
                 $escapedgroupname = preg_quote($thisgroupname, '/');
                 if (!empty ($respscount)) {
@@ -572,8 +572,8 @@ switch ($action) {
                     $sql = 'SELECT r.id, gm.id as groupid ' .
                            'FROM {questionnaire_response} r ' .
                            'INNER JOIN {groups_members} gm ON r.userid = gm.userid ' .
-                           'WHERE r.survey_id = ? AND r.complete = ? AND gm.groupid = ?';
-                    if (!($resps = $DB->get_records_sql($sql, array($sid, 'y', $currentgroupid)))) {
+                           'WHERE r.questionnaireid = ? AND r.complete = ? AND gm.groupid = ?';
+                    if (!($resps = $DB->get_records_sql($sql, array($questionnaire->id, 'y', $currentgroupid)))) {
                         $resps = '';
                     }
             }
@@ -662,12 +662,12 @@ switch ($action) {
                         $resps = $respsallparticipants;
                         break;
                     default:     // Members of a specific group.
-                        $sql = 'SELECT r.id, r.survey_id, r.submitted, r.userid ' .
+                        $sql = 'SELECT r.id, r.questionnaireid, r.submitted, r.userid ' .
                                'FROM {questionnaire_response} r ' .
                                'INNER JOIN {groups_members} gm ON r.userid = gm.userid ' .
-                               'WHERE r.survey_id = ? AND r.complete = ? AND gm.groupid = ? ' .
+                               'WHERE r.questionnaireid = ? AND r.complete = ? AND gm.groupid = ? ' .
                                'ORDER BY r.id';
-                        $resps = $DB->get_records_sql($sql, [$sid, 'y', $currentgroupid]);
+                        $resps = $DB->get_records_sql($sql, [$questionnaire->id, 'y', $currentgroupid]);
                 }
                 if (empty($resps)) {
                     $noresponses = true;

@@ -235,15 +235,15 @@ class single extends base {
     /**
      * Return sql and params for getting responses in bulk.
      * @author Guy Thomas
-     * @param int $surveyid
+     * @param int $questionnaireid
      * @param bool|int $responseid
      * @param bool|int $userid
      * @return array
      */
-    public function get_bulk_sql($surveyid, $responseid = false, $userid = false, $groupid = false) {
+    public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false) {
         global $DB;
 
-        $sql = $this->bulk_sql($surveyid, $responseid, $userid);
+        $sql = $this->bulk_sql($questionnaireid, $responseid, $userid);
         $params = [];
         if (($groupid !== false) && ($groupid > 0)) {
             $groupsql = ' INNER JOIN {groups_members} gm ON gm.groupid = ? AND gm.userid = qr.userid ';
@@ -253,12 +253,12 @@ class single extends base {
             $gparams = [];
         }
         $sql .= "
-            AND qr.survey_id = ? AND qr.complete = ?
+            AND qr.questionnaireid = ? AND qr.complete = ?
       LEFT JOIN {questionnaire_response_other} qro ON qro.response_id = qr.id AND qro.choice_id = qrs.choice_id
       LEFT JOIN {user} u ON u.id = qr.userid
       $groupsql
         ";
-        $params = array_merge([$surveyid, 'y'], $gparams);
+        $params = array_merge([$questionnaireid, 'y'], $gparams);
         if ($responseid) {
             $sql .= " WHERE qr.id = ?";
             $params[] = $responseid;
