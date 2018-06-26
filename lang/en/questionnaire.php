@@ -227,6 +227,7 @@ $string['horizontal'] = 'Horizontal';
 $string['id'] = 'ID';
 $string['includechoicecodes'] = 'Include choice codes';
 $string['includechoicetext'] = 'Include choice text';
+$string['includeincomplete'] = "Include incomplete responses";
 $string['incorrectcourseid'] = 'Course ID is incorrect';
 $string['incorrectmodule'] = 'Course Module ID was incorrect';
 $string['incorrectquestionnaire'] = 'Questionnaire is incorrect';

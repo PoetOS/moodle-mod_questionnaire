@@ -243,9 +243,7 @@ abstract class base {
      * @param bool|int $groupid
      * @return array
      */
-    public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false) {
-        global $DB;
-
+    public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false, $showincompletes = 0) {
         $sql = $this->bulk_sql($questionnaireid, $responseid, $userid);
         $params = [];
         if (($groupid !== false) && ($groupid > 0)) {
@@ -255,12 +253,22 @@ abstract class base {
             $groupsql = '';
             $gparams = [];
         }
+
+        if ($showincompletes == 1) {
+            $showcompleteonly = '';
+            $params = [$questionnaireid];
+        } else {
+            $showcompleteonly = 'AND qr.complete = ? ';
+            $params = [$questionnaireid, 'y'];
+        }
+
         $sql .= "
-            AND qr.questionnaireid = ? AND qr.complete = ?
+            AND qr.questionnaireid = ? $showcompleteonly
       LEFT JOIN {user} u ON u.id = qr.userid
       $groupsql
         ";
-        $params = array_merge([$questionnaireid, 'y'], $gparams);
+        $params = array_merge($params, $gparams);
+
         if ($responseid) {
             $sql .= " WHERE qr.id = ?";
             $params[] = $responseid;
