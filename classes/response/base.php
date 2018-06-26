@@ -116,7 +116,7 @@ abstract class base {
                     $answer = $row->response;
                     $ccontent = $row->content;
                     $content = preg_replace(array('/^!other=/', '/^!other/'),
-                            array('', get_string('other', 'questionnaire')), $ccontent);
+                        array('', get_string('other', 'questionnaire')), $ccontent);
                     $content .= ' ' . clean_text($answer);
                     $textidx = $content;
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
@@ -176,7 +176,7 @@ abstract class base {
      * @param bool|int $groupid
      * @return array
      */
-    public function get_bulk_sql($surveyid, $responseid = false, $userid = false, $groupid = false) {
+    public function get_bulk_sql($surveyid, $responseid = false, $userid = false, $groupid = false, $showIncompletes = 0) {
         global $DB;
 
         $sql = $this->bulk_sql($surveyid, $responseid, $userid);
@@ -188,12 +188,21 @@ abstract class base {
             $groupsql = '';
             $gparams = [];
         }
-        $sql .= "
-            AND qr.survey_id = ? AND qr.complete = ?
-      LEFT JOIN {user} u ON u.id = qr.userid
-      $groupsql
-        ";
-        $params = array_merge([$surveyid, 'y'], $gparams);
+        if($showIncompletes == 1) {
+            $sql .= "
+                AND qr.survey_id = ? 
+          LEFT JOIN {user} u ON u.id = qr.userid
+          $groupsql
+            ";
+            $params = array_merge([$surveyid], $gparams);
+        } else{
+            $sql .= "
+                AND qr.survey_id = ? AND qr.complete = ?
+          LEFT JOIN {user} u ON u.id = qr.userid
+          $groupsql
+            ";
+            $params = array_merge([$surveyid, 'y'], $gparams);
+        }
         if ($responseid) {
             $sql .= " WHERE qr.id = ?";
             $params[] = $responseid;
