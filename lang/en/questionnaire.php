@@ -129,7 +129,7 @@ $string['didnotrespondtoquestion'] = 'Did not respond to question';
 $string['directwarnings'] = 'Direct dependencies to this question will be removed. This will affect:';
 $string['displaymethod'] = 'Display method not defined for question.';
 $string['download'] = 'Download';
-$string['downloadtextformat'] = 'Download in text format';
+$string['downloadtextformat'] = 'Download as CSV';
 $string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a text file (CSV).
  This file can then be imported into a spreadsheet (e.g. MS Excel or Open Office Calc) or a statistical package for further processing the data.';
 $string['downloadtextformat_link'] = 'mod/questionnaire/report#Download_in_text_format';
@@ -572,7 +572,7 @@ $string['textarearows'] = 'Textarea rows';
 $string['textbox'] = 'Text Box';
 $string['textbox_help'] = 'For the Text Box question type, enter the Input Box length and the Maximum text length of text to be entered by respondent.
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
-$string['textdownloadoptions'] = 'Options for text download (CSV)';
+$string['textdownloadoptions'] = 'Options for CSV download';
 $string['thank_head'] = 'Thank you for completing this Questionnaire.';
 $string['theme'] = 'Theme';
 $string['thismonth'] = 'this month';

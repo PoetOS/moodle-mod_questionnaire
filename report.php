@@ -441,7 +441,8 @@ switch ($action) {
         $output = '';
         $output .= "<br /><br />\n";
         $output .= $questionnaire->renderer->help_icon('downloadtextformat', 'questionnaire');
-        $output .= '&nbsp;'.(get_string('downloadtext')).':&nbsp;'.get_string('responses', 'questionnaire').'&nbsp;'.$groupname;
+        $output .= '&nbsp;' . (get_string('downloadtextformat', 'questionnaire')) . ':&nbsp;' .
+            get_string('responses', 'questionnaire').'&nbsp;'.$groupname;
         $output .= $questionnaire->renderer->heading(get_string('textdownloadoptions', 'questionnaire'));
         $output .= $questionnaire->renderer->box_start();
         $output .= "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";
@@ -480,6 +481,7 @@ switch ($action) {
 
     case 'dcsv': // Download responses data as text (cvs) format.
         require_capability('mod/questionnaire:downloadresponses', $context);
+        require_once($CFG->libdir.'/dataformatlib.php');
 
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($questionnaire->name, PARAM_FILE);
@@ -490,16 +492,9 @@ switch ($action) {
         $showincompletes  = optional_param('complete', '0', PARAM_INT);
         $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes);
 
-        // CSV
-        // SEP. 2007 JR changed file extension to *.txt for non-English Excel users' sake
-        // and changed separator to tabulation
-        // JAN. 2008 added \r carriage return for better Windows implementation.
-        header("Content-Disposition: attachment; filename=$name.txt");
-        header("Content-Type: text/comma-separated-values");
-        foreach ($output as $row) {
-            $text = implode("\t", $row);
-            echo $text."\r\n";
-        }
+        // Use Moodle's core download function for outputting csv.
+        $rowheaders = array_shift($output);
+        download_as_dataformat($name, 'csv', $rowheaders, $output);
         exit();
         break;
 
