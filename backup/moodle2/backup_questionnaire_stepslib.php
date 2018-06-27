@@ -57,8 +57,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $questchoices = new backup_nested_element('quest_choices');
 
-        $questchoice = new backup_nested_element('quest_choice', array('id'), array(
-            'question_id', 'content', 'value'));
+        $questchoice = new backup_nested_element('quest_choice', array('id'), array('question_id', 'content', 'value'));
 
         $questdependencies = new backup_nested_element('quest_dependencies');
 
@@ -78,17 +77,15 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $responses = new backup_nested_element('responses');
 
         $response = new backup_nested_element('response', array('id'), array(
-            'submitted', 'complete', 'grade', 'userid', 'questionnaireid'));
+            'questionnaireid', 'submitted', 'complete', 'grade', 'userid'));
 
         $responsebools = new backup_nested_element('response_bools');
 
-        $responsebool = new backup_nested_element('response_bool', array('id'), array(
-            'response_id', 'question_id', 'choice_id'));
+        $responsebool = new backup_nested_element('response_bool', array('id'), array('response_id', 'question_id', 'choice_id'));
 
         $responsedates = new backup_nested_element('response_dates');
 
-        $responsedate = new backup_nested_element('response_date', array('id'), array(
-            'response_id', 'question_id', 'response'));
+        $responsedate = new backup_nested_element('response_date', array('id'), array('response_id', 'question_id', 'response'));
 
         $responsemultiples = new backup_nested_element('response_multiples');
 
@@ -112,8 +109,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $responsetexts = new backup_nested_element('response_texts');
 
-        $responsetext = new backup_nested_element('response_text', array('id'), array(
-            'response_id', 'question_id', 'response'));
+        $responsetext = new backup_nested_element('response_text', array('id'), array('response_id', 'question_id', 'response'));
 
         // Build the tree.
         $questionnaire->add_child($surveys);

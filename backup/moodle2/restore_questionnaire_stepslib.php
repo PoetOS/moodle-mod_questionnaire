@@ -68,7 +68,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         if ($userinfo) {
             if ($this->task->get_old_moduleversion() < 2018050102) {
                 // Old system.
-                // Upgrade the legacy attempt data. We don't usee 'attempts' any more; here for documentation.
                 $paths[] = new restore_path_element('questionnaire_attempt', '/activity/questionnaire/attempts/attempt');
                 $paths[] = new restore_path_element('questionnaire_response',
                     '/activity/questionnaire/attempts/attempt/responses/response');
