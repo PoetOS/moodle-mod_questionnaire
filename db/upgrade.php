@@ -715,7 +715,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     // Get rid of questionnaire_attempts table and migrate necessary data to the questionnaire_response table
     if ($oldversion < 2018050102) {
         $table = new xmldb_table('questionnaire_response');
-        $field1 = new xmldb_field('questionnaireid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $field1 = new xmldb_field('questionnaireid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
         $field2 = new xmldb_field('survey_id');
 
         // Create the new questionnaireid field, if it doesn't already exist (it shouldn't).
