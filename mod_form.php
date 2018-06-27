@@ -172,7 +172,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         if (!empty($defaultvalues['respondenttype']) && $defaultvalues['respondenttype'] == "anonymous") {
             // If this questionnaire has responses.
             $numresp = $DB->count_records('questionnaire_response',
-                            array('survey_id' => $defaultvalues['sid'], 'complete' => 'y'));
+                            array('questionnaireid' => $defaultvalues['instance'], 'complete' => 'y'));
             if ($numresp) {
                 $defaultvalues['cannotchangerespondenttype'] = 1;
             }

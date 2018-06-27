@@ -119,9 +119,10 @@ if (!$questionnaire->is_active()) {
                 '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
                 'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>');
         } else {
+            $resumesurvey = get_string('resumesurvey', 'questionnaire');
             $questionnaire->page->add_to_page('complete',
                 '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
-                'id='.$questionnaire->cm->id.'&resume=1').'">'.get_string('resumesurvey', 'questionnaire').'</a>');
+                'id='.$questionnaire->cm->id.'&resume=1').'" title="'.$resumesurvey.'">'.$resumesurvey.'</a>');
         }
     } else {
         $questionnaire->page->add_to_page('message', get_string('noneinuse', 'questionnaire'));

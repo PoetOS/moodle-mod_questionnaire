@@ -53,7 +53,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, 'y', $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $question->survey_id, $response->id, $userid);
+        $this->response_tests($questionnaire->id, $response->id, $userid);
 
         // Retrieve the specific boolean response.
         $booleanresponses = $DB->get_records('questionnaire_response_bool', array('response_id' => $response->id));
@@ -83,7 +83,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, 'This is my essay.', $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $question->survey_id, $response->id, $userid);
+        $this->response_tests($questionnaire->id, $response->id, $userid);
 
         // Retrieve the specific text response.
         $textresponses = $DB->get_records('questionnaire_response_text', array('response_id' => $response->id));
@@ -110,7 +110,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, '27/1/2015', $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $question->survey_id, $response->id, $userid);
+        $this->response_tests($questionnaire->id, $response->id, $userid);
 
         // Retrieve the specific date response.
         $dateresponses = $DB->get_records('questionnaire_response_date', array('response_id' => $response->id));
@@ -150,7 +150,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, $val, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $question->survey_id, $response->id, $userid);
+        $this->response_tests($questionnaire->id, $response->id, $userid);
 
         // Retrieve the specific single response.
         $singresponses = $DB->get_records('questionnaire_resp_single', array('response_id' => $response->id));
@@ -171,7 +171,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, $val, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $question->survey_id, $response->id, $userid, 1, 2);
+        $this->response_tests($questionnaire->id, $response->id, $userid, 1, 2);
 
         // Retrieve the specific single response.
         $singresponses = $DB->get_records('questionnaire_resp_single', array('response_id' => $response->id));
@@ -220,7 +220,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, $val, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $question->survey_id, $response->id, $userid);
+        $this->response_tests($questionnaire->id, $response->id, $userid);
 
         // Retrieve the specific multiples responses.
         $multresponses = $DB->get_records('questionnaire_resp_multiple', array('response_id' => $response->id));
@@ -273,7 +273,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, null, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $question->survey_id, $response->id, $userid);
+        $this->response_tests($questionnaire->id, $response->id, $userid);
 
         // Retrieve the specific rank response.
         $multresponses = $DB->get_records('questionnaire_response_rank', array('response_id' => $response->id));
@@ -305,14 +305,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         return $questionnaire;
     }
 
-    private function response_tests($questionnaireid, $surveyid, $responseid, $userid,
+    private function response_tests($questionnaireid, $responseid, $userid,
                                     $attemptcount = 1, $responsecount = 1) {
         global $DB;
 
-        $attempts = $DB->get_records('questionnaire_attempts',
-                    array('qid' => $questionnaireid, 'userid' => $userid, 'rid' => $responseid));
+        $attempts = $DB->get_records('questionnaire_response',
+                    ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'id' => $responseid, 'complete' => 'y']);
         $this->assertEquals($attemptcount, count($attempts));
-        $responses = $DB->get_records('questionnaire_response', array('survey_id' => $surveyid));
+        $responses = $DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaireid]);
         $this->assertEquals($responsecount, count($responses));
         $this->assertArrayHasKey($responseid, $responses);
         $this->assertEquals($responseid, $responses[$responseid]->id);

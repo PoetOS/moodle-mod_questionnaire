@@ -66,23 +66,44 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
                 '/activity/questionnaire/surveys/survey/questions/question/quest_dependencies/quest_dependency');
 
         if ($userinfo) {
-            $paths[] = new restore_path_element('questionnaire_attempt', '/activity/questionnaire/attempts/attempt');
-            $paths[] = new restore_path_element('questionnaire_response',
-                            '/activity/questionnaire/attempts/attempt/responses/response');
-            $paths[] = new restore_path_element('questionnaire_response_bool',
-                            '/activity/questionnaire/attempts/attempt/responses/response/response_bools/response_bool');
-            $paths[] = new restore_path_element('questionnaire_response_date',
-                            '/activity/questionnaire/attempts/attempt/responses/response/response_dates/response_date');
-            $paths[] = new restore_path_element('questionnaire_response_multiple',
-                            '/activity/questionnaire/attempts/attempt/responses/response/response_multiples/response_multiple');
-            $paths[] = new restore_path_element('questionnaire_response_other',
-                            '/activity/questionnaire/attempts/attempt/responses/response/response_others/response_other');
-            $paths[] = new restore_path_element('questionnaire_response_rank',
-                            '/activity/questionnaire/attempts/attempt/responses/response/response_ranks/response_rank');
-            $paths[] = new restore_path_element('questionnaire_response_single',
-                            '/activity/questionnaire/attempts/attempt/responses/response/response_singles/response_single');
-            $paths[] = new restore_path_element('questionnaire_response_text',
-                            '/activity/questionnaire/attempts/attempt/responses/response/response_texts/response_text');
+            if ($this->task->get_old_moduleversion() < 2018050102) {
+                // Old system.
+                $paths[] = new restore_path_element('questionnaire_attempt', '/activity/questionnaire/attempts/attempt');
+                $paths[] = new restore_path_element('questionnaire_response',
+                    '/activity/questionnaire/attempts/attempt/responses/response');
+                $paths[] = new restore_path_element('questionnaire_response_bool',
+                    '/activity/questionnaire/attempts/attempt/responses/response/response_bools/response_bool');
+                $paths[] = new restore_path_element('questionnaire_response_date',
+                    '/activity/questionnaire/attempts/attempt/responses/response/response_dates/response_date');
+                $paths[] = new restore_path_element('questionnaire_response_multiple',
+                    '/activity/questionnaire/attempts/attempt/responses/response/response_multiples/response_multiple');
+                $paths[] = new restore_path_element('questionnaire_response_other',
+                    '/activity/questionnaire/attempts/attempt/responses/response/response_others/response_other');
+                $paths[] = new restore_path_element('questionnaire_response_rank',
+                    '/activity/questionnaire/attempts/attempt/responses/response/response_ranks/response_rank');
+                $paths[] = new restore_path_element('questionnaire_response_single',
+                    '/activity/questionnaire/attempts/attempt/responses/response/response_singles/response_single');
+                $paths[] = new restore_path_element('questionnaire_response_text',
+                    '/activity/questionnaire/attempts/attempt/responses/response/response_texts/response_text');
+
+            } else {
+                // New system.
+                $paths[] = new restore_path_element('questionnaire_response', '/activity/questionnaire/responses/response');
+                $paths[] = new restore_path_element('questionnaire_response_bool',
+                    '/activity/questionnaire/responses/response/response_bools/response_bool');
+                $paths[] = new restore_path_element('questionnaire_response_date',
+                    '/activity/questionnaire/responses/response/response_dates/response_date');
+                $paths[] = new restore_path_element('questionnaire_response_multiple',
+                    '/activity/questionnaire/responses/response/response_multiples/response_multiple');
+                $paths[] = new restore_path_element('questionnaire_response_other',
+                    '/activity/questionnaire/responses/response/response_others/response_other');
+                $paths[] = new restore_path_element('questionnaire_response_rank',
+                    '/activity/questionnaire/responses/response/response_ranks/response_rank');
+                $paths[] = new restore_path_element('questionnaire_response_single',
+                    '/activity/questionnaire/responses/response/response_singles/response_single');
+                $paths[] = new restore_path_element('questionnaire_response_text',
+                    '/activity/questionnaire/responses/response/response_texts/response_text');
+            }
         }
 
         // Return the paths wrapped into standard activity structure.
@@ -216,16 +237,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
     }
 
     protected function process_questionnaire_attempt($data) {
-        global $DB;
-
-        $data = (object)$data;
-        $oldid = $data->id;
-        $data->qid = $this->get_new_parentid('questionnaire');
-        $data->userid = $this->get_mappingid('user', $data->userid);
-
-        // Insert the questionnaire_attempts record.
-        $newitemid = $DB->insert_record('questionnaire_attempts', $data);
-        $this->set_mapping('questionnaire_attempt', $oldid, $newitemid);
+        // New structure will be completed in process_questionnaire_response. Nothing to do here any more.
+        return true;
     }
 
     protected function process_questionnaire_response($data) {
@@ -239,16 +252,12 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         }
 
         $oldid = $data->id;
-        $data->survey_id = $this->get_mappingid('questionnaire_survey', $data->survey_id);
+        $data->questionnaireid = $this->get_new_parentid('questionnaire');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         // Insert the questionnaire_response record.
         $newitemid = $DB->insert_record('questionnaire_response', $data);
         $this->set_mapping('questionnaire_response', $oldid, $newitemid);
-
-        // Update the questionnaire_attempts record we just created with the new response id.
-        $DB->set_field('questionnaire_attempts', 'rid', $newitemid,
-                        array('id' => $this->get_new_parentid('questionnaire_attempt')));
     }
 
     protected function process_questionnaire_response_bool($data) {

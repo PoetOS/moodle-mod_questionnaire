@@ -127,7 +127,7 @@ foreach ($questionnaires as $questionnaire) {
 
         if ($showing == 'responses') {
             $status = '';
-            if ($responses = questionnaire_get_user_responses($questionnaire->sid, $USER->id, $complete = false)) {
+            if ($responses = questionnaire_get_user_responses($questionnaire->id, $USER->id, $complete = false)) {
                 foreach ($responses as $response) {
                     if ($response->complete == 'y') {
                         $status .= get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
@@ -139,7 +139,7 @@ foreach ($questionnaires as $questionnaire) {
             }
             $data[] = $status;
         } else if ($showing == 'stats') {
-            $data[] = $DB->count_records('questionnaire_response', array('survey_id' => $questionnaire->sid, 'complete' => 'y'));
+            $data[] = $DB->count_records('questionnaire_response', array('questionnaireid' => $questionnaire->id, 'complete' => 'y'));
             if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
                 // For a public questionnaire, look for the original public questionnaire that it is based on.
                 if ($survey->realm == 'public') {

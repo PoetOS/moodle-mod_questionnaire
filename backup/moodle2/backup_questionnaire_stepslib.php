@@ -57,8 +57,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $questchoices = new backup_nested_element('quest_choices');
 
-        $questchoice = new backup_nested_element('quest_choice', array('id'), array(
-            'question_id', 'content', 'value'));
+        $questchoice = new backup_nested_element('quest_choice', array('id'), array('question_id', 'content', 'value'));
 
         $questdependencies = new backup_nested_element('quest_dependencies');
 
@@ -75,25 +74,18 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $feedback = new backup_nested_element('feedback', array('id'), array(
                 'section_id', 'feedbacklabel', 'feedbacktext', 'feedbacktextformat', 'minscore', 'maxscore'));
 
-        $attempts = new backup_nested_element('attempts');
-
-        $attempt = new backup_nested_element('attempt', array('id'), array(
-            'qid', 'userid', 'rid', 'timemodified'));
-
         $responses = new backup_nested_element('responses');
 
         $response = new backup_nested_element('response', array('id'), array(
-            'survey_id', 'submitted', 'complete', 'grade', 'userid'));
+            'questionnaireid', 'submitted', 'complete', 'grade', 'userid'));
 
         $responsebools = new backup_nested_element('response_bools');
 
-        $responsebool = new backup_nested_element('response_bool', array('id'), array(
-            'response_id', 'question_id', 'choice_id'));
+        $responsebool = new backup_nested_element('response_bool', array('id'), array('response_id', 'question_id', 'choice_id'));
 
         $responsedates = new backup_nested_element('response_dates');
 
-        $responsedate = new backup_nested_element('response_date', array('id'), array(
-            'response_id', 'question_id', 'response'));
+        $responsedate = new backup_nested_element('response_date', array('id'), array('response_id', 'question_id', 'response'));
 
         $responsemultiples = new backup_nested_element('response_multiples');
 
@@ -117,8 +109,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $responsetexts = new backup_nested_element('response_texts');
 
-        $responsetext = new backup_nested_element('response_text', array('id'), array(
-            'response_id', 'question_id', 'response'));
+        $responsetext = new backup_nested_element('response_text', array('id'), array('response_id', 'question_id', 'response'));
 
         // Build the tree.
         $questionnaire->add_child($surveys);
@@ -139,10 +130,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $fbsection->add_child($feedbacks);
         $feedbacks->add_child($feedback);
 
-        $questionnaire->add_child($attempts);
-        $attempts->add_child($attempt);
-
-        $attempt->add_child($responses);
+        $questionnaire->add_child($responses);
         $responses->add_child($response);
 
         $response->add_child($responsebools);
@@ -189,8 +177,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
             // All the rest of elements only happen if we are including user info.
             if ($userinfo) {
-                $attempt->set_source_table('questionnaire_attempts', array('qid' => backup::VAR_PARENTID));
-                $response->set_source_table('questionnaire_response', array('id' => '../../rid'));
+                $response->set_source_table('questionnaire_response', array('questionnaireid' => backup::VAR_PARENTID));
                 $responsebool->set_source_table('questionnaire_response_bool', array('response_id' => backup::VAR_PARENTID));
                 $responsedate->set_source_table('questionnaire_response_date', array('response_id' => backup::VAR_PARENTID));
                 $responsemultiple->set_source_table('questionnaire_resp_multiple', array('response_id' => backup::VAR_PARENTID));
@@ -201,7 +188,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             }
 
             // Define id annotations.
-            $attempt->annotate_ids('user', 'userid');
+            $response->annotate_ids('user', 'userid');
         }
         // Define file annotations
         $questionnaire->annotate_files('mod_questionnaire', 'intro', null); // This file area hasn't itemid.

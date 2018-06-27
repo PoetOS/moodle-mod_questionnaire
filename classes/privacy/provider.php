@@ -43,16 +43,9 @@ class provider implements
     public static function get_metadata(\core_privacy\local\metadata\collection $collection): \core_privacy\local\metadata\collection {
 
         // Add all of the relevant tables and fields to the collection.
-        $collection->add_database_table('questionnaire_attempts', [
-            'userid' => 'privacy:metadata:questionnaire_attempts:userid',
-            'rid' => 'privacy:metadata:questionnaire_attempts:rid',
-            'qid' => 'privacy:metadata:questionnaire_attempts:qid',
-            'timemodified' => 'privacy:metadata:questionnaire_attempts:timemodified',
-        ], 'privacy:metadata:questionnaire_attempts');
-
         $collection->add_database_table('questionnaire_response', [
             'userid' => 'privacy:metadata:questionnaire_response:userid',
-            'survey_id' => 'privacy:metadata:questionnaire_response:survey_id',
+            'questionnaireid' => 'privacy:metadata:questionnaire_response:questionnaireid',
             'complete' => 'privacy:metadata:questionnaire_response:complete',
             'grade' => 'privacy:metadata:questionnaire_response:grade',
             'submitted' => 'privacy:metadata:questionnaire_response:submitted',
@@ -119,7 +112,7 @@ class provider implements
            INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
            INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
            INNER JOIN {questionnaire} q ON q.id = cm.instance
-           INNER JOIN {questionnaire_response} qr ON qr.survey_id = q.sid
+           INNER JOIN {questionnaire_response} qr ON qr.questionnaireid = q.id
                 WHERE qr.userid = :attemptuserid
         ";
 
@@ -158,8 +151,7 @@ class provider implements
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
             INNER JOIN {questionnaire} q ON q.id = cm.instance
-            INNER JOIN {questionnaire_response} qr ON qr.survey_id = q.sid
-            LEFT JOIN {questionnaire_attempts} qa ON qa.rid = qr.id
+            INNER JOIN {questionnaire_response} qr ON qr.questionnaireid = q.id
                  WHERE c.id {$contextsql}
                        AND qr.userid = :userid
               ORDER BY cm.id, qr.id ASC";
@@ -226,11 +218,11 @@ class provider implements
             return;
         }
 
-        if ($responses = $DB->get_recordset('questionnaire_response', ['survey_id' => $questionnaire->sid])) {
+        if ($responses = $DB->get_recordset('questionnaire_response', ['questionnaireid' => $questionnaire->id])) {
             self::delete_responses($responses);
         }
         $responses->close();
-        $DB->delete_records('questionnaire_response', ['survey_id' => $questionnaire->sid]);
+        $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaire->id]);
     }
 
     /**
@@ -259,11 +251,11 @@ class provider implements
             }
 
             if ($responses = $DB->get_recordset('questionnaire_response',
-                ['survey_id' => $questionnaire->sid, 'userid' => $userid])) {
+                ['questionnaireid' => $questionnaire->id, 'userid' => $userid])) {
                 self::delete_responses($responses);
             }
             $responses->close();
-            $DB->delete_records('questionnaire_response', ['survey_id' => $questionnaire->sid, 'userid' => $userid]);
+            $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaire->id, 'userid' => $userid]);
         }
     }
 
@@ -283,7 +275,6 @@ class provider implements
             $DB->delete_records('questionnaire_response_rank', ['response_id' => $response->id]);
             $DB->delete_records('questionnaire_resp_single', ['response_id' => $response->id]);
             $DB->delete_records('questionnaire_response_text', ['response_id' => $response->id]);
-            $DB->delete_records('questionnaire_attempts', ['rid' => $response->id]);
         }
     }
 }
