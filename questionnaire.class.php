@@ -411,7 +411,7 @@ class questionnaire {
         global $DB;
 
         $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'y'];
-        if (!($attempts = $DB->get_records('questionnaire_response', $params, 'timemodified DESC'))) {
+        if (!($attempts = $DB->get_records('questionnaire_response', $params, 'submitted DESC'))) {
             return true;
         }
 
@@ -429,27 +429,27 @@ class questionnaire {
                 break;
 
             case QUESTIONNAIREDAILY:
-                $attemptyear = date('Y', $attempt->timemodified);
+                $attemptyear = date('Y', $attempt->submitted);
                 $currentyear = date('Y', $timenow);
-                $attemptdayofyear = date('z', $attempt->timemodified);
+                $attemptdayofyear = date('z', $attempt->submitted);
                 $currentdayofyear = date('z', $timenow);
                 $cantake = (($attemptyear < $currentyear) ||
                             (($attemptyear == $currentyear) && ($attemptdayofyear < $currentdayofyear)));
                 break;
 
             case QUESTIONNAIREWEEKLY:
-                $attemptyear = date('Y', $attempt->timemodified);
+                $attemptyear = date('Y', $attempt->submitted);
                 $currentyear = date('Y', $timenow);
-                $attemptweekofyear = date('W', $attempt->timemodified);
+                $attemptweekofyear = date('W', $attempt->submitted);
                 $currentweekofyear = date('W', $timenow);
                 $cantake = (($attemptyear < $currentyear) ||
                             (($attemptyear == $currentyear) && ($attemptweekofyear < $currentweekofyear)));
                 break;
 
             case QUESTIONNAIREMONTHLY:
-                $attemptyear = date('Y', $attempt->timemodified);
+                $attemptyear = date('Y', $attempt->submitted);
                 $currentyear = date('Y', $timenow);
-                $attemptmonthofyear = date('n', $attempt->timemodified);
+                $attemptmonthofyear = date('n', $attempt->submitted);
                 $currentmonthofyear = date('n', $timenow);
                 $cantake = (($attemptyear < $currentyear) ||
                             (($attemptyear == $currentyear) && ($attemptmonthofyear < $currentmonthofyear)));
