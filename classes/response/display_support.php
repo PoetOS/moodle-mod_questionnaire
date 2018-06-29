@@ -67,14 +67,18 @@ class display_support {
                     arsort($weights);
                     break;
             }
+            // use number of participants ($total) instead of $numresponses
+            /*
             $numresponses = 0;
             foreach ($weights as $key => $value) {
                 $numresponses = $numresponses + $value;
             }
+            */
             reset ($weights);
             while (list($content, $num) = each($weights)) {
                 if ($num > 0) {
-                    $percent = $num / $numresponses * 100.0;
+                    // $percent = $num / $numresponses * 100.0;
+                    $percent = $num / $total * 100.0;
                 } else {
                     $percent = 0;
                 }
