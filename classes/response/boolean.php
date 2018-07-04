@@ -131,7 +131,9 @@ class boolean extends base {
             $prtotal = 0;
         }
 
-         $this->counts = array($this->stryes => 0, $this->strno => 0);
+        $this->counts = [$this->stryes => 0, $this->strno => 0];
+        $numrespondents = count($rids);
+        $numresps = 0;
         if ($rows = $this->get_results($rids, $anonymous)) {
             foreach ($rows as $row) {
                 $this->choice = $row->choice_id;
@@ -142,9 +144,11 @@ class boolean extends base {
                     $this->choice = $this->strno;
                 }
                 $this->counts[$this->choice] = intval($count);
+                $numresps += $this->counts[$this->choice];
             }
-            $output .= \mod_questionnaire\response\display_support::mkrespercent($this->counts, count($rids),
-                $this->question->precise, $prtotal, $sort = '');
+            $noresponsecount = $numrespondents - $numresps;
+            $output .= \mod_questionnaire\response\display_support::mkrespercent($this->counts, $numrespondents,
+                $this->question->precise, $prtotal, '', $noresponsecount);
         } else {
             $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }

@@ -110,6 +110,8 @@ abstract class base {
         } else if (is_int($rids)) {
             $prtotal = 0;
         }
+        $numrespondents = count($rids);
+        $numnoresponses = $numrespondents - count($rows);
         if ($rows) {
             foreach ($rows as $idx => $row) {
                 if (strpos($idx, 'other') === 0) {
@@ -127,8 +129,8 @@ abstract class base {
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            $output .= \mod_questionnaire\response\display_support::mkrespercent($this->counts, count($rids),
-                $this->question->precise, $prtotal, $sort);
+            $output .= \mod_questionnaire\response\display_support::mkrespercent($this->counts, $numrespondents,
+                $this->question->precise, $prtotal, $sort, $numnoresponses);
         } else {
             $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }

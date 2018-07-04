@@ -38,24 +38,25 @@ class display_support {
     /* {{{ proto void mkrespercent(array weights, int total, int precision, bool show_totals)
       Builds HTML showing PERCENTAGE results. */
 
-    public static function mkrespercent($weights, $total, $precision, $showtotals, $sort) {
+    public static function mkrespercent($weights, $total, $precision, $showtotals, $sort = '', $norespcount = 0) {
         global $CFG;
+
         $precision = 0;
         $i = 0;
         $alt = '';
         $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
         $strtotal = get_string('total', 'questionnaire');
         $table = new html_table();
-        $table->size = array();
+        $table->size = [];
 
-        $table->align = array();
-        $table->head = array();
-        $table->wrap = array();
-        $table->size = array_merge($table->size, array('50%', '40%', '10%'));
-        $table->align = array_merge($table->align, array('left', 'left', 'right'));
-        $table->wrap = array_merge($table->wrap, array('', 'nowrap', ''));
-        $table->head = array_merge($table->head, array(get_string('response', 'questionnaire'),
-                       get_string('average', 'questionnaire'), get_string('total', 'questionnaire')));
+        $table->align = [];
+        $table->head = [];
+        $table->wrap = [];
+        $table->size = array_merge($table->size, ['50%', '40%', '10%']);
+        $table->align = array_merge($table->align, ['left', 'left', 'right']);
+        $table->wrap = array_merge($table->wrap, ['', 'nowrap', '']);
+        $table->head = array_merge($table->head, [get_string('response', 'questionnaire'),
+                       get_string('average', 'questionnaire'), get_string('total', 'questionnaire')]);
 
         if (!empty($weights) && is_array($weights)) {
             $pos = 0;
@@ -67,17 +68,10 @@ class display_support {
                     arsort($weights);
                     break;
             }
-            // use number of participants ($total) instead of $numresponses
-            /*
-            $numresponses = 0;
-            foreach ($weights as $key => $value) {
-                $numresponses = $numresponses + $value;
-            }
-            */
+
             reset ($weights);
             while (list($content, $num) = each($weights)) {
                 if ($num > 0) {
-                    // $percent = $num / $numresponses * 100.0;
                     $percent = $num / $total * 100.0;
                 } else {
                     $percent = 0;
@@ -101,12 +95,20 @@ class display_support {
                     $out = '';
                 }
 
-                $tabledata = array();
-                $tabledata = array_merge($tabledata, array(format_text($content, FORMAT_HTML, ['noclean' => true]), $out, $num));
-                $table->data[] = $tabledata;
+                $table->data[] = [format_text($content, FORMAT_HTML, ['noclean' => true]), $out, $num];
                 $i += $num;
                 $pos++;
             } // End while.
+
+            if (!empty($norespcount)) {
+                $percent = $norespcount / $total * 100.0;
+                $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'hbar_l.gif" />'.
+                    '<img style="height:9px; width:'.($percent * 1.4).'px;" alt="'.$alt.'" src="'.
+                    $imageurl.'hbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'hbar_r.gif" />'.
+                    sprintf('&nbsp;%.'.$precision.'f%%', $percent);
+                $table->data[] = [get_string('didnotrespondtoquestion', 'questionnaire'), $out, $norespcount];
+                $i += $num;
+            }
 
             if ($showtotals) {
                 if ($i > 0) {
@@ -129,14 +131,10 @@ class display_support {
                         sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 }
                 $table->data[] = 'hr';
-                $tabledata = array();
-                $tabledata = array_merge($tabledata, array($strtotal, $out, "$i/$total"));
-                $table->data[] = $tabledata;
+                $table->data[] = [$strtotal, $out, "$i/$total"];
             }
         } else {
-            $tabledata = array();
-            $tabledata = array_merge($tabledata, array('', get_string('noresponsedata', 'questionnaire')));
-            $table->data[] = $tabledata;
+            $table->data[] = ['', get_string('noresponsedata', 'questionnaire')];
         }
 
         return html_writer::table($table);
