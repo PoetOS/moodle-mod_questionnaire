@@ -256,7 +256,14 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function results_output($question, $rids, $sort, $anonymous) {
-        return $question->display_results($rids, $sort, $anonymous);
+        $pagetags = $question->display_results($rids, $sort, $anonymous);
+
+        // If the response has a template, then render it from $pagetags. If no template, then $pagetags already contains HTML.
+        if (($template = $question->results_template())) {
+            return $this->render_from_template($template, $pagetags);
+        } else {
+            return $pagetags;
+        }
     }
 
     /**

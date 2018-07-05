@@ -112,14 +112,22 @@ class boolean extends base {
     }
 
     /**
+     * Provide a template for results screen if defined.
+     * @return mixed The template string or false/
+     */
+    public function results_template() {
+        return 'mod_questionnaire/results_choice';
+    }
+
+    /**
+     * Return the JSON structure required for the template.
+     *
      * @param bool $rids
      * @param string $sort
      * @param bool $anonymous
      * @return string
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        $output = '';
-
         if (empty($this->stryes)) {
             $this->stryes = get_string('yes');
             $this->strno = get_string('no');
@@ -147,12 +155,12 @@ class boolean extends base {
                 $numresps += $this->counts[$this->choice];
             }
             $noresponsecount = $numrespondents - $numresps;
-            $output .= \mod_questionnaire\response\display_support::mkrespercent($this->counts, $numrespondents,
-                $this->question->precise, $prtotal, '', $noresponsecount);
+            $pagetags = $this->get_results_tags($this->counts, $numrespondents, $this->question->precise, $prtotal, '',
+                $noresponsecount);
         } else {
-            $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
+            $pagetags = new \stdClass();
         }
-        return $output;
+        return $pagetags;
     }
 
     /**

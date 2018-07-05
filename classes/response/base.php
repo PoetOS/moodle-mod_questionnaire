@@ -89,52 +89,144 @@ abstract class base {
     }
 
     /**
+     * Provide a template for results screen if defined.
+     * @return mixed The template string or false/
+     */
+    public function results_template() {
+        return false;
+    }
+
+    /**
+     * Gets the results tags for templates for questions with defined choices (single, multiple, boolean).
+     *
+     * @param $weights
+     * @param $total
+     * @param $precision
+     * @param $showtotals
+     * @param string $sort
+     * @param int $norespcount
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function get_results_tags($weights, $total, $precision, $showtotals, $sort = '', $norespcount = 0) {
+        global $CFG;
+
+        $pagetags = new \stdClass();
+        $precision = 0;
+        $i = 0;
+        $alt = '';
+        $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
+
+        if (!empty($weights) && is_array($weights)) {
+            $pos = 0;
+            switch ($sort) {
+                case 'ascending':
+                    asort($weights);
+                    break;
+                case 'descending':
+                    arsort($weights);
+                    break;
+            }
+
+            reset ($weights);
+            $pagetags->responses = [];
+            while (list($content, $num) = each($weights)) {
+                $response = new \stdClass();
+                $response->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
+                if ($num > 0) {
+                    $percent = $num / $total * 100.0;
+                } else {
+                    $percent = 0;
+                }
+                if ($percent > 100) {
+                    $percent = 100;
+                }
+                if ($num) {
+                    if (!right_to_left()) {
+                        $response->alt1 = $alt;
+                        $response->image1 = $imageurl . 'hbar_l.gif';
+                        $response->alt3 = $alt;
+                        $response->image3 = $imageurl . 'hbar_r.gif';
+                    } else {
+                        $response->alt1 = $alt;
+                        $response->image1 = $imageurl . 'hbar_r.gif';
+                        $response->alt3 = $alt;
+                        $response->image3 = $imageurl . 'hbar_l.gif';
+                    }
+                    $response->alt2 = $alt;
+                    $response->width2 = $percent * 1.4;
+                    $response->image2 = $imageurl . 'hbar.gif';
+                    $response->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
+                }
+                $response->total = $num;
+                $pagetags->responses[] = (object)['response' => $response];
+                $i += $num;
+                $pos++;
+            } // End while.
+
+            if (!empty($norespcount)) {
+                $response = new \stdClass();
+                $response->text = get_string('didnotrespondtoquestion', 'questionnaire');
+                $percent = $norespcount / $total * 100.0;
+                if (!right_to_left()) {
+                    $response->alt1 = $alt;
+                    $response->image1 = $imageurl . 'hbar_l.gif';
+                    $response->alt3 = $alt;
+                    $response->image3 = $imageurl . 'hbar_r.gif';
+                } else {
+                    $response->alt1 = $alt;
+                    $response->image1 = $imageurl . 'hbar_r.gif';
+                    $response->alt3 = $alt;
+                    $response->image3 = $imageurl . 'hbar_l.gif';
+                }
+                $response->alt2 = $alt;
+                $response->width2 = $percent * 1.4;
+                $response->image2 = $imageurl . 'hbar.gif';
+                $response->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
+                $response->total = $norespcount;
+                $pagetags->responses[] = (object)['response' => $response];
+                $i += $num;
+            }
+
+            if ($showtotals) {
+                $pagetags->total = new \stdClass();
+                if ($i > 0) {
+                    $percent = $i / $total * 100.0;
+                } else {
+                    $percent = 0;
+                }
+                if ($percent > 100) {
+                    $percent = 100;
+                }
+                if (!right_to_left()) {
+                    $pagetags->total->alt1 = $alt;
+                    $pagetags->total->image1 = $imageurl . 'thbar_l.gif';
+                    $pagetags->total->alt3 = $alt;
+                    $pagetags->total->image3 = $imageurl . 'thbar_r.gif';
+                } else {
+                    $pagetags->total->alt1 = $alt;
+                    $pagetags->total->image1 = $imageurl . 'thbar_r.gif';
+                    $pagetags->total->alt3 = $alt;
+                    $pagetags->total->image3 = $imageurl . 'thbar_l.gif';
+                }
+                $pagetags->total->alt2 = $alt;
+                $pagetags->total->width2 = $percent * 1.4;
+                $pagetags->total->image2 = $imageurl . 'thbar.gif';
+                $pagetags->total->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
+                $pagetags->total->total = "$i/$total";
+            }
+        }
+
+        return $pagetags;
+    }
+
+    /**
      * Provide the feedback scores for all requested response id's. This should be provided only by questions that provide feedback.
      * @param array $rids
      * @return array | boolean
      */
     public function get_feedback_scores(array $rids) {
         return false;
-    }
-
-    /**
-     * @param $rows
-     * @param $rids
-     * @param $sort
-     * @return string
-     */
-    protected function display_response_choice_results($rows, $rids, $sort) {
-        $output = '';
-        if (is_array($rids)) {
-            $prtotal = 1;
-        } else if (is_int($rids)) {
-            $prtotal = 0;
-        }
-        $numrespondents = count($rids);
-        $numnoresponses = $numrespondents - count($rows);
-        if ($rows) {
-            foreach ($rows as $idx => $row) {
-                if (strpos($idx, 'other') === 0) {
-                    $answer = $row->response;
-                    $ccontent = $row->content;
-                    $content = preg_replace(array('/^!other=/', '/^!other/'),
-                            array('', get_string('other', 'questionnaire')), $ccontent);
-                    $content .= ' ' . clean_text($answer);
-                    $textidx = $content;
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
-                } else {
-                    $contents = questionnaire_choice_values($row->content);
-                    $this->choice = $contents->text.$contents->image;
-                    $textidx = $this->choice;
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
-                }
-            }
-            $output .= \mod_questionnaire\response\display_support::mkrespercent($this->counts, $numrespondents,
-                $this->question->precise, $prtotal, $sort, $numnoresponses);
-        } else {
-            $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
-        }
-        return $output;
     }
 
     /**

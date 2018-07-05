@@ -156,13 +156,53 @@ class single extends base {
     }
 
     /**
+     * Provide a template for results screen if defined.
+     * @return mixed The template string or false/
+     */
+    public function results_template() {
+        return 'mod_questionnaire/results_choice';
+    }
+
+    /**
+     * Return the JSON structure required for the template.
+     *
      * @param bool $rids
      * @param string $sort
      * @param bool $anonymous
      * @return string
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        return $this->display_response_choice_results($this->get_results($rids, $anonymous), $rids, $sort);
+        $rows = $this->get_results($rids, $anonymous);
+        if (is_array($rids)) {
+            $prtotal = 1;
+        } else if (is_int($rids)) {
+            $prtotal = 0;
+        }
+        $numrespondents = count($rids);
+        $numnoresponses = $numrespondents - count($rows);
+        if ($rows) {
+            foreach ($rows as $idx => $row) {
+                if (strpos($idx, 'other') === 0) {
+                    $answer = $row->response;
+                    $ccontent = $row->content;
+                    $content = preg_replace(array('/^!other=/', '/^!other/'),
+                        array('', get_string('other', 'questionnaire')), $ccontent);
+                    $content .= ' ' . clean_text($answer);
+                    $textidx = $content;
+                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                } else {
+                    $contents = questionnaire_choice_values($row->content);
+                    $this->choice = $contents->text.$contents->image;
+                    $textidx = $this->choice;
+                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                }
+            }
+            $pagetags = $this->get_results_tags($this->counts, $numrespondents, $this->question->precise, $prtotal, $sort,
+                $numnoresponses);
+        } else {
+            $pagetags = new \stdClass();
+        }
+        return $pagetags;
     }
 
     /**

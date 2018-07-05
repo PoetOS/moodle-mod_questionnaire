@@ -35,112 +35,8 @@ use \html_table;
  */
 
 class display_support {
-    /* {{{ proto void mkrespercent(array weights, int total, int precision, bool show_totals)
-      Builds HTML showing PERCENTAGE results. */
 
-    public static function mkrespercent($weights, $total, $precision, $showtotals, $sort = '', $norespcount = 0) {
-        global $CFG;
-
-        $precision = 0;
-        $i = 0;
-        $alt = '';
-        $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
-        $strtotal = get_string('total', 'questionnaire');
-        $table = new html_table();
-        $table->size = [];
-
-        $table->align = [];
-        $table->head = [];
-        $table->wrap = [];
-        $table->size = array_merge($table->size, ['50%', '40%', '10%']);
-        $table->align = array_merge($table->align, ['left', 'left', 'right']);
-        $table->wrap = array_merge($table->wrap, ['', 'nowrap', '']);
-        $table->head = array_merge($table->head, [get_string('response', 'questionnaire'),
-                       get_string('average', 'questionnaire'), get_string('total', 'questionnaire')]);
-
-        if (!empty($weights) && is_array($weights)) {
-            $pos = 0;
-            switch ($sort) {
-                case 'ascending':
-                    asort($weights);
-                    break;
-                case 'descending':
-                    arsort($weights);
-                    break;
-            }
-
-            reset ($weights);
-            while (list($content, $num) = each($weights)) {
-                if ($num > 0) {
-                    $percent = $num / $total * 100.0;
-                } else {
-                    $percent = 0;
-                }
-                if ($percent > 100) {
-                    $percent = 100;
-                }
-                if ($num) {
-                    if (!right_to_left()) {
-                        $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'hbar_l.gif" />'.
-                            '<img style="height:9px; width:'.($percent * 1.4).'px;" alt="'.$alt.'" src="'.
-                            $imageurl.'hbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'hbar_r.gif" />'.
-                            sprintf('&nbsp;%.'.$precision.'f%%', $percent);
-                    } else {
-                        $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'hbar_r.gif" />'.
-                            '<img style="height:9px; width:'.($percent * 1.4).'px;" alt="'.$alt.'" src="'.
-                            $imageurl.'hbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'hbar_l.gif" />'.
-                            sprintf('&nbsp;%.'.$precision.'f%%', $percent);
-                    }
-                } else {
-                    $out = '';
-                }
-
-                $table->data[] = [format_text($content, FORMAT_HTML, ['noclean' => true]), $out, $num];
-                $i += $num;
-                $pos++;
-            } // End while.
-
-            if (!empty($norespcount)) {
-                $percent = $norespcount / $total * 100.0;
-                $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'hbar_l.gif" />'.
-                    '<img style="height:9px; width:'.($percent * 1.4).'px;" alt="'.$alt.'" src="'.
-                    $imageurl.'hbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'hbar_r.gif" />'.
-                    sprintf('&nbsp;%.'.$precision.'f%%', $percent);
-                $table->data[] = [get_string('didnotrespondtoquestion', 'questionnaire'), $out, $norespcount];
-                $i += $num;
-            }
-
-            if ($showtotals) {
-                if ($i > 0) {
-                    $percent = $i / $total * 100.0;
-                } else {
-                    $percent = 0;
-                }
-                if ($percent > 100) {
-                    $percent = 100;
-                }
-                if (!right_to_left()) {
-                    $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'thbar_l.gif" />'.
-                        '<img style="height:9px;  width:'.($percent * 1.4).'px;" alt="'.$alt.'" src="'.
-                        $imageurl.'thbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'thbar_r.gif" />'.
-                        sprintf('&nbsp;%.'.$precision.'f%%', $percent);
-                } else {
-                    $out = '&nbsp;<img alt="'.$alt.'" src="'.$imageurl.'thbar_r.gif" />'.
-                        '<img style="height:9px;  width:'.($percent * 1.4).'px;" alt="'.$alt.'" src="'.
-                        $imageurl.'thbar.gif" />'.'<img alt="'.$alt.'" src="'.$imageurl.'thbar_l.gif" />'.
-                        sprintf('&nbsp;%.'.$precision.'f%%', $percent);
-                }
-                $table->data[] = 'hr';
-                $table->data[] = [$strtotal, $out, "$i/$total"];
-            }
-        } else {
-            $table->data[] = ['', get_string('noresponsedata', 'questionnaire')];
-        }
-
-        return html_writer::table($table);
-    }
-
-    public static function mkreslisttext($rows) {
+    public static function mkreslisttext($rows, $norespcount = 0) {
         global $CFG, $SESSION, $questionnaire, $DB;
         $strresponse = get_string('response', 'questionnaire');
         $viewsingleresponse = $questionnaire->capabilities->viewsingleresponse;
@@ -174,10 +70,17 @@ class display_support {
                 $table->data[] = array($text);
             }
         }
+
+        if ($norespcount != 0) {
+            $numresps = count($rows);
+            $totalresps = $numresps + $norespcount;
+            $table->data[] = 'hr';
+            $table->data[] = [get_string('totalresponses', 'questionnaire'), "$numresps/$totalresps"];
+        }
         return html_writer::table($table);
     }
 
-    public static function mkreslistdate($counts, $total, $precision, $showtotals) {
+    public static function mkreslistdate($counts, $total, $norespcount = 0) {
         $dateformat = get_string('strfdate', 'questionnaire');
 
         if ($total == 0) {
@@ -192,10 +95,17 @@ class display_support {
         $table->attributes['class'] = 'generaltable';
 
         if (!empty($counts) && is_array($counts)) {
+            $numresps = 0;
             ksort ($counts); // Sort dates into chronological order.
             while (list($text, $num) = each($counts)) {
                 $text = userdate ( $text, $dateformat, '', false);    // Change timestamp into readable dates.
                 $table->data[] = array($num, $text);
+                $numresps += $num;
+            }
+            if ($norespcount != 0) {
+                $totalresps = $numresps + $norespcount;
+                $table->data[] = 'hr';
+                $table->data[] = [get_string('totalresponses', 'questionnaire'), "$numresps/$totalresps"];
             }
         } else {
             $table->data[] = array('', get_string('noresponsedata', 'questionnaire'));
@@ -204,13 +114,13 @@ class display_support {
         return html_writer::table($table);
     }
 
-    public static function mkreslistnumeric($counts, $total, $precision) {
+    public static function mkreslistnumeric($counts, $total, $precision, $norespcount = 0) {
         if ($total == 0) {
             return '';
         }
         $nbresponses = 0;
         $sum = 0;
-        $strtotal = get_string('total', 'questionnaire');
+        $strtotal = get_string('totalofnumbers', 'questionnaire');
         $strresponse = get_string('response', 'questionnaire');
         $strnum = get_string('num', 'questionnaire');
         $strnoresponsedata = get_string('noresponsedata', 'questionnaire');
@@ -231,7 +141,13 @@ class display_support {
             $table->data[] = 'hr';
             $table->data[] = array($strtotal , $sum);
             $avg = $sum / $nbresponses;
-               $table->data[] = array($straverage , sprintf('%.'.$precision.'f', $avg));
+            $table->data[] = array($straverage , sprintf('%.'.$precision.'f', $avg));
+
+            if ($norespcount != 0) {
+                $totalresps = $nbresponses + $norespcount;
+                $table->data[] = 'hr';
+                $table->data[] = [get_string('totalresponses', 'questionnaire'), "$nbresponses/$totalresps"];
+            }
         } else {
             $table->data[] = array('', $strnoresponsedata);
         }

@@ -97,6 +97,8 @@ class text extends base {
             $prtotal = 0;
         }
         if ($rows = $this->get_results($rids, $anonymous)) {
+            $numrespondents = count($rids);
+            $noresponsecount = $numrespondents - count($rows);
             // Count identical answers (numeric questions only).
             foreach ($rows as $row) {
                 if (!empty($row->response) || $row->response === "0") {
@@ -108,10 +110,10 @@ class text extends base {
             }
             $isnumeric = $this->question->type_id == QUESNUMERIC;
             if ($isnumeric) {
-                $output .= \mod_questionnaire\response\display_support::mkreslistnumeric($this->counts, count($rids),
-                    $this->question->precise);
+                $output .= \mod_questionnaire\response\display_support::mkreslistnumeric($this->counts, $numrespondents,
+                    $this->question->precise, $noresponsecount);
             } else {
-                $output .= \mod_questionnaire\response\display_support::mkreslisttext($rows);
+                $output .= \mod_questionnaire\response\display_support::mkreslisttext($rows, $noresponsecount);
             }
         } else {
             $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
