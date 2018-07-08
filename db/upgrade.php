@@ -612,7 +612,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         if ($dbman->field_exists($table, $field)) {
             // Drop the old 'owner' index before modifying the field.
             $index = new xmldb_index('owner', XMLDB_INDEX_NOTUNIQUE, ['owner']);
-            $dbman->drop_index($table, $index);
+            if ($dbman->index_exists($table, $index)) {
+                $dbman->drop_index($table, $index);
+            }
 
             // Launch change of type for field owner.
             $dbman->change_field_type($table, $field);
