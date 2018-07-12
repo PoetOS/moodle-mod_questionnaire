@@ -179,7 +179,6 @@ class single extends base {
             $prtotal = 0;
         }
         $numrespondents = count($rids);
-        $numnoresponses = $numrespondents - count($rows);
         if ($rows) {
             foreach ($rows as $idx => $row) {
                 if (strpos($idx, 'other') === 0) {
@@ -197,8 +196,7 @@ class single extends base {
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            $pagetags = $this->get_results_tags($this->counts, $numrespondents, $this->question->precise, $prtotal, $sort,
-                $numnoresponses);
+            $pagetags = $this->get_results_tags($this->counts, $numrespondents, $this->question->precise, $prtotal, $sort);
         } else {
             $pagetags = new \stdClass();
         }

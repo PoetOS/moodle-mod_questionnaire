@@ -104,11 +104,10 @@ abstract class base {
      * @param $precision
      * @param $showtotals
      * @param string $sort
-     * @param int $norespcount
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_results_tags($weights, $total, $precision, $showtotals, $sort = '', $norespcount = 0) {
+    public function get_results_tags($weights, $total, $precision, $showtotals, $sort = '') {
         global $CFG;
 
         $pagetags = new \stdClass();
@@ -128,13 +127,15 @@ abstract class base {
                     break;
             }
 
+            // Use the total number of question respondents for answer percentage.
+            $percenttotal = array_sum($weights);
             reset ($weights);
             $pagetags->responses = [];
-            while (list($content, $num) = each($weights)) {
+            foreach ($weights as $content => $num) {
                 $response = new \stdClass();
                 $response->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
                 if ($num > 0) {
-                    $percent = $num / $total * 100.0;
+                    $percent = round((float)$num / (float)$percenttotal * 100.0);
                 } else {
                     $percent = 0;
                 }
@@ -164,34 +165,10 @@ abstract class base {
                 $pos++;
             } // End while.
 
-            if (!empty($norespcount)) {
-                $response = new \stdClass();
-                $response->text = get_string('didnotrespondtoquestion', 'questionnaire');
-                $percent = $norespcount / $total * 100.0;
-                if (!right_to_left()) {
-                    $response->alt1 = $alt;
-                    $response->image1 = $imageurl . 'hbar_l.gif';
-                    $response->alt3 = $alt;
-                    $response->image3 = $imageurl . 'hbar_r.gif';
-                } else {
-                    $response->alt1 = $alt;
-                    $response->image1 = $imageurl . 'hbar_r.gif';
-                    $response->alt3 = $alt;
-                    $response->image3 = $imageurl . 'hbar_l.gif';
-                }
-                $response->alt2 = $alt;
-                $response->width2 = $percent * 1.4;
-                $response->image2 = $imageurl . 'hbar.gif';
-                $response->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
-                $response->total = $norespcount;
-                $pagetags->responses[] = (object)['response' => $response];
-                $i += $num;
-            }
-
             if ($showtotals) {
                 $pagetags->total = new \stdClass();
                 if ($i > 0) {
-                    $percent = $i / $total * 100.0;
+                    $percent = round((float)$i / (float)$total * 100.0);
                 } else {
                     $percent = 0;
                 }

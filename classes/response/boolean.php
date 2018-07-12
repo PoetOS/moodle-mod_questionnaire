@@ -154,9 +154,7 @@ class boolean extends base {
                 $this->counts[$this->choice] = intval($count);
                 $numresps += $this->counts[$this->choice];
             }
-            $noresponsecount = $numrespondents - $numresps;
-            $pagetags = $this->get_results_tags($this->counts, $numrespondents, $this->question->precise, $prtotal, '',
-                $noresponsecount);
+            $pagetags = $this->get_results_tags($this->counts, $numrespondents, $this->question->precise, $prtotal, '');
         } else {
             $pagetags = new \stdClass();
         }
