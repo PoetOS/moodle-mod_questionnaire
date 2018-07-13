@@ -100,19 +100,18 @@ abstract class base {
      * Gets the results tags for templates for questions with defined choices (single, multiple, boolean).
      *
      * @param $weights
-     * @param $total
-     * @param $precision
+     * @param $participants Number of questionnaire participants.
+     * @param $respondents Number of question respondents.
      * @param $showtotals
      * @param string $sort
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_results_tags($weights, $total, $precision, $showtotals, $sort = '') {
+    public function get_results_tags($weights, $participants, $respondents, $showtotals, $sort = '') {
         global $CFG;
 
         $pagetags = new \stdClass();
         $precision = 0;
-        $i = 0;
         $alt = '';
         $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
 
@@ -127,15 +126,13 @@ abstract class base {
                     break;
             }
 
-            // Use the total number of question respondents for answer percentage.
-            $percenttotal = array_sum($weights);
             reset ($weights);
             $pagetags->responses = [];
             foreach ($weights as $content => $num) {
                 $response = new \stdClass();
                 $response->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
                 if ($num > 0) {
-                    $percent = round((float)$num / (float)$percenttotal * 100.0);
+                    $percent = round((float)$num / (float)$respondents * 100.0);
                 } else {
                     $percent = 0;
                 }
@@ -161,14 +158,13 @@ abstract class base {
                 }
                 $response->total = $num;
                 $pagetags->responses[] = (object)['response' => $response];
-                $i += $num;
                 $pos++;
             } // End while.
 
             if ($showtotals) {
                 $pagetags->total = new \stdClass();
-                if ($i > 0) {
-                    $percent = round((float)$i / (float)$total * 100.0);
+                if ($respondents > 0) {
+                    $percent = round((float)$respondents / (float)$participants * 100.0);
                 } else {
                     $percent = 0;
                 }
@@ -190,7 +186,7 @@ abstract class base {
                 $pagetags->total->width2 = $percent * 1.4;
                 $pagetags->total->image2 = $imageurl . 'thbar.gif';
                 $pagetags->total->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
-                $pagetags->total->total = "$i/$total";
+                $pagetags->total->total = "$respondents/$participants";
             }
         }
 

@@ -172,13 +172,21 @@ class single extends base {
      * @return string
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
+        global $DB;
+
         $rows = $this->get_results($rids, $anonymous);
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
             $prtotal = 0;
         }
-        $numrespondents = count($rids);
+        $numresps = count($rids);
+
+        $responsecountsql = 'SELECT COUNT(DISTINCT r.response_id) ' .
+            'FROM {' . $this->response_table() . '} r ' .
+            'WHERE r.question_id = ? ';
+        $numrespondents = $DB->count_records_sql($responsecountsql, [$this->question->id]);
+
         if ($rows) {
             foreach ($rows as $idx => $row) {
                 if (strpos($idx, 'other') === 0) {
@@ -196,7 +204,7 @@ class single extends base {
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
                 }
             }
-            $pagetags = $this->get_results_tags($this->counts, $numrespondents, $this->question->precise, $prtotal, $sort);
+            $pagetags = $this->get_results_tags($this->counts, $numresps, $numrespondents, $prtotal, $sort);
         } else {
             $pagetags = new \stdClass();
         }

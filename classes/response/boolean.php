@@ -138,10 +138,10 @@ class boolean extends base {
         } else if (is_int($rids)) {
             $prtotal = 0;
         }
+        $numresps = count($rids);
 
         $this->counts = [$this->stryes => 0, $this->strno => 0];
-        $numrespondents = count($rids);
-        $numresps = 0;
+        $numrespondents = 0;
         if ($rows = $this->get_results($rids, $anonymous)) {
             foreach ($rows as $row) {
                 $this->choice = $row->choice_id;
@@ -152,9 +152,9 @@ class boolean extends base {
                     $this->choice = $this->strno;
                 }
                 $this->counts[$this->choice] = intval($count);
-                $numresps += $this->counts[$this->choice];
+                $numrespondents += $this->counts[$this->choice];
             }
-            $pagetags = $this->get_results_tags($this->counts, $numrespondents, $this->question->precise, $prtotal, '');
+            $pagetags = $this->get_results_tags($this->counts, $numresps, $numrespondents, $prtotal, '');
         } else {
             $pagetags = new \stdClass();
         }
