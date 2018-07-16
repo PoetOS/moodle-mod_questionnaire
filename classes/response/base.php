@@ -107,7 +107,7 @@ abstract class base {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_results_tags($weights, $participants, $respondents, $showtotals, $sort = '') {
+    public function get_results_tags($weights, $participants, $respondents, $showtotals = 1, $sort = '') {
         global $CFG;
 
         $pagetags = new \stdClass();
