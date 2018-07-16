@@ -80,40 +80,6 @@ class display_support {
         return html_writer::table($table);
     }
 
-    public static function mkreslistdate($counts, $total, $norespcount = 0) {
-        $dateformat = get_string('strfdate', 'questionnaire');
-
-        if ($total == 0) {
-            return '';
-        }
-        $strresponse = get_string('response', 'questionnaire');
-        $strnum = get_string('num', 'questionnaire');
-        $table = new html_table();
-        $table->align = array('left', 'right');
-        $table->head = array($strnum, $strresponse);
-        $table->size = array('*', '*');
-        $table->attributes['class'] = 'generaltable';
-
-        if (!empty($counts) && is_array($counts)) {
-            $numresps = 0;
-            ksort ($counts); // Sort dates into chronological order.
-            while (list($text, $num) = each($counts)) {
-                $text = userdate ( $text, $dateformat, '', false);    // Change timestamp into readable dates.
-                $table->data[] = array($num, $text);
-                $numresps += $num;
-            }
-            if ($norespcount != 0) {
-                $totalresps = $numresps + $norespcount;
-                $table->data[] = 'hr';
-                $table->data[] = [get_string('totalresponses', 'questionnaire'), "$numresps/$totalresps"];
-            }
-        } else {
-            $table->data[] = array('', get_string('noresponsedata', 'questionnaire'));
-        }
-
-        return html_writer::table($table);
-    }
-
     public static function mkreslistnumeric($counts, $total, $precision, $norespcount = 0) {
         if ($total == 0) {
             return '';
