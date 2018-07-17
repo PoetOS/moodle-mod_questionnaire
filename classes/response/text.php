@@ -89,8 +89,22 @@ class text extends base {
         return $DB->get_records_sql($sql, $params);
     }
 
+    /**
+     * Provide a template for results screen if defined.
+     * @return mixed The template string or false/
+     */
+    public function results_template() {
+        return 'mod_questionnaire/results_text';
+    }
+
+    /**
+     * @param bool $rids
+     * @param string $sort
+     * @param bool $anonymous
+     * @return string
+     * @throws \coding_exception
+     */
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        $output = '';
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -98,27 +112,115 @@ class text extends base {
         }
         if ($rows = $this->get_results($rids, $anonymous)) {
             $numrespondents = count($rids);
-            $noresponsecount = $numrespondents - count($rows);
-            // Count identical answers (numeric questions only).
-            foreach ($rows as $row) {
-                if (!empty($row->response) || $row->response === "0") {
-                    $this->text = $row->response;
-                    $textidx = clean_text($this->text);
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
-                    $this->userid[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
-                }
-            }
+            $numresponses = count($rows);
             $isnumeric = $this->question->type_id == QUESNUMERIC;
+            // Count identical answers (numeric questions only).
             if ($isnumeric) {
-                $output .= \mod_questionnaire\response\display_support::mkreslistnumeric($this->counts, $numrespondents,
-                    $this->question->precise, $noresponsecount);
+                foreach ($rows as $row) {
+                    if (!empty($row->response) || $row->response === "0") {
+                        $this->text = $row->response;
+                        $textidx = clean_text($this->text);
+                        $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                        $this->userid[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                    }
+                }
+                $pagetags = $this->get_results_tags($this->counts, $numrespondents, $numresponses, $prtotal);
             } else {
-                $output .= \mod_questionnaire\response\display_support::mkreslisttext($rows, $noresponsecount);
+                $pagetags = $this->get_results_tags($rows, $numrespondents, $numresponses, $prtotal);
             }
         } else {
-            $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
+            $pagetags = new \stdClass();
         }
-        return $output;
+        return $pagetags;
+    }
+
+    /**
+     * Override the results tags function for templates for questions with dates.
+     *
+     * @param $weights
+     * @param $participants Number of questionnaire participants.
+     * @param $respondents Number of question respondents.
+     * @param $showtotals
+     * @param string $sort
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function get_results_tags($weights, $participants, $respondents, $showtotals = 1, $sort = '') {
+        $pagetags = new \stdClass();
+        if ($respondents == 0) {
+            return $pagetags;
+        }
+
+        // If array element is an object, outputting non-numeric responses.
+        if (is_object(reset($weights))) {
+            global $CFG, $SESSION, $questionnaire, $DB;
+            $viewsingleresponse = $questionnaire->capabilities->viewsingleresponse;
+            $nonanonymous = $questionnaire->respondenttype != 'anonymous';
+            if ($viewsingleresponse && $nonanonymous) {
+                $currentgroupid = '';
+                if (isset($SESSION->questionnaire->currentgroupid)) {
+                    $currentgroupid = $SESSION->questionnaire->currentgroupid;
+                }
+                $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$questionnaire->survey->id.
+                    '&currentgroupid='.$currentgroupid;
+            }
+            $users = [];
+            foreach ($weights as $row) {
+                $response = new \stdClass();
+                $response->text = format_text($row->response, FORMAT_HTML, ['noclean' => true]);
+                if ($viewsingleresponse && $nonanonymous) {
+                    $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
+                    $title = userdate($row->submitted);
+                    if (!isset($users[$row->userid])) {
+                        $users[$row->userid] = $DB->get_record('user', ['id' => $row->userid]);
+                    }
+                    $response->respondent = '<a href="'.$rurl.'" title="'.$title.'">'.fullname($users[$row->userid]).'</a>';
+                } else {
+                    $response->respondent = '';
+                }
+                $pagetags->responses[] = (object)['response' => $response];
+            }
+
+            if ($showtotals == 1) {
+                $pagetags->total = new \stdClass();
+                $pagetags->total->total = "$respondents/$participants";
+            }
+        } else {
+            $nbresponses = 0;
+            $sum = 0;
+            $strtotal = get_string('totalofnumbers', 'questionnaire');
+            $straverage = get_string('average', 'questionnaire');
+
+            if (!empty($weights) && is_array($weights)) {
+                ksort($weights);
+                foreach ($weights as $text => $num) {
+                    $response = new \stdClass();
+                    $response->text = $text;
+                    $response->respondent = $num;
+                    $nbresponses += $num;
+                    $sum += $text * $num;
+                    $pagetags->responses[] = (object)['response' => $response];
+                }
+
+                $response = new \stdClass();
+                $response->text = $sum;
+                $response->respondent = $strtotal;
+                $pagetags->responses[] = (object)['response' => $response];
+
+                $response = new \stdClass();
+                $response->respondent = $straverage;
+                $avg = $sum / $nbresponses;
+                $response->text = sprintf('%.' . $this->question->precise . 'f', $avg);
+                $pagetags->responses[] = (object)['response' => $response];
+
+                if ($showtotals == 1) {
+                    $pagetags->total = new \stdClass();
+                    $pagetags->total->total = "$respondents/$participants";
+                }
+            }
+        }
+
+        return $pagetags;
     }
 
     /**

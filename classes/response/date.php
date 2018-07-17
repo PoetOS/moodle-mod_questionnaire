@@ -134,7 +134,7 @@ class date extends base {
             ksort ($weights); // Sort dates into chronological order.
             foreach ($weights as $content => $num) {
                 $response = new \stdClass();
-                $response->text = userdate($content, $dateformat, '', false);    // Change timestamp into readable dates.;
+                $response->text = userdate($content, $dateformat, '', false);    // Change timestamp into readable dates.
                 $numresps += $num;
                 $response->total = $num;
                 $pagetags->responses[] = (object)['response' => $response];
