@@ -44,6 +44,7 @@
 <!-- Begin HTML generated from question_numeric template. -->
 {{#qelements}}
 {{#choice}}
+    <span style="font-style: italic; font-size: 90%">{{#str}} thousands, mod_questionnaire {{/str}}<br /></span>
 <input {{#choice.onkeypress}}onkeypress="{{.}}"{{/choice.onkeypress}} type="text" size="{{choice.size}}" name="{{choice.name}}" {{#choice.maxlength}}maxlength="{{choice.maxlength}}"{{/choice.maxlength}} value="{{choice.value}}" id="{{choice.id}}" />
 {{/choice}}
 {{/qelements}}

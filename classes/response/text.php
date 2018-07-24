@@ -43,6 +43,7 @@ class text extends base {
         global $DB;
         // Only insert if non-empty content.
         if ($this->question->type_id == QUESNUMERIC) {
+            $val = str_replace(",", ".",$val); // Allow commas as well as points in decimal numbers.
             $val = preg_replace("/[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
         }
 
