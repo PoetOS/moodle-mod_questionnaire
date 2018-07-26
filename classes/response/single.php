@@ -286,11 +286,8 @@ class single extends base {
      * @param bool|int $userid
      * @return array
      */
-    public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false) {
-        global $DB;
-
+    public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false, $showincompletes = 0) {
         $sql = $this->bulk_sql($questionnaireid, $responseid, $userid);
-        $params = [];
         if (($groupid !== false) && ($groupid > 0)) {
             $groupsql = ' INNER JOIN {groups_members} gm ON gm.groupid = ? AND gm.userid = qr.userid ';
             $gparams = [$groupid];
@@ -298,13 +295,23 @@ class single extends base {
             $groupsql = '';
             $gparams = [];
         }
+
+        if ($showincompletes == 1) {
+            $showcompleteonly = '';
+            $params = [$questionnaireid];
+        } else {
+            $showcompleteonly = 'AND qr.complete = ? ';
+            $params = [$questionnaireid, 'y'];
+        }
+
         $sql .= "
-            AND qr.questionnaireid = ? AND qr.complete = ?
+            AND qr.questionnaireid = ? $showcompleteonly
       LEFT JOIN {questionnaire_response_other} qro ON qro.response_id = qr.id AND qro.choice_id = qrs.choice_id
       LEFT JOIN {user} u ON u.id = qr.userid
       $groupsql
         ";
-        $params = array_merge([$questionnaireid, 'y'], $gparams);
+        $params = array_merge($params, $gparams);
+
         if ($responseid) {
             $sql .= " WHERE qr.id = ?";
             $params[] = $responseid;

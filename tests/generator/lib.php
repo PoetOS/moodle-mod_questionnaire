@@ -502,9 +502,10 @@ class mod_questionnaire_generator extends testing_module_generator {
      *
      * @param array|stdClass $record
      * @param array $questionresponses
+     * @param boolean $complete Whether the response is complete or not.
      * @return stdClass the discussion object
      */
-    public function create_response($record = null, $questionresponses) {
+    public function create_response($record = null, $questionresponses, $complete = true) {
         global $DB;
 
         // Increment the response count.
@@ -535,7 +536,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         }
 
         // Mark response as complete.
-        $record['complete'] = 'y';
+        $record['complete'] = ($complete) ? 'y' : 'n';
         $DB->update_record('questionnaire_response', $record);
 
         return $record;
@@ -576,10 +577,11 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param questionnaire $questionnaire
      * @param \mod_questionnaire\question\base[] $questions
      * @param $userid
+     * @param $complete
      * @return stdClass
      * @throws coding_exception
      */
-    public function generate_response($questionnaire, $questions, $userid) {
+    public function generate_response($questionnaire, $questions, $userid, $complete = true) {
         $responses = [];
         foreach ($questions as $question) {
 
@@ -631,7 +633,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
 
         }
-        return $this->create_response(['questionnaireid' => $questionnaire->id, 'userid' => $userid], $responses);
+        return $this->create_response(['questionnaireid' => $questionnaire->id, 'userid' => $userid], $responses, $complete);
     }
 
     public function create_and_fully_populate($coursecount = 4, $studentcount = 20, $questionnairecount = 2,
@@ -710,8 +712,15 @@ class mod_questionnaire_generator extends testing_module_generator {
                 }
 
                 // Create responses.
+                $count = 1;
                 foreach ($students as $student) {
-                    $qdg->generate_response($questionnaire, $questions, $student->id);
+                    // Make the last response an "incomplete" response.
+                    if ($count < $studentcount) {
+                        $qdg->generate_response($questionnaire, $questions, $student->id);
+                    } else {
+                        $qdg->generate_response($questionnaire, $questions, $student->id, false);
+                    }
+                    $count++;
                 }
             }
         }

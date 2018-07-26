@@ -38,7 +38,7 @@ class questionnaire {
      * The survey record.
      * @var object $survey
      */
-    // Todo var $survey; TODO.
+     // Todo var $survey; TODO.
 
     /**
      * @var $renderer Contains the page renderer when loaded, or false if not.
@@ -176,25 +176,25 @@ class questionnaire {
         if (!$this->capabilities->view) {
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('noteligible', 'questionnaire', $this->name),
-                    \core\output\notification::NOTIFY_ERROR));
+                \core\output\notification::NOTIFY_ERROR));
         } else if (!$this->is_active()) {
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('notavail', 'questionnaire'), \core\output\notification::NOTIFY_ERROR));
         } else if (!$this->is_open()) {
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('notopen', 'questionnaire', userdate($this->opendate)),
-                    \core\output\notification::NOTIFY_ERROR));
+                \core\output\notification::NOTIFY_ERROR));
         } else if ($this->is_closed()) {
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('closed', 'questionnaire', userdate($this->closedate)),
-                    \core\output\notification::NOTIFY_ERROR));
+                \core\output\notification::NOTIFY_ERROR));
         } else if (!$this->user_is_eligible($USER->id)) {
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('noteligible', 'questionnaire'), \core\output\notification::NOTIFY_ERROR));
         } else if ($this->survey->realm == 'template') {
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('templatenotviewable', 'questionnaire'),
-                    \core\output\notification::NOTIFY_ERROR));
+                \core\output\notification::NOTIFY_ERROR));
         } else if (!$this->user_can_take($USER->id)) {
             switch ($this->qtype) {
                 case QUESTIONNAIREDAILY:
@@ -212,7 +212,7 @@ class questionnaire {
             }
             $this->page->add_to_page('notifications',
                 $this->renderer->notification(get_string('alreadyfilled', 'questionnaire', $msgstring),
-                    \core\output\notification::NOTIFY_ERROR));
+                \core\output\notification::NOTIFY_ERROR));
         } else {
             // Handle the main questionnaire completion page.
             $quser = $USER->id;
@@ -492,8 +492,8 @@ class questionnaire {
             // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
             if ($this->capabilities->readallresponses &&
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))) {
+                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))) {
                 return true;
             }
 
@@ -513,8 +513,8 @@ class questionnaire {
             // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
             if ($this->capabilities->readallresponses &&
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))) {
+                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))) {
                 return true;
             }
 
@@ -556,14 +556,14 @@ class questionnaire {
         $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
         return (( // Teacher or non-editing teacher (if can view all groups).
                 ($canviewallgroups ||
-                    // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
-                    ($canviewgroups && $this->capabilities->readallresponseanytime)) &&
+                 // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
+                 ($canviewgroups && $this->capabilities->readallresponseanytime)) &&
                 ($numresp > 0) && $owner && ($numselectedresps > 0)) ||
-            ($this->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
+               ($this->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
                 // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && ($usernumresp > 0))) &&
+                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && ($usernumresp > 0))) &&
                 $this->is_survey_owner()));
     }
 
@@ -2575,7 +2575,7 @@ class questionnaire {
      * @param string $userid
      * @return array
      */
-    protected function get_survey_all_responses($rid = '', $userid = '', $groupid = false, $showIncompletes = 0) {
+    protected function get_survey_all_responses($rid = '', $userid = '', $groupid = false, $showincompletes = 0) {
         global $DB;
         $uniquetypes = $this->get_survey_questiontypes(true);
         $allresponsessql = "";
@@ -2587,7 +2587,7 @@ class questionnaire {
                 continue;
             }
             $allresponsessql .= $allresponsessql == '' ? '' : ' UNION ALL ';
-            list ($sql, $params) = $question->response->get_bulk_sql($this->id, $rid, $userid, $groupid);
+            list ($sql, $params) = $question->response->get_bulk_sql($this->id, $rid, $userid, $groupid, $showincompletes);
             $allresponsesparams = array_merge($allresponsesparams, $params);
             $allresponsessql .= $sql;
         }
@@ -2617,7 +2617,7 @@ class questionnaire {
                                        $currentgroupid,
                                        array &$questionsbyposition,
                                        $nbinfocols,
-                                       $numrespcols, $showIncompletes = 0) {
+                                       $numrespcols, $showincompletes = 0) {
         global $DB;
 
         static $config = null;
@@ -2626,7 +2626,7 @@ class questionnaire {
             $config = get_config('questionnaire', 'downloadoptions');
         }
         $options = empty($config) ? array() : explode(',', $config);
-        if($showIncompletes == 1){
+        if($showincompletes == 1){
             $options[] = 'complete';
         }
 
@@ -2744,7 +2744,7 @@ class questionnaire {
     /* {{{ proto array survey_generate_csv(int survey_id)
     Exports the results of a survey to an array.
     */
-    public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid, $showIncompletes = 0) {
+    public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid, $showincompletes = 0) {
         global $DB;
 
         raise_memory_limit('1G');
@@ -2754,7 +2754,7 @@ class questionnaire {
 
         $config = get_config('questionnaire', 'downloadoptions');
         $options = empty($config) ? array() : explode(',', $config);
-        if($showIncompletes == 1){
+        if($showincompletes == 1){
             $options[] = 'complete';
         }
         $columns = array();
@@ -2789,7 +2789,7 @@ class questionnaire {
         }
 
         // Get all responses for this survey in one go.
-        $allresponsesrs = $this->get_survey_all_responses($rid, $userid, $currentgroupid, $showIncompletes);
+        $allresponsesrs = $this->get_survey_all_responses($rid, $userid, $currentgroupid, $showincompletes);
 
         // Do we have any questions of type RADIO, DROP, CHECKBOX OR RATE? If so lets get all their choices in one go.
         $choicetypes = $this->choice_types();
@@ -2993,7 +2993,7 @@ class questionnaire {
 
             if ($prevresprow !== false && $prevresprow->rid !== $rid) {
                 $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition,
-                    $nbinfocols, $numrespcols, $showIncompletes);
+                    $nbinfocols, $numrespcols, $showincompletes);
                 $row = [];
             }
 
@@ -3071,7 +3071,7 @@ class questionnaire {
         if ($prevresprow !== false) {
             // Add final row to output. May not exist if no response data was ever present.
             $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition,
-                $nbinfocols, $numrespcols, $showIncompletes);
+                $nbinfocols, $numrespcols, $showincompletes);
         }
 
         // Change table headers to incorporate actual question numbers.

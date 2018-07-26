@@ -454,7 +454,7 @@ switch ($action) {
         $output .= "<br />\n";
         $output .= html_writer::checkbox('choicetext', 1, true, get_string('includechoicetext', 'questionnaire'));
         $output .= "<br />\n";
-        $output .= html_writer::checkbox('complete', 1, false, "Include incomplete responses"); // use get_string?
+        $output .= html_writer::checkbox('complete', 1, false, get_string('includeincomplete', 'questionnaire'));
         $output .= "<br />\n";
         $output .= "<br />\n";
         $output .= "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
@@ -487,8 +487,8 @@ switch ($action) {
 
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
         $choicetext  = optional_param('choicetext', '0', PARAM_INT);
-        $showIncompletes  = optional_param('complete', '0', PARAM_INT);
-        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showIncompletes);
+        $showincompletes  = optional_param('complete', '0', PARAM_INT);
+        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes);
 
         // CSV
         // SEP. 2007 JR changed file extension to *.txt for non-English Excel users' sake

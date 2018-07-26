@@ -243,7 +243,7 @@ abstract class base {
      * @param bool|int $groupid
      * @return array
      */
-    public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false, $showIncompletes = 0) {
+    public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false, $showincompletes = 0) {
         $sql = $this->bulk_sql($questionnaireid, $responseid, $userid);
         if (($groupid !== false) && ($groupid > 0)) {
             $groupsql = ' INNER JOIN {groups_members} gm ON gm.groupid = ? AND gm.userid = qr.userid ';
@@ -252,21 +252,22 @@ abstract class base {
             $groupsql = '';
             $gparams = [];
         }
-        if($showIncompletes == 1) {
-            $sql .= "
-                AND qr.questionnaireid = ? 
-          LEFT JOIN {user} u ON u.id = qr.userid
-          $groupsql
-            ";
-            $params = array_merge([$questionnaireid], $gparams);
-        } else{
-            $sql .= "
-                AND qr.questionnaireid = ? AND qr.complete = ?
-          LEFT JOIN {user} u ON u.id = qr.userid
-          $groupsql
-            ";
-            $params = array_merge([$questionnaireid, 'y'], $gparams);
+
+        if ($showincompletes == 1) {
+            $showcompleteonly = '';
+            $params = [$questionnaireid];
+        } else {
+            $showcompleteonly = 'AND qr.complete = ? ';
+            $params = [$questionnaireid, 'y'];
         }
+
+        $sql .= "
+            AND qr.questionnaireid = ? $showcompleteonly
+      LEFT JOIN {user} u ON u.id = qr.userid
+      $groupsql
+        ";
+        $params = array_merge($params, $gparams);
+
         if ($responseid) {
             $sql .= " WHERE qr.id = ?";
             $params[] = $responseid;
