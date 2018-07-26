@@ -2626,7 +2626,7 @@ class questionnaire {
             $config = get_config('questionnaire', 'downloadoptions');
         }
         $options = empty($config) ? array() : explode(',', $config);
-        if($showincompletes == 1){
+        if ($showincompletes == 1) {
             $options[] = 'complete';
         }
 
@@ -2754,7 +2754,7 @@ class questionnaire {
 
         $config = get_config('questionnaire', 'downloadoptions');
         $options = empty($config) ? array() : explode(',', $config);
-        if($showincompletes == 1){
+        if ($showincompletes == 1) {
             $options[] = 'complete';
         }
         $columns = array();
