@@ -647,7 +647,8 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
             if ($questionnaire->capabilities->downloadresponses) {
                 $urlargs = array('instance' => $questionnaire->id, 'user' => $USER->id,
                     'action' => 'dwnpg', 'group' => $currentgroupid);
-                $myreportnode->add(get_string('downloadtext'), new moodle_url('/mod/questionnaire/report.php', $urlargs));
+                $myreportnode->add(get_string('downloadtextformat', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/report.php', $urlargs));
             }
         } else {
             $urlargs = array('instance' => $questionnaire->id, 'userid' => $USER->id,
