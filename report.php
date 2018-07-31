@@ -114,8 +114,7 @@ $SESSION->questionnaire->current_tab = 'allreport';
 
 // Get all responses for further use in viewbyresp and deleteall etc.
 // All participants.
-$params = array('questionnaireid' => $questionnaire->id, 'complete' => 'y');
-$respsallparticipants = $DB->get_records('questionnaire_response', $params, 'id', 'id,questionnaireid,submitted,userid');
+$respsallparticipants = $questionnaire->get_responses();
 $SESSION->questionnaire->numrespsallparticipants = count ($respsallparticipants);
 $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
 
@@ -347,15 +346,8 @@ switch ($action) {
                     $resps = $respsallparticipants;
                     break;
                 default:     // Members of a specific group.
-                    $sql = "SELECT r.id, r.questionnaireid, r.submitted, r.userid
-                        FROM {questionnaire_response} r,
-                            {groups_members} gm
-                         WHERE r.questionnaireid = ? AND
-                           r.complete ='y' AND
-                           gm.groupid = ? AND r.userid = gm.userid
-                        ORDER BY r.id";
-                    if (!($resps = $DB->get_records_sql($sql, array($questionnaire->id, $currentgroupid)))) {
-                        $resps = array();
+                    if (!($resps = $questionnaire->get_responses(false, $currentgroupid))) {
+                        $resps = [];
                     }
             }
             if (empty($resps)) {
@@ -385,7 +377,7 @@ switch ($action) {
             foreach ($resps as $response) {
                 questionnaire_delete_response($response, $questionnaire);
             }
-            if (!$DB->count_records('questionnaire_response', array('questionnaireid' => $questionnaire->id, 'complete' => 'y'))) {
+            if (!$questionnaire->count_submissions()) {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
             } else {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vall&amp;sid='.$sid.'&amp;instance='.$instance;
@@ -533,12 +525,8 @@ switch ($action) {
         if (is_array($questionnairegroups) && $groupmode > 0) {
             $groupselect = groups_print_activity_menu($cm, $url->out(), true);
             // Count number of responses in each group.
-            foreach ($questionnairegroups as $group) {0
-                $sql = 'SELECT COUNT(r.id) ' .
-                       'FROM {questionnaire_response} r ' .
-                       'INNER JOIN {groups_members} gm ON r.userid = gm.userid ' .
-                       'WHERE r.questionnaireid = ? AND r.complete = ? AND gm.groupid = ?';
-                $respscount = $DB->count_records_sql($sql, array($questionnaire->id, 'y', $group->id));
+            foreach ($questionnairegroups as $group) {
+                $respscount = $questionnaire->count_submissions(false, $group->id);
                 $thisgroupname = groups_get_group_name($group->id);
                 $escapedgroupname = preg_quote($thisgroupname, '/');
                 if (!empty ($respscount)) {
@@ -567,11 +555,7 @@ switch ($action) {
                     $resps = $respsallparticipants;
                     break;
                 default:     // Members of a specific group.
-                    $sql = 'SELECT r.id, gm.id as groupid ' .
-                           'FROM {questionnaire_response} r ' .
-                           'INNER JOIN {groups_members} gm ON r.userid = gm.userid ' .
-                           'WHERE r.questionnaireid = ? AND r.complete = ? AND gm.groupid = ?';
-                    if (!($resps = $DB->get_records_sql($sql, array($questionnaire->id, 'y', $currentgroupid)))) {
+                    if (!($resps = $questionnaire->get_responses(false, $currentgroupid))) {
                         $resps = '';
                     }
             }
@@ -660,12 +644,7 @@ switch ($action) {
                         $resps = $respsallparticipants;
                         break;
                     default:     // Members of a specific group.
-                        $sql = 'SELECT r.id, r.questionnaireid, r.submitted, r.userid ' .
-                               'FROM {questionnaire_response} r ' .
-                               'INNER JOIN {groups_members} gm ON r.userid = gm.userid ' .
-                               'WHERE r.questionnaireid = ? AND r.complete = ? AND gm.groupid = ? ' .
-                               'ORDER BY r.id';
-                        $resps = $DB->get_records_sql($sql, [$questionnaire->id, 'y', $currentgroupid]);
+                        $resps = $questionnaire->get_responses(false, $currentgroupid);
                 }
                 if (empty($resps)) {
                     $noresponses = true;
