@@ -259,7 +259,7 @@ class questionnaire {
                     $completion->update_state($this->cm, COMPLETION_COMPLETE);
                 }
 
-                // Log this submitted response.
+                // Log this submitted response. Note this removes the anonymity in the logged event.
                 $context = context_module::instance($this->cm->id);
                 $anonymous = $this->respondenttype == 'anonymous';
                 $params = array(
@@ -2658,6 +2658,8 @@ class questionnaire {
         global $DB;
 
         static $config = null;
+        // If using an anonymous response, map users to unique user numbers so that number of unique anonymous users can be seen.
+        static $anonumap = [];
 
         if ($config === null) {
             $config = get_config('questionnaire', 'downloadoptions');
@@ -2673,7 +2675,7 @@ class questionnaire {
             $user->$userfield = $resprow->$userfield;
         }
         $user->id = $resprow->userid;
-        $isanonymous = $this->respondenttype == 'anonymous';
+        $isanonymous = ($this->respondenttype == 'anonymous');
 
         // Moodle:
         // Get the course name that this questionnaire belongs to.
@@ -2718,7 +2720,10 @@ class questionnaire {
         }
 
         if ($isanonymous) {
-            $fullname = get_string('anonymous', 'questionnaire');
+            if (!isset($anonumap[$user->id])) {
+                $anonumap[$user->id] = count($anonumap) + 1;
+            }
+            $fullname = get_string('anonymous', 'questionnaire') . $anonumap[$user->id];
             $username = '';
             $uid = '';
         } else {
