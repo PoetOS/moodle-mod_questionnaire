@@ -581,7 +581,7 @@ class questionnaire {
 
         // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
         // Public questionnaires can have responses to multiple questionnaire instances.
-        if ($this->survey->realm == 'public') {
+        if (is_object($this->survey) && ($this->survey->realm == 'public') && ($this->course->id == $this->survey->courseid)) {
             $sql = 'SELECT COUNT(r.id) ' .
                 'FROM {questionnaire_response} r ' .
                 'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
@@ -627,7 +627,7 @@ class questionnaire {
 
         // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
         // Public questionnaires can have responses to multiple questionnaire instances.
-        if ($this->survey->realm == 'public') {
+        if (is_object($this->survey) && ($this->survey->realm == 'public') && ($this->course->id == $this->survey->courseid)) {
             $sql = 'SELECT r.* ' .
                 'FROM {questionnaire_response} r ' .
                 'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
