@@ -1,5 +1,5 @@
 @mod @mod_questionnaire
-Feature: Questionnaires can use an existing public survey to gather responses in one place.
+Feature: Public questionnaires gather all instance responses in one master course, but not in the instance courses.
   When teachers view a course instance they will not see any student responses.
   When teachers view the main public course questionnaire, they will see all instances' responses.
 
