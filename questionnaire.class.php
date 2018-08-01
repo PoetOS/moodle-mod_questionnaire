@@ -567,16 +567,90 @@ class questionnaire {
                 $this->is_survey_owner()));
     }
 
-    public function count_submissions($userid=false) {
+    public function count_submissions($userid=false, $groupid=0) {
         global $DB;
 
-        if (!$userid) {
-            // Provide for groups setting.
-            return $DB->count_records('questionnaire_response', array('questionnaireid' => $this->id, 'complete' => 'y'));
-        } else {
-            return $DB->count_records('questionnaire_response', array('questionnaireid' => $this->id, 'userid' => $userid,
-                                      'complete' => 'y'));
+        $params = [];
+        $groupsql = '';
+        $groupcnd = '';
+        if ($groupid != 0) {
+            $groupsql = 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
+            $groupcnd = ' AND gm.id = :groupid ';
+            $params['groupid'] = $groupid;
         }
+
+        // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
+        // Public questionnaires can have responses to multiple questionnaire instances.
+        if (is_object($this->survey) && ($this->survey->realm == 'public') && ($this->course->id == $this->survey->courseid)) {
+            $sql = 'SELECT COUNT(r.id) ' .
+                'FROM {questionnaire_response} r ' .
+                'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
+                'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
+                $groupsql .
+                'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
+            $params['surveyid'] = $this->sid;
+            $params['status'] = 'y';
+        } else {
+            $sql = 'SELECT COUNT(r.id) ' .
+                'FROM {questionnaire_response} r ' .
+                $groupsql .
+                'WHERE r.questionnaireid = :questionnaireid AND r.complete = :status' . $groupcnd;
+            $params['questionnaireid'] = $this->id;
+            $params['status'] = 'y';
+        }
+        if ($userid) {
+            $sql .= ' AND r.userid = :userid';
+            $params['userid'] = $userid;
+        }
+        return $DB->count_records_sql($sql, $params);
+    }
+
+    /**
+     * Get the requested responses for this questionnaire.
+     *
+     * @param int|bool $userid
+     * @param int $groupid
+     * @return array
+     * @throws dml_exception
+     */
+    public function get_responses($userid=false, $groupid=0) {
+        global $DB;
+
+        $params = [];
+        $groupsql = '';
+        $groupcnd = '';
+        if ($groupid != 0) {
+            $groupsql = 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
+            $groupcnd = ' AND gm.id = :groupid ';
+            $params['groupid'] = $groupid;
+        }
+
+        // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
+        // Public questionnaires can have responses to multiple questionnaire instances.
+        if (is_object($this->survey) && ($this->survey->realm == 'public') && ($this->course->id == $this->survey->courseid)) {
+            $sql = 'SELECT r.* ' .
+                'FROM {questionnaire_response} r ' .
+                'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
+                'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
+                $groupsql .
+                'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
+            $params['surveyid'] = $this->sid;
+            $params['status'] = 'y';
+        } else {
+            $sql = 'SELECT r.* ' .
+                'FROM {questionnaire_response} r ' .
+                $groupsql .
+                'WHERE r.questionnaireid = :questionnaireid AND r.complete = :status' . $groupcnd;
+            $params['questionnaireid'] = $this->id;
+            $params['status'] = 'y';
+        }
+        if ($userid) {
+            $sql .= ' AND r.userid = :userid';
+            $params['userid'] = $userid;
+        }
+
+        $sql .= ' ORDER BY r.id';
+        return $DB->get_records_sql($sql, $params);
     }
 
     private function has_required($section = 0) {
@@ -2115,32 +2189,11 @@ class questionnaire {
         // Is this questionnaire set to fullname or anonymous?
         $isfullname = $this->respondenttype != 'anonymous';
         if ($isfullname) {
-            $selectgroupid = '';
-            $gmuserid = ', GM.userid ';
-            $groupmembers = ', {groups_members} GM ';
-            switch ($currentgroupid) {
-                case 0:     // All participants.
-                    $gmuserid = '';
-                    $groupmembers = '';
-                    break;
-                default:     // Members of a specific group.
-                    $selectgroupid = ' AND GM.groupid='.$currentgroupid.' AND R.userid = GM.userid ';
-            }
-            $sql = 'SELECT R.id AS responseid, R.submitted AS submitted, R.userid, U.username AS username,
-                            U.id as userid '.$gmuserid.
-                'FROM {questionnaire_response} R,
-                  {user} U
-                '.$groupmembers.
-            'WHERE R.questionnaireid= :questionnaireid AND complete = :complete AND U.id = R.userid ' . $selectgroupid .
-            'ORDER BY U.lastname, U.firstname, R.submitted DESC';
+            $responses = $this->get_responses(false, $currentgroupid);
         } else {
-            $sql = 'SELECT R.id AS responseid, R.submitted
-                   FROM {questionnaire_response} R
-                   WHERE R.questionnaireid = :questionnaireid
-                   AND complete = :complete
-                   ORDER BY R.submitted DESC';
+            $responses = $this->get_responses();
         }
-        if (!$responses = $DB->get_records_sql ($sql, array('questionnaireid' => $this->id, 'complete' => 'y'))) {
+        if (!$responses) {
             return;
         }
         $total = count($responses);
@@ -2156,7 +2209,7 @@ class questionnaire {
         $i = 0;
         $currpos = -1;
         foreach ($responses as $response) {
-            array_push($rids, $response->responseid);
+            array_push($rids, $response->id);
             if ($isfullname) {
                 $user = $DB->get_record('user', array('id' => $response->userid));
                 $userfullname = fullname($user);
@@ -2164,7 +2217,7 @@ class questionnaire {
                 array_push($ridsuserfullname, fullname($user));
                 array_push($ridsuserid, $response->userid);
             }
-            if ($response->responseid == $currrid) {
+            if ($response->id == $currrid) {
                 $currpos = $i;
             }
             $i++;
@@ -2422,30 +2475,14 @@ class questionnaire {
         } else {
             $navbar = false;
             if ($uid !== false) { // One participant only.
-                $sql = "SELECT r.id, r.questionnaireid
-                          FROM {questionnaire_response} r
-                         WHERE r.questionnaireid='{$this->id}' AND
-                               r.userid = $uid AND
-                               r.complete='y'
-                         ORDER BY r.id";
+                $rows = $this->get_responses($uid);
                 // All participants or all members of a group.
             } else if ($currentgroupid == 0) {
-                $sql = "SELECT r.id, r.questionnaireid, r.userid as userid
-                          FROM {questionnaire_response} r
-                         WHERE r.questionnaireid='{$this->id}' AND
-                               r.complete='y'
-                         ORDER BY r.id";
+                $rows = $this->get_responses();
             } else { // Members of a specific group.
-                $sql = "SELECT r.id, r.questionnaireid
-                          FROM {questionnaire_response} r,
-                                {groups_members} gm
-                         WHERE r.questionnaireid='{$this->id}' AND
-                               r.complete='y' AND
-                               gm.groupid=".$currentgroupid." AND
-                               r.userid=gm.userid
-                         ORDER BY r.id";
+                $rows = $this->get_responses(false, $currentgroupid);
             }
-            if (!($rows = $DB->get_records_sql($sql))) {
+            if (!$rows) {
                 $this->page->add_to_page('respondentinfo',
                     $this->renderer->notification(get_string('noresponses', 'questionnaire'),
                         \core\output\notification::NOTIFY_ERROR));
