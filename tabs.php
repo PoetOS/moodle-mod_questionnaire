@@ -49,6 +49,11 @@ if ($questionnaire->capabilities->editquestions && $owner) {
             'id='.$questionnaire->cm->id), get_string('questions', 'questionnaire'));
 }
 
+if ($questionnaire->capabilities->editquestions && $owner) {
+    $row[] = new tabobject('feedback', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/feedback.php?'.
+            'id='.$questionnaire->cm->id), get_string('feedback'));
+}
+
 if ($questionnaire->capabilities->preview && $owner) {
     if (!empty($questionnaire->questions)) {
         $row[] = new tabobject('preview', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/preview.php?'.

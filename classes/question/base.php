@@ -455,7 +455,7 @@ abstract class base {
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
      */
     public function valid_feedback() {
-        if ($this->supports_feedback() && $this->has_choices() && $this->required()) {
+        if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
             foreach ($this->choices as $choice) {
                 if ($choice->value != null) {
                     return true;

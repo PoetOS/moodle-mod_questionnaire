@@ -598,6 +598,15 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $questionnairenode->add_node($node, $beforekey);
     }
 
+    if (has_capability('mod/questionnaire:editquestions', $context) && $owner) {
+        $url = '/mod/questionnaire/feedback.php';
+        $node = navigation_node::create(get_string('feedback', 'questionnaire'),
+            new moodle_url($url, array('id' => $cmid)),
+            navigation_node::TYPE_SETTING, null, 'feedback',
+            new pix_icon('t/edit', ''));
+        $questionnairenode->add_node($node, $beforekey);
+    }
+
     if (has_capability('mod/questionnaire:preview', $context)) {
         $url = '/mod/questionnaire/preview.php';
         $node = navigation_node::create(get_string('preview_label', 'questionnaire'),

@@ -170,13 +170,6 @@ class questions_form extends \moodleform {
                                 'title' => $strremove);
 
                 if ($tid == QUESPAGEBREAK) {
-                    $esrc = $CFG->wwwroot.'/mod/questionnaire/images/editd.gif';
-                    $eextra = array('disabled' => 'disabled');
-                } else {
-                    $esrc = $CFG->wwwroot.'/mod/questionnaire/images/edit.gif';
-                }
-
-                if ($tid == QUESPAGEBREAK) {
                     $esrc = $spacer;
                     $eextra = array('disabled' => 'disabled');
                 } else {

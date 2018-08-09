@@ -1290,8 +1290,7 @@ class questionnaire {
                 return(false);
             }
         } else {
-            if (empty($sdata->name) || empty($sdata->title)
-                || empty($sdata->realm)) {
+            if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
                 return(false);
             }
             if (!isset($sdata->chart_type)) {
@@ -1315,7 +1314,9 @@ class questionnaire {
             $surveyrecord = new stdClass();
             $surveyrecord->id = $this->survey->id;
             foreach ($fields as $f) {
-                $surveyrecord->$f = trim($sdata->{$f});
+                if (isset($sdata->{$f})) {
+                    $surveyrecord->$f = trim($sdata->{$f});
+                }
             }
 
             $result = $DB->update_record('questionnaire_survey', $surveyrecord);
