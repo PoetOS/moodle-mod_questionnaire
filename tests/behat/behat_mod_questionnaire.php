@@ -73,10 +73,7 @@ class behat_mod_questionnaire extends behat_base {
         // multiline data.
         $rows = $fielddata->getRows();
         $hashrows = $fielddata->getRowsHash();
-        $options = array();
         if (isset($hashrows['Possible answers'])) {
-            $options = explode(',', $hashrows['Possible answers']);
-            $rownum = -1;
             // Find the row that contained multiline data and add line breaks. Rows are two item arrays where the
             // first is an identifier and the second is the value.
             foreach ($rows as $key => $row) {
@@ -145,7 +142,7 @@ class behat_mod_questionnaire extends behat_base {
      */
     private function add_question_data($sid) {
         $questiondata = array(
-            array("id", "survey_id", "name", "type_id", "result_id", "length", "precise", "position", "content", "required",
+            array("id", "surveyid", "name", "type_id", "result_id", "length", "precise", "position", "content", "required",
                   "deleted", "dependquestion", "dependchoice"),
             array("1", $sid, "own car", "1", null, "0", "0", "1", "<p>Do you own a car?</p>", "y", "n", "0", "0"),
             array("2", $sid, "optional", "2", null, "20", "25", "3", "<p>What is the colour of your car?</p>", "y", "n", "121",

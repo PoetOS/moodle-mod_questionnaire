@@ -152,8 +152,8 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $record['position'] = count($questionnaire->questions);
 
-        if (!isset($record['survey_id'])) {
-            throw new coding_exception('survey_id must be present in phpunit_util::create_question() $record');
+        if (!isset($record['surveyid'])) {
+            throw new coding_exception('surveyid must be present in phpunit_util::create_question() $record');
         }
 
         if (!isset($record['name'])) {
@@ -213,7 +213,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
         if ($qtype !== null) {
             $questiondata['type_id'] = $qtype;
-            $questiondata['survey_id'] = $questionnaire->sid;
+            $questiondata['surveyid'] = $questionnaire->sid;
             $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
             $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
             $this->create_question($questionnaire, $questiondata, $choicedata);
@@ -679,7 +679,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $qdg->create_question(
                         $questionnaire,
                         [
-                            'survey_id' => $questionnaire->sid,
+                            'surveyid' => $questionnaire->sid,
                             'name'      => $qdg->type_name($questiontype),
                             'type_id'   => QUESSECTIONTEXT
                         ]
@@ -693,7 +693,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         $questions[] = $qdg->create_question(
                             $questionnaire,
                             [
-                                'survey_id' => $questionnaire->sid,
+                                'surveyid' => $questionnaire->sid,
                                 'name'      => $qdg->type_name($questiontype).' '.$qname++,
                                 'type_id'   => $questiontype
                             ],
@@ -704,7 +704,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $qdg->create_question(
                         $questionnaire,
                         [
-                            'survey_id' => $questionnaire->sid,
+                            'surveyid' => $questionnaire->sid,
                             'name' => 'pagebreak '.$qname++,
                             'type_id' => QUESPAGEBREAK
                         ]

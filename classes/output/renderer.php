@@ -69,6 +69,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Fill out the feedback page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_feedbackpage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/qsettingspage', $data);
+    }
+
+    /**
      * Fill out the questions page.
      * @param \templateable $page
      * @return string | boolean

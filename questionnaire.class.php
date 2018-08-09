@@ -122,7 +122,7 @@ class questionnaire {
             $this->questionsbysec = [];
         }
 
-        $select = 'survey_id = ? AND deleted = ?';
+        $select = 'surveyid = ? AND deleted = ?';
         $params = [$sid, 'n'];
         if ($records = $DB->get_records_select('questionnaire_question', $select, $params, 'position')) {
             $sec = 1;
@@ -925,7 +925,7 @@ class questionnaire {
             }
 
             // Prevent navigation to previous page if wrong format in answered questions).
-            $msg = $this->response_check_format($formdata->sec, $formdata, $checkmissing = false, $checkwrongformat = true);
+            $msg = $this->response_check_format($formdata->sec, $formdata, false, true);
             if ($msg) {
                 $formdata->prev = '';
             } else {
@@ -1290,8 +1290,7 @@ class questionnaire {
                 return(false);
             }
         } else {
-            if (empty($sdata->name) || empty($sdata->title)
-                || empty($sdata->realm)) {
+            if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
                 return(false);
             }
             if (!isset($sdata->chart_type)) {
@@ -1315,7 +1314,9 @@ class questionnaire {
             $surveyrecord = new stdClass();
             $surveyrecord->id = $this->survey->id;
             foreach ($fields as $f) {
-                $surveyrecord->$f = trim($sdata->{$f});
+                if (isset($sdata->{$f})) {
+                    $surveyrecord->$f = trim($sdata->{$f});
+                }
             }
 
             $result = $DB->update_record('questionnaire_survey', $surveyrecord);
@@ -1367,7 +1368,7 @@ class questionnaire {
             // Fix some fields first.
             $oldid = $question->id;
             unset($question->id);
-            $question->survey_id = $newsid;
+            $question->surveyid = $newsid;
             $question->position = $pos++;
 
             // Copy question to new survey.
@@ -1407,9 +1408,9 @@ class questionnaire {
 
         // Replicate any feedback data.
         // TODO: Need to handle image attachments (same for other copies above).
-        $fbsections = $DB->get_records('questionnaire_fb_sections', ['survey_id' => $this->survey->id], 'id');
+        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->survey->id], 'id');
         foreach ($fbsections as $fbsid => $fbsection) {
-            $fbsection->survey_id = $newsid;
+            $fbsection->surveyid = $newsid;
             $scorecalculation = unserialize($fbsection->scorecalculation);
             $newscorecalculation = [];
             foreach ($scorecalculation as $qid => $val) {
@@ -1418,9 +1419,9 @@ class questionnaire {
             $fbsection->scorecalculation = serialize($newscorecalculation);
             unset($fbsection->id);
             $newfbsid = $DB->insert_record('questionnaire_fb_sections', $fbsection);
-            $feedbackrecs = $DB->get_records('questionnaire_feedback', ['section_id' => $fbsid], 'id');
+            $feedbackrecs = $DB->get_records('questionnaire_feedback', ['sectionid' => $fbsid], 'id');
             foreach ($feedbackrecs as $feedbackrec) {
-                $feedbackrec->section_id = $newfbsid;
+                $feedbackrec->sectionid = $newfbsid;
                 unset($feedbackrec->id);
                 $DB->insert_record('questionnaire_feedback', $feedbackrec);
             }
@@ -1449,10 +1450,7 @@ class questionnaire {
         $qnum = $i - 1;
 
         foreach ($this->questionsbysec[$section] as $question) {
-            $qid = $question->id;
             $tid = $question->type_id;
-            $lid = $question->length;
-            $pid = $question->precise;
             if ($tid != QUESSECTIONTEXT) {
                 $qnum++;
             }
@@ -1617,7 +1615,7 @@ class questionnaire {
         global $DB;
 
         $pos = $this->response_select_max_pos($rid);
-        $select = 'survey_id = ? AND type_id = ? AND position < ? AND deleted = ?';
+        $select = 'surveyid = ? AND type_id = ? AND position < ? AND deleted = ?';
         $params = [$this->sid, QUESPAGEBREAK, $pos, 'n'];
         $max = $DB->count_records_select('questionnaire_question', $select, $params) + 1;
 
@@ -1635,7 +1633,7 @@ class questionnaire {
             $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_'.$tbl.'} a, {questionnaire_question} q '.
                 'WHERE a.response_id = ? AND '.
                 'q.id = a.question_id AND '.
-                'q.survey_id = ? AND '.
+                'q.surveyid = ? AND '.
                 'q.deleted = \'n\'';
             if ($record = $DB->get_record_sql($sql, array($rid, $this->sid))) {
                 $newmax = (int)$record->num;
@@ -1744,8 +1742,6 @@ class questionnaire {
      * @return void
      */
     private function send_message($info, $eventtype) {
-        global $USER;
-
         $eventdata = new \core\message\message();
         $eventdata->courseid         = $this->course->id;
         $eventdata->modulename       = 'questionnaire';
@@ -1970,7 +1966,7 @@ class questionnaire {
      * @throws dml_exception
      */
     private function response_send_email($rid, $email) {
-        global $CFG, $USER;
+        global $CFG;
 
         $submission = $this->generate_csv($rid, '', null, 1, 0);
         if (!empty($submission)) {
@@ -2069,9 +2065,6 @@ class questionnaire {
     }
 
     private function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
-        global $DB;
-
-        $sid = $this->survey->id;
         if ($col == null) {
             $col = '';
         }
@@ -2184,8 +2177,6 @@ class questionnaire {
     public function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
         global $CFG, $DB;
 
-        $output = '';
-
         // Is this questionnaire set to fullname or anonymous?
         $isfullname = $this->respondenttype != 'anonymous';
         if ($isfullname) {
@@ -2212,7 +2203,6 @@ class questionnaire {
             array_push($rids, $response->id);
             if ($isfullname) {
                 $user = $DB->get_record('user', array('id' => $response->userid));
-                $userfullname = fullname($user);
                 array_push($ridssub, $response->submitted);
                 array_push($ridsuserfullname, fullname($user));
                 array_push($ridsuserid, $response->userid);
@@ -2231,7 +2221,6 @@ class questionnaire {
             $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
             $firstrid = $rids[0];
             $lastrid = $rids[$total - 1];
-            $displaypos = 1;
             if ($prevrid != null) {
                 $pos = $currpos - 1;
                 $title = '';
@@ -2346,7 +2335,6 @@ class questionnaire {
     public function survey_results_navbar_student($currrid, $userid, $instance, $resps, $reporttype='myreport', $sid='') {
         global $DB;
         $stranonymous = get_string('anonymous', 'questionnaire');
-        $output = '';
 
         $total = count($resps);
         $rids = array();
@@ -2376,14 +2364,12 @@ class questionnaire {
         }
         $prevrid = ($currpos > 0) ? $rids[$currpos - 1] : null;
         $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
-        $rowsperpage = 1;
 
         if ($reporttype == 'myreport') {
             $url = 'myreport.php?instance='.$instance.'&user='.$userid.'&action=vresp&byresponse=1&individualresponse=1';
         } else {
             $url = 'report.php?instance='.$instance.'&user='.$userid.'&action=vresp&byresponse=1&individualresponse=1&sid='.$sid;
         }
-        $linkarr = array();
         $navbar = new \stdClass();
         $displaypos = 1;
         if ($prevrid != null) {
@@ -2409,7 +2395,7 @@ class questionnaire {
         $this->page->add_to_page('bottomnavigationbar', $this->renderer->usernavigationbar($navbar));
     }
 
-    /* {{{ proto string survey_results(int survey_id, int precision, bool show_totals, int question_id,
+    /* {{{ proto string survey_results(int surveyid, int precision, bool show_totals, int question_id,
      * array choice_ids, int response_id)
         Builds HTML for the results for the survey. If a
         question id and choice id(s) are given, then the results
@@ -2783,7 +2769,7 @@ class questionnaire {
         return $positioned;
     }
 
-    /* {{{ proto array survey_generate_csv(int survey_id)
+    /* {{{ proto array survey_generate_csv(int surveyid)
     Exports the results of a survey to an array.
     */
     public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid, $showincompletes = 0) {
@@ -2845,7 +2831,7 @@ class questionnaire {
                 SELECT DISTINCT c.id as cid, q.id as qid, q.precise AS precise, q.name, c.content
                   FROM {questionnaire_question} q
                   JOIN {questionnaire_quest_choice} c ON question_id = q.id
-                 WHERE q.survey_id = ? ORDER BY cid ASC
+                 WHERE q.surveyid = ? ORDER BY cid ASC
             ";
             $choicerecords = $DB->get_records_sql($choicesql, $choiceparams);
             $choicesbyqid = [];
@@ -2882,7 +2868,6 @@ class questionnaire {
                 }
                 $choices = $choicesbyqid[$qid];
 
-                $subqnum = 0;
                 switch ($type) {
 
                     case QUESRADIO: // Single.
@@ -3117,9 +3102,7 @@ class questionnaire {
         }
 
         // Change table headers to incorporate actual question numbers.
-        $numcol = 0;
         $numquestion = 0;
-        $out = '';
         $oldkey = 0;
 
         for ($i = $nbinfocols; $i < $numrespcols; $i++) {
@@ -3146,38 +3129,11 @@ class questionnaire {
             if ($pos) {
                 $thisoutput = substr($thisoutput, 0, $pos);
             }
-            $other = $sep.$stringother;
             $out = 'Q'.sprintf("%02d", $numquestion).$sep.$thisoutput;
             $output[0][$i] = $out;
         }
         return $output;
     }
-
-    /* {{{ proto bool survey_export_csv(int survey_id, string filename)
-        Exports the results of a survey to a CSV file.
-        Returns true on success.
-        */
-
-    private function export_csv($filename) {
-        $umask = umask(0077);
-        $fh = fopen($filename, 'w');
-        umask($umask);
-        if (!$fh) {
-            return 0;
-        }
-
-        $data = survey_generate_csv($rid = '', $userid = '', $currentgroupid = '');
-
-        foreach ($data as $row) {
-            fputs($fh, join(', ', $row) . "\n");
-        }
-
-        fflush($fh);
-        fclose($fh);
-
-        return 1;
-    }
-
 
     /**
      * Function to move a question to a new position.
@@ -3221,7 +3177,7 @@ class questionnaire {
         require_once($CFG->dirroot.'/mod/questionnaire/drawchart.php');
 
         // Find if there are any feedbacks in this questionnaire.
-        $sql = "SELECT * FROM {questionnaire_fb_sections} WHERE survey_id = ? AND section IS NOT NULL";
+        $sql = "SELECT * FROM {questionnaire_fb_sections} WHERE surveyid = ? AND section IS NOT NULL";
         if (!$fbsections = $DB->get_records_sql($sql, [$this->survey->id])) {
             return '';
         }
@@ -3258,6 +3214,7 @@ class questionnaire {
         }
 
         $fbsectionsnb = array_keys($fbsections);
+        $numsections = count($fbsections);
 
         // Get all response ids for all respondents.
         $rids = array();
@@ -3325,7 +3282,7 @@ class questionnaire {
             $sectionlabel = $fbsections[$sectionid]->sectionlabel;
 
             $sectionheading = $fbsections[$sectionid]->sectionheading;
-            $feedbacks = $DB->get_records('questionnaire_feedback', array('section_id' => $sectionid));
+            $feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $sectionid]);
             $labels = array();
             foreach ($feedbacks as $feedback) {
                 if ($feedback->feedbacklabel != '') {
@@ -3333,7 +3290,7 @@ class questionnaire {
                 }
             }
             $feedback = $DB->get_record_select('questionnaire_feedback',
-                'section_id = ? AND minscore <= ? AND ? < maxscore', array($sectionid, $scorepercent, $scorepercent));
+                'sectionid = ? AND minscore <= ? AND ? < maxscore', [$sectionid, $scorepercent, $scorepercent]);
 
             // To eliminate all potential % chars in heading text (might interfere with the sprintf function).
             $sectionheading = str_replace('%', '', $sectionheading);
@@ -3404,19 +3361,18 @@ class questionnaire {
         $oppositescorepercent = array();
         $alloppositescorepercent = array();
         $chartlabels = array();
-        $chartscore = array();
-        // sections where all questions are unseen because of the $advdependencies
+        // Sections where all questions are unseen because of the $advdependencies.
         $nanscores = array();
 
-        for ($i = 1; $i <= $this->survey->feedbacksections; $i++) {
+        for ($i = 1; $i <= $numsections; $i++) {
             $score[$i] = 0;
             $allscore[$i] = 0;
             $maxscore[$i] = 0;
             $scorepercent[$i] = 0;
         }
 
-        for ($section = 1; $section <= $this->survey->feedbacksections; $section++) {
-            // get feedback messages only for this sections
+        for ($section = 1; $section <= $numsections; $section++) {
+            // Get feedback messages only for this sections.
             if (($filteredsections != null) && !in_array($section, $filteredsections)) {
                 continue;
             }
@@ -3424,6 +3380,9 @@ class questionnaire {
                 if ($fbsection->section == $section) {
                     $feedbacksectionid = $key;
                     $scorecalculation = unserialize($fbsection->scorecalculation);
+                    if (empty($scorecalculation) && !is_array($scorecalculation)) {
+                        $scorecalculation = [];
+                    }
                     $sectionheading = $fbsection->sectionheading;
                     $imageid = $fbsection->id;
                     $chartlabels [$section] = $fbsection->sectionlabel;
@@ -3450,7 +3409,8 @@ class questionnaire {
             $oppositescorepercent[$section] = 100 - $scorepercent[$section];
 
             if (($compare || $allresponses) && $nbparticipants != 0) {
-                $allscorepercent[$section] = ($maxscore[$section] > 0) ? (round(($allscore[$section] / $nbparticipants) / $maxscore[$section] * 100)) : 0;
+                $allscorepercent[$section] = ($maxscore[$section] > 0) ? (round(($allscore[$section] / $nbparticipants) /
+                    $maxscore[$section] * 100)) : 0;
                 $alloppositescorepercent[$section] = 100 - $allscorepercent[$section];
             }
 
@@ -3477,7 +3437,7 @@ class questionnaire {
                 $feedbackmessages[] = $this->renderer->box_start('reportQuestionTitle');
                 $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, $formatoptions);
                 $feedback = $DB->get_record_select('questionnaire_feedback',
-                    'section_id = ? AND minscore <= ? AND ? < maxscore',
+                    'sectionid = ? AND minscore <= ? AND ? < maxscore',
                     array($feedbacksectionid, $scorepercent[$section], $scorepercent[$section]),
                     'id,feedbacktext,feedbacktextformat');
                 $feedbackmessages[] = $this->renderer->box_end();

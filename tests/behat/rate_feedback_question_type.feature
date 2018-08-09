@@ -6,7 +6,7 @@ Feature: In questionnaire, rate questions can be defined with scores attributed 
   I must add a required rate question type.
 
   @javascript
-  Scenario: Create a questionnaire with a rate question type and verify that feedback options exist.
+  Scenario: Create a questionnaire with an Osgood rate question type and verify that feedback options exist.
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
@@ -32,10 +32,11 @@ Feature: In questionnaire, rate questions can be defined with scores attributed 
       | Question Name | Q7 |
       | Yes | y |
       | Nb of scale items | 4 |
-      | Type of rate scale | N/A column |
+      | Type of rate scale | Osgood |
       | Question Text | Rate these |
       | Possible answers | 1=One,2=Two,3=Three,4=Four |
     Then I should see "[Rate (scale 1..5)] (Q7)"
-    And I follow "Advanced settings"
+    And I follow "Feedback"
     And I should see "Feedback options"
+    And I should see "Display Scores"
     And I log out

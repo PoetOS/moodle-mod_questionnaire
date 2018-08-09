@@ -143,7 +143,8 @@ function questionnaire_add_instance($questionnaire) {
     questionnaire_set_events($questionnaire);
 
     $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
-    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire', $questionnaire->id, $completiontimeexpected);
+    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire',
+        $questionnaire->id, $completiontimeexpected);
 
     return $questionnaire->id;
 }
@@ -183,7 +184,8 @@ function questionnaire_update_instance($questionnaire) {
     questionnaire_set_events($questionnaire);
 
     $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
-    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire', $questionnaire->id, $completiontimeexpected);
+    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire',
+        $questionnaire->id, $completiontimeexpected);
 
     return $DB->update_record("questionnaire", $questionnaire);
 }
@@ -594,6 +596,15 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $node = navigation_node::create(get_string('questions', 'questionnaire'),
             new moodle_url($url, array('id' => $cmid)),
             navigation_node::TYPE_SETTING, null, 'questions',
+            new pix_icon('t/edit', ''));
+        $questionnairenode->add_node($node, $beforekey);
+    }
+
+    if (has_capability('mod/questionnaire:editquestions', $context) && $owner) {
+        $url = '/mod/questionnaire/feedback.php';
+        $node = navigation_node::create(get_string('feedback', 'questionnaire'),
+            new moodle_url($url, array('id' => $cmid)),
+            navigation_node::TYPE_SETTING, null, 'feedback',
             new pix_icon('t/edit', ''));
         $questionnairenode->add_node($node, $beforekey);
     }

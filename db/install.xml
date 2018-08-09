@@ -62,7 +62,7 @@
     <TABLE NAME="questionnaire_question" COMMENT="questionnaire_question table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="survey_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="surveyid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="name" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="type_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="result_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
@@ -223,7 +223,7 @@
     <TABLE NAME="questionnaire_fb_sections" COMMENT="questionnaire_fb_sections table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="survey_id" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="surveyid" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="section" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="scorecalculation" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="sectionlabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
@@ -237,7 +237,7 @@
     <TABLE NAME="questionnaire_feedback" COMMENT="questionnaire_feedback table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="section_id" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="sectionid" TYPE="int" LENGTH="18" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="feedbacklabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="feedbacktext" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="feedbacktextformat" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>

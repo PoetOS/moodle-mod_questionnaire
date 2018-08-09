@@ -52,7 +52,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $questions = new backup_nested_element('questions');
 
-        $question = new backup_nested_element('question', array('id'), array('survey_id', 'name', 'type_id', 'result_id',
+        $question = new backup_nested_element('question', array('id'), array('surveyid', 'name', 'type_id', 'result_id',
             'length', 'precise', 'position', 'content', 'required', 'deleted'));
 
         $questchoices = new backup_nested_element('quest_choices');
@@ -67,12 +67,12 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $fbsections = new backup_nested_element('fb_sections');
 
         $fbsection = new backup_nested_element('fb_section', array('id'), array(
-                'survey_id', 'section', 'scorecalculation', 'sectionlabel', 'sectionheading', 'sectionheadingformat'));
+                'surveyid', 'section', 'scorecalculation', 'sectionlabel', 'sectionheading', 'sectionheadingformat'));
 
         $feedbacks = new backup_nested_element('feedbacks');
 
         $feedback = new backup_nested_element('feedback', array('id'), array(
-                'section_id', 'feedbacklabel', 'feedbacktext', 'feedbacktextformat', 'minscore', 'maxscore'));
+                'sectionid', 'feedbacklabel', 'feedbacktext', 'feedbacktextformat', 'minscore', 'maxscore'));
 
         $responses = new backup_nested_element('responses');
 
@@ -169,9 +169,9 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         // If current questionnaire is based on a public one, do not include survey nor questions in backup.
         if (!$haspublic) {
             $survey->set_source_table('questionnaire_survey', array('id' => '../../sid'));
-            $question->set_source_table('questionnaire_question', array('survey_id' => backup::VAR_PARENTID));
-            $fbsection->set_source_table('questionnaire_fb_sections', array('survey_id' => backup::VAR_PARENTID));
-            $feedback->set_source_table('questionnaire_feedback', array('section_id' => backup::VAR_PARENTID));
+            $question->set_source_table('questionnaire_question', array('surveyid' => backup::VAR_PARENTID));
+            $fbsection->set_source_table('questionnaire_fb_sections', array('surveyid' => backup::VAR_PARENTID));
+            $feedback->set_source_table('questionnaire_feedback', array('sectionid' => backup::VAR_PARENTID));
             $questchoice->set_source_table('questionnaire_quest_choice', array('question_id' => backup::VAR_PARENTID));
             $questdependency->set_source_table('questionnaire_dependency', array('questionid' => backup::VAR_PARENTID));
 

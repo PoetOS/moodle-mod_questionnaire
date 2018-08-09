@@ -77,15 +77,15 @@ if ($delq) {
     $questionnaireid = $questionnaire->id;
 
     // Need to reload questions before setting deleted question to 'y'.
-    $questions = $DB->get_records('questionnaire_question', array('survey_id' => $sid, 'deleted' => 'n'), 'id');
-    $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $sid));
+    $questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'], 'id');
+    $DB->set_field('questionnaire_question', 'deleted', 'y', ['id' => $qid, 'surveyid' => $sid]);
 
     // Delete all dependency records for this question.
     questionnaire_delete_dependencies($qid);
 
     // Just in case the page is refreshed (F5) after a question has been deleted.
     if (isset($questions[$qid])) {
-        $select = 'survey_id = '.$sid.' AND deleted = \'n\' AND position > '.
+        $select = 'surveyid = '.$sid.' AND deleted = \'n\' AND position > '.
                         $questions[$qid]->position;
     } else {
         redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
@@ -105,7 +105,7 @@ if ($delq) {
         questionnaire_delete_responses($qid);
 
         // If no questions left in this questionnaire, remove all responses.
-        if ($DB->count_records('questionnaire_question', ['survey_id' => $sid, 'deleted' => 'n'] == 0) ) {
+        if ($DB->count_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n']) == 0) {
             $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
         }
     }
@@ -210,7 +210,7 @@ if ($action == 'main') {
         } else if (isset($qformdata->addqbutton)) {
             if ($qformdata->type_id == QUESPAGEBREAK) { // Adding section break is handled right away....
                 $questionrec = new stdClass();
-                $questionrec->survey_id = $qformdata->sid;
+                $questionrec->surveyid = $qformdata->sid;
                 $questionrec->type_id = QUESPAGEBREAK;
                 $questionrec->content = 'break';
                 $question = \mod_questionnaire\question\base::question_builder(QUESPAGEBREAK);

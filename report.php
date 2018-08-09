@@ -123,7 +123,7 @@ $groupmode = groups_get_activity_groupmode($cm, $course);
 $questionnairegroups = '';
 $groupscount = 0;
 $SESSION->questionnaire->respscount = 0;
-$SESSION->questionnaire_survey_id = $sid;
+$SESSION->questionnaire_surveyid = $sid;
 
 if ($groupmode > 0) {
     if ($groupmode == 1) {

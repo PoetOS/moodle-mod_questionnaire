@@ -57,8 +57,6 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
     }
 
     public function test_add_instance() {
-        global $DB;
-
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
@@ -174,7 +172,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->assertTrue(questionnaire_delete_instance($questionnaire->id));
         $this->assertEmpty($DB->get_record('questionnaire', array('id' => $questionnaire->id)));
         $this->assertEmpty($DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid)));
-        $this->assertEmpty($DB->get_records('questionnaire_question', array('survey_id' => $survey->id)));
+        $this->assertEmpty($DB->get_records('questionnaire_question', array('surveyid' => $survey->id)));
         $this->assertEmpty($DB->get_records('questionnaire_response', array('questionnaireid' => $questionnaire->id)));
         $this->assertEmpty($DB->get_records('questionnaire_response_bool', array('response_id' => $response->id)));
         $this->assertEmpty($DB->get_records('event', array("modulename" => 'questionnaire', "instance" => $questionnaire->id)));
@@ -195,7 +193,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->assertEquals(get_string("noresponses", "questionnaire"), $outline->info);
 
         // Test for a user with one response.
-        $response = $generator->create_question_response($questionnaire, reset($questionnaire->questions), 'y', $user->id);
+        $generator->create_question_response($questionnaire, reset($questionnaire->questions), 'y', $user->id);
         $outline = questionnaire_user_outline($course, $user, null, $questionnaire);
         $this->assertEquals('1 '.get_string("response", "questionnaire"), $outline->info);
     }

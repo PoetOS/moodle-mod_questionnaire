@@ -33,6 +33,7 @@ Feature: In questionnaire, yes/no questions can be defined with scores attribute
       | Yes | y |
       | Question Text | Are you still in School? |
     Then I should see "[Yes/No] (Q1)"
-    And I follow "Advanced settings"
+    And I follow "Feedback"
     And I should see "Feedback options"
+    And I should see "Display Scores"
     And I log out

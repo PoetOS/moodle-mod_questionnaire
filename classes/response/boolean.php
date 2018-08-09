@@ -181,9 +181,6 @@ class boolean extends base {
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {
             $choice = $row->choice_id;
-            if (isset ($row->name) && $row->name == '') {
-                $noname = true;
-            }
             unset ($row->id);
             unset ($row->choice_id);
             $row = (array)$row;

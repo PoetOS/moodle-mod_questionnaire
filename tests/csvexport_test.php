@@ -61,8 +61,6 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
     }
 
     public function test_csvexport() {
-        global $DB;
-
         $this->resetAfterTest();
         $dg = $this->getDataGenerator();
         $qdg = $dg->get_plugin_generator('mod_questionnaire');
