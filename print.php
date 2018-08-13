@@ -18,9 +18,10 @@ require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
 $qid = required_param('qid', PARAM_INT);
-$rid = required_param('rid', PARAM_INT);
+$rid = optional_param('rid', null, PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
 $sec = required_param('sec', PARAM_INT);
+$type = optional_param('type', 'single', PARAM_TEXT);
 $null = null;
 $referer = $CFG->wwwroot.'/mod/questionnaire/report.php';
 
@@ -42,6 +43,8 @@ $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 if (!empty($rid)) {
+    $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+} elseif ($type === "all"){
     $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
 } else {
     $questionnaire->add_page(new \mod_questionnaire\output\previewpage());
@@ -66,6 +69,10 @@ $PAGE->set_title($questionnaire->survey->title);
 $PAGE->set_pagelayout('popup');
 echo $questionnaire->renderer->header();
 $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
-$questionnaire->survey_print_render('', 'print', $courseid, $rid, $blankquestionnaire);
+if ($type === "all"){
+    $questionnaire->survey_print_render('', 'print', $courseid, $rid, $blankquestionnaire, true);
+}else{
+    $questionnaire->survey_print_render('', 'print', $courseid, $rid, $blankquestionnaire);
+}
 echo $questionnaire->renderer->render($questionnaire->page);
 echo $questionnaire->renderer->footer();

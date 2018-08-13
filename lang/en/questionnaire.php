@@ -369,9 +369,11 @@ $string['previewing'] = ' Previewing Questionnaire ';
 $string['previous'] = 'Previous';
 $string['previouspage'] = 'Previous Page';
 $string['print'] = 'Print this Response';
+$string['printall'] = 'Print all Responses';
 $string['printblank'] = 'Print Blank';
 $string['printblanktooltip'] = 'Opens printer-friendly window with blank Questionnaire';
 $string['printtooltip'] = 'Opens printer-friendly window with current Response';
+$string['printtooltipall'] = 'Opens printer-friendly window with current Responses';
 
 $string['privacy:metadata:questionnaire_attempts'] = 'Details about each submission of a questionnaire by a user.';
 $string['privacy:metadata:questionnaire_attempts:userid'] = 'The ID of the user for this attempt.';
