@@ -129,8 +129,7 @@ $string['directwarnings'] = 'Direct dependencies to this question will be remove
 $string['displaymethod'] = 'Display method not defined for question.';
 $string['download'] = 'Download';
 $string['downloadtextformat'] = 'Download in text format';
-$string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a text file (CSV).
- This file can then be imported into a spreadsheet (e.g. MS Excel or Open Office Calc) or a statistical package for further processing the data.';
+$string['downloadtextformat_help'] = 'This feature enables you to download questionnaire responses in a file format of your choice. The file can then be opened in a spreadsheet program (e.g. MS Excel or Open Office Calc) or a statistical package for further processing.';
 $string['downloadtextformat_link'] = 'mod/questionnaire/report#Download_in_text_format';
 $string['dropdown'] = 'Dropdown Box';
 $string['dropdown_help'] = 'There is no real advantage to using the Dropdown Box over using the Radio Buttons
@@ -570,7 +569,7 @@ $string['textarearows'] = 'Textarea rows';
 $string['textbox'] = 'Text Box';
 $string['textbox_help'] = 'For the Text Box question type, enter the Input Box length and the Maximum text length of text to be entered by respondent.
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
-$string['textdownloadoptions'] = 'Options for text download (CSV)';
+$string['textdownloadoptions'] = 'Options for download';
 $string['thank_head'] = 'Thank you for completing this Questionnaire.';
 $string['theme'] = 'Theme';
 $string['thismonth'] = 'this month';
@@ -614,3 +613,6 @@ $string['yesno_help'] = 'Simple Yes/No question.';
 $string['yourresponse'] = 'Your response';
 $string['yourresponses'] = 'Your responses';
 $string['crontask'] = 'Questionnaire cleanup job';
+$string['unknowformat'] = 'Unknown format type';
+$string['downloadas'] = 'Download data as';
+$string['downloadresponses'] = 'Download responses';
