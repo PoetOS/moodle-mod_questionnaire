@@ -16,6 +16,7 @@
 
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->libdir . '/dataformatlib.php');
 
 $instance = optional_param('instance', false, PARAM_INT);   // Questionnaire ID.
 $action = optional_param('action', 'vall', PARAM_ALPHA);
@@ -26,6 +27,7 @@ $byresponse = optional_param('byresponse', false, PARAM_INT);
 $individualresponse = optional_param('individualresponse', false, PARAM_INT);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $user = optional_param('user', '', PARAM_INT);
+$dataformat = optional_param('format', '', PARAM_ALPHA);
 $userid = $USER->id;
 switch ($action) {
     case 'vallasort':
@@ -433,22 +435,18 @@ switch ($action) {
         $output = '';
         $output .= "<br /><br />\n";
         $output .= $questionnaire->renderer->help_icon('downloadtextformat', 'questionnaire');
-        $output .= '&nbsp;'.(get_string('downloadtext')).':&nbsp;'.get_string('responses', 'questionnaire').'&nbsp;'.$groupname;
+        $output .= '&nbsp;' . (get_string('download', 'questionnaire')) . ':&nbsp;' . get_string('responses', 'questionnaire') . '&nbsp;' .
+                $groupname;
         $output .= $questionnaire->renderer->heading(get_string('textdownloadoptions', 'questionnaire'));
         $output .= $questionnaire->renderer->box_start();
-        $output .= "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";
-        $output .= "<input type=\"hidden\" name=\"instance\" value=\"$instance\" />\n";
-        $output .= "<input type=\"hidden\" name=\"user\" value=\"$user\" />\n";
-        $output .= "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
-        $output .= "<input type=\"hidden\" name=\"action\" value=\"dcsv\" />\n";
-        $output .= "<input type=\"hidden\" name=\"group\" value=\"$currentgroupid\" />\n";
-        $output .= html_writer::checkbox('choicecodes', 1, true, get_string('includechoicecodes', 'questionnaire'));
-        $output .= "<br />\n";
-        $output .= html_writer::checkbox('choicetext', 1, true, get_string('includechoicetext', 'questionnaire'));
-        $output .= "<br />\n";
-        $output .= "<br />\n";
-        $output .= "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
-        $output .= "</form>\n";
+        $output .= $questionnaire->renderer->render_export_format_selector(get_string('downloadas', 'questionnaire'), 'report.php',
+                'format', [
+                        'instance' => $instance,
+                        'user' => $user,
+                        'sid' => $sid,
+                        'action' => 'dcsv',
+                        'group' => $currentgroupid
+                ]);
         $output .= $questionnaire->renderer->box_end();
 
         $questionnaire->page->add_to_page('respondentinfo', $output);
@@ -474,23 +472,20 @@ switch ($action) {
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($questionnaire->name, PARAM_FILE);
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
-
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
-        $choicetext  = optional_param('choicetext', '0', PARAM_INT);
+        $choicetext = optional_param('choicetext', '0', PARAM_INT);
         $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid);
 
-        // CSV
-        // SEP. 2007 JR changed file extension to *.txt for non-English Excel users' sake
-        // and changed separator to tabulation
-        // JAN. 2008 added \r carriage return for better Windows implementation.
-        header("Content-Disposition: attachment; filename=$name.txt");
-        header("Content-Type: text/comma-separated-values");
-        foreach ($output as $row) {
-            $text = implode("\t", $row);
-            echo $text."\r\n";
+        if ($dataformat) {
+            $fields = $output[0];
+            array_shift($output);
+            $contents = new ArrayObject($output);
+            $iterator = $contents->getIterator();
+            download_as_dataformat($name, $dataformat, $fields, $iterator);
+            exit();
+            break;
         }
-        exit();
-        break;
+        throw new \moodle_exception('unknowformat', 'questionnaire');
 
     case 'vall':         // View all responses.
     case 'vallasort':    // View all responses sorted in ascending order.

@@ -161,7 +161,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg&group='.$currentgroupid;
             $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
-            $row3[] = new tabobject('downloadcsv', $link, get_string('downloadtext'));
+            $row3[] = new tabobject('downloadcsv', $link, get_string('downloadresponses', 'questionnaire'));
         }
     }
 
