@@ -182,7 +182,7 @@ class multiple extends single {
         } else {
             $arr = [];
             $tmp = null;
-            foreach ($records as $aid => $row) {
+            foreach ($records as $row) {
                 $qid = $row->qid;
                 $cid = $row->cid;
                 unset($row->aid);

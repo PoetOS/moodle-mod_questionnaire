@@ -124,7 +124,7 @@ class rate extends base {
             $disabled = ' disabled="disabled"';
         }
         if (!empty($data) && ( !isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id}) ) ) {
-            $data->{'q'.$this->id} = array();
+            $data->{'q'.$this->id} = [];
         }
 
         $isna = $this->precise == 1;
@@ -133,9 +133,8 @@ class rate extends base {
         // Check if rate question has one line only to display full width columns of choices.
         $nocontent = false;
         $nameddegrees = 0;
-        $n = array();
-        $v = array();
-        $mods = array();
+        $n = [];
+        $v = [];
         $maxndlen = 0;
         foreach ($this->choices as $cid => $choice) {
             $content = $choice->content;

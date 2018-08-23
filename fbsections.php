@@ -227,6 +227,12 @@ if ($settings = $feedbackform->get_data()) {
         $updaterec->sectionheadingformat = $settings->sectionheading['format'];
         $DB->update_record('questionnaire_fb_sections', $updaterec);
 
+        // May have changed the section label and weights, so update the data.
+        $customdata->sectionselect[$feedbacksection->id] = $settings->sectionlabel;
+        if (isset($fullform->weight)) {
+            $customdata->feedbacksection->scorecalculation = $fullform->weight;
+        }
+
         // Save current section's feedbacks
         // first delete all existing feedbacks for this section - if any - because we never know whether editing feedbacks will
         // have more or less texts, so it's easiest to delete all and start afresh.
@@ -249,6 +255,7 @@ if ($settings = $feedbackform->get_data()) {
             $feedback->section_id = $feedbacksection->id;
             if (isset($settings->feedbacklabel[$i])) {
                 $feedback->feedbacklabel = $settings->feedbacklabel[$i];
+
             }
             $feedback->feedbacktext = '';
             $feedback->feedbacktextformat = $settings->feedbacktext[$i]['format'];

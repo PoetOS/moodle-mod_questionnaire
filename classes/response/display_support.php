@@ -287,7 +287,7 @@ class display_support {
         }
         $nameddegrees = 0;
         $n = array();
-        foreach ($question->choices as $cid => $choice) {
+        foreach ($question->choices as $choice) {
             $content = $choice->content;
             // Check for number from 1 to 3 digits, followed by the equal sign = (to accomodate named degrees).
             if (preg_match("/^([0-9]{1,3})=(.*)$/", $content, $ndd)) {

@@ -712,7 +712,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2017111103, 'questionnaire');
     }
 
-    // Get rid of questionnaire_attempts table and migrate necessary data to the questionnaire_response table
+    // Get rid of questionnaire_attempts table and migrate necessary data to the questionnaire_response table.
     if ($oldversion < 2018050102) {
         $table = new xmldb_table('questionnaire_response');
         $field1 = new xmldb_field('questionnaireid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');

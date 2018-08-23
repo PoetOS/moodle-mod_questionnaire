@@ -73,10 +73,7 @@ class behat_mod_questionnaire extends behat_base {
         // multiline data.
         $rows = $fielddata->getRows();
         $hashrows = $fielddata->getRowsHash();
-        $options = array();
         if (isset($hashrows['Possible answers'])) {
-            $options = explode(',', $hashrows['Possible answers']);
-            $rownum = -1;
             // Find the row that contained multiline data and add line breaks. Rows are two item arrays where the
             // first is an identifier and the second is the value.
             foreach ($rows as $key => $row) {

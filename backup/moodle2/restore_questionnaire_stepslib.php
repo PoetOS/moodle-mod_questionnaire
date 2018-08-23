@@ -225,7 +225,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
     }
 
     protected function process_questionnaire_dependency($data) {
-        global $DB;
         $data = (object)$data;
 
         $data->questionid = $this->get_new_parentid('questionnaire_question');

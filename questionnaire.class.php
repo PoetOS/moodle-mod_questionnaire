@@ -925,7 +925,7 @@ class questionnaire {
             }
 
             // Prevent navigation to previous page if wrong format in answered questions).
-            $msg = $this->response_check_format($formdata->sec, $formdata, $checkmissing = false, $checkwrongformat = true);
+            $msg = $this->response_check_format($formdata->sec, $formdata, false, true);
             if ($msg) {
                 $formdata->prev = '';
             } else {
@@ -1450,10 +1450,7 @@ class questionnaire {
         $qnum = $i - 1;
 
         foreach ($this->questionsbysec[$section] as $question) {
-            $qid = $question->id;
             $tid = $question->type_id;
-            $lid = $question->length;
-            $pid = $question->precise;
             if ($tid != QUESSECTIONTEXT) {
                 $qnum++;
             }
@@ -1745,8 +1742,6 @@ class questionnaire {
      * @return void
      */
     private function send_message($info, $eventtype) {
-        global $USER;
-
         $eventdata = new \core\message\message();
         $eventdata->courseid         = $this->course->id;
         $eventdata->modulename       = 'questionnaire';
@@ -1971,7 +1966,7 @@ class questionnaire {
      * @throws dml_exception
      */
     private function response_send_email($rid, $email) {
-        global $CFG, $USER;
+        global $CFG;
 
         $submission = $this->generate_csv($rid, '', null, 1, 0);
         if (!empty($submission)) {
@@ -2070,9 +2065,6 @@ class questionnaire {
     }
 
     private function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
-        global $DB;
-
-        $sid = $this->survey->id;
         if ($col == null) {
             $col = '';
         }
@@ -2185,8 +2177,6 @@ class questionnaire {
     public function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
         global $CFG, $DB;
 
-        $output = '';
-
         // Is this questionnaire set to fullname or anonymous?
         $isfullname = $this->respondenttype != 'anonymous';
         if ($isfullname) {
@@ -2213,7 +2203,6 @@ class questionnaire {
             array_push($rids, $response->id);
             if ($isfullname) {
                 $user = $DB->get_record('user', array('id' => $response->userid));
-                $userfullname = fullname($user);
                 array_push($ridssub, $response->submitted);
                 array_push($ridsuserfullname, fullname($user));
                 array_push($ridsuserid, $response->userid);
@@ -2232,7 +2221,6 @@ class questionnaire {
             $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
             $firstrid = $rids[0];
             $lastrid = $rids[$total - 1];
-            $displaypos = 1;
             if ($prevrid != null) {
                 $pos = $currpos - 1;
                 $title = '';
@@ -2347,7 +2335,6 @@ class questionnaire {
     public function survey_results_navbar_student($currrid, $userid, $instance, $resps, $reporttype='myreport', $sid='') {
         global $DB;
         $stranonymous = get_string('anonymous', 'questionnaire');
-        $output = '';
 
         $total = count($resps);
         $rids = array();
@@ -2377,14 +2364,12 @@ class questionnaire {
         }
         $prevrid = ($currpos > 0) ? $rids[$currpos - 1] : null;
         $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
-        $rowsperpage = 1;
 
         if ($reporttype == 'myreport') {
             $url = 'myreport.php?instance='.$instance.'&user='.$userid.'&action=vresp&byresponse=1&individualresponse=1';
         } else {
             $url = 'report.php?instance='.$instance.'&user='.$userid.'&action=vresp&byresponse=1&individualresponse=1&sid='.$sid;
         }
-        $linkarr = array();
         $navbar = new \stdClass();
         $displaypos = 1;
         if ($prevrid != null) {
@@ -2883,7 +2868,6 @@ class questionnaire {
                 }
                 $choices = $choicesbyqid[$qid];
 
-                $subqnum = 0;
                 switch ($type) {
 
                     case QUESRADIO: // Single.
@@ -3118,9 +3102,7 @@ class questionnaire {
         }
 
         // Change table headers to incorporate actual question numbers.
-        $numcol = 0;
         $numquestion = 0;
-        $out = '';
         $oldkey = 0;
 
         for ($i = $nbinfocols; $i < $numrespcols; $i++) {
@@ -3147,38 +3129,11 @@ class questionnaire {
             if ($pos) {
                 $thisoutput = substr($thisoutput, 0, $pos);
             }
-            $other = $sep.$stringother;
             $out = 'Q'.sprintf("%02d", $numquestion).$sep.$thisoutput;
             $output[0][$i] = $out;
         }
         return $output;
     }
-
-    /* {{{ proto bool survey_export_csv(int survey_id, string filename)
-        Exports the results of a survey to a CSV file.
-        Returns true on success.
-        */
-
-    private function export_csv($filename) {
-        $umask = umask(0077);
-        $fh = fopen($filename, 'w');
-        umask($umask);
-        if (!$fh) {
-            return 0;
-        }
-
-        $data = survey_generate_csv($rid = '', $userid = '', $currentgroupid = '');
-
-        foreach ($data as $row) {
-            fputs($fh, join(', ', $row) . "\n");
-        }
-
-        fflush($fh);
-        fclose($fh);
-
-        return 1;
-    }
-
 
     /**
      * Function to move a question to a new position.
@@ -3405,8 +3360,7 @@ class questionnaire {
         $oppositescorepercent = array();
         $alloppositescorepercent = array();
         $chartlabels = array();
-        $chartscore = array();
-        // sections where all questions are unseen because of the $advdependencies
+        // Sections where all questions are unseen because of the $advdependencies.
         $nanscores = array();
 
         for ($i = 1; $i <= $this->survey->feedbacksections; $i++) {
@@ -3451,7 +3405,8 @@ class questionnaire {
             $oppositescorepercent[$section] = 100 - $scorepercent[$section];
 
             if (($compare || $allresponses) && $nbparticipants != 0) {
-                $allscorepercent[$section] = ($maxscore[$section] > 0) ? (round(($allscore[$section] / $nbparticipants) / $maxscore[$section] * 100)) : 0;
+                $allscorepercent[$section] = ($maxscore[$section] > 0) ? (round(($allscore[$section] / $nbparticipants) /
+                    $maxscore[$section] * 100)) : 0;
                 $alloppositescorepercent[$section] = 100 - $allscorepercent[$section];
             }
 

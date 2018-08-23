@@ -50,8 +50,6 @@ function draw_chart($feedbacktype, $charttype=null, $labels,
     $chartcolorsgradient = "['Gradient(white:blue)', 'Gradient(white:red)', 'Gradient(white:green)', 'Gradient(white:pink)',
             'Gradient(white:yellow)', 'Gradient(white:cyan)', 'Gradient(white:navy)',
             'Gradient(white:gray)', 'Gradient(white:black)']";
-    $chartcolorsgradient2 = "['Gradient(pink:red)', 'Gradient(white:blue)', 'Gradient(white:green)', 'Gradient(white:pink)',
-        'Gradient(white:yellow)', 'Gradient(white:cyan)', 'Gradient(white:navy)', 'Gradient(white:gray)', 'Gradient(white:black)']";
 
     // We do not have labels other than global in this feedback type.
     if ($feedbacktype == 'global') {

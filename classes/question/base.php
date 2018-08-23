@@ -327,12 +327,12 @@ abstract class base {
                     $dependencyorfulfilled = false;
                     // To reach this point, the and-dependencies have all been fultilled or do not exist, so set them ok.
                     $dependencyandfulfilled = true;
-                    // This answer given
+                    // This answer given.
                     if (($dependency->dependlogic == 1) && $choicematches) {
                         $dependencyorfulfilled = true;
                     }
 
-                    // This answer NOT given
+                    // This answer NOT given.
                     if (($dependency->dependlogic == 0) && !$choicematches) {
                         $dependencyorfulfilled = true;
                     }
@@ -599,8 +599,6 @@ abstract class base {
     }
 
     public function update_choices() {
-        global $DB;
-
         $retvalue = true;
         if ($this->has_choices() && isset($this->choices)) {
             // Need to fix this messed-up qid/id issue.
@@ -872,23 +870,6 @@ abstract class base {
         $pagetags->qcontent = $content;
 
         return $pagetags;
-    }
-
-    private function response_check_required ($data) {
-        // JR check all question types
-        if ($this->type_id == QUESRATE) { // Rate is a special case.
-            foreach ($this->choices as $cid => $choice) {
-                $str = 'q'."{$this->id}_$cid";
-                if (isset($data->$str)) {
-                    return ('&nbsp;');
-                }
-            }
-        }
-        if ($this->required() &&  empty($data->{'q'.$this->id}) ) {
-            return ('*');
-        } else {
-            return ('&nbsp;');
-        }
     }
 
     // This section contains functions for editing the specific question types.

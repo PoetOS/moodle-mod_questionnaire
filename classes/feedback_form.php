@@ -33,7 +33,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 class feedback_form extends \moodleform {
 
     public function definition() {
-        global $questionnaire, $DB;
+        global $questionnaire;
 
         $mform =& $this->_form;
 
