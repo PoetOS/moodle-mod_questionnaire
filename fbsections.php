@@ -81,7 +81,9 @@ if (!($feedbackrecs = $DB->get_records_sql($select . $from . $where . $order, $p
             $feedbacksection->section = $feedbackrec->section;
             $feedbacksection->scorecalculation = unserialize($feedbackrec->scorecalculation);
             foreach ($feedbacksection->scorecalculation as $qid => $score) {
-                if (!$questionnaire->questions[$qid]->supports_feedback_scores()) {
+                if (!isset($questionnaire->questions[$qid])) {
+                    unset($feedbacksection->scorecalculation[$qid]);
+                } else if (!$questionnaire->questions[$qid]->supports_feedback_scores()) {
                     $feedbacksection->scorecalculation[$qid] = -1;
                 }
             }
