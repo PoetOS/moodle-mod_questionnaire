@@ -80,6 +80,9 @@ if (!($feedbackrecs = $DB->get_records_sql($select . $from . $where . $order, $p
             $feedbacksection->survey_id = $feedbackrec->survey_id;
             $feedbacksection->section = $feedbackrec->section;
             $feedbacksection->scorecalculation = unserialize($feedbackrec->scorecalculation);
+            if (empty($feedbacksection->scorecalculation)) {
+                $feedbacksection->scorecalculation = [];
+            }
             foreach ($feedbacksection->scorecalculation as $qid => $score) {
                 if (!isset($questionnaire->questions[$qid])) {
                     unset($feedbacksection->scorecalculation[$qid]);
