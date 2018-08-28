@@ -3371,7 +3371,7 @@ class questionnaire {
         }
 
         for ($section = 1; $section <= $this->survey->feedbacksections; $section++) {
-            // get feedback messages only for this sections
+            // Get feedback messages only for this sections.
             if (($filteredsections != null) && !in_array($section, $filteredsections)) {
                 continue;
             }

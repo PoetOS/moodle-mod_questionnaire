@@ -62,13 +62,32 @@ class feedback_section_form extends \moodleform {
             $mform->addGroup($addnewsectionarray, '', get_string('feedbacksectionlabel', 'questionnaire'));
         }
 
+        if ($feedbacksections == 1) {
+            $label = get_string('feedbackglobal', 'questionnaire');
+            $feedbackheading = get_string('feedbackglobalheading', 'questionnaire');
+            $feedbackmessages = get_string('feedbackglobalmessages', 'questionnaire');
+        } else {
+            $label = $feedbacksection->sectionlabel;
+            $feedbackheading = get_string('feedbacksectionheading', 'questionnaire', $label);
+            $feedbackmessages = get_string('feedbackmessages', 'questionnaire', $label);
+        }
+
+        $mform->addElement('header', 'contenthdr', $feedbackheading);
+        $mform->addElement('text', 'sectionlabel', get_string('feedbacksectionlabel', 'questionnaire'),
+            ['size' => '50', 'maxlength' => '50']);
+        $mform->setType('sectionlabel', PARAM_TEXT);
+        $mform->addRule('sectionlabel', null, 'required', null, 'client');
+        $mform->addHelpButton('sectionlabel', 'feedbacksectionlabel', 'questionnaire');
+
+        $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
+        $mform->addElement('editor', 'sectionheading', get_string('feedbacksectionheadingtext', 'questionnaire'),
+            null, $editoroptions);
+        $mform->setType('sectionheading', PARAM_RAW);
+        $mform->setDefault('feedbacknotes', $questionnaire->survey->feedbacknotes);
+        $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
+
         if ($questionnaire->survey->feedbacksections > 0) {
             // Sections.
-            if ($survey->feedbacksections == 1) {
-                $label = get_string('feedbackglobal', 'questionnaire');
-            } else {
-                $label = $feedbacksection->sectionlabel;
-            }
             if ($survey->feedbacksections > 1) {
                 $mform->addElement('header', 'fbsection_' . $feedbacksection->id,
                     get_string('feedbacksectionquestions', 'questionnaire', $label));
@@ -81,9 +100,13 @@ class feedback_section_form extends \moodleform {
                     foreach ($feedbacksection->scorecalculation as $qid => $score) {
                         unset($qvalid[$qid]);
                         $questionactions = [];
-                        $weight = '<input type="number" style="width: 4em;" id="weight' . $counter . '" ' .
-                            'name="weight[' . $qid . ']" min="0.0" max="1.0" step="0.01" ' .
-                            'value="' . $score . '">';
+                        if ($score !== -1) {
+                            $weight = '<input type="number" style="width: 4em;" id="weight' . $counter . '" ' .
+                                'name="weight[' . $qid . ']" min="0.0" max="1.0" step="0.01" ' .
+                                'value="' . $score . '">';
+                        } else {
+                            $weight = '<span>&nbsp;</span>';
+                        }
                         $questionactions[] = $mform->createElement('html', $weight);
                         $rextra['value'] = $qid;
                         unset($rextra['style']);
@@ -103,28 +126,6 @@ class feedback_section_form extends \moodleform {
                 }
             }
         }
-
-        if ($feedbacksections == 1) {
-            $feedbackheading = get_string('feedbackglobalheading', 'questionnaire');
-            $feedbackmessages = get_string('feedbackglobalmessages', 'questionnaire');
-        } else {
-            $feedbackheading = get_string('feedbacksectionheading', 'questionnaire', $label);
-            $feedbackmessages = get_string('feedbackmessages', 'questionnaire', $label);
-        }
-
-        $mform->addElement('header', 'contenthdr', $feedbackheading);
-        $mform->addElement('text', 'sectionlabel', get_string('feedbacksectionlabel', 'questionnaire'),
-                        ['size' => '50', 'maxlength' => '50']);
-        $mform->setType('sectionlabel', PARAM_TEXT);
-        $mform->addRule('sectionlabel', null, 'required', null, 'client');
-        $mform->addHelpButton('sectionlabel', 'feedbacksectionlabel', 'questionnaire');
-
-        $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
-        $mform->addElement('editor', 'sectionheading', get_string('feedbacksectionheadingtext', 'questionnaire'),
-                        null, $editoroptions);
-        $mform->setType('sectionheading', PARAM_RAW);
-        $mform->setDefault('feedbacknotes', $questionnaire->survey->feedbacknotes);
-        $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
 
         // FEEDBACK FIELDS.
 

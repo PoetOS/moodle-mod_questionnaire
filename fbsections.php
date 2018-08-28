@@ -80,6 +80,11 @@ if (!($feedbackrecs = $DB->get_records_sql($select . $from . $where . $order, $p
             $feedbacksection->survey_id = $feedbackrec->survey_id;
             $feedbacksection->section = $feedbackrec->section;
             $feedbacksection->scorecalculation = unserialize($feedbackrec->scorecalculation);
+            foreach ($feedbacksection->scorecalculation as $qid => $score) {
+                if (!$questionnaire->questions[$qid]->supports_feedback_scores()) {
+                    $feedbacksection->scorecalculation[$qid] = -1;
+                }
+            }
             $feedbacksection->sectionlabel = $feedbackrec->sectionlabel;
             $feedbacksection->sectionheading = $feedbackrec->sectionheading;
             $feedbacksection->sectionheadingformat = $feedbackrec->sectionheadingformat;
@@ -197,7 +202,11 @@ if ($settings = $feedbackform->get_data()) {
         $scorecalculation = [];
         // Check for added question.
         if (isset($settings->addquestionselect) && ($settings->addquestionselect != 0)) {
-            $scorecalculation[$settings->addquestionselect] = 1;
+            if ($questionnaire->questions[$settings->addquestionselect]->supports_feedback_scores()) {
+                $scorecalculation[$settings->addquestionselect] = 1;
+            } else {
+                $scorecalculation[$settings->addquestionselect] = -1;
+            }
         }
         // Get all current asigned questions.
         if (isset($fullform->weight)) {
