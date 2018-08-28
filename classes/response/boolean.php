@@ -215,7 +215,7 @@ class boolean extends base {
         // while all others are an integer. So put the boolean response in "response" field instead (CONTRIB-6436).
         // NOTE - the actual use of "boolean" should probably change to not use "choice_id" at all, or use it as
         // numeric zero and one instead.
-        $extraselect = '0 AS choice_id, ' . $DB->sql_order_by_text('qrb.choice_id', 1000) . ' AS response, 0 AS rank';
+        $extraselect = '0 AS choice_id, ' . $DB->sql_order_by_text('qrb.choice_id', 1000) . ' AS response, 0 AS `rank`';
         $alias = 'qrb';
 
         return "
