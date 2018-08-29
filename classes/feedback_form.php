@@ -116,10 +116,18 @@ class feedback_form extends \moodleform {
         $buttongroup[] = $mform->createElement('submit', 'feedbacksettingsbutton1', get_string('savesettings', 'questionnaire'));
         $buttongroup[] = $mform->createElement('submit', 'feedbackeditbutton', get_string('feedbackeditsections', 'questionnaire'));
         $mform->addGroup($buttongroup, 'buttongroup');
-        $mform->hideIf('buttongroup', 'feedbacksections', 'eq', 0);
+        if (moodle_major_version() == '3.3') {
+            $mform->disabledIf('buttongroup', 'feedbacksections', 'eq', 0);
+        } else {
+            $mform->hideIf('buttongroup', 'feedbacksections', 'eq', 0);
+        }
 
         $mform->addElement('submit', 'feedbacksettingsbutton2', get_string('savesettings', 'questionnaire'));
-        $mform->hideIf('feedbacksettingsbutton2', 'feedbacksections', 'neq', 0);
+        if (moodle_major_version() == '3.3') {
+            $mform->disabledIf('feedbacksettingsbutton2', 'feedbacksections', 'neq', 0);
+        } else {
+            $mform->hideIf('feedbacksettingsbutton2', 'feedbacksections', 'neq', 0);
+        }
     }
 
     public function validation($data, $files) {
