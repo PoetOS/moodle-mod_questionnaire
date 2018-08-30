@@ -57,54 +57,14 @@ $PAGE->set_context($context);
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
+
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
-$select = 'SELECT f.id as fbid, fs.*, f.feedbacklabel, f.feedbacktext, f.feedbacktextformat, f.minscore, f.maxscore ';
-$from = 'FROM {questionnaire_fb_sections} fs LEFT JOIN {questionnaire_feedback} f ON fs.id = f.section_id ';
-$order = 'ORDER BY minscore DESC';
 if ($sectionid) {
-    $where = 'WHERE fs.id = ? ';
-    $params = [$sectionid];
+    $feedbacksection = new mod_questionnaire\feedback\section(['id' => $sectionid], $questionnaire->questions);
 } else {
-    $where = 'WHERE fs.survey_id = ? AND fs.section = ? ';
-    $params = [$questionnaire->survey->id, $section];
-}
-
-if (!($feedbackrecs = $DB->get_records_sql($select . $from . $where . $order, $params))) {
-    print_error('invalidsectionid');
-} else {
-    $feedbacksection = new stdClass();
-    foreach ($feedbackrecs as $fbid => $feedbackrec) {
-        if (!isset($feedbacksection->id)) {
-            $feedbacksection->id = $feedbackrec->id;
-            $feedbacksection->survey_id = $feedbackrec->survey_id;
-            $feedbacksection->section = $feedbackrec->section;
-            $feedbacksection->scorecalculation = unserialize($feedbackrec->scorecalculation);
-            if (empty($feedbacksection->scorecalculation)) {
-                $feedbacksection->scorecalculation = [];
-            }
-            foreach ($feedbacksection->scorecalculation as $qid => $score) {
-                if (!isset($questionnaire->questions[$qid])) {
-                    unset($feedbacksection->scorecalculation[$qid]);
-                } else if (!$questionnaire->questions[$qid]->supports_feedback_scores()) {
-                    $feedbacksection->scorecalculation[$qid] = -1;
-                }
-            }
-            $feedbacksection->sectionlabel = $feedbackrec->sectionlabel;
-            $feedbacksection->sectionheading = $feedbackrec->sectionheading;
-            $feedbacksection->sectionheadingformat = $feedbackrec->sectionheadingformat;
-            $feedbacksection->feedbacks = [];
-        }
-        if (!empty($fbid)) {
-            $feedbacksection->feedbacks[$feedbackrec->fbid] = new stdClass();
-            $feedbacksection->feedbacks[$feedbackrec->fbid]->id = $feedbackrec->fbid;
-            $feedbacksection->feedbacks[$feedbackrec->fbid]->feedbacklabel = $feedbackrec->feedbacklabel;
-            $feedbacksection->feedbacks[$feedbackrec->fbid]->feedbacktext = $feedbackrec->feedbacktext;
-            $feedbacksection->feedbacks[$feedbackrec->fbid]->feedbacktextformat = $feedbackrec->feedbacktextformat;
-            $feedbacksection->feedbacks[$feedbackrec->fbid]->minscore = $feedbackrec->minscore;
-            $feedbacksection->feedbacks[$feedbackrec->fbid]->maxscore = $feedbackrec->maxscore;
-        }
-    }
+    $feedbacksection = new mod_questionnaire\feedback\section(['surveyid' => $questionnaire->survey->id, 'sectionnum' => $section],
+        $questionnaire->questions);
 }
 
 // Get all questions that are valid feedback questions.
@@ -129,17 +89,13 @@ if (!$questionnaire->capabilities->editquestions) {
 if ($action == 'removequestion') {
     $sectionid = required_param('sectionid', PARAM_INT);
     $qid = required_param('qid', PARAM_INT);
-    unset($feedbacksection->scorecalculation[$qid]);
-    $scorecalculation = serialize($feedbacksection->scorecalculation);
-    $DB->set_field('questionnaire_fb_sections', 'scorecalculation', $scorecalculation, ['id' => $sectionid]);
+    $feedbacksection->remove_question($qid);
 
 } else if ($action == 'deletesection') {
     $sectionid = required_param('sectionid', PARAM_INT);
     if ($sectionid == $feedbacksection->id) {
-        $DB->delete_records('questionnaire_feedback', ['section_id' => $sectionid]);
-        $DB->delete_records('questionnaire_fb_sections', ['id' => $sectionid]);
-        $url = new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id]);
-        redirect($url);
+        $feedbacksection->delete();
+        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id]));
     }
 }
 
@@ -164,8 +120,7 @@ $sdata->sectionheading = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'item
 $feedbackform->set_data($sdata);
 
 if ($feedbackform->is_cancelled()) {
-    $url = new moodle_url('/mod/questionnaire/feedback.php', ['id' => $cm->id]);
-    redirect ($url);
+    redirect(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $cm->id]));
 }
 
 if ($settings = $feedbackform->get_data()) {
@@ -174,34 +129,22 @@ if ($settings = $feedbackform->get_data()) {
 
     if (isset($settings->gotosection)) {
         if ($settings->navigatesections != $feedbacksection->id) {
-            $url = new moodle_url('/mod/questionnaire/fbsections.php',
-                ['id' => $cm->id, 'sectionid' => $settings->navigatesections]);
-            redirect($url);
+            redirect(new moodle_url('/mod/questionnaire/fbsections.php',
+                ['id' => $cm->id, 'sectionid' => $settings->navigatesections]));
         }
 
     } else if (isset($settings->addnewsection)) {
-        if (empty($settings->newsectionlabel)) {
-            $settings->newsectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
-        }
-        $maxsection = $DB->get_field('questionnaire_fb_sections', 'MAX(section)', ['survey_id' => $questionnaire->survey->id]);
-        $newrec = new stdClass();
-        $newrec->survey_id = $questionnaire->survey->id;
-        $newrec->section = $maxsection + 1;
-        $newrec->sectionlabel = $settings->newsectionlabel;
-        $newsecid = $DB->insert_record('questionnaire_fb_sections', $newrec);
-        $url = new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'sectionid' => $newsecid]);
-        redirect($url);
+        $newsection = mod_questionnaire\feedback\section::new_section($questionnaire->survey->id, $settings->newsectionlabel);
+        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'sectionid' => $newsection->id]));
 
     } else if (isset($fullform->confirmdeletesection)) {
-        $url = new moodle_url('/mod/questionnaire/fbsections.php',
-            ['id' => $cm->id, 'sectionid' => $feedbacksection->id, 'action' => 'confirmdeletesection']);
-        redirect($url);
+        redirect(new moodle_url('/mod/questionnaire/fbsections.php',
+            ['id' => $cm->id, 'sectionid' => $feedbacksection->id, 'action' => 'confirmdeletesection']));
 
     } else if (isset($fullform->confirmremovequestion)) {
         $qid = key($fullform->confirmremovequestion);
-        $url = new moodle_url('/mod/questionnaire/fbsections.php',
-            ['id' => $cm->id, 'sectionid' => $settings->sectionid, 'action' => 'confirmremovequestion', 'qid' => $qid]);
-        redirect($url);
+        redirect(new moodle_url('/mod/questionnaire/fbsections.php',
+            ['id' => $cm->id, 'sectionid' => $settings->sectionid, 'action' => 'confirmremovequestion', 'qid' => $qid]));
 
     } else if (isset($settings->addquestion)) {
         $scorecalculation = [];
@@ -220,26 +163,19 @@ if ($settings = $feedbackform->get_data()) {
             }
         }
         // Update the section with question weights.
-        $newscore = serialize($scorecalculation);
-        $DB->set_field('questionnaire_fb_sections', 'scorecalculation', $newscore, ['id' => $feedbacksection->id]);
-        $feedbacksection->scorecalculation = $scorecalculation;
+        $feedbacksection->set_new_scorecalculation($scorecalculation);
 
     } else if (isset($settings->submitbutton)) {
-        $updaterec = new stdClass();
-        $updaterec->id = $feedbacksection->id;
-        $updaterec->survey_id = $feedbacksection->survey_id;
-        $updaterec->section = $feedbacksection->section;
         if (isset($fullform->weight)) {
-            $updaterec->scorecalculation = serialize($fullform->weight);
+            $feedbacksection->scorecalculation = $fullform->weight;
         } else {
-            $updaterec->scorecalculation = null;
+            $feedbacksection->scorecalculation = [];
         }
-        $updaterec->sectionlabel = $settings->sectionlabel;
-        $updaterec->sectionheading = file_save_draft_area_files((int)$settings->sectionheading['itemid'], $context->id,
+        $feedbacksection->sectionlabel = $settings->sectionlabel;
+        $feedbacksection->sectionheading = file_save_draft_area_files((int)$settings->sectionheading['itemid'], $context->id,
             'mod_questionnaire', 'sectionheading', $feedbacksection->id, ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0],
             $settings->sectionheading['text']);
-        $updaterec->sectionheadingformat = $settings->sectionheading['format'];
-        $DB->update_record('questionnaire_fb_sections', $updaterec);
+        $feedbacksection->sectionheadingformat = $settings->sectionheading['format'];
 
         // May have changed the section label and weights, so update the data.
         $customdata->sectionselect[$feedbacksection->id] = $settings->sectionlabel;
@@ -250,6 +186,8 @@ if ($settings = $feedbackform->get_data()) {
         // Save current section's feedbacks
         // first delete all existing feedbacks for this section - if any - because we never know whether editing feedbacks will
         // have more or less texts, so it's easiest to delete all and start afresh.
+        $feedbacksection->delete_sectionfeedback();
+
         $i = 0;
         while (!empty($settings->feedbackboundaries[$i])) {
             $boundary = trim($settings->feedbackboundaries[$i]);
@@ -263,26 +201,31 @@ if ($settings = $feedbackform->get_data()) {
         $settings->feedbackboundaries[-1] = 101;
         $settings->feedbackboundaries[$numboundaries] = 0;
         $settings->feedbackboundarycount = $numboundaries;
-        $DB->delete_records('questionnaire_feedback', ['section_id' => $feedbacksection->id]);
+
+        // Now set up new section feedback records for each saved boundary.
         for ($i = 0; $i <= $settings->feedbackboundarycount; $i++) {
             $feedback = new stdClass();
             $feedback->section_id = $feedbacksection->id;
             if (isset($settings->feedbacklabel[$i])) {
                 $feedback->feedbacklabel = $settings->feedbacklabel[$i];
-
+            } else {
+                $feedback->feedbacklabel = null;
             }
             $feedback->feedbacktext = '';
             $feedback->feedbacktextformat = $settings->feedbacktext[$i]['format'];
             $feedback->minscore = $settings->feedbackboundaries[$i];
             $feedback->maxscore = $settings->feedbackboundaries[$i - 1];
-            $feedback->id = $DB->insert_record('questionnaire_feedback', $feedback);
+
+            $fbid = $feedbacksection->load_sectionfeedback($feedback);
 
             $feedbacktext = file_save_draft_area_files((int)$settings->feedbacktext[$i]['itemid'],
-                $context->id, 'mod_questionnaire', 'feedback', $feedback->id,
-                ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0],
+                $context->id, 'mod_questionnaire', 'feedback', $fbid, ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0],
                 $settings->feedbacktext[$i]['text']);
-            $DB->set_field('questionnaire_feedback', 'feedbacktext', $feedbacktext, ['id' => $feedback->id]);
+            $feedbacksection->sectionfeedback[$fbid]->feedbacktext = $feedbacktext;
         }
+
+        // Update all feedback data.
+        $feedbacksection->update();
     }
     $feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata);
 }

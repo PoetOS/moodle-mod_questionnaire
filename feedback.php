@@ -48,8 +48,7 @@ if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/feedback.php', ['id' => $id]);
-$PAGE->set_url($url);
+$PAGE->set_url(new moodle_url($CFG->wwwroot.'/mod/questionnaire/feedback.php', ['id' => $id]));
 $PAGE->set_context($context);
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
@@ -79,7 +78,7 @@ $sdata->feedbacknotes = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemi
 $feedbackform->set_data($sdata);
 
 if ($feedbackform->is_cancelled()) {
-    redirect ($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id, '');
+    redirect(new moodle_url('/mod/questionnaire/view.php', ['id' => $questionnaire->cm->id]));
 }
 // Confirm that feedback can be used for this questionnaire...
 // Get all questions that are valid feedback questions.
@@ -150,8 +149,7 @@ if ($settings = $feedbackform->get_data()) {
             $feedbacksection->sectionheadingformat = 1;
             $feedbacksection->id = $DB->insert_record('questionnaire_fb_sections', $feedbacksection);
         }
-        $url = new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'section' => $firstsection]);
-        redirect($url);
+        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'section' => $firstsection]));
     }
 }
 

@@ -41,7 +41,7 @@ class feedback_section_form extends \moodleform {
         $validquestions = $this->_customdata->validquestions;
         $survey = $this->_customdata->survey;
         $feedbacksections = $questionnaire->survey->feedbacksections;
-        $this->_feedbacks = $feedbacksection->feedbacks;
+        $this->_feedbacks = $feedbacksection->sectionfeedback;
         $this->context = $questionnaire->context;
         $mform    =& $this->_form;
 
