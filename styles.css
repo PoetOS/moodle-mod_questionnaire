@@ -353,3 +353,7 @@ td.selected {
 #page-mod-questionnaire-questions #region-main .mform .fitem .felement {
     margin-bottom: 0;
 }
+
+.qn-indent {
+    margin-left: 20px;
+}
