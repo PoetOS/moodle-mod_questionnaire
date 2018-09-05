@@ -400,7 +400,7 @@ $string['privacy:metadata:questionnaire_response_rank'] = 'A rank question respo
 $string['privacy:metadata:questionnaire_response_rank:response_id'] = 'The ID of the response record for this response.';
 $string['privacy:metadata:questionnaire_response_rank:question_id'] = 'The ID of the question record for this response.';
 $string['privacy:metadata:questionnaire_response_rank:choice_id'] = 'The ID of the choice record for this response.';
-$string['privacy:metadata:questionnaire_response_rank:rank'] = 'The specific rank answer.';
+$string['privacy:metadata:questionnaire_response_rank:rankvalue'] = 'The specific rank answer.';
 
 $string['privacy:metadata:questionnaire_response_text'] = 'A text question response.';
 $string['privacy:metadata:questionnaire_response_text:response_id'] = 'The ID of the response record for this response.';

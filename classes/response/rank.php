@@ -63,7 +63,7 @@ class rank extends base {
                 $record->response_id = $rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
-                $record->rank = $rank;
+                $record->rankvalue = $rank;
                 $resid = $DB->insert_record(self::response_table(), $record);
             }
             return $resid;
@@ -76,7 +76,7 @@ class rank extends base {
             $record = new \stdClass();
             $record->response_id = $rid;
             $record->question_id = $this->question->id;
-            $record->rank = $rank;
+            $record->rankvalue = $rank;
             return $DB->insert_record(self::response_table(), $record);
         }
     }
@@ -103,7 +103,7 @@ class rank extends base {
                 foreach ($rows as $row) {
                     $this->counts[$row->content] = new \stdClass();
                     $nbna = $DB->count_records(self::response_table(), array('question_id' => $this->question->id,
-                                    'choice_id' => $row->id, 'rank' => '-1'));
+                                    'choice_id' => $row->id, 'rankvalue' => '-1'));
                     $this->counts[$row->content]->nbna = $nbna;
                     // The $row->value may be null (i.e. empty) or have a 'NULL' value.
                     if ($row->value !== null && $row->value !== 'NULL') {
@@ -116,19 +116,19 @@ class rank extends base {
             // Usual case.
             if (!$isrestricted) {
                 if (!empty ($rankvalue)) {
-                    $sql = "SELECT r.id, c.content, r.rank, c.id AS choiceid
+                    $sql = "SELECT r.id, c.content, r.rankvalue, c.id AS choiceid
                     FROM {questionnaire_quest_choice} c, {".self::response_table()."} r
                     WHERE r.choice_id = c.id
                     AND c.question_id = " . $this->question->id . "
-                    AND r.rank >= 0{$rsql}
+                    AND r.rankvalue >= 0{$rsql}
                     ORDER BY choiceid";
                     $results = $DB->get_records_sql($sql, $params);
                     $value = array();
                     foreach ($results as $result) {
                         if (isset ($value[$result->choiceid])) {
-                            $value[$result->choiceid] += $rankvalue[$result->rank];
+                            $value[$result->choiceid] += $rankvalue[$result->rankvalue];
                         } else {
-                            $value[$result->choiceid] = $rankvalue[$result->rank];
+                            $value[$result->choiceid] = $rankvalue[$result->rankvalue];
                         }
                     }
                 }
@@ -136,9 +136,9 @@ class rank extends base {
                 $sql = "SELECT c.id, c.content, a.average, a.num
                         FROM {questionnaire_quest_choice} c
                         INNER JOIN
-                             (SELECT c2.id, AVG(a2.rank+1) AS average, COUNT(a2.response_id) AS num
+                             (SELECT c2.id, AVG(a2.rankvalue+1) AS average, COUNT(a2.response_id) AS num
                               FROM {questionnaire_quest_choice} c2, {".self::response_table()."} a2
-                              WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rank >= 0{$rsql}
+                              WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
                               GROUP BY c2.id) a ON a.id = c.id
                               order by c.id";
                 $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
@@ -158,9 +158,9 @@ class rank extends base {
                 $sql = "SELECT c.id, c.content, a.sum, a.num
                         FROM {questionnaire_quest_choice} c
                         INNER JOIN
-                             (SELECT c2.id, SUM(a2.rank+1) AS sum, COUNT(a2.response_id) AS num
+                             (SELECT c2.id, SUM(a2.rankvalue+1) AS sum, COUNT(a2.response_id) AS num
                               FROM {questionnaire_quest_choice} c2, {".self::response_table()."} a2
-                              WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rank >= 0{$rsql}
+                              WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
                               GROUP BY c2.id) a ON a.id = c.id";
                 $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
                 // Formula to calculate the best ranking order.
@@ -173,10 +173,10 @@ class rank extends base {
                 return $results;
             }
         } else {
-            $sql = 'SELECT A.rank, COUNT(A.response_id) AS num ' .
+            $sql = 'SELECT A.rankvalue, COUNT(A.response_id) AS num ' .
                    'FROM {'.self::response_table().'} A ' .
                    'WHERE A.question_id= ? ' . $rsql . ' ' .
-                   'GROUP BY A.rank';
+                   'GROUP BY A.rankvalue';
             return $DB->get_records_sql($sql, array_merge(array($this->question->id), $params));
         }
     }
@@ -198,7 +198,7 @@ class rank extends base {
         }
         $params[] = 'y';
 
-        $sql = 'SELECT r.id, r.response_id as rid, r.question_id AS qid, r.choice_id AS cid, r.rank ' .
+        $sql = 'SELECT r.id, r.response_id as rid, r.question_id AS qid, r.choice_id AS cid, r.rankvalue ' .
             'FROM {'.$this->response_table().'} r ' .
             'INNER JOIN {questionnaire_quest_choice} c ON r.choice_id = c.id ' .
             'WHERE r.question_id= ? ' . $rsql . ' ' .
@@ -226,7 +226,7 @@ class rank extends base {
                 $feedbackscores[$rid]->rid = $rid;
                 $feedbackscores[$rid]->score = 0;
             }
-            $feedbackscores[$rid]->score += isset($scores[$response->rank]) ? $scores[$response->rank] : 0;
+            $feedbackscores[$rid]->score += isset($scores[$response->rankvalue]) ? $scores[$response->rankvalue] : 0;
         }
 
         return (!empty($feedbackscores) ? $feedbackscores : false);
@@ -299,7 +299,7 @@ class rank extends base {
 
         $values = [];
         $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid '.$col.', c.content as ccontent,
-                                a.rank as arank '.
+                                a.rankvalue as arank '.
             'FROM {'.self::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
             'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
             'ORDER BY aid, a.question_id, c.id';

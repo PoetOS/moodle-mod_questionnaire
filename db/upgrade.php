@@ -756,6 +756,20 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2018050102, 'questionnaire');
     }
+
+    // Rename the mdl_questionnaire_response_rank.rank field as it is reserved in MySQL as of 8.0.2.
+    if ($oldversion < 2018050103) {
+        // Change the name from username to userid.
+        $table = new xmldb_table('questionnaire_response_rank');
+        $field = new xmldb_field('rank', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, null, '0', 'choice_id');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'rankvalue');
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2018050103, 'questionnaire');
+    }
+
     return $result;
 }
 
