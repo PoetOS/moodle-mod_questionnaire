@@ -108,7 +108,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $responseranks = new backup_nested_element('response_ranks');
 
         $responserank = new backup_nested_element('response_rank', array('id'), array(
-            'response_id', 'question_id', 'choice_id', 'rank'));
+            'response_id', 'question_id', 'choice_id', 'rankvalue'));
 
         $responsesingles = new backup_nested_element('response_singles');
 

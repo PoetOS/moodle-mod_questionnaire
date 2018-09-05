@@ -472,7 +472,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         'response_id' => $responseid,
                         'question_id' => $questionresponse->questionid,
                         'choice_id' => $choiceid,
-                        'rank' => $questionresponse->response->rank
+                        'rankvalue' => $questionresponse->response->rankvalue
                     ]
                 );
             } else {

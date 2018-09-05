@@ -419,14 +419,14 @@ class display_support {
         }
 
         array_unshift($params, $question->id); // This is question_id.
-        $sql = 'SELECT r.id, c.content, r.rank, c.id AS choiceid ' .
+        $sql = 'SELECT r.id, c.content, r.rankvalue, c.id AS choiceid ' .
                 'FROM {questionnaire_quest_choice} c , ' .
                      '{questionnaire_response_rank} r ' .
                 'WHERE c.question_id = ?' .
                 ' AND r.question_id = c.question_id' .
                 ' AND r.choice_id = c.id ' .
                 $rsql .
-                ' ORDER BY choiceid, rank ASC';
+                ' ORDER BY choiceid, rankvalue ASC';
         $choices = $DB->get_records_sql($sql, $params);
 
         // Sort rows (results) by average value.
@@ -458,7 +458,7 @@ class display_support {
                 if ($choice->choiceid == $choiceid) {
                     $n = 0;
                     for ($i = 0; $i < $nbranks; $i++) {
-                        if ($choice->rank == $i) {
+                        if ($choice->rankvalue == $i) {
                             $n++;
                             if (!isset($ranks[$choice->content][$i])) {
                                 $ranks[$choice->content][$i] = 0;

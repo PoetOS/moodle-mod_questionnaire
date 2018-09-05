@@ -206,6 +206,8 @@ class behat_mod_questionnaire extends behat_base {
      * @return null
      */
     private function add_response_data($qid, $sid) {
+        global $DB;
+
         $responses = array(
             array("id", "survey_id", "submitted", "complete", "grade", "userid"),
             array("1", $sid, "1419011935", "y", "0", "2"),
@@ -272,7 +274,7 @@ class behat_mod_questionnaire extends behat_base {
             array('responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id'));
 
         $responserank = array(
-            array("id", "response_id", "question_id", "choice_id", "rank"),
+            array("id", "response_id", "question_id", "choice_id", "rankvalue"),
             array("", "1", "13", "16", "0"),
             array("", "1", "13", "17", "1"),
             array("", "1", "13", "18", "2"),

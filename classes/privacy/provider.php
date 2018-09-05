@@ -81,7 +81,7 @@ class provider implements
             'response_id' => 'privacy:metadata:questionnaire_response_rank:response_id',
             'question_id' => 'privacy:metadata:questionnaire_response_rank:question_id',
             'choice_id' => 'privacy:metadata:questionnaire_response_rank:choice_id',
-            'rank' => 'privacy:metadata:questionnaire_response_rank:rank',
+            'rank' => 'privacy:metadata:questionnaire_response_rank:rankvalue',
         ], 'privacy:metadata:questionnaire_response_rank');
 
         $collection->add_database_table('questionnaire_response_text', [

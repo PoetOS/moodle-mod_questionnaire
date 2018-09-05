@@ -301,6 +301,12 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         global $DB;
 
         $data = (object)$data;
+
+        // Older versions of questionnaire used 'rank' instead of 'rankvalue'. If 'rank' exists, change it to 'rankvalue'.
+        if (isset($data->rank) && !isset($data->rankvalue)) {
+            $data->rankvalue = $data->rank;
+        }
+
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
         $data->choice_id = $this->get_mappingid('questionnaire_quest_choice', $data->choice_id);

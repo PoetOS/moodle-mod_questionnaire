@@ -280,7 +280,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals(3, count($multresponses));
         foreach ($multresponses as $multresponse) {
             $this->assertEquals($question->id, $multresponse->question_id);
-            $this->assertEquals($vals[$multresponse->choice_id], $multresponse->rank);
+            $this->assertEquals($vals[$multresponse->choice_id], $multresponse->rankvalue);
         }
     }
 
