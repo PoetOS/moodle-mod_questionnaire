@@ -26,10 +26,10 @@ defined('MOODLE_INTERNAL') || die();
 
 class question_response_rank {
     public $choice;
-    public $rank;
+    public $rankvalue;
 
     public function __construct($choice, $rank) {
         $this->choice = $choice;
-        $this->rank = $rank;
+        $this->rankvalue = $rank;
     }
 }

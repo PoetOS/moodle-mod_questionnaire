@@ -310,9 +310,9 @@ class multiple extends single {
         global $DB;
 
         $userfields = $this->user_fields_sql();
-        $extraselect = '';
-        $extraselect .= 'qrm.choice_id, ' . $DB->sql_order_by_text('qro.response', 1000) . ' AS response, 0 AS rank';
         $alias = 'qrm';
+        $extraselect = '';
+        $extraselect .= 'qrm.choice_id, ' . $DB->sql_order_by_text('qro.response', 1000) . ' AS response, 0 AS rankvalue';
 
         return "
             SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
