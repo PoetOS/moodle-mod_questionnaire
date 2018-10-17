@@ -245,7 +245,6 @@ abstract class base {
      */
     public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false, $showincompletes = 0) {
         $sql = $this->bulk_sql($questionnaireid, $responseid, $userid);
-        $params = [];
         if (($groupid !== false) && ($groupid > 0)) {
             $groupsql = ' INNER JOIN {groups_members} gm ON gm.groupid = ? AND gm.userid = qr.userid ';
             $gparams = [$groupid];
