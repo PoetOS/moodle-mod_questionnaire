@@ -34,13 +34,15 @@ class provider implements
     // This plugin currently implements the original plugin_provider interface.
     \core_privacy\local\request\plugin\provider {
 
+    use \core_privacy\local\legacy_polyfill;
+
     /**
      * Returns meta data about this system.
      *
      * @param   collection $items The collection to add metadata to.
      * @return  collection  The array of metadata
      */
-    public static function get_metadata(\core_privacy\local\metadata\collection $collection): \core_privacy\local\metadata\collection {
+    public static function _get_metadata(\core_privacy\local\metadata\collection $collection): \core_privacy\local\metadata\collection {
 
         // Add all of the relevant tables and fields to the collection.
         $collection->add_database_table('questionnaire_response', [
@@ -104,7 +106,7 @@ class provider implements
      * @param   int $userid The user to search.
      * @return  contextlist   $contextlist  The list of contexts used in this plugin.
      */
-    public static function get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
+    public static function _get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
         $contextlist = new \core_privacy\local\request\contextlist();
 
         $sql = "SELECT c.id
@@ -132,7 +134,7 @@ class provider implements
      *
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
-    public static function export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {
+    public static function _export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
@@ -203,7 +205,7 @@ class provider implements
      *
      * @param context $context Context to delete data from.
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {
+    public static function _delete_data_for_all_users_in_context(\context $context) {
         global $DB;
 
         if (!($context instanceof \context_module)) {
@@ -230,7 +232,7 @@ class provider implements
      *
      * @param   approved_contextlist    $contextlist    The approved contexts and user information to delete information for.
      */
-    public static function delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {
+    public static function _delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {
         global $DB;
 
         if (empty($contextlist->count())) {

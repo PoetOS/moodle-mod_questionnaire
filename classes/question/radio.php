@@ -192,7 +192,6 @@ class radio extends base {
 
         $resptags = new \stdClass();
         $resptags->choices = [];
-        $output = '';
 
         $horizontal = $this->length;
         $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');

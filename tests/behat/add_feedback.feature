@@ -23,8 +23,8 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I navigate to "Advanced settings" in current page administration
-    Then I should not see "Feedback options"
+    And I navigate to "Feedback" in current page administration
+    Then I should see "Feedback options are available if your questionnaire contains the following question types"
     And I follow "Questions"
     Then I should see "Add questions"
     And I add a "Dropdown Box" question and I fill the form with:
@@ -53,9 +53,8 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
       | Yes | y |
       | Question Text | Yes or no |
     Then I should see "[Yes/No] (Q4)"
-    And I follow "Advanced settings"
+    And I follow "Feedback"
     And I should see "Feedback options"
-    And I follow "Feedback options"
     And I set the field "id_feedbacksections" to "Global Feedback"
     And I set the field "id_feedbackscores" to "Yes"
     And I set the field "id_feedbacknotes" to "These are the main Feedback notes"
@@ -68,7 +67,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
     And I set the field "id_feedbacktext_1" to "Feedback 50%"
     And I set the field "id_feedbackboundaries_1" to "20"
     And I set the field "id_feedbacktext_2" to "Feedback 20%"
-    And I press "Save settings"
+    And I press "Save changes"
     And I log out
 
 #  Scenario: Student completes feedback questions.

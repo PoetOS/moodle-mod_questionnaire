@@ -712,7 +712,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2017111103, 'questionnaire');
     }
 
-    // Get rid of questionnaire_attempts table and migrate necessary data to the questionnaire_response table
+    // Get rid of questionnaire_attempts table and migrate necessary data to the questionnaire_response table.
     if ($oldversion < 2018050102) {
         $table = new xmldb_table('questionnaire_response');
         $field1 = new xmldb_field('questionnaireid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
@@ -781,6 +781,31 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2018050104, 'questionnaire');
+    }
+
+    // 'feedbacksections' field is used differently now.
+    if ($oldversion < 2018050105) {
+        // Get all of the survey records where feedbacksection is greater than 2 and set them to 2.
+        $DB->set_field_select('questionnaire_survey', 'feedbacksections', 2, 'feedbacksections > 2');
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2018050105, 'questionnaire');
+    }
+
+    // Rename all of the survey_id fields to surveyid, and the section_id fields to sectionid to meet Moodle coding rules.
+    if ($oldversion < 2018050106) {
+        $table1 = new xmldb_table('questionnaire_fb_sections');
+        $field1 = new xmldb_field('survey_id', XMLDB_TYPE_INTEGER, '18');
+        $table2 = new xmldb_table('questionnaire_feedback');
+        $field2 = new xmldb_field('section_id', XMLDB_TYPE_INTEGER, '18');
+        $table3 = new xmldb_table('questionnaire_question');
+        $field3 = new xmldb_field('survey_id', XMLDB_TYPE_INTEGER, '10');
+
+        $dbman->rename_field($table1, $field1, 'surveyid');
+        $dbman->rename_field($table2, $field2, 'sectionid');
+        $dbman->rename_field($table3, $field3, 'surveyid');
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2018050106, 'questionnaire');
     }
 
     return $result;

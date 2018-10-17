@@ -81,7 +81,7 @@ class sectiontext extends base {
             return '';
         }
 
-        $fbsections = $DB->get_records('questionnaire_fb_sections', ['survey_id' => $this->survey_id]);
+        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->surveyid]);
         $filteredsections = [];
 
         // In which section(s) is this question?

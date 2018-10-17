@@ -133,6 +133,11 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $oldid = $data->id;
         $data->courseid = $this->get_courseid();
 
+        // Check for a 'feedbacksections' value larger than 2, and limit it to 2. As of 3.5.1 this has a different meaning.
+        if ($data->feedbacksections > 2) {
+            $data->feedbacksections = 2;
+        }
+
         // Insert the questionnaire_survey record.
         $newitemid = $DB->insert_record('questionnaire_survey', $data);
         $this->set_mapping('questionnaire_survey', $oldid, $newitemid, true);
@@ -146,7 +151,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $data = (object)$data;
         $oldid = $data->id;
-        $data->survey_id = $this->get_new_parentid('questionnaire_survey');
+        $data->surveyid = $this->get_new_parentid('questionnaire_survey');
 
         // Insert the questionnaire_question record.
         $newitemid = $DB->insert_record('questionnaire_question', $data);
@@ -170,7 +175,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $data = (object)$data;
         $oldid = $data->id;
-        $data->survey_id = $this->get_new_parentid('questionnaire_survey');
+        $data->surveyid = $this->get_new_parentid('questionnaire_survey');
 
         // If this questionnaire has separate sections feedbacks.
         if (isset($data->scorecalculation)) {
@@ -193,7 +198,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $data = (object)$data;
         $oldid = $data->id;
-        $data->section_id = $this->get_new_parentid('questionnaire_fb_sections');
+        $data->sectionid = $this->get_new_parentid('questionnaire_fb_sections');
 
         // Insert the questionnaire_feedback record.
         $newitemid = $DB->insert_record('questionnaire_feedback', $data);
@@ -225,7 +230,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
     }
 
     protected function process_questionnaire_dependency($data) {
-        global $DB;
         $data = (object)$data;
 
         $data->questionid = $this->get_new_parentid('questionnaire_question');

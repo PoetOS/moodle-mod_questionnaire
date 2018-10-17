@@ -69,6 +69,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Fill out the feedback page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_feedbackpage($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/qsettingspage', $data);
+    }
+
+    /**
      * Fill out the questions page.
      * @param \templateable $page
      * @return string | boolean
@@ -256,7 +266,14 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function results_output($question, $rids, $sort, $anonymous) {
-        return $question->display_results($rids, $sort, $anonymous);
+        $pagetags = $question->display_results($rids, $sort, $anonymous);
+
+        // If the response has a template, then render it from $pagetags. If no template, then $pagetags already contains HTML.
+        if (($template = $question->results_template())) {
+            return $this->render_from_template($template, $pagetags);
+        } else {
+            return $pagetags;
+        }
     }
 
     /**

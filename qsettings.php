@@ -73,11 +73,6 @@ $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questi
                 $sdata->sid, array('subdirs' => true), $questionnaire->survey->thank_body);
 $sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
 
-$draftideditor = file_get_submitted_draft_itemid('feedbacknotes');
-$currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'feedbacknotes',
-        $sdata->sid, array('subdirs' => true), $questionnaire->survey->feedbacknotes);
-$sdata->feedbacknotes = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
-
 $settingsform->set_data($sdata);
 
 if ($settingsform->is_cancelled()) {
@@ -109,38 +104,6 @@ if ($settings = $settingsform->get_data()) {
                                                      $sdata->id, array('subdirs' => true), $sdata->thank_body);
     $sdata->email = $settings->email;
 
-    if (isset ($settings->feedbackscores)) {
-        $sdata->feedbackscores = $settings->feedbackscores;
-    } else {
-        $sdata->feedbackscores = 0;
-    }
-
-    if (isset ($settings->feedbacknotes)) {
-        $sdata->fbnotesitemid = $settings->feedbacknotes['itemid'];
-        $sdata->fbnotesformat = $settings->feedbacknotes['format'];
-        $sdata->feedbacknotes  = $settings->feedbacknotes['text'];
-        $sdata->feedbacknotes  = file_save_draft_area_files($sdata->fbnotesitemid,
-                        $context->id, 'mod_questionnaire', 'feedbacknotes',
-                        $sdata->id, array('subdirs' => true), $sdata->feedbacknotes);
-    } else {
-        $sdata->feedbacknotes = '';
-    }
-
-    if (isset ($settings->feedbacksections)) {
-        $sdata->feedbacksections = $settings->feedbacksections;
-        $usergraph = get_config('questionnaire', 'usergraph');
-        if ($usergraph) {
-            if ($settings->feedbacksections == 1) {
-                $sdata->chart_type = $settings->chart_type_global;
-            } else if ($settings->feedbacksections == 2) {
-                $sdata->chart_type = $settings->chart_type_two_sections;
-            } else if ($settings->feedbacksections > 2) {
-                $sdata->chart_type = $settings->chart_type_sections;
-            }
-        }
-    } else {
-        $sdata->feedbacksections = '';
-    }
     $sdata->courseid = $settings->courseid;
     if (!($sid = $questionnaire->survey_update($sdata))) {
         print_error('couldnotcreatenewsurvey', 'questionnaire');
@@ -154,34 +117,6 @@ if ($settings = $settingsform->get_data()) {
         // Save current advanced settings only.
         if (isset($settings->submitbutton) || isset($settings->submitbutton2)) {
             redirect ($redirecturl, get_string('settingssaved', 'questionnaire'));
-        }
-
-        // Delete existing section and feedback records for this questionnaire if any were previously set and None are wanted now
-        // or Global feedback is now wanted.
-        if ($sdata->feedbacksections == 0 || ($questionnaire->survey->feedbacksections > 1 && $sdata->feedbacksections == 1)) {
-            if ($feedbacksections = $DB->get_records('questionnaire_fb_sections',
-                    array('survey_id' => $sid), '', 'id') ) {
-                foreach ($feedbacksections as $key => $feedbacksection) {
-                    $DB->delete_records('questionnaire_feedback', array('section_id' => $key));
-                }
-                $DB->delete_records('questionnaire_fb_sections', array('survey_id' => $sid));
-            }
-        }
-
-        // Save current advanced settings and go to edit feedback page(s).
-        $SESSION->questionnaire->currentfbsection = 1;
-        switch ($settings->feedbacksections) {
-            // 1 fbsection means Global feedback, redirect immediately to the fb settings page.
-            case 1:
-                redirect ($CFG->wwwroot.'/mod/questionnaire/fbsettings.php?id='.$questionnaire->cm->id,
-                        get_string('settingssaved', 'questionnaire'), 0);
-                break;
-            // More than 1 section, go to fb sections page for user to put questions inside sections.
-            default:
-                // This questionnaire has more than one feedback sections, so needs to set sections questions first
-                // before setting feedback messages.
-                redirect ($CFG->wwwroot.'/mod/questionnaire/fbsections.php?id='.$questionnaire->cm->id, '', 0);
-                break;
         }
     }
 }

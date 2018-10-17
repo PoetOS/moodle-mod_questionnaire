@@ -84,7 +84,6 @@ class drop extends base {
      */
     protected function question_survey_display($data, $dependants, $blankquestionnaire=false) {
         // Drop.
-        $output = '';
         $options = [];
 
         $choicetags = new \stdClass();

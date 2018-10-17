@@ -143,7 +143,8 @@ function questionnaire_add_instance($questionnaire) {
     questionnaire_set_events($questionnaire);
 
     $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
-    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire', $questionnaire->id, $completiontimeexpected);
+    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire',
+        $questionnaire->id, $completiontimeexpected);
 
     return $questionnaire->id;
 }
@@ -183,7 +184,8 @@ function questionnaire_update_instance($questionnaire) {
     questionnaire_set_events($questionnaire);
 
     $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
-    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire', $questionnaire->id, $completiontimeexpected);
+    \core_completion\api::update_completion_date_event($questionnaire->coursemodule, 'questionnaire',
+        $questionnaire->id, $completiontimeexpected);
 
     return $DB->update_record("questionnaire", $questionnaire);
 }
@@ -598,6 +600,15 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $questionnairenode->add_node($node, $beforekey);
     }
 
+    if (has_capability('mod/questionnaire:editquestions', $context) && $owner) {
+        $url = '/mod/questionnaire/feedback.php';
+        $node = navigation_node::create(get_string('feedback', 'questionnaire'),
+            new moodle_url($url, array('id' => $cmid)),
+            navigation_node::TYPE_SETTING, null, 'feedback',
+            new pix_icon('t/edit', ''));
+        $questionnairenode->add_node($node, $beforekey);
+    }
+
     if (has_capability('mod/questionnaire:preview', $context)) {
         $url = '/mod/questionnaire/preview.php';
         $node = navigation_node::create(get_string('preview_label', 'questionnaire'),
@@ -647,7 +658,8 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
             if ($questionnaire->capabilities->downloadresponses) {
                 $urlargs = array('instance' => $questionnaire->id, 'user' => $USER->id,
                     'action' => 'dwnpg', 'group' => $currentgroupid);
-                $myreportnode->add(get_string('downloadtext'), new moodle_url('/mod/questionnaire/report.php', $urlargs));
+                $myreportnode->add(get_string('downloadtextformat', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/report.php', $urlargs));
             }
         } else {
             $urlargs = array('instance' => $questionnaire->id, 'userid' => $USER->id,

@@ -49,6 +49,11 @@ if ($questionnaire->capabilities->editquestions && $owner) {
             'id='.$questionnaire->cm->id), get_string('questions', 'questionnaire'));
 }
 
+if ($questionnaire->capabilities->editquestions && $owner) {
+    $row[] = new tabobject('feedback', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/feedback.php?'.
+            'id='.$questionnaire->cm->id), get_string('feedback'));
+}
+
 if ($questionnaire->capabilities->preview && $owner) {
     if (!empty($questionnaire->questions)) {
         $row[] = new tabobject('preview', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/preview.php?'.
@@ -85,7 +90,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg';
             $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
-            $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtext'));
+            $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
     } else if (in_array($currenttab, array('mybyresponse', 'mysummary'))) {
         $inactive[] = 'myreport';
@@ -161,7 +166,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg&group='.$currentgroupid;
             $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
-            $row3[] = new tabobject('downloadcsv', $link, get_string('downloadtext'));
+            $row3[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
     }
 
@@ -216,7 +221,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg';
             $link  = htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
-            $row2[] = new tabobject('downloadcsv', $link, get_string('downloadtext'));
+            $row2[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
         if (count($row2) <= 1) {
             $currenttab = 'allreport';

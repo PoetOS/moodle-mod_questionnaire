@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Print the form to add or edit a questionnaire-instance
+ * Print the form to manage feedback settings.
  *
  * @package mod_questionnaire
- * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
- * @author Joseph Rezeau (based on Quiz by Tim Hunt)
+ * @copyright  2016 onward Mike Churchward (mike.churchward@poetgroup.org)
+ * @author Joseph Rezeau
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
@@ -32,193 +32,106 @@ require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 
 class feedback_form extends \moodleform {
 
-    protected $_feedbacks;
-
     public function definition() {
-        global $questionnaire, $DB, $SESSION;
-        $currentsection   = $SESSION->questionnaire->currentfbsection;
-        $sectionid   = $this->_customdata['sectionid'];
-        $feedbacksections = $questionnaire->survey->feedbacksections;
-        $this->_feedbacks = $DB->get_records('questionnaire_feedback',
-                array('section_id' => $sectionid),
-                'minscore DESC');
-        $this->context = $questionnaire->context;
-        $mform    =& $this->_form;
+        global $questionnaire;
 
-        if ($feedbacksections == 1) {
-            $feedbackheading = get_string('feedbackglobalheading', 'questionnaire');
-            $feedbackmessages = get_string('feedbackglobalmessages', 'questionnaire');
-        } else {
-            $feedbackheading = get_string('feedbacksectionheading', 'questionnaire', $currentsection.'/'.$feedbacksections);
-            $feedbackmessages = get_string('feedbackmessages', 'questionnaire', $currentsection.'/'.$feedbacksections);
-        }
+        $mform =& $this->_form;
 
-        $mform->addElement('header', 'contenthdr', $feedbackheading);
+        // Questionnaire Feedback Sections and Messages.
+        $feedbackoptions = [];
+        $feedbackoptions[0] = get_string('feedbacknone', 'questionnaire');
+        $mform->addElement('header', 'submithdr', get_string('feedbackoptions', 'questionnaire'));
+        $feedbackoptions[1] = get_string('feedbackglobal', 'questionnaire');
+        $feedbackoptions[2] = get_string('feedbacksections', 'questionnaire');
 
-        $questions = $questionnaire->questions;
-        $fbsection = $DB->get_record('questionnaire_fb_sections',
-                        array('survey_id' => $questionnaire->survey->id, 'section' => $currentsection));
-        $questionslist = '';
-        if (isset($fbsection->scorecalculation)) {
-            $scorecalculation = unserialize($fbsection->scorecalculation);
-            $questionslist = '<ul style="float: left;">';
-            foreach ($scorecalculation as $qid => $key) {
-                $questionslist .= '<li>'.$questions[$qid]->name.'</li>';
+        $mform->addElement('select', 'feedbacksections', get_string('feedbackoptions', 'questionnaire'), $feedbackoptions);
+        $mform->setDefault('feedbacksections', $questionnaire->survey->feedbacksections);
+        $mform->addHelpButton('feedbacksections', 'feedbackoptions', 'questionnaire');
+
+        $options = ['0' => get_string('no'), '1' => get_string('yes')];
+        $mform->addElement('select', 'feedbackscores', get_string('feedbackscores', 'questionnaire'), $options);
+        $mform->addHelpButton('feedbackscores', 'feedbackscores', 'questionnaire');
+
+        // Is the RGraph library enabled at level site?
+        if (get_config('questionnaire', 'usergraph')) {
+            $chartgroup = [];
+            $charttypes = [null => get_string('none'),
+                'bipolar' => get_string('chart:bipolar', 'questionnaire'),
+                'vprogress' => get_string('chart:vprogress', 'questionnaire')];
+            $chartgroup[] = $mform->createElement('select', 'chart_type_global',
+                get_string('chart:type', 'questionnaire') . ' (' .
+                get_string('feedbackglobal', 'questionnaire') . ')', $charttypes);
+            if ($questionnaire->survey->feedbacksections == 1) {
+                $mform->setDefault('chart_type_global', $questionnaire->survey->chart_type);
             }
-            $questionslist .= '</ul>';
+            $mform->disabledIf('chart_type_global', 'feedbacksections', 'eq', 0);
+            $mform->disabledIf('chart_type_global', 'feedbacksections', 'neq', 1);
+
+            $charttypes = [null => get_string('none'),
+                'bipolar' => get_string('chart:bipolar', 'questionnaire'),
+                'hbar' => get_string('chart:hbar', 'questionnaire'),
+                'rose' => get_string('chart:rose', 'questionnaire')];
+            $chartgroup[] = $mform->createElement('select', 'chart_type_two_sections',
+                get_string('chart:type', 'questionnaire') . ' (' .
+                get_string('feedbackbysection', 'questionnaire') . ')', $charttypes);
+            if ($questionnaire->survey->feedbacksections > 1) {
+                $mform->setDefault('chart_type_two_sections', $questionnaire->survey->chart_type);
+            }
+            $mform->disabledIf('chart_type_two_sections', 'feedbacksections', 'neq', 2);
+
+            $charttypes = [null => get_string('none'),
+                'bipolar' => get_string('chart:bipolar', 'questionnaire'),
+                'hbar' => get_string('chart:hbar', 'questionnaire'),
+                'radar' => get_string('chart:radar', 'questionnaire'),
+                'rose' => get_string('chart:rose', 'questionnaire')];
+            $chartgroup[] = $mform->createElement('select', 'chart_type_sections',
+                get_string('chart:type', 'questionnaire') . ' (' .
+                get_string('feedbackbysection', 'questionnaire') . ')', $charttypes);
+            if ($questionnaire->survey->feedbacksections > 1) {
+                $mform->setDefault('chart_type_sections', $questionnaire->survey->chart_type);
+            }
+            $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 0);
+            $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 1);
+            $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 2);
+
+            $mform->addGroup($chartgroup, 'chartgroup',
+                get_string('chart:type', 'questionnaire'), null, false);
+            $mform->addHelpButton('chartgroup', 'chart:type', 'questionnaire');
         }
-        $mform->addElement('static', 'questionsinsectionlist', get_string('questionsinsection', 'questionnaire'), $questionslist);
-        $mform->addElement('text', 'sectionlabel', get_string('feedbacksectionlabel', 'questionnaire'),
-                        array('size' => '50', 'maxlength' => '50'));
-        $mform->setType('sectionlabel', PARAM_TEXT);
-        $mform->addRule('sectionlabel', null, 'required', null, 'client');
-        $mform->addHelpButton('sectionlabel', 'feedbacksectionlabel', 'questionnaire');
+        $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
+        $mform->addElement('editor', 'feedbacknotes', get_string('feedbacknotes', 'questionnaire'), null, $editoroptions);
+        $mform->setType('feedbacknotes', PARAM_RAW);
+        $mform->setDefault('feedbacknotes', $questionnaire->survey->feedbacknotes);
+        $mform->addHelpButton('feedbacknotes', 'feedbacknotes', 'questionnaire');
 
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true);
-        $mform->addElement('editor', 'sectionheading', get_string('feedbacksectionheadingtext', 'questionnaire'),
-                        null, $editoroptions);
-        $mform->setType('info', PARAM_RAW);
-
-        $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
-
-        // FEEDBACK FIELDS.
-
-        $mform->addElement('header', 'feedbackhdr', $feedbackmessages);
-        $mform->addHelpButton('feedbackhdr', 'feedback', 'questionnaire');
-
-        $mform->addElement('static', 'scoreboundarystatic1', get_string('feedbackscoreboundary', 'questionnaire'), '100%');
-
-        $repeatarray = array();
-        $repeatedoptions = array();
-
-        $repeatarray[] = $mform->createElement(
-            'editor', 'feedbacktext', get_string('feedback', 'questionnaire'), null,
-            array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context)
-        );
-        $repeatarray[] = $mform->createElement(
-            'text', 'feedbackboundaries', get_string('feedbackscoreboundary', 'questionnaire'), array('size' => 10)
-        );
-        $repeatedoptions['feedbacklabel']['type'] = PARAM_RAW;
-        $repeatedoptions['feedbacktext']['type'] = PARAM_RAW;
-        $repeatedoptions['feedbackboundaries']['type'] = PARAM_RAW;
-
-        $numfeedbacks = max(count($this->_feedbacks) * 1, 3);
-
-        $nextel = $this->repeat_elements($repeatarray, $numfeedbacks - 1,
-                        $repeatedoptions, 'boundary_repeats', 'boundary_add_fields', 2,
-                        get_string('feedbackaddmorefeedbacks', 'questionnaire'), true);
-
-        // Put some extra elements in before the button.
-        $mform->insertElementBefore(
-            $mform->createElement('editor', "feedbacktext[$nextel]", get_string('feedback', 'questionnaire'), null,
-                array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context)),
-            'boundary_add_fields');
-        $mform->insertElementBefore(
-            $mform->createElement('static', 'scoreboundarystatic2', get_string('feedbackscoreboundary', 'questionnaire'), '0%'),
-            'boundary_add_fields');
-
-        // Hidden fields.
         $mform->addElement('hidden', 'id', 0);
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'sid', 0);
         $mform->setType('sid', PARAM_INT);
+        $mform->addElement('hidden', 'courseid', '');
+        $mform->setType('courseid', PARAM_RAW);
 
-        // Buttons.
-        if ($currentsection < $feedbacksections) {
-            $currentsection ++;
-            $sectionsnav = '('.$currentsection.'/'.$feedbacksections.')';
-            $buttonarray[] = &$mform->createElement('submit', 'submitbutton',
-                get_string('feedbacknextsection', 'questionnaire', $sectionsnav));
+        // Can't seem to disable or hide one button in the group, so create two different button sets and hide one.
+        $buttongroup = [];
+        $buttongroup[] = $mform->createElement('submit', 'feedbacksettingsbutton1', get_string('savesettings', 'questionnaire'));
+        $buttongroup[] = $mform->createElement('submit', 'feedbackeditbutton', get_string('feedbackeditsections', 'questionnaire'));
+        $mform->addGroup($buttongroup, 'buttongroup');
+        if (moodle_major_version() == '3.3') {
+            $mform->disabledIf('buttongroup', 'feedbacksections', 'eq', 0);
         } else {
-            $buttonarray[] = &$mform->createElement('submit', 'savesettings', get_string('savesettings', 'questionnaire'));
+            $mform->hideIf('buttongroup', 'feedbacksections', 'eq', 0);
         }
 
-        $buttonarray[] = &$mform->createElement('cancel');
-        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
-    }
-
-    public function data_preprocessing(&$toform) {
-        if (count($this->_feedbacks)) {
-            $key = 0;
-            foreach ($this->_feedbacks as $feedback) {
-                $draftid = file_get_submitted_draft_itemid('feedbacktext['.$key.']');
-                $toform['feedbacktext['.$key.']']['text'] = file_prepare_draft_area(
-                    $draftid,               // Draftid.
-                    $this->context->id,     // Context.
-                    'mod_questionnaire',    // Component.
-                    'feedback',             // Filarea.
-                    !empty($feedback->id) ? (int)$feedback->id : null, // Itemid.
-                    null,
-                    $feedback->feedbacktext // Text.
-                );
-                $toform['feedbacktext['.$key.']']['format'] = 1;
-                $toform['feedbacklabel['.$key.']'] = $feedback->feedbacklabel;
-                $toform['feedbacktext['.$key.']']['itemid'] = $draftid;
-
-                if ($feedback->minscore > 0) {
-                    $toform['feedbackboundaries['.$key.']'] = (100.0 * $feedback->minscore / 100 ) . '%';
-                }
-                $key++;
-            }
+        $mform->addElement('submit', 'feedbacksettingsbutton2', get_string('savesettings', 'questionnaire'));
+        if (moodle_major_version() == '3.3') {
+            $mform->disabledIf('feedbacksettingsbutton2', 'feedbacksections', 'neq', 0);
+        } else {
+            $mform->hideIf('feedbacksettingsbutton2', 'feedbacksections', 'neq', 0);
         }
     }
+
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
-
-        // Check the boundary value is a number or a percentage, and in range.
-        $i = 0;
-        while (!empty($data['feedbackboundaries'][$i])) {
-            $boundary = trim($data['feedbackboundaries'][$i]);
-            if (strlen($boundary) > 0 && $boundary[strlen($boundary) - 1] == '%') {
-                $boundary = trim(substr($boundary, 0, -1));
-                if (is_numeric($boundary)) {
-                    $boundary = $boundary * 100 / 100.0;
-                } else {
-                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryformat', 'quiz', $i + 1);
-                }
-            }
-            if (is_numeric($boundary) && $boundary <= 0) {
-                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryoutofrange', 'questionnaire', $i + 1);
-            }
-            if (is_numeric($boundary) && $i > 0 &&
-                    $boundary >= $data['feedbackboundaries'][$i - 1]) {
-                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrororder', 'questionnaire', $i + 1);
-            }
-            $data['feedbackboundaries'][$i] = $boundary;
-            $i += 1;
-        }
-        $numboundaries = $i;
-
-        // Check there is nothing in the remaining unused fields.
-        if (!empty($data['feedbackboundaries'])) {
-            for ($i = $numboundaries; $i < count($data['feedbackboundaries']); $i += 1) {
-                if (!empty($data['feedbackboundaries'][$i] ) &&
-                        trim($data['feedbackboundaries'][$i] ) != '') {
-                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorjunkinboundary', 'questionnaire', $i + 1);
-                }
-            }
-        }
-        for ($i = $numboundaries + 1; $i < count($data['feedbacktext']); $i += 1) {
-            if (!empty($data['feedbacktext'][$i]['text']) &&
-                    trim($data['feedbacktext'][$i]['text'] ) != '') {
-                $errors["feedbacktext[$i]"] = get_string('feedbackerrorjunkinfeedback', 'questionnaire', $i + 1);
-            }
-        }
         return $errors;
-    }
-
-    /**
-     * Load in existing data as form defaults. Usually new entry defaults are stored directly in
-     * form definition (new entry form); this function is used to load in data where values
-     * already exist and data is being edited (edit entry form).
-     *
-     * @param mixed $default_values object or array of default values
-     */
-    public function set_data($defaultvalues) {
-        if (is_object($defaultvalues)) {
-            $defaultvalues = (array)$defaultvalues;
-        }
-        $this->data_preprocessing($defaultvalues);
-        parent::set_data($defaultvalues);
     }
 }

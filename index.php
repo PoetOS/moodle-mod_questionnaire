@@ -139,8 +139,8 @@ foreach ($questionnaires as $questionnaire) {
             }
             $data[] = $status;
         } else if ($showing == 'stats') {
-            $data[] = $DB->count_records('questionnaire_response', array('questionnaireid' => $questionnaire->id, 'complete' => 'y'));
-            if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
+            $data[] = $DB->count_records('questionnaire_response', ['questionnaireid' => $questionnaire->id, 'complete' => 'y']);
+            if ($survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid])) {
                 // For a public questionnaire, look for the original public questionnaire that it is based on.
                 if ($survey->realm == 'public') {
                     $strpreview = get_string('preview_questionnaire', 'questionnaire');

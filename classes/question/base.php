@@ -61,8 +61,8 @@ abstract class base {
     /** @var int $id The database id of this question. */
     public $id          = 0;
 
-    /** @var int $survey_id The database id of the survey this question belongs to. */
-    // public $survey_id   = 0;  Commenting out for now, as '_' not allowed.
+    /** @var int $surveyid The database id of the survey this question belongs to. */
+    public $surveyid   = 0;
 
     /** @var string $name The name of this question. */
     public $name        = '';
@@ -139,7 +139,7 @@ abstract class base {
 
         if (is_object($question)) {
             $this->id = $question->id;
-            $this->survey_id = $question->survey_id;
+            $this->surveyid = $question->surveyid;
             $this->name = $question->name;
             $this->length = $question->length;
             $this->precise = $question->precise;
@@ -254,7 +254,7 @@ abstract class base {
 
         $this->dependencies = [];
         $dependencies = $DB->get_records('questionnaire_dependency',
-            ['questionid' => $this->id , 'surveyid' => $this->survey_id], 'id ASC');
+            ['questionid' => $this->id , 'surveyid' => $this->surveyid], 'id ASC');
         foreach ($dependencies as $dependency) {
             $this->dependencies[$dependency->id] = new \stdClass();
             $this->dependencies[$dependency->id]->dependquestionid = $dependency->dependquestionid;
@@ -327,12 +327,12 @@ abstract class base {
                     $dependencyorfulfilled = false;
                     // To reach this point, the and-dependencies have all been fultilled or do not exist, so set them ok.
                     $dependencyandfulfilled = true;
-                    // This answer given
+                    // This answer given.
                     if (($dependency->dependlogic == 1) && $choicematches) {
                         $dependencyorfulfilled = true;
                     }
 
-                    // This answer NOT given
+                    // This answer NOT given.
                     if (($dependency->dependlogic == 0) && !$choicematches) {
                         $dependencyorfulfilled = true;
                     }
@@ -455,7 +455,7 @@ abstract class base {
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
      */
     public function valid_feedback() {
-        if ($this->supports_feedback() && $this->has_choices() && $this->required()) {
+        if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
             foreach ($this->choices as $choice) {
                 if ($choice->value != null) {
                     return true;
@@ -533,7 +533,7 @@ abstract class base {
         if ($questionrecord === null) {
             $questionrecord = new \stdClass();
             $questionrecord->id = $this->id;
-            $questionrecord->survey_id = $this->survey_id;
+            $questionrecord->surveyid = $this->surveyid;
             $questionrecord->name = $this->name;
             $questionrecord->type_id = $this->type_id;
             $questionrecord->result_id = $this->result_id;
@@ -574,8 +574,8 @@ abstract class base {
             // Set the position to the end.
             $sql = 'SELECT MAX(position) as maxpos '.
                    'FROM {questionnaire_question} '.
-                   'WHERE survey_id = ? AND deleted = ?';
-            $params = ['survey_id' => $questionrecord->survey_id, 'deleted' => 'n'];
+                   'WHERE surveyid = ? AND deleted = ?';
+            $params = ['surveyid' => $questionrecord->surveyid, 'deleted' => 'n'];
             if ($record = $DB->get_record_sql($sql, $params)) {
                 $questionrecord->position = $record->maxpos + 1;
             } else {
@@ -599,8 +599,6 @@ abstract class base {
     }
 
     public function update_choices() {
-        global $DB;
-
         $retvalue = true;
         if ($this->has_choices() && isset($this->choices)) {
             // Need to fix this messed-up qid/id issue.
@@ -758,6 +756,19 @@ abstract class base {
     }
 
     /**
+     * Override and return a form template if provided. Output of results_output is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function results_template() {
+        if (isset ($this->response) && is_object($this->response) &&
+            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            return $this->response->results_template();
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Get the output for question renderers / templates.
      * @param object $formdata
      * @param array $dependants Array of all questions/choices depending on this question.
@@ -859,23 +870,6 @@ abstract class base {
         $pagetags->qcontent = $content;
 
         return $pagetags;
-    }
-
-    private function response_check_required ($data) {
-        // JR check all question types
-        if ($this->type_id == QUESRATE) { // Rate is a special case.
-            foreach ($this->choices as $cid => $choice) {
-                $str = 'q'."{$this->id}_$cid";
-                if (isset($data->$str)) {
-                    return ('&nbsp;');
-                }
-            }
-        }
-        if ($this->required() &&  empty($data->{'q'.$this->id}) ) {
-            return ('*');
-        } else {
-            return ('&nbsp;');
-        }
     }
 
     // This section contains functions for editing the specific question types.
@@ -1162,8 +1156,8 @@ abstract class base {
         } else {
             // Create new question:
             // Need to update any image content after the question is created, so create then update the content.
-            $formdata->survey_id = $formdata->sid;
-            $fields = ['survey_id', 'name', 'type_id', 'length', 'precise', 'required', 'position'];
+            $formdata->surveyid = $formdata->sid;
+            $fields = ['surveyid', 'name', 'type_id', 'length', 'precise', 'required', 'position'];
             $questionrecord = new \stdClass();
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {
@@ -1272,7 +1266,7 @@ abstract class base {
                     $dependencyrecord = new \stdClass();
                     $dependencyrecord->id = $ekey;
                     $dependencyrecord->questionid = $this->qid;
-                    $dependencyrecord->surveyid = $this->survey_id;
+                    $dependencyrecord->surveyid = $this->surveyid;
                     $dependencyrecord->dependquestionid = $formdata->dependquestion[$nidx];
                     $dependencyrecord->dependchoiceid = $formdata->dependchoice[$nidx];
                     $dependencyrecord->dependlogic = $formdata->dependlogic_cleaned[$nidx];

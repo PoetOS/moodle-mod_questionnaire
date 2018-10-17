@@ -128,7 +128,7 @@ class questions_form extends \moodleform {
 
             // No page break in first position!
             if ($tid == QUESPAGEBREAK && $pos == 1) {
-                $DB->set_field('questionnaire_question', 'deleted', 'y', array('id' => $qid, 'survey_id' => $sid));
+                $DB->set_field('questionnaire_question', 'deleted', 'y', ['id' => $qid, 'surveyid' => $sid]);
                 if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
                     foreach ($records as $record) {
                         $DB->set_field('questionnaire_question', 'position', $record->position - 1, array('id' => $record->id));
@@ -170,13 +170,6 @@ class questions_form extends \moodleform {
                                 'title' => $strremove);
 
                 if ($tid == QUESPAGEBREAK) {
-                    $esrc = $CFG->wwwroot.'/mod/questionnaire/images/editd.gif';
-                    $eextra = array('disabled' => 'disabled');
-                } else {
-                    $esrc = $CFG->wwwroot.'/mod/questionnaire/images/edit.gif';
-                }
-
-                if ($tid == QUESPAGEBREAK) {
                     $esrc = $spacer;
                     $eextra = array('disabled' => 'disabled');
                 } else {
@@ -212,13 +205,13 @@ class questions_form extends \moodleform {
                     // or immediately preceded by a question with a dependency and followed by a non-dependent question.
                     if ($tid == QUESPAGEBREAK) {
                         if ($nextquestion = $DB->get_record('questionnaire_question',
-                            ['survey_id' => $sid, 'position' => $pos + 1, 'deleted' => 'n'], 'id, name, content') ) {
+                            ['surveyid' => $sid, 'position' => $pos + 1, 'deleted' => 'n'], 'id, name, content') ) {
 
                             $nextquestiondependencies = $DB->get_records('questionnaire_dependency',
                                 ['questionid' => $nextquestion->id , 'surveyid' => $sid], 'id ASC');
 
                             if ($previousquestion = $DB->get_record('questionnaire_question',
-                                ['survey_id' => $sid, 'position' => $pos - 1, 'deleted' => 'n'], 'id, name, content')) {
+                                ['surveyid' => $sid, 'position' => $pos - 1, 'deleted' => 'n'], 'id, name, content')) {
 
                                 $previousquestiondependencies = $DB->get_records('questionnaire_dependency',
                                     ['questionid' => $previousquestion->id , 'surveyid' => $sid], 'id ASC');
