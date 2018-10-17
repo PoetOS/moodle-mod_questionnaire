@@ -281,13 +281,15 @@ class single extends base {
     /**
      * Return sql and params for getting responses in bulk.
      * @author Guy Thomas
-     * @param int $questionnaireid
+     * @param int|array $questionnaireids One id, or an array of ids.
      * @param bool|int $responseid
      * @param bool|int $userid
      * @return array
      */
-    public function get_bulk_sql($questionnaireid, $responseid = false, $userid = false, $groupid = false, $showincompletes = 0) {
-        $sql = $this->bulk_sql($questionnaireid, $responseid, $userid);
+    public function get_bulk_sql($questionnaireids, $responseid = false, $userid = false, $groupid = false, $showincompletes = 0) {
+        global $DB;
+
+        $sql = $this->bulk_sql();
         if (($groupid !== false) && ($groupid > 0)) {
             $groupsql = ' INNER JOIN {groups_members} gm ON gm.groupid = ? AND gm.userid = qr.userid ';
             $gparams = [$groupid];
@@ -296,16 +298,21 @@ class single extends base {
             $gparams = [];
         }
 
+        if (is_array($questionnaireids)) {
+            list($qsql, $params) = $DB->get_in_or_equal($questionnaireids);
+        } else {
+            $qsql = ' = ? ';
+            $params = [$questionnaireids];
+        }
         if ($showincompletes == 1) {
             $showcompleteonly = '';
-            $params = [$questionnaireid];
         } else {
             $showcompleteonly = 'AND qr.complete = ? ';
-            $params = [$questionnaireid, 'y'];
+            $params[] = 'y';
         }
 
         $sql .= "
-            AND qr.questionnaireid = ? $showcompleteonly
+            AND qr.questionnaireid $qsql $showcompleteonly
       LEFT JOIN {questionnaire_response_other} qro ON qro.response_id = qr.id AND qro.choice_id = qrs.choice_id
       LEFT JOIN {user} u ON u.id = qr.userid
       $groupsql

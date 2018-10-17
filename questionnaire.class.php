@@ -2604,13 +2604,20 @@ class questionnaire {
         $allresponsessql = "";
         $allresponsesparams = [];
 
+        // If a questionnaire is "public", and this is the master course, need to get responses from all instances.
+        if (($this->survey->realm == 'public') && ($this->course->id == $this->survey->courseid)) {
+            $qids = array_keys($DB->get_records('questionnaire', ['sid' => 5], 'id'));
+        } else {
+            $qids = $this->id;
+        }
+
         foreach ($uniquetypes as $type) {
             $question = \mod_questionnaire\question\base::question_builder($type);
             if (!isset($question->response)) {
                 continue;
             }
             $allresponsessql .= $allresponsessql == '' ? '' : ' UNION ALL ';
-            list ($sql, $params) = $question->response->get_bulk_sql($this->id, $rid, $userid, $groupid, $showincompletes);
+            list ($sql, $params) = $question->response->get_bulk_sql($qids, $rid, $userid, $groupid, $showincompletes);
             $allresponsesparams = array_merge($allresponsesparams, $params);
             $allresponsessql .= $sql;
         }
