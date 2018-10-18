@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core/dataformat_selector
+    @template mod_questionnaire/dataformat_selector
 
     Template for dataformat selection and download form.
 
@@ -34,12 +34,23 @@
         "base": "http://example.org/",
         "name": "test",
         "label": "Download table data as",
-        "params": {
-            "name": "fieldname",
-            "value": "defaultvalue"
-        },
-        "extrafields": '<input type="text" name="extrafield" value="more" />',
-        "options": [{"label": "CSV", "name": "csv"}, {"label": "Excel", "name": "excel"}],
+        "params": [
+            {
+                "name": "fieldname",
+                "value": "defaultvalue"
+            }
+        ],
+        "extrafields": "Input HTML",
+        "options": [
+            {
+                "label": "CSV", 
+                "name": "csv"
+            }, 
+            {   
+                "label": "Excel",
+                "name": "excel"
+            }
+        ],
         "submit": "Download",
     }
 }}
