@@ -463,6 +463,7 @@ $string['questionnaireadministration'] = 'Questionnaire Administration';
 $string['questionnairecloses'] = 'Questionnaire Closes';
 $string['questionnaireopens'] = 'Questionnaire Opens';
 $string['questionnairereport'] = 'Questionnaire Report';
+$string['questionnairename'] = 'Questionnaire Name';
 $string['questionnum'] = 'Question #';
 $string['questions'] = 'Questions';
 $string['questionsinsection'] = 'Questions in this section:';
