@@ -581,7 +581,7 @@ class questionnaire {
 
         // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
         // Public questionnaires can have responses to multiple questionnaire instances.
-        if (is_object($this->survey) && ($this->survey->realm == 'public') && ($this->course->id == $this->survey->courseid)) {
+        if ($this->survey_is_public_master()) {
             $sql = 'SELECT COUNT(r.id) ' .
                 'FROM {questionnaire_response} r ' .
                 'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
@@ -627,7 +627,7 @@ class questionnaire {
 
         // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
         // Public questionnaires can have responses to multiple questionnaire instances.
-        if (is_object($this->survey) && ($this->survey->realm == 'public') && ($this->course->id == $this->survey->courseid)) {
+        if ($this->survey_is_public_master()) {
             $sql = 'SELECT r.* ' .
                 'FROM {questionnaire_response} r ' .
                 'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
@@ -1087,7 +1087,7 @@ class questionnaire {
         }
         if ($ruser) {
             $respinfo = get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>';
-            if ($this->survey->realm == 'public') {
+            if ($this->survey_is_public()) {
                 // For a public questionnaire, look for the course that used it.
                 $coursename = '';
                 $sql = 'SELECT q.id, q.course, c.fullname ' .
@@ -2605,8 +2605,8 @@ class questionnaire {
         $allresponsesparams = [];
 
         // If a questionnaire is "public", and this is the master course, need to get responses from all instances.
-        if (($this->survey->realm == 'public') && ($this->course->id == $this->survey->courseid)) {
-            $qids = array_keys($DB->get_records('questionnaire', ['sid' => 5], 'id'));
+        if ($this->survey_is_public_master()) {
+            $qids = array_keys($DB->get_records('questionnaire', ['sid' => $this->sid], 'id'));
         } else {
             $qids = $this->id;
         }
@@ -2625,6 +2625,24 @@ class questionnaire {
         $allresponsessql .= " ORDER BY usrid, id";
         $allresponses = $DB->get_recordset_sql($allresponsessql, $allresponsesparams);
         return $allresponses;
+    }
+
+    /**
+     * Return true if the survey is a 'public' one.
+     *
+     * @return boolean
+     */
+    public function survey_is_public() {
+        return is_object($this->survey) && ($this->survey->realm == 'public');
+    }
+
+    /**
+     * Return true if the survey is a 'public' one and this is the master instance.
+     *
+     * @return boolean
+     */
+    public function survey_is_public_master() {
+        return $this->survey_is_public() && ($this->course->id == $this->survey->courseid);
     }
 
     /**
@@ -2672,7 +2690,7 @@ class questionnaire {
 
         // Moodle:
         // Get the course name that this questionnaire belongs to.
-        if ($this->survey->realm != 'public') {
+        if (!$this->survey_is_public()) {
             $courseid = $this->course->id;
             $coursename = $this->course->fullname;
         } else {

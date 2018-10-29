@@ -1356,22 +1356,4 @@ abstract class base {
         }
         return false;
     }
-
-    /**
-     * Return all the fields to be used for users in questionnaire sql.
-     *
-     * @author: Guy Thomas
-     * @return string
-     */
-    protected function user_fields_sql() {
-        $userfieldsarr = get_all_user_name_fields();
-        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution']);
-        $userfields = '';
-        foreach ($userfieldsarr as $field) {
-            $userfields .= $userfields === '' ? '' : ', ';
-            $userfields .= 'u.'.$field;
-        }
-        $userfields .= ', u.id as usrid';
-        return $userfields;
-    }
 }

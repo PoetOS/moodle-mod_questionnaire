@@ -762,26 +762,29 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     if ($COURSE->id == $courseid) {
         $course = $COURSE;
     } else {
-        $course = $DB->get_record('course', array('id' => $courseid));
+        $course = $DB->get_record('course', ['id' => $courseid]);
     }
 
     $modinfo = get_fast_modinfo($course);
 
     $cm = $modinfo->cms[$cmid];
-    $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance));
+    $questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance]);
+    $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
     $context = context_module::instance($cm->id);
     $grader = has_capability('mod/questionnaire:viewsingleresponse', $context);
 
     // If this is a copy of a public questionnaire whose original is located in another course,
     // current user (teacher) cannot view responses.
-    if ($grader && $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
+    if ($grader) {
         // For a public questionnaire, look for the original public questionnaire that it is based on.
-        if ($survey->realm == 'public' && $survey->courseid != $course->id) {
+        if (!$questionnaire->survey_is_public_master()) {
             // For a public questionnaire, look for the original public questionnaire that it is based on.
-            $originalquestionnaire = $DB->get_record('questionnaire', ['sid' => $survey->id, 'course' => $survey->courseid]);
-            $cmoriginal = get_coursemodule_from_instance("questionnaire", $originalquestionnaire->id, $survey->courseid);
-            $contextoriginal = context_course::instance($survey->courseid, MUST_EXIST);
+            $originalquestionnaire = $DB->get_record('questionnaire',
+                ['sid' => $questionnaire->survey->id, 'course' => $questionnaire->survey->courseid]);
+            $cmoriginal = get_coursemodule_from_instance("questionnaire", $originalquestionnaire->id,
+                $questionnaire->survey->courseid);
+            $contextoriginal = context_course::instance($questionnaire->survey->courseid, MUST_EXIST);
             if (!has_capability('mod/questionnaire:viewsingleresponse', $contextoriginal)) {
                 $tmpactivity = new stdClass();
                 $tmpactivity->type = 'questionnaire';
