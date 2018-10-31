@@ -1,0 +1,181 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{=<% %>=}}
+<div>
+    <core-course-module-description description="<%questionnaire.questionnaire.intro%>"
+                                    component="mod_questionnaire" componentId="<%cmid%>"
+                                    pagenum="<%pagenum%>"></core-course-module-description>
+    <%#completed%>
+    <ion-card>
+        <ion-card-content>
+            {{ 'plugin.mod_questionnaire.submitted' | translate }} <%complete_userdate%>
+        </ion-card-content>
+    </ion-card>
+    <%/completed%>
+    <div>
+        <ion-card>
+            <%#completed%><ion-list><%/completed%>
+            <%^completed%><form ion-list [formGroup]="questionsForm"><%/completed%>
+                <%#pagequestions%>
+                <ion-list-header text-wrap>
+                    <core-format-text text="CONTENT_OTHERDATA.fields['<%info.fieldkey%>'].content"></core-format-text>
+                    <%#info.required%><ion-badge item-end color="danger">{{ 'plugin.mod_questionnaire.required' | translate }}</ion-badge><%/info.required%>
+                </ion-list-header>
+                <%#info.isselect%>
+                <ion-select [(ngModel)]="CONTENT_OTHERDATA.responses['<%info.fieldkey%>']"<%^completed%> name="<%info.fieldkey%>" formControlName="<%info.fieldkey%>"<%/completed%>>
+                <%#choices%>
+                <ion-option<%#completed%> disabled="true"<%/completed%><%#value%> selected="true"<%/value%> value="<%id%>"><%content%></ion-option>
+                <%/choices%>
+                </ion-select>
+                <%^completed%><core-input-errors item-content [control]="questionsForm.controls.<%info.fieldkey%>" [errorText]="questionsFormErrors['<%info.fieldkey%>']"></core-input-errors><%/completed%>
+                <%/info.isselect%>
+                <%#info.isbool%>
+                <ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.responses['<%info.fieldkey%>']"<%^completed%> name="<%info.fieldkey%>" formControlName="<%info.fieldkey%>"<%/completed%>>
+                <%#choices%>
+                <ion-item>
+                    <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
+                    <ion-radio<%#completed%> disabled="true"<%#value%> checked="true"<%/value%><%/completed%> value="<%choice_id%>"></ion-radio>
+                </ion-item>
+                <%/choices%>
+        </ion-list>
+            <%^completed%><core-input-errors item-content [control]="questionsForm.controls.<%info.fieldkey%>" [errorText]="questionsFormErrors['<%info.fieldkey%>']"></core-input-errors><%/completed%>
+            <%/info.isbool%>
+            <%#info.isradiobutton%>
+            <ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.responses['<%info.fieldkey%>']"<%^completed%> name="<%info.fieldkey%>" formControlName="<%info.fieldkey%>"<%/completed%>>
+            <%#choices%>
+            <ion-item>
+                <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
+                <ion-radio<%#value%> checked="true"<%/value%>
+                value="<%choice_id%>"
+                <%#completed%> disabled="true"<%/completed%>></ion-radio>
+            </ion-item>
+            <%/choices%>
+            </ion-list>
+            <%^completed%><core-input-errors item-content [control]="questionsForm.controls.<%info.fieldkey%>" [errorText]="questionsFormErrors['<%info.fieldkey%>']"></core-input-errors><%/completed%>
+            <%/info.isradiobutton%>
+            <%#info.ischeckbox%>
+            <ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.responses['<%info.fieldkey%>']"<%^completed%> name="<%info.fieldkey%>" formControlName="<%info.fieldkey%>"<%/completed%>>
+            <%#choices%>
+            <ion-item>
+                <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
+                <ion-checkbox<%#value%> checked="true"<%/value%>
+                value="<%choice_id%>"<%#completed%> disabled="true"<%/completed%>
+                ></ion-checkbox>
+            </ion-item>
+            <%/choices%>
+            </ion-list>
+            <%^completed%><core-input-errors item-content [control]="questionsForm.controls.<%info.fieldkey%>" [errorText]="questionsFormErrors['<%info.fieldkey%>']"></core-input-errors><%/completed%>
+            <%/info.ischeckbox%>
+            <%#info.istextessay%>
+            <ion-item>
+                <%^completed%>
+                <core-rich-text-editor item-content
+                                       [control]="questionsForm.controls.<%info.fieldkey%>"
+                                       [placeholder]="'plugin.mod_questionnaire.required | translate'"
+                                       [(ngModel)]="CONTENT_OTHERDATA.responses['<%info.fieldkey%>']"
+                                       name="<%info.fieldkey%>"
+                                       formControlName="<%info.fieldkey%>"></core-rich-text-editor>
+                <core-input-errors item-content [control]="questionsForm.controls.<%info.fieldkey%>" [errorText]="questionsFormErrors['<%info.fieldkey%>']"></core-input-errors>
+                <%/completed%>
+                <%#completed%>
+                <ion-note><core-format-text text="CONTENT_OTHERDATA.responses['<%info.fieldkey%>']"></core-format-text></ion-note>
+                <%/completed%>
+            </ion-item>
+            <%/info.istextessay%>
+            <%#info.israte%>
+            <%#choices%>
+            <ion-list-header text-wrap>
+                <core-format-text text="<%info.content_stripped%>"></core-format-text>
+                <ion-badge item-end>{{ CONTENT_OTHERDATA.responses['response_<%info.type_id%>_<%info.id%>_<%id%>'] }}</ion-badge>
+            </ion-list-header>
+            <ion-item>
+                <ion-range min="<%min%>" max="<%max%>"
+                           snaps="true" pin="true" color="secondary"
+                           [(ngModel)]="CONTENT_OTHERDATA.responses['response_<%info.type_id%>_<%info.id%>_<%id%>']"
+                <%^completed%> name="<%info.fieldkey%>" formControlName="<%info.fieldkey%>"<%/completed%>>
+                <ion-label range-left><%minstr%></ion-label>
+                <ion-label range-right><%#na%><ion-icon name="eye-off"></ion-icon><%/na%><%^na%><%maxstr%><%/na%></ion-label>
+                </ion-range>
+            </ion-item>
+            <%/choices%>
+            <%/info.israte%>
+            <%/pagequestions%>
+            <%#prevpage%>
+            <button ion-button item-end outline icon-start block core-site-plugins-call-ws-new-content
+                    name="mod_questionnaire_submit_questionnaire_response"
+                    [params]="{
+                                        questionnaireid: <%questionnaire.questionnaire.id%>,
+                                        surveyid: <%questionnaire.questionnaire.questionnaireid%>,
+                                        userid: <%userid%>,
+                                        cmid: <%cmid%>,
+                                        sec: <%pagenum%>,
+                                        completed: <%completed%>,
+                                        submit: 0,
+                                        responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
+                                    }"
+                    [args]="{
+                                        cmid: <%cmid%>,
+                                        pagenum: <%nextpage%>
+                                    }"
+                    type="submit"
+            ><ion-icon name="arrow-back"></ion-icon> {{ 'plugin.mod_questionnaire.previouspage' | translate }}</button>
+            <%/prevpage%>
+            <%#nextpage%>
+            <button ion-button item-end outline icon-end block core-site-plugins-call-ws-new-content
+                    name="mod_questionnaire_submit_questionnaire_response"
+                    [params]="{
+                                        questionnaireid: <%questionnaire.questionnaire.id%>,
+                                        surveyid: <%questionnaire.questionnaire.questionnaireid%>,
+                                        userid: <%userid%>,
+                                        cmid: <%cmid%>,
+                                        sec: <%pagenum%>,
+                                        completed: <%completed%>,
+                                        submit: 0,
+                                        responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
+                                    }"
+                    [args]="{
+                                        cmid: <%cmid%>,
+                                        pagenum: <%nextpage%>
+                                    }"
+                    type="submit"
+            >{{ 'plugin.mod_questionnaire.nextpage' | translate }} <ion-icon name="arrow-forward"></ion-icon></button>
+            <%/nextpage%>
+            <%^completed%>
+            <%^nextpage%>
+            <button ion-button block core-site-plugins-call-ws
+                    name="mod_questionnaire_submit_questionnaire_response"
+                    [params]="{
+                                                questionnaireid: <%questionnaire.questionnaire.id%>,
+                                                surveyid: <%questionnaire.questionnaire.questionnaireid%>,
+                                                userid: <%userid%>,
+                                                cmid: <%cmid%>,
+                                                sec: <%pagenum%>,
+                                                completed: <%completed%>,
+                                                submit: 1,
+                                                responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
+                                            }"
+                    confirmMessage="{{ 'plugin.mod_questionnaire.areyousure' | translate }}"
+                    refreshOnSuccess="true"
+                    type="submit"
+            >{{ 'plugin.mod_questionnaire.savechanges' | translate }}</button>
+            <%/nextpage%>
+            <%/completed%>
+            <%#completed%></ion-list><%/completed%>
+            <%^completed%></form><%/completed%>
+        </ion-card>
+    </div>
+</div>
