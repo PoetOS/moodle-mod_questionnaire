@@ -1,54 +1,5 @@
 Release Notes
 
-Version 3.5.1 (Build - 2018110100)
-NOTE - This release can be backported to Moodle 3.4 and 3.3. If doing so, please ensure that your questionnaire installation is at
-the latest version for those releases. For Moodle 3.4, this is questionnaire release 3.4.2. For Moodle 3.3, this is questionnaire
-release 3.3.3.
-
-New features:
-The feedback options UI has been completely overhauled. The feedback UI is now accessed from the module settings menu and tabs.
-Each section can now be easily accessed and managed on one page. Questions are now assigned to sections rather than sections
-assigned to questions.
-
-Rate question usability improvements, specifically a mouse click on table cell selects the radio button as well.
-
-Report now uses number of of participants instead of number of responses for averages on questions that have optional responses
-(e.g. checkboxes).
-
-Numeric question responses now allow comma decimal separator as well as period.
-
-Data export now uses the more of the Moodle export API, and exports with 'CSV' extension rather than 'TXT'.
-
-Incomplete responses can now be selected for export with the CSV export function.
-
-In exported data, anonymous responses are assigned unique identifiers, so that responses from the same anonymous submitter can be
-grouped.
-
-Thanks to C. Jobst & Y. Annanias of the University of Leipzig and the Online-Self-Assessment project for the Faculty of Economics
-and Management Science, funded by the EU/ESF (The European Social Fund in Germany) for the resources and efforts for these features.
-
-
-Bug Fixes:
-CONTRIB-7420 - Renaming 'rank' data field to 'rankvalue' to deal with 'rank' now being a MySQL reserved word.
-
-GHI154 - Fixing delete question error caused by code improvement regression.
-
-GHI151 - Fixing download of all public questionnaire instance results, caused by attempt table merge regression.
-
-
-Code improvements:
-Merged attempts and response tables into one table.
-New functions added to remove repeated code snippets and DB calls.
-Numerous response templates added.
-Feedback and feedback section classes added.
-
-Version 3.5.0 (Build - 2018061900)
-
-New features:
-This is an early release providing the GDPR Privacy API implementation.
-
-Bug fixes:
-CONTRIB-7187 - Fixed preview mode with dependencies bug and added tests to verify.
-CONTRIB-7300 - Removed database columns from install.xml and readded the upgrade step for them.
+Version 3.5.0 Alpha (Build - 2018013100)
 
 (see CHANGES.TXT in release 3.4 for earlier changes.)
