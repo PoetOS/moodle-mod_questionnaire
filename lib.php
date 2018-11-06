@@ -789,7 +789,7 @@ function get_questionnaire_data($cmid, $userid = false) {
 }
 
 function save_questionnaire_data($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, array $responses) {
-    global $DB, $CFG; //do not delete $CFG!!!
+    global $DB, $CFG; // Do not delete $CFG!!!
     $ret = [
         'responses' => [],
         'warnings' => []
@@ -797,12 +797,9 @@ function save_questionnaire_data($questionnaireid, $surveyid, $userid, $cmid, $s
     if (!$completed) {
         require_once('questionnaire.class.php');
         $cm = get_coursemodule_from_id('questionnaire', $cmid);
-        $questionnaire = new \questionnaire($questionnaireid, null,
-            $DB->get_record('course', ['id' => $cm->course]), $cm);
-        $rid = $questionnaire->delete_insert_response(
-            $DB->get_field('questionnaire_response', 'id',
-                ['questionnaireid' => $surveyid, 'complete' => 'n',
-                    'userid' => $userid]), $sec, $userid);
+        $questionnaire = new \questionnaire($questionnaireid, null, $DB->get_record('course', ['id' => $cm->course]), $cm);
+        $rid = $questionnaire->delete_insert_response($DB->get_field('questionnaire_response', 'id',
+            ['questionnaireid' => $surveyid, 'complete' => 'n', 'userid' => $userid]), $sec, $userid);
         $questionnairedata = get_questionnaire_data($cmid, $userid);
         $pagequestions = isset($questionnairedata['questions'][$sec]) ? $questionnairedata['questions'][$sec] : [];
         if (!empty($pagequestions)) {

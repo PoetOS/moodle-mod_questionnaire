@@ -46,10 +46,10 @@ class mobile {
         self::require_capability($cm, $context, 'mod/questionnaire:view');
         // Set some variables we are going to be using.
         $questionnaire = get_questionnaire_data($cmid, $USER->id);
-        if (isset($questionnaire['questions'][$pagenum-1]) && !empty($questionnaire['questions'][$pagenum-1])) {
-            $prevpage = $pagenum-1;
+        if (isset($questionnaire['questions'][$pagenum - 1]) && !empty($questionnaire['questions'][$pagenum - 1])) {
+            $prevpage = $pagenum - 1;
         }
-        //$jsfilepath = $CFG->wwwroot . '/mod/questionnaire/javascript/mobile.js';
+
         $data = [
             'questionnaire' => $questionnaire,
             'cmid' => $cmid,
@@ -60,9 +60,10 @@ class mobile {
             'prevpage' => 0,
             'emptypage' => false
         ];
-        // Check for required fields filled
+        // Check for required fields filled.
         $break = false;
-        if (($pagenum - 1) > 0 && isset($questionnaire['questions'][$pagenum - 1]) && !empty($questionnaire['questions'][$pagenum - 1])) {
+        if (($pagenum - 1) > 0 && isset($questionnaire['questions'][$pagenum - 1]) &&
+            !empty($questionnaire['questions'][$pagenum - 1])) {
             $prepn = $pagenum - 1;
             $cnt = 0;
             while (($prepn) > 0 && isset($questionnaire['questions'][$prepn]) && !empty($questionnaire['questions'][$prepn])) {
@@ -93,8 +94,8 @@ class mobile {
             }
         }
         if (intval($args->pagenum) == $pagenum) {
-            if (isset($questionnaire['questions'][$pagenum-1]) && !empty($questionnaire['questions'][$pagenum-1])) {
-                $prevpage = $pagenum-1;
+            if (isset($questionnaire['questions'][$pagenum - 1]) && !empty($questionnaire['questions'][$pagenum - 1])) {
+                $prevpage = $pagenum - 1;
             }
             $questionnaireobj = new \questionnaire($questionnaire['questionnaire']['id'], null,
                 $DB->get_record('course', ['id' => $cm->course]), $cm);
@@ -105,14 +106,9 @@ class mobile {
                     'userid' => $USER->id
                 ]);
             if (isset($questionnaire['questions'][$pagenum]) && !empty($questionnaire['questions'][$pagenum])) {
-                // Maybe for future
-                //$qnumplus = 0;
-                // Search for the next page to output
+                // Search for the next page to output.
                 while (!$questionnaireobj->eligible_questions_on_page($pagenum, $rid)) {
                     if (isset($questionnaire['questions'][$pagenum]) && !empty($questionnaire['questions'][$pagenum])) {
-                        /*if ($questionnaire['questionnaire']['autonumquestions']) {
-                            $qnumplus += count($questionnaire['questions'][$pagenum]);
-                        }*/
                         $pagenum++;
                     } else {
                         $cmid = 0;
@@ -122,7 +118,8 @@ class mobile {
             }
             if ($prevpage > 0 && isset($questionnaire['questions'][$prevpage]) && !empty($questionnaire['questions'][$prevpage])) {
                 while (!$questionnaireobj->eligible_questions_on_page($prevpage, $rid)) {
-                    if ($prevpage > 0 && isset($questionnaire['questions'][$prevpage]) && !empty($questionnaire['questions'][$prevpage])) {
+                    if ($prevpage > 0 && isset($questionnaire['questions'][$prevpage]) &&
+                        !empty($questionnaire['questions'][$prevpage])) {
                         $prevpage--;
                     } else {
                         break;
@@ -131,13 +128,15 @@ class mobile {
             }
         }
         if ($cmid) {
-            $data['completed'] = (isset($questionnaire['response']['complete']) && $questionnaire['response']['complete'] == 'y') ? 1 : 0;
-            $data['complete_userdate'] = (isset($questionnaire['response']['complete']) && $questionnaire['response']['complete'] == 'y') ?
-                userdate($questionnaire['response']['submitted']) : '';
+            $data['completed'] = (isset($questionnaire['response']['complete']) &&
+                $questionnaire['response']['complete'] == 'y') ? 1 : 0;
+            $data['complete_userdate'] = (isset($questionnaire['response']['complete']) &&
+                $questionnaire['response']['complete'] == 'y') ? userdate($questionnaire['response']['submitted']) : '';
             if (isset($questionnaire['questions'][$pagenum])) {
                 $i = 0;
                 foreach ($questionnaire['questions'][$pagenum] as $questionid => $choices) {
-                    if (isset($questionnaire['questionsinfo'][$pagenum][$questionid]) && !empty($questionnaire['questionsinfo'][$pagenum][$questionid])) {
+                    if (isset($questionnaire['questionsinfo'][$pagenum][$questionid]) &&
+                        !empty($questionnaire['questionsinfo'][$pagenum][$questionid])) {
                         $data['questions'][$pagenum][$i]['info'] = $questionnaire['questionsinfo'][$pagenum][$questionid];
                         if ($data['questions'][$pagenum][$i]['info']['required'] == 'n') {
                             unset($data['questions'][$pagenum][$i]['info']['required']);
@@ -160,8 +159,8 @@ class mobile {
                         $i++;
                     }
                 }
-                if (isset($questionnaire['questions'][$pagenum+1]) && !empty($questionnaire['questions'][$pagenum+1])) {
-                    $data['nextpage'] = $pagenum+1;
+                if (isset($questionnaire['questions'][$pagenum + 1]) && !empty($questionnaire['questions'][$pagenum + 1])) {
+                    $data['nextpage'] = $pagenum + 1;
                 }
                 if ($prevpage) {
                     $data['prevpage'] = $prevpage;
@@ -178,7 +177,6 @@ class mobile {
                     'html' => $OUTPUT->render_from_template('mod_questionnaire/mobile_view_activity_page', $data)
                 ],
             ],
-            //'javascript' => file_get_contents($jsfilepath),
             'otherdata' => [
                 'fields' => json_encode($questionnaire['fields']),
                 'questionsinfo' => json_encode($questionnaire['questionsinfo']),
