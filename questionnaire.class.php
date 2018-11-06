@@ -278,6 +278,49 @@ class questionnaire {
         }
     }
 
+    public function delete_insert_response($rid, $sec, $quser) {
+        $this->response_delete($rid, $sec);
+        $this->rid = $this->response_insert($sec, $rid, $quser);
+        return $this->rid;
+    }
+
+    public function commit_submission_response($rid, $quser) {
+        $this->response_commit($rid);
+        // If it was a previous save, rid is in the form...
+        if (!empty($rid) && is_numeric($rid)) {
+            $rid = $rid;
+            // Otherwise its in this object.
+        } else {
+            $rid = $this->rid;
+        }
+        if ($this->grade != 0) {
+            $questionnaire = new \stdClass();
+            $questionnaire->id = $this->id;
+            $questionnaire->name = $this->name;
+            $questionnaire->grade = $this->grade;
+            $questionnaire->cmidnumber = $this->cm->idnumber;
+            $questionnaire->courseid = $this->course->id;
+            questionnaire_update_grades($questionnaire, $quser);
+        }
+        // Update completion state.
+        $completion = new \completion_info($this->course);
+        if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
+            $completion->update_state($this->cm, COMPLETION_COMPLETE);
+        }
+        // Log this submitted response.
+        $context = \context_module::instance($this->cm->id);
+        $anonymous = $this->respondenttype == 'anonymous';
+        $params = [
+            'context' => $context,
+            'courseid' => $this->course->id,
+            'relateduserid' => $quser,
+            'anonymous' => $anonymous,
+            'other' => array('questionnaireid' => $this->id)
+        ];
+        $event = \mod_questionnaire\event\attempt_submitted::create($params);
+        $event->trigger();
+    }
+
     /*
     * Function to view an entire responses data.
     *
