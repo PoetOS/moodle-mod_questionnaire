@@ -133,21 +133,21 @@ class display_support {
         reset ($counts);
 
         if (!empty($counts) && is_array($counts)) {
-            while (list($content) = each($counts)) {
+            foreach ($counts as $content => $contentobj) {
                 // Eliminate potential named degrees on Likert scale.
                 if (!preg_match("/^[0-9]{1,3}=/", $content)) {
 
-                    if (isset($counts[$content]->avg)) {
-                        $avg = $counts[$content]->avg;
-                        if (isset($counts[$content]->avgvalue)) {
-                            $avgvalue = $counts[$content]->avgvalue;
+                    if (isset($contentobj->avg)) {
+                        $avg = $contentobj->avg;
+                        if (isset($contentobj->avgvalue)) {
+                            $avgvalue = $contentobj->avgvalue;
                         } else {
                             $avgvalue = '';
                         }
                     } else {
                         $avg = '';
                     }
-                    $nbna = $counts[$content]->nbna;
+                    $nbna = $contentobj->nbna;
 
                     if ($avg) {
                         $out = '';
@@ -197,7 +197,7 @@ class display_support {
                         }
                     }
                 } // End if named degrees.
-            } // End while.
+            } // End foreach.
         } else {
             $table->data[] = array('', get_string('noresponsedata', 'questionnaire'));
         }

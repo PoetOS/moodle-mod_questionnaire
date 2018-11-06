@@ -42,7 +42,7 @@ class provider implements
      * @param   collection $items The collection to add metadata to.
      * @return  collection  The array of metadata
      */
-    public static function _get_metadata(\core_privacy\local\metadata\collection $collection): \core_privacy\local\metadata\collection {
+    public static function _get_metadata(\core_privacy\local\metadata\collection $collection) : \core_privacy\local\metadata\collection {
 
         // Add all of the relevant tables and fields to the collection.
         $collection->add_database_table('questionnaire_response', [

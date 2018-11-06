@@ -783,7 +783,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2018050104, 'questionnaire');
     }
 
-    // 'feedbacksections' field is used differently now.
+    // Now 'feedbacksections' field is used differently.
     if ($oldversion < 2018050105) {
         // Get all of the survey records where feedbacksection is greater than 2 and set them to 2.
         $DB->set_field_select('questionnaire_survey', 'feedbacksections', 2, 'feedbacksections > 2');
