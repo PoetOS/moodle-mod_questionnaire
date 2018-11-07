@@ -45,7 +45,7 @@ class mobile {
         $context = \context_module::instance($cmid);
         self::require_capability($cm, $context, 'mod/questionnaire:view');
         // Set some variables we are going to be using.
-        $questionnaire = get_questionnaire_data($cmid, $USER->id);
+        $questionnaire = questionnaire_get_mobile_data($cmid, $USER->id);
         if (isset($questionnaire['questions'][$pagenum - 1]) && !empty($questionnaire['questions'][$pagenum - 1])) {
             $prevpage = $pagenum - 1;
         }

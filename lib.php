@@ -61,7 +61,7 @@ function questionnaire_get_extra_capabilities() {
     return array('moodle/site:accessallgroups');
 }
 
-function get_questionnaire($questionnaireid) {
+function questionnaire_get_instance($questionnaireid) {
     global $DB;
     return $DB->get_record('questionnaire', array('id' => $questionnaireid));
 }
@@ -475,10 +475,10 @@ function questionnaire_scale_used_anywhere($scaleid) {
  * @return array
  * @throws moodle_exception
  */
-function get_questionnaire_data($cmid, $userid = false) {
+function questionnaire_get_mobile_data($cmid, $userid = false) {
     global $DB, $USER;
     if ($q = get_coursemodule_from_id('questionnaire', $cmid)) {
-        if (!$questionnaire = get_questionnaire($q->instance)) {
+        if (!$questionnaire = questionnaire_get_instance($q->instance)) {
             throw new \moodle_exception("invalidcoursemodule", "error");
         }
     }
@@ -788,7 +788,7 @@ function get_questionnaire_data($cmid, $userid = false) {
     return $ret;
 }
 
-function save_questionnaire_data($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, array $responses) {
+function questionnaire_save_mobile_data($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, array $responses) {
     global $DB, $CFG; // Do not delete $CFG!!!
     $ret = [
         'responses' => [],
@@ -800,7 +800,7 @@ function save_questionnaire_data($questionnaireid, $surveyid, $userid, $cmid, $s
         $questionnaire = new \questionnaire($questionnaireid, null, $DB->get_record('course', ['id' => $cm->course]), $cm);
         $rid = $questionnaire->delete_insert_response($DB->get_field('questionnaire_response', 'id',
             ['questionnaireid' => $surveyid, 'complete' => 'n', 'userid' => $userid]), $sec, $userid);
-        $questionnairedata = get_questionnaire_data($cmid, $userid);
+        $questionnairedata = questionnaire_get_mobile_data($cmid, $userid);
         $pagequestions = isset($questionnairedata['questions'][$sec]) ? $questionnairedata['questions'][$sec] : [];
         if (!empty($pagequestions)) {
             $pagequestionsids = array_keys($pagequestions);

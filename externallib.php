@@ -96,7 +96,7 @@ class mod_questionnaire_external extends \external_api {
             ]
         );
 
-        if (!$questionnaire = get_questionnaire($params['questionnaireid'])) {
+        if (!$questionnaire = questionnaire_get_instance($params['questionnaireid'])) {
             throw new \moodle_exception("invalidcoursemodule", "error");
         }
         list($course, $cm) = get_course_and_cm_from_instance($questionnaire, 'questionnaire');
@@ -106,7 +106,7 @@ class mod_questionnaire_external extends \external_api {
 
         require_capability('mod/questionnaire:submit', $context);
 
-        $result = save_questionnaire_data($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, $responses);
+        $result = questionnaire_save_mobile_data($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, $responses);
         $result['submitted'] = true;
         if (isset($result['warnings']) && !empty($result['warnings'])) {
             unset($result['responses']);

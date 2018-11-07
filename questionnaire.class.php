@@ -243,15 +243,7 @@ class questionnaire {
                     $rid = $this->rid;
                 }
 
-                if ($this->grade != 0) {
-                    $questionnaire = new stdClass();
-                    $questionnaire->id = $this->id;
-                    $questionnaire->name = $this->name;
-                    $questionnaire->grade = $this->grade;
-                    $questionnaire->cmidnumber = $this->cm->idnumber;
-                    $questionnaire->courseid = $this->course->id;
-                    questionnaire_update_grades($questionnaire, $quser);
-                }
+                $this->update_grades($quser);
 
                 // Update completion state.
                 $completion = new completion_info($this->course);
@@ -293,15 +285,9 @@ class questionnaire {
         } else {
             $rid = $this->rid;
         }
-        if ($this->grade != 0) {
-            $questionnaire = new \stdClass();
-            $questionnaire->id = $this->id;
-            $questionnaire->name = $this->name;
-            $questionnaire->grade = $this->grade;
-            $questionnaire->cmidnumber = $this->cm->idnumber;
-            $questionnaire->courseid = $this->course->id;
-            questionnaire_update_grades($questionnaire, $quser);
-        }
+
+        $this->update_grades($quser);
+
         // Update completion state.
         $completion = new \completion_info($this->course);
         if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
@@ -319,6 +305,23 @@ class questionnaire {
         ];
         $event = \mod_questionnaire\event\attempt_submitted::create($params);
         $event->trigger();
+    }
+
+    /**
+     * Update the grade for this questionnaire and user.
+     *
+     * @param $userid
+     */
+    private function update_grades($userid) {
+        if ($this->grade != 0) {
+            $questionnaire = new \stdClass();
+            $questionnaire->id = $this->id;
+            $questionnaire->name = $this->name;
+            $questionnaire->grade = $this->grade;
+            $questionnaire->cmidnumber = $this->cm->idnumber;
+            $questionnaire->courseid = $this->course->id;
+            questionnaire_update_grades($questionnaire, $userid);
+        }
     }
 
     /*
