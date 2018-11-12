@@ -510,7 +510,7 @@ function questionnaire_get_mobile_data($cmid, $userid = false) {
     ];
     $sql = 'SELECT qq.*,qqt.response_table FROM '
         . '{questionnaire_question} qq LEFT JOIN {questionnaire_question_type} qqt '
-        . 'ON qq.type_id = qqt.typeid WHERE qq.survey_id = ? AND qq.deleted = ? '
+        . 'ON qq.type_id = qqt.typeid WHERE qq.surveyid = ? AND qq.deleted = ? '
         . 'ORDER BY qq.position';
     if ($questions = $DB->get_records_sql($sql, [$questionnaire->sid, 'n'])) {
         require_once('classes/question/base.php');
@@ -527,7 +527,7 @@ function questionnaire_get_mobile_data($cmid, $userid = false) {
                 $ret['questionsinfo'][$pagenum][$question->id] =
                 $ret['fields'][$fieldkey] = [
                     'id' => $question->id,
-                    'survey_id' => $question->survey_id,
+                    'surveyid' => $question->surveyid,
                     'name' => $question->name,
                     'type_id' => $question->type_id,
                     'length' => $question->length,
