@@ -790,16 +790,17 @@ function questionnaire_get_mobile_data($cmid, $userid = false) {
 
 function questionnaire_save_mobile_data($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, array $responses) {
     global $DB, $CFG; // Do not delete $CFG!!!
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
     $ret = [
         'responses' => [],
         'warnings' => []
     ];
+    $cm = get_coursemodule_from_id('questionnaire', $cmid);
+    $questionnaire = new questionnaire($questionnaireid, null, $DB->get_record('course', ['id' => $cm->course]), $cm);
+
     if (!$completed) {
-        require_once('questionnaire.class.php');
-        $cm = get_coursemodule_from_id('questionnaire', $cmid);
-        $questionnaire = new \questionnaire($questionnaireid, null, $DB->get_record('course', ['id' => $cm->course]), $cm);
         $rid = $questionnaire->delete_insert_response($DB->get_field('questionnaire_response', 'id',
-            ['questionnaireid' => $surveyid, 'complete' => 'n', 'userid' => $userid]), $sec, $userid);
+            ['questionnaireid' => $questionnaireid, 'complete' => 'n', 'userid' => $userid]), $sec, $userid);
         $questionnairedata = questionnaire_get_mobile_data($cmid, $userid);
         $pagequestions = isset($questionnairedata['questions'][$sec]) ? $questionnairedata['questions'][$sec] : [];
         if (!empty($pagequestions)) {
@@ -882,7 +883,7 @@ function questionnaire_save_mobile_data($questionnaireid, $surveyid, $userid, $c
     if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
         $questionnaire->commit_submission_response(
             $DB->get_field('questionnaire_response', 'id',
-                ['questionnaireid' => $surveyid, 'complete' => 'n',
+                ['questionnaireid' => $questionnaireid, 'complete' => 'n',
                     'userid' => $userid]), $userid);
     }
     return $ret;
