@@ -575,7 +575,7 @@ class questionnaire {
         $groupcnd = '';
         if ($groupid != 0) {
             $groupsql = 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
-            $groupcnd = ' AND gm.id = :groupid ';
+            $groupcnd = ' AND gm.groupid = :groupid ';
             $params['groupid'] = $groupid;
         }
 
@@ -621,7 +621,7 @@ class questionnaire {
         $groupcnd = '';
         if ($groupid != 0) {
             $groupsql = 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
-            $groupcnd = ' AND gm.id = :groupid ';
+            $groupcnd = ' AND gm.groupid = :groupid ';
             $params['groupid'] = $groupid;
         }
 
