@@ -1654,13 +1654,48 @@ class questionnaire {
      * @throws coding_exception
      */
     private function get_full_submission_for_notifications($answers) {
+        $responses = $this->get_full_submission_for_export($answers);
         $message = '';
+        foreach ($responses as $response) {
+            $message .= html_to_text($response->questionname) . "<br />\n";
+            $message .= get_string('question') . ': ' . html_to_text($response->questiontext) . "<br />\n";
+            $message .= get_string('answers', 'questionnaire') . ":<br />\n";
+            foreach ($response->answers as $answer) {
+                $message .= html_to_text($answer) . "<br />\n";
+            }
+            $message .= "<br />\n";
+        }
+
+        return $message;
+    }
+
+    /**
+     * Construct the response data for a given response and return a structured export.
+     * @param $rid
+     * @return string
+     * @throws coding_exception
+     */
+    public function get_structured_response($rid) {
+        $answers = new stdClass();
+        $this->response_import_all($rid, $answers);
+        return $this->get_full_submission_for_export($answers);
+    }
+
+    /**
+     * Return a JSON structure containing all the questions and answers for a specific submission.
+     * @param $answers The array of answers from import_all_responses.
+     * @return string
+     * @throws coding_exception
+     */
+    private function get_full_submission_for_export($answers) {
+        $exportstructure = [];
         foreach ($this->questions as $question) {
             $rqid = 'q' . $question->id;
-            $message .= $question->position . '. ' . html_to_text($question->name) . "<br />\n";
-            $message .= get_string('question') . ': ' . html_to_text($question->content) . "<br />\n";
+            $response = new stdClass();
+            $response->questionname = $question->position . '. ' . $question->name;
+            $response->questiontext = $question->content;
+            $response->answers = [];
             if ($question->type_id == 8) {
-                $message .= get_string('answers', 'questionnaire') . ":<br />\n";
                 $choices = [];
                 $cids = [];
                 foreach ($question->choices as $cid => $choice) {
@@ -1674,8 +1709,11 @@ class questionnaire {
                     if (isset($answers->$rqid)) {
                         $cid = substr($rqid, (strpos($rqid, '_') + 1));
                         if (isset($question->choices[$cid]) && isset($choices[$answers->$rqid + 1])) {
-                            $message .= $question->choices[$cid]->content . ' = ' . $choices[$answers->$rqid + 1] . "<br />\n";
+                            $rating = $choices[$answers->$rqid + 1];
+                        } else {
+                            $rating = $answers->$rqid + 1;
                         }
+                        $response->answers[] = $question->choices[$cid]->content . ' = ' . $rating;
                     }
                 }
             } else if ($question->has_choices()) {
@@ -1686,37 +1724,34 @@ class questionnaire {
                         break;
                     }
                 }
+                $answertext = '';
                 if (isset($answers->$rqid) && is_array($answers->$rqid)) {
-                    $message .= get_string('answers', 'questionnaire') . ': ';
                     $i = 0;
                     foreach ($answers->$rqid as $answer) {
                         if ($i > 0) {
-                            $message .= '; ';
+                            $answertext .= '; ';
                         }
-                        if ($answer == ('other_' . $other)) {
-                            $message .= $answers->{$rqid . '_' . $other};
+                        if (isset($other) && ($answer == ('other_' . $other))) {
+                            $answertext .= $answers->{$rqid . '_' . $other};
                         } else {
-                            $message .= $question->choices[$answer]->content;
+                            $answertext .= $question->choices[$answer]->content;
                         }
                         $i++;
                     }
-                    $message .= "<br />\n";
-                } else if (isset($answers->$rqid) && ($answers->$rqid == ('other_' . $other))) {
-                    $message .= get_string('answer', 'questionnaire') . ': ';
-                    $message .= $answers->{$rqid . '_' . $other} . "<br />\n";
-                } else if (isset($answers->$rqid)) {
-                    $message .= get_string('answer', 'questionnaire') . ': ';
-                    $message .= $question->choices[$answers->$rqid]->content . "<br />\n";
+                } else if (isset($answers->$rqid) && isset($other) && ($answers->$rqid == ('other_' . $other))) {
+                    $answertext .= $answers->{$rqid . '_' . $other};
+                } else if (isset($answers->$rqid) && isset($question->choices[$answers->$rqid])) {
+                    $answertext .= $question->choices[$answers->$rqid]->content;
                 }
+                $response->answers[] = $answertext;
 
             } else if (isset($answers->$rqid)) {
-                $message .= get_string('answer', 'questionnaire') . ': ';
-                $message .= html_to_text($answers->$rqid) . "<br />\n";
+                $response->answers[] = $answers->$rqid;
             }
-            $message .= "<br />\n";
+            $exportstructure[] = $response;
         }
 
-        return $message;
+        return $exportstructure;
     }
 
     /**
