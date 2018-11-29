@@ -22,11 +22,11 @@ Feature: Review responses
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
     And "Test questionnaire" has questions and responses
     And I log in as "admin"
-    And I navigate to "Location settings" node in "Site administration > Location"
+    And I navigate to "Location > Location settings" in site administration
     And I set the field "id_s__timezone" to "Europe/London"
     And I set the field "id_s__forcetimezone" to "Europe/London"
     And I press "Save changes"
-    And I navigate to "Language settings" node in "Site administration > Language"
+    And I navigate to "Language > Language settings" in site administration
     And I set the field "id_s__autolang" to "0"
 #    And I set the field "id_s__lang" to "en‎"
     And I log out
