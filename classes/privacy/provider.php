@@ -31,6 +31,9 @@ class provider implements
     // This plugin has data.
     \core_privacy\local\metadata\provider,
 
+    // This plugin is capable of determining which users have data within it.
+    \core_privacy\local\request\core_userlist_provider,
+
     // This plugin currently implements the original plugin_provider interface.
     \core_privacy\local\request\plugin\provider {
 
@@ -127,6 +130,31 @@ class provider implements
         $contextlist->add_from_sql($sql, $params);
 
         return $contextlist;
+    }
+
+    /**
+     * Get the list of users who have data within a context.
+     *
+     * @param \core_privacy\local\request\userlist $userlist The userlist containing the list of users who have data in this
+     * context/plugin combination.
+     */
+    public static function get_users_in_context(\core_privacy\local\request\userlist $userlist) {
+
+        $context = $userlist->get_context();
+        if (!$context instanceof \context_module) {
+            return;
+        }
+
+        $params = ['modulename' => 'questionnaire', 'instanceid' => $context->instanceid];
+
+        // Questionnaire respondents.
+        $sql = "SELECT qr.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {questionnaire} q ON q.id = cm.instance
+                  JOIN {questionnaire_response} qr ON qr.questionnaireid = q.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
     }
 
     /**
@@ -259,6 +287,33 @@ class provider implements
             $responses->close();
             $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaire->id, 'userid' => $userid]);
         }
+    }
+
+    /**
+     * Delete multiple users within a single context.
+     *
+     * @param \core_privacy\local\request\approved_userlist $userlist The approved context and user information to delete
+     * information for.
+     */
+    public static function delete_data_for_users(\core_privacy\local\request\approved_userlist $userlist) {
+        global $DB;
+
+        $context = $userlist->get_context();
+        if (!$cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
+            return;
+        }
+        if (!($questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance]))) {
+            return;
+        }
+
+        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        $params = array_merge(['questionnaireid' => $questionnaire->id], $userinparams);
+        $select = 'questionnaireid = :questionnaireid AND userid ' . $userinsql;
+        if ($responses = $DB->get_recordset_select('questionnaire_response', $select, $params)) {
+            self::delete_responses($responses);
+        }
+        $responses->close();
+        $DB->delete_records_select('questionnaire_response', $select, $params);
     }
 
     /**
