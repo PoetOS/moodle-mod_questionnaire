@@ -8,8 +8,8 @@ addons:
   mysql: "8.0.2"
   apt:
     packages:
-      - oracle-java8-installer
-      - oracle-java8-set-default
+      - oracle-java9-installer
+      - oracle-java9-set-default
 
 cache:
   directories:
