@@ -43,7 +43,7 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     And I am on "Course 2" course homepage with editing mode on
     And I follow "Add an activity or resource"
     And I click on "Questionnaire" "radio"
-    And I press "Add"
+    And I click on "Add" "button" in the "Add an activity or resource" "dialogue"
     And I set the field "Name" to "Questionnaire instance 1"
     And I expand all fieldsets
     Then I should see "Content options"
@@ -56,7 +56,7 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     And I am on "Course 3" course homepage with editing mode on
     And I follow "Add an activity or resource"
     And I click on "Questionnaire" "radio"
-    And I press "Add"
+    And I click on "Add" "button" in the "Add an activity or resource" "dialogue"
     And I set the field "Name" to "Questionnaire instance 2"
     And I expand all fieldsets
     Then I should see "Content options"
