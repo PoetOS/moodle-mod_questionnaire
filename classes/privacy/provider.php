@@ -45,7 +45,7 @@ class provider implements
      * @param   collection $items The collection to add metadata to.
      * @return  collection  The array of metadata
      */
-    public static function _get_metadata(\core_privacy\local\metadata\collection $collection) : \core_privacy\local\metadata\collection {
+    public static function _get_metadata(\core_privacy\local\metadata\collection $collection) {
 
         // Add all of the relevant tables and fields to the collection.
         $collection->add_database_table('questionnaire_response', [
@@ -109,7 +109,7 @@ class provider implements
      * @param   int $userid The user to search.
      * @return  contextlist   $contextlist  The list of contexts used in this plugin.
      */
-    public static function _get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
+    public static function _get_contexts_for_userid($userid) {
         $contextlist = new \core_privacy\local\request\contextlist();
 
         $sql = "SELECT c.id
