@@ -152,7 +152,7 @@ class single extends base {
             'INNER JOIN {questionnaire_quest_choice} c ON r.choice_id = c.id ' .
             'WHERE r.question_id= ? ' . $rsql . ' ' .
             'ORDER BY response_id ASC';
-        return $DB->get_recordset_sql($sql, $params);
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**
