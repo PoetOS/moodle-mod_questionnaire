@@ -1,5 +1,22 @@
 Release Notes
 
+Version 3.5.2 (Build - 2018120100)
+NOTE - This release will work on Moodle 3.6 and can be backported to Moodle 3.4 and 3.3. If doing so, please ensure that your
+questionnaire installation is at the latest version for those releases. For Moodle 3.4, this is questionnaire release 3.4.2.
+For Moodle 3.3, this is questionnaire release 3.3.3.
+
+New features:
+Code has been updated to work on Moodle 3.6
+
+The two new privacy api functions have been added (get_users_in_context, delete_data_for_users).
+
+Bug Fixes:
+The privacy api polyfill functions have been fixed so that they work correctly with PHP 5.6 under Moodle 3.3.
+(Thanks to Paul Holden - https://github.com/paulholden - https://github.com/PoetOS/moodle-mod_questionnaire/pull/166)
+
+GHI167 - Fixed the feedback scoring for boolean questions.
+
+
 Version 3.5.1 (Build - 2018110100)
 NOTE - This release can be backported to Moodle 3.4 and 3.3. If doing so, please ensure that your questionnaire installation is at
 the latest version for those releases. For Moodle 3.4, this is questionnaire release 3.4.2. For Moodle 3.3, this is questionnaire
