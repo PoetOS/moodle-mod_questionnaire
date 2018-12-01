@@ -103,12 +103,20 @@ class boolean extends base {
         }
         $params[] = 'y';
 
-        $sql = 'SELECT response_id as rid, COUNT(response_id) AS score ' .
+        $feedbackscores = false;
+        $sql = 'SELECT response_id, choice_id ' .
             'FROM {'.$this->response_table().'} ' .
-            'WHERE question_id= ? ' . $rsql . ' AND choice_id = ? ' .
-            'GROUP BY response_id ' .
+            'WHERE question_id= ? ' . $rsql . ' ' .
             'ORDER BY response_id ASC';
-        return $DB->get_recordset_sql($sql, $params);
+        if ($responses = $DB->get_recordset_sql($sql, $params)) {
+            $feedbackscores = [];
+            foreach ($responses as $rid => $response) {
+                $feedbackscores[$rid] = new \stdClass();
+                $feedbackscores[$rid]->rid = $rid;
+                $feedbackscores[$rid]->score = ($response->choice_id == 'y') ? 1 : 0;
+            }
+        }
+        return $feedbackscores;
     }
 
     /**
