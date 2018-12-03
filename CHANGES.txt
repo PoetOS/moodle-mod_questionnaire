@@ -26,6 +26,18 @@ enhanced notification feature.
 Note, this release can also be installed in Moodle 3.3, if you want the new features prior to upgrading to Moodle 3.4. This release
 does make database structure changes, so it cannot be downgraded after installation.
 
+Also note, the Moodle 3.5 release can be installed on Moodle 3.4 and Moodle 3.3. Use the 3.5 release to get the latest new features.
+
+Release 3.4.3 (Build - 2018120300)
+Bug fixes:
+The privacy api polyfill functions have been fixed so that they work correctly with PHP 5.6 under Moodle 3.3.
+(Thanks to Paul Holden - https://github.com/paulholden - https://github.com/PoetOS/moodle-mod_questionnaire/pull/166)
+
+GHI167 - Fixed the feedback scoring for boolean questions.
+
+CONTRIB-7420 - Renaming 'rank' data field to 'rankvalue' to deal with 'rank' now being a MySQL reserved word.
+
+
 Release 3.4.2 (Build - 2018061900)
 New features:
 This is an early release providing the GDPR Privacy API implementation.
