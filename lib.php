@@ -1186,6 +1186,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
 
     global $CFG, $COURSE, $USER, $DB;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     if ($COURSE->id == $courseid) {
         $course = $COURSE;
