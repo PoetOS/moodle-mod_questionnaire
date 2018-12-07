@@ -27,6 +27,7 @@
 defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 /**
  * Questionnaire module external functions
@@ -83,7 +84,7 @@ class mod_questionnaire_external extends \external_api {
      * @since Moodle 3.0
      */
     public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, $responses) {
-        $params = self::validate_parameters(self::submit_questionnaire_response_parameters(),
+        self::validate_parameters(self::submit_questionnaire_response_parameters(),
             [
                 'questionnaireid' => $questionnaireid,
                 'surveyid' => $surveyid,
@@ -96,17 +97,15 @@ class mod_questionnaire_external extends \external_api {
             ]
         );
 
-        if (!$questionnaire = questionnaire_get_instance($params['questionnaireid'])) {
-            throw new \moodle_exception("invalidcoursemodule", "error");
-        }
-        list($course, $cm) = get_course_and_cm_from_instance($questionnaire, 'questionnaire');
+        list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
+        $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
 
         $context = \context_module::instance($cm->id);
         self::validate_context($context);
 
         require_capability('mod/questionnaire:submit', $context);
 
-        $result = questionnaire_save_mobile_data($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, $responses);
+        $result = $questionnaire->save_mobile_data($userid, $sec, $completed, $submit, $responses);
         $result['submitted'] = true;
         if (isset($result['warnings']) && !empty($result['warnings'])) {
             unset($result['responses']);
@@ -119,7 +118,7 @@ class mod_questionnaire_external extends \external_api {
     /**
      * Describes the submit_questionnaire_response return value.
      *
-     * @return external_multiple_structure
+     * @return external_single_structure
      * @since Moodle 3.0
      */
     public static function submit_questionnaire_response_returns() {

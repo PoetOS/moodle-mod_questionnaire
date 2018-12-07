@@ -1634,6 +1634,13 @@ class questionnaire {
         return $DB->update_record('questionnaire_response', $record);
     }
 
+    /**
+     * Get the latest response id for the user, or verify that the given response id is valid.
+     * @param $userid
+     * @param int $rid
+     * @return int|string
+     * @throws dml_exception
+     */
     private function get_response($userid, $rid = 0) {
         global $DB;
 
