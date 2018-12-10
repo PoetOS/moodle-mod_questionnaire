@@ -34,6 +34,8 @@ class provider implements
     // This plugin currently implements the original plugin_provider interface.
     \core_privacy\local\request\plugin\provider {
 
+    use \core_privacy\local\legacy_polyfill;
+
     /**
      * Returns meta data about this system.
      *
