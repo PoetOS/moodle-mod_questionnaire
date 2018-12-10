@@ -1,10 +1,19 @@
 Release Notes
 
-Version 3.5.2 (Build - 2018120100)
-NOTE - This release will work on Moodle 3.6 and can be backported to Moodle 3.4 and 3.3. If doing so, please ensure that your
+<i>NOTE - This release will work on Moodle 3.6 and can be backported to Moodle 3.4 and 3.3. If doing so, please ensure that your
 questionnaire installation is at the latest version for those releases. For Moodle 3.4, this is questionnaire release 3.4.2.
-For Moodle 3.3, this is questionnaire release 3.3.3.
+For Moodle 3.3, this is questionnaire release 3.3.3.</i>
 
+Version 3.5.3 (Build - 2018121000)
+Bug Fixes:
+GHI162 - Fixed response by group.
+
+CONTRIB-7555 - Fixed error on recent activity block.
+
+CONTRIB-7557 - Allowed compatibility with older releases of Moodle privacy API.
+
+
+Version 3.5.2 (Build - 2018120100)
 New features:
 Code has been updated to work on Moodle 3.6
 
