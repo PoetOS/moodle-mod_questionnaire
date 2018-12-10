@@ -598,4 +598,101 @@ class rate extends base {
         }
         return true;
     }
+
+    /**
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
+        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
+        $mobiledata->questionsinfo['israte'] = true;
+        return $mobiledata;
+    }
+
+    /**
+     * @param $mobiledata
+     * @return mixed
+     */
+    public function add_mobile_choice_data($mobiledata) {
+        $mobiledata->questions = [];
+        $excludes = [];
+        $vals = $extracontents = [];
+        $mobiledata->questions = [];
+        foreach ($this->choices as $choiceid => $choice) {
+            $choice->na = false;
+            if ($this->precise == 0) {
+                $mobiledata->questions[$choiceid] = $choice;
+                if ($this->required()) {
+                    $mobiledata->questions[$choiceid]->min = 1;
+                    $mobiledata->questions[$choiceid]->minstr = 1;
+                } else {
+                    $mobiledata->questions[$choiceid]->min = 0;
+                    $mobiledata->questions[$choiceid]->minstr = 0;
+                }
+                $mobiledata->questions[$choiceid]->max = intval($this->length);
+                $mobiledata->questions[$choiceid]->maxstr = intval($this->length);
+            } else if ($this->precise == 1) {
+                $mobiledata->questions[$choiceid] = $choice;
+                if ($this->required()) {
+                    $mobiledata->questions[$choiceid]->min = 1;
+                    $mobiledata->questions[$choiceid]->minstr = 1;
+                } else {
+                    $mobiledata->questions[$choiceid]->min = 0;
+                    $mobiledata->questions[$choiceid]->minstr = 0;
+                }
+                $mobiledata->questions[$choiceid]->max = intval($this->length) + 1;
+                $mobiledata->questions[$choiceid]->na = true;
+                $extracontents[] = $mobiledata->questions[$choiceid]->max . ' = ' .
+                    get_string('notapplicable', 'mod_questionnaire');
+            } else if ($this->precise > 1) {
+                $excludes[$choiceid] = $choiceid;
+                if ($choice->value == null) {
+                    if ($arr = explode('|', $choice->content)) {
+                        if (count($arr) == 2) {
+                            $mobiledata->questions[$choiceid] = $choice;
+                            $mobiledata->questions[$choiceid]->content = '';
+                            $mobiledata->questions[$choiceid]->minstr = $arr[0];
+                            $mobiledata->questions[$choiceid]->maxstr = $arr[1];
+                        }
+                    }
+                } else {
+                    $val = intval($choice->value);
+                    $vals[$val] = $val;
+                    $extracontents[] = $choice->content;
+                }
+            }
+            if ($vals) {
+                if ($q = $mobiledata->questions) {
+                    foreach (array_keys($q) as $itemid) {
+                        $mobiledata->questions[$itemid]->min = min($vals);
+                        $mobiledata->questions[$itemid]->max = max($vals);
+                    }
+                }
+            }
+            if ($extracontents) {
+                $extracontents = array_unique($extracontents);
+                $extrahtml = '<br><ul>';
+                foreach ($extracontents as $extracontent) {
+                    $extrahtml .= '<li>'.$extracontent.'</li>';
+                }
+                $extrahtml .= '</ul>';
+                $options = ['noclean' => true, 'para' => false, 'filter' => true,
+                    'context' => $this->context, 'overflowdiv' => true];
+                $mobiledata->questions['content'] .= format_text($extrahtml, FORMAT_HTML, $options);
+            }
+
+            if (!in_array($choiceid, $excludes)) {
+                $choice->choice_id = $choiceid;
+                if ($choice->value == null) {
+                    $choice->value = '';
+                }
+                $mobiledata->questions[$choiceid] = $choice;
+            }
+        }
+
+        return $mobiledata;
+    }
 }

@@ -29,23 +29,57 @@ defined('MOODLE_INTERNAL') || die();
 
 class pagebreak extends base {
 
+    /**
+     * @return object|string
+     */
     protected function responseclass() {
         return '';
     }
 
+    /**
+     * @return string
+     */
     public function helpname() {
         return '';
     }
 
+    /**
+     * @param object $data
+     * @param $descendantsdata
+     * @param bool $blankquestionnaire
+     * @return string
+     */
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         return '';
     }
 
+    /**
+     * @param object $data
+     * @return string
+     */
     protected function response_survey_display($data) {
         return '';
     }
 
+    /**
+     * @param edit_question_form $form
+     * @param questionnaire $questionnaire
+     * @return bool
+     */
     public function edit_form(edit_question_form $form, questionnaire $questionnaire) {
+        return false;
+    }
+
+    /**
+     * Override and return false if not supporting mobile app.
+     *
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
         return false;
     }
 }

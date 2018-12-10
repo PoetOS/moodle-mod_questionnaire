@@ -107,4 +107,32 @@ class text extends base {
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_precise($mform, 'maxtextlength');
     }
+
+    /**
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
+        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
+        $mobiledata->questionsinfo['istextessay'] = true;
+        return $mobiledata;
+    }
+
+    /**
+     * @param $mobiledata
+     * @return mixed
+     */
+    public function add_mobile_choice_data($mobiledata) {
+        $mobiledata->questions = [];
+        $mobiledata->questions[0] = new \stdClass();
+        $mobiledata->questions[0]->id = 0;
+        $mobiledata->questions[0]->choice_id = 0;
+        $mobiledata->questions[0]->question_id = $this->id;
+        $mobiledata->questions[0]->content = '';
+        $mobiledata->questions[0]->value = null;
+        return $mobiledata;
+    }
 }

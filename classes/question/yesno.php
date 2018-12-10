@@ -199,4 +199,46 @@ class yesno extends base {
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         return base::form_precise_hidden($mform);
     }
+
+    /**
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
+        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
+        $mobiledata->questionsinfo['isbool'] = true;
+        return $mobiledata;
+    }
+
+    /**
+     * @param $mobiledata
+     * @return mixed
+     */
+    public function add_mobile_choice_data($mobiledata) {
+        $mobiledata->questions = [];
+        $mobiledata->questions[0] = new \stdClass();
+        $mobiledata->questions[0]->id = 0;
+        $mobiledata->questions[0]->choice_id = 'n';
+        $mobiledata->questions[0]->question_id = $this->id;
+        $mobiledata->questions[0]->value = null;
+        $mobiledata->questions[0]->content = get_string('no');
+        $mobiledata->questions[0]->isbool = true;
+        $mobiledata->questions[1] = new \stdClass();
+        $mobiledata->questions[1]->id = 1;
+        $mobiledata->questions[1]->choice_id = 'y';
+        $mobiledata->questions[1]->question_id = $this->id;
+        $mobiledata->questions[1]->value = null;
+        $mobiledata->questions[1]->content = get_string('yes');
+        $mobiledata->questions[1]->isbool = true;
+        if ($this->required()) {
+            $mobiledata->questions[1]->value = 'y';
+            $mobiledata->questions[1]->firstone = true;
+        }
+        $mobiledata->responses = 'n';
+
+        return $mobiledata;
+    }
 }

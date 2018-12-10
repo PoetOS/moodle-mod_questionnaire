@@ -3586,4 +3586,256 @@ class questionnaire {
         return $feedbackmessages;
     }
 
+    // Mobile support area.
+    /**
+     * Get questionnaire data
+     *
+     * @global object $DB
+     * @param int|bool $userid
+     * @return array
+     * @throws moodle_exception
+     */
+    public function get_mobile_data($userid = false) {
+        global $DB, $USER;
+
+        $ret = [
+            'questionnaire' => [
+                'id' => $this->id,
+                'name' => format_string($this->name),
+                'intro' => $this->intro,
+                'userid' => intval($userid ? $userid : $USER->id),
+                'questionnaireid' => intval($this->sid),
+                'autonumpages' => in_array($this->autonum, [1, 2]),
+                'autonumquestions' => in_array($this->autonum, [1, 3])
+            ],
+            'response' => [
+                'id' => 0,
+                'questionnaireid' => 0,
+                'submitted' => 0,
+                'complete' => 'n',
+                'grade' => 0,
+                'userid' => 0,
+                'fullname' => '',
+                'userdate' => '',
+            ],
+            'answered' => [],
+            'fields' => [],
+            'responses' => [],
+            'questionscount' => 0,
+            'pagescount' => 1,
+        ];
+
+        if (!empty($this->questions)) {
+            $pagenum = 1;
+            $qnum = 0;
+            foreach ($this->questions as $question) {
+                $ret['questionscount']++;
+                $qnum++;
+                $fieldkey = 'response_' . $question->type_id . '_' . $question->id;
+                if ($mobiledata = $question->get_mobile_data($qnum, $fieldkey, $ret['questionnaire']['autonumquestions'])) {
+                    $ret['questionsinfo'][$pagenum][$question->id] = $mobiledata->questionsinfo;
+                    $ret['fields'][$fieldkey] = $mobiledata->fields;
+                    $ret['questions'][$pagenum][$question->id] = $mobiledata->questions;
+                    $ret['responses']['response_' . $question->type_id . '_' . $question->id] = $mobiledata->responses;
+                } else if ($question->type_id == QUESPAGEBREAK) {
+                    $ret['questionscount']--;
+                    $ret['pagescount']++;
+                    $pagenum++;
+                    $qnum--;
+                }
+            }
+            if ($userid) {
+                if ($responses = $this->get_responses($userid)) {
+                    $response = end($responses);
+                    $ret['response'] = (array) $response;
+                    $ret['response']['submitted_userdate'] = '';
+                    if (isset($ret['response']['submitted']) && !empty($ret['response']['submitted'])) {
+                        $ret['response']['submitted_userdate'] = userdate($ret['response']['submitted']);
+                    }
+                    $ret['response']['fullname'] = fullname($DB->get_record('user', ['id' => $userid]));
+                    $ret['response']['userdate'] = userdate($ret['response']['submitted']);
+                    foreach ($ret['questionsinfo'] as $pagenum => $data1) {
+                        foreach ($data1 as $questionid => $data2) {
+                            $ret['answered'][$questionid] = false;
+                            if (isset($data2['response_table']) && !empty($data2['response_table'])) {
+                                if ($values = $DB->get_records_sql('SELECT * FROM {questionnaire_'
+                                    . $data2['response_table'] . '} WHERE response_id = ? AND question_id = ?',
+                                    [$response->id, $questionid])) {
+                                    foreach ($values as $value) {
+                                        switch($data2['type_id']) {
+                                            case QUESYESNO: // Yes/No bool
+                                                if (isset($ret['questions'][$pagenum][$questionid])) {
+                                                    if (isset($value->choice_id) && !empty($value->choice_id)) {
+                                                        $ret['answered'][$questionid] = true;
+                                                        if ($value->choice_id == 'y') {
+                                                            $ret['questions'][$pagenum][$questionid][1]->value = 'y';
+                                                            $ret['responses']['response_'.$data2['type_id'].'_'.$questionid] = 'y';
+                                                        } else {
+                                                            $ret['questions'][$pagenum][$questionid][0]->value = 'n';
+                                                            $ret['responses']['response_'.$data2['type_id'].'_'.$questionid] = 'n';
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                            case QUESTEXT: // Text
+                                            case QUESESSAY: // Essay
+                                                if (isset($value->response) && !empty($value->response)) {
+                                                    $ret['answered'][$questionid] = true;
+                                                    $ret['questions'][$pagenum][$questionid][0]->value = $value->response;
+                                                    $ret['responses']['response_'.$data2['type_id'].'_'.$questionid] = $value->response;
+                                                }
+                                                break;
+                                            case QUESRADIO: // Radiobutton
+                                            case QUESCHECK: // Checkbox
+                                            case QUESDROP: // Select
+                                                if ($value = $DB->get_records_sql('SELECT * FROM {questionnaire_'
+                                                    . $data2['response_table'] . '} WHERE response_id = ? AND question_id = ?',
+                                                    [$response->id, $questionid])) {
+                                                    foreach ($value as $row) {
+                                                        foreach ($ret['questions'][$pagenum][$questionid] as $k => $item) {
+                                                            if ($item->id == $row->choice_id) {
+                                                                $ret['answered'][$questionid] = true;
+                                                                $ret['questions'][$pagenum][$questionid][$k]->value = intval($item->id);
+                                                                $ret['responses']['response_'.$data2['type_id'].'_'.$questionid] = intval($item->id);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                            case QUESRATE: // Rate 1-NN
+                                                if ($value = $DB->get_records_sql('SELECT * FROM {questionnaire_'
+                                                    . $data2['response_table'] . '} WHERE response_id = ? AND question_id = ?',
+                                                    [$response->id, $questionid])) {
+                                                    foreach ($value as $row) {
+                                                        if ($questionid == $row->question_id) {
+                                                            $ret['answered'][$questionid] = true;
+                                                            $v = $row->rankvalue + 1;
+                                                            if ($ret['questionsinfo'][$pagenum][$questionid]['precise'] == 1) {
+                                                                if ($row->rankvalue == -1) {
+                                                                    $v = $ret['questions'][$pagenum][$questionid][$row->choice_id]->max;
+                                                                }
+                                                            }
+                                                            $ret['questions'][$pagenum][$questionid][$row->choice_id]->value
+                                                                = $ret['responses']['response_'.$data2['type_id'].'_'.$questionid.'_'.$row->choice_id] = $v;
+                                                            $ret['questions'][$pagenum][$questionid][$row->choice_id]->choice_id = $row->choice_id;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $ret;
+    }
+
+    /**
+     * @param $userid
+     * @param $sec
+     * @param $completed
+     * @param $submit
+     * @param array $responses
+     * @return array
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
+    function save_mobile_data($userid, $sec, $completed, $submit, array $responses) {
+        global $DB, $CFG; // Do not delete $CFG!!!
+
+        if (!$completed) {
+            $rid = $this->delete_insert_response($DB->get_field('questionnaire_response', 'id',
+                ['questionnaireid' => $this->id, 'complete' => 'n', 'userid' => $userid]), $sec, $userid);
+            $questionnairedata = $this->get_mobile_data($userid);
+            $pagequestions = isset($questionnairedata['questions'][$sec]) ? $questionnairedata['questions'][$sec] : [];
+            if (!empty($pagequestions)) {
+                $pagequestionsids = array_keys($pagequestions);
+                $missingquestions = $warningmessages = [];
+                foreach ($pagequestionsids as $questionid) {
+                    $missingquestions[$questionid] = $questionid;
+                }
+                foreach ($pagequestionsids as $questionid) {
+                    foreach ($responses as $response) {
+                        $args = explode('_', $response['name']);
+                        if (count($args) >= 3) {
+                            $typeid = intval($args[1]);
+                            $rquestionid = intval($args[2]);
+                            if (in_array($rquestionid, $pagequestionsids)) {
+                                unset($missingquestions[$rquestionid]);
+                                if ($rquestionid == $questionid) {
+                                    if ($typeid == $questionnairedata['questionsinfo'][$sec][$rquestionid]['type_id']) {
+                                        if ($rquestionid > 0 && !in_array($response['value'], array(-9999, 'undefined'))) {
+                                            switch ($questionnairedata['questionsinfo'][$sec][$rquestionid]['type_id']) {
+                                                case QUESRATE:
+                                                    if (isset($args[3]) && !empty($args[3])) {
+                                                        $choiceid = intval($args[3]);
+                                                        $value = intval($response['value']) - 1;
+                                                        $rec = new \stdClass();
+                                                        $rec->response_id = $rid;
+                                                        $rec->question_id = intval($rquestionid);
+                                                        $rec->choice_id = $choiceid;
+                                                        $rec->rankvalue = $value;
+                                                        if ($questionnairedata['questionsinfo'][$sec][$rquestionid]['precise'] == 1) {
+                                                            if ($value == $questionnairedata['questions'][$sec][$rquestionid][$choiceid]->max) {
+                                                                $rec->rank = -1;
+                                                            }
+                                                        }
+                                                        $DB->insert_record('questionnaire_response_rank', $rec);
+                                                    }
+                                                    break;
+                                                default:
+                                                    if ($questionnairedata['questionsinfo'][$sec][$rquestionid]['required'] == 'n'
+                                                        || ($questionnairedata['questionsinfo'][$sec][$rquestionid]['required'] == 'y'
+                                                            && !empty($response['value']))) {
+                                                        $questionobj = \mod_questionnaire\question\base::question_builder(
+                                                            $questionnairedata['questionsinfo'][$sec][$rquestionid]['type_id'],
+                                                            $questionnairedata['questionsinfo'][$sec][$rquestionid]);
+                                                        if ($questionobj->insert_response($rid, $response['value'])) {
+                                                            $ret['responses'][$rid][$questionid] = $response['value'];
+                                                        }
+                                                    } else {
+                                                        $ret['warnings'][] = [
+                                                            'item' => 'mod_questionnaire_question',
+                                                            'itemid' => $questionid,
+                                                            'warningcode' => 'required',
+                                                            'message' => s(get_string('required') . ': ' . $questionnairedata['questionsinfo'][$sec][$questionid]['name'])
+                                                        ];
+                                                    }
+                                            }
+                                        } else {
+                                            $missingquestions[$rquestionid] = $rquestionid;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if ($missingquestions) {
+                    foreach ($missingquestions as $questionid) {
+                        if ($questionnairedata['questionsinfo'][$sec][$questionid]['required'] == 'y') {
+                            $ret['warnings'][] = [
+                                'item' => 'mod_questionnaire_question',
+                                'itemid' => $questionid,
+                                'warningcode' => 'required',
+                                'message' => s(get_string('required') . ': ' . $questionnairedata['questionsinfo'][$sec][$questionid]['name'])
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+        if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
+            $this->commit_submission_response(
+                $DB->get_field('questionnaire_response', 'id',
+                    ['questionnaireid' => $this->id, 'complete' => 'n',
+                        'userid' => $userid]), $userid);
+        }
+        return $ret;
+    }
 }
