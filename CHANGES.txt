@@ -1,5 +1,11 @@
 Release Notes
 
+<i>Note, this release can also be installed in Moodle 3.3, if you want the new features prior to upgrading to Moodle 3.4. This
+release does make database structure changes, so it cannot be downgraded after installation.
+
+Also note, the Questionnaire 3.5 release can be installed on Moodle 3.4 and Moodle 3.3. Use the 3.5 release to get the latest new
+features.</i>
+
 The 3.4 release of questionnaire includes new new feature improvements:
 
 1. Branching questions. Previously, questions could be assigned one parent question answer as a dependency. Now, multiple question
@@ -27,6 +33,10 @@ Note, this release can also be installed in Moodle 3.3, if you want the new feat
 does make database structure changes, so it cannot be downgraded after installation.
 
 Also note, the Moodle 3.5 release can be installed on Moodle 3.4 and Moodle 3.3. Use the 3.5 release to get the latest new features.
+
+Release 3.4.4 (Build - 2018121000)
+Bug fixes:
+CONTRIB-7561 - Fixing fatal errors on plugin privacy registry screen.
 
 Release 3.4.3 (Build - 2018120300)
 Bug fixes:
