@@ -279,6 +279,15 @@ class check extends base {
     }
 
     /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
      * Preprocess choice data.
      */
     protected function form_preprocess_choicedata($formdata) {
@@ -308,8 +317,8 @@ class check extends base {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
-        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
+    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
+        $mobiledata = parent::get_mobile_question_data($qnum, $fieldkey, $autonum = false);
         $mobiledata->questionsinfo['ischeckbox'] = true;
         return $mobiledata;
     }

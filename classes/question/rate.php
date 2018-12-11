@@ -600,14 +600,23 @@ class rate extends base {
     }
 
     /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
      * @param $qnum
      * @param $fieldkey
      * @param bool $autonum
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
-        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
+    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
+        $mobiledata = parent::get_mobile_question_data($qnum, $fieldkey, $autonum = false);
         $mobiledata->questionsinfo['israte'] = true;
         return $mobiledata;
     }
@@ -616,13 +625,16 @@ class rate extends base {
      * @param $mobiledata
      * @return mixed
      */
-    public function add_mobile_choice_data($mobiledata) {
+    public function add_mobile_question_choice_data($mobiledata) {
         $mobiledata->questions = [];
         $excludes = [];
         $vals = $extracontents = [];
         $mobiledata->questions = [];
         foreach ($this->choices as $choiceid => $choice) {
             $choice->na = false;
+            $choice->choice_id = $choiceid;
+            $choice->id = $choiceid;
+            $choice->question_id = $this->id;
             if ($this->precise == 0) {
                 $mobiledata->questions[$choiceid] = $choice;
                 if ($this->required()) {
@@ -694,5 +706,36 @@ class rate extends base {
         }
 
         return $mobiledata;
+    }
+
+    /**
+     * @param $rid
+     * @return \stdClass
+     */
+    public function get_mobile_response_data($rid) {
+        $results = $this->get_results($rid);
+        $resultdata = new \stdClass();
+        $resultdata->answered = false;
+        $resultdata->questions = [];
+        $resultdata->responses = '';
+        if (!empty($results) && $this->has_choices()) {
+            foreach ($results as $result) {
+                if ($this->id == $result->question_id) {
+                    $resultdata->answered = true;
+                    $v = $result->rankvalue + 1;
+                    if (($this->precise == 1) && ($result->rankvalue == -1)) {
+                        $v = $this->choices[$result->choice_id]->max; // This might be maxscore().
+                    }
+                    if (!isset($resultdata->questions[$result->choice_id])) {
+                        $resultdata->questions[$result->choice_id] = new \stdClass();
+                    }
+                    $resultdata->questions[$result->choice_id]->value = $v;
+                    $resultdata->questions[$result->choice_id]->choice_id = $result->choice_id;
+                    $resultdata->responses = $v;
+                }
+            }
+        }
+
+        return $resultdata;
     }
 }

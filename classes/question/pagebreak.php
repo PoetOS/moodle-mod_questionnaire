@@ -71,6 +71,15 @@ class pagebreak extends base {
     }
 
     /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
      * Override and return false if not supporting mobile app.
      *
      * @param $qnum
@@ -79,7 +88,7 @@ class pagebreak extends base {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
+    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
         return false;
     }
 }

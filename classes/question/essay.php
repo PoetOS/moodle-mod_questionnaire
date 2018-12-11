@@ -26,16 +26,44 @@ namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 
-class essay extends base {
+class essay extends text {
 
+    /**
+     * @return object|string
+     */
     protected function responseclass() {
         return '\\mod_questionnaire\\response\\text';
     }
 
+    /**
+     * @return string
+     */
     public function helpname() {
         return 'essaybox';
     }
 
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return false;
+    }
+
+    /**
+     * Override and return a response template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return false;
+    }
+
+    /**
+     * @param object $data
+     * @param $descendantsdata
+     * @param bool $blankquestionnaire
+     * @return object|string
+     */
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         $output = '';
 
@@ -73,6 +101,10 @@ class essay extends base {
         return $output;
     }
 
+    /**
+     * @param object $data
+     * @return object|string
+     */
     protected function response_survey_display($data) {
         $output = '';
         $output .= '<div class="response text">';
@@ -82,7 +114,12 @@ class essay extends base {
     }
 
     // Note - intentianally returning 'precise' for length and 'length' for precise.
-
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helptext
+     * @return \MoodleQuickForm|void
+     * @throws \coding_exception
+     */
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         $responseformats = array(
                         "0" => get_string('formateditor', 'questionnaire'),
@@ -92,6 +129,21 @@ class essay extends base {
         return $mform;
     }
 
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helptext
+     * @return \MoodleQuickForm|void
+     * @throws \coding_exception
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         $choices = array();
         for ($lines = 5; $lines <= 40; $lines += 5) {
@@ -100,33 +152,5 @@ class essay extends base {
         $mform->addElement('select', 'length', get_string('responsefieldlines', 'questionnaire'), $choices);
         $mform->setType('length', PARAM_INT);
         return $mform;
-    }
-
-    /**
-     * @param $qnum
-     * @param $fieldkey
-     * @param bool $autonum
-     * @return \stdClass
-     * @throws \coding_exception
-     */
-    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
-        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
-        $mobiledata->questionsinfo['istextessay'] = true;
-        return $mobiledata;
-    }
-
-    /**
-     * @param $mobiledata
-     * @return mixed
-     */
-    public function add_mobile_choice_data($mobiledata) {
-        $mobiledata->questions = [];
-        $mobiledata->questions[0] = new \stdClass();
-        $mobiledata->questions[0]->id = 0;
-        $mobiledata->questions[0]->choice_id = 0;
-        $mobiledata->questions[0]->question_id = $this->id;
-        $mobiledata->questions[0]->content = '';
-        $mobiledata->questions[0]->value = null;
-        return $mobiledata;
     }
 }

@@ -201,14 +201,23 @@ class yesno extends base {
     }
 
     /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
      * @param $qnum
      * @param $fieldkey
      * @param bool $autonum
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
-        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
+    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
+        $mobiledata = parent::get_mobile_question_data($qnum, $fieldkey, $autonum = false);
         $mobiledata->questionsinfo['isbool'] = true;
         return $mobiledata;
     }
@@ -217,7 +226,7 @@ class yesno extends base {
      * @param $mobiledata
      * @return mixed
      */
-    public function add_mobile_choice_data($mobiledata) {
+    public function add_mobile_question_choice_data($mobiledata) {
         $mobiledata->questions = [];
         $mobiledata->questions[0] = new \stdClass();
         $mobiledata->questions[0]->id = 0;
@@ -240,5 +249,33 @@ class yesno extends base {
         $mobiledata->responses = 'n';
 
         return $mobiledata;
+    }
+
+    /**
+     * @param $rid
+     * @return \stdClass
+     */
+    public function get_mobile_response_data($rid) {
+        $results = $this->get_results($rid);
+        $resultdata = new \stdClass();
+        $resultdata->answered = false;
+        $resultdata->questions = [];
+        $resultdata->responses = '';
+        if (!empty($results)) {
+            $resultdata->answered = true;
+            foreach ($results as $result) {
+                if ('y' == $result->choice_id) {
+                    $resultdata->questions[1] = new \stdClass();
+                    $resultdata->questions[1]->value = 'y';
+                    $resultdata->responses = 'y';
+                } else {
+                    $resultdata->questions[0] = new \stdClass();
+                    $resultdata->questions[0]->value = 'n';
+                    $resultdata->responses = 'n';
+                }
+            }
+        }
+
+        return $resultdata;
     }
 }

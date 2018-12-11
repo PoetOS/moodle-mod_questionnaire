@@ -150,14 +150,23 @@ class drop extends base {
     }
 
     /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
      * @param $qnum
      * @param $fieldkey
      * @param bool $autonum
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
-        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
+    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
+        $mobiledata = parent::get_mobile_question_data($qnum, $fieldkey, $autonum = false);
         $mobiledata->questionsinfo['isselect'] = true;
         return $mobiledata;
     }

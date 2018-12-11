@@ -37,10 +37,16 @@ class text extends base {
         return parent::__construct($id, $question, $context, $params);
     }
 
+    /**
+     * @return object|string
+     */
     protected function responseclass() {
         return '\\mod_questionnaire\\response\\text';
     }
 
+    /**
+     * @return string
+     */
     public function helpname() {
         return 'textbox';
     }
@@ -100,12 +106,29 @@ class text extends base {
         return $resptags;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helptext
+     */
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_length($mform, 'fieldlength');
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helptext
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_precise($mform, 'maxtextlength');
+    }
+
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
     }
 
     /**
@@ -115,8 +138,8 @@ class text extends base {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
-        $mobiledata = parent::get_mobile_data($qnum, $fieldkey, $autonum = false);
+    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
+        $mobiledata = parent::get_mobile_question_data($qnum, $fieldkey, $autonum = false);
         $mobiledata->questionsinfo['istextessay'] = true;
         return $mobiledata;
     }
@@ -125,7 +148,7 @@ class text extends base {
      * @param $mobiledata
      * @return mixed
      */
-    public function add_mobile_choice_data($mobiledata) {
+    public function add_mobile_question_choice_data($mobiledata) {
         $mobiledata->questions = [];
         $mobiledata->questions[0] = new \stdClass();
         $mobiledata->questions[0]->id = 0;
@@ -134,5 +157,26 @@ class text extends base {
         $mobiledata->questions[0]->content = '';
         $mobiledata->questions[0]->value = null;
         return $mobiledata;
+    }
+
+    /**
+     * @param $rid
+     * @return \stdClass
+     */
+    public function get_mobile_response_data($rid) {
+        $results = $this->get_results($rid);
+        $resultdata = new \stdClass();
+        $resultdata->answered = false;
+        $resultdata->questions = [];
+        $resultdata->responses = '';
+        if (!empty($results) && $this->has_choices()) {
+            $resultdata->answered = true;
+            foreach ($results as $result) {
+                $resultdata->questions[0]->value = $result->response;
+                $resultdata->responses = $result->response;
+            }
+        }
+
+        return $resultdata;
     }
 }

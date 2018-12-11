@@ -211,6 +211,9 @@ abstract class base {
         return false;
     }
 
+    /**
+     * @throws \dml_exception
+     */
     private function get_choices() {
         global $DB;
 
@@ -249,6 +252,9 @@ abstract class base {
         return false;
     }
 
+    /**
+     * @throws \dml_exception
+     */
     private function get_dependencies() {
         global $DB;
 
@@ -349,6 +355,9 @@ abstract class base {
         return $fulfilled;
     }
 
+    /**
+     * @return mixed
+     */
     public function response_table() {
         return $this->response->response_table();
     }
@@ -598,6 +607,9 @@ abstract class base {
         }
     }
 
+    /**
+     * @return bool
+     */
     public function update_choices() {
         $retvalue = true;
         if ($this->has_choices() && isset($this->choices)) {
@@ -619,11 +631,21 @@ abstract class base {
         return $retvalue;
     }
 
+    /**
+     * @param $choicerecord
+     * @return bool
+     * @throws \dml_exception
+     */
     public function update_choice($choicerecord) {
         global $DB;
         return $DB->update_record('questionnaire_quest_choice', $choicerecord);
     }
 
+    /**
+     * @param $choicerecord
+     * @return bool
+     * @throws \dml_exception
+     */
     public function add_choice($choicerecord) {
         global $DB;
         $retvalue = true;
@@ -659,11 +681,21 @@ abstract class base {
         return $retvalue;
     }
 
+    /**
+     * @param $dependencyrecord
+     * @return bool
+     * @throws \dml_exception
+     */
     public function update_dependency($dependencyrecord) {
         global $DB;
         return $DB->update_record('questionnaire_dependency', $dependencyrecord);
     }
 
+    /**
+     * @param $dependencyrecord
+     * @return bool
+     * @throws \dml_exception
+     */
     public function add_dependency($dependencyrecord) {
         global $DB;
 
@@ -928,6 +960,11 @@ abstract class base {
         return true;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @throws \coding_exception
+     */
     protected function form_header(\MoodleQuickForm $mform, $helpname = '') {
         // Display different messages for new question creation and existing question modification.
         if (isset($this->qid) && !empty($this->qid)) {
@@ -943,6 +980,11 @@ abstract class base {
         $mform->addHelpButton('questionhdredit', $helpname, 'questionnaire');
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     protected function form_name(\MoodleQuickForm $mform) {
         $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'),
                         ['size' => '30', 'maxlength' => '30']);
@@ -951,6 +993,11 @@ abstract class base {
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     protected function form_required(\MoodleQuickForm $mform) {
         $reqgroup = [];
         $reqgroup[] =& $mform->createElement('radio', 'required', '', get_string('yes'), 'y');
@@ -960,10 +1007,18 @@ abstract class base {
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
         self::form_length_text($mform, $helpname);
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         self::form_precise_text($mform, $helpname);
     }
@@ -1057,6 +1112,12 @@ abstract class base {
         return true;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param $context
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     protected function form_question_text(\MoodleQuickForm $mform, $context) {
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true, 'context' => $context];
         $mform->addElement('editor', 'content', get_string('text', 'questionnaire'), null, $editoroptions);
@@ -1065,6 +1126,13 @@ abstract class base {
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param array $choices
+     * @param string $helpname
+     * @return string
+     * @throws \coding_exception
+     */
     protected function form_choices(\MoodleQuickForm $mform, array $choices, $helpname = '') {
         $numchoices = count($choices);
         $allchoices = '';
@@ -1092,12 +1160,24 @@ abstract class base {
 
     // Helper functions for commonly used editing functions.
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param int $value
+     * @return \MoodleQuickForm
+     */
     static public function form_length_hidden(\MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'length', $value);
         $mform->setType('length', PARAM_INT);
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @param int $value
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     static public function form_length_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'length', get_string($helpname, 'questionnaire'), ['size' => '1'], $value);
         $mform->setType('length', PARAM_INT);
@@ -1107,12 +1187,24 @@ abstract class base {
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param int $value
+     * @return \MoodleQuickForm
+     */
     static public function form_precise_hidden(\MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'precise', $value);
         $mform->setType('precise', PARAM_INT);
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @param int $value
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     static public function form_precise_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'precise', get_string($helpname, 'questionnaire'), ['size' => '1']);
         $mform->setType('precise', PARAM_INT);
@@ -1358,6 +1450,15 @@ abstract class base {
     }
 
     /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return false;
+    }
+
+    /**
      * Override and return false if not supporting mobile app.
      *
      * @param $qnum
@@ -1366,7 +1467,7 @@ abstract class base {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_data($qnum, $fieldkey, $autonum = false) {
+    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
         $mobiledata = new \stdClass();
         if ($this->type_id != QUESPAGEBREAK) {
             $options = ['noclean' => true, 'para' => false, 'filter' => true,
@@ -1391,7 +1492,7 @@ abstract class base {
                 'errormessage' => get_string('required') . ': ' . $this->name
             ];
             $mobiledata->fields = $mobiledata->questionsinfo;
-            $this->add_mobile_choice_data($mobiledata);
+            $this->add_mobile_question_choice_data($mobiledata);
 
             if ($autonum) {
                 $mobiledata->questionsinfo['content'] = $qnum . '. ' . $mobiledata->questionsinfo['content'];
@@ -1406,10 +1507,12 @@ abstract class base {
      * @param $mobiledata
      * @return mixed
      */
-    public function add_mobile_choice_data($mobiledata) {
+    public function add_mobile_question_choice_data($mobiledata) {
         if ($this->has_choices()) {
             $mobiledata->questions = [];
             foreach ($this->choices as $choiceid => $choice) {
+                $choice->id = $choiceid;
+                $choice->question_id = $this->id;
                 $choice->choice_id = $choiceid;
                 if ($choice->value == null) {
                     $choice->value = '';
@@ -1426,5 +1529,31 @@ abstract class base {
         }
 
         return $mobiledata;
+    }
+
+    /**
+     * @param $rid
+     * @return \stdClass
+     */
+    public function get_mobile_response_data($rid) {
+        $results = $this->get_results($rid);
+        $resultdata = new \stdClass();
+        $resultdata->answered = false;
+        $resultdata->questions = [];
+        $resultdata->responses = '';
+        if (!empty($results) && $this->has_choices()) {
+            foreach ($results as $result) {
+                foreach ($this->choices as $choiceid => $choice) {
+                    if ($choiceid == $result->choice_id) {
+                        $resultdata->answered = true;
+                        $resultdata->questions[$choiceid] = new \stdClass();
+                        $resultdata->questions[$choiceid]->value = $choiceid;
+                        $resultdata->responses = $choiceid;
+                    }
+                }
+            }
+        }
+
+        return $resultdata;
     }
 }
