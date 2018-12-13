@@ -3631,11 +3631,10 @@ class questionnaire {
             foreach ($this->questions as $question) {
                 $ret['questionscount']++;
                 $qnum++;
-                $fieldkey = 'response_' . $question->type_id . '_' . $question->id;
                 if ($question->supports_mobile() && ($mobiledata =
-                        $question->get_mobile_question_data($qnum, $fieldkey, $ret['questionnaire']['autonumquestions']))) {
+                        $question->get_mobile_question_data($qnum, $ret['questionnaire']['autonumquestions']))) {
                     $ret['questionsinfo'][$pagenum][$question->id] = $mobiledata->questionsinfo;
-                    $ret['fields'][$fieldkey] = $mobiledata->fields;
+                    $ret['fields'][$mobiledata->questionsinfo['fieldkey']] = $mobiledata->fields;
                     $ret['questions'][$pagenum][$question->id] = $mobiledata->questions;
                     $ret['responses']['response_' . $question->type_id . '_' . $question->id] = $mobiledata->responses;
                 } else if ($question->type_id == QUESPAGEBREAK) {
@@ -3656,10 +3655,11 @@ class questionnaire {
                     $ret['response']['fullname'] = fullname($DB->get_record('user', ['id' => $userid]));
                     $ret['response']['userdate'] = userdate($ret['response']['submitted']);
                     foreach ($this->questions as $question) {
+// TODO - Need to do something with pagenum.
                         $responsedata = $question->get_mobile_response_data($response->id);
                         $ret['answered'][$question->id] = $responsedata->answered;
                         $ret['questions'][$pagenum][$question->id] = $responsedata->questions +
-                            $ret['questions'][$pagenum][$question->id];
+                            (isset($ret['questions'][$pagenum][$question->id]) ? $ret['questions'][$pagenum][$question->id] : []);
                         $ret['responses']['response_' . $question->type_id . '_' . $question->id] = $responsedata->responses;
                     }
                 }
@@ -3682,6 +3682,25 @@ class questionnaire {
     public function save_mobile_data($userid, $sec, $completed, $submit, array $responses) {
         global $DB, $CFG; // Do not delete $CFG!!!
 
+// This should create an array of well formed responses then execute question->insert_response one by one.
+        $processedresponses = [];
+        foreach ($responses as $response) {
+            // Array of label 'response', question type id, question id, and possible choice id.
+            $resparr = explode('_', $response['name']);
+            if (count($resparr) == 3) {
+                $questionid = $resparr[2];
+                // Single response type.
+                $processedresponses[$questionid] = $response['value'];
+            } else if (count($resparr) == 4) {
+                list(, , $questionid, $choiceid) = $resparr;
+                // Multiple response type.
+                if (!isset($processedresponses[$questionid])) {
+                    $processedresponses[$questionid] = [];
+                }
+                $processedresponses[$questionid][$choiceid] = $response['value'];
+            }
+        }
+
         if (!$completed) {
             $rid = $this->delete_insert_response($DB->get_field('questionnaire_response', 'id',
                 ['questionnaireid' => $this->id, 'complete' => 'n', 'userid' => $userid]), $sec, $userid);
@@ -3694,6 +3713,13 @@ class questionnaire {
                     $missingquestions[$questionid] = $questionid;
                 }
                 foreach ($pagequestionsids as $questionid) {
+                    if (isset($this->questions[$questionid]) && isset($processedresponses[$questionid])) {
+                        if ($this->questions[$questionid]->save_mobile_response($rid, $processedresponses[$questionid])) {
+                            $ret['responses'][$rid][$questionid] = $response['value'];
+                        }
+                    }
+                }
+/*
                     foreach ($responses as $response) {
                         $args = explode('_', $response['name']);
                         if (count($args) >= 3) {
@@ -3748,8 +3774,8 @@ class questionnaire {
                                 }
                             }
                         }
-                    }
-                }
+                    } */
+
                 if ($missingquestions) {
                     foreach ($missingquestions as $questionid) {
                         if ($questionnairedata['questionsinfo'][$sec][$questionid]['required'] == 'y') {

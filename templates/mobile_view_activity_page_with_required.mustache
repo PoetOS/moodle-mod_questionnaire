@@ -68,13 +68,13 @@
             <%^completed%><core-input-errors item-content [control]="questionsForm.controls.<%info.fieldkey%>" [errorText]="questionsFormErrors['<%info.fieldkey%>']"></core-input-errors><%/completed%>
             <%/info.isradiobutton%>
             <%#info.ischeckbox%>
-            <ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.responses['<%info.fieldkey%>']"<%^completed%> name="<%info.fieldkey%>" formControlName="<%info.fieldkey%>"<%/completed%>>
+            <ion-list radio-group<%^completed%> name="<%info.fieldkey%>" formControlName="<%info.fieldkey%>"<%/completed%>>
             <%#choices%>
             <ion-item>
                 <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
                 <ion-checkbox<%#value%> checked="true"<%/value%>
                 value="<%choice_id%>"<%#completed%> disabled="true"<%/completed%>
-                ></ion-checkbox>
+                [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-checkbox>
             </ion-item>
             <%/choices%>
             </ion-list>

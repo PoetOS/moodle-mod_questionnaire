@@ -217,6 +217,15 @@ abstract class base {
     }
 
     /**
+     * @param $rid
+     * @param $respdata
+     * @return bool
+     */
+    public function save_mobile_response($rid, $respdata) {
+        return $this->insert_response($rid, $respdata);
+    }
+
+    /**
      * Return all the fields to be used for users in bulk questionnaire sql.
      *
      * @author: Guy Thomas

@@ -165,8 +165,8 @@ class drop extends base {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
-        $mobiledata = parent::get_mobile_question_data($qnum, $fieldkey, $autonum = false);
+    public function get_mobile_question_data($qnum, $autonum = false) {
+        $mobiledata = parent::get_mobile_question_data($qnum, $autonum = false);
         $mobiledata->questionsinfo['isselect'] = true;
         return $mobiledata;
     }

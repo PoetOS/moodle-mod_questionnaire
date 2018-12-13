@@ -66,13 +66,13 @@
                         </ion-list>
                     <%/info.isradiobutton%>
                     <%#info.ischeckbox%>
-                        <ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.responses['<%info.fieldkey%>']">
+                        <ion-list radio-group>
                         <%#choices%>
                             <ion-item>
                                 <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
-                                <ion-checkbox<%#value%> checked="true"<%/value%>
-                                value="<%choice_id%>"<%#completed%> disabled="true"<%/completed%>
-                                ></ion-checkbox>
+                                <ion-checkbox <%#value%> checked="true"<%/value%> value="<%choice_id%>"
+                                <%#completed%> disabled="true"<%/completed%>
+                                [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-checkbox>
                             </ion-item>
                         <%/choices%>
                         </ion-list>

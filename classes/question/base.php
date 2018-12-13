@@ -379,7 +379,7 @@ abstract class base {
      * Insert response data method.
      */
     public function insert_response($rid, $val) {
-        if (isset ($this->response) && is_object($this->response) &&
+        if (isset($this->response) && is_object($this->response) &&
             is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
             return $this->response->insert_response($rid, $val);
         } else {
@@ -1467,7 +1467,7 @@ abstract class base {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $fieldkey, $autonum = false) {
+    public function get_mobile_question_data($qnum, $autonum = false) {
         $mobiledata = new \stdClass();
         if ($this->type_id != QUESPAGEBREAK) {
             $options = ['noclean' => true, 'para' => false, 'filter' => true,
@@ -1486,7 +1486,7 @@ abstract class base {
                 'required' => $this->required,
                 'deleted' => $this->deleted,
                 'response_table' => $this->responsetable,
-                'fieldkey' => $fieldkey,
+                'fieldkey' => 'response_' . $this->type_id . '_' . $this->id,
                 'precise' => $this->precise,
                 'qnum' => $qnum,
                 'errormessage' => get_string('required') . ': ' . $this->name
@@ -1555,5 +1555,19 @@ abstract class base {
         }
 
         return $resultdata;
+    }
+
+    /**
+     * @param $rid
+     * @param $respdata
+     * @return bool
+     */
+    public function save_mobile_response($rid, $respdata) {
+        if (isset($this->response) && is_object($this->response) &&
+            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            return $this->response->save_mobile_response($rid, $respdata);
+        } else {
+            return false;
+        }
     }
 }

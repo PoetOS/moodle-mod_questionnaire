@@ -329,4 +329,14 @@ class multiple extends single {
               JOIN {".self::response_table()."} $alias ON $alias.response_id = qr.id
         ";
     }
+
+    /**
+     * @param $rid
+     * @param $respdata
+     * @return bool
+     */
+    public function save_mobile_response($rid, $respdata) {
+        $resps = array_keys($respdata);
+        return $this->insert_response($rid, $resps);
+    }
 }
