@@ -3682,7 +3682,7 @@ class questionnaire {
     public function save_mobile_data($userid, $sec, $completed, $submit, array $responses) {
         global $DB, $CFG; // Do not delete $CFG!!!
 
-// This should create an array of well formed responses then execute question->insert_response one by one.
+        // This should create an array of well formed responses then execute question->insert_response one by one.
         $processedresponses = [];
         foreach ($responses as $response) {
             // Array of label 'response', question type id, question id, and possible choice id.
@@ -3714,67 +3714,22 @@ class questionnaire {
                 }
                 foreach ($pagequestionsids as $questionid) {
                     if (isset($this->questions[$questionid]) && isset($processedresponses[$questionid])) {
+                        unset($missingquestions[$questionid]);
                         if ($this->questions[$questionid]->save_mobile_response($rid, $processedresponses[$questionid])) {
                             $ret['responses'][$rid][$questionid] = $response['value'];
                         }
+                    } else if (isset($this->questions[$questionid]) && $this->questions[$questionid]->required()) {
+                        $ret['warnings'][] = [
+                            'item' => 'mod_questionnaire_question',
+                            'itemid' => $questionid,
+                            'warningcode' => 'required',
+                            'message' => s(get_string('required') . ': ' .
+                                $questionnairedata['questionsinfo'][$sec][$questionid]['name'])
+                        ];
+                    } else if (isset($this->questions[$questionid])) {
+                        unset($missingquestions[$questionid]);
                     }
                 }
-/*
-                    foreach ($responses as $response) {
-                        $args = explode('_', $response['name']);
-                        if (count($args) >= 3) {
-                            $typeid = intval($args[1]);
-                            $rquestionid = intval($args[2]);
-                            if (in_array($rquestionid, $pagequestionsids)) {
-                                unset($missingquestions[$rquestionid]);
-                                if ($rquestionid == $questionid) {
-                                    if ($typeid == $questionnairedata['questionsinfo'][$sec][$rquestionid]['type_id']) {
-                                        if ($rquestionid > 0 && !in_array($response['value'], array(-9999, 'undefined'))) {
-                                            switch ($questionnairedata['questionsinfo'][$sec][$rquestionid]['type_id']) {
-                                                case QUESRATE:
-                                                    if (isset($args[3]) && !empty($args[3])) {
-                                                        $choiceid = intval($args[3]);
-                                                        $value = intval($response['value']) - 1;
-                                                        $rec = new \stdClass();
-                                                        $rec->response_id = $rid;
-                                                        $rec->question_id = intval($rquestionid);
-                                                        $rec->choice_id = $choiceid;
-                                                        $rec->rankvalue = $value;
-                                                        if ($questionnairedata['questionsinfo'][$sec][$rquestionid]['precise'] == 1) {
-                                                            if ($value == $questionnairedata['questions'][$sec][$rquestionid][$choiceid]->max) {
-                                                                $rec->rank = -1;
-                                                            }
-                                                        }
-                                                        $DB->insert_record('questionnaire_response_rank', $rec);
-                                                    }
-                                                    break;
-                                                default:
-                                                    if ($questionnairedata['questionsinfo'][$sec][$rquestionid]['required'] == 'n'
-                                                        || ($questionnairedata['questionsinfo'][$sec][$rquestionid]['required'] == 'y'
-                                                            && !empty($response['value']))) {
-                                                        $questionobj = \mod_questionnaire\question\base::question_builder(
-                                                            $questionnairedata['questionsinfo'][$sec][$rquestionid]['type_id'],
-                                                            $questionnairedata['questionsinfo'][$sec][$rquestionid]);
-                                                        if ($questionobj->insert_response($rid, $response['value'])) {
-                                                            $ret['responses'][$rid][$questionid] = $response['value'];
-                                                        }
-                                                    } else {
-                                                        $ret['warnings'][] = [
-                                                            'item' => 'mod_questionnaire_question',
-                                                            'itemid' => $questionid,
-                                                            'warningcode' => 'required',
-                                                            'message' => s(get_string('required') . ': ' . $questionnairedata['questionsinfo'][$sec][$questionid]['name'])
-                                                        ];
-                                                    }
-                                            }
-                                        } else {
-                                            $missingquestions[$rquestionid] = $rquestionid;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } */
 
                 if ($missingquestions) {
                     foreach ($missingquestions as $questionid) {
