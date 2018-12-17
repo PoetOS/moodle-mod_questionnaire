@@ -126,6 +126,7 @@ class drop extends base {
         $resptags->id = 'menu' . $resptags->name;
         $resptags->class = 'select custom-select ' . $resptags->id;
         $resptags->options = [];
+        $resptags->options[] = (object)['value' => '', 'label' => get_string('choosedots')];
         foreach ($this->choices as $id => $choice) {
             $contents = questionnaire_choice_values($choice->content);
             $chobj = new \stdClass();
