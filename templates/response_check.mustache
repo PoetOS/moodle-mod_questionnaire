@@ -48,12 +48,12 @@
 <div class="questionnaire_response questionnaire_check">
 {{#choices}}
     {{#selected}}
-    <span class="selected"><input type="checkbox" name="{{name}}" checked="checked" onclick="this.checked=true;" />
+    <span class="selected"><input type="checkbox" name="{{name}}" checked="checked" disabled="disabled" />
         {{{content}}}</span>
     {{#othercontent}}<span class="response text">{{{.}}}</span>{{/othercontent}}
     {{/selected}}
     {{^selected}}
-    <span class="unselected"><input type="checkbox" name="{{name}}" onclick="this.checked=true;" />
+    <span class="unselected"><input type="checkbox" name="{{name}}" disabled="disabled" />
         {{{content}}}</span>
     {{/selected}}
     <br />
