@@ -49,11 +49,16 @@
     }}
 <!-- Begin HTML generated from response_drop template. -->
 <div class="questionnaire_response questionnaire_drop">
+{{#selectedlabel}}
     <select id="{{id}}" name="{{name}}" class="{{class}}">
         {{#options}}
         <option {{#selected}}selected="selected" {{/selected}}value="{{value}}">{{label}}</option>
         {{/options}}
     </select>
     {{#selectedlabel}}: <span class="selected">{{.}}</span>{{/selectedlabel}}
+{{/selectedlabel}}
+{{^selectedlabel}}
+    <p class="generaltable">&nbsp;{{#str}} noresponsedata, questionnaire{{/str}}</p>
+{{/selectedlabel}}
 </div>
 <!-- End HTML generated from response_drop template. -->
