@@ -54,16 +54,55 @@ class mobile {
             $prevpage = $pagenum - 1;
         }
 
-        $data = [
-            'questionnaire' => $questionnairedata,
-            'cmid' => $cmid,
-            'courseid' => intval($cm->course),
-            'pagenum' => $pagenum,
-            'userid' => $USER->id,
-            'nextpage' => 0,
-            'prevpage' => 0,
-            'emptypage' => false
+        $data = [];
+        $data['cmid'] = $cmid;
+        $data['userid'] = $USER->id;
+        $data['intro'] = $questionnaire->intro;
+        $data['autonumquestions'] = $questionnaire->autonum;
+        $data['id'] = $questionnaire->id;
+        $data['surveyid'] = $questionnaire->survey->id;
+        $data['pagenum'] = $pagenum;
+        $data['prevpage'] = $prevpage;
+        $data['nextpage'] = 0;
+        $data['completed'] = (isset($questionnairedata['response']['complete']) &&
+            $questionnairedata['response']['complete'] == 'y') ? 1 : 0;
+        $data['complete_userdate'] = (isset($questionnairedata['response']['complete']) &&
+            $questionnairedata['response']['complete'] == 'y') ? userdate($questionnairedata['response']['submitted']) : '';
+//        $data['emptypage'] = false;
+//        $data['emptypage_content'] = '';
+        $pagequestions = [];
+        foreach ($questionnairedata['questions'][$pagenum] as $questionid => $choices) {
+            $pagequestion = $questionnairedata['questionsinfo'][$pagenum][$questionid];
+            // Do an array_merge to reindex choices with standard numerical indexing.
+            $pagequestion['choices'] = array_merge([], $choices);
+            $pagequestions[] = $pagequestion;
+        }
+        $data['pagequestions'] = $pagequestions;
+
+        $return = [
+            'templates' => [
+                [
+                    'id' => 'main',
+                    'html' => $OUTPUT->render_from_template('mod_questionnaire/mobile_view_activity_page', $data)
+                ],
+            ],
+            'otherdata' => [
+                'fields' => json_encode($questionnairedata['fields']),
+                'questionsinfo' => json_encode($questionnairedata['questionsinfo']),
+                'questions' => json_encode($questionnairedata['questions']),
+                'pagequestions' => json_encode($data['pagequestions']),
+                'responses' => json_encode($questionnairedata['responses']),
+                'pagenum' => $pagenum,
+                'nextpage' => $data['nextpage'],
+                'prevpage' => $data['prevpage'],
+                'completed' => $data['completed'],
+                'intro' => $questionnairedata['questionnaire']['intro'],
+                'string_required' => get_string('required'),
+            ],
+            'files' => null
         ];
+        return $return;
+
         // Check for required fields filled.
         $break = false;
         if (($pagenum - 1) > 0 && isset($questionnairedata['questions'][$pagenum - 1]) &&
@@ -195,7 +234,7 @@ class mobile {
                 'prevpage' => $data['prevpage'],
                 'completed' => $data['completed'],
                 'intro' => $questionnairedata['questionnaire']['intro'],
-                'string_required' => get_string('required')
+                'string_required' => get_string('required'),
             ],
             'files' => null
         ];
