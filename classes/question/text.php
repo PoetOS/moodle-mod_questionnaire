@@ -169,7 +169,7 @@ class text extends base {
         $resultdata->answered = false;
         $resultdata->questions = [];
         $resultdata->responses = '';
-        if (!empty($results) && $this->has_choices()) {
+        if (!empty($results)) {
             $resultdata->answered = true;
             foreach ($results as $result) {
                 $resultdata->questions[0]->value = $result->response;

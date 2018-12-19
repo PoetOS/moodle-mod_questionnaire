@@ -176,7 +176,8 @@ class mobile {
             $data['emptypage'] = true;
             $data['emptypage_content'] = get_string('questionnaire:submit', 'questionnaire');
         }
-        return [
+
+        $return = [
             'templates' => [
                 [
                     'id' => 'main',
@@ -198,6 +199,7 @@ class mobile {
             ],
             'files' => null
         ];
+        return $return;
     }
 
     /**

@@ -718,7 +718,7 @@ class rate extends base {
         $resultdata->answered = false;
         $resultdata->questions = [];
         $resultdata->responses = '';
-        if (!empty($results) && $this->has_choices()) {
+        if (!empty($results)) {
             foreach ($results as $result) {
                 if ($this->id == $result->question_id) {
                     $resultdata->answered = true;
