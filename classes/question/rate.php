@@ -635,6 +635,9 @@ class rate extends base {
             $choice->choice_id = $choiceid;
             $choice->id = $choiceid;
             $choice->question_id = $this->id;
+            // Add a fieldkey for each choice.
+            $choice->fieldkey = 'response_' . $this->type_id . '_' . $this->id . '_' . $choiceid;
+
             if ($this->precise == 0) {
                 $mobiledata->questions[$choiceid] = $choice;
                 if ($this->required()) {
@@ -717,7 +720,7 @@ class rate extends base {
         $resultdata = new \stdClass();
         $resultdata->answered = false;
         $resultdata->questions = [];
-        $resultdata->responses = '';
+        $resultdata->responses = [];
         if (!empty($results)) {
             foreach ($results as $result) {
                 if ($this->id == $result->question_id) {
@@ -731,7 +734,7 @@ class rate extends base {
                     }
                     $resultdata->questions[$result->choice_id]->value = $v;
                     $resultdata->questions[$result->choice_id]->choice_id = $result->choice_id;
-                    $resultdata->responses = $v;
+                    $resultdata->responses['response_' . $this->type_id . '_' . $this->id . '_' . $result->choice_id] = $v;
                 }
             }
         }

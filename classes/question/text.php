@@ -163,7 +163,7 @@ class text extends base {
      * @param $rid
      * @return \stdClass
      */
-    public function get_mobile_response_data($rid) {
+/*    public function get_mobile_response_data($rid) {
         $results = $this->get_results($rid);
         $resultdata = new \stdClass();
         $resultdata->answered = false;
@@ -178,5 +178,5 @@ class text extends base {
         }
 
         return $resultdata;
-    }
+    } */
 }

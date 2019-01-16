@@ -335,4 +335,30 @@ class check extends base {
         }
         return $mobiledata;
     }
+
+    /**
+     * @param $rid
+     * @return \stdClass
+     */
+    public function get_mobile_response_data($rid) {
+        $results = $this->get_results($rid);
+        $resultdata = new \stdClass();
+        $resultdata->answered = false;
+        $resultdata->questions = [];
+        $resultdata->responses = [];
+        if (!empty($results) && $this->has_choices()) {
+            foreach ($results as $result) {
+                foreach ($this->choices as $choiceid => $choice) {
+                    if ($choiceid == $result->cid) {
+                        $resultdata->answered = true;
+                        $resultdata->questions[$choiceid] = new \stdClass();
+                        $resultdata->questions[$choiceid]->value = $choiceid;
+                        $resultdata->responses['response_' . $this->type_id . '_' . $this->id . '_' . $choiceid] = $choiceid;
+                    }
+                }
+            }
+        }
+
+        return $resultdata;
+    }
 }

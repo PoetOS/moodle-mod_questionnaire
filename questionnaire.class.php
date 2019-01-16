@@ -3654,13 +3654,18 @@ class questionnaire {
                     }
                     $ret['response']['fullname'] = fullname($DB->get_record('user', ['id' => $userid]));
                     $ret['response']['userdate'] = userdate($ret['response']['submitted']);
+                    $ret['responses'] = [];
                     foreach ($this->questions as $question) {
                         // TODO - Need to do something with pagenum.
                         $responsedata = $question->get_mobile_response_data($response->id);
                         $ret['answered'][$question->id] = $responsedata->answered;
-                        $ret['questions'][$pagenum][$question->id] = $responsedata->questions +
-                            (isset($ret['questions'][$pagenum][$question->id]) ? $ret['questions'][$pagenum][$question->id] : []);
-                        $ret['responses']['response_' . $question->type_id . '_' . $question->id] = $responsedata->responses;
+                        if (!isset($ret['questions'][$pagenum][$question->id])) {
+                            $ret['questions'][$pagenum][$question->id] = [];
+                        }
+                        foreach ($responsedata->questions as $choiceid => $choice) {
+                            $ret['questions'][$pagenum][$question->id][$choiceid]->value = $choice->value;
+                        }
+                        $ret['responses'] += $responsedata->responses;
                     }
                 }
             }
@@ -3687,6 +3692,7 @@ class questionnaire {
         foreach ($responses as $response) {
             // Array of label 'response', question type id, question id, and possible choice id.
             $resparr = explode('_', $response['name']);
+error_log(print_r($resparr, true));
             if (count($resparr) == 3) {
                 $questionid = $resparr[2];
                 // Single response type.

@@ -260,18 +260,18 @@ class yesno extends base {
         $resultdata = new \stdClass();
         $resultdata->answered = false;
         $resultdata->questions = [];
-        $resultdata->responses = '';
+        $resultdata->responses = [];
         if (!empty($results)) {
             $resultdata->answered = true;
             foreach ($results as $result) {
                 if ('y' == $result->choice_id) {
                     $resultdata->questions[1] = new \stdClass();
                     $resultdata->questions[1]->value = 'y';
-                    $resultdata->responses = 'y';
+                    $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = 'y';
                 } else {
                     $resultdata->questions[0] = new \stdClass();
                     $resultdata->questions[0]->value = 'n';
-                    $resultdata->responses = 'n';
+                    $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = 'n';
                 }
             }
         }
