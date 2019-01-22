@@ -289,7 +289,7 @@ td.selected {
 /* move horizontal radio buttons closer to their labels */
 .qn-answer input[type="radio"],
 .qn-answer input[type="checkbox"] {
-    margin-right: 3px;
+    width: 100%;
 }
 
 #page-mod-questionnaire-show_nonrespondents input[type="radio"] {
