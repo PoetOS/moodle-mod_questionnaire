@@ -134,7 +134,7 @@ class provider extends provider_helper {
        INNER JOIN {questionnaire} q ON q.id = cm.instance
        INNER JOIN {questionnaire_response} qr ON qr.questionnaireid = q.id
             WHERE qr.userid = :attemptuserid
-    ";
+       ";
 
         $params = [
             'modname' => 'questionnaire',
