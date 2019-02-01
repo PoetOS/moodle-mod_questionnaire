@@ -2064,7 +2064,7 @@ class questionnaire {
         return($rid);
     }
 
-    private function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
+    public function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
         if ($col == null) {
             $col = '';
         }

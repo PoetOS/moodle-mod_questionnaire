@@ -101,6 +101,19 @@ $capabilities = array(
         )
     ),
 
+    // Ability to export own responses to portfolio.
+    'mod/questionnaire:exportownresponses' => array(
+
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+            'student' => CAP_ALLOW,
+        )
+    ),
+
     // Ability to delete someone's (or own) previous responses.
     'mod/questionnaire:deleteresponses' => array(
 

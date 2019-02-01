@@ -983,3 +983,253 @@ function questionnaire_get_standard_page_items($id = null, $a = null) {
 
     return (array($cm, $course, $questionnaire));
 }
+
+// Add 'Export to portfolio' button to mod_questionnaire response
+require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->libdir . '/portfolio/caller.php');
+/**
+ * Portfolio caller class for mod_questionnaire.
+ *
+ * @package    mod_questionnaire
+ * @copyright  2018 Blackboard {@link http://www.blackboard.com}
+ * @author     Belinda O'Mahoney
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class questionnaire_portfolio_caller extends portfolio_module_caller_base {
+
+    /** @var int callback arg - questionnaire id */
+    protected $qid;
+
+    /** @var int callback arg - response id */
+    protected $rid;
+
+    /** @var  questionnaire object */
+    protected $questionnaire;
+
+    /** @var  coursemodule object */
+    protected $cm;
+
+    /** @var  index for the array of responses that contains the answer text */
+    protected $answertextindex;
+
+    public static function expected_callbackargs() {
+        return array(
+            'qid' => true,
+            'rid' => false,
+        );
+    }
+
+    public static function base_supported_formats() {
+        return array(PORTFOLIO_FORMAT_LEAP2A, PORTFOLIO_FORMAT_PLAINHTML);
+    }
+
+    public function load_data() {
+        global $DB;
+
+        if (! $questionnaire = $DB->get_record('questionnaire', array('id' => $this->qid))) {
+            throw new portfolio_caller_exception('invalidquestionnaireid', 'questionnaire');
+        }
+        if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+            throw new portfolio_caller_exception('coursemisconf');
+        }
+        if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
+            throw new portfolio_caller_exception('invalidcoursemodule');
+        }
+        $this->set('cm', $cm);
+        require_course_login($course, true, $cm);
+
+        $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+        if (empty($questionnaire->survey)) {
+            throw new portfolio_caller_exception('surveynotexists', 'questionnaire');
+        }
+
+        $params = array('survey_id' => $questionnaire->survey->id, 'userid' => $this->user->id, 'complete' => 'y');
+        $questionnaire->responses = $DB->get_records('questionnaire_response', $params);
+        $questionnaire->rids = array_keys($questionnaire->responses);
+        if (! $this->rid) {
+            $this->rid = end($questionnaire->rids);
+        }
+
+        $this->fields = ['name', 'content', 'position'];
+        $response = $questionnaire->response_select($this->rid, implode(', ', $this->fields), false);
+        $questionnaire->response = $this->format_and_order_questionnaire_response($response);
+
+        $this->set('questionnaire', $questionnaire);
+    }
+
+    private function format_and_order_questionnaire_response($qresponse) {
+
+        //calculate indexes for response array
+        $this->questionpositionindex = array_search("position", $this->fields);
+        end($this->fields);
+        $this->answertextindex = key($this->fields)+1;
+        $answeridindex = $this->answertextindex+1;
+
+        //format response array creating an array with the question info
+        //and each question response is an array of one or more responses
+        foreach($qresponse as $key => $response) {
+            if (is_array($response[0])) {
+                $newresponse = array();
+                $newanswertext = array();
+                $newanswerid = array();
+                foreach($response as $respo) {
+                    foreach($respo as $k => $resp) {
+                        if ($k != $this->answertextindex && $k != $answeridindex) {
+                            $newresponse[$k] = $resp;
+                        } else if ($k == $this->answertextindex) {
+                            $newanswertext[] = $resp;
+                        } else if ($k == $answeridindex) {
+                            $newanswerid[] = $resp;
+                        }
+                    }
+                }
+                $newresponse[] = $newanswertext;
+                $newresponse[] = $newanswerid;
+
+                $qresponse[$key] = $newresponse;
+            } else {
+                $qresponse[$key][$this->answertextindex] = array($qresponse[$key][$this->answertextindex]);
+                $qresponse[$key][$answeridindex] = array($qresponse[$key][$answeridindex]);
+            }
+        }
+
+        //sort by question position
+        usort($qresponse, function($a, $b) {
+            return $a[$this->questionpositionindex] <=> $b[$this->questionpositionindex];
+        });
+
+        return $qresponse;
+    }
+
+    public function prepare_package() {
+        $leapwriter = false;
+        $format = 'html';
+        $name = clean_filename($this->cm->name . ".html");
+        if ($this->exporter->get('formatclass') == PORTFOLIO_FORMAT_LEAP2A) {
+            $leapwriter = $this->exporter->get('format')->leap2a_writer();
+            $format = 'text';
+            $name = 'leap2a.xml';
+            $ids = array();
+        }
+        $header = $this->format_questionnaire_header($format);
+
+        $content = "";
+        //add questionnaire info to exported content
+        if (! $leapwriter) {
+            $content .= $header->output;
+        }
+
+        $questionindex = 0;
+        //add questions and responses to exported content
+        foreach($this->get('questionnaire')->response as $response) {
+            $formattedresponse = $this->format_question_and_response($response, $format);
+            $content .= $formattedresponse->output;
+
+            if ($leapwriter) {
+                $entry = new portfolio_format_leap2a_entry('questionentry'.$questionindex, $formattedresponse->name, 'resource', $formattedresponse->output);
+                $entry->published = $this->get('questionnaire')->responses[$this->rid]->submitted;
+                $leapwriter->add_entry($entry);
+                $ids[] = $entry->id;
+            }
+
+            $questionindex++;
+        }
+
+        //add questionnaire info to exported content
+        if ($leapwriter) {
+            $selection = new portfolio_format_leap2a_entry('questionnaireentry'.$this->get('questionnaire')->id, $header->name, 'selection', $header->intro);
+            $selection->published = $this->get('questionnaire')->timemodified;
+            $selection->content = $header->output;
+            $leapwriter->add_entry($selection);
+            $leapwriter->make_selection($selection, $ids, 'Grouping');
+
+            $content = $leapwriter->to_xml();
+        }
+
+        $this->exporter->write_new_file($content, $name);
+    }
+
+    private function get_line_break($format) {
+        if ($format == 'html') {
+            return "<br />";
+        }
+        return "\n";
+    }
+
+    private function format_questionnaire_header($format) {
+        $lbr = $this->get_line_break($format);
+
+        $formatted = new stdClass();
+        $formatted->name = strip_tags($this->get('questionnaire')->name);
+        $formatted->intro = strip_tags($this->get('questionnaire')->intro);
+        $formatted->content = get_string('modulename', 'mod_questionnaire').": \"".$formatted->name."\" ".get_string('forcourse', 'mod_questionnaire')." \"".$this->get('questionnaire')->course->fullname."\" ";
+        $formatted->output = $formatted->content.$lbr.$formatted->intro.$lbr;
+        if ($format == 'html') {
+            $timemodified = date("l, d F Y, h:i a", $this->get('questionnaire')->timemodified);
+            $formatted->output = get_string('published', 'mod_questionnaire').": ".$timemodified.$lbr.$lbr;
+        }
+
+        return $formatted;
+    }
+
+    private function format_question_and_response($response, $format) {
+        //calculate indexes for response array
+        $questionnameindex = array_search("name", $this->fields);
+        $questioncontentindex = array_search("content", $this->fields);
+        $lbr = $this->get_line_break($format);
+
+        $formatted = new stdClass();
+        $formatted->name = strip_tags($response[$questionnameindex]);
+        if (empty($formatted->name)) {
+            $formatted->name = strip_tags($response[$this->questionpositionindex]);
+        }
+        $formatted->content = strip_tags($response[$questioncontentindex]);
+        $formatted->responses = array();
+        foreach($response[$this->answertextindex] as $resp) {
+            $formatted->responses[] = strip_tags($resp);
+        }
+
+        $formatted->output = "";
+        if ($format == 'html') {
+            $formatted->output .= "{$formatted->name}:".$lbr;
+        }
+        $formatted->output .= "{$formatted->content}".$lbr;
+        $formatted->output .= get_string('responses', 'mod_questionnaire').": ";
+        foreach($formatted->responses as $resp) {
+            $formatted->output .= $resp;
+            if ($resp != end($formatted->responses)) {
+                $formatted->output .= $lbr;
+            }
+        }
+        $formatted->output .= $lbr;
+        if ($format == 'html') {
+            $formatted->output .= $lbr;
+        }
+
+        return $formatted;
+    }
+
+    public function get_sha1() {
+        $text = '';
+        foreach($this->get('questionnaire')->response as $response) {
+            foreach($response[$this->answertextindex] as $r) {
+                $text .= $r;
+            }
+        }
+        return sha1($text);
+    }
+
+    public function expected_time() {
+        return portfolio_expected_time_db(count($this->get('questionnaire')->response));
+    }
+
+    public function check_permissions() {
+        $context = context_module::instance($this->cm->id);
+        return has_capability('mod/questionnaire:readownresponses', $context) &&
+                has_capability('mod/questionnaire:exportownresponses', $context);
+    }
+
+    public static function display_name() {
+        return get_string('modulename', 'questionnaire');
+    }
+}

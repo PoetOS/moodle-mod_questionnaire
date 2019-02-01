@@ -79,6 +79,18 @@ if (!isset($SESSION->questionnaire)) {
 }
 $SESSION->questionnaire->current_tab = 'myreport';
 
+// Add 'Export to portfolio' button to mod_questionnaire response
+if ($CFG->enableportfolios && has_capability('mod/questionnaire:exportownresponses', $context)) {
+    require_once($CFG->libdir . '/portfoliolib.php');
+
+    $button = new portfolio_add_button();
+    $portfolioparams = array(
+        'qid' => $questionnaire->id,
+        'rid' => $rid,
+    );
+    $button->set_callback_options('questionnaire_portfolio_caller', $portfolioparams, 'mod_questionnaire');
+}
+
 switch ($action) {
     case 'summary':
         if (empty($questionnaire->survey)) {
@@ -125,6 +137,7 @@ switch ($action) {
         $questionnaire->page->add_to_page('myheaders', $titletext);
         $questionnaire->view_all_responses($resps);
         echo $questionnaire->renderer->render($questionnaire->page);
+
         // Finish the page.
         echo $questionnaire->renderer->footer($course);
         break;
@@ -262,8 +275,12 @@ switch ($action) {
         }
         $compare = true;
         $questionnaire->view_response($rid, null, null, $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
-        // Finish the page.
         echo $questionnaire->renderer->render($questionnaire->page);
+        if ($button) {
+            echo $button->to_html(PORTFOLIO_ADD_TEXT_LINK);
+        }
+
+        // Finish the page.
         echo $questionnaire->renderer->footer($course);
         break;
 
