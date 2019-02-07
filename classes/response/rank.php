@@ -97,7 +97,7 @@ class rank extends base {
 
         if ($this->question->type_id == QUESRATE) {
             // JR there can't be an !other field in rating questions ???
-            $rankvalue = array();
+            $rankvalue = [];
             $select = 'question_id=' . $this->question->id . ' AND content NOT LIKE \'!other%\' ORDER BY id ASC';
             if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
                 foreach ($rows as $row) {
@@ -106,7 +106,7 @@ class rank extends base {
                                     'choice_id' => $row->id, 'rankvalue' => '-1'));
                     $this->counts[$row->content]->nbna = $nbna;
                     // The $row->value may be null (i.e. empty) or have a 'NULL' value.
-                    if ($row->value !== null && $row->value !== 'NULL') {
+                    if (($row->value !== null) && ($row->value !== 'NULL') && ($row->value !== '')) {
                         $rankvalue[] = $row->value;
                     }
                 }
