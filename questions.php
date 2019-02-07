@@ -57,7 +57,7 @@ $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
 
 if (!$questionnaire->capabilities->editquestions) {
-    print_error('nopermissions', 'error', 'mod:questionnaire:edit');
+    print_error('nopermissions', 'error', '', 'mod:questionnaire:edit');
 }
 
 $questionnairehasdependencies = $questionnaire->has_dependencies();
