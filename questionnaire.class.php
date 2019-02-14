@@ -3039,6 +3039,12 @@ class questionnaire {
         foreach ($allresponsesrs as $responserow) {
             $rid = $responserow->rid;
             $qid = $responserow->question_id;
+
+            // It's possible for a response to exist for a deleted question. Ignore these.
+            if (!isset($this->questions[$qid])) {
+                break;
+            }
+
             $question = $this->questions[$qid];
             $qtype = intval($question->type_id);
             $questionobj = $this->questions[$qid];
