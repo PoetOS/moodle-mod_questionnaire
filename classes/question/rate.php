@@ -641,24 +641,24 @@ class rate extends base {
             if ($this->precise == 0) {
                 $mobiledata->questions[$choiceid] = $choice;
                 if ($this->required()) {
-                    $mobiledata->questions[$choiceid]->min = 1;
+                    $mobiledata->questions[$choiceid]->min = 0;
                     $mobiledata->questions[$choiceid]->minstr = 1;
                 } else {
                     $mobiledata->questions[$choiceid]->min = 0;
-                    $mobiledata->questions[$choiceid]->minstr = 0;
+                    $mobiledata->questions[$choiceid]->minstr = 1;
                 }
-                $mobiledata->questions[$choiceid]->max = intval($this->length);
+                $mobiledata->questions[$choiceid]->max = intval($this->length) - 1;
                 $mobiledata->questions[$choiceid]->maxstr = intval($this->length);
             } else if ($this->precise == 1) {
                 $mobiledata->questions[$choiceid] = $choice;
                 if ($this->required()) {
-                    $mobiledata->questions[$choiceid]->min = 1;
+                    $mobiledata->questions[$choiceid]->min = 0;
                     $mobiledata->questions[$choiceid]->minstr = 1;
                 } else {
                     $mobiledata->questions[$choiceid]->min = 0;
-                    $mobiledata->questions[$choiceid]->minstr = 0;
+                    $mobiledata->questions[$choiceid]->minstr = 1;
                 }
-                $mobiledata->questions[$choiceid]->max = intval($this->length) + 1;
+                $mobiledata->questions[$choiceid]->max = intval($this->length);
                 $mobiledata->questions[$choiceid]->na = true;
                 $extracontents[] = $mobiledata->questions[$choiceid]->max . ' = ' .
                     get_string('notapplicable', 'mod_questionnaire');
@@ -716,6 +716,7 @@ class rate extends base {
      * @return \stdClass
      */
     public function get_mobile_response_data($rid) {
+        // The get_results method for rate/rank responses is different than all others. That should be reworked.
         $results = $this->get_results($rid);
         $resultdata = new \stdClass();
         $resultdata->answered = false;
@@ -723,19 +724,18 @@ class rate extends base {
         $resultdata->responses = [];
         if (!empty($results)) {
             foreach ($results as $result) {
-                if ($this->id == $result->question_id) {
-                    $resultdata->answered = true;
-                    $v = $result->rankvalue + 1;
-                    if (($this->precise == 1) && ($result->rankvalue == -1)) {
-                        $v = $this->choices[$result->choice_id]->max; // This might be maxscore().
-                    }
-                    if (!isset($resultdata->questions[$result->choice_id])) {
-                        $resultdata->questions[$result->choice_id] = new \stdClass();
-                    }
-                    $resultdata->questions[$result->choice_id]->value = $v;
-                    $resultdata->questions[$result->choice_id]->choice_id = $result->choice_id;
-                    $resultdata->responses['response_' . $this->type_id . '_' . $this->id . '_' . $result->choice_id] = $v;
+                $resultdata->answered = true;
+                $value = (int)$result->average;
+                $v = $value - 1;
+                if (($this->precise == 1) && ($value == -1)) {
+                    $v = $this->choices[$result->choice_id]->max; // This might be maxscore().
                 }
+                if (!isset($resultdata->questions[$result->id])) {
+                    $resultdata->questions[$result->id] = new \stdClass();
+                }
+                $resultdata->questions[$result->id]->value = $v;
+                $resultdata->questions[$result->id]->choice_id = $result->id;
+                $resultdata->responses['response_' . $this->type_id . '_' . $this->id . '_' . $result->id] = $v;
             }
         }
 

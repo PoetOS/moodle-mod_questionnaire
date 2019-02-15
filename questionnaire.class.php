@@ -3698,7 +3698,6 @@ class questionnaire {
         foreach ($responses as $response) {
             // Array of label 'response', question type id, question id, and possible choice id.
             $resparr = explode('_', $response['name']);
-error_log(print_r($resparr, true));
             if (count($resparr) == 3) {
                 $questionid = $resparr[2];
                 // Single response type.
