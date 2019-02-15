@@ -62,7 +62,7 @@ $questionnaire->add_page(new \mod_questionnaire\output\feedbackpage());
 $SESSION->questionnaire->current_tab = 'feedback';
 
 if (!$questionnaire->capabilities->editquestions) {
-    print_error('nopermissions', 'error', 'mod:questionnaire:editquestions');
+    print_error('nopermissions', 'error', '', 'mod:questionnaire:editquestions');
 }
 
 $feedbackform = new \mod_questionnaire\feedback_form('feedback.php');

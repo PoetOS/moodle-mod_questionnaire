@@ -55,7 +55,7 @@ $questionnaire->add_page(new \mod_questionnaire\output\qsettingspage());
 $SESSION->questionnaire->current_tab = 'settings';
 
 if (!$questionnaire->capabilities->manage) {
-    print_error('nopermissions', 'error', 'mod:questionnaire:manage');
+    print_error('nopermissions', 'error', '', 'mod:questionnaire:manage');
 }
 
 $settingsform = new \mod_questionnaire\settings_form('qsettings.php');

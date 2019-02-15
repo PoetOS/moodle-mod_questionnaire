@@ -1,5 +1,5 @@
 {
-    "name": "remotelearner/moodle-mod_questionnaire",
+    "name": "PoetOS/moodle-mod_questionnaire",
     "type": "moodle-mod",
     "require": {
         "composer/installers": "~1.0"

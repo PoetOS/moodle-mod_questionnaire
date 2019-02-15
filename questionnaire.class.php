@@ -3092,6 +3092,12 @@ class questionnaire {
         foreach ($allresponsesrs as $responserow) {
             $rid = $responserow->rid;
             $qid = $responserow->question_id;
+
+            // It's possible for a response to exist for a deleted question. Ignore these.
+            if (!isset($this->questions[$qid])) {
+                break;
+            }
+
             $question = $this->questions[$qid];
             $qtype = intval($question->type_id);
             $questionobj = $this->questions[$qid];
@@ -3140,7 +3146,7 @@ class questionnaire {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
                     if (preg_match('/^!other/', $content)) {
                         // If this has an "other" text, use it.
-                        $responsetxt = get_string('other', 'questionnaire');
+                        $responsetxt = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')], $content);
                         $responsetxt1 = $responserow->response;
                     } else if (($choicecodes == 1) && ($choicetext == 1)) {
                         $responsetxt = $c.' : '.$content;
