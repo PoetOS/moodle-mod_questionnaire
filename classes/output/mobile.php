@@ -68,8 +68,6 @@ class mobile {
             $questionnairedata['response']['complete'] == 'y') ? 1 : 0;
         $data['complete_userdate'] = (isset($questionnairedata['response']['complete']) &&
             $questionnairedata['response']['complete'] == 'y') ? userdate($questionnairedata['response']['submitted']) : '';
-//        $data['emptypage'] = false;
-//        $data['emptypage_content'] = '';
         $pagequestions = [];
         foreach ($questionnairedata['questions'][$pagenum] as $questionid => $choices) {
             $pagequestion = $questionnairedata['questionsinfo'][$pagenum][$questionid];

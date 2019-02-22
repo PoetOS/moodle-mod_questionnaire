@@ -158,25 +158,4 @@ class text extends base {
         $mobiledata->questions[0]->value = null;
         return $mobiledata;
     }
-
-    /**
-     * @param $rid
-     * @return \stdClass
-     */
-/*    public function get_mobile_response_data($rid) {
-        $results = $this->get_results($rid);
-        $resultdata = new \stdClass();
-        $resultdata->answered = false;
-        $resultdata->questions = [];
-        $resultdata->responses = '';
-        if (!empty($results)) {
-            $resultdata->answered = true;
-            foreach ($results as $result) {
-                $resultdata->questions[0]->value = $result->response;
-                $resultdata->responses = $result->response;
-            }
-        }
-
-        return $resultdata;
-    } */
 }

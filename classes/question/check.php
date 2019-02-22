@@ -346,7 +346,7 @@ class check extends base {
         $resultdata->answered = false;
         $resultdata->questions = [];
         $resultdata->responses = [];
-        if (!empty($results) && $this->has_choices()) {
+        if (!empty($results)) {
             foreach ($results as $result) {
                 foreach ($this->choices as $choiceid => $choice) {
                     if ($choiceid == $result->cid) {

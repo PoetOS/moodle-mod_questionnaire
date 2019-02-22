@@ -154,4 +154,41 @@ class numerical extends base {
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_precise($mform, 'numberofdecimaldigits');
     }
+
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function get_mobile_question_data($qnum, $autonum = false) {
+        $mobiledata = parent::get_mobile_question_data($qnum, $autonum = false);
+        $mobiledata->questionsinfo['isnumeric'] = true;
+        return $mobiledata;
+    }
+
+    /**
+     * @param $mobiledata
+     * @return mixed
+     */
+    public function add_mobile_question_choice_data($mobiledata) {
+        $mobiledata->questions = [];
+        $mobiledata->questions[0] = new \stdClass();
+        $mobiledata->questions[0]->id = 0;
+        $mobiledata->questions[0]->choice_id = 0;
+        $mobiledata->questions[0]->question_id = $this->id;
+        $mobiledata->questions[0]->content = '';
+        $mobiledata->questions[0]->value = null;
+        return $mobiledata;
+    }
 }

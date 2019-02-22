@@ -39,15 +39,19 @@ class date extends base {
         return 'questionnaire_response_date';
     }
 
-    public function insert_response($rid, $val) {
+    public function insert_response($rid, $val, $checkdateresult = false) {
         global $DB;
-        $checkdateresult = questionnaire_check_date($val);
-        $thisdate = $val;
-        if (substr($checkdateresult, 0, 5) == 'wrong') {
-            return false;
+
+        if ($checkdateresult === false) {
+            $checkdateresult = questionnaire_check_date($val);
+            $thisdate = $val;
+            if (substr($checkdateresult, 0, 5) == 'wrong') {
+                return false;
+            }
+            // Now use ISO date formatting.
+            $checkdateresult = questionnaire_check_date($thisdate, true);
         }
-        // Now use ISO date formatting.
-        $checkdateresult = questionnaire_check_date($thisdate, true);
+
         $record = new \stdClass();
         $record->response_id = $rid;
         $record->question_id = $this->question->id;
@@ -200,5 +204,14 @@ class date extends base {
     protected function bulk_sql_config() {
         return new bulk_sql_config(self::response_table(), 'qrd', false, true, false);
     }
-}
 
+    /**
+     * @param $rid
+     * @param $respdata
+     * @return bool
+     */
+    public function save_mobile_response($rid, $respdata) {
+        // Date comes from mobile app as 2019-02-22, which is the format it's stored in.
+        return $this->insert_response($rid, null, $respdata);
+    }
+}

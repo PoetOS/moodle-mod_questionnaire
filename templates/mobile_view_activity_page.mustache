@@ -148,6 +148,26 @@
                             <%/completed%>
                         </ion-item>
                     <%/istextessay%>
+                    <%#isnumeric%>
+                    <ion-item>
+                        <%^completed%>
+                        <ion-input type="number" [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-input>
+                        <%/completed%>
+                        <%#completed%>
+                        <ion-note><core-format-text text="{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}"></core-format-text></ion-note>
+                        <%/completed%>
+                    </ion-item>
+                    <%/isnumeric%>
+                    <%#isdate%>
+                    <ion-item>
+                        <%^completed%>
+                        <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-datetime>
+                        <%/completed%>
+                        <%#completed%>
+                        <ion-note><core-format-text text="{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}"></core-format-text></ion-note>
+                        <%/completed%>
+                    </ion-item>
+                    <%/isdate%>
                     <%#israte%>
                         <%#choices%>
                             <ion-list-header text-wrap>
