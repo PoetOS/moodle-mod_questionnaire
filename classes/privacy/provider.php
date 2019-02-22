@@ -27,32 +27,15 @@ namespace mod_questionnaire\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
-// The core_userlist_provider was introduced in 3.6, 3.5.3 and 3.4.6. It will not work in any release supporting the privacy API
-// below those. This code will not use it if it does not exist and continue to work on under 3.5.3, under 3.4.6 and 3.3.*.
-if (interface_exists('\core_privacy\local\request\core_userlist_provider')) {
-    abstract class provider_helper implements
-        // This plugin has data.
-        \core_privacy\local\metadata\provider,
+class provider implements
+    // This plugin has data.
+    \core_privacy\local\metadata\provider,
 
-        // This plugin is capable of determining which users have data within it.
-        \core_privacy\local\request\core_userlist_provider,
+    // This plugin is capable of determining which users have data within it.
+    \core_privacy\local\request\core_userlist_provider,
 
-        // This plugin currently implements the original plugin_provider interface.
-        \core_privacy\local\request\plugin\provider {
-    }
-} else {
-    abstract class provider_helper implements
-        // This plugin has data.
-        \core_privacy\local\metadata\provider,
-
-        // This plugin currently implements the original plugin_provider interface.
-        \core_privacy\local\request\plugin\provider {
-    }
-}
-
-class provider extends provider_helper {
-
-    use \core_privacy\local\legacy_polyfill;
+    // This plugin currently implements the original plugin_provider interface.
+    \core_privacy\local\request\plugin\provider {
 
     /**
      * Returns meta data about this system.
@@ -60,7 +43,8 @@ class provider extends provider_helper {
      * @param   collection $items The collection to add metadata to.
      * @return  collection  The array of metadata
      */
-    public static function _get_metadata(\core_privacy\local\metadata\collection $collection) {
+    public static function get_metadata(\core_privacy\local\metadata\collection $collection):
+        \core_privacy\local\metadata\collection  {
 
         // Add all of the relevant tables and fields to the collection.
         $collection->add_database_table('questionnaire_response', [
@@ -124,7 +108,7 @@ class provider extends provider_helper {
      * @param   int $userid The user to search.
      * @return  contextlist   $contextlist  The list of contexts used in this plugin.
      */
-    public static function _get_contexts_for_userid($userid) {
+    public static function get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
         $contextlist = new \core_privacy\local\request\contextlist();
 
         $sql = "SELECT c.id
@@ -177,7 +161,7 @@ class provider extends provider_helper {
      *
      * @param   approved_contextlist $contextlist The approved contexts to export information for.
      */
-    public static function _export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {
+    public static function export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
@@ -248,7 +232,7 @@ class provider extends provider_helper {
      *
      * @param context $context Context to delete data from.
      */
-    public static function _delete_data_for_all_users_in_context(\context $context) {
+    public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
 
         if (!($context instanceof \context_module)) {
@@ -275,7 +259,7 @@ class provider extends provider_helper {
      *
      * @param   approved_contextlist $contextlist The approved contexts and user information to delete information for.
      */
-    public static function _delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {
+    public static function delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {
         global $DB;
 
         if (empty($contextlist->count())) {
@@ -336,7 +320,7 @@ class provider extends provider_helper {
      *
      * @param   recordset $responses The list of response records to delete for.
      */
-    private static function delete_responses($responses) {
+    private static function delete_responses(\moodle_recordset $responses) {
         global $DB;
 
         foreach ($responses as $response) {
