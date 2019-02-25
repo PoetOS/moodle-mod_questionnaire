@@ -107,7 +107,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questionnaire = $generator->create_test_questionnaire($course, QUESDATE, array('content' => 'Enter a date'));
         $question = reset($questionnaire->questions);
         // Date format is configured per site. This won't work unless it matches the configured format.
-        $response = $generator->create_question_response($questionnaire, $question, '27/1/2015', $userid);
+        $response = $generator->create_question_response($questionnaire, $question, '2015-01-27', $userid);
 
         // Test the responses for this questionnaire.
         $this->response_tests($questionnaire->id, $response->id, $userid);
