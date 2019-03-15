@@ -19,7 +19,7 @@
  *
  * @package    mod_questionnaire
  * @category   test
- * @copyright  2016 Mike Churchward - The POET Group
+ * @copyright  2016 Mike Churchward - Poet Open Source
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -38,7 +38,7 @@ use Behat\Behat\Context\Step\Given as Given,
  *
  * @package    mod_questionnaire
  * @category   test
- * @copyright  2016 Mike Churchward - The POET Group
+ * @copyright  2016 Mike Churchward - Poet Open Source
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_mod_questionnaire extends behat_base {
