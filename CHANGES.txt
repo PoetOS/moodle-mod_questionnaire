@@ -4,6 +4,27 @@ Release Notes
 questionnaire installation is at the latest version for those releases. For Moodle 3.4, this is questionnaire release 3.4.2.
 For Moodle 3.3, this is questionnaire release 3.3.3.</i>
 
+Version 3.5.4 (Build - 2019032100)
+Bug Fixes:
+CONTRIB-7575 - Fixing display of dropdown responses when no selection has been made.
+
+GHI176 - Fixed duplicate answer check for rate buttons when clicking outside of the button.
+
+GHI179 - Fixing deletion of responses for public questionnaires.
+
+GHI182 - Fixing malformed error messages.
+
+GHI172 - ALlowing for empty string choices restored from older backups.
+
+CONTRIB-7643 - Ensure "View all" options are not displayed when proper capabilities have not been granted.
+
+
+Improvements:
+CONTRIB-7412 - Display the "other" text that was entered in the CSV response exports.
+
+GHI172 - Ignore deleted questions for CSV response exports.
+
+
 Version 3.5.3 (Build - 2018121000)
 Bug Fixes:
 GHI162 - Fixed response by group.

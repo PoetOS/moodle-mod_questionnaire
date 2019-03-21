@@ -571,14 +571,16 @@ class questionnaire {
         }
     }
 
+    /**
+     * True if the user can view the responses to this questionnaire, and there are valid responses.
+     * @param null $usernumresp
+     * @return bool
+     * @throws coding_exception
+     */
     public function can_view_all_responses($usernumresp = null) {
         global $USER, $DB, $SESSION;
 
-        if ($owner = $DB->get_field('questionnaire_survey', 'courseid', ['id' => $this->sid])) {
-            $owner = ($owner == $this->course->id);
-        } else {
-            $owner = true;
-        }
+        $owner = $this->is_survey_owner();
         $numresp = $this->count_submissions();
         if ($usernumresp === null) {
             $usernumresp = $this->count_submissions($USER->id);
@@ -594,23 +596,45 @@ class questionnaire {
         // If questionnaire is set to separate groups, prevent user who is not member of any group
         // to view All responses.
         $canviewgroups = true;
+        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
         $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
         if ($groupmode == 1) {
             $canviewgroups = groups_has_membership($this->cm, $USER->id);
         }
 
-        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
-        return (( // Teacher or non-editing teacher (if can view all groups).
-                ($canviewallgroups ||
-                 // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
-                 ($canviewgroups && $this->capabilities->readallresponseanytime)) &&
-                ($numresp > 0) && $owner && ($numselectedresps > 0)) ||
-               ($this->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
-                // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
+        $grouplogic = $canviewgroups || $canviewallgroups;
+        $respslogic = ($numresp > 0) && ($numselectedresps > 0);
+        return $this->can_view_all_responses_anytime($grouplogic, $respslogic) ||
+            $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic);
+    }
+
+    /**
+     * True if the user can view all of the responses to this questionnaire any time, and there are valid responses.
+     * @param null $usernumresp
+     * @return bool
+     * @throws coding_exception
+     */
+    public function can_view_all_responses_anytime($grouplogic = true, $respslogic = true) {
+        // Can view if you are a valid group user, this is the owning course, and there are responses, and you have no
+        // response view restrictions.
+        return $grouplogic && $respslogic && $this->is_survey_owner() && $this->capabilities->readallresponseanytime;
+    }
+
+    /**
+     * True if the user can view all of the responses to this questionnaire any time, and there are valid responses.
+     * @param null $usernumresp
+     * @return bool
+     * @throws coding_exception
+     */
+    public function can_view_all_responses_with_restrictions($usernumresp, $grouplogic = true, $respslogic = true) {
+        // Can view if you are a valid group user, this is the owning course, and there are responses, and you can view
+        // subject to viewing settings..
+        return $grouplogic && $respslogic && $this->is_survey_owner() &&
+            ($this->capabilities->readallresponses &&
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && ($usernumresp > 0))) &&
-                $this->is_survey_owner()));
+                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
+
     }
 
     public function count_submissions($userid=false, $groupid=0) {
