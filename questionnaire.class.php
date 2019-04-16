@@ -3201,16 +3201,18 @@ class questionnaire {
                 $row[$position] = $responsetxt;
             } else {
                 $position = $questionpositions[$qid];
-                if ($questionobj->has_choices()) {
-                    // This is choice type question, so process as so.
-                    $c = 0;
-                    if (in_array(intval($question->type_id), $choicetypes)) {
-                        $choices = $choicesbyqid[$qid];
-                        // Get position of choice.
-                        foreach ($choices as $choice) {
-                            $c++;
-                            if ($responserow->choice_id === $choice->cid) {
-                                break;
+                if ($questionobj !== null) {
+                    if ($questionobj->has_choices()) {
+                        // This is choice type question, so process as so.
+                        $c = 0;
+                        if (in_array(intval($question->type_id), $choicetypes)) {
+                            $choices = $choicesbyqid[$qid];
+                            // Get position of choice.
+                            foreach ($choices as $choice) {
+                               $c++;
+                               if ($responserow->choice_id === $choice->cid) {
+                                   break;
+                               }
                             }
                         }
                     }
