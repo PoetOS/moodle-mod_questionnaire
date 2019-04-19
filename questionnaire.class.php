@@ -3298,6 +3298,7 @@ class questionnaire {
                 $row[$position] = $responsetxt;
                 // Check for "other" text and set it to the next position if present.
                 if (!empty($responsetxt1)) {
+                    $responsetxt1 = preg_replace("/[\r\n\t]/", ' ', $responsetxt1);
                     $row[$position + 1] = $responsetxt1;
                     unset($responsetxt1);
                 }
