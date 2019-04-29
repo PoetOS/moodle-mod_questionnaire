@@ -1,0 +1,15 @@
+{{=<% %>=}}
+<%#choices%>
+<ion-list-header text-wrap>
+    <core-format-text text="<%content%>"></core-format-text>
+    <ion-badge item-end>{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}</ion-badge>
+</ion-list-header>
+<ion-item>
+    <ion-range min="<%min%>" max="<%max%>"
+               snaps="true" pin="true" color="secondary"
+               [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
+        <ion-label range-left><%minstr%></ion-label>
+        <ion-label range-right><%#na%><ion-icon name="eye-off"></ion-icon><%/na%><%^na%><%maxstr%><%/na%></ion-label>
+    </ion-range>
+</ion-item>
+<%/choices%>

@@ -1,0 +1,9 @@
+{{=<% %>=}}
+<ion-item>
+    <%^completed%>
+    <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-datetime>
+    <%/completed%>
+    <%#completed%>
+    <ion-note><core-format-text text="{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}"></core-format-text></ion-note>
+    <%/completed%>
+</ion-item>

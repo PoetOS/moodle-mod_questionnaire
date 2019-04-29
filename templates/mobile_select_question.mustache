@@ -1,0 +1,6 @@
+{{=<% %>=}}
+<ion-select [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
+    <%#choices%>
+    <ion-option<%#completed%> disabled="true"<%/completed%><%#value%> selected="true"<%/value%> value="<%id%>"><%content%></ion-option>
+    <%/choices%>
+</ion-select>

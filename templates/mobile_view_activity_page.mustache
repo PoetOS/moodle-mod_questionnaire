@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/mobile_view_activity
+    @template mod_questionnaire/mobile_view_activity_page
 
     Template which defines a questionnaire display in the mobile app.
 
@@ -67,13 +67,13 @@
                         "max": 5,
                         "minstr": "Low",
                         "maxstr": "High",
-                        "na": 0,
+                        "na": 0
                     }
-                ],
+                ]
             }
-        ],
+        ]
     }
-    }}
+}}
 {{=<% %>=}}
 <div>
     <core-course-module-description description="<%intro%>"
@@ -97,92 +97,28 @@
                         <%#required%><ion-badge item-end color="danger">{{ 'plugin.mod_questionnaire.required' | translate }}</ion-badge><%/required%>
                     </ion-list-header>
                     <%#isselect%>
-                        <ion-select [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
-                            <%#choices%>
-                                <ion-option<%#completed%> disabled="true"<%/completed%><%#value%> selected="true"<%/value%> value="<%id%>"><%content%></ion-option>
-                            <%/choices%>
-                        </ion-select>
+                        <%> mod_questionnaire/mobile_select_question %>
                     <%/isselect%>
                     <%#isbool%>
-                        <ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
-                            <%#choices%>
-                                <ion-item>
-                                    <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
-                                    <ion-radio<%#completed%> disabled="true"<%#value%> checked="true"<%/value%><%/completed%> value="<%choice_id%>"></ion-radio>
-                                </ion-item>
-                            <%/choices%>
-                        </ion-list>
+                        <%> mod_questionnaire/mobile_boolean_question %>
                     <%/isbool%>
                     <%#isradiobutton%>
-                        <ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
-                            <%#choices%>
-                                <ion-item>
-                                    <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
-                                    <ion-radio<%#value%> checked="true"<%/value%>
-                                    value="<%choice_id%>"
-                                    <%#completed%> disabled="true"<%/completed%>></ion-radio>
-                                </ion-item>
-                            <%/choices%>
-                        </ion-list>
+                        <%> mod_questionnaire/mobile_radio_question %>
                     <%/isradiobutton%>
                     <%#ischeckbox%>
-                        <ion-list radio-group>
-                        <%#choices%>
-                            <ion-item>
-                                <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
-                                <ion-checkbox <%#value%> checked="true"<%/value%> value="<%choice_id%>"
-                                <%#completed%> disabled="true"<%/completed%>
-                                [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-checkbox>
-                            </ion-item>
-                        <%/choices%>
-                        </ion-list>
+                        <%> mod_questionnaire/mobile_checkbox_question %>
                     <%/ischeckbox%>
                     <%#istextessay%>
-                        <ion-item>
-                            <%^completed%>
-                                <ion-textarea aria-multiline="true" [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"
-                                core-auto-rows></ion-textarea>
-                            <%/completed%>
-                            <%#completed%>
-                                <ion-note><core-format-text text="{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}"></core-format-text></ion-note>
-                            <%/completed%>
-                        </ion-item>
+                        <%> mod_questionnaire/mobile_text_question %>
                     <%/istextessay%>
                     <%#isnumeric%>
-                    <ion-item>
-                        <%^completed%>
-                        <ion-input type="number" [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-input>
-                        <%/completed%>
-                        <%#completed%>
-                        <ion-note><core-format-text text="{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}"></core-format-text></ion-note>
-                        <%/completed%>
-                    </ion-item>
+                        <%> mod_questionnaire/mobile_numeric_question %>
                     <%/isnumeric%>
                     <%#isdate%>
-                    <ion-item>
-                        <%^completed%>
-                        <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-datetime>
-                        <%/completed%>
-                        <%#completed%>
-                        <ion-note><core-format-text text="{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}"></core-format-text></ion-note>
-                        <%/completed%>
-                    </ion-item>
+                        <%> mod_questionnaire/mobile_date_question %>
                     <%/isdate%>
                     <%#israte%>
-                        <%#choices%>
-                            <ion-list-header text-wrap>
-                                <core-format-text text="<%content%>"></core-format-text>
-                                <ion-badge item-end>{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}</ion-badge>
-                            </ion-list-header>
-                            <ion-item>
-                                <ion-range min="<%min%>" max="<%max%>"
-                                           snaps="true" pin="true" color="secondary"
-                                           [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
-                                <ion-label range-left><%minstr%></ion-label>
-                                <ion-label range-right><%#na%><ion-icon name="eye-off"></ion-icon><%/na%><%^na%><%maxstr%><%/na%></ion-label>
-                                </ion-range>
-                            </ion-item>
-                        <%/choices%>
+                        <%> mod_questionnaire/mobile_rate_question %>
                     <%/israte%>
                 <%/pagequestions%>
                 <%^pagequestions%>
