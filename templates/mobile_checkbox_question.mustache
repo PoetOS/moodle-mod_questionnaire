@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/mobile_boolean_question
+    @template mod_questionnaire/mobile_checkbox_question
 
     Template which defines a checkbox question display in the mobile app.
 
@@ -25,15 +25,16 @@
 
     Example context (json):
     {
-        "fieldkey": 985,
         "choices": [
             {
+                "fieldkey": 985,
                 "choice_id": 5432,
                 "content": "Red",
                 "completed": 0,
                 "value": 1
             },
             {
+                "fieldkey": 986 ,
                 "choice_id": 5433,
                 "content": "Blue",
                 "completed": 0,
@@ -49,7 +50,7 @@
         <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
         <ion-checkbox <%#value%> checked="true"<%/value%> value="<%choice_id%>"
         <%#completed%> disabled="true"<%/completed%>
-        [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"></ion-checkbox>
+        [(ngModel)]="CONTENT_OTHERDATA.responses[<%fieldkey%>]"></ion-checkbox>
     </ion-item>
     <%/choices%>
 </ion-list>
