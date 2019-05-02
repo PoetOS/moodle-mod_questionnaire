@@ -54,11 +54,10 @@ abstract class base {
     /**
      * Insert a provided response to the question.
      *
-     * @param integer $rid - The data id of the response table id.
-     * @param mixed $val - The response data provided.
+     * @param object $responsedata All of the responsedata as an object.
      * @return int|bool - on error the subtype should call set_error and return false.
      */
-    abstract public function insert_response($rid, $val);
+    abstract public function insert_response($responsedata);
 
     /**
      * Provide the result information for the specified result records.

@@ -222,26 +222,17 @@ class questionnaire {
             // If Questionnaire was submitted with all required fields completed ($msg is empty),
             // then record the submittal.
             $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/complete.php");
-            if (!empty($viewform->rid)) {
-                $viewform->rid = (int)$viewform->rid;
-            }
-            if (!empty($viewform->sec)) {
-                $viewform->sec = (int)$viewform->sec;
-            }
-            if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
+            if ($viewform && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
-                $this->response_delete($viewform->rid, $viewform->sec);
-                $this->rid = $this->response_insert($viewform->sec, $viewform->rid, $quser);
-                $this->response_commit($this->rid);
-
-                // If it was a previous save, rid is in the form...
-                if (!empty($viewform->rid) && is_numeric($viewform->rid)) {
-                    $rid = $viewform->rid;
-
-                    // Otherwise its in this object.
-                } else {
-                    $rid = $this->rid;
+                if (!empty($viewform->rid)) {
+                    $viewform->rid = (int)$viewform->rid;
                 }
+                if (!empty($viewform->sec)) {
+                    $viewform->sec = (int)$viewform->sec;
+                }
+                $this->response_delete($viewform->rid, $viewform->sec);
+                $this->rid = $this->response_insert($viewform, $quser);
+                $this->response_commit($this->rid);
 
                 $this->update_grades($quser);
 
@@ -272,7 +263,7 @@ class questionnaire {
 
     public function delete_insert_response($rid, $sec, $quser) {
         $this->response_delete($rid, $sec);
-        $this->rid = $this->response_insert($sec, $rid, $quser);
+        $this->rid = $this->response_insert((object)['sec' => $sec, 'rid' => $rid], $quser);
         return $this->rid;
     }
 
@@ -957,7 +948,7 @@ class questionnaire {
 
         if (!empty($formdata->resume) && ($this->resume)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser, true);
+            $formdata->rid = $this->response_insert($formdata, $quser, true);
             $this->response_goto_saved($action);
             return;
         }
@@ -969,7 +960,7 @@ class questionnaire {
                 $formdata->next = '';
             } else {
                 $this->response_delete($formdata->rid, $formdata->sec);
-                $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser);
+                $formdata->rid = $this->response_insert($formdata, $quser);
                 // Skip logic.
                 $formdata->sec++;
                 if ($this->has_dependencies()) {
@@ -1000,7 +991,7 @@ class questionnaire {
                 $formdata->prev = '';
             } else {
                 $this->response_delete($formdata->rid, $formdata->sec);
-                $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser);
+                $formdata->rid = $this->response_insert($formdata, $quser);
                 $formdata->sec--;
                 // Skip logic.
                 if ($this->has_dependencies()) {
@@ -2095,19 +2086,27 @@ class questionnaire {
         return $return;
     }
 
-    public function response_insert($section, $rid, $userid, $resume=false) {
+    /**
+     * @param object $responsedata An object containing all data for the response.
+     * @param int $userid
+     * @param bool $resume
+     * @return bool|int
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function response_insert($responsedata, $userid, $resume=false) {
         global $DB;
 
         $record = new stdClass();
         $record->submitted = time();
 
-        if (empty($rid)) {
+        if (empty($responsedata->rid)) {
             // Create a uniqe id for this response.
             $record->questionnaireid = $this->id;
             $record->userid = $userid;
-            $rid = $DB->insert_record('questionnaire_response', $record);
+            $responsedata->rid = $DB->insert_record('questionnaire_response', $record);
         } else {
-            $record->id = $rid;
+            $record->id = $responsedata->rid;
             $DB->update_record('questionnaire_response', $record);
         }
         if ($resume) {
@@ -2126,19 +2125,13 @@ class questionnaire {
             $event->trigger();
         }
 
-        if (!empty($this->questionsbysec[$section])) {
-            foreach ($this->questionsbysec[$section] as $question) {
-                // NOTE *** $val really should be a value obtained from the caller or somewhere else.
-                // Note that "optional_param" accepting arrays is deprecated for optional_param_array.
-                if ($question->responsetable == 'resp_multiple') {
-                    $val = optional_param_array('q'.$question->id, '', PARAM_RAW);
-                } else {
-                    $val = optional_param('q'.$question->id, '', PARAM_RAW);
-                }
-                $question->insert_response($rid, $val);
+        if (!empty($this->questionsbysec[$responsedata->sec])) {
+            foreach ($this->questionsbysec[$responsedata->sec] as $question) {
+                $val = isset($responsedata->{'q'.$question->id}) ? $responsedata->{'q'.$question->id} : '';
+                $question->insert_response($responsedata);
             }
         }
-        return($rid);
+        return($responsedata->rid);
     }
 
     private function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {

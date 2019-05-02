@@ -36,15 +36,25 @@ use mod_questionnaire\db\bulk_sql_config;
 
 class boolean extends base {
 
+    /**
+     * @return string
+     */
     static public function response_table() {
         return 'questionnaire_response_bool';
     }
 
-    public function insert_response($rid, $val) {
+    /**
+     * @param int|object $responsedata
+     * @return bool|int
+     * @throws \dml_exception
+     */
+    public function insert_response($responsedata) {
         global $DB;
+
+        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
         if (!empty($val)) { // If "no answer" then choice is empty (CONTRIB-846).
             $record = new \stdClass();
-            $record->response_id = $rid;
+            $record->response_id = $responsedata->rid;
             $record->question_id = $this->question->id;
             $record->choice_id = $val;
             return $DB->insert_record(self::response_table(), $record);
@@ -53,6 +63,13 @@ class boolean extends base {
         }
     }
 
+    /**
+     * @param bool $rids
+     * @param bool $anonymous
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
 

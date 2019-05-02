@@ -377,11 +377,13 @@ abstract class base {
 
     /**
      * Insert response data method.
+     * @param object $responsedata All of the responsedata.
+     * @return bool
      */
-    public function insert_response($rid, $val) {
+    public function insert_response($responsedata) {
         if (isset($this->response) && is_object($this->response) &&
             is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->insert_response($rid, $val);
+            return $this->response->insert_response($responsedata);
         } else {
             return false;
         }

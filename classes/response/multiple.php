@@ -43,12 +43,15 @@ class multiple extends single {
         return 'questionnaire_resp_multiple';
     }
 
-    public function insert_response($rid, $val) {
+    public function insert_response($responsedata) {
         global $DB;
+
+        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
         $resid = '';
         foreach ($this->question->choices as $cid => $choice) {
             if (strpos($choice->content, '!other') === 0) {
-                $other = optional_param('q'.$this->question->id.'_'.$cid, '', PARAM_CLEAN);
+                $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
+                    $responsedata->{'q'.$this->question->id.'_'.$cid} : '';
                 if (empty($other)) {
                     continue;
                 }
@@ -59,7 +62,7 @@ class multiple extends single {
                 }
                 if (preg_match("/[^ \t\n]/", $other)) {
                     $record = new \stdClass();
-                    $record->response_id = $rid;
+                    $record->response_id = $responsedata->rid;
                     $record->question_id = $this->question->id;
                     $record->choice_id = $cid;
                     $record->response = $other;
@@ -79,7 +82,7 @@ class multiple extends single {
                     continue;
                 }
                 $record = new \stdClass();
-                $record->response_id = $rid;
+                $record->response_id = $responsedata->rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
                 $resid = $DB->insert_record(self::response_table(), $record);

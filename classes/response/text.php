@@ -35,12 +35,22 @@ use mod_questionnaire\db\bulk_sql_config;
  */
 
 class text extends base {
+    /**
+     * @return string
+     */
     static public function response_table() {
         return 'questionnaire_response_text';
     }
 
-    public function insert_response($rid, $val) {
+    /**
+     * @param int|object $responsedata
+     * @return bool|int
+     * @throws \dml_exception
+     */
+    public function insert_response($responsedata) {
         global $DB;
+
+        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
         // Only insert if non-empty content.
         if ($this->question->type_id == QUESNUMERIC) {
             $val = str_replace(",", ".", $val); // Allow commas as well as points in decimal numbers.
@@ -49,7 +59,7 @@ class text extends base {
 
         if (preg_match("/[^ \t\n]/", $val)) {
             $record = new \stdClass();
-            $record->response_id = $rid;
+            $record->response_id = $responsedata->rid;
             $record->question_id = $this->question->id;
             $record->response = $val;
             return $DB->insert_record(self::response_table(), $record);
@@ -58,6 +68,13 @@ class text extends base {
         }
     }
 
+    /**
+     * @param bool $rids
+     * @param bool $anonymous
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
 

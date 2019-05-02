@@ -33,22 +33,33 @@ defined('MOODLE_INTERNAL') || die();
  */
 
 class single extends base {
+    /**
+     * @return string
+     */
     static public function response_table() {
         return 'questionnaire_resp_single';
     }
 
-    public function insert_response($rid, $val) {
+    /**
+     * @param int|object $responsedata
+     * @return bool|int
+     * @throws \dml_exception
+     */
+    public function insert_response($responsedata) {
         global $DB;
+
+        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
         if (!empty($val)) {
             foreach ($this->question->choices as $cid => $choice) {
                 if (strpos($choice->content, '!other') === 0) {
-                    $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_TEXT);
+                    $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
+                        $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
                     if (!isset($other)) {
                         continue;
                     }
                     if (preg_match("/[^ \t\n]/", $other)) {
                         $record = new \stdClass();
-                        $record->response_id = $rid;
+                        $record->response_id = $responsedata->rid;
                         $record->question_id = $this->question->id;
                         $record->choice_id = $cid;
                         $record->response = $other;
@@ -62,11 +73,12 @@ class single extends base {
         if (preg_match("/other_q([0-9]+)/", (isset($val) ? $val : ''), $regs)) {
             $cid = $regs[1];
             if (!isset($other)) {
-                $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_TEXT);
+                $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
+                    $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
             }
             if (preg_match("/[^ \t\n]/", $other)) {
                 $record = new \stdClass();
-                $record->response_id = $rid;
+                $record->response_id = $responsedata->rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
                 $record->response = $other;
@@ -75,7 +87,7 @@ class single extends base {
             }
         }
         $record = new \stdClass();
-        $record->response_id = $rid;
+        $record->response_id = $responsedata->rid;
         $record->question_id = $this->question->id;
         $record->choice_id = isset($val) ? $val : 0;
         if ($record->choice_id) {// If "no answer" then choice_id is empty (CONTRIB-846).

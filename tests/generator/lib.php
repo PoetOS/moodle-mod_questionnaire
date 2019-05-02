@@ -228,8 +228,11 @@ class mod_questionnaire_generator extends testing_module_generator {
     public function create_question_response($questionnaire, $question, $respval, $userid = 1, $section = 1) {
         global $DB;
         $currentrid = 0;
-        $_POST['q'.$question->id] = $respval;
-        $responseid = $questionnaire->response_insert($section, $currentrid, $userid);
+        if (!is_array($respval)) {
+            $respval = ['q'.$question->id => $respval];
+        }
+        $respdata = (object)(array_merge(['sec' => $section, 'rid' => $currentrid], $respval));
+        $responseid = $questionnaire->response_insert($respdata, $userid);
         $this->response_commit($questionnaire, $responseid);
         return $DB->get_record('questionnaire_response', array('id' => $responseid));
     }

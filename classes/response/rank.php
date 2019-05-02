@@ -40,16 +40,18 @@ class rank extends base {
     }
 
     /**
-     * @param int $rid
-     * @param mixed $val
+     * @param object $responsedata
      * @return bool|int
      */
-    public function insert_response($rid, $val) {
+    public function insert_response($responsedata) {
         global $DB;
+
+        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
         if ($this->question->type_id == QUESRATE) {
             $resid = false;
             foreach ($this->question->choices as $cid => $choice) {
-                $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_CLEAN);
+                $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
+                    $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
                 // Choice not set or not answered.
                 if (!isset($other) || $other == '') {
                     continue;
@@ -60,7 +62,7 @@ class rank extends base {
                     $rank = intval($other);
                 }
                 $record = new \stdClass();
-                $record->response_id = $rid;
+                $record->response_id = $responsedata->rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
                 $record->rankvalue = $rank;
@@ -74,7 +76,7 @@ class rank extends base {
                 $rank = intval($val);
             }
             $record = new \stdClass();
-            $record->response_id = $rid;
+            $record->response_id = $responsedata->rid;
             $record->question_id = $this->question->id;
             $record->rankvalue = $rank;
             return $DB->insert_record(self::response_table(), $record);
