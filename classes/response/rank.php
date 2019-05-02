@@ -40,16 +40,18 @@ class rank extends base {
     }
 
     /**
-     * @param int $rid
-     * @param mixed $val
+     * @param object $responsedata
      * @return bool|int
      */
-    public function insert_response($rid, $val) {
+    public function insert_response($responsedata) {
         global $DB;
+
+        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
         if ($this->question->type_id == QUESRATE) {
             $resid = false;
             foreach ($this->question->choices as $cid => $choice) {
-                $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_CLEAN);
+                $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
+                    $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
                 // Choice not set or not answered.
                 if (!isset($other) || $other == '') {
                     continue;
@@ -60,7 +62,7 @@ class rank extends base {
                     $rank = intval($other);
                 }
                 $record = new \stdClass();
-                $record->response_id = $rid;
+                $record->response_id = $responsedata->rid;
                 $record->question_id = $this->question->id;
                 $record->choice_id = $cid;
                 $record->rankvalue = $rank;
@@ -74,7 +76,7 @@ class rank extends base {
                 $rank = intval($val);
             }
             $record = new \stdClass();
-            $record->response_id = $rid;
+            $record->response_id = $responsedata->rid;
             $record->question_id = $this->question->id;
             $record->rankvalue = $rank;
             return $DB->insert_record(self::response_table(), $record);
@@ -288,17 +290,13 @@ class rank extends base {
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid '.$col.', c.content as ccontent,
+        $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid, q.content, c.content as ccontent,
                                 a.rankvalue as arank '.
             'FROM {'.self::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
             'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.

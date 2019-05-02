@@ -165,10 +165,9 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
                 $val = $cid;
             }
         }
-        // Need an extra $_POST variable for an "other" response.
-        $_POST['q'.$question->id.'_'.$val] = 'Forty-four';
+        $vals = ['q'.$question->id => $val, 'q'.$question->id.'_'.$val => 'Forty-four'];
         $userid = 2;
-        $response = $generator->create_question_response($questionnaire, $question, $val, $userid);
+        $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
         $this->response_tests($questionnaire->id, $response->id, $userid, 1, 2);
@@ -211,13 +210,15 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $val = array();
         foreach ($question->choices as $cid => $choice) {
             if (($choice->content == 'Two') || ($choice->content == 'Three')) {
-                $val[] = $cid;
+                $val[$cid] = $cid;
             } else if ($choice->content == '!other=Another number') {
-                $val2 = $cid;
+                $val[$cid] = $cid;
+                $val[\mod_questionnaire\question\base::other_choice_name($cid)] = 'Forty-four';
+                $ocid = $cid;
             }
         }
-        $_POST['q'.$question->id.'_'.$val2] = 'Forty-four';
-        $response = $generator->create_question_response($questionnaire, $question, $val, $userid);
+        $vals = ['q'.$question->id => $val];
+        $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
         $this->response_tests($questionnaire->id, $response->id, $userid);
@@ -237,7 +238,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             array('response_id' => $response->id, 'question_id' => $question->id));
         $this->assertEquals(1, count($otherresponses));
         $otherresponse = reset($otherresponses);
-        $this->assertEquals($val2, $otherresponse->choice_id);
+        $this->assertEquals($ocid, $otherresponse->choice_id);
         $this->assertEquals('Forty-four', $otherresponse->response);
     }
 
@@ -268,9 +269,9 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $i = 1;
         foreach ($question->choices as $cid => $choice) {
             $vals[$cid] = $i;
-            $_POST['q'.$question->id.'_'.$cid] = $i++;
+            $vals['q'.$question->id.'_'.$cid] = $i++;
         }
-        $response = $generator->create_question_response($questionnaire, $question, null, $userid);
+        $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
         $this->response_tests($questionnaire->id, $response->id, $userid);

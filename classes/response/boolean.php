@@ -36,15 +36,25 @@ use mod_questionnaire\db\bulk_sql_config;
 
 class boolean extends base {
 
+    /**
+     * @return string
+     */
     static public function response_table() {
         return 'questionnaire_response_bool';
     }
 
-    public function insert_response($rid, $val) {
+    /**
+     * @param int|object $responsedata
+     * @return bool|int
+     * @throws \dml_exception
+     */
+    public function insert_response($responsedata) {
         global $DB;
+
+        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
         if (!empty($val)) { // If "no answer" then choice is empty (CONTRIB-846).
             $record = new \stdClass();
-            $record->response_id = $rid;
+            $record->response_id = $responsedata->rid;
             $record->question_id = $this->question->id;
             $record->choice_id = $val;
             return $DB->insert_record(self::response_table(), $record);
@@ -53,6 +63,13 @@ class boolean extends base {
         }
     }
 
+    /**
+     * @param bool $rids
+     * @param bool $anonymous
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
 
@@ -173,17 +190,13 @@ class boolean extends base {
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id '.$col.', a.choice_id '.
+        $sql = 'SELECT q.id, q.content, a.choice_id '.
             'FROM {'.self::response_table().'} a, {questionnaire_question} q '.
             'WHERE a.response_id= ? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
@@ -200,9 +213,7 @@ class boolean extends base {
             }
             $values[$qid] = $newrow;
             array_push($values[$qid], ($choice == 'y') ? '1' : '0');
-            if (!$csvexport) {
-                array_push($values[$qid], $choice); // DEV still needed for responses display.
-            }
+            array_push($values[$qid], $choice); // DEV still needed for responses display.
         }
 
         return $values;

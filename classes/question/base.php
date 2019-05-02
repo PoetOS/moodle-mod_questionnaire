@@ -205,6 +205,52 @@ abstract class base {
     }
 
     /**
+     * Return true if the choice object or choice content string is an "other" choice.
+     *
+     * @param string | object $choice
+     * @return bool
+     */
+    static public function other_choice($choice) {
+        if (is_object($choice)) {
+            $content = $choice->content;
+        } else {
+            $content = $choice;
+        }
+        return (strpos($content, '!other') === 0);
+    }
+
+    /**
+     * Return the string to display for an "other" option. If the option is not an "other", return false.
+     *
+     * @param string | object $choice
+     * @return string | bool
+     */
+    static public function other_choice_display($choice) {
+        if (!self::other_choice($choice)) {
+            return false;
+        }
+
+        if (is_object($choice)) {
+            $content = $choice->content;
+        } else {
+            $content = $choice;
+        }
+
+        // If there is a defined string display after the "=", return it. Otherwise the "other" language string.
+        return preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')], $content);
+    }
+
+    /**
+     * Return the string to use as an input name for an other choice.
+     *
+     * @param int $choiceid
+     * @return string
+     */
+    static public function other_choice_name($choiceid) {
+        return 'o' . $choiceid;
+    }
+
+    /**
      * Override and return true if the question has choices.
      */
     public function has_choices() {
@@ -368,11 +414,13 @@ abstract class base {
 
     /**
      * Insert response data method.
+     * @param object $responsedata All of the responsedata.
+     * @return bool
      */
-    public function insert_response($rid, $val) {
-        if (isset ($this->response) && is_object($this->response) &&
+    public function insert_response($responsedata) {
+        if (isset($this->response) && is_object($this->response) &&
             is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->insert_response($rid, $val);
+            return $this->response->insert_response($responsedata);
         } else {
             return false;
         }
@@ -774,6 +822,7 @@ abstract class base {
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param integer $qnum
      * @param boolean $blankquestionnaire
+     * @return \stdClass
      */
     public function question_output($formdata, $dependants=[], $qnum='', $blankquestionnaire) {
         $pagetags = $this->questionstart_survey_display($qnum, $formdata);
@@ -783,10 +832,9 @@ abstract class base {
 
     /**
      * Get the output for question renderers / templates.
-     * @param object $formdata
-     * @param string $descendantdata
-     * @param integer $qnum
-     * @param boolean $blankquestionnaire
+     * @param $data
+     * @param string $qnum
+     * @return \stdClass
      */
     public function response_output($data, $qnum='') {
         $pagetags = $this->questionstart_survey_display($qnum, $data);

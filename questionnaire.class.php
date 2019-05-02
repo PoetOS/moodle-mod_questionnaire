@@ -222,36 +222,19 @@ class questionnaire {
             // If Questionnaire was submitted with all required fields completed ($msg is empty),
             // then record the submittal.
             $viewform = data_submitted($CFG->wwwroot."/mod/questionnaire/complete.php");
-            if (!empty($viewform->rid)) {
-                $viewform->rid = (int)$viewform->rid;
-            }
-            if (!empty($viewform->sec)) {
-                $viewform->sec = (int)$viewform->sec;
-            }
-            if (data_submitted() && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
+            if ($viewform && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)) {
+                if (!empty($viewform->rid)) {
+                    $viewform->rid = (int)$viewform->rid;
+                }
+                if (!empty($viewform->sec)) {
+                    $viewform->sec = (int)$viewform->sec;
+                }
                 $this->response_delete($viewform->rid, $viewform->sec);
-                $this->rid = $this->response_insert($viewform->sec, $viewform->rid, $quser);
+                $this->rid = $this->response_insert($viewform, $quser);
                 $this->response_commit($this->rid);
 
-                // If it was a previous save, rid is in the form...
-                if (!empty($viewform->rid) && is_numeric($viewform->rid)) {
-                    $rid = $viewform->rid;
-
-                    // Otherwise its in this object.
-                } else {
-                    $rid = $this->rid;
-                }
-
-                if ($this->grade != 0) {
-                    $questionnaire = new stdClass();
-                    $questionnaire->id = $this->id;
-                    $questionnaire->name = $this->name;
-                    $questionnaire->grade = $this->grade;
-                    $questionnaire->cmidnumber = $this->cm->idnumber;
-                    $questionnaire->courseid = $this->course->id;
-                    questionnaire_update_grades($questionnaire, $quser);
-                }
+                $this->update_grades($quser);
 
                 // Update completion state.
                 $completion = new completion_info($this->course);
@@ -275,6 +258,60 @@ class questionnaire {
                 $this->submission_notify($this->rid);
                 $this->response_goto_thankyou();
             }
+        }
+    }
+
+    public function delete_insert_response($rid, $sec, $quser) {
+        $this->response_delete($rid, $sec);
+        $this->rid = $this->response_insert((object)['sec' => $sec, 'rid' => $rid], $quser);
+        return $this->rid;
+    }
+
+    public function commit_submission_response($rid, $quser) {
+        $this->response_commit($rid);
+        // If it was a previous save, rid is in the form...
+        if (!empty($rid) && is_numeric($rid)) {
+            $rid = $rid;
+            // Otherwise its in this object.
+        } else {
+            $rid = $this->rid;
+        }
+
+        $this->update_grades($quser);
+
+        // Update completion state.
+        $completion = new \completion_info($this->course);
+        if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
+            $completion->update_state($this->cm, COMPLETION_COMPLETE);
+        }
+        // Log this submitted response.
+        $context = \context_module::instance($this->cm->id);
+        $anonymous = $this->respondenttype == 'anonymous';
+        $params = [
+            'context' => $context,
+            'courseid' => $this->course->id,
+            'relateduserid' => $quser,
+            'anonymous' => $anonymous,
+            'other' => array('questionnaireid' => $this->id)
+        ];
+        $event = \mod_questionnaire\event\attempt_submitted::create($params);
+        $event->trigger();
+    }
+
+    /**
+     * Update the grade for this questionnaire and user.
+     *
+     * @param $userid
+     */
+    private function update_grades($userid) {
+        if ($this->grade != 0) {
+            $questionnaire = new \stdClass();
+            $questionnaire->id = $this->id;
+            $questionnaire->name = $this->name;
+            $questionnaire->grade = $this->grade;
+            $questionnaire->cmidnumber = $this->cm->idnumber;
+            $questionnaire->courseid = $this->course->id;
+            questionnaire_update_grades($questionnaire, $userid);
         }
     }
 
@@ -911,7 +948,7 @@ class questionnaire {
 
         if (!empty($formdata->resume) && ($this->resume)) {
             $this->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser, true);
+            $formdata->rid = $this->response_insert($formdata, $quser, true);
             $this->response_goto_saved($action);
             return;
         }
@@ -923,7 +960,7 @@ class questionnaire {
                 $formdata->next = '';
             } else {
                 $this->response_delete($formdata->rid, $formdata->sec);
-                $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser);
+                $formdata->rid = $this->response_insert($formdata, $quser);
                 // Skip logic.
                 $formdata->sec++;
                 if ($this->has_dependencies()) {
@@ -954,7 +991,7 @@ class questionnaire {
                 $formdata->prev = '';
             } else {
                 $this->response_delete($formdata->rid, $formdata->sec);
-                $formdata->rid = $this->response_insert($formdata->sec, $formdata->rid, $quser);
+                $formdata->rid = $this->response_insert($formdata, $quser);
                 $formdata->sec--;
                 // Skip logic.
                 if ($this->has_dependencies()) {
@@ -1567,31 +1604,23 @@ class questionnaire {
         if ($sec < 1 || !isset($this->questionsbysec[$sec])) {
             return;
         }
-        $vals = $this->response_select($rid, 'content');
-        reset($vals);
-        foreach ($vals as $id => $arr) {
-            if (isset($arr[0]) && is_array($arr[0])) {
-                // Multiple.
-                $varr->{'q'.$id} = array_map('array_pop', $arr);
-            } else {
-                $varr->{'q'.$id} = array_pop($arr);
-            }
-        }
+        return $this->response_import_all($rid, $varr);
     }
 
     private function response_import_all($rid, &$varr) {
 
-        $vals = $this->response_select($rid, 'content');
+        $vals = $this->response_select($rid);
         reset($vals);
         foreach ($vals as $id => $arr) {
-            if (strstr($id, '_') && isset($arr[4])) { // Single OR multiple with !other choice selected.
-                $varr->{'q'.$id} = $arr[4];
-            } else {
-                if (isset($arr[0]) && is_array($arr[0])) { // Multiple.
-                    $varr->{'q'.$id} = array_map('array_pop', $arr);
-                } else { // Boolean, rate and other.
-                    $varr->{'q'.$id} = array_pop($arr);
+            if (isset($arr[0]) && is_array($arr[0])) {
+                // Multiple.
+                foreach ($arr as $response) {
+                    $val = end($response);
+                    $idx = key($response);
+                    $varr->{'q'.$id}[$idx] = $val;
                 }
+            } else {
+                $varr->{'q'.$id} = array_pop($arr);
             }
         }
     }
@@ -2042,19 +2071,27 @@ class questionnaire {
         return $return;
     }
 
-    public function response_insert($section, $rid, $userid, $resume=false) {
+    /**
+     * @param object $responsedata An object containing all data for the response.
+     * @param int $userid
+     * @param bool $resume
+     * @return bool|int
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function response_insert($responsedata, $userid, $resume=false) {
         global $DB;
 
         $record = new stdClass();
         $record->submitted = time();
 
-        if (empty($rid)) {
+        if (empty($responsedata->rid)) {
             // Create a uniqe id for this response.
             $record->questionnaireid = $this->id;
             $record->userid = $userid;
-            $rid = $DB->insert_record('questionnaire_response', $record);
+            $responsedata->rid = $DB->insert_record('questionnaire_response', $record);
         } else {
-            $record->id = $rid;
+            $record->id = $responsedata->rid;
             $DB->update_record('questionnaire_response', $record);
         }
         if ($resume) {
@@ -2073,52 +2110,33 @@ class questionnaire {
             $event->trigger();
         }
 
-        if (!empty($this->questionsbysec[$section])) {
-            foreach ($this->questionsbysec[$section] as $question) {
-                // NOTE *** $val really should be a value obtained from the caller or somewhere else.
-                // Note that "optional_param" accepting arrays is deprecated for optional_param_array.
-                if ($question->responsetable == 'resp_multiple') {
-                    $val = optional_param_array('q'.$question->id, '', PARAM_RAW);
-                } else {
-                    $val = optional_param('q'.$question->id, '', PARAM_RAW);
-                }
-                $question->insert_response($rid, $val);
+        if (!empty($this->questionsbysec[$responsedata->sec])) {
+            foreach ($this->questionsbysec[$responsedata->sec] as $question) {
+                $val = isset($responsedata->{'q'.$question->id}) ? $responsedata->{'q'.$question->id} : '';
+                $question->insert_response($responsedata);
             }
         }
-        return($rid);
+        return($responsedata->rid);
     }
 
-    private function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
-        if ($col == null) {
-            $col = '';
-        }
-        if (!is_array($col) && !empty($col)) {
-            $col = explode(',', preg_replace("/\s/", '', $col));
-        }
-        if (is_array($col) && count($col) > 0) {
-            $callback = function($a) {
-                return 'q.'.$a;
-            };
-            $col = ',' . implode(',', array_map($callback, $col));
-        }
-
+    private function response_select($rid) {
         // Response_bool (yes/no).
-        $values = \mod_questionnaire\response\boolean::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values = \mod_questionnaire\response\boolean::response_select($rid);
 
         // Response_single (radio button or dropdown).
-        $values += \mod_questionnaire\response\single::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\single::response_select($rid);
 
         // Response_multiple.
-        $values += \mod_questionnaire\response\multiple::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\multiple::response_select($rid);
 
         // Response_rank.
-        $values += \mod_questionnaire\response\rank::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\rank::response_select($rid);
 
         // Response_text.
-        $values += \mod_questionnaire\response\text::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\text::response_select($rid);
 
         // Response_date.
-        $values += \mod_questionnaire\response\date::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\date::response_select($rid);
 
         return($values);
     }
@@ -2928,7 +2946,7 @@ class questionnaire {
                         foreach ($choices as $choice) {
                             $content = $choice->content;
                             // If "Other" add a column for the actual "other" text entered.
-                            if (preg_match('/^!other/', $content)) {
+                            if (\mod_questionnaire\question\base::other_choice($content)) {
                                 $col = $choice->name.'_'.$stringother;
                                 $columns[][$qpos] = $col;
                                 $questionidcols[][$qpos] = null;
@@ -2956,7 +2974,7 @@ class questionnaire {
                             array_push($types, '0');
                             // If "Other" add a column for the "other" checkbox.
                             // Then add a column for the actual "other" text entered.
-                            if (preg_match('/^!other/', $content)) {
+                            if (\mod_questionnaire\question\base::other_choice($content)) {
                                 $content = $stringother;
                                 $col = $choice->name.'->['.$content.']';
                                 $columns[][$qpos] = $col;
@@ -3086,7 +3104,7 @@ class questionnaire {
                     $choicetxt = $responserow->rankvalue + 1;
                 } else {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
-                    if (preg_match('/^!other/', $content)) {
+                    if (\mod_questionnaire\question\base::other_choice($content)) {
                         // If this is an "other" column, put the text entered in the next position.
                         $row[$position + 1] = $responserow->response;
                         $choicetxt = empty($responserow->choice_id) ? '0' : '1';
@@ -3115,9 +3133,9 @@ class questionnaire {
                     }
 
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
-                    if (preg_match('/^!other/', $content)) {
+                    if (\mod_questionnaire\question\base::other_choice($content)) {
                         // If this has an "other" text, use it.
-                        $responsetxt = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')], $content);
+                        $responsetxt = \mod_questionnaire\question\base::other_choice_display($content);
                         $responsetxt1 = $responserow->response;
                     } else if (($choicecodes == 1) && ($choicetext == 1)) {
                         $responsetxt = $c.' : '.$content;
