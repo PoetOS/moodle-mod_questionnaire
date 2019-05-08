@@ -131,16 +131,16 @@ class radio extends base {
                 $othertext = self::other_choice_display($choice);
                 $cname = self::other_choice_name($id);
                 $odata = isset($qdata->{'q'.$this->id.$cname}) ? $qdata->{'q'.$this->id.$cname} : '';
-                $otherempty = empty($odata);
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
                 $radio->name = 'q'.$this->id;
                 $radio->id = $htmlid;
                 $radio->value = $id;
-                if (isset($qdata->{$radio->name}) || !empty($odata)) {
+                if ((isset($qdata->{$radio->name}) && ($qdata->{$radio->name} == $id)) || !empty($odata)) {
                     $radio->checked = true;
                     $ischecked = true;
                 }
+                $otherempty = !empty($radio->checked) && empty($odata);
                 $radio->label = format_text($othertext, FORMAT_HTML, ['noclean' => true]);
                 $radio->oname = 'q'.$this->id.self::other_choice_name($id);
                 $radio->oid = $htmlid.'-other';

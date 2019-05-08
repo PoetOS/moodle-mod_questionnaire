@@ -187,7 +187,7 @@ class check extends base {
                     ['noclean' => true]));
             } else {
                 $othertext = self::other_choice_display($choice);
-                if (isset($data->{'q'.$this->id})) {
+                if (isset($data->{'q'.$this->id}[self::other_choice_name($id)])) {
                     $oresp = $data->{'q'.$this->id}[self::other_choice_name($id)];
                     $chobj->selected = 1;
                     $chobj->othercontent = (!empty($oresp) ? htmlspecialchars($oresp) : '&nbsp;');

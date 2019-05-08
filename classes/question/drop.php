@@ -86,9 +86,21 @@ class drop extends base {
         // Drop.
         $options = [];
 
+        $qdata = new \stdClass();
+        if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
+            foreach($data->{'q'.$this->id} as $cid => $cval) {
+                $qdata->{'q' . $this->id} = $cid;
+                if (isset($data->{'q'.$this->id}[self::other_choice_name($cid)])) {
+                    $qdata->{'q'.$this->id.self::other_choice_name($cid)} = $data->{'q'.$this->id}[self::other_choice_name($cid)];
+                }
+            }
+        } else if (isset($data->{'q'.$this->id})) {
+            $qdata->{'q'.$this->id} = $data->{'q'.$this->id};
+        }
+
         $choicetags = new \stdClass();
         $choicetags->qelements = new \stdClass();
-        $selected = isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : false;
+        $selected = isset($qdata->{'q'.$this->id}) ? $qdata->{'q'.$this->id} : false;
         $options[] = (object)['value' => '', 'label' => get_string('choosedots')];
         foreach ($this->choices as $key => $choice) {
             if ($pos = strpos($choice->content, '=')) {
