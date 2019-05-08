@@ -57,5 +57,6 @@ Feature: Radio questions allow optional "other" responses with optional labels
     And I follow "Continue"
     Then I should see "Your response"
     And I should see "Test questionnaire"
+And I pause
     And I should see "Other: Yellow"
     And I should see "Another colour: Indigo"

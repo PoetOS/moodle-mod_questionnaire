@@ -205,13 +205,9 @@ abstract class base {
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         return [];
     }
 

@@ -1604,31 +1604,23 @@ class questionnaire {
         if ($sec < 1 || !isset($this->questionsbysec[$sec])) {
             return;
         }
-        $vals = $this->response_select($rid, 'content');
-        reset($vals);
-        foreach ($vals as $id => $arr) {
-            if (isset($arr[0]) && is_array($arr[0])) {
-                // Multiple.
-                $varr->{'q'.$id} = array_map('array_pop', $arr);
-            } else {
-                $varr->{'q'.$id} = array_pop($arr);
-            }
-        }
+        return $this->response_import_all($rid, $varr);
     }
 
     private function response_import_all($rid, &$varr) {
 
-        $vals = $this->response_select($rid, 'content');
+        $vals = $this->response_select($rid);
         reset($vals);
         foreach ($vals as $id => $arr) {
-            if (strstr($id, '_') && isset($arr[4])) { // Single OR multiple with !other choice selected.
-                $varr->{'q'.$id} = $arr[4];
-            } else {
-                if (isset($arr[0]) && is_array($arr[0])) { // Multiple.
-                    $varr->{'q'.$id} = array_map('array_pop', $arr);
-                } else { // Boolean, rate and other.
-                    $varr->{'q'.$id} = array_pop($arr);
+            if (isset($arr[0]) && is_array($arr[0])) {
+                // Multiple.
+                foreach ($arr as $response) {
+                    $val = end($response);
+                    $idx = key($response);
+                    $varr->{'q'.$id}[$idx] = $val;
                 }
+            } else {
+                $varr->{'q'.$id} = array_pop($arr);
             }
         }
     }
@@ -2134,37 +2126,24 @@ class questionnaire {
         return($responsedata->rid);
     }
 
-    private function response_select($rid, $col = null, $csvexport = false, $choicecodes=0, $choicetext=1) {
-        if ($col == null) {
-            $col = '';
-        }
-        if (!is_array($col) && !empty($col)) {
-            $col = explode(',', preg_replace("/\s/", '', $col));
-        }
-        if (is_array($col) && count($col) > 0) {
-            $callback = function($a) {
-                return 'q.'.$a;
-            };
-            $col = ',' . implode(',', array_map($callback, $col));
-        }
-
+    private function response_select($rid) {
         // Response_bool (yes/no).
-        $values = \mod_questionnaire\response\boolean::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values = \mod_questionnaire\response\boolean::response_select($rid);
 
         // Response_single (radio button or dropdown).
-        $values += \mod_questionnaire\response\single::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\single::response_select($rid);
 
         // Response_multiple.
-        $values += \mod_questionnaire\response\multiple::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\multiple::response_select($rid);
 
         // Response_rank.
-        $values += \mod_questionnaire\response\rank::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\rank::response_select($rid);
 
         // Response_text.
-        $values += \mod_questionnaire\response\text::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\text::response_select($rid);
 
         // Response_date.
-        $values += \mod_questionnaire\response\date::response_select($rid, $col, $csvexport, $choicecodes, $choicetext);
+        $values += \mod_questionnaire\response\date::response_select($rid);
 
         return($values);
     }
@@ -2974,7 +2953,7 @@ class questionnaire {
                         foreach ($choices as $choice) {
                             $content = $choice->content;
                             // If "Other" add a column for the actual "other" text entered.
-                            if (preg_match('/^!other/', $content)) {
+                            if (\mod_questionnaire\question\base::other_choice($content)) {
                                 $col = $choice->name.'_'.$stringother;
                                 $columns[][$qpos] = $col;
                                 $questionidcols[][$qpos] = null;
@@ -3002,7 +2981,7 @@ class questionnaire {
                             array_push($types, '0');
                             // If "Other" add a column for the "other" checkbox.
                             // Then add a column for the actual "other" text entered.
-                            if (preg_match('/^!other/', $content)) {
+                            if (\mod_questionnaire\question\base::other_choice($content)) {
                                 $content = $stringother;
                                 $col = $choice->name.'->['.$content.']';
                                 $columns[][$qpos] = $col;
@@ -3132,7 +3111,7 @@ class questionnaire {
                     $choicetxt = $responserow->rankvalue + 1;
                 } else {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
-                    if (preg_match('/^!other/', $content)) {
+                    if (\mod_questionnaire\question\base::other_choice($content)) {
                         // If this is an "other" column, put the text entered in the next position.
                         $row[$position + 1] = $responserow->response;
                         $choicetxt = empty($responserow->choice_id) ? '0' : '1';
@@ -3161,9 +3140,9 @@ class questionnaire {
                     }
 
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
-                    if (preg_match('/^!other/', $content)) {
+                    if (\mod_questionnaire\question\base::other_choice($content)) {
                         // If this has an "other" text, use it.
-                        $responsetxt = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')], $content);
+                        $responsetxt = \mod_questionnaire\question\base::other_choice_display($content);
                         $responsetxt1 = $responserow->response;
                     } else if (($choicecodes == 1) && ($choicetext == 1)) {
                         $responsetxt = $c.' : '.$content;

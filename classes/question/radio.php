@@ -86,31 +86,37 @@ class radio extends base {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $otherempty = false;
-        // Find out which radio button is checked (if any); yields choice ID.
-        if (isset($data->{'q'.$this->id})) {
-            $checked = $data->{'q'.$this->id};
-        } else {
-            $checked = '';
-        }
         $horizontal = $this->length;
         $ischecked = false;
 
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
+
+        $qdata = new \stdClass();
+        if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
+            foreach($data->{'q'.$this->id} as $cid => $cval) {
+                $qdata->{'q' . $this->id} = $cid;
+                if (isset($data->{'q'.$this->id}[self::other_choice_name($cid)])) {
+                    $qdata->{'q'.$this->id.self::other_choice_name($cid)} = $data->{'q'.$this->id}[self::other_choice_name($cid)];
+                }
+            }
+        } else if (isset($data->{'q'.$this->id})) {
+            $qdata->{'q'.$this->id} = $data->{'q'.$this->id};
+        }
+
         foreach ($this->choices as $id => $choice) {
             $radio = new \stdClass();
-            $other = strpos($choice->content, '!other');
             if ($horizontal) {
                 $radio->horizontal = $horizontal;
             }
 
-            if ($other !== 0) { // This is a normal radio button.
+            if (!self::other_choice($choice)) { // This is a normal radio button.
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
                 $radio->name = 'q'.$this->id;
                 $radio->id = $htmlid;
                 $radio->value = $id;
-                if ($id == $checked) {
+                if (isset($qdata->{$radio->name}) && ($qdata->{$radio->name} == $id)) {
                     $radio->checked = true;
                     $ischecked = true;
                 }
@@ -122,30 +128,24 @@ class radio extends base {
                 $contents = questionnaire_choice_values($choice->content);
                 $radio->label = $value.format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
             } else {             // Radio button with associated !other text field.
-                $othertext = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')],
-                    $choice->content);
-                $cid = 'q'.$this->id.'_'.$id;
-                $otherempty = false;
-                if (substr($checked, 0, 6) == 'other_') { // Fix bug CONTRIB-222.
-                    $checked = substr($checked, 6);
-                }
+                $othertext = self::other_choice_display($choice);
+                $cname = self::other_choice_name($id);
+                $odata = isset($qdata->{'q'.$this->id.$cname}) ? $qdata->{'q'.$this->id.$cname} : '';
+                $otherempty = empty($odata);
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
                 $radio->name = 'q'.$this->id;
                 $radio->id = $htmlid;
-                $radio->value = 'other_'.$id;
-                if (($id == $checked) || !empty($data->$cid)) {
+                $radio->value = $id;
+                if (isset($qdata->{$radio->name}) || !empty($odata)) {
                     $radio->checked = true;
                     $ischecked = true;
-                    if (isset($data->$cid) && (trim($data->$cid) == false)) {
-                        $otherempty = true;
-                    }
                 }
                 $radio->label = format_text($othertext, FORMAT_HTML, ['noclean' => true]);
-                $radio->oname = $cid;
+                $radio->oname = 'q'.$this->id.self::other_choice_name($id);
                 $radio->oid = $htmlid.'-other';
-                if (isset($data->$cid)) {
-                    $radio->ovalue = stripslashes($data->$cid);
+                if (isset($odata)) {
+                    $radio->ovalue = stripslashes($odata);
                 }
                 $radio->olabel = 'Text for '.format_text($othertext, FORMAT_HTML, ['noclean' => true]);
             }
@@ -155,7 +155,6 @@ class radio extends base {
         // CONTRIB-846.
         if (!$this->required()) {
             $radio = new \stdClass();
-            $id = '';
             $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
             if ($horizontal) {
                 $radio->horizontal = $horizontal;
@@ -163,7 +162,7 @@ class radio extends base {
 
             $radio->name = 'q'.$this->id;
             $radio->id = $htmlid;
-            $radio->value = $id;
+            $radio->value = 0;
 
             if (!$ischecked && !$blankquestionnaire) {
                 $radio->checked = true;
@@ -193,15 +192,27 @@ class radio extends base {
         $resptags = new \stdClass();
         $resptags->choices = [];
 
+        $qdata = new \stdClass();
+        if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
+            foreach($data->{'q'.$this->id} as $cid => $cval) {
+                $qdata->{'q' . $this->id} = $cid;
+                if (isset($data->{'q'.$this->id}[self::other_choice_name($cid)])) {
+                    $qdata->{'q'.$this->id.self::other_choice_name($cid)} = $data->{'q'.$this->id}[self::other_choice_name($cid)];
+                }
+            }
+        } else if (isset($data->{'q'.$this->id})) {
+            $qdata->{'q'.$this->id} = $data->{'q'.$this->id};
+        }
+
         $horizontal = $this->length;
-        $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $checked = (isset($qdata->{'q'.$this->id}) ? $qdata->{'q'.$this->id} : '');
         foreach ($this->choices as $id => $choice) {
             $chobj = new \stdClass();
             if ($horizontal) {
                 $chobj->horizontal = 1;
             }
             $chobj->name = $id.$uniquetag++;
-            if (strpos($choice->content, '!other') !== 0) {
+            if (!self::other_choice($choice)) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
                 if ($id == $checked) {
@@ -209,12 +220,11 @@ class radio extends base {
                 }
                 $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
             } else {
-                $othertext = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')],
-                    $choice->content);
-                $cid = 'q'.$this->id.'_'.$id;
-                if (isset($data->{'q'.$this->id.'_'.$id})) {
+                $othertext = self::other_choice_display($choice);
+                $cid = 'q'.$this->id.self::other_choice_name($id);
+                if (isset($qdata->{$cid})) {
                     $chobj->selected = 1;
-                    $chobj->othercontent = (!empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;');
+                    $chobj->othercontent = (!empty($qdata->{$cid}) ? htmlspecialchars($qdata->{$cid}) : '&nbsp;');
                 }
                 $chobj->content = $othertext;
             }
@@ -246,9 +256,9 @@ class radio extends base {
      * @return boolean
      */
     public function response_valid($responsedata) {
-        if (isset($responsedata->{'q'.$this->id}) && (strpos($responsedata->{'q'.$this->id}, 'other_') !== false)) {
+        if (isset($responsedata->{'q'.$this->id}) && self::other_choice($this->choices[$responsedata->{'q'.$this->id}])) {
             // False if "other" choice is checked but text box is empty.
-            return (trim($responsedata->{'q'.$this->id.''.substr($responsedata->{'q'.$this->id}, 5)}) != false);
+            return !empty($responsedata->{'q'.$this->id.self::other_choice_name($responsedata->{'q'.$this->id})});
         } else {
             return parent::response_valid($responsedata);
         }

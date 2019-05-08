@@ -48,57 +48,39 @@ class single extends base {
     public function insert_response($responsedata) {
         global $DB;
 
-        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
-        if (!empty($val)) {
-            foreach ($this->question->choices as $cid => $choice) {
-                if (strpos($choice->content, '!other') === 0) {
-                    $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
-                        $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
-                    if (!isset($other)) {
-                        continue;
-                    }
-                    if (preg_match("/[^ \t\n]/", $other)) {
-                        $record = new \stdClass();
-                        $record->response_id = $responsedata->rid;
-                        $record->question_id = $this->question->id;
-                        $record->choice_id = $cid;
-                        $record->response = $other;
-                        $resid = $DB->insert_record('questionnaire_response_other', $record);
-                        $val = $cid;
-                        break;
-                    }
-                }
-            }
-        }
-        if (preg_match("/other_q([0-9]+)/", (isset($val) ? $val : ''), $regs)) {
-            $cid = $regs[1];
-            if (!isset($other)) {
-                $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
-                    $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
-            }
-            if (preg_match("/[^ \t\n]/", $other)) {
-                $record = new \stdClass();
-                $record->response_id = $responsedata->rid;
-                $record->question_id = $this->question->id;
-                $record->choice_id = $cid;
-                $record->response = $other;
-                $resid = $DB->insert_record('questionnaire_response_other', $record);
-                $val = $cid;
-            }
-        }
-        $record = new \stdClass();
-        $record->response_id = $responsedata->rid;
-        $record->question_id = $this->question->id;
-        $record->choice_id = isset($val) ? $val : 0;
-        if ($record->choice_id) {// If "no answer" then choice_id is empty (CONTRIB-846).
-            try {
-                return $DB->insert_record(static::response_table(), $record);
-            } catch (\dml_write_exception $ex) {
-                return false;
-            }
-        } else {
+        $cid = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : null;
+        $resid = '';
+
+        if ($cid === null) {
             return false;
         }
+
+        $cid = clean_param($cid, PARAM_CLEAN);
+        if (isset($this->question->choices[$cid])) {
+            // If this choice is an "other" choice, look for the added input.
+            if (\mod_questionnaire\question\base::other_choice($this->question->choices[$cid])) {
+                $cname = 'q' . $this->question->id . \mod_questionnaire\question\base::other_choice_name($cid);
+                $other = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
+
+                // If no input specified, ignore this choice.
+                if (!empty($other) && !preg_match("/[ \t\n]/", $other)) {
+                    $record = new \stdClass();
+                    $record->response_id = $responsedata->rid;
+                    $record->question_id = $this->question->id;
+                    $record->choice_id = $cid;
+                    $record->response = $other;
+                    $DB->insert_record('questionnaire_response_other', $record);
+                }
+            }
+
+            // Record the choice selection.
+            $record = new \stdClass();
+            $record->response_id = $responsedata->rid;
+            $record->question_id = $this->question->id;
+            $record->choice_id = $cid;
+            $resid = $DB->insert_record(self::response_table(), $record);
+        }
+        return $resid;
     }
 
     public function get_results($rids=false, $anonymous=false) {
@@ -204,8 +186,7 @@ class single extends base {
                 if (strpos($idx, 'other') === 0) {
                     $answer = $row->response;
                     $ccontent = $row->content;
-                    $content = preg_replace(array('/^!other=/', '/^!other/'),
-                        array('', get_string('other', 'questionnaire')), $ccontent);
+                    $content = \mod_questionnaire\question\base::other_choice_display($ccontent);
                     $content .= ' ' . clean_text($answer);
                     $textidx = $content;
                     $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
@@ -225,66 +206,31 @@ class single extends base {
 
     /**
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
+     * Array is indexed by question, and contains an array by choice code of selected choices.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id '.$col.', q.type_id as q_type, c.content as ccontent,c.id as cid '.
-            'FROM {'.static::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
-            'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id ';
+        $sql = 'SELECT a.id, q.id as qid, q.content, c.content as ccontent, c.id as cid, o.response ' .
+            'FROM {'.static::response_table().'} a ' .
+            'INNER JOIN {questionnaire_question} q ON a.question_id = q.id ' .
+            'INNER JOIN {questionnaire_quest_choice} c ON a.choice_id = c.id ' .
+            'LEFT JOIN {questionnaire_response_other} o ON a.response_id = o.response_id AND c.id = o.choice_id ' .
+            'WHERE a.response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
-        foreach ($records as $qid => $row) {
-            $cid = $row->cid;
-            if ($csvexport) {
-                static $i = 1;
-                $qrecords = $DB->get_records('questionnaire_quest_choice', ['question_id' => $qid]);
-                foreach ($qrecords as $value) {
-                    if ($value->id == $cid) {
-                        $contents = questionnaire_choice_values($value->content);
-                        if ($contents->modname) {
-                            $row->ccontent = $contents->modname;
-                        } else {
-                            $content = $contents->text;
-                            if (preg_match('/^!other/', $content)) {
-                                $row->ccontent = get_string('other', 'questionnaire');
-                            } else if (($choicecodes == 1) && ($choicetext == 1)) {
-                                $row->ccontent = "$i : $content";
-                            } else if ($choicecodes == 1) {
-                                $row->ccontent = "$i";
-                            } else {
-                                $row->ccontent = $content;
-                            }
-                        }
-                        $i = 1;
-                        break;
-                    }
-                    $i++;
-                }
+        foreach ($records as $row) {
+            $newrow['content'] = $row->content;
+            $newrow['ccontent'] = $row->ccontent;
+            $newrow['responses'] = [];
+            $newrow['responses'][$row->cid] = $row->cid;
+            if (\mod_questionnaire\question\base::other_choice($row->ccontent)) {
+                $newrow['responses'][\mod_questionnaire\question\base::other_choice_name($row->cid)] = $row->response;
             }
-            unset($row->id);
-            unset($row->cid);
-            unset($row->q_type);
-            $arow = get_object_vars($row);
-            $newrow = [];
-            foreach ($arow as $key => $val) {
-                if (!is_numeric($key)) {
-                    $newrow[] = $val;
-                }
-            }
-            if (preg_match('/^!other/', $row->ccontent)) {
-                $newrow[] = 'other_' . $cid;
-            } else {
-                $newrow[] = (int)$cid;
-            }
-            $values[$qid] = $newrow;
+            $values[$row->qid] = $newrow;
         }
 
         return $values;

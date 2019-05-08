@@ -210,12 +210,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $val = array();
         foreach ($question->choices as $cid => $choice) {
             if (($choice->content == 'Two') || ($choice->content == 'Three')) {
-                $val[] = $cid;
+                $val[$cid] = $cid;
             } else if ($choice->content == '!other=Another number') {
-                $val2 = $cid;
+                $val[$cid] = $cid;
+                $val[\mod_questionnaire\question\base::other_choice_name($cid)] = 'Forty-four';
+                $ocid = $cid;
             }
         }
-        $vals = ['q'.$question->id => $val, 'q'.$question->id.'_'.$val2 => 'Forty-four'];
+        $vals = ['q'.$question->id => $val];
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
@@ -236,7 +238,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             array('response_id' => $response->id, 'question_id' => $question->id));
         $this->assertEquals(1, count($otherresponses));
         $otherresponse = reset($otherresponses);
-        $this->assertEquals($val2, $otherresponse->choice_id);
+        $this->assertEquals($ocid, $otherresponse->choice_id);
         $this->assertEquals('Forty-four', $otherresponse->response);
     }
 

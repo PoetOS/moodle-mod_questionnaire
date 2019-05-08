@@ -190,17 +190,13 @@ class boolean extends base {
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id '.$col.', a.choice_id '.
+        $sql = 'SELECT q.id, q.content, a.choice_id '.
             'FROM {'.self::response_table().'} a, {questionnaire_question} q '.
             'WHERE a.response_id= ? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
@@ -217,9 +213,7 @@ class boolean extends base {
             }
             $values[$qid] = $newrow;
             array_push($values[$qid], ($choice == 'y') ? '1' : '0');
-            if (!$csvexport) {
-                array_push($values[$qid], $choice); // DEV still needed for responses display.
-            }
+            array_push($values[$qid], $choice); // DEV still needed for responses display.
         }
 
         return $values;

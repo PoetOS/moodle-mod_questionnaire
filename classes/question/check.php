@@ -80,10 +80,10 @@ class check extends base {
         $otherempty = false;
         if (!empty($data) ) {
             if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
-                $data->{'q'.$this->id} = array();
+                $data->{'q'.$this->id} = [];
             }
             // Verify that number of checked boxes (nbboxes) is within set limits (length = min; precision = max).
-            if ( $data->{'q'.$this->id} ) {
+            if ($data->{'q'.$this->id} ) {
                 $otherempty = false;
                 $boxes = $data->{'q'.$this->id};
                 $nbboxes = count($boxes);
@@ -130,53 +130,31 @@ class check extends base {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
         foreach ($this->choices as $id => $choice) {
-
-            $other = strpos($choice->content, '!other');
             $checkbox = new \stdClass();
-            if ($other !== 0) { // This is a normal check box.
-                $contents = questionnaire_choice_values($choice->content);
-                $checked = false;
-                if (!empty($data) ) {
-                    $checked = in_array($id, $data->{'q'.$this->id});
-                }
-                $checkbox->name = 'q'.$this->id.'[]';
-                $checkbox->value = $id;
-                $checkbox->id = 'checkbox_'.$id;
-                $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
-                if ($checked) {
-                    $checkbox->checked = $checked;
-                }
-            } else {             // Check box with associated !other text field.
-                // In case length field has been used to enter max number of choices, set it to 20.
-                $othertext = preg_replace(
-                        array("/^!other=/", "/^!other/"),
-                        array('', get_string('other', 'questionnaire')),
-                        $choice->content);
-                $cid = 'q'.$this->id.'_'.$id;
-                if (!empty($data) && isset($data->$cid) && (trim($data->$cid) != false)) {
-                    $checked = true;
-                } else {
-                    $checked = false;
-                }
-                $name = 'q'.$this->id.'[]';
-                $value = 'other_'.$id;
-
-                $checkbox->name = $name;
-                $checkbox->oname = $cid;
-                $checkbox->value = $value;
-                $checkbox->ovalue = (isset($data->$cid) && !empty($data->$cid) ? stripslashes($data->$cid) : '');
-                $checkbox->id = 'checkbox_'.$id;
-                $checkbox->label = format_text($othertext.'', FORMAT_HTML, ['noclean' => true]);
-                if ($checked) {
-                    $checkbox->checked = $checked;
-                }
+            $contents = questionnaire_choice_values($choice->content);
+            $checked = false;
+            if (!empty($data) ) {
+                $checked = isset($data->{'q'.$this->id}[$id]);
+            }
+            $checkbox->name = 'q'.$this->id.'['.$id.']';
+            $checkbox->value = $id;
+            $checkbox->id = 'checkbox_'.$id;
+            $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
+            if ($checked) {
+                $checkbox->checked = $checked;
+            }
+            if (self::other_choice($choice)) {
+                $checkbox->oname = 'q'.$this->id.'['.self::other_choice_name($id).']';
+                $checkbox->ovalue = (isset($data->{'q'.$this->id}[self::other_choice_name($id)]) &&
+                    !empty($data->{'q'.$this->id}[self::other_choice_name($id)]) ?
+                    stripslashes($data->{'q'.$this->id}[self::other_choice_name($id)]) : '');
+                $checkbox->label = format_text(self::other_choice_display($choice).'', FORMAT_HTML, ['noclean' => true]);
             }
             $choicetags->qelements[] = (object)['choice' => $checkbox];
         }
         if ($otherempty) {
             $this->add_notification(get_string('otherempty', 'questionnaire'));
         }
-
         return $choicetags;
     }
 
@@ -198,25 +176,21 @@ class check extends base {
 
         foreach ($this->choices as $id => $choice) {
             $chobj = new \stdClass();
-            if (strpos($choice->content, '!other') !== 0) {
+            if (!self::other_choice($choice)) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
-                if (in_array($id, $data->{'q'.$this->id})) {
+                if (isset($data->{'q'.$this->id}[$id])) {
                     $chobj->selected = 1;
                 }
                 $chobj->name = $id.$uniquetag++;
                 $chobj->content = (($choice->content === '') ? $id : format_text($choice->content, FORMAT_HTML,
                     ['noclean' => true]));
             } else {
-                $othertext = preg_replace(
-                        array("/^!other=/", "/^!other/"),
-                        array('', get_string('other', 'questionnaire')),
-                        $choice->content);
-                $cid = 'q'.$this->id.'_'.$id;
-
-                if (isset($data->$cid)) {
+                $othertext = self::other_choice_display($choice);
+                if (isset($data->{'q'.$this->id})) {
+                    $oresp = $data->{'q'.$this->id}[self::other_choice_name($id)];
                     $chobj->selected = 1;
-                    $chobj->othercontent = (!empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;');
+                    $chobj->othercontent = (!empty($oresp) ? htmlspecialchars($oresp) : '&nbsp;');
                 }
                 $chobj->name = $id.$uniquetag++;
                 $chobj->content = (($othertext === '') ? $id : $othertext);
