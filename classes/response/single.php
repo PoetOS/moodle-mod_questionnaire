@@ -23,6 +23,8 @@
  */
 
 namespace mod_questionnaire\response;
+use mod_questionnaire\response\choice\choice;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -182,6 +184,7 @@ class single extends base {
         $numrespondents = $DB->count_records_sql($responsecountsql, [$this->question->id]);
 
         if ($rows) {
+            $counts = [];
             foreach ($rows as $idx => $row) {
                 if (strpos($idx, 'other') === 0) {
                     $answer = $row->response;
@@ -189,19 +192,39 @@ class single extends base {
                     $content = \mod_questionnaire\question\base::other_choice_display($ccontent);
                     $content .= ' ' . clean_text($answer);
                     $textidx = $content;
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                    $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 } else {
                     $contents = questionnaire_choice_values($row->content);
-                    $this->choice = $contents->text.$contents->image;
-                    $textidx = $this->choice;
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                    $textidx = $contents->text.$contents->image;
+                    $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 }
             }
-            $pagetags = $this->get_results_tags($this->counts, $numresps, $numrespondents, $prtotal, $sort);
+            $pagetags = $this->get_results_tags($counts, $numresps, $numrespondents, $prtotal, $sort);
         } else {
             $pagetags = new \stdClass();
         }
         return $pagetags;
+    }
+
+    /**
+     * Load the requested response into the object. Must be implemented by the subclass.
+     *
+     * @param int $rid The response id.
+     * @return array
+     */
+    public function load_response($rid) {
+        global $DB;
+
+        $sql = 'SELECT a.id, c.id as cid, o.response ' .
+            'FROM {'.static::response_table().'} a ' .
+            'INNER JOIN {questionnaire_quest_choice} c ON a.choice_id = c.id ' .
+            'LEFT JOIN {questionnaire_response_other} o ON a.response_id = o.response_id AND c.id = o.choice_id ' .
+            'WHERE a.response_id = ? ';
+        $record = $DB->get_record_sql($sql, [$rid]);
+        if ($record) {
+            $this->responseid = $rid;
+            $this->choices[$record->cid] = new choice($record->cid, $record->response);
+        }
     }
 
     /**

@@ -110,17 +110,17 @@ class date extends base {
         $numresps = count($rids);
         if ($rows = $this->get_results($rids, $anonymous)) {
             $numrespondents = count($rows);
+            $counts = [];
             foreach ($rows as $row) {
                 // Count identical answers (case insensitive).
-                $this->text = $row->response;
-                if (!empty($this->text)) {
-                    $dateparts = preg_split('/-/', $this->text);
-                    $this->text = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
-                    $textidx = clean_text($this->text);
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                if (!empty($row->response)) {
+                    $dateparts = preg_split('/-/', $row->response);
+                    $text = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
+                    $textidx = clean_text($text);
+                    $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 }
             }
-            $pagetags = $this->get_results_tags($this->counts, $numresps, $numrespondents);
+            $pagetags = $this->get_results_tags($counts, $numresps, $numrespondents);
         } else {
             $pagetags = new \stdClass();
         }

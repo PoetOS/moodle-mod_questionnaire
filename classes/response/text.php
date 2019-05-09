@@ -134,15 +134,14 @@ class text extends base {
             $isnumeric = $this->question->type_id == QUESNUMERIC;
             // Count identical answers (numeric questions only).
             if ($isnumeric) {
+                $counts = [];
                 foreach ($rows as $row) {
                     if (!empty($row->response) || $row->response === "0") {
-                        $this->text = $row->response;
-                        $textidx = clean_text($this->text);
-                        $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
-                        $this->userid[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                        $textidx = clean_text($row->response);
+                        $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                     }
                 }
-                $pagetags = $this->get_results_tags($this->counts, $numrespondents, $numresponses, $prtotal);
+                $pagetags = $this->get_results_tags($counts, $numrespondents, $numresponses, $prtotal);
             } else {
                 $pagetags = $this->get_results_tags($rows, $numrespondents, $numresponses, $prtotal);
             }

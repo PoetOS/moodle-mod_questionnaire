@@ -153,10 +153,8 @@ class boolean extends base {
      * @return string
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        if (empty($this->stryes)) {
-            $this->stryes = get_string('yes');
-            $this->strno = get_string('no');
-        }
+        $stryes = get_string('yes');
+        $strno = get_string('no');
 
         if (is_array($rids)) {
             $prtotal = 1;
@@ -165,25 +163,45 @@ class boolean extends base {
         }
         $numresps = count($rids);
 
-        $this->counts = [$this->stryes => 0, $this->strno => 0];
+        $counts = [$stryes => 0, $strno => 0];
         $numrespondents = 0;
         if ($rows = $this->get_results($rids, $anonymous)) {
             foreach ($rows as $row) {
-                $this->choice = $row->choice_id;
+                $choice = $row->choice_id;
                 $count = $row->num;
-                if ($this->choice == 'y') {
-                    $this->choice = $this->stryes;
+                if ($choice == 'y') {
+                    $choice = $stryes;
                 } else {
-                    $this->choice = $this->strno;
+                    $choice = $strno;
                 }
-                $this->counts[$this->choice] = intval($count);
-                $numrespondents += $this->counts[$this->choice];
+                $counts[$choice] = intval($count);
+                $numrespondents += $counts[$choice];
             }
-            $pagetags = $this->get_results_tags($this->counts, $numresps, $numrespondents, $prtotal, '');
+            $pagetags = $this->get_results_tags($counts, $numresps, $numrespondents, $prtotal, '');
         } else {
             $pagetags = new \stdClass();
         }
         return $pagetags;
+    }
+
+    /**
+     * Load the requested response into the object. Must be implemented by the subclass.
+     *
+     * @param int $rid The response id.
+     */
+    public function load_response($rid) {
+        global $DB;
+
+        $sql = 'SELECT a.id, c.id as cid, o.response ' .
+            'FROM {'.static::response_table().'} a ' .
+            'INNER JOIN {questionnaire_quest_choice} c ON a.choice_id = c.id ' .
+            'LEFT JOIN {questionnaire_response_other} o ON a.response_id = o.response_id AND c.id = o.choice_id ' .
+            'WHERE a.response_id = ? ';
+        $record = $DB->get_record_sql($sql, [$rid]);
+        if ($record) {
+            $this->responseid = $rid;
+            $this->choices[$record->cid] = new choice($record->cid, $record->response);
+        }
     }
 
     /**

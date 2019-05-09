@@ -94,7 +94,7 @@ class radio extends base {
 
         $qdata = new \stdClass();
         if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
-            foreach($data->{'q'.$this->id} as $cid => $cval) {
+            foreach ($data->{'q'.$this->id} as $cid => $cval) {
                 $qdata->{'q' . $this->id} = $cid;
                 if (isset($data->{'q'.$this->id}[self::other_choice_name($cid)])) {
                     $qdata->{'q'.$this->id.self::other_choice_name($cid)} = $data->{'q'.$this->id}[self::other_choice_name($cid)];
@@ -194,7 +194,7 @@ class radio extends base {
 
         $qdata = new \stdClass();
         if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
-            foreach($data->{'q'.$this->id} as $cid => $cval) {
+            foreach ($data->{'q'.$this->id} as $cid => $cval) {
                 $qdata->{'q' . $this->id} = $cid;
                 if (isset($data->{'q'.$this->id}[self::other_choice_name($cid)])) {
                     $qdata->{'q'.$this->id.self::other_choice_name($cid)} = $data->{'q'.$this->id}[self::other_choice_name($cid)];

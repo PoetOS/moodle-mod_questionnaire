@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the parent class for questionnaire question types.
+ * This file contains the parent class for questionnaire response types.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package response
  */
 
 namespace mod_questionnaire\response;
@@ -38,8 +38,20 @@ use mod_questionnaire\db\bulk_sql_config;
 
 abstract class base {
 
-    public function __construct($question) {
+    // Class properties:
+    /** @var \mod_questionnaire\question\base $question The question for this response. */
+    public $question;
+
+    /** @var int $responseid The id of the response this is for. */
+    public $responseid;
+
+    /** @var array $choices An array of \mod_questionnaire\response\choice objects. */
+    public $choices;
+
+    public function __construct(\mod_questionnaire\question\base $question, int $responseid = null, array $choices = []) {
         $this->question = $question;
+        $this->responseid = $responseid;
+        $this->choices = $choices;
     }
 
     /**
@@ -198,6 +210,16 @@ abstract class base {
      * @return array | boolean
      */
     public function get_feedback_scores(array $rids) {
+        return false;
+    }
+
+    /**
+     * Load the requested response into the object. Must be implemented by the subclass.
+     *
+     * @param int $rid The response id.
+     * @return bool
+     */
+    public function load_response($rid) {
         return false;
     }
 
