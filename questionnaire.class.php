@@ -1923,7 +1923,7 @@ class questionnaire {
                 $choices = [];
                 $cids = [];
                 foreach ($question->choices as $cid => $choice) {
-                    if (!empty($choice->value)) {
+                    if (!empty($choice->value) && (strpos($choice->content, '=') !== false)) {
                         $choices[$choice->value] = substr($choice->content, (strpos($choice->content, '=') + 1));
                     } else {
                         $cids[$rqid . '_' . $cid] = $choice->content;
