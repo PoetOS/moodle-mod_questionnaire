@@ -2953,7 +2953,7 @@ class questionnaire {
                         foreach ($choices as $choice) {
                             $content = $choice->content;
                             // If "Other" add a column for the actual "other" text entered.
-                            if (\mod_questionnaire\question\base::other_choice($content)) {
+                            if (\mod_questionnaire\question\choice\choice::content_is_other_choice($content)) {
                                 $col = $choice->name.'_'.$stringother;
                                 $columns[][$qpos] = $col;
                                 $questionidcols[][$qpos] = null;
@@ -2981,7 +2981,7 @@ class questionnaire {
                             array_push($types, '0');
                             // If "Other" add a column for the "other" checkbox.
                             // Then add a column for the actual "other" text entered.
-                            if (\mod_questionnaire\question\base::other_choice($content)) {
+                            if (\mod_questionnaire\question\choice\choice::content_is_other_choice($content)) {
                                 $content = $stringother;
                                 $col = $choice->name.'->['.$content.']';
                                 $columns[][$qpos] = $col;
@@ -3111,7 +3111,7 @@ class questionnaire {
                     $choicetxt = $responserow->rankvalue + 1;
                 } else {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
-                    if (\mod_questionnaire\question\base::other_choice($content)) {
+                    if (\mod_questionnaire\question\choice\choice::content_is_other_choice($content)) {
                         // If this is an "other" column, put the text entered in the next position.
                         $row[$position + 1] = $responserow->response;
                         $choicetxt = empty($responserow->choice_id) ? '0' : '1';
@@ -3140,9 +3140,9 @@ class questionnaire {
                     }
 
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
-                    if (\mod_questionnaire\question\base::other_choice($content)) {
+                    if (\mod_questionnaire\question\choice\choice::content_is_other_choice($content)) {
                         // If this has an "other" text, use it.
-                        $responsetxt = \mod_questionnaire\question\base::other_choice_display($content);
+                        $responsetxt = \mod_questionnaire\question\choice\choice::content_other_choice_display($content);
                         $responsetxt1 = $responserow->response;
                     } else if (($choicecodes == 1) && ($choicetext == 1)) {
                         $responsetxt = $c.' : '.$content;

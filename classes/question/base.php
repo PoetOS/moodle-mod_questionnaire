@@ -205,52 +205,6 @@ abstract class base {
     }
 
     /**
-     * Return true if the choice object or choice content string is an "other" choice.
-     *
-     * @param string | object $choice
-     * @return bool
-     */
-    static public function other_choice($choice) {
-        if (is_object($choice)) {
-            $content = $choice->content;
-        } else {
-            $content = $choice;
-        }
-        return (strpos($content, '!other') === 0);
-    }
-
-    /**
-     * Return the string to display for an "other" option. If the option is not an "other", return false.
-     *
-     * @param string | object $choice
-     * @return string | bool
-     */
-    static public function other_choice_display($choice) {
-        if (!self::other_choice($choice)) {
-            return false;
-        }
-
-        if (is_object($choice)) {
-            $content = $choice->content;
-        } else {
-            $content = $choice;
-        }
-
-        // If there is a defined string display after the "=", return it. Otherwise the "other" language string.
-        return preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')], $content);
-    }
-
-    /**
-     * Return the string to use as an input name for an other choice.
-     *
-     * @param int $choiceid
-     * @return string
-     */
-    static public function other_choice_name($choiceid) {
-        return 'o' . $choiceid;
-    }
-
-    /**
      * Override and return true if the question has choices.
      */
     public function has_choices() {
@@ -265,9 +219,7 @@ abstract class base {
 
         if ($choices = $DB->get_records('questionnaire_quest_choice', ['question_id' => $this->id], 'id ASC')) {
             foreach ($choices as $choice) {
-                $this->choices[$choice->id] = new \stdClass();
-                $this->choices[$choice->id]->content = $choice->content;
-                $this->choices[$choice->id]->value = $choice->value;
+                $this->choices[$choice->id] = choice\choice::create_from_data($choice);
             }
         } else {
             $this->choices = [];

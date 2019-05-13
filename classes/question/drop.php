@@ -25,6 +25,7 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
+use mod_questionnaire\question\choice\choice;
 
 class drop extends base {
 
@@ -90,8 +91,9 @@ class drop extends base {
         if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
             foreach ($data->{'q'.$this->id} as $cid => $cval) {
                 $qdata->{'q' . $this->id} = $cid;
-                if (isset($data->{'q'.$this->id}[self::other_choice_name($cid)])) {
-                    $qdata->{'q'.$this->id.self::other_choice_name($cid)} = $data->{'q'.$this->id}[self::other_choice_name($cid)];
+                if (isset($data->{'q'.$this->id}[choice::id_other_choice_name($cid)])) {
+                    $qdata->{'q'.$this->id.choice::id_other_choice_name($cid)} =
+                        $data->{'q'.$this->id}[choice::id_other_choice_name($cid)];
                 }
             }
         } else if (isset($data->{'q'.$this->id})) {
@@ -139,12 +141,22 @@ class drop extends base {
         $resptags->class = 'select custom-select ' . $resptags->id;
         $resptags->options = [];
         $resptags->options[] = (object)['value' => '', 'label' => get_string('choosedots')];
+
+        $qdata = new \stdClass();
+        if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
+            foreach ($data->{'q'.$this->id} as $cid => $cval) {
+                $qdata->{'q' . $this->id} = $cid;
+            }
+        } else if (isset($data->{'q'.$this->id})) {
+            $qdata->{'q'.$this->id} = $data->{'q'.$this->id};
+        }
+
         foreach ($this->choices as $id => $choice) {
             $contents = questionnaire_choice_values($choice->content);
             $chobj = new \stdClass();
             $chobj->value = $id;
             $chobj->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]);
-            if (isset($data->{'q'.$this->id}) && ($id == $data->{'q'.$this->id})) {
+            if (isset($qdata->{'q'.$this->id}) && ($id == $qdata->{'q'.$this->id})) {
                 $chobj->selected = 1;
                 $resptags->selectedlabel = $chobj->label;
             }

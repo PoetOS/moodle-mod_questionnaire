@@ -23,6 +23,8 @@
  */
 
 namespace mod_questionnaire\question;
+use mod_questionnaire\question\choice\choice;
+
 defined('MOODLE_INTERNAL') || die();
 
 class radio extends base {
@@ -96,8 +98,9 @@ class radio extends base {
         if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
             foreach ($data->{'q'.$this->id} as $cid => $cval) {
                 $qdata->{'q' . $this->id} = $cid;
-                if (isset($data->{'q'.$this->id}[self::other_choice_name($cid)])) {
-                    $qdata->{'q'.$this->id.self::other_choice_name($cid)} = $data->{'q'.$this->id}[self::other_choice_name($cid)];
+                if (isset($data->{'q'.$this->id}[choice::id_other_choice_name($cid)])) {
+                    $qdata->{'q'.$this->id.choice::id_other_choice_name($cid)} =
+                        $data->{'q'.$this->id}[choice::id_other_choice_name($cid)];
                 }
             }
         } else if (isset($data->{'q'.$this->id})) {
@@ -110,7 +113,7 @@ class radio extends base {
                 $radio->horizontal = $horizontal;
             }
 
-            if (!self::other_choice($choice)) { // This is a normal radio button.
+            if (!$choice->is_other_choice()) { // This is a normal radio button.
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
                 $radio->name = 'q'.$this->id;
@@ -128,8 +131,8 @@ class radio extends base {
                 $contents = questionnaire_choice_values($choice->content);
                 $radio->label = $value.format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
             } else {             // Radio button with associated !other text field.
-                $othertext = self::other_choice_display($choice);
-                $cname = self::other_choice_name($id);
+                $othertext = $choice->other_choice_display();
+                $cname = choice::id_other_choice_name($id);
                 $odata = isset($qdata->{'q'.$this->id.$cname}) ? $qdata->{'q'.$this->id.$cname} : '';
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
@@ -142,7 +145,7 @@ class radio extends base {
                 }
                 $otherempty = !empty($radio->checked) && empty($odata);
                 $radio->label = format_text($othertext, FORMAT_HTML, ['noclean' => true]);
-                $radio->oname = 'q'.$this->id.self::other_choice_name($id);
+                $radio->oname = 'q'.$this->id.choice::id_other_choice_name($id);
                 $radio->oid = $htmlid.'-other';
                 if (isset($odata)) {
                     $radio->ovalue = stripslashes($odata);
@@ -196,8 +199,9 @@ class radio extends base {
         if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
             foreach ($data->{'q'.$this->id} as $cid => $cval) {
                 $qdata->{'q' . $this->id} = $cid;
-                if (isset($data->{'q'.$this->id}[self::other_choice_name($cid)])) {
-                    $qdata->{'q'.$this->id.self::other_choice_name($cid)} = $data->{'q'.$this->id}[self::other_choice_name($cid)];
+                if (isset($data->{'q'.$this->id}[choice::id_other_choice_name($cid)])) {
+                    $qdata->{'q'.$this->id.choice::id_other_choice_name($cid)} =
+                        $data->{'q'.$this->id}[choice::id_other_choice_name($cid)];
                 }
             }
         } else if (isset($data->{'q'.$this->id})) {
@@ -212,7 +216,7 @@ class radio extends base {
                 $chobj->horizontal = 1;
             }
             $chobj->name = $id.$uniquetag++;
-            if (!self::other_choice($choice)) {
+            if (!$choice->is_other_choice()) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
                 if ($id == $checked) {
@@ -220,8 +224,8 @@ class radio extends base {
                 }
                 $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
             } else {
-                $othertext = self::other_choice_display($choice);
-                $cid = 'q'.$this->id.self::other_choice_name($id);
+                $othertext = $choice->other_choice_display();
+                $cid = 'q'.$this->id.choice::id_other_choice_name($id);
                 if (isset($qdata->{$cid})) {
                     $chobj->selected = 1;
                     $chobj->othercontent = (!empty($qdata->{$cid}) ? htmlspecialchars($qdata->{$cid}) : '&nbsp;');
@@ -256,9 +260,10 @@ class radio extends base {
      * @return boolean
      */
     public function response_valid($responsedata) {
-        if (isset($responsedata->{'q'.$this->id}) && self::other_choice($this->choices[$responsedata->{'q'.$this->id}])) {
+        if (isset($responsedata->{'q'.$this->id}) && isset($this->choices[$responsedata->{'q'.$this->id}]) &&
+            $this->choices[$responsedata->{'q'.$this->id}]->is_other_choice()) {
             // False if "other" choice is checked but text box is empty.
-            return !empty($responsedata->{'q'.$this->id.self::other_choice_name($responsedata->{'q'.$this->id})});
+            return !empty($responsedata->{'q'.$this->id.choice::id_other_choice_name($responsedata->{'q'.$this->id})});
         } else {
             return parent::response_valid($responsedata);
         }

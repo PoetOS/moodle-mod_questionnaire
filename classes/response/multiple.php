@@ -57,8 +57,8 @@ class multiple extends single {
             $cid = clean_param($cid, PARAM_CLEAN);
             if (isset($this->question->choices[$cid])) {
                 // If this choice is an "other" choice, look for the added input.
-                if (\mod_questionnaire\question\base::other_choice($this->question->choices[$cid])) {
-                    $cname = \mod_questionnaire\question\base::other_choice_name($cid);
+                if ($this->question->choices[$cid]->is_other_choice()) {
+                    $cname = \mod_questionnaire\question\choice\choice::id_other_choice_name($cid);
                     $other = isset($val[$cname]) ? $val[$cname] : '';
 
                     // If no input specified, ignore this choice.
@@ -120,8 +120,9 @@ class multiple extends single {
                     $newrow['responses'] = [];
                 }
                 $newrow['responses'][$row->cid] = $row->cid;
-                if (\mod_questionnaire\question\base::other_choice($row->ccontent)) {
-                    $newrow['responses'][\mod_questionnaire\question\base::other_choice_name($row->cid)] = $row->response;
+                if (\mod_questionnaire\question\choice\choice::content_is_other_choice($row->ccontent)) {
+                    $newrow['responses'][\mod_questionnaire\question\choice\choice::id_other_choice_name($row->cid)] =
+                        $row->response;
                 }
             }
             $values[$qid] = $newrow;

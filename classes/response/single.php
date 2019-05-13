@@ -60,8 +60,8 @@ class single extends base {
         $cid = clean_param($cid, PARAM_CLEAN);
         if (isset($this->question->choices[$cid])) {
             // If this choice is an "other" choice, look for the added input.
-            if (\mod_questionnaire\question\base::other_choice($this->question->choices[$cid])) {
-                $cname = 'q' . $this->question->id . \mod_questionnaire\question\base::other_choice_name($cid);
+            if ($this->question->choices[$cid]->is_other_choice()) {
+                $cname = 'q' . $this->question->id . \mod_questionnaire\question\choice\choice::id_other_choice_name($cid);
                 $other = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
 
                 // If no input specified, ignore this choice.
@@ -189,7 +189,7 @@ class single extends base {
                 if (strpos($idx, 'other') === 0) {
                     $answer = $row->response;
                     $ccontent = $row->content;
-                    $content = \mod_questionnaire\question\base::other_choice_display($ccontent);
+                    $content = \mod_questionnaire\question\choice\choice::content_other_choice_display($ccontent);
                     $content .= ' ' . clean_text($answer);
                     $textidx = $content;
                     $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
@@ -250,8 +250,8 @@ class single extends base {
             $newrow['ccontent'] = $row->ccontent;
             $newrow['responses'] = [];
             $newrow['responses'][$row->cid] = $row->cid;
-            if (\mod_questionnaire\question\base::other_choice($row->ccontent)) {
-                $newrow['responses'][\mod_questionnaire\question\base::other_choice_name($row->cid)] = $row->response;
+            if (\mod_questionnaire\question\choice\choice::content_is_other_choice($row->ccontent)) {
+                $newrow['responses'][\mod_questionnaire\question\choice\choice::id_other_choice_name($row->cid)] = $row->response;
             }
             $values[$row->qid] = $newrow;
         }

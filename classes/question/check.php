@@ -143,12 +143,12 @@ class check extends base {
             if ($checked) {
                 $checkbox->checked = $checked;
             }
-            if (self::other_choice($choice)) {
-                $checkbox->oname = 'q'.$this->id.'['.self::other_choice_name($id).']';
-                $checkbox->ovalue = (isset($data->{'q'.$this->id}[self::other_choice_name($id)]) &&
-                    !empty($data->{'q'.$this->id}[self::other_choice_name($id)]) ?
-                    stripslashes($data->{'q'.$this->id}[self::other_choice_name($id)]) : '');
-                $checkbox->label = format_text(self::other_choice_display($choice).'', FORMAT_HTML, ['noclean' => true]);
+            if ($choice->is_other_choice()) {
+                $checkbox->oname = 'q'.$this->id.'['.$choice->other_choice_name().']';
+                $checkbox->ovalue = (isset($data->{'q'.$this->id}[$choice->other_choice_name()]) &&
+                    !empty($data->{'q'.$this->id}[$choice->other_choice_name()]) ?
+                    stripslashes($data->{'q'.$this->id}[$choice->other_choice_name()]) : '');
+                $checkbox->label = format_text($choice->other_choice_display().'', FORMAT_HTML, ['noclean' => true]);
             }
             $choicetags->qelements[] = (object)['choice' => $checkbox];
         }
@@ -176,7 +176,7 @@ class check extends base {
 
         foreach ($this->choices as $id => $choice) {
             $chobj = new \stdClass();
-            if (!self::other_choice($choice)) {
+            if (!$choice->is_other_choice()) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
                 if (isset($data->{'q'.$this->id}[$id])) {
@@ -186,9 +186,9 @@ class check extends base {
                 $chobj->content = (($choice->content === '') ? $id : format_text($choice->content, FORMAT_HTML,
                     ['noclean' => true]));
             } else {
-                $othertext = self::other_choice_display($choice);
-                if (isset($data->{'q'.$this->id}[self::other_choice_name($id)])) {
-                    $oresp = $data->{'q'.$this->id}[self::other_choice_name($id)];
+                $othertext = $choice->other_choice_display();
+                if (isset($data->{'q'.$this->id}[$choice->other_choice_name()])) {
+                    $oresp = $data->{'q'.$this->id}[$choice->other_choice_name()];
                     $chobj->selected = 1;
                     $chobj->othercontent = (!empty($oresp) ? htmlspecialchars($oresp) : '&nbsp;');
                 }
