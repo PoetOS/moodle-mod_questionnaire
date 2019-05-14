@@ -47,40 +47,27 @@ class rank extends base {
         global $DB;
 
         $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
-        if ($this->question->type_id == QUESRATE) {
-            $resid = false;
-            foreach ($this->question->choices as $cid => $choice) {
-                $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
-                    $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
-                // Choice not set or not answered.
-                if (!isset($other) || $other == '') {
-                    continue;
-                }
-                if ($other == get_string('notapplicable', 'questionnaire')) {
-                    $rank = -1;
-                } else {
-                    $rank = intval($other);
-                }
-                $record = new \stdClass();
-                $record->response_id = $responsedata->rid;
-                $record->question_id = $this->question->id;
-                $record->choice_id = $cid;
-                $record->rankvalue = $rank;
-                $resid = $DB->insert_record(self::response_table(), $record);
+        $resid = false;
+        foreach ($this->question->choices as $cid => $choice) {
+            $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
+                $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
+            // Choice not set or not answered.
+            if (!isset($other) || $other == '') {
+                continue;
             }
-            return $resid;
-        } else { // THIS SHOULD NEVER HAPPEN.
-            if ($val == get_string('notapplicable', 'questionnaire')) {
+            if ($other == get_string('notapplicable', 'questionnaire')) {
                 $rank = -1;
             } else {
-                $rank = intval($val);
+                $rank = intval($other);
             }
             $record = new \stdClass();
             $record->response_id = $responsedata->rid;
             $record->question_id = $this->question->id;
+            $record->choice_id = $cid;
             $record->rankvalue = $rank;
-            return $DB->insert_record(self::response_table(), $record);
+            $resid = $DB->insert_record(self::response_table(), $record);
         }
+        return $resid;
     }
 
     /**
@@ -125,89 +112,81 @@ class rank extends base {
             $rsql = ' AND response_id ' . $rsql;
         }
 
-        if ($this->question->type_id == QUESRATE) {
-            // JR there can't be an !other field in rating questions ???
-            $rankvalue = [];
-            $select = 'question_id=' . $this->question->id . ' AND content NOT LIKE \'!other%\' ORDER BY id ASC';
-            if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
-                foreach ($rows as $row) {
-                    $this->counts[$row->content] = new \stdClass();
-                    $nbna = $DB->count_records(self::response_table(), array('question_id' => $this->question->id,
-                                    'choice_id' => $row->id, 'rankvalue' => '-1'));
-                    $this->counts[$row->content]->nbna = $nbna;
-                    // The $row->value may be null (i.e. empty) or have a 'NULL' value.
-                    if (($row->value !== null) && ($row->value !== 'NULL') && ($row->value !== '')) {
-                        $rankvalue[] = $row->value;
+        // JR there can't be an !other field in rating questions ???
+        $rankvalue = [];
+        $select = 'question_id=' . $this->question->id . ' AND content NOT LIKE \'!other%\' ORDER BY id ASC';
+        if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
+            foreach ($rows as $row) {
+                $this->counts[$row->content] = new \stdClass();
+                $nbna = $DB->count_records(self::response_table(), array('question_id' => $this->question->id,
+                                'choice_id' => $row->id, 'rankvalue' => '-1'));
+                $this->counts[$row->content]->nbna = $nbna;
+                // The $row->value may be null (i.e. empty) or have a 'NULL' value.
+                if (($row->value !== null) && ($row->value !== 'NULL') && ($row->value !== '')) {
+                    $rankvalue[] = $row->value;
+                }
+            }
+        }
+
+        $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->precise == 2;
+        // Usual case.
+        if (!$isrestricted) {
+            if (!empty ($rankvalue)) {
+                $sql = "SELECT r.id, c.content, r.rankvalue, c.id AS choiceid
+                FROM {questionnaire_quest_choice} c, {".self::response_table()."} r
+                WHERE r.choice_id = c.id
+                AND c.question_id = " . $this->question->id . "
+                AND r.rankvalue >= 0{$rsql}
+                ORDER BY choiceid";
+                $results = $DB->get_records_sql($sql, $params);
+                $value = array();
+                foreach ($results as $result) {
+                    if (isset ($value[$result->choiceid])) {
+                        $value[$result->choiceid] += $rankvalue[$result->rankvalue];
+                    } else {
+                        $value[$result->choiceid] = $rankvalue[$result->rankvalue];
                     }
                 }
             }
 
-            $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->precise == 2;
-            // Usual case.
-            if (!$isrestricted) {
-                if (!empty ($rankvalue)) {
-                    $sql = "SELECT r.id, c.content, r.rankvalue, c.id AS choiceid
-                    FROM {questionnaire_quest_choice} c, {".self::response_table()."} r
-                    WHERE r.choice_id = c.id
-                    AND c.question_id = " . $this->question->id . "
-                    AND r.rankvalue >= 0{$rsql}
-                    ORDER BY choiceid";
-                    $results = $DB->get_records_sql($sql, $params);
-                    $value = array();
-                    foreach ($results as $result) {
-                        if (isset ($value[$result->choiceid])) {
-                            $value[$result->choiceid] += $rankvalue[$result->rankvalue];
-                        } else {
-                            $value[$result->choiceid] = $rankvalue[$result->rankvalue];
-                        }
-                    }
-                }
-
-                $sql = "SELECT c.id, c.content, a.average, a.num
-                        FROM {questionnaire_quest_choice} c
-                        INNER JOIN
-                             (SELECT c2.id, AVG(a2.rankvalue+1) AS average, COUNT(a2.response_id) AS num
-                              FROM {questionnaire_quest_choice} c2, {".self::response_table()."} a2
-                              WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
-                              GROUP BY c2.id) a ON a.id = c.id
-                              order by c.id";
-                $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
-                if (!empty ($rankvalue)) {
-                    foreach ($results as $key => $result) {
-                        $result->averagevalue = $value[$key] / $result->num;
-                    }
-                }
-                // Reindex by 'content'. Can't do this from the query as it won't work with MS-SQL.
+            $sql = "SELECT c.id, c.content, a.average, a.num
+                    FROM {questionnaire_quest_choice} c
+                    INNER JOIN
+                         (SELECT c2.id, AVG(a2.rankvalue+1) AS average, COUNT(a2.response_id) AS num
+                          FROM {questionnaire_quest_choice} c2, {".self::response_table()."} a2
+                          WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
+                          GROUP BY c2.id) a ON a.id = c.id
+                          order by c.id";
+            $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
+            if (!empty ($rankvalue)) {
                 foreach ($results as $key => $result) {
-                    $results[$result->content] = $result;
-                    unset($results[$key]);
+                    $result->averagevalue = $value[$key] / $result->num;
                 }
-                return $results;
-                // Case where scaleitems is less than possible choices.
-            } else {
-                $sql = "SELECT c.id, c.content, a.sum, a.num
-                        FROM {questionnaire_quest_choice} c
-                        INNER JOIN
-                             (SELECT c2.id, SUM(a2.rankvalue+1) AS sum, COUNT(a2.response_id) AS num
-                              FROM {questionnaire_quest_choice} c2, {".self::response_table()."} a2
-                              WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
-                              GROUP BY c2.id) a ON a.id = c.id";
-                $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
-                // Formula to calculate the best ranking order.
-                $nbresponses = count($rids);
-                foreach ($results as $key => $result) {
-                    $result->average = ($result->sum + ($nbresponses - $result->num) * ($this->length + 1)) / $nbresponses;
-                    $results[$result->content] = $result;
-                    unset($results[$key]);
-                }
-                return $results;
             }
+            // Reindex by 'content'. Can't do this from the query as it won't work with MS-SQL.
+            foreach ($results as $key => $result) {
+                $results[$result->content] = $result;
+                unset($results[$key]);
+            }
+            return $results;
+            // Case where scaleitems is less than possible choices.
         } else {
-            $sql = 'SELECT A.rankvalue, COUNT(A.response_id) AS num ' .
-                   'FROM {'.self::response_table().'} A ' .
-                   'WHERE A.question_id= ? ' . $rsql . ' ' .
-                   'GROUP BY A.rankvalue';
-            return $DB->get_records_sql($sql, array_merge(array($this->question->id), $params));
+            $sql = "SELECT c.id, c.content, a.sum, a.num
+                    FROM {questionnaire_quest_choice} c
+                    INNER JOIN
+                         (SELECT c2.id, SUM(a2.rankvalue+1) AS sum, COUNT(a2.response_id) AS num
+                          FROM {questionnaire_quest_choice} c2, {".self::response_table()."} a2
+                          WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
+                          GROUP BY c2.id) a ON a.id = c.id";
+            $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
+            // Formula to calculate the best ranking order.
+            $nbresponses = count($rids);
+            foreach ($results as $key => $result) {
+                $result->average = ($result->sum + ($nbresponses - $result->num) * ($this->length + 1)) / $nbresponses;
+                $results[$result->content] = $result;
+                unset($results[$key]);
+            }
+            return $results;
         }
     }
 
