@@ -44,15 +44,20 @@
 <!-- Begin fieldset generated from question_container template. -->
 <fieldset id="qn-{{fieldset.id}}" class="{{fieldset.class}}">
     {{{dependencylist}}}
-    <div class="qn-legend">
     {{#qnum}}
     <legend class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}}</legend>
+    <div class="qn-legend">
         <div class="qn-info">
             <h2 class="qn-number">{{{qnum}}}</h2>
         </div>
-    {{/qnum}}
         {{{required}}}
     </div>
+    {{/qnum}}
+    {{^qnum}}
+        <div class="qn-legend">
+            {{{required}}}
+        </div>
+    {{/qnum}}
     <div class="qn-content">
         <div class="qn-question {{skippedclass}}">
             {{#label}}<label for="{{label.for}}">{{/label}}
