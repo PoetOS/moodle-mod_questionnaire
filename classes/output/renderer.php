@@ -174,7 +174,7 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question for a survey.
-     * @param mod_questionnaire\question\base $question The question object.
+     * @param mod_questionnaire\question\question $question The question object.
      * @param array $formdata Any returned form data.
      * @param array $dependants Array of all questions/choices depending on $question.
      * @param int $qnum The question number.
@@ -203,7 +203,7 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question response.
-     * @param mod_questionnaire\question\base $question The question object.
+     * @param mod_questionnaire\question\question $question The question object.
      * @param stdClass $data All of the response data.
      * @param int $qnum The question number.
      * @return string The output for the page.
@@ -259,7 +259,7 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question results summary.
-     * @param mod_questionnaire\question\base $question The question object.
+     * @param mod_questionnaire\question\question $question The question object.
      * @param array $rids The response ids.
      * @param string $sort The sort order being used.
      * @param string $anonymous The value of the anonymous setting.

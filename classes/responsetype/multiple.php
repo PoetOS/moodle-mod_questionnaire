@@ -22,7 +22,7 @@
  * @package questiontypes
  */
 
-namespace mod_questionnaire\response;
+namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\db\bulk_sql_config;

@@ -22,8 +22,8 @@
  * @package questiontypes
  */
 
-namespace mod_questionnaire\response;
-use mod_questionnaire\response\choice\choice;
+namespace mod_questionnaire\responsetype;
+use mod_questionnaire\responsetype\choice\choice;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @package responsetypes
  */
 
-class single extends base {
+class single extends responsetype {
     /**
      * @return string
      */

@@ -25,7 +25,7 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 
-class sectiontext extends base {
+class sectiontext extends question {
 
     protected function responseclass() {
         return '';
@@ -150,10 +150,10 @@ class sectiontext extends base {
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_length_hidden($mform);
+        return question::form_length_hidden($mform);
     }
 
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_precise_hidden($mform);
+        return question::form_precise_hidden($mform);
     }
 }

@@ -25,10 +25,10 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 
-class yesno extends base {
+class yesno extends question {
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\boolean';
+        return '\\mod_questionnaire\\responsetype\\boolean';
     }
 
     public function helpname() {
@@ -193,11 +193,11 @@ class yesno extends base {
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_length_hidden($mform);
+        return question::form_length_hidden($mform);
     }
 
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_precise_hidden($mform);
+        return question::form_precise_hidden($mform);
     }
 
     /**

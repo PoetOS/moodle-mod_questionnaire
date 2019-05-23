@@ -55,7 +55,7 @@ $idcounter = 0;
 
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
-abstract class base {
+abstract class question {
 
     // Class Properties.
     /** @var int $id The database id of this question. */
@@ -380,7 +380,7 @@ abstract class base {
      */
     public function insert_response($responsedata) {
         if (isset($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
             return $this->response->insert_response($responsedata);
         } else {
             return false;
@@ -392,7 +392,7 @@ abstract class base {
      */
     public function get_results($rids = false) {
         if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
             return $this->response->get_results($rids);
         } else {
             return false;
@@ -404,7 +404,7 @@ abstract class base {
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
         if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
             return $this->response->display_results($rids, $sort, $anonymous);
         } else {
             return false;
@@ -482,7 +482,7 @@ abstract class base {
      */
     public function get_feedback_scores(array $rids) {
         if ($this->valid_feedback() && isset($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
             return $this->response->get_feedback_scores($rids);
         } else {
             return false;
@@ -793,7 +793,7 @@ abstract class base {
      */
     public function results_template() {
         if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
             return $this->response->results_template();
         } else {
             return false;
@@ -1570,7 +1570,7 @@ abstract class base {
      */
     public function save_mobile_response($rid, $respdata) {
         if (isset($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
+            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
             return $this->response->save_mobile_response($rid, $respdata);
         } else {
             return false;

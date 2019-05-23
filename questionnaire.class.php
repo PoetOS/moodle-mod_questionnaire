@@ -30,7 +30,7 @@ class questionnaire {
     // Class Properties.
 
     /**
-     * @var \mod_questionnaire\question\base[] $quesitons
+     * @var \mod_questionnaire\question\question[] $quesitons
      */
     public $questions = [];
 
@@ -129,7 +129,7 @@ class questionnaire {
             $isbreak = false;
             foreach ($records as $record) {
 
-                $this->questions[$record->id] = \mod_questionnaire\question\base::question_builder($record->type_id,
+                $this->questions[$record->id] = \mod_questionnaire\question\question::question_builder($record->type_id,
                     $record, $this->context);
 
                 if ($record->type_id != QUESPAGEBREAK) {
@@ -2128,22 +2128,22 @@ class questionnaire {
 
     private function response_select($rid) {
         // Response_bool (yes/no).
-        $values = \mod_questionnaire\response\boolean::response_select($rid);
+        $values = \mod_questionnaire\responsetype\boolean::response_select($rid);
 
         // Response_single (radio button or dropdown).
-        $values += \mod_questionnaire\response\single::response_select($rid);
+        $values += \mod_questionnaire\responsetype\single::response_select($rid);
 
         // Response_multiple.
-        $values += \mod_questionnaire\response\multiple::response_select($rid);
+        $values += \mod_questionnaire\responsetype\multiple::response_select($rid);
 
         // Response_rank.
-        $values += \mod_questionnaire\response\rank::response_select($rid);
+        $values += \mod_questionnaire\responsetype\rank::response_select($rid);
 
         // Response_text.
-        $values += \mod_questionnaire\response\text::response_select($rid);
+        $values += \mod_questionnaire\responsetype\text::response_select($rid);
 
         // Response_date.
-        $values += \mod_questionnaire\response\date::response_select($rid);
+        $values += \mod_questionnaire\responsetype\date::response_select($rid);
 
         return($values);
     }
@@ -2661,7 +2661,7 @@ class questionnaire {
         }
 
         foreach ($uniquetypes as $type) {
-            $question = \mod_questionnaire\question\base::question_builder($type);
+            $question = \mod_questionnaire\question\question::question_builder($type);
             if (!isset($question->response)) {
                 continue;
             }

@@ -933,7 +933,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             }
         }
     } else {
-        $question = \mod_questionnaire\question\base::question_builder($qtype);
+        $question = \mod_questionnaire\question\question::question_builder($qtype);
         $question->sid = $questionnaire->survey->id;
         $question->id = $questionnaire->cm->id;
         $question->type_id = $qtype;

@@ -22,7 +22,7 @@
  * @package response
  */
 
-namespace mod_questionnaire\response;
+namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 use \html_table;
@@ -36,19 +36,19 @@ use mod_questionnaire\db\bulk_sql_config;
  * @package response
  */
 
-abstract class base {
+abstract class responsetype {
 
     // Class properties:
-    /** @var \mod_questionnaire\question\base $question The question for this response. */
+    /** @var \mod_questionnaire\question\question $question The question for this response. */
     public $question;
 
     /** @var int $responseid The id of the response this is for. */
     public $responseid;
 
-    /** @var array $choices An array of \mod_questionnaire\response\choice objects. */
+    /** @var array $choices An array of \mod_questionnaire\responsetype\choice objects. */
     public $choices;
 
-    public function __construct(\mod_questionnaire\question\base $question, int $responseid = null, array $choices = []) {
+    public function __construct(\mod_questionnaire\question\question $question, int $responseid = null, array $choices = []) {
         $this->question = $question;
         $this->responseid = $responseid;
         $this->choices = $choices;

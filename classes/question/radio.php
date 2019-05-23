@@ -27,10 +27,10 @@ use mod_questionnaire\question\choice\choice;
 
 defined('MOODLE_INTERNAL') || die();
 
-class radio extends base {
+class radio extends question {
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\single';
+        return '\\mod_questionnaire\\responsetype\\single';
     }
 
     public function helpname() {
@@ -281,7 +281,7 @@ class radio extends base {
     }
 
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
-        return base::form_precise_hidden($mform);
+        return question::form_precise_hidden($mform);
     }
 
     /**

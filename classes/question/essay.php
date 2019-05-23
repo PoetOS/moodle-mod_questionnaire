@@ -32,7 +32,7 @@ class essay extends text {
      * @return object|string
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\text';
+        return '\\mod_questionnaire\\responsetype\\text';
     }
 
     /**

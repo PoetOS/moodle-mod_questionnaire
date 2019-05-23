@@ -27,10 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 use mod_questionnaire\question\choice\choice;
 
-class drop extends base {
+class drop extends question {
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\single';
+        return '\\mod_questionnaire\\responsetype\\single';
     }
 
     public function helpname() {
@@ -167,11 +167,11 @@ class drop extends base {
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_length_hidden($mform);
+        return question::form_length_hidden($mform);
     }
 
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_precise_hidden($mform);
+        return question::form_precise_hidden($mform);
     }
 
     /**

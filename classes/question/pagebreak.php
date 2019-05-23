@@ -27,7 +27,7 @@ use mod_questionnaire\edit_question_form;
 use \questionnaire;
 defined('MOODLE_INTERNAL') || die();
 
-class pagebreak extends base {
+class pagebreak extends question {
 
     /**
      * @return object|string

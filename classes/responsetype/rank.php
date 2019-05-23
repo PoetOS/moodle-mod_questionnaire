@@ -22,7 +22,7 @@
  * @package questiontypes
  */
 
-namespace mod_questionnaire\response;
+namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\db\bulk_sql_config;
@@ -34,7 +34,7 @@ use mod_questionnaire\db\bulk_sql_config;
  * @package responsetypes
  */
 
-class rank extends base {
+class rank extends responsetype {
     static public function response_table() {
         return 'questionnaire_response_rank';
     }
@@ -282,10 +282,10 @@ class rank extends base {
                 $this->counts[$ccontent]->avg = $avg;
                 $this->counts[$ccontent]->avgvalue = $avgvalue;
             }
-            $output .= \mod_questionnaire\response\display_support::mkresavg($this->counts, count($rids), $this->question->choices,
+            $output .= \mod_questionnaire\responsetype\display_support::mkresavg($this->counts, count($rids), $this->question->choices,
                 $this->question->precise, $prtotal, $this->question->length, $sort, $stravgvalue);
 
-            $output .= \mod_questionnaire\response\display_support::mkrescount($this->counts, $rids, $rows, $this->question,
+            $output .= \mod_questionnaire\responsetype\display_support::mkrescount($this->counts, $rids, $rows, $this->question,
                 $this->question->precise, $this->question->length, $sort);
         } else {
             $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';

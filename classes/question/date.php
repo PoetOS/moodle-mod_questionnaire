@@ -26,10 +26,10 @@ namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 
-class date extends base {
+class date extends question {
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\date';
+        return '\\mod_questionnaire\\responsetype\\date';
     }
 
     public function helpname() {
@@ -118,11 +118,11 @@ class date extends base {
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_length_hidden($mform);
+        return question::form_length_hidden($mform);
     }
 
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_precise_hidden($mform);
+        return question::form_precise_hidden($mform);
     }
 
     /**

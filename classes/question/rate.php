@@ -26,7 +26,7 @@ namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 
-class rate extends base {
+class rate extends question {
 
     /**
      * Constructor. Use to set any default properties.
@@ -38,7 +38,7 @@ class rate extends base {
     }
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\rank';
+        return '\\mod_questionnaire\\responsetype\\rank';
     }
 
     public function helpname() {

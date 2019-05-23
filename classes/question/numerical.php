@@ -25,7 +25,7 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 
-class numerical extends base {
+class numerical extends question {
 
     /**
      * Constructor. Use to set any default properties.
@@ -37,7 +37,7 @@ class numerical extends base {
     }
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\text';
+        return '\\mod_questionnaire\\responsetype\\text';
     }
 
     public function helpname() {

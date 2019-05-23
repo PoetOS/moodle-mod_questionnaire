@@ -26,10 +26,10 @@ namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 
-class check extends base {
+class check extends question {
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\multiple';
+        return '\\mod_questionnaire\\responsetype\\multiple';
     }
 
     public function helpname() {

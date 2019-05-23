@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-use mod_questionnaire\question\base;
+use mod_questionnaire\question\question;
 
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
