@@ -2,4 +2,4 @@ Release Notes
 
 <i>NOTE - The 3.6 releases will only work on Moodle 3.6. The 3.5 releases will work on Moodle 3.6, 3.5, 3.4 and 3.3.</i>
 
-(see CHANGES.TXT in release 3.3 for earlier changes.)
+(see CHANGES.TXT in release 3.5 for earlier changes.)
