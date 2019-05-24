@@ -16,21 +16,25 @@ cache:
     - $HOME/.npm
 
 php:
- - 7.0
  - 7.1
  - 7.2
 
 env:
   - MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
   - MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
-
+  - MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
+  - MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
 
 matrix:
   exclude:
-  - php: 7.0
+  - php: 7.2
     env: MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
-  - php: 7.0
+  - php: 7.2
     env: MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
+  - php: 7.1
+    env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
+  - php: 7.1
+    env: MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
 
 before_install:
   - phpenv config-rm xdebug.ini
@@ -52,6 +56,6 @@ script:
   - moodle-plugin-ci savepoints
   - moodle-plugin-ci mustache
   - moodle-plugin-ci grunt
-  - moodle-plugin-ci phpdoc
+  # moodle-plugin-ci phpdoc
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
