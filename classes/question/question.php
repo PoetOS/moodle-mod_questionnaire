@@ -164,7 +164,7 @@ abstract class question {
         }
 
         if ($respclass = $this->responseclass()) {
-            $this->response = new $respclass($this);
+            $this->responsetype = new $respclass($this);
         }
     }
 
@@ -357,7 +357,7 @@ abstract class question {
      * @return mixed
      */
     public function response_table() {
-        return $this->response->response_table();
+        return $this->responsetype->response_table();
     }
 
     /**
@@ -368,7 +368,7 @@ abstract class question {
      */
     public function response_has_choice($rid, $choiceid) {
         global $DB;
-        $choiceval = $this->response->transform_choiceid($choiceid);
+        $choiceval = $this->responsetype->transform_choiceid($choiceid);
         return $DB->record_exists($this->response_table(),
             ['response_id' => $rid, 'question_id' => $this->id, 'choice_id' => $choiceval]);
     }
@@ -379,9 +379,9 @@ abstract class question {
      * @return bool
      */
     public function insert_response($responsedata) {
-        if (isset($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
-            return $this->response->insert_response($responsedata);
+        if (isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->insert_response($responsedata);
         } else {
             return false;
         }
@@ -391,9 +391,9 @@ abstract class question {
      * Get results data method.
      */
     public function get_results($rids = false) {
-        if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
-            return $this->response->get_results($rids);
+        if (isset ($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->get_results($rids);
         } else {
             return false;
         }
@@ -403,9 +403,9 @@ abstract class question {
      * Display results method.
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
-            return $this->response->display_results($rids, $sort, $anonymous);
+        if (isset ($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->display_results($rids, $sort, $anonymous);
         } else {
             return false;
         }
@@ -481,9 +481,9 @@ abstract class question {
      * @return array | boolean
      */
     public function get_feedback_scores(array $rids) {
-        if ($this->valid_feedback() && isset($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
-            return $this->response->get_feedback_scores($rids);
+        if ($this->valid_feedback() && isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->get_feedback_scores($rids);
         } else {
             return false;
         }
@@ -792,9 +792,9 @@ abstract class question {
      * @return boolean | string
      */
     public function results_template() {
-        if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
-            return $this->response->results_template();
+        if (isset ($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->results_template();
         } else {
             return false;
         }
@@ -1569,9 +1569,9 @@ abstract class question {
      * @return bool
      */
     public function save_mobile_response($rid, $respdata) {
-        if (isset($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\responsetype\\responsetype')) {
-            return $this->response->save_mobile_response($rid, $respdata);
+        if (isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->save_mobile_response($rid, $respdata);
         } else {
             return false;
         }

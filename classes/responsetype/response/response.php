@@ -30,34 +30,45 @@ class response {
 
     // Class properties.
 
-    /** @var int $rid The id of the response this applies to. */
-    public $rid;
+    /** @var int $id The id of the response this applies to. */
+    public $id;
 
-    /** @var int $questionid The id of the question this response applies to. */
-    public $questionid;
+    /** @var int $questionnaireid The id of the questionnaire this response applies to. */
+    public $questionnaireid;
 
-    /** @var string $content The choiceid of this response (if applicable). */
-    public $choiceid;
+    /** @var int $userid The id of the user for this response. */
+    public $userid;
 
-    /** @var string $value The value of this response (if applicable). */
-    public $value;
+    /** @var int $submitted The most recent submission date of this response. */
+    public $submitted;
+
+    /** @var boolean $complete Flag for final submission of this response. */
+    public $complete;
+
+    /** @var int $grade Numeric grade for this response (if applicable). */
+    public $grade;
 
     /**
      * Choice constructor.
-     * @param null $rid
-     * @param null $questionid
-     * @param null $choiceid
-     * @param null $value
+     * @param null $id
+     * @param null $questionnaireid
+     * @param null $userid
+     * @param null $submitted
+     * @param null $complete
+     * @param null $grade
      */
-    public function __construct($rid = null, $questionid = null, $choiceid = null, $value = null) {
-        $this->rid = $rid;
-        $this->questionid = $questionid;
-        $this->choiceid = $choiceid;
-        $this->value = $value;
+    public function __construct($id = null, $questionnaireid = null, $userid = null, $submitted = null, $complete = null,
+                                $grade = null) {
+        $this->id = $id;
+        $this->questionnaireid = $questionnaireid;
+        $this->userid = $userid;
+        $this->submitted = $submitted;
+        $this->complete = $complete;
+        $this->grade = $grade;
     }
 
     /**
-     * Create and return a choice object from data.
+     * Create and return a response object from data.
      *
      * @param object | array $responsedata The data to load.
      * @return response
@@ -70,10 +81,11 @@ class response {
         $properties = array_keys(get_class_vars(__CLASS__));
         foreach ($properties as $property) {
             if (!isset($responsedata[$property])) {
-                $choicedata[$property] = null;
+                $responsedata[$property] = null;
             }
         }
 
-        return new response($choicedata['rid'], $choicedata['questionid'], $choicedata['choiceid'], $choicedata['value']);
+        return new response($responsedata['id'], $responsedata['questionnaireid'], $responsedata['userid'],
+            $responsedata['submitted'], $responsedata['complete'], $responsedata['grade']);
     }
 }

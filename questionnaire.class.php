@@ -91,6 +91,9 @@ class questionnaire {
         if (!empty($this->cm->id)) {
             $this->capabilities = questionnaire_load_capabilities($this->cm->id);
         }
+
+        // Load any response information for this user.
+        $this->add_responses();
     }
 
     /**
@@ -143,6 +146,31 @@ class questionnaire {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * @param int $userid
+     * @throws dml_exception
+     */
+    public function add_responses($userid = null) {
+        global $USER, $DB;
+
+        $this->responses = [];
+
+        // Empty questionnaires cannot have responses.
+        if (empty($this->id)) {
+            return;
+        }
+
+        if ($userid === null) {
+            $userid = $USER->id;
+        }
+
+        $responses = $DB->get_records('questionnaire_response', ['questionnaireid' => $this->id, 'userid' => $userid],
+            'submitted ASC');
+        foreach ($responses as $response) {
+            $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
         }
     }
 
@@ -1456,8 +1484,8 @@ class questionnaire {
             $record->surveyid = $newsid;
             $record->dependquestionid = $qidarray[$dquestion->dependquestionid];
             // The response may not use choice id's (example boolean). If not, just copy the value.
-            $response = $this->questions[$dquestion->dependquestionid]->response;
-            if ($response->transform_choiceid($dquestion->dependchoiceid) == $dquestion->dependchoiceid) {
+            $responsetype = $this->questions[$dquestion->dependquestionid]->responsetype;
+            if ($responsetype->transform_choiceid($dquestion->dependchoiceid) == $dquestion->dependchoiceid) {
                 $record->dependchoiceid = $cidarray[$dquestion->dependchoiceid];
             } else {
                 $record->dependchoiceid = $dquestion->dependchoiceid;
@@ -2662,11 +2690,11 @@ class questionnaire {
 
         foreach ($uniquetypes as $type) {
             $question = \mod_questionnaire\question\question::question_builder($type);
-            if (!isset($question->response)) {
+            if (!isset($question->responsetype)) {
                 continue;
             }
             $allresponsessql .= $allresponsessql == '' ? '' : ' UNION ALL ';
-            list ($sql, $params) = $question->response->get_bulk_sql($qids, $rid, $userid, $groupid, $showincompletes);
+            list ($sql, $params) = $question->responsetype->get_bulk_sql($qids, $rid, $userid, $groupid, $showincompletes);
             $allresponsesparams = array_merge($allresponsesparams, $params);
             $allresponsessql .= $sql;
         }
@@ -2927,7 +2955,7 @@ class questionnaire {
 
         foreach ($this->questions as $question) {
             // Skip questions that aren't response capable.
-            if (!isset($question->response)) {
+            if (!isset($question->responsetype)) {
                 continue;
             }
             // Establish the table's field names.
