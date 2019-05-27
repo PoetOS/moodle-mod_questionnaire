@@ -31,6 +31,7 @@
     {
         "qelements": {
             "choice": {
+                "type": "text",
                 "onkeypress": "dosomething()",
                 "name": "choiceid1",
                 "value": "2010-03-04"
@@ -43,7 +44,7 @@
 {{#choice}}
 <div class="qn-datemsg">{{# str }}strictdateformatting, mod_questionnaire{{/ str}}</div>
 <div class="qn-date">
-    <input type="date" name="{{choice.name}}" value="{{choice.value}}" />
+    <input type="{{type}}" name="{{choice.name}}" value="{{choice.value}}" />
 <!--    <input {{#choice.onkeypress}}onkeypress="{{.}}"{{/choice.onkeypress}} type="text" size="12" name="{{choice.name}}" maxlength="10" value="{{choice.value}}" /> -->
 </div>
 {{/choice}}

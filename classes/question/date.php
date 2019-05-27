@@ -71,6 +71,7 @@ class date extends base {
             }
         }
         $choice = new \stdClass();
+        $choice->type = 'date'; // Using HTML5 date input.
         $choice->onkeypress = 'return event.keyCode != 13;';
         $choice->name = 'q'.$this->id;
         $choice->value = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
