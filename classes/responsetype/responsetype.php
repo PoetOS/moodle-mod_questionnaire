@@ -64,6 +64,16 @@ abstract class responsetype {
     }
 
     /**
+     * Return the known response tables. Should be replaced by a better management system eventually.
+     * @return array
+     */
+    static public function all_response_tables() {
+        return ['questionnaire_response_bool', 'questionnaire_response_date', 'questionnaire_response_other',
+            'questionnaire_response_rank', 'questionnaire_response_text', 'questionnaire_resp_multiple',
+            'questionnaire_resp_single'];
+    }
+
+    /**
      * Insert a provided response to the question.
      *
      * @param object $responsedata All of the responsedata as an object.

@@ -194,7 +194,8 @@ abstract class question {
 
     /**
      * Return the different question type names.
-     * @return array
+     * @param $qtype
+     * @return string
      */
     static public function qtypename($qtype) {
         if (array_key_exists($qtype, self::$qtypenames)) {
@@ -202,6 +203,14 @@ abstract class question {
         } else {
             return('');
         }
+    }
+
+    /**
+     * Return all of the different question type names.
+     * @return array
+     */
+    static public function qtypenames() {
+        return self::$qtypenames;
     }
 
     /**
@@ -926,7 +935,8 @@ abstract class question {
         $this->form_question_text($mform, $form->_customdata['modcontext']);
 
         if ($this->has_choices()) {
-            $this->allchoices = $this->form_choices($mform, $this->choices);
+            // This is used only by the question editing form.
+            $this->allchoices = $this->form_choices($mform);
         }
 
         // Added for advanced dependencies, parameter $editformobject is needed to use repeat_elements.
@@ -1128,33 +1138,32 @@ abstract class question {
 
     /**
      * @param \MoodleQuickForm $mform
-     * @param array $choices
-     * @param string $helpname
      * @return string
      * @throws \coding_exception
      */
-    protected function form_choices(\MoodleQuickForm $mform, array $choices, $helpname = '') {
-        $numchoices = count($choices);
-        $allchoices = '';
-        foreach ($choices as $choice) {
-            if (!empty($allchoices)) {
-                $allchoices .= "\n";
+    protected function form_choices(\MoodleQuickForm $mform) {
+        if ($this->has_choices()) {
+            $numchoices = count($this->choices);
+            $allchoices = '';
+            foreach ($this->choices as $choice) {
+                if (!empty($allchoices)) {
+                    $allchoices .= "\n";
+                }
+                $allchoices .= $choice->content;
             }
-            $allchoices .= $choice->content;
-        }
-        if (empty($helpname)) {
-            $helpname = $this->helpname();
-        }
 
-        $mform->addElement('html', '<div class="qoptcontainer">');
-        $options = ['wrap' => 'virtual', 'class' => 'qopts'];
-        $mform->addElement('textarea', 'allchoices', get_string('possibleanswers', 'questionnaire'), $options);
-        $mform->setType('allchoices', PARAM_RAW);
-        $mform->addRule('allchoices', null, 'required', null, 'client');
-        $mform->addHelpButton('allchoices', $helpname, 'questionnaire');
-        $mform->addElement('html', '</div>');
-        $mform->addElement('hidden', 'num_choices', $numchoices);
-        $mform->setType('num_choices', PARAM_INT);
+            $helpname = $this->helpname();
+
+            $mform->addElement('html', '<div class="qoptcontainer">');
+            $options = ['wrap' => 'virtual', 'class' => 'qopts'];
+            $mform->addElement('textarea', 'allchoices', get_string('possibleanswers', 'questionnaire'), $options);
+            $mform->setType('allchoices', PARAM_RAW);
+            $mform->addRule('allchoices', null, 'required', null, 'client');
+            $mform->addHelpButton('allchoices', $helpname, 'questionnaire');
+            $mform->addElement('html', '</div>');
+            $mform->addElement('hidden', 'num_choices', $numchoices);
+            $mform->setType('num_choices', PARAM_INT);
+        }
         return $allchoices;
     }
 

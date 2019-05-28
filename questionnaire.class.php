@@ -136,7 +136,7 @@ class questionnaire {
                     $record, $this->context);
 
                 if ($record->type_id != QUESPAGEBREAK) {
-                    $this->questionsbysec[$sec][$record->id] = &$this->questions[$record->id];
+                    $this->questionsbysec[$sec][] = $record->id;
                     $isbreak = false;
                 } else {
                     // Sanity check: no section break allowed as first position, no 2 consecutive section breaks.
@@ -752,8 +752,8 @@ class questionnaire {
                 }
             }
         } else {
-            foreach ($this->questionsbysec[$section] as $question) {
-                if ($question->required()) {
+            foreach ($this->questionsbysec[$section] as $questionid) {
+                if ($this->questions[$questionid]->required()) {
                     return true;
                 }
             }
@@ -921,8 +921,8 @@ class questionnaire {
     public function eligible_questions_on_page($secnum, $rid) {
         $questionstodisplay = false;
 
-        foreach ($this->questionsbysec[$secnum] as $question) {
-            if ($question->dependency_fulfilled($rid, $this->questions)) {
+        foreach ($this->questionsbysec[$secnum] as $questionid) {
+            if ($this->questions[$questionid]->dependency_fulfilled($rid, $this->questions)) {
                 $questionstodisplay = true;
                 break;
             }
@@ -1088,8 +1088,8 @@ class questionnaire {
         $i = 0;
         if ($section > 1) {
             for ($j = 2; $j <= $section; $j++) {
-                foreach ($this->questionsbysec[$j - 1] as $question) {
-                    if ($question->type_id < QUESPAGEBREAK) {
+                foreach ($this->questionsbysec[$j - 1] as $questionid) {
+                    if ($this->questions[$questionid]->type_id < QUESPAGEBREAK) {
                         $i++;
                     }
                 }
@@ -1097,14 +1097,14 @@ class questionnaire {
         }
 
         $this->print_survey_start($message, $section, $numsections, $hasrequired, '', 1);
-        foreach ($this->questionsbysec[$section] as $question) {
-            if ($question->type_id != QUESSECTIONTEXT) {
+        foreach ($this->questionsbysec[$section] as $questionid) {
+            if ($this->questions[$questionid]->type_id != QUESSECTIONTEXT) {
                 $i++;
             }
             // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
             $formdata->questionnaire_id = $this->id;
             $this->page->add_to_page('questions',
-                $this->renderer->question_output($question, $formdata, [], $i, $this->usehtmleditor));
+                $this->renderer->question_output($this->questions[$questionid], $formdata, [], $i, $this->usehtmleditor));
         }
 
         $this->print_survey_end($section, $numsections);
@@ -1307,7 +1307,7 @@ class questionnaire {
             }
         }
 
-        $this->print_survey_start($message, $section = 1, 1, $hasrequired, $rid = '');
+        $this->print_survey_start($message, 1, 1, $hasrequired, '');
 
         if (($referer == 'preview') && $this->has_dependencies()) {
             $allqdependants = $this->get_dependants_and_choices();
@@ -1327,16 +1327,16 @@ class questionnaire {
                 $output .= $this->renderer->print_preview_pagenumber(get_string('page', 'questionnaire').' '.$page);
                 $page++;
             }
-            foreach ($section as $question) {
-                if ($question->type_id == QUESSECTIONTEXT) {
+            foreach ($section as $questionid) {
+                if ($this->questions[$questionid]->type_id == QUESSECTIONTEXT) {
                     $i--;
                 }
-                if (isset($allqdependants[$question->id])) {
-                    $dependants = $allqdependants[$question->id];
+                if (isset($allqdependants[$questionid])) {
+                    $dependants = $allqdependants[$questionid];
                 } else {
                     $dependants = [];
                 }
-                $output .= $this->renderer->question_output($question, $formdata, $dependants, $i++, null);
+                $output .= $this->renderer->question_output($this->questions[$questionid], $formdata, $dependants, $i++, null);
                 $this->page->add_to_page('questions', $output);
                 $output = '';
             }
@@ -1529,8 +1529,8 @@ class questionnaire {
         $i = 1;
         for ($j = 2; $j <= $section; $j++) {
             // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED.
-            foreach ($this->questionsbysec[$j - 1] as $sectionrecord) {
-                $tid = $sectionrecord->type_id;
+            foreach ($this->questionsbysec[$j - 1] as $questionid) {
+                $tid = $this->questions[$questionid]->type_id;
                 if ($tid < QUESPAGEBREAK) {
                     $i++;
                 }
@@ -1538,16 +1538,16 @@ class questionnaire {
         }
         $qnum = $i - 1;
 
-        foreach ($this->questionsbysec[$section] as $question) {
-            $tid = $question->type_id;
+        foreach ($this->questionsbysec[$section] as $questionid) {
+            $tid = $this->questions[$questionid]->type_id;
             if ($tid != QUESSECTIONTEXT) {
                 $qnum++;
             }
-            if (!$question->response_complete($formdata)) {
+            if (!$this->questions[$questionid]->response_complete($formdata)) {
                 $missing++;
                 $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
             }
-            if (!$question->response_valid($formdata)) {
+            if (!$this->questions[$questionid]->response_valid($formdata)) {
                 $wrongformat++;
                 $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
             }
@@ -1604,8 +1604,8 @@ class questionnaire {
 
             /* get question_id's in this section */
             $qids = array();
-            foreach ($this->questionsbysec[$sec] as $question) {
-                $qids[] = $question->id;
+            foreach ($this->questionsbysec[$sec] as $questionid) {
+                $qids[] = $questionid;
             }
             if (empty($qids)) {
                 return;
@@ -2146,9 +2146,9 @@ class questionnaire {
         }
 
         if (!empty($this->questionsbysec[$responsedata->sec])) {
-            foreach ($this->questionsbysec[$responsedata->sec] as $question) {
-                $val = isset($responsedata->{'q'.$question->id}) ? $responsedata->{'q'.$question->id} : '';
-                $question->insert_response($responsedata);
+            foreach ($this->questionsbysec[$responsedata->sec] as $questionid) {
+                $val = isset($responsedata->{'q'.$questionid}) ? $responsedata->{'q'.$questionid} : '';
+                $this->questions[$questionid]->insert_response($responsedata);
             }
         }
         return($responsedata->rid);
