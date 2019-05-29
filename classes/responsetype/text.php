@@ -26,6 +26,7 @@ namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\db\bulk_sql_config;
+use mod_questionnaire\responsetype\answer\answer;
 
 /**
  * Class for text response types.
@@ -269,6 +270,29 @@ class text extends responsetype {
         }
 
         return $values;
+    }
+
+    /**
+     * Return an array of answer objects by question for the given response id.
+     * THIS SHOULD REPLACE response_select.
+     *
+     * @param int $rid The response id.
+     * @return array array answer
+     * @throws \dml_exception
+     */
+    static public function response_answers_by_question($rid) {
+        global $DB;
+
+        $answers = [];
+        $sql ='SELECT id, response_id as responseid, question_id as questionid, 0 as choiceid, response as value ' .
+            'FROM {' . static::response_table() .'} ' .
+            'WHERE response_id = ? ';
+        $records = $DB->get_records_sql($sql, [$rid]);
+        foreach ($records as $record) {
+            $answers[$record->questionid][] = answer::create_from_data($record);
+        }
+
+        return $answers;
     }
 
     /**

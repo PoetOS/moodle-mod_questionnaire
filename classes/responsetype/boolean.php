@@ -25,7 +25,11 @@
 namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
+use dml_exception;
 use mod_questionnaire\db\bulk_sql_config;
+use mod_questionnaire\responsetype\answer\answer;
+use stdClass;
 
 /**
  * Class for boolean response types.
@@ -46,14 +50,14 @@ class boolean extends responsetype {
     /**
      * @param int|object $responsedata
      * @return bool|int
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     public function insert_response($responsedata) {
         global $DB;
 
         $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
         if (!empty($val)) { // If "no answer" then choice is empty (CONTRIB-846).
-            $record = new \stdClass();
+            $record = new stdClass();
             $record->response_id = $responsedata->rid;
             $record->question_id = $this->question->id;
             $record->choice_id = $val;
@@ -67,8 +71,8 @@ class boolean extends responsetype {
      * @param bool $rids
      * @param bool $anonymous
      * @return array
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * @throws coding_exception
+     * @throws dml_exception
      */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
@@ -128,7 +132,7 @@ class boolean extends responsetype {
         if ($responses = $DB->get_recordset_sql($sql, $params)) {
             $feedbackscores = [];
             foreach ($responses as $rid => $response) {
-                $feedbackscores[$rid] = new \stdClass();
+                $feedbackscores[$rid] = new stdClass();
                 $feedbackscores[$rid]->rid = $rid;
                 $feedbackscores[$rid]->score = ($response->choice_id == 'y') ? 1 : 0;
             }
@@ -179,7 +183,7 @@ class boolean extends responsetype {
             }
             $pagetags = $this->get_results_tags($counts, $numresps, $numrespondents, $prtotal, '');
         } else {
-            $pagetags = new \stdClass();
+            $pagetags = new stdClass();
         }
         return $pagetags;
     }
@@ -235,6 +239,30 @@ class boolean extends responsetype {
         }
 
         return $values;
+    }
+
+    /**
+     * Return an array of answer objects by question for the given response id.
+     * THIS SHOULD REPLACE response_select.
+     *
+     * @param int $rid The response id.
+     * @return array array answer
+     * @throws dml_exception
+     */
+    static public function response_answers_by_question($rid) {
+        global $DB;
+
+        $answers = [];
+        $sql = 'SELECT id, response_id as responseid, question_id as questionid, choice_id as choiceid, choice_id as value ' .
+            'FROM {' . static::response_table() .'} ' .
+            'WHERE response_id = ? ';
+        $records = $DB->get_records_sql($sql, [$rid]);
+        foreach ($records as $record) {
+            $record->choiceid = ($record->choiceid == 'y') ? 1 : 0;
+            $answers[$record->questionid][] = answer::create_from_data($record);
+        }
+
+        return $answers;
     }
 
     /**

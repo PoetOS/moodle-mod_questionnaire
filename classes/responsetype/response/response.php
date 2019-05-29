@@ -103,47 +103,12 @@ class response {
      * Add the answers to each question in a question array of answers structure.
      */
     public function add_questions_answers() {
-        global $DB;
-
         $this->answers = [];
-
-        $sql = 'SELECT ' . $DB->sql_concat("'b'", 'id') . ' AS id, response_id as responseid, question_id as questionid, '.
-            'choice_id as choiceid, null as value ' .
-            'FROM {questionnaire_response_bool} ' .
-            'WHERE response_id = ? ';
-        $sql .= 'UNION ALL ' .
-            'SELECT ' . $DB->sql_concat("'d'", 'id') . ' AS id, response_id as responseid, question_id as questionid, '.
-            'null as choiceid, response as value ' .
-            'FROM {questionnaire_response_date} ' .
-            'WHERE response_id = ? ';
-        $sql .= 'UNION ALL ' .
-            'SELECT ' . $DB->sql_concat("'r'", 'id') . ' AS id, response_id as responseid, question_id as questionid, '.
-            'choice_id as choiceid, rankvalue as value ' .
-            'FROM {questionnaire_response_rank} ' .
-            'WHERE response_id = ? ';
-        $sql .= 'UNION ALL ' .
-            'SELECT ' . $DB->sql_concat("'t'", 'id') . ' AS id, response_id as responseid, question_id as questionid, '.
-            'null as choiceid, response as value ' .
-            'FROM {questionnaire_response_text} ' .
-            'WHERE response_id = ? ';
-        $sql .= 'UNION ALL ' .
-            'SELECT ' . $DB->sql_concat("'m'", 'm.id') . ' AS id, m.response_id as responseid, m.question_id as questionid, '.
-            'm.choice_id as choiceid, o.response as value ' .
-            'FROM {questionnaire_resp_multiple} m ' .
-            'LEFT JOIN {questionnaire_response_other} o ON o.response_id = m.response_id AND o.question_id = m.question_id AND ' .
-            'o.choice_id = m.choice_id ' .
-            'WHERE m.response_id = ? ';
-        $sql .= 'UNION ALL ' .
-            'SELECT ' . $DB->sql_concat("'s'", 's.id') . ' AS id, s.response_id as responseid, s.question_id as questionid, '.
-            's.choice_id as choiceid, o.response as value ' .
-            'FROM {questionnaire_resp_single} s ' .
-            'LEFT JOIN {questionnaire_response_other} o ON o.response_id = s.response_id AND o.question_id = s.question_id AND ' .
-            'o.choice_id = s.choice_id ' .
-            'WHERE s.response_id = ? ';
-
-        $records = $DB->get_records_sql($sql, [$this->id, $this->id, $this->id, $this->id, $this->id, $this->id, $this->id]);
-        foreach ($records as $record) {
-            $this->answers[$record->questionid][] = answer::create_from_data($record);
-        }
+        $this->answers += \mod_questionnaire\responsetype\boolean::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\date::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\multiple::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\rank::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\single::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\text::response_answers_by_question($this->id);
     }
 }

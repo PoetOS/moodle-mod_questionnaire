@@ -23,6 +23,7 @@
  */
 
 namespace mod_questionnaire\responsetype;
+use mod_questionnaire\responsetype\answer\answer;
 use mod_questionnaire\responsetype\choice\choice;
 
 defined('MOODLE_INTERNAL') || die();
@@ -257,6 +258,32 @@ class single extends responsetype {
         }
 
         return $values;
+    }
+
+    /**
+     * Return an array of answer objects by question for the given response id.
+     * THIS SHOULD REPLACE response_select.
+     *
+     * @param int $rid The response id.
+     * @return array array answer
+     * @throws \dml_exception
+     */
+    static public function response_answers_by_question($rid) {
+        global $DB;
+
+        $answers = [];
+        $sql ='SELECT r.id as id, r.response_id as responseid, r.question_id as questionid, r.choice_id as choiceid, ' .
+            'o.response as value ' .
+            'FROM {' . static::response_table() .'} r ' .
+            'LEFT JOIN {questionnaire_response_other} o ON r.response_id = o.response_id AND r.question_id = o.question_id AND ' .
+            'r.choice_id = o.choice_id ' .
+            'WHERE r.response_id = ? ';
+        $records = $DB->get_records_sql($sql, [$rid]);
+        foreach ($records as $record) {
+            $answers[$record->questionid][] = answer::create_from_data($record);
+        }
+
+        return $answers;
     }
 
     /**

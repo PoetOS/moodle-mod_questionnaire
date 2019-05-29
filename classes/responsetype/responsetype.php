@@ -55,7 +55,8 @@ abstract class responsetype {
     }
 
     /**
-     * Provide the necessary response data table name.
+     * Provide the necessary response data table name. Should probably always be used with late static binding 'static::' form
+     * rather than 'self::' form to allow for class extending.
      *
      * @return string response table name.
      */
@@ -240,6 +241,17 @@ abstract class responsetype {
      * @return array
      */
     static public function response_select($rid) {
+        return [];
+    }
+
+    /**
+     * Return an array of answer objects by question for the given response id.
+     * THIS SHOULD REPLACE response_select.
+     *
+     * @param int $rid The response id.
+     * @return array array answer
+     */
+    static public function response_answers_by_question($rid) {
         return [];
     }
 

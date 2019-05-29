@@ -92,7 +92,9 @@ class questionnaire {
             $this->capabilities = questionnaire_load_capabilities($this->cm->id);
         }
 
-        // Load any response information for this user.
+        // Don't automatically add responses.
+        $this->responses = [];
+        // Temporrary to test all databases.
         $this->add_responses();
     }
 
@@ -150,13 +152,13 @@ class questionnaire {
     }
 
     /**
+     * Load any response information for this user.
+     *
      * @param int $userid
      * @throws dml_exception
      */
     public function add_responses($userid = null) {
         global $USER, $DB;
-
-        $this->responses = [];
 
         // Empty questionnaires cannot have responses.
         if (empty($this->id)) {

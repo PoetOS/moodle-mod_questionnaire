@@ -64,11 +64,21 @@ class mobile {
         $data['pagenum'] = $pagenum;
         $data['prevpage'] = $prevpage;
         $data['nextpage'] = 0;
-        $data['completed'] = (isset($questionnairedata['response']['complete']) &&
-            $questionnairedata['response']['complete'] == 'y') ? 1 : 0;
-        $data['complete_userdate'] = (isset($questionnairedata['response']['complete']) &&
-            $questionnairedata['response']['complete'] == 'y') ? userdate($questionnairedata['response']['submitted']) : '';
+        $latestresponse = end($questionnaire->responses);
+        if (!empty($latestresponse) && ($latestresponse->complete == 'y')) {
+            $data['completed'] = 1;
+            $data['complete_userdate'] = userdate($latestresponse->submitted);
+        } else {
+            $data['completed'] = 0;
+            $data['complete_userdate'] = '';
+        }
         $pagequestions = [];
+        $data['pagequestions'] = [];
+        $qnum = 1;
+        foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
+            $pagequestion['qnum'] = $qnum;
+            $qnum++;
+        }
         foreach ($questionnairedata['questions'][$pagenum] as $questionid => $choices) {
             $pagequestion = $questionnairedata['questionsinfo'][$pagenum][$questionid];
             // Do an array_merge to reindex choices with standard numerical indexing.
