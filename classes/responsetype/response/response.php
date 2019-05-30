@@ -104,11 +104,11 @@ class response {
      */
     public function add_questions_answers() {
         $this->answers = [];
+        $this->answers += \mod_questionnaire\responsetype\multiple::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\single::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\rank::response_answers_by_question($this->id);
         $this->answers += \mod_questionnaire\responsetype\boolean::response_answers_by_question($this->id);
         $this->answers += \mod_questionnaire\responsetype\date::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\responsetype\multiple::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\responsetype\rank::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\responsetype\single::response_answers_by_question($this->id);
         $this->answers += \mod_questionnaire\responsetype\text::response_answers_by_question($this->id);
     }
 }

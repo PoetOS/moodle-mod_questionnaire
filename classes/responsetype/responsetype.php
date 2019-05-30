@@ -38,7 +38,7 @@ use mod_questionnaire\db\bulk_sql_config;
 
 abstract class responsetype {
 
-    // Class properties:
+    // Class properties.
     /** @var \mod_questionnaire\question\question $question The question for this response. */
     public $question;
 
@@ -221,16 +221,6 @@ abstract class responsetype {
      * @return array | boolean
      */
     public function get_feedback_scores(array $rids) {
-        return false;
-    }
-
-    /**
-     * Load the requested response into the object. Must be implemented by the subclass.
-     *
-     * @param int $rid The response id.
-     * @return bool
-     */
-    public function load_response($rid) {
         return false;
     }
 

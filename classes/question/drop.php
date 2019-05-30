@@ -128,11 +128,11 @@ class drop extends question {
 
     /**
      * Return the context tags for the drop response template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object The check question response context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
@@ -142,13 +142,8 @@ class drop extends question {
         $resptags->options = [];
         $resptags->options[] = (object)['value' => '', 'label' => get_string('choosedots')];
 
-        $qdata = new \stdClass();
-        if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
-            foreach ($data->{'q'.$this->id} as $cid => $cval) {
-                $qdata->{'q' . $this->id} = $cid;
-            }
-        } else if (isset($data->{'q'.$this->id})) {
-            $qdata->{'q'.$this->id} = $data->{'q'.$this->id};
+        if (!isset($response->answers[$this->id])) {
+            $response->answers[$this->id][] = new \mod_questionnaire\responsetype\answer\answer();
         }
 
         foreach ($this->choices as $id => $choice) {
@@ -156,7 +151,7 @@ class drop extends question {
             $chobj = new \stdClass();
             $chobj->value = $id;
             $chobj->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]);
-            if (isset($qdata->{'q'.$this->id}) && ($id == $qdata->{'q'.$this->id})) {
+            if (isset($response->answers[$this->id][$id])) {
                 $chobj->selected = 1;
                 $resptags->selectedlabel = $chobj->label;
             }

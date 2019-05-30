@@ -825,13 +825,13 @@ abstract class question {
 
     /**
      * Get the output for question renderers / templates.
-     * @param $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param string $qnum
      * @return \stdClass
      */
-    public function response_output($data, $qnum='') {
-        $pagetags = $this->questionstart_survey_display($qnum, $data);
-        $pagetags->qformelement = $this->response_survey_display($data);
+    public function response_output($response, $qnum='') {
+        $pagetags = $this->questionstart_survey_display($qnum);
+        $pagetags->qformelement = $this->response_survey_display($response);
         return $pagetags;
     }
 

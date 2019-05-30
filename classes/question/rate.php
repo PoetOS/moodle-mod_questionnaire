@@ -328,24 +328,23 @@ class rate extends question {
 
     /**
      * Return the context tags for the rate response template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object The rate question response context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
         $resptags->headers = [];
         $resptags->rows = [];
 
-        if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
-            $data->{'q'.$this->id} = array();
+        if (!isset($response->answers[$this->id])) {
+            $response->answers[$this->id][] = new \mod_questionnaire\responsetype\answer\answer();
         }
         // Check if rate question has one line only to display full width columns of choices.
         $nocontent = false;
         foreach ($this->choices as $cid => $choice) {
-            $content = $choice->content;
             if ($choice->content == '') {
                 $nocontent = true;
                 break;
@@ -430,13 +429,13 @@ class rate extends question {
                 $cols = [];
                 for ($j = 0; $j < $this->length; $j++) {
                     $cellobj = new \stdClass();
-                    if (isset($data->$str) && ($j == $data->$str)) {
+                    if (isset($response->answers[$this->id][$cid]) && ($j == $response->answers[$this->id][$cid]->value)) {
                         $cellobj->checked = 1;
                     }
                     $cellobj->str = $str.$j.$uniquetag++;
                     $cellobj->bg = $bg;
                     // N/A column checked.
-                    $checkedna = (isset($data->$str) && ($data->$str == -1));
+                    $checkedna = (isset($response->answers[$this->id][$cid]) && ($response->answers[$this->id][$cid]->value == -1));
                     if ($bg == 'c0') {
                         $bg = 'c1';
                     } else {

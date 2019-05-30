@@ -185,52 +185,41 @@ class radio extends question {
 
     /**
      * Return the context tags for the radio response template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object The radio question response context tags.
-     *
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
         $resptags->choices = [];
 
         $qdata = new \stdClass();
-        if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
-            foreach ($data->{'q'.$this->id} as $cid => $cval) {
-                $qdata->{'q' . $this->id} = $cid;
-                if (isset($data->{'q'.$this->id}[choice::id_other_choice_name($cid)])) {
-                    $qdata->{'q'.$this->id.choice::id_other_choice_name($cid)} =
-                        $data->{'q'.$this->id}[choice::id_other_choice_name($cid)];
-                }
-            }
-        } else if (isset($data->{'q'.$this->id})) {
-            $qdata->{'q'.$this->id} = $data->{'q'.$this->id};
-        }
-
         $horizontal = $this->length;
-        $checked = (isset($qdata->{'q'.$this->id}) ? $qdata->{'q'.$this->id} : '');
+        if (isset($response->answers[$this->id])) {
+            $answer = reset($response->answers[$this->id]);
+            $checked = $answer->choiceid;
+        } else {
+            $checked = null;
+        }
         foreach ($this->choices as $id => $choice) {
             $chobj = new \stdClass();
             if ($horizontal) {
                 $chobj->horizontal = 1;
             }
             $chobj->name = $id.$uniquetag++;
-            if (!$choice->is_other_choice()) {
-                $contents = questionnaire_choice_values($choice->content);
-                $choice->content = $contents->text.$contents->image;
-                if ($id == $checked) {
-                    $chobj->selected = 1;
+            $contents = questionnaire_choice_values($choice->content);
+            $choice->content = $contents->text.$contents->image;
+            if ($id == $checked) {
+                $chobj->selected = 1;
+                if ($choice->is_other_choice()) {
+                    $chobj->othercontent = $answer->value;
                 }
-                $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
+            }
+            if ($choice->is_other_choice()) {
+                $chobj->content = $choice->other_choice_display();
             } else {
-                $othertext = $choice->other_choice_display();
-                $cid = 'q'.$this->id.choice::id_other_choice_name($id);
-                if (isset($qdata->{$cid})) {
-                    $chobj->selected = 1;
-                    $chobj->othercontent = (!empty($qdata->{$cid}) ? htmlspecialchars($qdata->{$cid}) : '&nbsp;');
-                }
-                $chobj->content = $othertext;
+                $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
             }
             $resptags->choices[] = $chobj;
         }

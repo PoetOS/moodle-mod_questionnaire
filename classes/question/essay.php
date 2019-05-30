@@ -102,13 +102,19 @@ class essay extends text {
     }
 
     /**
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object|string
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
+        if (isset($response->answers[$this->id])) {
+            $answer = reset($response->answers[$this->id]);
+            $answer = $answer->value;
+        } else {
+            $answer = '&nbsp;';
+        }
         $output = '';
         $output .= '<div class="response text">';
-        $output .= !empty($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '&nbsp;';
+        $output .= $answer;
         $output .= '</div>';
         return $output;
     }

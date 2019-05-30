@@ -283,8 +283,8 @@ class rank extends responsetype {
                 $this->counts[$ccontent]->avg = $avg;
                 $this->counts[$ccontent]->avgvalue = $avgvalue;
             }
-            $output .= \mod_questionnaire\responsetype\display_support::mkresavg($this->counts, count($rids), $this->question->choices,
-                $this->question->precise, $prtotal, $this->question->length, $sort, $stravgvalue);
+            $output .= \mod_questionnaire\responsetype\display_support::mkresavg($this->counts, count($rids),
+                $this->question->choices, $this->question->precise, $prtotal, $this->question->length, $sort, $stravgvalue);
 
             $output .= \mod_questionnaire\responsetype\display_support::mkrescount($this->counts, $rids, $rows, $this->question,
                 $this->question->precise, $this->question->length, $sort);
@@ -371,12 +371,12 @@ class rank extends responsetype {
         global $DB;
 
         $answers = [];
-        $sql ='SELECT id, response_id as responseid, question_id as questionid, choice_id as choiceid, rankvalue as value ' .
+        $sql = 'SELECT id, response_id as responseid, question_id as questionid, choice_id as choiceid, rankvalue as value ' .
             'FROM {' . static::response_table() .'} ' .
             'WHERE response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
-            $answers[$record->questionid][] = answer::create_from_data($record);
+            $answers[$record->questionid][$record->choiceid] = answer::create_from_data($record);
         }
 
         return $answers;

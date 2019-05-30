@@ -98,10 +98,11 @@ class text extends question {
      * @return object The radio question response context tags.
      *
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         $resptags = new \stdClass();
-        if (isset($data->{'q'.$this->id})) {
-            $resptags->content = format_text($data->{'q'.$this->id}, FORMAT_HTML);
+        if (isset($response->answers[$this->id])) {
+            $answer = reset($response->answers[$this->id]);
+            $resptags->content = format_text($answer->value, FORMAT_HTML);
         }
         return $resptags;
     }

@@ -208,27 +208,6 @@ class single extends responsetype {
     }
 
     /**
-     * Load the requested response into the object. Must be implemented by the subclass.
-     *
-     * @param int $rid The response id.
-     * @return array
-     */
-    public function load_response($rid) {
-        global $DB;
-
-        $sql = 'SELECT a.id, c.id as cid, o.response ' .
-            'FROM {'.static::response_table().'} a ' .
-            'INNER JOIN {questionnaire_quest_choice} c ON a.choice_id = c.id ' .
-            'LEFT JOIN {questionnaire_response_other} o ON a.response_id = o.response_id AND c.id = o.choice_id ' .
-            'WHERE a.response_id = ? ';
-        $record = $DB->get_record_sql($sql, [$rid]);
-        if ($record) {
-            $this->responseid = $rid;
-            $this->choices[$record->cid] = new choice($record->cid, $record->response);
-        }
-    }
-
-    /**
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      * Array is indexed by question, and contains an array by choice code of selected choices.
      *
@@ -272,7 +251,7 @@ class single extends responsetype {
         global $DB;
 
         $answers = [];
-        $sql ='SELECT r.id as id, r.response_id as responseid, r.question_id as questionid, r.choice_id as choiceid, ' .
+        $sql = 'SELECT r.id as id, r.response_id as responseid, r.question_id as questionid, r.choice_id as choiceid, ' .
             'o.response as value ' .
             'FROM {' . static::response_table() .'} r ' .
             'LEFT JOIN {questionnaire_response_other} o ON r.response_id = o.response_id AND r.question_id = o.question_id AND ' .
@@ -280,7 +259,7 @@ class single extends responsetype {
             'WHERE r.response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
-            $answers[$record->questionid][] = answer::create_from_data($record);
+            $answers[$record->questionid][$record->choiceid] = answer::create_from_data($record);
         }
 
         return $answers;

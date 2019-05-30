@@ -94,8 +94,6 @@ class questionnaire {
 
         // Don't automatically add responses.
         $this->responses = [];
-        // Temporrary to test all databases.
-        $this->add_responses();
     }
 
     /**
@@ -152,12 +150,12 @@ class questionnaire {
     }
 
     /**
-     * Load any response information for this user.
+     * Load all response information for this user.
      *
      * @param int $userid
      * @throws dml_exception
      */
-    public function add_responses($userid = null) {
+    public function add_user_responses($userid = null) {
         global $USER, $DB;
 
         // Empty questionnaires cannot have responses.
@@ -174,6 +172,24 @@ class questionnaire {
         foreach ($responses as $response) {
             $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
         }
+    }
+
+    /**
+     * Load the sepecified response information.
+     *
+     * @param $responseid
+     * @throws dml_exception
+     */
+    public function add_response($responseid) {
+        global $DB;
+
+        // Empty questionnaires cannot have responses.
+        if (empty($this->id)) {
+            return;
+        }
+
+        $response = $DB->get_record('questionnaire_response', ['id' => $responseid]);
+        $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
     }
 
     /**
@@ -353,9 +369,8 @@ class questionnaire {
                                   $isgroupmember = false, $allresponses = false, $currentgroupid = 0) {
         $this->print_survey_start('', 1, 1, 0, $rid, false);
 
-        $data = new stdClass();
         $i = 0;
-        $this->response_import_all($rid, $data);
+        $this->add_response($rid);
         if ($referer != 'print') {
             $feedbackmessages = $this->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
 
@@ -378,7 +393,7 @@ class questionnaire {
                 $i++;
             }
             if ($question->type_id != QUESPAGEBREAK) {
-                $this->page->add_to_page('responses', $this->renderer->response_output($question, $data, $i));
+                $this->page->add_to_page('responses', $this->renderer->response_output($question, $this->responses[$rid], $i));
             }
         }
     }
@@ -3775,7 +3790,8 @@ class questionnaire {
                                 'item' => 'mod_questionnaire_question',
                                 'itemid' => $questionid,
                                 'warningcode' => 'required',
-                                'message' => s(get_string('required') . ': ' . $questionnairedata['questionsinfo'][$sec][$questionid]['name'])
+                                'message' => s(get_string('required') . ': ' .
+                                    $questionnairedata['questionsinfo'][$sec][$questionid]['name'])
                             ];
                         }
                     }

@@ -169,11 +169,11 @@ class yesno extends question {
 
     /**
      * Return the context tags for the text response template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object The radio question response context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
@@ -182,10 +182,14 @@ class yesno extends question {
         $resptags->noname = 'q'.$this->id.$uniquetag++.'n';
         $resptags->stryes = get_string('yes');
         $resptags->strno = get_string('no');
-        if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == 'y')) {
+        if (!isset($response->answers[$this->id])) {
+            $response->answers[$this->id][] = new \mod_questionnaire\responsetype\answer\answer();
+        }
+        $answer = reset($response->answers[$this->id]);
+        if ($answer->value == 'y') {
             $resptags->yesselected = 1;
         }
-        if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == 'n')) {
+        if ($answer->value == 'n') {
             $resptags->noselected = 1;
         }
 

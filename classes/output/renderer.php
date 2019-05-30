@@ -174,7 +174,7 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question for a survey.
-     * @param mod_questionnaire\question\question $question The question object.
+     * @param \mod_questionnaire\question\question $question The question object.
      * @param array $formdata Any returned form data.
      * @param array $dependants Array of all questions/choices depending on $question.
      * @param int $qnum The question number.
@@ -203,13 +203,14 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question response.
-     * @param mod_questionnaire\question\question $question The question object.
-     * @param stdClass $data All of the response data.
+     * @param \mod_questionnaire\question\question $question The question object.
+     * @param \mod_questionnaire\responsetype\response\response $response The response object.
      * @param int $qnum The question number.
      * @return string The output for the page.
+     * @throws \moodle_exception
      */
-    public function response_output($question, $data, $qnum=null) {
-        $pagetags = $question->response_output($data, $qnum);
+    public function response_output($question, $response, $qnum=null) {
+        $pagetags = $question->response_output($response, $qnum);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.

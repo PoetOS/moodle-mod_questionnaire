@@ -122,10 +122,11 @@ class numerical extends question {
      * @return object The numeric question response context tags.
      *
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         $resptags = new \stdClass();
-        if (isset($data->{'q'.$this->id})) {
-            $resptags->content = $data->{'q'.$this->id};
+        if (isset($response->answers[$this->id])) {
+            $answer = reset($response->answers[$this->id]);
+            $resptags->content = $answer->value;
         }
         return $resptags;
     }

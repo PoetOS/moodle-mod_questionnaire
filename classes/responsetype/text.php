@@ -284,7 +284,7 @@ class text extends responsetype {
         global $DB;
 
         $answers = [];
-        $sql ='SELECT id, response_id as responseid, question_id as questionid, 0 as choiceid, response as value ' .
+        $sql = 'SELECT id, response_id as responseid, question_id as questionid, 0 as choiceid, response as value ' .
             'FROM {' . static::response_table() .'} ' .
             'WHERE response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);

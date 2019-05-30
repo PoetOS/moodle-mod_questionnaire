@@ -160,18 +160,17 @@ class check extends question {
 
     /**
      * Return the context tags for the check response template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object The check question response context tags.
-     *
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
         $resptags->choices = [];
 
-        if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
-            $data->{'q'.$this->id} = array();
+        if (!isset($response->answers[$this->id])) {
+            $response->answers[$this->id][] = new \mod_questionnaire\responsetype\answer\answer();
         }
 
         foreach ($this->choices as $id => $choice) {
@@ -179,7 +178,7 @@ class check extends question {
             if (!$choice->is_other_choice()) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
-                if (isset($data->{'q'.$this->id}[$id])) {
+                if (isset($response->answers[$this->id][$id])) {
                     $chobj->selected = 1;
                 }
                 $chobj->name = $id.$uniquetag++;
@@ -187,8 +186,8 @@ class check extends question {
                     ['noclean' => true]));
             } else {
                 $othertext = $choice->other_choice_display();
-                if (isset($data->{'q'.$this->id}[$choice->other_choice_name()])) {
-                    $oresp = $data->{'q'.$this->id}[$choice->other_choice_name()];
+                if (isset($response->answers[$this->id][$id])) {
+                    $oresp = $response->answers[$this->id][$id]->value;
                     $chobj->selected = 1;
                     $chobj->othercontent = (!empty($oresp) ? htmlspecialchars($oresp) : '&nbsp;');
                 }
