@@ -167,8 +167,7 @@ class questionnaire {
             $userid = $USER->id;
         }
 
-        $responses = $DB->get_records('questionnaire_response', ['questionnaireid' => $this->id, 'userid' => $userid],
-            'submitted ASC');
+        $responses = $this->get_responses($userid);
         foreach ($responses as $response) {
             $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
         }
@@ -398,53 +397,18 @@ class questionnaire {
         }
     }
 
-    /*
-    * Function to view an entire responses data.
-    *
-    * $value is unused, but is needed in order to get the $key elements of the array. Suppress PHPMD warning.
-    *
-    * @SuppressWarnings(PHPMD.UnusedLocalVariable)
-    */
-    public function view_all_responses($resps) {
+    /**
+     * Function to view all loaded responses.
+     * @throws coding_exception
+     */
+    public function view_all_responses() {
         $this->print_survey_start('', 1, 1, 0);
 
         // If a student's responses have been deleted by teacher while student was viewing the report,
         // then responses may have become empty, hence this test is necessary.
-        if ($resps) {
-            foreach ($resps as $resp) {
-                $data[$resp->id] = new stdClass();
-                $this->response_import_all($resp->id, $data[$resp->id]);
-            }
 
-            $i = 0;
-
-            $allrespdata = [];
-            foreach ($this->questions as $question) {
-                if ($question->type_id < QUESPAGEBREAK) {
-                    $i++;
-                }
-                $qid = preg_quote('q'.$question->id, '/');
-                if ($question->type_id != QUESPAGEBREAK) {
-                    $allrespdata[$i] = [];
-                    $allrespdata[$i]['question'] = $question;
-                    foreach ($data as $respid => $respdata) {
-                        $hasresp = false;
-                        foreach ($respdata as $key => $value) {
-                            if ($hasresp = preg_match("/$qid(_|$)/", $key)) {
-                                break;
-                            }
-                        }
-                        // Do not display empty responses.
-                        if ($hasresp) {
-                            $allrespdata[$i][] = [
-                                'respdate' => userdate($resps[$respid]->submitted),
-                                'respdata' => $respdata
-                            ];
-                        }
-                    }
-                }
-            }
-            $this->page->add_to_page('responses', $this->renderer->all_response_output($allrespdata));
+        if (!empty($this->responses)) {
+            $this->page->add_to_page('responses', $this->renderer->all_response_output($this->responses, $this->questions));
         } else {
             $this->page->add_to_page('responses', $this->renderer->all_response_output(get_string('noresponses', 'questionnaire')));
         }

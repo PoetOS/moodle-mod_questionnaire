@@ -130,7 +130,6 @@ function other_check(name) {
     if (other.indexOf("]") != -1) {
         other = other.slice(0, other.indexOf("]"));
     }
-    alert(other);
     var f = document.getElementById("phpesp_response");
     for (var i = 0; i <= f.elements.length; i++) {
         if (f.elements[i].value == other) {

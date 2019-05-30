@@ -830,7 +830,7 @@ abstract class question {
      * @return \stdClass
      */
     public function response_output($response, $qnum='') {
-        $pagetags = $this->questionstart_survey_display($qnum);
+        $pagetags = $this->questionstart_survey_display($qnum, $response);
         $pagetags->qformelement = $this->response_survey_display($response);
         return $pagetags;
     }
@@ -838,15 +838,16 @@ abstract class question {
     /**
      * Get the output for the start of the questions in a survey.
      * @param integer $qnum
-     * @param object $formdata
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @return \stdClass
+     * @throws \coding_exception
      */
-    public function questionstart_survey_display($qnum, $formdata='') {
+    public function questionstart_survey_display($qnum, $response=null) {
         global $OUTPUT, $SESSION, $questionnaire, $PAGE;
 
         $pagetags = new \stdClass();
         $currenttab = $SESSION->questionnaire->current_tab;
         $pagetype = $PAGE->pagetype;
-        $skippedquestion = false;
         $skippedclass = '';
         $autonum = $questionnaire->autonum;
         // If no questions autonumbering.
@@ -855,11 +856,17 @@ abstract class question {
             $qnum = '';
             $nonumbering = true;
         }
+
+        // For now, check what the response type is until we've got it all refactored.
+        if ($response instanceof \mod_questionnaire\responsetype\response\response) {
+            $skippedquestion = !isset($response->answers[$this->id]);
+        } else {
+            $skippedquestion = !empty($response) && !array_key_exists('q'.$this->id, $response);
+        }
+
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
         if (($pagetype == 'mod-questionnaire-myreport' || $pagetype == 'mod-questionnaire-report') &&
-            ($nonumbering == false) && !empty($formdata) && !empty($this->dependencies) &&
-            !array_key_exists('q'.$this->id, $formdata)) {
-            $skippedquestion = true;
+            ($nonumbering == false) && !empty($this->dependencies) && $skippedquestion) {
             $skippedclass = ' unselected';
             $qnum = '<span class="'.$skippedclass.'">('.$qnum.')</span>';
         }

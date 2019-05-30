@@ -44,6 +44,15 @@ class pagebreak extends question {
     }
 
     /**
+     * @param int $qnum
+     * @param null $response
+     * @return \stdClass|string
+     */
+    public function questionstart_survey_display($qnum, $response=null) {
+        return '';
+    }
+
+    /**
      * @param object $data
      * @param $descendantsdata
      * @param bool $blankquestionnaire
