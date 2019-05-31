@@ -59,12 +59,12 @@ class essay extends text {
     }
 
     /**
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param $descendantsdata
      * @param bool $blankquestionnaire
      * @return object|string
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         $output = '';
 
         // Essay.
@@ -81,8 +81,8 @@ class essay extends text {
             $rows = $this->precise > 1 ? $this->precise : $this->length;
         }
         $name = 'q'.$this->id;
-        if (isset($data->{'q'.$this->id})) {
-            $value = $data->{'q'.$this->id};
+        if (isset($response->answers[$this->id][0])) {
+            $value = $response->answers[$this->id][0]->value;
         } else {
             $value = '';
         }

@@ -811,15 +811,15 @@ abstract class question {
 
     /**
      * Get the output for question renderers / templates.
-     * @param object $formdata
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param integer $qnum
      * @param boolean $blankquestionnaire
      * @return \stdClass
      */
-    public function question_output($formdata, $dependants=[], $qnum='', $blankquestionnaire) {
-        $pagetags = $this->questionstart_survey_display($qnum, $formdata);
-        $pagetags->qformelement = $this->question_survey_display($formdata, $dependants, $blankquestionnaire);
+    public function question_output($response, $dependants=[], $qnum='', $blankquestionnaire) {
+        $pagetags = $this->questionstart_survey_display($qnum, $response);
+        $pagetags->qformelement = $this->question_survey_display($response, $dependants, $blankquestionnaire);
         return $pagetags;
     }
 

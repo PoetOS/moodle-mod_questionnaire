@@ -62,19 +62,19 @@ class numerical extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
-     * @param string $descendantdata
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @param $descendantsdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         // Numeric.
         $questiontags = new \stdClass();
         $precision = $this->precise;
         $a = '';
-        if (isset($data->{'q'.$this->id})) {
-            $mynumber = $data->{'q'.$this->id};
+        if (isset($response->answers[$this->id][0])) {
+            $mynumber = $response->answers[$this->id][0]->value;
             if ($mynumber != '') {
                 $mynumber0 = $mynumber;
                 if (!is_numeric($mynumber) ) {
@@ -100,7 +100,7 @@ class numerical extends question {
                 }
             }
             if ($mynumber != '') {
-                $data->{'q'.$this->id} = $mynumber;
+                $response->answers[$this->id][0]->value = $mynumber;
             }
         }
 
@@ -109,7 +109,7 @@ class numerical extends question {
         $choice->size = $this->length;
         $choice->name = 'q'.$this->id;
         $choice->maxlength = $this->length;
-        $choice->value = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $choice->value = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
         $choice->id = self::qtypename($this->type_id) . $this->id;
         $questiontags->qelements = new \stdClass();
         $questiontags->qelements->choice = $choice;

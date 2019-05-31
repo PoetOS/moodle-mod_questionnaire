@@ -69,31 +69,25 @@ class check extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($data, $dependants, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants, $blankquestionnaire=false) {
         // Check boxes.
+print_object($response->answers[$this->id]);
         $otherempty = false;
-        if (!empty($data) ) {
-            if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
-                $data->{'q'.$this->id} = [];
-            }
+        if (!empty($response)) {
             // Verify that number of checked boxes (nbboxes) is within set limits (length = min; precision = max).
-            if ($data->{'q'.$this->id} ) {
+            if (!empty($response->answers[$this->id])) {
                 $otherempty = false;
-                $boxes = $data->{'q'.$this->id};
-                $nbboxes = count($boxes);
-                foreach ($boxes as $box) {
-                    $pos = strpos($box, 'other_');
-                    if (is_int($pos) == true) {
-                        $resp = 'q'.$this->id.''.substr($box, 5);
-                        if (isset($data->$resp) && (trim($data->$resp) == false)) {
-                            $otherempty = true;
-                        }
+                $nbboxes = count($response->answers[$this->id]);
+                foreach ($response->answers[$this->id] as $answer) {
+                    $choice = $this->choices[$answer->choiceid];
+                    if ($choice->is_other_choice()) {
+                        $otherempty = empty($choice->value);
                     }
                 }
                 $nbchoices = count($this->choices);
@@ -133,8 +127,8 @@ class check extends question {
             $checkbox = new \stdClass();
             $contents = questionnaire_choice_values($choice->content);
             $checked = false;
-            if (!empty($data) ) {
-                $checked = isset($data->{'q'.$this->id}[$id]);
+            if (!empty($response->answers[$this->id]) ) {
+                $checked = isset($response->answers[$this->id][$id]);
             }
             $checkbox->name = 'q'.$this->id.'['.$id.']';
             $checkbox->value = $id;
@@ -145,9 +139,8 @@ class check extends question {
             }
             if ($choice->is_other_choice()) {
                 $checkbox->oname = 'q'.$this->id.'['.$choice->other_choice_name().']';
-                $checkbox->ovalue = (isset($data->{'q'.$this->id}[$choice->other_choice_name()]) &&
-                    !empty($data->{'q'.$this->id}[$choice->other_choice_name()]) ?
-                    stripslashes($data->{'q'.$this->id}[$choice->other_choice_name()]) : '');
+                $checkbox->ovalue = (isset($response->answers[$this->id][$id]) && !empty($response->answers[$this->id][$id]) ?
+                    stripslashes($response->answers[$this->id][$id]->value) : '');
                 $checkbox->label = format_text($choice->other_choice_display().'', FORMAT_HTML, ['noclean' => true]);
             }
             $choicetags->qelements[] = (object)['choice' => $checkbox];

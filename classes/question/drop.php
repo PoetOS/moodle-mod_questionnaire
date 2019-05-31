@@ -77,32 +77,24 @@ class drop extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($data, $dependants, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants, $blankquestionnaire=false) {
         // Drop.
         $options = [];
 
-        $qdata = new \stdClass();
-        if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
-            foreach ($data->{'q'.$this->id} as $cid => $cval) {
-                $qdata->{'q' . $this->id} = $cid;
-                if (isset($data->{'q'.$this->id}[choice::id_other_choice_name($cid)])) {
-                    $qdata->{'q'.$this->id.choice::id_other_choice_name($cid)} =
-                        $data->{'q'.$this->id}[choice::id_other_choice_name($cid)];
-                }
-            }
-        } else if (isset($data->{'q'.$this->id})) {
-            $qdata->{'q'.$this->id} = $data->{'q'.$this->id};
-        }
-
         $choicetags = new \stdClass();
         $choicetags->qelements = new \stdClass();
-        $selected = isset($qdata->{'q'.$this->id}) ? $qdata->{'q'.$this->id} : false;
+        if (isset($response->answers[$this->id])) {
+            $answer = reset($response->answers[$this->id]);
+            $selected = $answer->choiceid;
+        } else {
+            $selected = false;
+        }
         $options[] = (object)['value' => '', 'label' => get_string('choosedots')];
         foreach ($this->choices as $key => $choice) {
             if ($pos = strpos($choice->content, '=')) {

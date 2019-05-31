@@ -102,13 +102,13 @@ class yesno extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function question_survey_display($data, $dependants=[], $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants=[], $blankquestionnaire=false) {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $stryes = get_string('yes');
@@ -124,7 +124,7 @@ class yesno extends question {
 
         $options = [$val1 => $stryes, $val2 => $strno];
         $name = 'q'.$this->id;
-        $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $checked = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
         $ischecked = false;
 
         $choicetags = new \stdClass();

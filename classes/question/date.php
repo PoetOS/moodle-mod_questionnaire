@@ -54,18 +54,18 @@ class date extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param string $descendantdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         // Date.
         $questiontags = new \stdClass();
-        if (!empty($data->{'q'.$this->id})) {
-            $dateentered = $data->{'q'.$this->id};
-            $setdate = questionnaire_check_date ($dateentered, false);
+        if (!empty($response->answers[$this->id])) {
+            $dateentered = $response->answers[$this->id][0]->value;
+            $setdate = questionnaire_check_date($dateentered, false);
             if ($setdate == 'wrongdateformat') {
                 $msg = get_string('wrongdateformat', 'questionnaire', $dateentered);
                 $this->add_notification($msg);
@@ -73,13 +73,13 @@ class date extends question {
                 $msg = get_string('wrongdaterange', 'questionnaire');
                 $this->add_notification($msg);
             } else {
-                $data->{'q'.$this->id} = $setdate;
+                $response->answers[$this->id][0]->value = $setdate;
             }
         }
         $choice = new \stdClass();
         $choice->onkeypress = 'return event.keyCode != 13;';
         $choice->name = 'q'.$this->id;
-        $choice->value = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $choice->value = (isset($response->answers[$this->id][0]->value) ? $response->answers[$this->id][0]->value : '');
         $questiontags->qelements = new \stdClass();
         $questiontags->qelements->choice = $choice;
         return $questiontags;

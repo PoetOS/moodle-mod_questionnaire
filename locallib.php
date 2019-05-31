@@ -87,6 +87,12 @@ $autonumbering = array (0 => get_string('autonumberno', 'questionnaire'),
         2 => get_string('autonumberpages', 'questionnaire'),
         3 => get_string('autonumberpagesandquestions', 'questionnaire'));
 
+/**
+ * @param $thisdate
+ * @param bool $insert
+ * @return int|string
+ * @throws coding_exception
+ */
 function questionnaire_check_date ($thisdate, $insert=false) {
     $dateformat = get_string('strfdate', 'questionnaire');
     if (preg_match('/(%[mdyY])(.+)(%[mdyY])(.+)(%[mdyY])/', $dateformat, $matches)) {

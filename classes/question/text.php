@@ -69,13 +69,12 @@ class text extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
-     * @param string $descendantdata
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @param $descendantsdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
-     *
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         // Text Box.
         $questiontags = new \stdClass();
         $questiontags->qelements = new \stdClass();
@@ -86,7 +85,7 @@ class text extends question {
         if ($this->precise > 0) {
             $choice->maxlength = $this->precise;
         }
-        $choice->value = (isset($data->{'q'.$this->id}) ? stripslashes($data->{'q'.$this->id}) : '');
+        $choice->value = (isset($response->answers[$this->id][0]) ? stripslashes($response->answers[$this->id][0]->value) : '');
         $choice->id = self::qtypename($this->type_id) . $this->id;
         $questiontags->qelements->choice = $choice;
         return $questiontags;

@@ -77,13 +77,13 @@ class radio extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($data, $dependants=[], $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants=[], $blankquestionnaire=false) {
         // Radio buttons
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
@@ -93,19 +93,6 @@ class radio extends question {
 
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
-
-        $qdata = new \stdClass();
-        if (isset($data->{'q'.$this->id}) && is_array($data->{'q'.$this->id})) {
-            foreach ($data->{'q'.$this->id} as $cid => $cval) {
-                $qdata->{'q' . $this->id} = $cid;
-                if (isset($data->{'q'.$this->id}[choice::id_other_choice_name($cid)])) {
-                    $qdata->{'q'.$this->id.choice::id_other_choice_name($cid)} =
-                        $data->{'q'.$this->id}[choice::id_other_choice_name($cid)];
-                }
-            }
-        } else if (isset($data->{'q'.$this->id})) {
-            $qdata->{'q'.$this->id} = $data->{'q'.$this->id};
-        }
 
         foreach ($this->choices as $id => $choice) {
             $radio = new \stdClass();
@@ -119,7 +106,7 @@ class radio extends question {
                 $radio->name = 'q'.$this->id;
                 $radio->id = $htmlid;
                 $radio->value = $id;
-                if (isset($qdata->{$radio->name}) && ($qdata->{$radio->name} == $id)) {
+                if (isset($response->answers[$this->id][$id])) {
                     $radio->checked = true;
                     $ischecked = true;
                 }
@@ -133,13 +120,13 @@ class radio extends question {
             } else {             // Radio button with associated !other text field.
                 $othertext = $choice->other_choice_display();
                 $cname = choice::id_other_choice_name($id);
-                $odata = isset($qdata->{'q'.$this->id.$cname}) ? $qdata->{'q'.$this->id.$cname} : '';
+                $odata = isset($response->answers[$this->id][$id]) ? $response->answers[$this->id][$id]->value : '';
                 $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
 
                 $radio->name = 'q'.$this->id;
                 $radio->id = $htmlid;
                 $radio->value = $id;
-                if ((isset($qdata->{$radio->name}) && ($qdata->{$radio->name} == $id)) || !empty($odata)) {
+                if (isset($response->answers[$this->id][$id]) || !empty($odata)) {
                     $radio->checked = true;
                     $ischecked = true;
                 }

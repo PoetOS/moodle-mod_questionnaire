@@ -916,14 +916,14 @@ class questionnaire {
     public function print_survey($userid=false, $quser) {
         global $SESSION, $CFG;
 
-        $formdata = new stdClass();
-        if (data_submitted() && confirm_sesskey()) {
-            $formdata = data_submitted();
+        if (!($formdata = data_submitted()) || !confirm_sesskey()) {
+            $formdata = new stdClass();
         }
-        $formdata->rid = $this->get_response($quser);
+
+        $formdata->rid = $this->get_latest_responseid($quser);
         // If student saved a "resume" questionnaire OR left a questionnaire unfinished
         // and there are more pages than one find the page of the last answered question.
-        if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
+        if (($formdata->rid != 0) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
         }
         if (empty($formdata->sec)) {
@@ -1012,7 +1012,8 @@ class questionnaire {
         }
 
         if (!empty($formdata->rid)) {
-            $this->response_import_sec($formdata->rid, $formdata->sec, $formdata);
+            $this->add_response($formdata->rid);
+//            $this->response_import_sec($formdata->rid, $formdata->sec, $formdata);
         }
 
         $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
@@ -1085,7 +1086,8 @@ class questionnaire {
             // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
             $formdata->questionnaire_id = $this->id;
             $this->page->add_to_page('questions',
-                $this->renderer->question_output($this->questions[$questionid], $formdata, [], $i, $this->usehtmleditor));
+                $this->renderer->question_output($this->questions[$questionid], $this->responses[$formdata->rid],
+                    [], $i, $this->usehtmleditor));
         }
 
         $this->print_survey_end($section, $numsections);
@@ -1652,30 +1654,20 @@ class questionnaire {
 
     /**
      * Get the latest response id for the user, or verify that the given response id is valid.
-     * @param $userid
-     * @param int $rid
-     * @return int|string
+     * @param int $userid
+     * @return int
      * @throws dml_exception
      */
-    private function get_response($userid, $rid = 0) {
+    private function get_latest_responseid($userid) {
         global $DB;
 
-        $rid = intval($rid);
-        if ($rid != 0) {
-            // Check for valid rid.
-            $fields = 'id, userid';
-            $params = ['id' => $rid, 'questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
-            return ($DB->get_record('questionnaire_response', $params, $fields) !== false) ? $rid : '';
-
+        // Find latest in progress rid.
+        $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
+        if ($records = $DB->get_records('questionnaire_response', $params, 'submitted DESC', 'id,questionnaireid', 0, 1)) {
+            $rec = reset($records);
+            return $rec->id;
         } else {
-            // Find latest in progress rid.
-            $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
-            if ($records = $DB->get_records('questionnaire_response', $params, 'submitted DESC', 'id,questionnaireid', 0, 1)) {
-                $rec = reset($records);
-                return $rec->id;
-            } else {
-                return '';
-            }
+            return 0;
         }
     }
 

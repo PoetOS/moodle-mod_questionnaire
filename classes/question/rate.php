@@ -109,13 +109,13 @@ class rate extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $data
      * @param string $descendantdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
 
@@ -238,8 +238,7 @@ class rate extends question {
 
         $num = 0;
         foreach ($this->choices as $cid => $choice) {
-            $str = 'q'."{$this->id}_$cid";
-            $num += (isset($data->$str) && ($data->$str != -999));
+            $num += (isset($response->answers[$this->id][$cid]) && ($response->answers[$this->id][$cid]->value != -999));
         }
 
         $notcomplete = false;
@@ -267,7 +266,8 @@ class rate extends question {
                     $checked = ' checked="checked"';
                     $completeclass = 'notanswered';
                     $title = '';
-                    if ($notcomplete && isset($data->$str) && ($data->$str == -999)) {
+                    if ($notcomplete && isset($response->answers[$this->id][$cid]) &&
+                        ($response->answers[$this->id][$cid]->value == -999)) {
                         $completeclass = 'notcompleted';
                         $title = get_string('pleasecomplete', 'questionnaire');
                     }
@@ -284,10 +284,10 @@ class rate extends question {
                 }
                 for ($j = 0; $j < $this->length + $isna; $j++) {
                     $col = [];
-                    $checked = ((isset($data->$str) && ($j == $data->$str ||
-                                 $j == $this->length && $data->$str == -1)) ? ' checked="checked"' : '');
                     $checked = '';
-                    if (isset($data->$str) && ($j == $data->$str || $j == $this->length && $data->$str == -1)) {
+                    if (isset($response->answers[$this->id][$cid]) &&
+                        (($j == $response->answers[$this->id][$cid]->value) ||
+                            (($j == $this->length) && ($response->answers[$this->id][$cid]->value == -1)))) {
                         $checked = ' checked="checked"';
                     }
                     $col['colstyle'] = 'text-align:center';
