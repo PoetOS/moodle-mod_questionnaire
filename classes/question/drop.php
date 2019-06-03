@@ -89,12 +89,6 @@ class drop extends question {
 
         $choicetags = new \stdClass();
         $choicetags->qelements = new \stdClass();
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
-            $selected = $answer->choiceid;
-        } else {
-            $selected = false;
-        }
         $options[] = (object)['value' => '', 'label' => get_string('choosedots')];
         foreach ($this->choices as $key => $choice) {
             if ($pos = strpos($choice->content, '=')) {
@@ -103,7 +97,7 @@ class drop extends question {
             $option = new \stdClass();
             $option->value = $key;
             $option->label = $choice->content;
-            if (($selected !== false) && ($key == $selected)) {
+            if (isset($response->answers[$this->id][$key])) {
                 $option->selected = true;
             }
             $options[] = $option;

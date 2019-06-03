@@ -26,7 +26,6 @@ namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\db\bulk_sql_config;
-use mod_questionnaire\responsetype\answer\answer;
 
 /**
  * Class for rank responses.
@@ -36,22 +35,26 @@ use mod_questionnaire\responsetype\answer\answer;
  */
 
 class rank extends responsetype {
+    /**
+     * @return string
+     */
     static public function response_table() {
         return 'questionnaire_response_rank';
     }
 
     /**
-     * @param object $responsedata
-     * @return bool|int
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     * @throws \coding_exception
      */
-    public function insert_response($responsedata) {
-        global $DB;
-
-        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
-        $resid = false;
-        foreach ($this->question->choices as $cid => $choice) {
-            $other = isset($responsedata->{'q'.$this->question->id.'_'.$cid}) ?
-                $responsedata->{'q'.$this->question->id.'_'.$cid} : null;
+    static public function answers_from_webform($responsedata, $question){
+        $answers = [];
+        foreach ($question->choices as $cid => $choice) {
+            $other = isset($responsedata->{'q' . $question->id . '_' . $cid}) ?
+                $responsedata->{'q' . $question->id . '_' . $cid} : null;
             // Choice not set or not answered.
             if (!isset($other) || $other == '') {
                 continue;
@@ -62,11 +65,42 @@ class rank extends responsetype {
                 $rank = intval($other);
             }
             $record = new \stdClass();
-            $record->response_id = $responsedata->rid;
-            $record->question_id = $this->question->id;
-            $record->choice_id = $cid;
-            $record->rankvalue = $rank;
-            $resid = $DB->insert_record(self::response_table(), $record);
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->choiceid = $cid;
+            $record->value = $rank;
+            $answers[$cid] = answer\answer::create_from_data($record);
+        }
+        return $answers;
+    }
+
+    /**
+     * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
+     * @return bool|int
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function insert_response($responsedata) {
+        global $DB;
+
+        if (!$responsedata instanceof \mod_questionnaire\responsetype\response\response) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this->question]);
+        } else {
+            $response = $responsedata;
+        }
+
+        $resid = false;
+
+        if (isset($response->answers[$this->question->id])) {
+            foreach ($response->answers[$this->question->id] as $answer) {
+                // Record the choice selection.
+                $record = new \stdClass();
+                $record->response_id = $response->id;
+                $record->question_id = $this->question->id;
+                $record->choice_id = $answer->choiceid;
+                $record->rankvalue = $answer->value;
+                $resid = $DB->insert_record(static::response_table(), $record);
+            }
         }
         return $resid;
     }
@@ -91,7 +125,7 @@ class rank extends responsetype {
             $record->question_id = $this->question->id;
             $record->choice_id = $choiceid;
             $record->rankvalue = $choiceval;
-            $resid = $DB->insert_record(self::response_table(), $record);
+            $resid = $DB->insert_record(static::response_table(), $record);
         }
 
         return $resid;
@@ -119,7 +153,7 @@ class rank extends responsetype {
         if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
             foreach ($rows as $row) {
                 $this->counts[$row->content] = new \stdClass();
-                $nbna = $DB->count_records(self::response_table(), array('question_id' => $this->question->id,
+                $nbna = $DB->count_records(static::response_table(), array('question_id' => $this->question->id,
                                 'choice_id' => $row->id, 'rankvalue' => '-1'));
                 $this->counts[$row->content]->nbna = $nbna;
                 // The $row->value may be null (i.e. empty) or have a 'NULL' value.
@@ -134,7 +168,7 @@ class rank extends responsetype {
         if (!$isrestricted) {
             if (!empty ($rankvalue)) {
                 $sql = "SELECT r.id, c.content, r.rankvalue, c.id AS choiceid
-                FROM {questionnaire_quest_choice} c, {".self::response_table()."} r
+                FROM {questionnaire_quest_choice} c, {".static::response_table()."} r
                 WHERE r.choice_id = c.id
                 AND c.question_id = " . $this->question->id . "
                 AND r.rankvalue >= 0{$rsql}
@@ -154,7 +188,7 @@ class rank extends responsetype {
                     FROM {questionnaire_quest_choice} c
                     INNER JOIN
                          (SELECT c2.id, AVG(a2.rankvalue+1) AS average, COUNT(a2.response_id) AS num
-                          FROM {questionnaire_quest_choice} c2, {".self::response_table()."} a2
+                          FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
                           GROUP BY c2.id) a ON a.id = c.id
                           order by c.id";
@@ -176,7 +210,7 @@ class rank extends responsetype {
                     FROM {questionnaire_quest_choice} c
                     INNER JOIN
                          (SELECT c2.id, SUM(a2.rankvalue+1) AS sum, COUNT(a2.response_id) AS num
-                          FROM {questionnaire_quest_choice} c2, {".self::response_table()."} a2
+                          FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
                           GROUP BY c2.id) a ON a.id = c.id";
             $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
@@ -306,7 +340,7 @@ class rank extends responsetype {
         $values = [];
         $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid, q.content, c.content as ccontent,
                                 a.rankvalue as arank '.
-            'FROM {'.self::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
+            'FROM {'.static::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
             'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
             'ORDER BY aid, a.question_id, c.id';
         $records = $DB->get_records_sql($sql, [$rid]);
@@ -376,7 +410,7 @@ class rank extends responsetype {
             'WHERE response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
-            $answers[$record->questionid][$record->choiceid] = answer::create_from_data($record);
+            $answers[$record->questionid][$record->choiceid] = answer\answer::create_from_data($record);
         }
 
         return $answers;
@@ -387,7 +421,7 @@ class rank extends responsetype {
      * @return bulk_sql_config
      */
     protected function bulk_sql_config() {
-        return new bulk_sql_config(self::response_table(), 'qrr', true, false, true);
+        return new bulk_sql_config(static::response_table(), 'qrr', true, false, true);
     }
 
 }

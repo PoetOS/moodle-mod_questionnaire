@@ -61,9 +61,10 @@ class response {
      * @param null $submitted
      * @param null $complete
      * @param null $grade
+     * @param bool $addanswers
      */
     public function __construct($id = null, $questionnaireid = null, $userid = null, $submitted = null, $complete = null,
-                                $grade = null) {
+                                $grade = null, $addanswers = true) {
         global $DB;
 
         $this->id = $id;
@@ -74,7 +75,9 @@ class response {
         $this->grade = $grade;
 
         // Add answers by questions that exist.
-        $this->add_questions_answers();
+        if ($addanswers) {
+            $this->add_questions_answers();
+        }
     }
 
     /**
@@ -97,6 +100,28 @@ class response {
 
         return new response($responsedata['id'], $responsedata['questionnaireid'], $responsedata['userid'],
             $responsedata['submitted'], $responsedata['complete'], $responsedata['grade']);
+    }
+
+    /**
+     * Provide a response object from web form data to the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param array \mod_questionnaire\question\question $questions
+     * @return bool|response A response object.
+     * @throws \coding_exception
+     */
+    static public function response_from_webform($responsedata, $questions){
+        global $USER;
+
+        $questionnaireid = isset($responsedata->questionnaire_id) ? $responsedata->questionnaire_id :
+            (isset($responsedata->a) ? $responsedata->a : 0);
+        $response = new response($responsedata->rid, $questionnaireid, $USER->id, null, null, null, false);
+        foreach ($questions as $question) {
+            if ($question->supports_responses()) {
+                $response->answers[$question->id] = $question->responsetype::answers_from_webform($responsedata, $question);
+            }
+        }
+        return $response;
     }
 
     /**

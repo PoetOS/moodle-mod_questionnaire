@@ -77,7 +77,6 @@ class check extends question {
      */
     protected function question_survey_display($response, $dependants, $blankquestionnaire=false) {
         // Check boxes.
-print_object($response->answers[$this->id]);
         $otherempty = false;
         if (!empty($response)) {
             // Verify that number of checked boxes (nbboxes) is within set limits (length = min; precision = max).
@@ -87,7 +86,7 @@ print_object($response->answers[$this->id]);
                 foreach ($response->answers[$this->id] as $answer) {
                     $choice = $this->choices[$answer->choiceid];
                     if ($choice->is_other_choice()) {
-                        $otherempty = empty($choice->value);
+                        $otherempty = empty($answer->value);
                     }
                 }
                 $nbchoices = count($this->choices);

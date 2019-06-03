@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 use coding_exception;
 use dml_exception;
 use mod_questionnaire\db\bulk_sql_config;
-use mod_questionnaire\responsetype\answer\answer;
 use stdClass;
 
 /**
@@ -48,20 +47,46 @@ class boolean extends responsetype {
     }
 
     /**
-     * @param int|object $responsedata
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_webform($responsedata, $question) {
+        $answers = [];
+        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+            $record = new \stdClass();
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->choiceid = $responsedata->{'q' . $question->id};
+            $record->value = $responsedata->{'q' . $question->id};
+            $answers[] = answer\answer::create_from_data($record);
+        }
+        return $answers;
+    }
+
+    /**
+     * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
      * @return bool|int
-     * @throws dml_exception
+     * @throws \coding_exception
+     * @throws \dml_exception
      */
     public function insert_response($responsedata) {
         global $DB;
 
-        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
-        if (!empty($val)) { // If "no answer" then choice is empty (CONTRIB-846).
-            $record = new stdClass();
-            $record->response_id = $responsedata->rid;
+        if (!$responsedata instanceof \mod_questionnaire\responsetype\response\response) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this->question]);
+        } else {
+            $response = $responsedata;
+        }
+
+        if (!empty($response) && isset($response->answers[$this->question->id])) {
+            $record = new \stdClass();
+            $record->response_id = $response->id;
             $record->question_id = $this->question->id;
-            $record->choice_id = $val;
-            return $DB->insert_record(self::response_table(), $record);
+            $record->choice_id = $response->answers[$this->question->id][0]->choiceid;
+            return $DB->insert_record(static::response_table(), $record);
         } else {
             return false;
         }
@@ -87,7 +112,7 @@ class boolean extends responsetype {
         $params[] = '';
 
         $sql = 'SELECT choice_id, COUNT(response_id) AS num ' .
-               'FROM {'.self::response_table().'} ' .
+               'FROM {'.static::response_table().'} ' .
                'WHERE question_id= ? ' . $rsql . ' AND choice_id != ? ' .
                'GROUP BY choice_id';
         return $DB->get_records_sql($sql, $params);
@@ -199,7 +224,7 @@ class boolean extends responsetype {
 
         $values = [];
         $sql = 'SELECT q.id, q.content, a.choice_id '.
-            'FROM {'.self::response_table().'} a, {questionnaire_question} q '.
+            'FROM {'.static::response_table().'} a, {questionnaire_question} q '.
             'WHERE a.response_id= ? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {
@@ -239,7 +264,7 @@ class boolean extends responsetype {
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
             $record->choiceid = ($record->choiceid == 'y') ? 1 : 0;
-            $answers[$record->questionid][] = answer::create_from_data($record);
+            $answers[$record->questionid][] = answer\answer::create_from_data($record);
         }
 
         return $answers;
@@ -250,7 +275,7 @@ class boolean extends responsetype {
      * @return bulk_sql_config
      */
     protected function bulk_sql_config() {
-        return new bulk_sql_config(self::response_table(), 'qrb', true, false, false);
+        return new bulk_sql_config(static::response_table(), 'qrb', true, false, false);
     }
 
     /**
@@ -275,7 +300,7 @@ class boolean extends responsetype {
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".self::response_table()."} $alias ON $alias.response_id = qr.id
+              JOIN {".static::response_table()."} $alias ON $alias.response_id = qr.id
         ";
     }
 }

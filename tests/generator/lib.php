@@ -231,7 +231,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         if (!is_array($respval)) {
             $respval = ['q'.$question->id => $respval];
         }
-        $respdata = (object)(array_merge(['sec' => $section, 'rid' => $currentrid], $respval));
+        $respdata = (object)(array_merge(['sec' => $section, 'rid' => $currentrid, 'a' => $questionnaire->id], $respval));
         $responseid = $questionnaire->response_insert($respdata, $userid);
         $this->response_commit($questionnaire, $responseid);
         return $DB->get_record('questionnaire_response', array('id' => $responseid));

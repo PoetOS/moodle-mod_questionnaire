@@ -75,6 +75,15 @@ abstract class responsetype {
     }
 
     /**
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    abstract static public function answers_from_webform($responsedata, $question);
+
+    /**
      * Insert a provided response to the question.
      *
      * @param object $responsedata All of the responsedata as an object.

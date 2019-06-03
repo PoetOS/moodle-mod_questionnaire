@@ -43,45 +43,35 @@ class multiple extends single {
         return 'questionnaire_resp_multiple';
     }
 
-    public function insert_response($responsedata) {
-        global $DB;
-
-        $val = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : '';
-        $resid = '';
-
-        if (!isset($val) || !is_array($val)) {
-            return false;
-        }
-
-        foreach ($val as $cid => $cvalue) {
-            $cid = clean_param($cid, PARAM_CLEAN);
-            if (isset($this->question->choices[$cid])) {
-                // If this choice is an "other" choice, look for the added input.
-                if ($this->question->choices[$cid]->is_other_choice()) {
-                    $cname = \mod_questionnaire\question\choice\choice::id_other_choice_name($cid);
-                    $other = isset($val[$cname]) ? $val[$cname] : '';
-
-                    // If no input specified, ignore this choice.
-                    if (empty($other) || preg_match("/[ \t\n]/", $other)) {
-                        continue;
-                    }
+    /**
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     * @throws \coding_exception
+     */
+    static public function answers_from_webform($responsedata, $question) {
+        $answers = [];
+        if (isset($responsedata->{'q'.$question->id})) {
+            foreach ($responsedata->{'q' . $question->id} as $cid => $cvalue) {
+                $cid = clean_param($cid, PARAM_CLEAN);
+                if (isset($question->choices[$cid])) {
                     $record = new \stdClass();
-                    $record->response_id = $responsedata->rid;
-                    $record->question_id = $this->question->id;
-                    $record->choice_id = $cid;
-                    $record->response = $other;
-                    $DB->insert_record('questionnaire_response_other', $record);
+                    $record->responseid = $responsedata->rid;
+                    $record->questionid = $question->id;
+                    $record->choiceid = $cid;
+                    // If this choice is an "other" choice, look for the added input.
+                    if ($question->choices[$cid]->is_other_choice()) {
+                        $cname = \mod_questionnaire\question\choice\choice::id_other_choice_name($cid);
+                        $record->value = isset($responsedata->{'q' . $question->id}[$cname]) ?
+                            $responsedata->{'q' . $question->id}[$cname] : '';
+                    }
+                    $answers[$cid] = answer\answer::create_from_data($record);
                 }
-
-                // Record the choice selection.
-                $record = new \stdClass();
-                $record->response_id = $responsedata->rid;
-                $record->question_id = $this->question->id;
-                $record->choice_id = $cid;
-                $resid = $DB->insert_record(self::response_table(), $record);
             }
         }
-        return $resid;
+        return $answers;
     }
 
     /**
@@ -201,7 +191,7 @@ class multiple extends single {
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".self::response_table()."} $alias ON $alias.response_id = qr.id
+              JOIN {".static::response_table()."} $alias ON $alias.response_id = qr.id
         ";
     }
 

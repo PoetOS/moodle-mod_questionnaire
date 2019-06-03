@@ -64,7 +64,7 @@ class answer {
     /**
      * Create and return an answer object from data.
      *
-     * @param object | array $answerdata The data to load.
+     * @param \stdClass | array $answerdata The data to load.
      * @return answer
      */
     public static function create_from_data($answerdata) {

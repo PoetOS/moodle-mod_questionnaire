@@ -23,8 +23,6 @@
  */
 
 namespace mod_questionnaire\responsetype;
-use mod_questionnaire\responsetype\answer\answer;
-use mod_questionnaire\responsetype\choice\choice;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -44,48 +42,79 @@ class single extends responsetype {
     }
 
     /**
-     * @param int|object $responsedata
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     * @throws \coding_exception
+     */
+    static public function answers_from_webform($responsedata, $question) {
+        $answers = [];
+        if (isset($responsedata->{'q'.$question->id}) && isset($question->choices[$responsedata->{'q'.$question->id}])) {
+            $record = new \stdClass();
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->choiceid = $responsedata->{'q'.$question->id};
+            // If this choice is an "other" choice, look for the added input.
+            if ($question->choices[$responsedata->{'q'.$question->id}]->is_other_choice()) {
+                $cname = 'q' . $question->id .
+                    \mod_questionnaire\question\choice\choice::id_other_choice_name($responsedata->{'q'.$question->id});
+                $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
+            }
+            $answers[$responsedata->{'q'.$question->id}] = answer\answer::create_from_data($record);
+        }
+        return $answers;
+    }
+
+    /**
+     * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
      * @return bool|int
+     * @throws \coding_exception
      * @throws \dml_exception
      */
     public function insert_response($responsedata) {
         global $DB;
 
-        $cid = isset($responsedata->{'q'.$this->question->id}) ? $responsedata->{'q'.$this->question->id} : null;
-        $resid = '';
-
-        if ($cid === null) {
-            return false;
+        if (!$responsedata instanceof \mod_questionnaire\responsetype\response\response) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this->question]);
+        } else {
+            $response = $responsedata;
         }
 
-        $cid = clean_param($cid, PARAM_CLEAN);
-        if (isset($this->question->choices[$cid])) {
-            // If this choice is an "other" choice, look for the added input.
-            if ($this->question->choices[$cid]->is_other_choice()) {
-                $cname = 'q' . $this->question->id . \mod_questionnaire\question\choice\choice::id_other_choice_name($cid);
-                $other = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
-
-                // If no input specified, ignore this choice.
-                if (!empty($other) && !preg_match("/[ \t\n]/", $other)) {
+        $resid = false;
+        if (!empty($response) && isset($response->answers[$this->question->id])) {
+            foreach ($response->answers[$this->question->id] as $answer) {
+                if ($this->question->choices[$answer->choiceid]->is_other_choice()) {
+                    // If no input specified, ignore this choice.
+                    if (empty($answer->value) || preg_match("/^[\s]*$/", $answer->value)) {
+                        continue;
+                    }
                     $record = new \stdClass();
-                    $record->response_id = $responsedata->rid;
+                    $record->response_id = $response->id;
                     $record->question_id = $this->question->id;
-                    $record->choice_id = $cid;
-                    $record->response = $other;
+                    $record->choice_id = $answer->choiceid;
+                    $record->response = $answer->value;
                     $DB->insert_record('questionnaire_response_other', $record);
                 }
+                // Record the choice selection.
+                $record = new \stdClass();
+                $record->response_id = $response->id;
+                $record->question_id = $this->question->id;
+                $record->choice_id = $answer->choiceid;
+                $resid = $DB->insert_record(static::response_table(), $record);
             }
-
-            // Record the choice selection.
-            $record = new \stdClass();
-            $record->response_id = $responsedata->rid;
-            $record->question_id = $this->question->id;
-            $record->choice_id = $cid;
-            $resid = $DB->insert_record(self::response_table(), $record);
         }
         return $resid;
     }
 
+    /**
+     * @param bool $rids
+     * @param bool $anonymous
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
 
@@ -259,7 +288,7 @@ class single extends responsetype {
             'WHERE r.response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
-            $answers[$record->questionid][$record->choiceid] = answer::create_from_data($record);
+            $answers[$record->questionid][$record->choiceid] = answer\answer::create_from_data($record);
         }
 
         return $answers;

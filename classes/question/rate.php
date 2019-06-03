@@ -168,15 +168,16 @@ class rate extends question {
         // If Osgood, adjust central columns to width of named degrees if any.
         if ($osgood) {
             if ($maxndlen < 4) {
-                $width = '45%';
+                $width = 45;
             } else if ($maxndlen < 13) {
-                $width = '40%';
+                $width = 40;
             } else {
-                $width = '30%';
+                $width = 30;
             }
             $nn = 100 - ($width * 2);
             $colwidth = ($nn / $this->length).'%';
             $textalign = 'right';
+            $width = $width . '%';
         } else if ($nocontent) {
             $width = '0%';
             $colwidth = (100 / $this->length).'%';
@@ -375,12 +376,15 @@ class rate extends question {
             $resptags->osgood = 1;
             if ($maxndlen < 4) {
                 $sidecolwidth = '45%';
+                $sidecolwidthn = 45;
             } else if ($maxndlen < 13) {
                 $sidecolwidth = '40%';
+                $sidecolwidthn = 40;
             } else {
                 $sidecolwidth = '30%';
+                $sidecolwidthn = 30;
             }
-            $nn = 100 - ($sidecolwidth * 2);
+            $nn = 100 - ($sidecolwidthn * 2);
             $resptags->sidecolwidth = $sidecolwidth;
             $resptags->colwidth = ($nn / $this->length).'%';
             $resptags->textalign = 'right';

@@ -174,7 +174,7 @@ class questionnaire {
     }
 
     /**
-     * Load the sepecified response information.
+     * Load the specified response information.
      *
      * @param $responseid
      * @throws dml_exception
@@ -189,6 +189,28 @@ class questionnaire {
 
         $response = $DB->get_record('questionnaire_response', ['id' => $responseid]);
         $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
+    }
+
+    /**
+     * Load the response information from a submitted form.
+     *
+     * @param $formdata
+     * @throws dml_exception
+     */
+    public function add_response_from_formdata($formdata) {
+        global $DB, $USER;
+
+        $rid = isset($formdata->rid) ? $formdata->rid : 0;
+
+        if ($rid) {
+            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
+            $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
+        } else {
+            $this->responses[$rid] =
+                mod_questionnaire\responsetype\response\response::response_from_webform($formdata, $this->questions);
+        }
+
+
     }
 
     /**
@@ -1012,8 +1034,7 @@ class questionnaire {
         }
 
         if (!empty($formdata->rid)) {
-            $this->add_response($formdata->rid);
-//            $this->response_import_sec($formdata->rid, $formdata->sec, $formdata);
+            $this->add_response_from_formdata($formdata);
         }
 
         $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
@@ -1048,6 +1069,13 @@ class questionnaire {
         return $msg;
     }
 
+    /**
+     * @param int $section
+     * @param string $message
+     * @param $formdata
+     * @return bool|void
+     * @throws coding_exception
+     */
     private function survey_render($section = 1, $message = '', &$formdata) {
 
         $this->usehtmleditor = null;
@@ -1085,8 +1113,10 @@ class questionnaire {
             }
             // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
             $formdata->questionnaire_id = $this->id;
+            $this->add_response_from_formdata($formdata);
             $this->page->add_to_page('questions',
-                $this->renderer->question_output($this->questions[$questionid], $this->responses[$formdata->rid],
+                $this->renderer->question_output($this->questions[$questionid],
+                    (isset($this->responses[$formdata->rid]) ? $this->responses[$formdata->rid] : []),
                     [], $i, $this->usehtmleditor));
         }
 
