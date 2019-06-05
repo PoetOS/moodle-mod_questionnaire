@@ -116,7 +116,10 @@ $string['createnew'] = 'Create new';
 $string['date'] = 'Date';
 $string['date_help'] = 'Use this question type if you expect the response to be a correctly formatted date.';
 $string['date_link'] = 'mod/questionnaire/questions#Date';
-$string['dateformatting'] = 'Use the day/month/year format, e.g. for March 14th, 1945:&nbsp; <strong>14/3/1945</strong>';
+$string['dateformatting'] = 'Use the year-month-day format, e.g. for March 4th, 1945:&nbsp; <strong>1945-03-04</strong>';
+// Prior to release 3.6.0, you could specify an input date format in the above string. Now, the format must be as below. This
+// string is used now in case sites modified the above string.
+$string['strictdateformatting'] = 'Use the year-month-day format, e.g. for March 4th, 1945:&nbsp; <strong>1945-03-04</strong>';
 $string['deleteallresponses'] = 'Delete ALL Responses';
 $string['deletecurrentquestion'] = 'Delete question {$a}';
 $string['deletedallgroupresp'] = 'Deleted ALL Responses in group {$a}';

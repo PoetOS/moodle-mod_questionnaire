@@ -64,19 +64,14 @@ class date extends base {
         // Date.
         $questiontags = new \stdClass();
         if (!empty($data->{'q'.$this->id})) {
-            $dateentered = $data->{'q'.$this->id};
-            $setdate = questionnaire_check_date ($dateentered, false);
-            if ($setdate == 'wrongdateformat') {
-                $msg = get_string('wrongdateformat', 'questionnaire', $dateentered);
+            $validdate = $this->check_date_format($data->{'q'.$this->id});
+            if (!$validdate) {
+                $msg = get_string('wrongdateformat', 'questionnaire', $data->{'q'.$this->id});
                 $this->add_notification($msg);
-            } else if ($setdate == 'wrongdaterange') {
-                $msg = get_string('wrongdaterange', 'questionnaire');
-                $this->add_notification($msg);
-            } else {
-                $data->{'q'.$this->id} = $setdate;
             }
         }
         $choice = new \stdClass();
+        $choice->type = 'date'; // Using HTML5 date input.
         $choice->onkeypress = 'return event.keyCode != 13;';
         $choice->name = 'q'.$this->id;
         $choice->value = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
@@ -107,11 +102,11 @@ class date extends base {
      */
     public function response_valid($responsedata) {
         if (isset($responsedata->{'q'.$this->id})) {
-            $checkdateresult = '';
+            $validresponse = true;
             if ($responsedata->{'q'.$this->id} != '') {
-                $checkdateresult = questionnaire_check_date($responsedata->{'q'.$this->id});
+                $validresponse = $this->check_date_format($responsedata->{'q'.$this->id});
             }
-            return (substr($checkdateresult, 0, 5) != 'wrong');
+            return $validresponse;
         } else {
             return parent::response_valid($responsedata);
         }
@@ -123,5 +118,51 @@ class date extends base {
 
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         return base::form_precise_hidden($mform);
+    }
+
+    /**
+     * Verify that the date provided is in the proper YYYY-MM-DD format.
+     *
+     */
+    public function check_date_format($date) {
+        $datepieces = explode('-', $date);
+        $return = true;
+
+        if (count($datepieces) != 3) {
+            $return = false;
+        } else {
+            foreach ($datepieces as $piece => $datepiece) {
+                if (!is_numeric($datepiece)) {
+                    $return = false;
+                    break;
+                }
+                switch ($piece) {
+                    // Year check.
+                    case 0:
+                        if ((strlen($datepiece) != 4) || ($datepiece <= 0)) {
+                            $return = false;
+                            break 2;
+                        }
+                        break;
+
+                    // Month check.
+                    case 1:
+                        if ((strlen($datepiece) != 2) || ((int)$datepiece < 1) || ((int)$datepiece > 12)) {
+                            $return = false;
+                            break 2;
+                        }
+                        break;
+
+                    // Day check.
+                    case 2:
+                        if ((strlen($datepiece) != 2) || ((int)$datepiece < 1) || ((int)$datepiece > 31)) {
+                            $return = false;
+                            break 2;
+                        }
+                        break;
+                }
+            }
+        }
+        return $return;
     }
 }

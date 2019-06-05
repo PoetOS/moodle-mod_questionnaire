@@ -41,17 +41,14 @@ class date extends base {
 
     public function insert_response($rid, $val) {
         global $DB;
-        $checkdateresult = questionnaire_check_date($val);
-        $thisdate = $val;
-        if (substr($checkdateresult, 0, 5) == 'wrong') {
+
+        if (!$this->question->check_date_format($val)) {
             return false;
         }
-        // Now use ISO date formatting.
-        $checkdateresult = questionnaire_check_date($thisdate, true);
         $record = new \stdClass();
         $record->response_id = $rid;
         $record->question_id = $this->question->id;
-        $record->response = $checkdateresult;
+        $record->response = $val;
         return $DB->insert_record(self::response_table(), $record);
     }
 
@@ -180,7 +177,7 @@ class date extends base {
                     if (preg_match('/\d\d\d\d-\d\d-\d\d/', $val)) {
                         $dateparts = preg_split('/-/', $val);
                         $val = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
-                        $val = userdate ( $val, $dateformat);
+                        $val = userdate($val, $dateformat);
                         $newrow[] = $val;
                     }
                 }
