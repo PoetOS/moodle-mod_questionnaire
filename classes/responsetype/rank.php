@@ -50,7 +50,7 @@ class rank extends responsetype {
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      * @throws \coding_exception
      */
-    static public function answers_from_webform($responsedata, $question){
+    static public function answers_from_webform($responsedata, $question) {
         $answers = [];
         foreach ($question->choices as $cid => $choice) {
             $other = isset($responsedata->{'q' . $question->id . '_' . $cid}) ?

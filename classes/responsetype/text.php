@@ -49,7 +49,7 @@ class text extends responsetype {
      * @param \mod_questionnaire\question\question $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
-    static public function answers_from_webform($responsedata, $question){
+    static public function answers_from_webform($responsedata, $question) {
         $answers = [];
         if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
             $val = $responsedata->{'q' . $question->id};

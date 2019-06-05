@@ -209,8 +209,6 @@ class questionnaire {
             $this->responses[$rid] =
                 mod_questionnaire\responsetype\response\response::response_from_webform($formdata, $this->questions);
         }
-
-
     }
 
     /**

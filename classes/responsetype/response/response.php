@@ -110,7 +110,7 @@ class response {
      * @return bool|response A response object.
      * @throws \coding_exception
      */
-    static public function response_from_webform($responsedata, $questions){
+    static public function response_from_webform($responsedata, $questions) {
         global $USER;
 
         $questionnaireid = isset($responsedata->questionnaire_id) ? $responsedata->questionnaire_id :
