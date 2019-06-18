@@ -1639,13 +1639,6 @@ class questionnaire {
         }
     }
 
-    private function response_import_sec($rid, $sec, &$varr) {
-        if ($sec < 1 || !isset($this->questionsbysec[$sec])) {
-            return;
-        }
-        return $this->response_import_all($rid, $varr);
-    }
-
     private function response_import_all($rid, &$varr) {
 
         $vals = $this->response_select($rid);
@@ -1776,12 +1769,11 @@ class questionnaire {
     private function send_submission_notifications($rid) {
         global $CFG, $USER;
 
-        $answers = new stdClass();
-        $this->response_import_all($rid, $answers);
+        $this->add_response($rid);
         $message = '';
 
         if ($this->notifications == 2) {
-            $message .= $this->get_full_submission_for_notifications($answers);
+            $message .= $this->get_full_submission_for_notifications();
         }
 
         $success = true;
@@ -1902,12 +1894,11 @@ class questionnaire {
 
     /**
      * Return a formatted string containing all the questions and answers for a specific submission.
-     * @param $answers The array of answers from import_all_responses.
      * @return string
      * @throws coding_exception
      */
-    private function get_full_submission_for_notifications($answers) {
-        $responses = $this->get_full_submission_for_export($answers);
+    private function get_full_submission_for_notifications() {
+        $responses = $this->get_full_submission_for_export();
         $message = '';
         foreach ($responses as $response) {
             $message .= html_to_text($response->questionname) . "<br />\n";
@@ -1940,7 +1931,7 @@ class questionnaire {
      * @return string
      * @throws coding_exception
      */
-    private function get_full_submission_for_export($answers) {
+    private function get_full_submission_for_export() {
         $exportstructure = [];
         foreach ($this->questions as $question) {
             $rqid = 'q' . $question->id;
