@@ -227,6 +227,24 @@ class questionnaire {
         $this->page = $page;
     }
 
+    /**
+     * Return true if questions should be automatically numbered.
+     * @return bool
+     */
+    public function questions_autonumbered() {
+        // Value of 1 if questions should be numbered. Value of 3 if both questions and pages should be numbered.
+        return (!empty($this->autonum) && (($this->autonum == 1) || ($this->autonum == 3)));
+    }
+
+    /**
+     * Return true if pages should be automatically numbered.
+     * @return bool
+     */
+    public function pages_autonumbered() {
+        // Value of 2 if pages should be numbered. Value of 3 if both questions and pages should be numbered.
+        return (!empty($this->autonum) && (($this->autonum == 2) || ($this->autonum == 3)));
+    }
+
     public function view() {
         global $CFG, $USER, $PAGE;
 
@@ -1241,9 +1259,8 @@ class questionnaire {
     }
 
     private function print_survey_end($section, $numsections) {
-        $autonum = $this->autonum;
-        // If no questions autonumbering.
-        if ($autonum < 3) {
+        // If no pages autonumbering.
+        if (!$this->pages_autonumbered()) {
             return;
         }
         if ($numsections > 1) {
@@ -1565,9 +1582,8 @@ class questionnaire {
         }
         $message = '';
         $nonumbering = false;
-        $autonum = $this->autonum;
         // If no questions autonumbering do not display missing question(s) number(s).
-        if ($autonum != 1 && $autonum != 3) {
+        if (!$this->questions_autonumbered()) {
             $nonumbering = true;
         }
         if ($checkmissing && $missing) {
@@ -1639,24 +1655,11 @@ class questionnaire {
         }
     }
 
-    private function response_import_all($rid, &$varr) {
-
-        $vals = $this->response_select($rid);
-        reset($vals);
-        foreach ($vals as $id => $arr) {
-            if (isset($arr[0]) && is_array($arr[0])) {
-                // Multiple.
-                foreach ($arr as $response) {
-                    $val = end($response);
-                    $idx = key($response);
-                    $varr->{'q'.$id}[$idx] = $val;
-                }
-            } else {
-                $varr->{'q'.$id} = array_pop($arr);
-            }
-        }
-    }
-
+    /**
+     * @param $rid
+     * @return bool
+     * @throws dml_exception
+     */
     private function response_commit($rid) {
         global $DB;
 
@@ -1773,7 +1776,7 @@ class questionnaire {
         $message = '';
 
         if ($this->notifications == 2) {
-            $message .= $this->get_full_submission_for_notifications();
+            $message .= $this->get_full_submission_for_notifications($rid);
         }
 
         $success = true;
@@ -1894,11 +1897,12 @@ class questionnaire {
 
     /**
      * Return a formatted string containing all the questions and answers for a specific submission.
+     * @param $rid
      * @return string
      * @throws coding_exception
      */
-    private function get_full_submission_for_notifications() {
-        $responses = $this->get_full_submission_for_export();
+    private function get_full_submission_for_notifications($rid) {
+        $responses = $this->get_full_submission_for_export($rid);
         $message = '';
         foreach ($responses as $response) {
             $message .= html_to_text($response->questionname) . "<br />\n";
@@ -1920,18 +1924,20 @@ class questionnaire {
      * @throws coding_exception
      */
     public function get_structured_response($rid) {
-        $answers = new stdClass();
-        $this->response_import_all($rid, $answers);
-        return $this->get_full_submission_for_export($answers);
+        $this->add_response($rid);
+        return $this->get_full_submission_for_export($rid);
     }
 
     /**
      * Return a JSON structure containing all the questions and answers for a specific submission.
-     * @param $answers The array of answers from import_all_responses.
-     * @return string
-     * @throws coding_exception
+     * @param $rid
+     * @return array
      */
-    private function get_full_submission_for_export() {
+    private function get_full_submission_for_export($rid) {
+        if (!isset($this->responses[$rid])) {
+            $this->add_response($rid);
+        }
+
         $exportstructure = [];
         foreach ($this->questions as $question) {
             $rqid = 'q' . $question->id;
@@ -1949,48 +1955,40 @@ class questionnaire {
                         $cids[$rqid . '_' . $cid] = $choice->content;
                     }
                 }
-                foreach ($cids as $rqid => $choice) {
-                    if (isset($answers->$rqid)) {
+                if (isset($this->responses[$rid]->answers[$question->id])) {
+                    foreach ($cids as $rqid => $choice) {
                         $cid = substr($rqid, (strpos($rqid, '_') + 1));
-                        if (isset($question->choices[$cid]) && isset($choices[$answers->$rqid + 1])) {
-                            $rating = $choices[$answers->$rqid + 1];
-                        } else {
-                            $rating = $answers->$rqid + 1;
+                        if (isset($this->responses[$rid]->answers[$question->id][$cid])) {
+                            if (isset($question->choices[$cid]) &&
+                                isset($choices[$this->responses[$rid]->answers[$question->id][$cid]->value + 1])) {
+                                $rating = $choices[$this->responses[$rid]->answers[$question->id][$cid]->value + 1];
+                            } else {
+                                $rating = $this->responses[$rid]->answers[$question->id][$cid]->value + 1;
+                            }
+                            $response->answers[] = $question->choices[$cid]->content . ' = ' . $rating;
                         }
-                        $response->answers[] = $question->choices[$cid]->content . ' = ' . $rating;
                     }
                 }
             } else if ($question->has_choices()) {
-                // Check for "other".
-                foreach ($question->choices as $cid => $choice) {
-                    if (strpos($choice->content, '!other=') !== false) {
-                        $other = $cid;
-                        break;
-                    }
-                }
                 $answertext = '';
-                if (isset($answers->$rqid) && is_array($answers->$rqid)) {
+                if (isset($this->responses[$rid]->answers[$question->id])) {
                     $i = 0;
-                    foreach ($answers->$rqid as $answer) {
+                    foreach ($this->responses[$rid]->answers[$question->id] as $answer) {
                         if ($i > 0) {
                             $answertext .= '; ';
                         }
-                        if (isset($other) && ($answer == ('other_' . $other))) {
-                            $answertext .= $answers->{$rqid . '_' . $other};
+                        if ($question->choices[$answer->choiceid]->is_other_choice()) {
+                            $answertext .= $answer->value;
                         } else {
-                            $answertext .= $question->choices[$answer]->content;
+                            $answertext .= $question->choices[$answer->choiceid]->content;
                         }
                         $i++;
                     }
-                } else if (isset($answers->$rqid) && isset($other) && ($answers->$rqid == ('other_' . $other))) {
-                    $answertext .= $answers->{$rqid . '_' . $other};
-                } else if (isset($answers->$rqid) && isset($question->choices[$answers->$rqid])) {
-                    $answertext .= $question->choices[$answers->$rqid]->content;
                 }
                 $response->answers[] = $answertext;
 
-            } else if (isset($answers->$rqid)) {
-                $response->answers[] = $answers->$rqid;
+            } else if (isset($this->responses[$rid]->answers[$question->id])) {
+                $response->answers[] = $this->responses[$rid]->answers[$question->id][0]->value;
             }
             $exportstructure[] = $response;
         }
@@ -3627,8 +3625,8 @@ class questionnaire {
                 'intro' => $this->intro,
                 'userid' => intval($userid ? $userid : $USER->id),
                 'questionnaireid' => intval($this->sid),
-                'autonumpages' => in_array($this->autonum, [1, 2]),
-                'autonumquestions' => in_array($this->autonum, [1, 3])
+                'autonumpages' => $this->pages_autonumbered(),
+                'autonumquestions' => $this->questions_autonumbered()
             ],
             'response' => [
                 'id' => 0,

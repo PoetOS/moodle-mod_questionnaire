@@ -38,19 +38,20 @@ class mobile {
 
         $args = (object) $args;
         $cmid = $args->cmid;
-        $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
+        $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 0;
         $prevpage = 0;
 
         list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
         $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
+        $questionnaire->add_user_responses();
 
         // Capabilities check.
         $context = \context_module::instance($cmid);
         self::require_capability($cm, $context, 'mod/questionnaire:view');
 
         // Set some variables we are going to be using.
-        $questionnairedata = $questionnaire->get_mobile_data($USER->id);
-        if (isset($questionnairedata['questions'][$pagenum - 1]) && !empty($questionnairedata['questions'][$pagenum - 1])) {
+//        $questionnairedata = $questionnaire->get_mobile_data($USER->id);
+        if (!empty($questionnaire->questionsbysec) && (count($questionnaire->questionsbysec) > 1) && ($pagenum > 0)) {
             $prevpage = $pagenum - 1;
         }
 
@@ -79,7 +80,22 @@ class mobile {
             $pagequestion['qnum'] = $qnum;
             $qnum++;
         }
-        foreach ($questionnairedata['questions'][$pagenum] as $questionid => $choices) {
+
+        foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
+//        foreach ($questionnairedata['questions'][$pagenum] as $questionid => $choices) {
+
+            $qnum++;
+            if ($questionnaire->questions[$questionid]->supports_mobile() &&
+                ($mobiledata =
+                    $questionnaire->questions[$questionid]->get_mobile_question_data($qnum, $ret['questionnaire']['autonumquestions']))) {
+                $ret['questionsinfo'][$pagenum][$question->id] = $mobiledata->questionsinfo;
+                $ret['fields'][$mobiledata->questionsinfo['fieldkey']] = $mobiledata->fields;
+                $ret['questions'][$pagenum][$question->id] = $mobiledata->questions;
+                $ret['responses']['response_' . $question->type_id . '_' . $question->id] = $mobiledata->responses;
+            }
+
+
+
             $pagequestion = $questionnairedata['questionsinfo'][$pagenum][$questionid];
             // Do an array_merge to reindex choices with standard numerical indexing.
             $pagequestion['choices'] = array_merge([], $choices);

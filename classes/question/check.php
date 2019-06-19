@@ -283,7 +283,7 @@ class check extends question {
      * @throws \coding_exception
      */
     public function get_mobile_question_data($qnum, $autonum = false) {
-        $mobiledata = parent::get_mobile_question_data($qnum, $autonum = false);
+        $mobiledata = parent::get_mobile_question_data($qnum, $autonum);
         $mobiledata->questionsinfo['ischeckbox'] = true;
         return $mobiledata;
     }

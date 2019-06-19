@@ -849,10 +849,9 @@ abstract class question {
         $currenttab = $SESSION->questionnaire->current_tab;
         $pagetype = $PAGE->pagetype;
         $skippedclass = '';
-        $autonum = $questionnaire->autonum;
         // If no questions autonumbering.
         $nonumbering = false;
-        if ($autonum != 1 && $autonum != 3) {
+        if (!$questionnaire->questions_autonumbered()) {
             $qnum = '';
             $nonumbering = true;
         }
