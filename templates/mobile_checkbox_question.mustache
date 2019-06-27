@@ -28,14 +28,14 @@
         "choices": [
             {
                 "fieldkey": 985,
-                "choice_id": 5432,
+                "id": 5432,
                 "content": "Red",
                 "completed": 0,
                 "value": 1
             },
             {
                 "fieldkey": 986 ,
-                "choice_id": 5433,
+                "id": 5433,
                 "content": "Blue",
                 "completed": 0,
                 "value": 0
@@ -48,7 +48,7 @@
     <%#choices%>
     <ion-item>
         <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
-        <ion-checkbox <%#value%> checked="true"<%/value%> value="<%choice_id%>"
+        <ion-checkbox <%#value%> checked="true"<%/value%> value="<%id%>"
         <%#completed%> disabled="true"<%/completed%>
         [(ngModel)]="CONTENT_OTHERDATA.responses[<%fieldkey%>]"></ion-checkbox>
     </ion-item>

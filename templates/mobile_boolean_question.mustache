@@ -28,13 +28,13 @@
         "fieldkey": 985,
         "choices": [
             {
-                "choice_id": 5432,
+                "id": 5432,
                 "content": "Yes",
                 "completed": 1,
                 "value": 1
             },
             {
-                "choice_id": 5432,
+                "id": 5432,
                 "content": "No",
                 "completed": 1,
                 "value": 0
@@ -47,7 +47,7 @@
     <%#choices%>
     <ion-item>
         <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
-        <ion-radio<%#completed%> disabled="true"<%#value%> checked="true"<%/value%><%/completed%> value="<%choice_id%>"></ion-radio>
+        <ion-radio<%#completed%> disabled="true"<%#value%> checked="true"<%/value%><%/completed%> value="<%id%>"></ion-radio>
     </ion-item>
     <%/choices%>
 </ion-list>

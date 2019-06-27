@@ -1482,97 +1482,93 @@ abstract class question {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $autonum = false) {
-        $mobiledata = new \stdClass();
-        if ($this->type_id != QUESPAGEBREAK) {
-            $options = ['noclean' => true, 'para' => false, 'filter' => true,
-                'context' => $this->context, 'overflowdiv' => true];
-            $mobiledata->questionsinfo = [
-                'id' => $this->id,
-                'surveyid' => $this->surveyid,
-                'name' => $this->name,
-                'type_id' => $this->type_id,
-                'length' => $this->length,
-                'content' => ($autonum ? '' : '') . format_text(file_rewrite_pluginfile_urls(
-                        $this->content, 'pluginfile.php', $this->context->id,
-                        'mod_questionnaire', 'question', $this->id),
-                        FORMAT_HTML, $options),
-                'content_stripped' => strip_tags($this->content),
-                'required' => $this->required,
-                'deleted' => $this->deleted,
-                'response_table' => $this->responsetable,
-                'fieldkey' => 'response_' . $this->type_id . '_' . $this->id,
-                'precise' => $this->precise,
-                'qnum' => $qnum,
-                'errormessage' => get_string('required') . ': ' . $this->name
-            ];
-            $mobiledata->fields = $mobiledata->questionsinfo;
-            $this->add_mobile_question_choice_data($mobiledata);
+    public function mobile_question_display($qnum, $autonum = false) {
+        $options = ['noclean' => true, 'para' => false, 'filter' => true,
+            'context' => $this->context, 'overflowdiv' => true];
+        $mobiledata = [
+            'id' => $this->id,
+            'name' => $this->name,
+            'type_id' => $this->type_id,
+            'length' => $this->length,
+            'content' => format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php', $this->context->id,
+                'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options),
+            'content_stripped' => strip_tags($this->content),
+            'required' => $this->required,
+            'deleted' => $this->deleted,
+            'response_table' => $this->responsetable,
+            'fieldkey' => $this->mobile_fieldkey(),
+            'precise' => $this->precise,
+            'qnum' => $qnum,
+            'errormessage' => get_string('required') . ': ' . $this->name
+        ];
+        $mobiledata['choices'] = $this->mobile_question_choices_display();
 
-            if ($autonum) {
-                $mobiledata->questionsinfo['content'] = $qnum . '. ' . $mobiledata->questionsinfo['content'];
-                $mobiledata->questionsinfo['content_stripped'] = $qnum . '. ' . $mobiledata->questionsinfo['content_stripped'];
-            }
+        if ($autonum) {
+            $mobiledata['content'] = $qnum . '. ' . $mobiledata['content'];
+            $mobiledata['content_stripped'] = $qnum . '. ' . $mobiledata['content_stripped'];
         }
-        $mobiledata->responses = '';
+        $mobiledata['responses'] = '';
         return $mobiledata;
     }
 
     /**
-     * @param $mobiledata
-     * @return mixed
+     * @return array
      */
-    public function add_mobile_question_choice_data($mobiledata) {
+    public function mobile_question_choices_display() {
+        $choices = [];
+        $cnum = 0;
         if ($this->has_choices()) {
-            $mobiledata->questions = [];
-            foreach ($this->choices as $choiceid => $choice) {
-                $choice->id = $choiceid;
-                $choice->question_id = $this->id;
-                $choice->choice_id = $choiceid;
-                if ($choice->value == null) {
-                    $choice->value = '';
-                }
-                $mobiledata->questions[$choiceid] = $choice;
-                if ($this->required()) {
-                    if (!isset($mobiledata->questionsinfo['firstone'])) {
-                        $mobiledata->questionsinfo['firstone'] = true;
-                        $mobiledata->questions[$choiceid]->value = intval($choice->choice_id);
-                        $mobiledata->questions[$choiceid]->firstone = true;
-                    }
-                }
+            foreach ($this->choices as $choice) {
+                $choices[$cnum] = $choice;
+                $cnum++;
             }
         }
-
-        return $mobiledata;
+        return $choices;
     }
 
     /**
-     * @param $rid
-     * @return \stdClass
+     * Return a field key to be used by the mobile app.
+     * @param $choiceid
+     * @return string
      */
-    public function get_mobile_response_data($rid) {
-        $results = $this->get_results($rid);
-        $resultdata = new \stdClass();
-        $resultdata->answered = false;
-        $resultdata->questions = [];
-        $resultdata->responses = [];
-        if (!empty($results) && $this->has_choices()) {
-            foreach ($results as $result) {
-                foreach ($this->choices as $choiceid => $choice) {
-                    if ($choiceid == $result->cid) {
-                        $resultdata->answered = true;
-                        $resultdata->questions[$choiceid] = new \stdClass();
-                        $resultdata->questions[$choiceid]->value = $choiceid;
-                        $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = $choiceid;
-                    }
-                }
-            }
-        } else if (!empty($results)) {
-            $resultdata->answered = true;
-            $result = end($results);
-            $resultdata->questions[0] = new \stdClass();
-            $resultdata->questions[0]->value = $result->response;
-            $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = $result->response;
+    public function mobile_fieldkey($choiceid = 0) {
+        $choicefield = '';
+        if ($choiceid != 0) {
+            $choicefield = '_' . $choiceid;
+        }
+        return 'response_' . $this->type_id . '_' . $this->id . $choicefield;
+    }
+
+    /**
+     * @param $response
+     * @return array
+     */
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        if (isset($response->answers)) {
+            $resultdata[$this->mobile_fieldkey()] = true;
+//            $resultdata->questions = [];
+//            $resultdata->responses = [];
+//            if (!empty($results) && $this->has_choices()) {
+//                foreach ($results as $result) {
+//                    foreach ($this->choices as $choiceid => $choice) {
+//                        if ($choiceid == $result->cid) {
+//                            $resultdata->answered = true;
+//                            $resultdata->questions[$choiceid] = new \stdClass();
+//                            $resultdata->questions[$choiceid]->value = $choiceid;
+//                            $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = $choiceid;
+//                        }
+//                    }
+//                }
+//            } else if (!empty($results)) {
+//                $resultdata->answered = true;
+//                $result = end($results);
+//                $resultdata->questions[0] = new \stdClass();
+//                $resultdata->questions[0]->value = $result->response;
+//                $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = $result->response;
+//            }
+        } else {
+            $resultdata[$this->mobile_fieldkey()] = false;
         }
 
         return $resultdata;

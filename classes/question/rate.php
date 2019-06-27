@@ -618,62 +618,61 @@ class rate extends question {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $autonum = false) {
-        $mobiledata = parent::get_mobile_question_data($qnum, $autonum);
-        $mobiledata->questionsinfo['israte'] = true;
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata['israte'] = true;
         return $mobiledata;
     }
 
     /**
-     * @param $mobiledata
      * @return mixed
+     * @throws \coding_exception
      */
-    public function add_mobile_question_choice_data($mobiledata) {
-        $mobiledata->questions = [];
+    public function mobile_question_choices_display() {
+        $choices = [];
         $excludes = [];
         $vals = $extracontents = [];
-        $mobiledata->questions = [];
+        $cnum = 0;
         foreach ($this->choices as $choiceid => $choice) {
             $choice->na = false;
             $choice->choice_id = $choiceid;
             $choice->id = $choiceid;
             $choice->question_id = $this->id;
             // Add a fieldkey for each choice.
-            $choice->fieldkey = 'response_' . $this->type_id . '_' . $this->id . '_' . $choiceid;
+            $choice->fieldkey = $this->mobile_fieldkey($choiceid);
 
             if ($this->precise == 0) {
-                $mobiledata->questions[$choiceid] = $choice;
+                $choices[$cnum] = $choice;
                 if ($this->required()) {
-                    $mobiledata->questions[$choiceid]->min = 0;
-                    $mobiledata->questions[$choiceid]->minstr = 1;
+                    $choices[$cnum]->min = 0;
+                    $choices[$cnum]->minstr = 1;
                 } else {
-                    $mobiledata->questions[$choiceid]->min = 0;
-                    $mobiledata->questions[$choiceid]->minstr = 1;
+                    $choices[$cnum]->min = 0;
+                    $choices[$cnum]->minstr = 1;
                 }
-                $mobiledata->questions[$choiceid]->max = intval($this->length) - 1;
-                $mobiledata->questions[$choiceid]->maxstr = intval($this->length);
+                $choices[$cnum]->max = intval($this->length) - 1;
+                $choices[$cnum]->maxstr = intval($this->length);
             } else if ($this->precise == 1) {
-                $mobiledata->questions[$choiceid] = $choice;
+                $choices[$cnum] = $choice;
                 if ($this->required()) {
-                    $mobiledata->questions[$choiceid]->min = 0;
-                    $mobiledata->questions[$choiceid]->minstr = 1;
+                    $choices[$cnum]->min = 0;
+                    $choices[$cnum]->minstr = 1;
                 } else {
-                    $mobiledata->questions[$choiceid]->min = 0;
-                    $mobiledata->questions[$choiceid]->minstr = 1;
+                    $choices[$cnum]->min = 0;
+                    $choices[$cnum]->minstr = 1;
                 }
-                $mobiledata->questions[$choiceid]->max = intval($this->length);
-                $mobiledata->questions[$choiceid]->na = true;
-                $extracontents[] = $mobiledata->questions[$choiceid]->max . ' = ' .
-                    get_string('notapplicable', 'mod_questionnaire');
+                $choices[$cnum]->max = intval($this->length);
+                $choices[$cnum]->na = true;
+                $extracontents[] = $choices[$cnum]->max . ' = ' . get_string('notapplicable', 'mod_questionnaire');
             } else if ($this->precise > 1) {
                 $excludes[$choiceid] = $choiceid;
                 if ($choice->value == null) {
                     if ($arr = explode('|', $choice->content)) {
                         if (count($arr) == 2) {
-                            $mobiledata->questions[$choiceid] = $choice;
-                            $mobiledata->questions[$choiceid]->content = '';
-                            $mobiledata->questions[$choiceid]->minstr = $arr[0];
-                            $mobiledata->questions[$choiceid]->maxstr = $arr[1];
+                            $choices[$cnum] = $choice;
+                            $choices[$cnum]->content = '';
+                            $choices[$cnum]->minstr = $arr[0];
+                            $choices[$cnum]->maxstr = $arr[1];
                         }
                     }
                 } else {
@@ -683,10 +682,10 @@ class rate extends question {
                 }
             }
             if ($vals) {
-                if ($q = $mobiledata->questions) {
+                if ($q = $choices) {
                     foreach (array_keys($q) as $itemid) {
-                        $mobiledata->questions[$itemid]->min = min($vals);
-                        $mobiledata->questions[$itemid]->max = max($vals);
+                        $choices[$itemid]->min = min($vals);
+                        $choices[$itemid]->max = max($vals);
                     }
                 }
             }
@@ -699,7 +698,7 @@ class rate extends question {
                 $extrahtml .= '</ul>';
                 $options = ['noclean' => true, 'para' => false, 'filter' => true,
                     'context' => $this->context, 'overflowdiv' => true];
-                $mobiledata->questions['content'] .= format_text($extrahtml, FORMAT_HTML, $options);
+                $choices['content'] .= format_text($extrahtml, FORMAT_HTML, $options);
             }
 
             if (!in_array($choiceid, $excludes)) {
@@ -707,18 +706,19 @@ class rate extends question {
                 if ($choice->value == null) {
                     $choice->value = '';
                 }
-                $mobiledata->questions[$choiceid] = $choice;
+                $choices[$cnum] = $choice;
             }
+            $cnum++;
         }
 
-        return $mobiledata;
+        return $choices;
     }
 
     /**
      * @param $rid
      * @return \stdClass
      */
-    public function get_mobile_response_data($rid) {
+/*    public function get_mobile_response_data($response) {
         // The get_results method for rate/rank responses is different than all others. That should be reworked.
         $results = $this->get_results($rid);
         $resultdata = new \stdClass();
@@ -743,5 +743,5 @@ class rate extends question {
         }
 
         return $resultdata;
-    }
+    } */
 }

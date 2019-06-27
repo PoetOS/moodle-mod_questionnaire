@@ -38,7 +38,7 @@ class mobile {
 
         $args = (object) $args;
         $cmid = $args->cmid;
-        $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 0;
+        $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
         $prevpage = 0;
 
         list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
@@ -50,8 +50,7 @@ class mobile {
         self::require_capability($cm, $context, 'mod/questionnaire:view');
 
         // Set some variables we are going to be using.
-//        $questionnairedata = $questionnaire->get_mobile_data($USER->id);
-        if (!empty($questionnaire->questionsbysec) && (count($questionnaire->questionsbysec) > 1) && ($pagenum > 0)) {
+        if (!empty($questionnaire->questionsbysec) && (count($questionnaire->questionsbysec) > 1) && ($pagenum > 1)) {
             $prevpage = $pagenum - 1;
         }
 
@@ -73,36 +72,54 @@ class mobile {
             $data['completed'] = 0;
             $data['complete_userdate'] = '';
         }
+        $responsedata = [
+            'id' => 0,
+            'questionnaireid' => 0,
+            'submitted' => 0,
+            'complete' => 'n',
+            'grade' => 0,
+            'userid' => 0,
+            'fullname' => '',
+            'userdate' => '',
+        ];
+
+        if ($responses = $questionnaire->get_responses($USER->id)) {
+            $response = end($responses);
+            $responsedata = (array) $response;
+            $responsedata['submitted_userdate'] = '';
+            if (isset($responsedata['submitted']) && !empty($responsedata['submitted'])) {
+                $responsedata['submitted_userdate'] = userdate($responsedata['submitted']);
+            }
+            $responsedata['fullname'] = fullname($DB->get_record('user', ['id' => $userid]));
+            $responsedata['userdate'] = $responsedata['submitted_userdate'];
+            $qresponsedata = [];
+            foreach ($questionnaire->questions as $question) {
+                // TODO - Need to do something with pagenum.
+                $qresponse = $question->get_mobile_response_data($response->id);
+                $qresponsedata += $qresponse->responses;
+            }
+        } else {
+            $response = \mod_questionnaire\responsetype\response\response::create_from_data(
+                ['questionnaireid' => $questionnaire->id, 'userid' => $USER->id]);
+        }
+
         $pagequestions = [];
         $data['pagequestions'] = [];
         $qnum = 1;
+        $responses = [];
         foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
-            $pagequestion['qnum'] = $qnum;
-            $qnum++;
-        }
-
-        foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
-//        foreach ($questionnairedata['questions'][$pagenum] as $questionid => $choices) {
-
-            $qnum++;
-            if ($questionnaire->questions[$questionid]->supports_mobile() &&
-                ($mobiledata =
-                    $questionnaire->questions[$questionid]->get_mobile_question_data($qnum, $ret['questionnaire']['autonumquestions']))) {
-                $ret['questionsinfo'][$pagenum][$question->id] = $mobiledata->questionsinfo;
-                $ret['fields'][$mobiledata->questionsinfo['fieldkey']] = $mobiledata->fields;
-                $ret['questions'][$pagenum][$question->id] = $mobiledata->questions;
-                $ret['responses']['response_' . $question->type_id . '_' . $question->id] = $mobiledata->responses;
+            $question = $questionnaire->questions[$questionid];
+            if ($question->supports_mobile()) {
+                $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
+                $responses = array_merge($responses, $question->get_mobile_response_data($response));
+//                $responsedata['responses'][$mobiledata['fieldkey']] = $mobiledata['responses'];
             }
-
-
-
-            $pagequestion = $questionnairedata['questionsinfo'][$pagenum][$questionid];
-            // Do an array_merge to reindex choices with standard numerical indexing.
-            $pagequestion['choices'] = array_merge([], $choices);
-            $pagequestions[] = $pagequestion;
+            $qnum++;
         }
         $data['pagequestions'] = $pagequestions;
 
+error_log(print_r($responses, true));
+//error_log(print_r($data, true));
         $return = [
             'templates' => [
                 [
@@ -111,17 +128,18 @@ class mobile {
                 ],
             ],
             'otherdata' => [
-                'fields' => json_encode($questionnairedata['fields']),
-                'questionsinfo' => json_encode($questionnairedata['questionsinfo']),
-                'questions' => json_encode($questionnairedata['questions']),
-                'pagequestions' => json_encode($data['pagequestions']),
-                'responses' => json_encode($questionnairedata['responses']),
-                'pagenum' => $pagenum,
-                'nextpage' => $data['nextpage'],
-                'prevpage' => $data['prevpage'],
-                'completed' => $data['completed'],
-                'intro' => $questionnairedata['questionnaire']['intro'],
-                'string_required' => get_string('required'),
+//                'fields' => json_encode($questionnairedata['fields']),
+//                'questionsinfo' => json_encode($questionnairedata['questionsinfo']),
+//                'questions' => json_encode($questionnairedata['questions']),
+//                'pagequestions' => json_encode($data['pagequestions']),
+//                'responses' => json_encode($responsedata['responses']),
+                'responses' => json_encode($responses),
+//                'pagenum' => $pagenum,
+//                'nextpage' => $data['nextpage'],
+//                'prevpage' => $data['prevpage'],
+//                'completed' => $data['completed'],
+//                'intro' => $questionnairedata['questionnaire']['intro'],
+//                'string_required' => get_string('required'),
             ],
             'files' => null
         ];

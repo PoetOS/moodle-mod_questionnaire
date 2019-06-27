@@ -282,9 +282,9 @@ class check extends question {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $autonum = false) {
-        $mobiledata = parent::get_mobile_question_data($qnum, $autonum);
-        $mobiledata->questionsinfo['ischeckbox'] = true;
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata['ischeckbox'] = true;
         return $mobiledata;
     }
 
@@ -292,36 +292,24 @@ class check extends question {
      * @param $mobiledata
      * @return mixed
      */
-    public function add_mobile_question_choice_data($mobiledata) {
-        $mobiledata = parent::add_mobile_question_choice_data($mobiledata);
-        foreach ($this->choices as $choiceid => $choice) {
+    public function mobile_question_choices_display() {
+        $choices = parent::mobile_question_choices_display();
+        foreach ($choices as $choicenum => $choice) {
             // Add a fieldkey for each choice.
-            $mobiledata->questions[$choiceid]->fieldkey = 'response_' . $this->type_id . '_' . $this->id . '_' . $choiceid;
+            $choices[$choicenum]->fieldkey = $this->mobile_fieldkey($choice->id);
         }
-        return $mobiledata;
+        return $choices;
     }
 
     /**
-     * @param $rid
-     * @return \stdClass
+     * @param $response
+     * @return array
      */
-    public function get_mobile_response_data($rid) {
-        $results = $this->get_results($rid);
-        $resultdata = new \stdClass();
-        $resultdata->answered = false;
-        $resultdata->questions = [];
-        $resultdata->responses = [];
-        if (!empty($results)) {
-            foreach ($results as $result) {
-                foreach ($this->choices as $choiceid => $choice) {
-                    if ($choiceid == $result->cid) {
-                        $resultdata->answered = true;
-                        $resultdata->questions[$choiceid] = new \stdClass();
-                        $resultdata->questions[$choiceid]->value = $choiceid;
-                        $resultdata->responses['response_' . $this->type_id . '_' . $this->id . '_' . $choiceid] = $choiceid;
-                    }
-                }
-            }
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        foreach ($this->choices as $choiceid => $choice) {
+            // Add a fieldkey for each choice.
+            $resultdata[$this->mobile_fieldkey($choiceid)] = false;
         }
 
         return $resultdata;

@@ -138,9 +138,9 @@ class text extends question {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $autonum = false) {
-        $mobiledata = parent::get_mobile_question_data($qnum, $autonum);
-        $mobiledata->questionsinfo['istextessay'] = true;
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata['istextessay'] = true;
         return $mobiledata;
     }
 
@@ -148,14 +148,14 @@ class text extends question {
      * @param $mobiledata
      * @return mixed
      */
-    public function add_mobile_question_choice_data($mobiledata) {
-        $mobiledata->questions = [];
-        $mobiledata->questions[0] = new \stdClass();
-        $mobiledata->questions[0]->id = 0;
-        $mobiledata->questions[0]->choice_id = 0;
-        $mobiledata->questions[0]->question_id = $this->id;
-        $mobiledata->questions[0]->content = '';
-        $mobiledata->questions[0]->value = null;
-        return $mobiledata;
+    public function mobile_question_choices_display() {
+        $choices = [];
+        $choices[0] = new \stdClass();
+        $choices[0]->id = 0;
+        $choices[0]->choice_id = 0;
+        $choices[0]->question_id = $this->id;
+        $choices[0]->content = '';
+        $choices[0]->value = null;
+        return $choices;
     }
 }

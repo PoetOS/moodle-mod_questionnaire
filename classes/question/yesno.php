@@ -220,46 +220,45 @@ class yesno extends question {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $autonum = false) {
-        $mobiledata = parent::get_mobile_question_data($qnum, $autonum);
-        $mobiledata->questionsinfo['isbool'] = true;
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata['isbool'] = true;
         return $mobiledata;
     }
 
     /**
-     * @param $mobiledata
      * @return mixed
+     * @throws \coding_exception
      */
-    public function add_mobile_question_choice_data($mobiledata) {
-        $mobiledata->questions = [];
-        $mobiledata->questions[0] = new \stdClass();
-        $mobiledata->questions[0]->id = 0;
-        $mobiledata->questions[0]->choice_id = 'n';
-        $mobiledata->questions[0]->question_id = $this->id;
-        $mobiledata->questions[0]->value = null;
-        $mobiledata->questions[0]->content = get_string('no');
-        $mobiledata->questions[0]->isbool = true;
-        $mobiledata->questions[1] = new \stdClass();
-        $mobiledata->questions[1]->id = 1;
-        $mobiledata->questions[1]->choice_id = 'y';
-        $mobiledata->questions[1]->question_id = $this->id;
-        $mobiledata->questions[1]->value = null;
-        $mobiledata->questions[1]->content = get_string('yes');
-        $mobiledata->questions[1]->isbool = true;
+    public function mobile_question_choices_display() {
+        $choices = [];
+        $choices[0] = new \stdClass();
+        $choices[0]->id = 0;
+        $choices[0]->choice_id = 'n';
+        $choices[0]->question_id = $this->id;
+        $choices[0]->value = null;
+        $choices[0]->content = get_string('no');
+        $choices[0]->isbool = true;
+        $choices[1] = new \stdClass();
+        $choices[1]->id = 1;
+        $choices[1]->choice_id = 'y';
+        $choices[1]->question_id = $this->id;
+        $choices[1]->value = null;
+        $choices[1]->content = get_string('yes');
+        $choices[1]->isbool = true;
         if ($this->required()) {
-            $mobiledata->questions[1]->value = 'y';
-            $mobiledata->questions[1]->firstone = true;
+            $choices[1]->value = 'y';
+            $choices[1]->firstone = true;
         }
-        $mobiledata->responses = 'n';
 
-        return $mobiledata;
+        return $choices;
     }
 
     /**
      * @param $rid
      * @return \stdClass
      */
-    public function get_mobile_response_data($rid) {
+/*    public function get_mobile_response_data($rid) {
         $results = $this->get_results($rid);
         $resultdata = new \stdClass();
         $resultdata->answered = false;
@@ -281,5 +280,5 @@ class yesno extends question {
         }
 
         return $resultdata;
-    }
+    } */
 }

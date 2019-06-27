@@ -276,9 +276,9 @@ class radio extends question {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $autonum = false) {
-        $mobiledata = parent::get_mobile_question_data($qnum, $autonum);
-        $mobiledata->questionsinfo['isradiobutton'] = true;
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata['isradiobutton'] = true;
         return $mobiledata;
     }
 }

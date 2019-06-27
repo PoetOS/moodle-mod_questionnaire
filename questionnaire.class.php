@@ -3707,6 +3707,7 @@ class questionnaire {
     public function save_mobile_data($userid, $sec, $completed, $submit, array $responses) {
         global $DB, $CFG; // Do not delete $CFG!!!
 
+//error_log(print_r($responses, true));
         // This should create an array of well formed responses then execute question->insert_response one by one.
         $processedresponses = [];
         foreach ($responses as $response) {

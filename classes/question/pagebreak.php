@@ -97,7 +97,7 @@ class pagebreak extends question {
      * @return \stdClass
      * @throws \coding_exception
      */
-    public function get_mobile_question_data($qnum, $autonum = false) {
+    public function mobile_question_display($qnum, $autonum = false) {
         return false;
     }
 }
