@@ -50,7 +50,7 @@
         <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
         <ion-checkbox <%#value%> checked="true"<%/value%> value="<%id%>"
         <%#completed%> disabled="true"<%/completed%>
-        [(ngModel)]="CONTENT_OTHERDATA.responses[<%fieldkey%>]"></ion-checkbox>
+        [(ngModel)]="CONTENT_OTHERDATA.responses['<%choicefieldkey%>']"></ion-checkbox>
     </ion-item>
     <%/choices%>
 </ion-list>

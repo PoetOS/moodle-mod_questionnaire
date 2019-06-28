@@ -296,7 +296,7 @@ class check extends question {
         $choices = parent::mobile_question_choices_display();
         foreach ($choices as $choicenum => $choice) {
             // Add a fieldkey for each choice.
-            $choices[$choicenum]->fieldkey = $this->mobile_fieldkey($choice->id);
+            $choices[$choicenum]->choicefieldkey = $this->mobile_fieldkey($choice->id);
         }
         return $choices;
     }
