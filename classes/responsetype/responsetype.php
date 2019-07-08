@@ -255,6 +255,18 @@ abstract class responsetype {
     }
 
     /**
+     * Provide an array of answer objects from mobile data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_appdata($responsedata, $question) {
+        // In most cases this can be a direct call to answers_from_webform. Override when this will not work.
+        return static::answers_from_webform($responsedata, $question);
+    }
+
+    /**
      * @param $rid
      * @param $respdata
      * @return bool

@@ -67,6 +67,26 @@ class boolean extends responsetype {
     }
 
     /**
+     * Provide an array of answer objects from mobile data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_appdata($responsedata, $question) {
+        $answers = [];
+        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+            $record = new \stdClass();
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->choiceid = $responsedata->{'q' . $question->id}[0];
+            $record->value = $responsedata->{'q' . $question->id}[0];
+            $answers[] = answer\answer::create_from_data($record);
+        }
+        return $answers;
+    }
+
+    /**
      * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
      * @return bool|int
      * @throws \coding_exception

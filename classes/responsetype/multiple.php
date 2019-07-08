@@ -75,6 +75,18 @@ class multiple extends single {
     }
 
     /**
+     * Provide an array of answer objects from mobile data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_appdata($responsedata, $question) {
+        // Need to override "single" class' implementation.
+        return static::answers_from_webform($responsedata, $question);
+    }
+
+    /**
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      * Array is indexed by question, and contains an array by choice code of selected choices.
      *

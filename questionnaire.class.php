@@ -192,7 +192,7 @@ class questionnaire {
     }
 
     /**
-     * Load the response information from a submitted form.
+     * Load the response information from a submitted web form.
      *
      * @param $formdata
      * @throws dml_exception
@@ -208,6 +208,26 @@ class questionnaire {
         } else {
             $this->responses[$rid] =
                 mod_questionnaire\responsetype\response\response::response_from_webform($formdata, $this->questions);
+        }
+    }
+
+    /**
+     * Load the response information from a submitted mobile app form.
+     *
+     * @param $formdata
+     * @throws dml_exception
+     */
+    public function add_response_from_appdata($appdata) {
+        global $DB, $USER;
+
+        $rid = isset($appdata['rid']) ? $appdata['rid'] : 0;
+
+        if ($rid) {
+            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
+            $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
+        } else {
+            $this->responses[$rid] = mod_questionnaire\responsetype\response\response::response_from_appdata($this->id, $rid,
+                $appdata, $this->questions);
         }
     }
 
@@ -2115,6 +2135,7 @@ class questionnaire {
             $record->questionnaireid = $this->id;
             $record->userid = $userid;
             $responsedata->rid = $DB->insert_record('questionnaire_response', $record);
+            $responsedata->id = $responsedata->rid;
         } else {
             $record->id = $responsedata->rid;
             $DB->update_record('questionnaire_response', $record);
@@ -2135,9 +2156,11 @@ class questionnaire {
             $event->trigger();
         }
 
+        if (!isset($responsedata->sec)) {
+            $responsedata->sec = 1;
+        }
         if (!empty($this->questionsbysec[$responsedata->sec])) {
             foreach ($this->questionsbysec[$responsedata->sec] as $questionid) {
-                $val = isset($responsedata->{'q'.$questionid}) ? $responsedata->{'q'.$questionid} : '';
                 $this->questions[$questionid]->insert_response($responsedata);
             }
         }
@@ -3707,76 +3730,14 @@ class questionnaire {
     public function save_mobile_data($userid, $sec, $completed, $submit, array $responses) {
         global $DB, $CFG; // Do not delete $CFG!!!
 
-//error_log(print_r($responses, true));
-        // This should create an array of well formed responses then execute question->insert_response one by one.
-        $processedresponses = [];
-        foreach ($responses as $response) {
-            // Array of label 'response', question type id, question id, and possible choice id.
-            $resparr = explode('_', $response['name']);
-            if (count($resparr) == 3) {
-                $questionid = $resparr[2];
-                // Single response type.
-                $processedresponses[$questionid] = $response['value'];
-            } else if (count($resparr) == 4) {
-                list(, , $questionid, $choiceid) = $resparr;
-                // Multiple response type.
-                if (!isset($processedresponses[$questionid])) {
-                    $processedresponses[$questionid] = [];
-                }
-                $processedresponses[$questionid][$choiceid] = $response['value'];
-            }
-        }
+        $this->add_response_from_appdata($responses);
+        $response = end($this->responses);
 
         if (!$completed) {
-            $rid = $this->delete_insert_response($DB->get_field('questionnaire_response', 'id',
-                ['questionnaireid' => $this->id, 'complete' => 'n', 'userid' => $userid]), $sec, $userid);
-            $questionnairedata = $this->get_mobile_data($userid);
-            $pagequestions = isset($questionnairedata['questions'][$sec]) ? $questionnairedata['questions'][$sec] : [];
-            if (!empty($pagequestions)) {
-                $pagequestionsids = array_keys($pagequestions);
-                $missingquestions = $warningmessages = [];
-                foreach ($pagequestionsids as $questionid) {
-                    $missingquestions[$questionid] = $questionid;
-                }
-                foreach ($pagequestionsids as $questionid) {
-                    if (isset($this->questions[$questionid]) && isset($processedresponses[$questionid])) {
-                        unset($missingquestions[$questionid]);
-                        if ($this->questions[$questionid]->save_mobile_response($rid, $processedresponses[$questionid])) {
-                            $ret['responses'][$rid][$questionid] = $response['value'];
-                        }
-                    } else if (isset($this->questions[$questionid]) && $this->questions[$questionid]->required()) {
-                        $ret['warnings'][] = [
-                            'item' => 'mod_questionnaire_question',
-                            'itemid' => $questionid,
-                            'warningcode' => 'required',
-                            'message' => s(get_string('required') . ': ' .
-                                $questionnairedata['questionsinfo'][$sec][$questionid]['name'])
-                        ];
-                    } else if (isset($this->questions[$questionid])) {
-                        unset($missingquestions[$questionid]);
-                    }
-                }
-
-                if ($missingquestions) {
-                    foreach ($missingquestions as $questionid) {
-                        if ($questionnairedata['questionsinfo'][$sec][$questionid]['required'] == 'y') {
-                            $ret['warnings'][] = [
-                                'item' => 'mod_questionnaire_question',
-                                'itemid' => $questionid,
-                                'warningcode' => 'required',
-                                'message' => s(get_string('required') . ': ' .
-                                    $questionnairedata['questionsinfo'][$sec][$questionid]['name'])
-                            ];
-                        }
-                    }
-                }
-            }
+            $this->response_insert($response, $userid);
         }
         if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
-            $this->commit_submission_response(
-                $DB->get_field('questionnaire_response', 'id',
-                    ['questionnaireid' => $this->id, 'complete' => 'n',
-                        'userid' => $userid]), $userid);
+            $this->commit_submission_response($rid, $userid);
         }
         return $ret;
     }

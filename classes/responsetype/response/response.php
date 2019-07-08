@@ -125,6 +125,45 @@ class response {
     }
 
     /**
+     * Provide a response object from mobile app data to the question.
+     *
+     * @param $questionnaireid
+     * @param $responseid
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param $questions Array of question objects.
+     * @return bool|response A response object.
+     */
+    static public function response_from_appdata($questionnaireid, $responseid, $responsedata, $questions) {
+        global $USER;
+
+        $response = new response($responseid, $questionnaireid, $USER->id, null, null, null, false);
+
+        // Process app data by question and choice and create a webform structure.
+        $processedresponses = new \stdClass();
+        $processedresponses->rid = $responseid;
+        foreach ($responsedata as $questiondata) {
+            $parts = explode('_', $questiondata['name']);
+            $property = 'q' . $parts[2];
+            if (!isset($processedresponses->{$property})) {
+                $processedresponses->{$property} = [];
+            }
+            if (isset($parts[3])) {
+                $cidx = $parts[3];
+            } else {
+                $cidx = 0;
+            }
+            $processedresponses->{$property}[$cidx] = $questiondata['value'];
+        }
+
+        foreach ($questions as $question) {
+            if ($question->supports_responses()) {
+                $response->answers[$question->id] = $question->responsetype::answers_from_appdata($processedresponses, $question);
+            }
+        }
+        return $response;
+    }
+
+    /**
      * Add the answers to each question in a question array of answers structure.
      */
     public function add_questions_answers() {
