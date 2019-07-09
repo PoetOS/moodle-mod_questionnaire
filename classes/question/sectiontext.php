@@ -111,7 +111,7 @@ class sectiontext extends question {
             return '';
         }
 
-        list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items(null, $data->questionnaire_id);
+        list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items(null, $response->questionnaireid);
         $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
         $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
         $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
@@ -120,8 +120,8 @@ class sectiontext extends question {
         $allresponses = false;
         $currentgroupid = 0;
         $isgroupmember = false;
-        $resps = [$response->rid => null];
-        $rid = $response->rid;
+        $rid = (isset($response->id) && !empty($response->id)) ? $response->id : 0;
+        $resps = [$rid => null];
         // For $filteredsections -> get the feedback messages only for this sections!
         $feedbackmessages = $questionnaire->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses,
             $currentgroupid, $filteredsections);
