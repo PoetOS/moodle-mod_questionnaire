@@ -62,7 +62,7 @@ class date extends responsetype {
     }
 
     /**
-     * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
+     * @param \mod_questionnaire\responsetype\response\response\ $responsedata
      * @return bool|int
      * @throws \coding_exception
      * @throws \dml_exception
@@ -77,19 +77,14 @@ class date extends responsetype {
         }
 
         if (!empty($response) && isset($response->answers[$this->question->id][0])) {
-            $checkdateresult = questionnaire_check_date($response->answers[$this->question->id][0]->value);
-            $thisdate = $response->answers[$this->question->id][0]->value;
-            if (substr($checkdateresult, 0, 5) == 'wrong') {
+            if (!$this->question->check_date_format($response->answers[$this->question->id][0]->value)) {
                 return false;
             }
-            // Now use ISO date formatting.
-            $checkdateresult = questionnaire_check_date($thisdate, true);
-
             $record = new \stdClass();
             $record->response_id = $response->id;
             $record->question_id = $this->question->id;
-            $record->response = $checkdateresult;
-            return $DB->insert_record(static::response_table(), $record);
+            $record->response = $response->answers[$this->question->id][0]->value;
+            return $DB->insert_record(self::response_table(), $record);
         } else {
             return false;
         }

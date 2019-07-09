@@ -76,22 +76,21 @@ class single extends responsetype {
      */
     static public function answers_from_appdata($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
-            foreach ($responsedata->{'q' . $question->id} as $choiceid) {
-                $record = new \stdClass();
-                $record->responseid = $responsedata->rid;
-                $record->questionid = $question->id;
-                $record->choiceid = $choiceid;
-                // If this choice is an "other" choice, look for the added input.
-                if ($question->choices[$choiceid]->is_other_choice()) {
-                    $cname = 'q' . $question->id .
-                        \mod_questionnaire\question\choice\choice::id_other_choice_name($responsedata->{'q' . $question->id});
-                    $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
-                } else {
-                    $record->value = '';
-                }
-                $answers[] = answer\answer::create_from_data($record);
+        if (isset($responsedata->{'q'.$question->id}[0]) && !empty($responsedata->{'q'.$question->id}[0])) {
+            $record = new \stdClass();
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->choiceid = $responsedata->{'q'.$question->id}[0];
+            // If this choice is an "other" choice, look for the added input.
+            if (isset($question->choices[$responsedata->{'q'.$question->id}[0]]) &&
+                $question->choices[$responsedata->{'q'.$question->id}[0]]->is_other_choice()) {
+                $cname = 'q' . $question->id .
+                    \mod_questionnaire\question\choice\choice::id_other_choice_name($responsedata->{'q'.$question->id}[0]);
+                $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
+            } else {
+                $record->value = '';
             }
+            $answers[] = answer\answer::create_from_data($record);
         }
         return $answers;
     }
@@ -114,7 +113,8 @@ class single extends responsetype {
         $resid = false;
         if (!empty($response) && isset($response->answers[$this->question->id])) {
             foreach ($response->answers[$this->question->id] as $answer) {
-                if ($this->question->choices[$answer->choiceid]->is_other_choice()) {
+                if (isset($this->question->choices[$answer->choiceid]) &&
+                    $this->question->choices[$answer->choiceid]->is_other_choice()) {
                     // If no input specified, ignore this choice.
                     if (empty($answer->value) || preg_match("/^[\s]*$/", $answer->value)) {
                         continue;

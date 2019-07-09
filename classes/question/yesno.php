@@ -253,32 +253,4 @@ class yesno extends question {
 
         return $choices;
     }
-
-    /**
-     * @param $rid
-     * @return \stdClass
-     */
-/*    public function get_mobile_response_data($rid) {
-        $results = $this->get_results($rid);
-        $resultdata = new \stdClass();
-        $resultdata->answered = false;
-        $resultdata->questions = [];
-        $resultdata->responses = [];
-        if (!empty($results)) {
-            $resultdata->answered = true;
-            foreach ($results as $result) {
-                if ('y' == $result->choice_id) {
-                    $resultdata->questions[1] = new \stdClass();
-                    $resultdata->questions[1]->value = 'y';
-                    $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = 'y';
-                } else {
-                    $resultdata->questions[0] = new \stdClass();
-                    $resultdata->questions[0]->value = 'n';
-                    $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = 'n';
-                }
-            }
-        }
-
-        return $resultdata;
-    } */
 }

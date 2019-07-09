@@ -118,7 +118,6 @@ class mobile {
         }
         $data['pagequestions'] = $pagequestions;
 
-//error_log(print_r($responses, true));
         $return = [
             'templates' => [
                 [

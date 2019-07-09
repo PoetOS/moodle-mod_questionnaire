@@ -126,6 +126,49 @@ class date extends question {
     }
 
     /**
+     * Verify that the date provided is in the proper YYYY-MM-DD format.
+     *
+     */
+    public function check_date_format($date) {
+        $datepieces = explode('-', $date);
+        $return = true;
+        if (count($datepieces) != 3) {
+            $return = false;
+        } else {
+            foreach ($datepieces as $piece => $datepiece) {
+                if (!is_numeric($datepiece)) {
+                    $return = false;
+                    break;
+                }
+                switch ($piece) {
+                    // Year check.
+                    case 0:
+                        if ((strlen($datepiece) != 4) || ($datepiece <= 0)) {
+                            $return = false;
+                            break 2;
+                        }
+                        break;
+                    // Month check.
+                    case 1:
+                        if ((strlen($datepiece) != 2) || ((int)$datepiece < 1) || ((int)$datepiece > 12)) {
+                            $return = false;
+                            break 2;
+                        }
+                        break;
+                    // Day check.
+                    case 2:
+                        if ((strlen($datepiece) != 2) || ((int)$datepiece < 1) || ((int)$datepiece > 31)) {
+                            $return = false;
+                            break 2;
+                        }
+                        break;
+                }
+            }
+        }
+        return $return;
+    }
+
+    /**
      * True if question provides mobile support.
      *
      * @return bool

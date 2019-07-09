@@ -3734,7 +3734,7 @@ class questionnaire {
         $response = end($this->responses);
 
         if (!$completed) {
-            $this->response_insert($response, $userid);
+            $rid = $this->response_insert($response, $userid);
         }
         if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
             $this->commit_submission_response($rid, $userid);

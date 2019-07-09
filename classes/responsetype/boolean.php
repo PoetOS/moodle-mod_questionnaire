@@ -74,16 +74,10 @@ class boolean extends responsetype {
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
     static public function answers_from_appdata($responsedata, $question) {
-        $answers = [];
         if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
-            $record = new \stdClass();
-            $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
-            $record->choiceid = $responsedata->{'q' . $question->id}[0];
-            $record->value = $responsedata->{'q' . $question->id}[0];
-            $answers[] = answer\answer::create_from_data($record);
+            $responsedata->{'q'.$question->id} = ($responsedata->{'q'.$question->id}[0] == 1) ? 'y' : 'n';
         }
-        return $answers;
+        return static::answers_from_webform($responsedata, $question);
     }
 
     /**

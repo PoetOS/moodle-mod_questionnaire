@@ -83,7 +83,27 @@ class multiple extends single {
      */
     static public function answers_from_appdata($responsedata, $question) {
         // Need to override "single" class' implementation.
-        return static::answers_from_webform($responsedata, $question);
+        $answers = [];
+        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+            foreach ($responsedata->{'q' . $question->id} as $choiceid => $choicevalue) {
+                if ($choicevalue == 'true') {
+                    $record = new \stdClass();
+                    $record->responseid = $responsedata->rid;
+                    $record->questionid = $question->id;
+                    $record->choiceid = $choiceid;
+                    // If this choice is an "other" choice, look for the added input.
+                    if (isset($question->choices[$choiceid]) && $question->choices[$choiceid]->is_other_choice()) {
+                        $cname = 'q' . $question->id .
+                            \mod_questionnaire\question\choice\choice::id_other_choice_name($responsedata->{'q' . $question->id});
+                        $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
+                    } else {
+                        $record->value = $choicevalue;
+                    }
+                    $answers[] = answer\answer::create_from_data($record);
+                }
+            }
+        }
+        return $answers;
     }
 
     /**
