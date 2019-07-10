@@ -90,6 +90,7 @@ class rank extends responsetype {
                     $record->responseid = $responsedata->rid;
                     $record->questionid = $question->id;
                     $record->choiceid = $choiceid;
+                    // Mobile app uses the maximum rank value for N/A, but database expects -1.
                     $record->value = ($choicevalue == $question->length) ? -1 : $choicevalue;
                     $answers[] = answer\answer::create_from_data($record);
                 }

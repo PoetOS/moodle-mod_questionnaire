@@ -297,6 +297,9 @@ class check extends question {
         foreach ($choices as $choicenum => $choice) {
             // Add a fieldkey for each choice.
             $choices[$choicenum]->choicefieldkey = $this->mobile_fieldkey($choice->id);
+            if ($choice->is_other_choice()) {
+                $choices[$choicenum]->otherchoicekey = $this->mobile_fieldkey($choice->other_choice_name());
+            }
         }
         return $choices;
     }

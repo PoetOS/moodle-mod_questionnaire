@@ -44,13 +44,26 @@
     }
 }}
 {{=<% %>=}}
+<%#choices%>
 <ion-list radio-group>
-    <%#choices%>
-    <ion-item>
-        <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
-        <ion-checkbox <%#value%> checked="true"<%/value%> value="<%id%>"
-        <%#completed%> disabled="true"<%/completed%>
-        [(ngModel)]="CONTENT_OTHERDATA.responses['<%choicefieldkey%>']"></ion-checkbox>
-    </ion-item>
-    <%/choices%>
+    <ion-grid no-padding>
+        <ion-row>
+            <ion-col>
+                <ion-item>
+                    <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
+                    <ion-checkbox <%#value%> checked="true"<%/value%> value="<%id%>"
+                    <%#completed%> disabled="true"<%/completed%>
+                    [(ngModel)]="CONTENT_OTHERDATA.responses['<%choicefieldkey%>']"></ion-checkbox>
+                </ion-item>
+            </ion-col>
+            <%#otherchoicekey%>
+            <ion-col>
+                <ion-item>
+                    <ion-input placeholder="Enter: " [(ngModel)]="CONTENT_OTHERDATA.responses['<%otherchoicekey%>']"></ion-input>
+                </ion-item>
+            </ion-col>
+            <%/otherchoicekey%>
+        </ion-row>
+    </ion-grid>
 </ion-list>
+<%/choices%>

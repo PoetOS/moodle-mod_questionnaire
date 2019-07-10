@@ -93,8 +93,7 @@ class multiple extends single {
                     $record->choiceid = $choiceid;
                     // If this choice is an "other" choice, look for the added input.
                     if (isset($question->choices[$choiceid]) && $question->choices[$choiceid]->is_other_choice()) {
-                        $cname = 'q' . $question->id .
-                            \mod_questionnaire\question\choice\choice::id_other_choice_name($responsedata->{'q' . $question->id});
+                        $cname = \mod_questionnaire\question\choice\choice::id_other_choice_name($choiceid);
                         $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
                     } else {
                         $record->value = $choicevalue;

@@ -1533,7 +1533,7 @@ abstract class question {
      */
     public function mobile_fieldkey($choiceid = 0) {
         $choicefield = '';
-        if ($choiceid != 0) {
+        if ($choiceid !== 0) {
             $choicefield = '_' . $choiceid;
         }
         return 'response_' . $this->type_id . '_' . $this->id . $choicefield;
