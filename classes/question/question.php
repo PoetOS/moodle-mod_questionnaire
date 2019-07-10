@@ -1493,7 +1493,7 @@ abstract class question {
             'content' => format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php', $this->context->id,
                 'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options),
             'content_stripped' => strip_tags($this->content),
-            'required' => $this->required,
+            'required' => ($this->required == 'y') ? 1 : 0,
             'deleted' => $this->deleted,
             'response_table' => $this->responsetable,
             'fieldkey' => $this->mobile_fieldkey(),
