@@ -698,7 +698,7 @@ class rate extends question {
                 $extrahtml .= '</ul>';
                 $options = ['noclean' => true, 'para' => false, 'filter' => true,
                     'context' => $this->context, 'overflowdiv' => true];
-                $choices['content'] .= format_text($extrahtml, FORMAT_HTML, $options);
+                $choice->content .= format_text($extrahtml, FORMAT_HTML, $options);
             }
 
             if (!in_array($choiceid, $excludes)) {
@@ -713,35 +713,4 @@ class rate extends question {
 
         return $choices;
     }
-
-    /**
-     * @param $rid
-     * @return \stdClass
-     */
-/*    public function get_mobile_response_data($response) {
-        // The get_results method for rate/rank responses is different than all others. That should be reworked.
-        $results = $this->get_results($rid);
-        $resultdata = new \stdClass();
-        $resultdata->answered = false;
-        $resultdata->questions = [];
-        $resultdata->responses = [];
-        if (!empty($results)) {
-            foreach ($results as $result) {
-                $resultdata->answered = true;
-                $value = (int)$result->average;
-                $v = $value - 1;
-                if (($this->precise == 1) && ($value == -1)) {
-                    $v = $this->choices[$result->choice_id]->max; // This might be maxscore().
-                }
-                if (!isset($resultdata->questions[$result->id])) {
-                    $resultdata->questions[$result->id] = new \stdClass();
-                }
-                $resultdata->questions[$result->id]->value = $v;
-                $resultdata->questions[$result->id]->choice_id = $result->id;
-                $resultdata->responses['response_' . $this->type_id . '_' . $this->id . '_' . $result->id] = $v;
-            }
-        }
-
-        return $resultdata;
-    } */
 }
