@@ -90,7 +90,7 @@ class rank extends responsetype {
                     $record->responseid = $responsedata->rid;
                     $record->questionid = $question->id;
                     $record->choiceid = $choiceid;
-                    $record->value = $choicevalue;
+                    $record->value = ($choicevalue == $question->length) ? -1 : $choicevalue;
                     $answers[] = answer\answer::create_from_data($record);
                 }
             }
