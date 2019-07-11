@@ -1547,26 +1547,6 @@ abstract class question {
         $resultdata = [];
         if (isset($response->answers)) {
             $resultdata[$this->mobile_fieldkey()] = true;
-//            $resultdata->questions = [];
-//            $resultdata->responses = [];
-//            if (!empty($results) && $this->has_choices()) {
-//                foreach ($results as $result) {
-//                    foreach ($this->choices as $choiceid => $choice) {
-//                        if ($choiceid == $result->cid) {
-//                            $resultdata->answered = true;
-//                            $resultdata->questions[$choiceid] = new \stdClass();
-//                            $resultdata->questions[$choiceid]->value = $choiceid;
-//                            $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = $choiceid;
-//                        }
-//                    }
-//                }
-//            } else if (!empty($results)) {
-//                $resultdata->answered = true;
-//                $result = end($results);
-//                $resultdata->questions[0] = new \stdClass();
-//                $resultdata->questions[0]->value = $result->response;
-//                $resultdata->responses['response_' . $this->type_id . '_' . $this->id] = $result->response;
-//            }
         } else {
             $resultdata[$this->mobile_fieldkey()] = false;
         }

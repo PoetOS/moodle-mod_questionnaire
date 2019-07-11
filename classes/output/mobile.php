@@ -112,7 +112,6 @@ class mobile {
             if ($question->supports_mobile()) {
                 $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
                 $responses = array_merge($responses, $question->get_mobile_response_data($response));
-//                $responsedata['responses'][$mobiledata['fieldkey']] = $mobiledata['responses'];
             }
             $qnum++;
         }

@@ -83,7 +83,8 @@ class mod_questionnaire_external extends \external_api {
      * @return array answers information and warnings
      * @since Moodle 3.0
      */
-    public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit, $responses) {
+    public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit,
+                                                         $responses) {
         self::validate_parameters(self::submit_questionnaire_response_parameters(),
             [
                 'questionnaireid' => $questionnaireid,
