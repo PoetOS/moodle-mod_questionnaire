@@ -84,8 +84,9 @@ class multiple extends single {
     static public function answers_from_appdata($responsedata, $question) {
         // Need to override "single" class' implementation.
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
-            foreach ($responsedata->{'q' . $question->id} as $choiceid => $choicevalue) {
+        $qname = 'q'.$question->id;
+        if (isset($responsedata->{$qname}) && !empty($responsedata->{$qname})) {
+            foreach ($responsedata->{$qname} as $choiceid => $choicevalue) {
                 if ($choicevalue == 'true') {
                     $record = new \stdClass();
                     $record->responseid = $responsedata->rid;
@@ -94,7 +95,8 @@ class multiple extends single {
                     // If this choice is an "other" choice, look for the added input.
                     if (isset($question->choices[$choiceid]) && $question->choices[$choiceid]->is_other_choice()) {
                         $cname = \mod_questionnaire\question\choice\choice::id_other_choice_name($choiceid);
-                        $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
+                        $record->value =
+                            isset($responsedata->{$qname}[$cname]) ? $responsedata->{$qname}[$cname] : '';
                     } else {
                         $record->value = $choicevalue;
                     }

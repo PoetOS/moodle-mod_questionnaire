@@ -17,54 +17,46 @@ cache:
     - $HOME/.npm
 
 php:
- - 5.6
+ - 7.0
  - 7.1
  - 7.2
 
 env:
+  - MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
+  - MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
   - MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
   - MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
   - MOODLE_BRANCH=MOODLE_35_STABLE DB=pgsql
   - MOODLE_BRANCH=MOODLE_35_STABLE DB=mysqli
   - MOODLE_BRANCH=MOODLE_34_STABLE DB=pgsql
   - MOODLE_BRANCH=MOODLE_34_STABLE DB=mysqli
-  - MOODLE_BRANCH=MOODLE_33_STABLE DB=pgsql
-  - MOODLE_BRANCH=MOODLE_33_STABLE DB=mysqli
 
 matrix:
   exclude:
   - php: 7.1
-    env: MOODLE_BRANCH=MOODLE_33_STABLE DB=mysqli
-  - php: 7.1
-    env: MOODLE_BRANCH=MOODLE_33_STABLE DB=pgsql
-  - php: 7.2
-    env: MOODLE_BRANCH=MOODLE_33_STABLE DB=mysqli
-  - php: 7.2
-    env: MOODLE_BRANCH=MOODLE_33_STABLE DB=pgsql
-  - php: 5.6
     env: MOODLE_BRANCH=MOODLE_34_STABLE DB=mysqli
-  - php: 5.6
+  - php: 7.1
     env: MOODLE_BRANCH=MOODLE_34_STABLE DB=pgsql
   - php: 7.2
     env: MOODLE_BRANCH=MOODLE_34_STABLE DB=mysqli
   - php: 7.2
     env: MOODLE_BRANCH=MOODLE_34_STABLE DB=pgsql
-  - php: 5.6
+  - php: 7.1
     env: MOODLE_BRANCH=MOODLE_35_STABLE DB=mysqli
-  - php: 5.6
+  - php: 7.1
     env: MOODLE_BRANCH=MOODLE_35_STABLE DB=pgsql
   - php: 7.2
     env: MOODLE_BRANCH=MOODLE_35_STABLE DB=mysqli
   - php: 7.2
     env: MOODLE_BRANCH=MOODLE_35_STABLE DB=pgsql
-  - php: 5.6
+  - php: 7.2
     env: MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
-  - php: 5.6
+  - php: 7.2
     env: MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
-  - php: 7.1
-    env: MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
-  - php: 7.1
-    env: MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
+  - php: 7.0
+    env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
+  - php: 7.0
+    env: MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
 
 before_install:
   - phpenv config-rm xdebug.ini

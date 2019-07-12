@@ -76,17 +76,17 @@ class single extends responsetype {
      */
     static public function answers_from_appdata($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}[0]) && !empty($responsedata->{'q'.$question->id}[0])) {
+        $qname = 'q'.$question->id;
+        if (isset($responsedata->{$qname}[0]) && !empty($responsedata->{$qname}[0])) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id;
-            $record->choiceid = $responsedata->{'q'.$question->id}[0];
+            $record->choiceid = $responsedata->{$qname}[0];
             // If this choice is an "other" choice, look for the added input.
-            if (isset($question->choices[$responsedata->{'q'.$question->id}[0]]) &&
-                $question->choices[$responsedata->{'q'.$question->id}[0]]->is_other_choice()) {
-                $cname = 'q' . $question->id .
-                    \mod_questionnaire\question\choice\choice::id_other_choice_name($responsedata->{'q'.$question->id}[0]);
-                $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
+            if ($question->choices[$record->choiceid]->is_other_choice()) {
+                $cname = \mod_questionnaire\question\choice\choice::id_other_choice_name($record->choiceid);
+                $record->value =
+                    isset($responsedata->{$qname}[$cname]) ? $responsedata->{$qname}[$cname] : '';
             } else {
                 $record->value = '';
             }

@@ -281,4 +281,19 @@ class radio extends question {
         $mobiledata['isradiobutton'] = true;
         return $mobiledata;
     }
+
+    /**
+     * @param $mobiledata
+     * @return mixed
+     */
+    public function mobile_question_choices_display() {
+        $choices = parent::mobile_question_choices_display();
+        foreach ($choices as $choicenum => $choice) {
+            if ($choice->is_other_choice()) {
+                $choices[$choicenum]->otherchoicekey = $this->mobile_fieldkey($choice->other_choice_name());
+                $choices[$choicenum]->content = format_text($choice->other_choice_display(), FORMAT_HTML, ['noclean' => true]);
+            }
+        }
+        return $choices;
+    }
 }
