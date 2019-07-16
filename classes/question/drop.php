@@ -176,4 +176,20 @@ class drop extends question {
         $mobiledata['isselect'] = true;
         return $mobiledata;
     }
+
+    /**
+     * @param $response
+     * @return array
+     */
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        foreach ($this->choices as $choiceid => $choice) {
+            if (isset($response->answers[$this->id][$choiceid])) {
+                // Add a fieldkey for each choice.
+                $resultdata[$this->mobile_fieldkey()] = $choiceid;
+            }
+        }
+
+        return $resultdata;
+    }
 }

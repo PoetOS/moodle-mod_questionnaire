@@ -312,8 +312,14 @@ class check extends question {
     public function get_mobile_response_data($response) {
         $resultdata = [];
         foreach ($this->choices as $choiceid => $choice) {
-            // Add a fieldkey for each choice.
-            $resultdata[$this->mobile_fieldkey($choiceid)] = false;
+            if (isset($response->answers[$this->id][$choiceid])) {
+                // Add a fieldkey for each choice.
+                $resultdata[$this->mobile_fieldkey($choiceid)] = 1;
+                if ($choice->is_other_choice()) {
+                    $resultdata[$this->mobile_fieldkey($choice->other_choice_name())] =
+                        $response->answers[$this->id][$choiceid]->value;
+                }
+            }
         }
 
         return $resultdata;

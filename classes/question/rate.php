@@ -713,4 +713,20 @@ class rate extends question {
 
         return $choices;
     }
+
+    /**
+     * @param $response
+     * @return array
+     */
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        foreach ($this->choices as $choiceid => $choice) {
+            if (isset($response->answers[$this->id][$choiceid])) {
+                // Add a fieldkey for each choice.
+                $resultdata[$this->mobile_fieldkey($choiceid)] = $response->answers[$this->id][$choiceid]->value;
+            }
+        }
+
+        return $resultdata;
+    }
 }

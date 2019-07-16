@@ -1519,7 +1519,7 @@ abstract class question {
         $cnum = 0;
         if ($this->has_choices()) {
             foreach ($this->choices as $choice) {
-                $choices[$cnum] = $choice;
+                $choices[$cnum] = clone($choice);
                 $cnum++;
             }
         }
@@ -1546,7 +1546,7 @@ abstract class question {
     public function get_mobile_response_data($response) {
         $resultdata = [];
         if (isset($response->answers)) {
-            $resultdata[$this->mobile_fieldkey()] = true;
+            $resultdata[$this->mobile_fieldkey()] = $response->answers[$this->id][0]->value;
         } else {
             $resultdata[$this->mobile_fieldkey()] = false;
         }

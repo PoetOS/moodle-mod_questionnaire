@@ -58,7 +58,8 @@
             <%#otherchoicekey%>
             <ion-col>
                 <ion-item>
-                    <ion-input placeholder="Enter: " [(ngModel)]="CONTENT_OTHERDATA.responses['<%otherchoicekey%>']"></ion-input>
+                    <ion-input placeholder="Enter: " [(ngModel)]="CONTENT_OTHERDATA.responses['<%otherchoicekey%>']"
+                    <%#completed%> disabled="true"<%/completed%>></ion-input>
                 </ion-item>
             </ion-col>
             <%/otherchoicekey%>

@@ -132,8 +132,9 @@ class choice {
     /**
      * Return the string to display for an "other" option content string. If the option is not an "other", return false.
      *
-     * @param string | object $choice
+     * @param $content
      * @return string | bool
+     * @throws \coding_exception
      */
     static public function content_other_choice_display($content) {
         if (!self::content_is_other_choice($content)) {

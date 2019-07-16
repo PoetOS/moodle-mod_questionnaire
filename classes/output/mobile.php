@@ -72,37 +72,11 @@ class mobile {
             $data['completed'] = 0;
             $data['complete_userdate'] = '';
         }
-        $responsedata = [
-            'id' => 0,
-            'questionnaireid' => 0,
-            'submitted' => 0,
-            'complete' => 'n',
-            'grade' => 0,
-            'userid' => 0,
-            'fullname' => '',
-            'userdate' => '',
-        ];
 
-        if ($responses = $questionnaire->get_responses($USER->id)) {
-            $response = end($responses);
-            $responsedata = (array) $response;
-            $responsedata['submitted_userdate'] = '';
-            if (isset($responsedata['submitted']) && !empty($responsedata['submitted'])) {
-                $responsedata['submitted_userdate'] = userdate($responsedata['submitted']);
-            }
-            $responsedata['fullname'] = fullname($DB->get_record('user', ['id' => $userid]));
-            $responsedata['userdate'] = $responsedata['submitted_userdate'];
-            $qresponsedata = [];
-            foreach ($questionnaire->questions as $question) {
-                // TODO - Need to do something with pagenum.
-                $qresponse = $question->get_mobile_response_data($response->id);
-                $qresponsedata += $qresponse->responses;
-            }
-        } else {
-            $response = \mod_questionnaire\responsetype\response\response::create_from_data(
-                ['questionnaireid' => $questionnaire->id, 'userid' => $USER->id]);
+        $response = null;
+        if (!empty($questionnaire->responses)) {
+            $response = end($questionnaire->responses);
         }
-
         $pagequestions = [];
         $data['pagequestions'] = [];
         $qnum = 1;
@@ -110,8 +84,10 @@ class mobile {
         foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
             $question = $questionnaire->questions[$questionid];
             if ($question->supports_mobile()) {
-                $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
-                $responses = array_merge($responses, $question->get_mobile_response_data($response));
+                $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum, $response);
+                if ($response !== null) {
+                    $responses = array_merge($responses, $question->get_mobile_response_data($response));
+                }
             }
             $qnum++;
         }
@@ -125,18 +101,7 @@ class mobile {
                 ],
             ],
             'otherdata' => [
-//                'fields' => json_encode($questionnairedata['fields']),
-//                'questionsinfo' => json_encode($questionnairedata['questionsinfo']),
-//                'questions' => json_encode($questionnairedata['questions']),
-//                'pagequestions' => json_encode($data['pagequestions']),
-//                'responses' => json_encode($responsedata['responses']),
                 'responses' => json_encode($responses),
-//                'pagenum' => $pagenum,
-//                'nextpage' => $data['nextpage'],
-//                'prevpage' => $data['prevpage'],
-//                'completed' => $data['completed'],
-//                'intro' => $questionnairedata['questionnaire']['intro'],
-//                'string_required' => get_string('required'),
             ],
             'files' => null
         ];

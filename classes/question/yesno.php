@@ -253,4 +253,19 @@ class yesno extends question {
 
         return $choices;
     }
+
+    /**
+     * @param $response
+     * @return array
+     */
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        if (isset($response->answers[$this->id][0])) {
+            $resultdata[$this->mobile_fieldkey()] = 0;
+        } else if (isset($response->answers[$this->id][1])) {
+            $resultdata[$this->mobile_fieldkey()] = 1;
+        }
+
+        return $resultdata;
+    }
 }
