@@ -55,6 +55,7 @@ class mod_questionnaire_external extends \external_api {
                 'cmid' => new \external_value(PARAM_INT, 'Course module id'),
                 'sec' => new \external_value(PARAM_INT, 'Section number'),
                 'completed' => new \external_value(PARAM_INT, 'Completed survey or not'),
+                'rid' => new \external_value(PARAM_INT, 'Existing response id'),
                 'submit' => new \external_value(PARAM_INT, 'Submit survey or not'),
                 'responses' => new \external_multiple_structure(
                     new \external_single_structure(
@@ -78,13 +79,14 @@ class mod_questionnaire_external extends \external_api {
      * @param int $cmid Course module id
      * @param int $sec Section number
      * @param int $completed Completed survey 1/0
+     * @param int $rid Already in progress response id.
      * @param int $submit Submit survey?
      * @param array $responses the response ids
      * @return array answers information and warnings
      * @since Moodle 3.0
      */
-    public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $submit,
-                                                         $responses) {
+    public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $rid,
+                                                         $submit, $responses) {
         self::validate_parameters(self::submit_questionnaire_response_parameters(),
             [
                 'questionnaireid' => $questionnaireid,
@@ -93,6 +95,7 @@ class mod_questionnaire_external extends \external_api {
                 'cmid' => $cmid,
                 'sec' => $sec,
                 'completed' => $completed,
+                'rid' => $rid,
                 'submit' => $submit,
                 'responses' => $responses
             ]
@@ -106,7 +109,7 @@ class mod_questionnaire_external extends \external_api {
 
         require_capability('mod/questionnaire:submit', $context);
 
-        $result = $questionnaire->save_mobile_data($userid, $sec, $completed, $submit, $responses);
+        $result = $questionnaire->save_mobile_data($userid, $sec, $completed, $rid, $submit, $responses);
         $result['submitted'] = true;
         if (isset($result['warnings']) && !empty($result['warnings'])) {
             unset($result['responses']);

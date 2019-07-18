@@ -38,20 +38,32 @@ class mobile {
 
         $args = (object) $args;
         $cmid = $args->cmid;
+        $rid = isset($args->rid) ? $args->rid : 0;
         $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
         $prevpage = 0;
+        $nextpage = 0;
 
         list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
         $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
-        $questionnaire->add_user_responses();
+        if ($questionnaire->user_has_saved_response($USER->id) && empty($rid)) {
+            $rid = $questionnaire->get_latest_responseid($USER->id);
+        } else {
+            $questionnaire->add_user_responses();
+        }
 
         // Capabilities check.
         $context = \context_module::instance($cmid);
         self::require_capability($cm, $context, 'mod/questionnaire:view');
 
+        $numpages = count($questionnaire->questionsbysec);
         // Set some variables we are going to be using.
-        if (!empty($questionnaire->questionsbysec) && (count($questionnaire->questionsbysec) > 1) && ($pagenum > 1)) {
-            $prevpage = $pagenum - 1;
+        if (!empty($questionnaire->questionsbysec) && ($numpages > 1)) {
+            if ($pagenum > 1) {
+                $prevpage = $pagenum - 1;
+            }
+            if ($pagenum < $numpages) {
+                $nextpage = $pagenum + 1;
+            }
         }
 
         $data = [];
@@ -60,10 +72,11 @@ class mobile {
         $data['intro'] = $questionnaire->intro;
         $data['autonumquestions'] = $questionnaire->autonum;
         $data['id'] = $questionnaire->id;
+        $data['rid'] = $rid;
         $data['surveyid'] = $questionnaire->survey->id;
         $data['pagenum'] = $pagenum;
         $data['prevpage'] = $prevpage;
-        $data['nextpage'] = 0;
+        $data['nextpage'] = $nextpage;
         $latestresponse = end($questionnaire->responses);
         if (!empty($latestresponse) && ($latestresponse->complete == 'y')) {
             $data['completed'] = 1;

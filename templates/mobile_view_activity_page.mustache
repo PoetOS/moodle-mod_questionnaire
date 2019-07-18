@@ -35,6 +35,7 @@
         "intro": "Welcome to the questionnaire",
         "autonumquestions": "1",
         "id": "342",
+        "rid": 0,
         "surveyid": "23",
         "pagenum": 0,
         "nextpage": 1,
@@ -140,6 +141,7 @@
                                         cmid: <%cmid%>,
                                         sec: <%pagenum%>,
                                         completed: <%completed%>,
+                                        rid: <%rid%>,
                                         submit: 0,
                                         responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
                                     }"
@@ -160,6 +162,7 @@
                                         cmid: <%cmid%>,
                                         sec: <%pagenum%>,
                                         completed: <%completed%>,
+                                        rid: <%rid%>,
                                         submit: 0,
                                         responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
                                     }"
@@ -175,15 +178,16 @@
                     <button ion-button block core-site-plugins-call-ws
                             name="mod_questionnaire_submit_questionnaire_response"
                             [params]="{
-                                                questionnaireid: <%id%>,
-                                                surveyid: <%surveyid%>,
-                                                userid: <%userid%>,
-                                                cmid: <%cmid%>,
-                                                sec: <%pagenum%>,
-                                                completed: <%completed%>,
-                                                submit: 1,
-                                                responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
-                                            }"
+                                        questionnaireid: <%id%>,
+                                        surveyid: <%surveyid%>,
+                                        userid: <%userid%>,
+                                        cmid: <%cmid%>,
+                                        sec: <%pagenum%>,
+                                        completed: <%completed%>,
+                                        rid: <%rid%>,
+                                        submit: 1,
+                                        responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
+                                    }"
                             confirmMessage="{{ 'plugin.mod_questionnaire.areyousure' | translate }}"
                             refreshOnSuccess="true"
                             type="submit"

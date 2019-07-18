@@ -1702,7 +1702,7 @@ class questionnaire {
      * @return int
      * @throws dml_exception
      */
-    private function get_latest_responseid($userid) {
+    public function get_latest_responseid($userid) {
         global $DB;
 
         // Find latest in progress rid.
@@ -3727,12 +3727,17 @@ class questionnaire {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public function save_mobile_data($userid, $sec, $completed, $submit, array $responses) {
+    public function save_mobile_data($userid, $sec, $completed, $rid, $submit, array $responses) {
         global $DB, $CFG; // Do not delete $CFG!!!
 
+        $ret = [];
         $this->add_response_from_appdata($responses);
         $response = end($this->responses);
+        $response->sec = $sec;
+        $response->rid = $rid;
+        $response->id = $rid;
 
+        // If reviewing a completed questionnaire, don't insert a response.
         if (!$completed) {
             $rid = $this->response_insert($response, $userid);
         }
