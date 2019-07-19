@@ -504,6 +504,61 @@ class questionnaire {
         return ($this->capabilities->view && $this->capabilities->submit);
     }
 
+    /**
+     * Return any message if the user cannot complete this questionnaire, explaining why.
+     * @param int $userid
+     * @return bool|string
+     * @throws coding_exception
+     */
+    public function user_access_messages($userid = 0) {
+        global $USER;
+
+        if ($userid == 0) {
+            $userid = $USER->id;
+        }
+        $message = false;
+
+        if (!$this->is_active()) {
+            if ($this->capabilities->manage) {
+                $msg = 'removenotinuse';
+            } else {
+                $msg = 'notavail';
+            }
+            $message = get_string($msg, 'questionnaire');
+
+        } else if ($this->survey->realm == 'template') {
+            $message = get_string('templatenotviewable', 'questionnaire');
+
+        } else if (!$this->is_open()) {
+            $message = get_string('notopen', 'questionnaire', userdate($this->opendate));
+
+        } else if ($this->is_closed()) {
+            $message = get_string('closed', 'questionnaire', userdate($this->closedate));
+
+        } else if (!$this->user_is_eligible($userid)) {
+            $message = get_string('noteligible', 'questionnaire');
+
+        } else if (!$this->user_can_take($userid)) {
+            switch ($this->qtype) {
+                case QUESTIONNAIREDAILY:
+                    $msgstring = ' ' . get_string('today', 'questionnaire');
+                    break;
+                case QUESTIONNAIREWEEKLY:
+                    $msgstring = ' ' . get_string('thisweek', 'questionnaire');
+                    break;
+                case QUESTIONNAIREMONTHLY:
+                    $msgstring = ' ' . get_string('thismonth', 'questionnaire');
+                    break;
+                default:
+                    $msgstring = '';
+                    break;
+            }
+            $message = get_string("alreadyfilled", "questionnaire", $msgstring);
+        }
+
+        return $message;
+    }
+
     public function user_has_saved_response($userid) {
         global $DB;
 

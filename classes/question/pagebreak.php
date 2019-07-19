@@ -85,7 +85,7 @@ class pagebreak extends question {
      * @return bool
      */
     public function supports_mobile() {
-        return true;
+        return false;
     }
 
     /**

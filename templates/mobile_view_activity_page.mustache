@@ -80,58 +80,53 @@
     <core-course-module-description description="<%intro%>"
                                     component="mod_questionnaire" componentId="<%cmid%>"
                                     pagenum="<%pagenum%>"></core-course-module-description>
-    <%#completed%>
+    <%#notifications%>
     <ion-card>
         <ion-card-content>
-            {{ 'plugin.mod_questionnaire.submitted' | translate }} <%complete_userdate%>
+            <%notifications%>
         </ion-card-content>
     </ion-card>
-    <%/completed%>
+    <%/notifications%>
     <div>
         <ion-card>
             <ion-list>
-            <%^emptypage%>
                 <%#pagequestions%>
-                    <ion-list-header text-wrap>
-                        <%#autonumquestions%><ion-badge color="dark" item-start><%qnum%></ion-badge><%/autonumquestions%>
-                        <core-format-text text="<%content%>"></core-format-text>
-                        <%#required%><ion-badge item-end color="danger">{{ 'plugin.mod_questionnaire.required' | translate }}</ion-badge><%/required%>
-                    </ion-list-header>
-                    <%#isselect%>
-                        <%> mod_questionnaire/mobile_select_question %>
-                    <%/isselect%>
-                    <%#isbool%>
-                        <%> mod_questionnaire/mobile_boolean_question %>
-                    <%/isbool%>
-                    <%#isradiobutton%>
-                        <%> mod_questionnaire/mobile_radio_question %>
-                    <%/isradiobutton%>
-                    <%#ischeckbox%>
-                        <%> mod_questionnaire/mobile_checkbox_question %>
-                    <%/ischeckbox%>
-                    <%#istextessay%>
-                        <%> mod_questionnaire/mobile_text_question %>
-                    <%/istextessay%>
-                    <%#isnumeric%>
-                        <%> mod_questionnaire/mobile_numeric_question %>
-                    <%/isnumeric%>
-                    <%#isdate%>
-                        <%> mod_questionnaire/mobile_date_question %>
-                    <%/isdate%>
-                    <%#israte%>
-                        <%> mod_questionnaire/mobile_rate_question %>
-                    <%/israte%>
+                <ion-list-header text-wrap>
+                    <%#autonumquestions%><ion-badge color="dark" item-start><%qnum%></ion-badge><%/autonumquestions%>
+                    <core-format-text text="<%content%>"></core-format-text>
+                    <%#required%><ion-badge item-end color="danger">{{ 'plugin.mod_questionnaire.required' | translate }}</ion-badge><%/required%>
+                </ion-list-header>
+                <%#isselect%>
+                    <%> mod_questionnaire/mobile_select_question %>
+                <%/isselect%>
+                <%#isbool%>
+                    <%> mod_questionnaire/mobile_boolean_question %>
+                <%/isbool%>
+                <%#isradiobutton%>
+                    <%> mod_questionnaire/mobile_radio_question %>
+                <%/isradiobutton%>
+                <%#ischeckbox%>
+                    <%> mod_questionnaire/mobile_checkbox_question %>
+                <%/ischeckbox%>
+                <%#istextessay%>
+                    <%> mod_questionnaire/mobile_text_question %>
+                <%/istextessay%>
+                <%#isnumeric%>
+                    <%> mod_questionnaire/mobile_numeric_question %>
+                <%/isnumeric%>
+                <%#isdate%>
+                    <%> mod_questionnaire/mobile_date_question %>
+                <%/isdate%>
+                <%#israte%>
+                    <%> mod_questionnaire/mobile_rate_question %>
+                <%/israte%>
                 <%/pagequestions%>
+
                 <%^pagequestions%>
                 <p>No questions found.</p>
                 <%/pagequestions%>
-            <%/emptypage%>
-            <%#emptypage%>
-                <ion-list-header text-wrap>
-                    <core-format-text text="<%emptypage_content%>"></core-format-text>
-                </ion-list-header>
-            <%/emptypage%>
-            <%#prevpage%>
+
+                <%#prevpage%>
                 <button ion-button item-end outline icon-start block core-site-plugins-call-ws-new-content
                         name="mod_questionnaire_submit_questionnaire_response"
                         [params]="{
@@ -147,12 +142,15 @@
                                     }"
                         [args]="{
                                         cmid: <%cmid%>,
+                                        rid: <%rid%>,
+                                        completeq: 1,
                                         pagenum: <%prevpage%>
                                     }"
                         type="submit"
                 ><ion-icon name="arrow-back"></ion-icon> {{ 'plugin.mod_questionnaire.previouspage' | translate }}</button>
-            <%/prevpage%>
-            <%#nextpage%>
+                <%/prevpage%>
+
+                <%#nextpage%>
                 <button ion-button item-end outline icon-end block core-site-plugins-call-ws-new-content
                         name="mod_questionnaire_submit_questionnaire_response"
                         [params]="{
@@ -168,33 +166,36 @@
                                     }"
                         [args]="{
                                         cmid: <%cmid%>,
+                                        rid: <%rid%>,
+                                        completeq: 1,
                                         pagenum: <%nextpage%>
                                     }"
                         type="submit"
                 >{{ 'plugin.mod_questionnaire.nextpage' | translate }} <ion-icon name="arrow-forward"></ion-icon></button>
-            <%/nextpage%>
-            <%^completed%>
-                <%^nextpage%>
-                    <button ion-button block core-site-plugins-call-ws
-                            name="mod_questionnaire_submit_questionnaire_response"
-                            [params]="{
-                                        questionnaireid: <%id%>,
-                                        surveyid: <%surveyid%>,
-                                        userid: <%userid%>,
-                                        cmid: <%cmid%>,
-                                        sec: <%pagenum%>,
-                                        completed: <%completed%>,
-                                        rid: <%rid%>,
-                                        submit: 1,
-                                        responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
-                                    }"
-                            confirmMessage="{{ 'plugin.mod_questionnaire.areyousure' | translate }}"
-                            refreshOnSuccess="true"
-                            type="submit"
-                    >{{ 'plugin.mod_questionnaire.savechanges' | translate }}</button>
                 <%/nextpage%>
-            <%/completed%>
+
+                <%^nextpage%><%^completed%>
+                <button ion-button block core-site-plugins-call-ws
+                        name="mod_questionnaire_submit_questionnaire_response"
+                        [params]="{
+                                    questionnaireid: <%id%>,
+                                    surveyid: <%surveyid%>,
+                                    userid: <%userid%>,
+                                    cmid: <%cmid%>,
+                                    sec: <%pagenum%>,
+                                    completed: <%completed%>,
+                                    rid: <%rid%>,
+                                    submit: 1,
+                                    responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
+                                }"
+                        confirmMessage="{{ 'plugin.mod_questionnaire.areyousure' | translate }}"
+                        refreshOnSuccess="true"
+                        type="submit"
+                >{{ 'plugin.mod_questionnaire.savechanges' | translate }}</button>
+                <%/completed%><%/nextpage%>
             </ion-list>
         </ion-card>
     </div>
+    <%#emptypage%>
+    <%/emptypage%>
 </div>

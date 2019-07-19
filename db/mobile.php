@@ -39,7 +39,9 @@ $addons = [
         'lang' => [
             ['yourresponse', 'questionnaire'],
             ['submitted', 'questionnaire'],
+            ['answerquestions', 'questionnaire'],
             ['areyousure', 'moodle'],
+            ['resumesurvey', 'questionnaire'],
             ['success', 'moodle'],
             ['savechanges', 'moodle'],
             ['nextpage', 'questionnaire'],
