@@ -1545,26 +1545,12 @@ abstract class question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        if (isset($response->answers)) {
+        if (isset($response->answers[$this->id][0])) {
             $resultdata[$this->mobile_fieldkey()] = $response->answers[$this->id][0]->value;
         } else {
             $resultdata[$this->mobile_fieldkey()] = false;
         }
 
         return $resultdata;
-    }
-
-    /**
-     * @param $rid
-     * @param $respdata
-     * @return bool
-     */
-    public function save_mobile_response($rid, $respdata) {
-        if (isset($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
-            return $this->responsetype->save_mobile_response($rid, $respdata);
-        } else {
-            return false;
-        }
     }
 }

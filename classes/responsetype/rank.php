@@ -131,32 +131,6 @@ class rank extends responsetype {
     }
 
     /**
-     * @param $rid
-     * @param $respdata
-     * @return bool
-     */
-    public function save_mobile_response($rid, $respdata) {
-        global $DB;
-
-        $resid = false;
-        foreach ($respdata as $choiceid => $choiceval) {
-            if ($choiceval == get_string('notapplicable', 'questionnaire')) {
-                $choiceval = -1;
-            } else {
-                $choiceval = intval($choiceval);
-            }
-            $record = new \stdClass();
-            $record->response_id = $rid;
-            $record->question_id = $this->question->id;
-            $record->choice_id = $choiceid;
-            $record->rankvalue = $choiceval;
-            $resid = $DB->insert_record(static::response_table(), $record);
-        }
-
-        return $resid;
-    }
-
-    /**
      * @param bool $rids
      * @param bool $anonymous
      * @return array
