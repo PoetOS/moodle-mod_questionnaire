@@ -30,6 +30,7 @@ env:
   - MOODLE_BRANCH=MOODLE_35_STABLE DB=mysqli
   - MOODLE_BRANCH=MOODLE_34_STABLE DB=pgsql
   - MOODLE_BRANCH=MOODLE_34_STABLE DB=mysqli
+  - IGNORE_NAMES=mobile*.mustache
 
 matrix:
   exclude:
