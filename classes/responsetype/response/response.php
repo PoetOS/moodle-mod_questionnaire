@@ -136,7 +136,7 @@ class response {
     static public function response_from_appdata($questionnaireid, $responseid, $responsedata, $questions) {
         global $USER;
 
-        $response = new response($responseid, $questionnaireid, $USER->id, null, null, null, false);
+        $response = new response($responseid, $questionnaireid, $USER->id, null, null, null, true);
 
         // Process app data by question and choice and create a webform structure.
         $processedresponses = new \stdClass();
@@ -156,7 +156,7 @@ class response {
         }
 
         foreach ($questions as $question) {
-            if ($question->supports_responses()) {
+            if ($question->supports_responses() && isset($processedresponses->{'q'.$question->id})) {
                 $response->answers[$question->id] = $question->responsetype::answers_from_appdata($processedresponses, $question);
             }
         }

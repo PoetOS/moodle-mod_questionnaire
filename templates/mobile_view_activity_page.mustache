@@ -37,6 +37,7 @@
         "id": "342",
         "rid": 0,
         "surveyid": "23",
+        "action": "nextpage",
         "pagenum": 0,
         "nextpage": 1,
         "prevpage": 0,
@@ -138,13 +139,15 @@
                                         completed: <%completed%>,
                                         rid: <%rid%>,
                                         submit: 0,
+                                        action: 'previouspage',
                                         responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
                                     }"
                         [args]="{
                                         cmid: <%cmid%>,
                                         rid: <%rid%>,
                                         completeq: 1,
-                                        pagenum: <%prevpage%>
+                                        action: 'previouspage',
+                                        pagenum: <%pagenum%>
                                     }"
                         type="submit"
                 ><ion-icon name="arrow-back"></ion-icon> {{ 'plugin.mod_questionnaire.previouspage' | translate }}</button>
@@ -162,13 +165,15 @@
                                         completed: <%completed%>,
                                         rid: <%rid%>,
                                         submit: 0,
+                                        action: 'nextpage',
                                         responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
                                     }"
                         [args]="{
                                         cmid: <%cmid%>,
                                         rid: <%rid%>,
                                         completeq: 1,
-                                        pagenum: <%nextpage%>
+                                        action: 'nextpage',
+                                        pagenum: <%pagenum%>
                                     }"
                         type="submit"
                 >{{ 'plugin.mod_questionnaire.nextpage' | translate }} <ion-icon name="arrow-forward"></ion-icon></button>
@@ -186,6 +191,7 @@
                                     completed: <%completed%>,
                                     rid: <%rid%>,
                                     submit: 1,
+                                    action: 'index',
                                     responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
                                 }"
                         confirmMessage="{{ 'plugin.mod_questionnaire.areyousure' | translate }}"

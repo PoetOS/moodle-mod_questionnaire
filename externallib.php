@@ -57,6 +57,7 @@ class mod_questionnaire_external extends \external_api {
                 'completed' => new \external_value(PARAM_INT, 'Completed survey or not'),
                 'rid' => new \external_value(PARAM_INT, 'Existing response id'),
                 'submit' => new \external_value(PARAM_INT, 'Submit survey or not'),
+                'action' => new \external_value(PARAM_ALPHA, 'Page action'),
                 'responses' => new \external_multiple_structure(
                     new \external_single_structure(
                         [
@@ -86,7 +87,7 @@ class mod_questionnaire_external extends \external_api {
      * @since Moodle 3.0
      */
     public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $rid,
-                                                         $submit, $responses) {
+                                                         $submit, $action, $responses) {
         self::validate_parameters(self::submit_questionnaire_response_parameters(),
             [
                 'questionnaireid' => $questionnaireid,
@@ -97,6 +98,7 @@ class mod_questionnaire_external extends \external_api {
                 'completed' => $completed,
                 'rid' => $rid,
                 'submit' => $submit,
+                'action' => $action,
                 'responses' => $responses
             ]
         );
@@ -109,7 +111,7 @@ class mod_questionnaire_external extends \external_api {
 
         require_capability('mod/questionnaire:submit', $context);
 
-        $result = $questionnaire->save_mobile_data($userid, $sec, $completed, $rid, $submit, $responses);
+        $result = $questionnaire->save_mobile_data($userid, $sec, $completed, $rid, $submit, $action, $responses);
         $result['submitted'] = true;
         if (isset($result['warnings']) && !empty($result['warnings'])) {
             unset($result['responses']);

@@ -95,7 +95,7 @@ class boolean extends responsetype {
             $response = $responsedata;
         }
 
-        if (!empty($response) && isset($response->answers[$this->question->id])) {
+        if (!empty($response) && isset($response->answers[$this->question->id][0])) {
             $record = new \stdClass();
             $record->response_id = $response->id;
             $record->question_id = $this->question->id;

@@ -274,48 +274,9 @@ class questionnaire {
         // Initialise the JavaScript.
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
 
-        $questionnaire = $this;
-
-        if (!$this->capabilities->view) {
-            $this->page->add_to_page('notifications',
-                $this->renderer->notification(get_string('noteligible', 'questionnaire', $this->name),
-                \core\output\notification::NOTIFY_ERROR));
-        } else if (!$this->is_active()) {
-            $this->page->add_to_page('notifications',
-                $this->renderer->notification(get_string('notavail', 'questionnaire'), \core\output\notification::NOTIFY_ERROR));
-        } else if (!$this->is_open()) {
-            $this->page->add_to_page('notifications',
-                $this->renderer->notification(get_string('notopen', 'questionnaire', userdate($this->opendate)),
-                \core\output\notification::NOTIFY_ERROR));
-        } else if ($this->is_closed()) {
-            $this->page->add_to_page('notifications',
-                $this->renderer->notification(get_string('closed', 'questionnaire', userdate($this->closedate)),
-                \core\output\notification::NOTIFY_ERROR));
-        } else if (!$this->user_is_eligible($USER->id)) {
-            $this->page->add_to_page('notifications',
-                $this->renderer->notification(get_string('noteligible', 'questionnaire'), \core\output\notification::NOTIFY_ERROR));
-        } else if ($this->survey->realm == 'template') {
-            $this->page->add_to_page('notifications',
-                $this->renderer->notification(get_string('templatenotviewable', 'questionnaire'),
-                \core\output\notification::NOTIFY_ERROR));
-        } else if (!$this->user_can_take($USER->id)) {
-            switch ($this->qtype) {
-                case QUESTIONNAIREDAILY:
-                    $msgstring = ' '.get_string('today', 'questionnaire');
-                    break;
-                case QUESTIONNAIREWEEKLY:
-                    $msgstring = ' '.get_string('thisweek', 'questionnaire');
-                    break;
-                case QUESTIONNAIREMONTHLY:
-                    $msgstring = ' '.get_string('thismonth', 'questionnaire');
-                    break;
-                default:
-                    $msgstring = '';
-                    break;
-            }
-            $this->page->add_to_page('notifications',
-                $this->renderer->notification(get_string('alreadyfilled', 'questionnaire', $msgstring),
-                \core\output\notification::NOTIFY_ERROR));
+        $message = $this->user_access_messages($USER->id, true);
+        if ($message !== false) {
+            $this->page->add_to_page('notifications', $message);
         } else {
             // Handle the main questionnaire completion page.
             $quser = $USER->id;
@@ -353,7 +314,7 @@ class questionnaire {
                     'courseid' => $this->course->id,
                     'relateduserid' => $USER->id,
                     'anonymous' => $anonymous,
-                    'other' => array('questionnaireid' => $questionnaire->id)
+                    'other' => array('questionnaireid' => $this->id)
                 );
                 $event = \mod_questionnaire\event\attempt_submitted::create($params);
                 $event->trigger();
@@ -507,10 +468,11 @@ class questionnaire {
     /**
      * Return any message if the user cannot complete this questionnaire, explaining why.
      * @param int $userid
+     * @param bool $asnotification Return as a rendered notification.
      * @return bool|string
      * @throws coding_exception
      */
-    public function user_access_messages($userid = 0) {
+    public function user_access_messages($userid = 0, $asnotification = false) {
         global $USER;
 
         if ($userid == 0) {
@@ -554,6 +516,10 @@ class questionnaire {
                     break;
             }
             $message = get_string("alreadyfilled", "questionnaire", $msgstring);
+        }
+
+        if (($message !== false) && $asnotification) {
+            $message = $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR);
         }
 
         return $message;
@@ -1007,6 +973,78 @@ class questionnaire {
     }
 
     /**
+     * Determine the next valid page and return it. Return false if no valid next page.
+     * @param $secnum
+     * @param $rid
+     * @return int | bool
+     */
+    public function next_page($secnum, $rid) {
+        $secnum++;
+        $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
+        if ($this->has_dependencies()) {
+            while (!$this->eligible_questions_on_page($secnum, $rid)) {
+                $secnum++;
+                // We have reached the end of questionnaire on a page without any question left.
+                if ($secnum > $numsections) {
+                    $secnum = false;
+                    break;
+                }
+            }
+        }
+        return $secnum;
+    }
+
+    /**
+     * @param $secnum
+     * @param $rid
+     * @return int | bool
+     */
+    public function prev_page($secnum, $rid) {
+        $secnum--;
+        if ($this->has_dependencies()) {
+            while (($secnum > 0) && !$this->eligible_questions_on_page($secnum, $rid)) {
+                $secnum--;
+            }
+        }
+        if ($secnum === 0) {
+            $secnum = false;
+        }
+        return $secnum;
+    }
+
+    /**
+     * @param $response
+     * @param $userid
+     * @return bool|int
+     */
+    public function next_page_action($response, $userid) {
+        $response->rid = $this->existing_response_action($response, $userid);
+        return $this->next_page($response->sec, $response->rid);
+    }
+
+    /**
+     * @param $response
+     * @param $userid
+     * @return bool|int
+     */
+    public function previous_page_action($response, $userid) {
+        $response->rid = $this->existing_response_action($response, $userid);
+        return $this->prev_page($response->sec, $response->rid);
+    }
+
+    /**
+     * @param $response
+     * @param $userid
+     * @return bool|int
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function existing_response_action($response, $userid) {
+        $this->response_delete($response->rid, $response->sec);
+        return $this->response_insert($response, $userid);
+    }
+
+    /**
      * Are there any eligible questions to be displayed on the specified page/section.
      * @param $secnum The section number to check.
      * @param $rid The current response id.
@@ -1081,20 +1119,12 @@ class questionnaire {
             if ($msg) {
                 $formdata->next = '';
             } else {
-                $this->response_delete($formdata->rid, $formdata->sec);
-                $formdata->rid = $this->response_insert($formdata, $quser);
-                // Skip logic.
-                $formdata->sec++;
-                if ($this->has_dependencies()) {
-                    while (!$this->eligible_questions_on_page($formdata->sec, $formdata->rid)) {
-                        $this->response_delete($formdata->rid, $formdata->sec);
-                        $formdata->sec++;
-                        // We have reached the end of questionnaire on a page without any question left.
-                        if ($formdata->sec > $numsections) {
-                            $SESSION->questionnaire->end = true; // End of questionnaire reached on a no questions page.
-                            break;
-                        }
-                    }
+                $nextsec = $this->next_page_action($formdata, $userid);
+                if ($nextsec === false) {
+                    $SESSION->questionnaire->end = true; // End of questionnaire reached on a no questions page.
+                    $formdata->sec = $numsections + 1;
+                } else {
+                    $formdata->sec = $nextsec;
                 }
             }
         }
@@ -1112,14 +1142,11 @@ class questionnaire {
             if ($msg) {
                 $formdata->prev = '';
             } else {
-                $this->response_delete($formdata->rid, $formdata->sec);
-                $formdata->rid = $this->response_insert($formdata, $quser);
-                $formdata->sec--;
-                // Skip logic.
-                if ($this->has_dependencies()) {
-                    while (($formdata->sec > 0) && !$this->eligible_questions_on_page($formdata->sec, $formdata->rid)) {
-                        $formdata->sec--;
-                    }
+                $prevsec = $this->previous_page_action($formdata, $userid);
+                if ($prevsec === false) {
+                    $formdata->sec = 0;
+                } else {
+                    $formdata->sec = $prevsec;
                 }
             }
         }
@@ -3782,7 +3809,7 @@ class questionnaire {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public function save_mobile_data($userid, $sec, $completed, $rid, $submit, array $responses) {
+    public function save_mobile_data($userid, $sec, $completed, $rid, $submit, $action, array $responses) {
         global $DB, $CFG; // Do not delete $CFG!!!
 
         $ret = [];
@@ -3792,10 +3819,15 @@ class questionnaire {
         $response->rid = $rid;
         $response->id = $rid;
 
+        if ($action == 'nextpage') {
+            $this->next_page_action($response, $userid);
+        } else if ($action == 'prevpage') {
+            $this->previous_page_action($response, $userid);
         // If reviewing a completed questionnaire, don't insert a response.
-        if (!$completed) {
+        } else if (!$completed) {
             $rid = $this->response_insert($response, $userid);
         }
+
         if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
             $this->commit_submission_response($rid, $userid);
         }
