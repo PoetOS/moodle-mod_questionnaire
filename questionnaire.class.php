@@ -198,37 +198,26 @@ class questionnaire {
      * @throws dml_exception
      */
     public function add_response_from_formdata($formdata) {
-        global $DB, $USER;
-
-        $rid = isset($formdata->rid) ? $formdata->rid : 0;
-
-        if ($rid) {
-            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
-            $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
-        } else {
-            $this->responses[$rid] =
-                mod_questionnaire\responsetype\response\response::response_from_webform($formdata, $this->questions);
-        }
+        $this->responses[0] = mod_questionnaire\responsetype\response\response::response_from_webform($formdata, $this->questions);
     }
 
     /**
-     * Load the response information from a submitted mobile app form.
+     * Return a response object from a submitted mobile app form.
      *
-     * @param $formdata
-     * @throws dml_exception
+     * @param $appdata
+     * @param int $sec
+     * @return bool|\mod_questionnaire\responsetype\response\response
      */
-    public function add_response_from_appdata($appdata) {
-        global $DB, $USER;
-
-        $rid = isset($appdata['rid']) ? $appdata['rid'] : 0;
-
-        if ($rid) {
-            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
-            $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
+    public function build_response_from_appdata($appdata, $sec=0) {
+        $questions = [];
+        if ($sec == 0) {
+            $questions = $this->questions;
         } else {
-            $this->responses[$rid] = mod_questionnaire\responsetype\response\response::response_from_appdata($this->id, $rid,
-                $appdata, $this->questions);
+            foreach ($this->questionsbysec[$sec] as $questionid) {
+                $questions[$questionid] = $this->questions[$questionid];
+            }
         }
+        return mod_questionnaire\responsetype\response\response::response_from_appdata($this->id, 0, $appdata, $questions);
     }
 
     /**
@@ -1152,7 +1141,7 @@ class questionnaire {
         }
 
         if (!empty($formdata->rid)) {
-            $this->add_response_from_formdata($formdata);
+            $this->add_response($formdata->rid);
         }
 
         $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
@@ -1231,7 +1220,11 @@ class questionnaire {
             }
             // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
             $formdata->questionnaire_id = $this->id;
-            $this->add_response_from_formdata($formdata);
+            if (isset($formdata->rid) && !empty($formdata->rid)) {
+                $this->add_response($formdata->rid);
+            } else {
+                $this->add_response_from_formdata($formdata);
+            }
             $this->page->add_to_page('questions',
                 $this->renderer->question_output($this->questions[$questionid],
                     (isset($this->responses[$formdata->rid]) ? $this->responses[$formdata->rid] : []),
@@ -3713,92 +3706,6 @@ class questionnaire {
 
     // Mobile support area.
     /**
-     * Get questionnaire data
-     *
-     * @global object $DB
-     * @param int|bool $userid
-     * @return array
-     * @throws moodle_exception
-     */
-    public function get_mobile_data($userid = false) {
-        global $DB, $USER;
-
-        $ret = [
-            'questionnaire' => [
-                'id' => $this->id,
-                'name' => format_string($this->name),
-                'intro' => $this->intro,
-                'userid' => intval($userid ? $userid : $USER->id),
-                'questionnaireid' => intval($this->sid),
-                'autonumpages' => $this->pages_autonumbered(),
-                'autonumquestions' => $this->questions_autonumbered()
-            ],
-            'response' => [
-                'id' => 0,
-                'questionnaireid' => 0,
-                'submitted' => 0,
-                'complete' => 'n',
-                'grade' => 0,
-                'userid' => 0,
-                'fullname' => '',
-                'userdate' => '',
-            ],
-            'answered' => [],
-            'fields' => [],
-            'responses' => [],
-            'questionscount' => 0,
-            'pagescount' => 1,
-        ];
-
-        if (!empty($this->questions)) {
-            $pagenum = 1;
-            $qnum = 0;
-            foreach ($this->questions as $question) {
-                $ret['questionscount']++;
-                $qnum++;
-                if ($question->supports_mobile() && ($mobiledata =
-                        $question->get_mobile_question_data($qnum, $ret['questionnaire']['autonumquestions']))) {
-                    $ret['questionsinfo'][$pagenum][$question->id] = $mobiledata->questionsinfo;
-                    $ret['fields'][$mobiledata->questionsinfo['fieldkey']] = $mobiledata->fields;
-                    $ret['questions'][$pagenum][$question->id] = $mobiledata->questions;
-                    $ret['responses']['response_' . $question->type_id . '_' . $question->id] = $mobiledata->responses;
-                } else if ($question->type_id == QUESPAGEBREAK) {
-                    $ret['questionscount']--;
-                    $ret['pagescount']++;
-                    $pagenum++;
-                    $qnum--;
-                }
-            }
-            if ($userid) {
-                if ($responses = $this->get_responses($userid)) {
-                    $response = end($responses);
-                    $ret['response'] = (array) $response;
-                    $ret['response']['submitted_userdate'] = '';
-                    if (isset($ret['response']['submitted']) && !empty($ret['response']['submitted'])) {
-                        $ret['response']['submitted_userdate'] = userdate($ret['response']['submitted']);
-                    }
-                    $ret['response']['fullname'] = fullname($DB->get_record('user', ['id' => $userid]));
-                    $ret['response']['userdate'] = userdate($ret['response']['submitted']);
-                    $ret['responses'] = [];
-                    foreach ($this->questions as $question) {
-                        // TODO - Need to do something with pagenum.
-                        $responsedata = $question->get_mobile_response_data($response->id);
-                        $ret['answered'][$question->id] = $responsedata->answered;
-                        if (!isset($ret['questions'][$pagenum][$question->id])) {
-                            $ret['questions'][$pagenum][$question->id] = [];
-                        }
-                        foreach ($responsedata->questions as $choiceid => $choice) {
-                            $ret['questions'][$pagenum][$question->id][$choiceid]->value = $choice->value;
-                        }
-                        $ret['responses'] += $responsedata->responses;
-                    }
-                }
-            }
-        }
-        return $ret;
-    }
-
-    /**
      * @param $userid
      * @param $sec
      * @param $completed
@@ -3813,8 +3720,7 @@ class questionnaire {
         global $DB, $CFG; // Do not delete $CFG!!!
 
         $ret = [];
-        $this->add_response_from_appdata($responses);
-        $response = end($this->responses);
+        $response = $this->build_response_from_appdata($responses, $sec);
         $response->sec = $sec;
         $response->rid = $rid;
         $response->id = $rid;
@@ -3823,8 +3729,8 @@ class questionnaire {
             $this->next_page_action($response, $userid);
         } else if ($action == 'prevpage') {
             $this->previous_page_action($response, $userid);
-        // If reviewing a completed questionnaire, don't insert a response.
         } else if (!$completed) {
+            // If reviewing a completed questionnaire, don't insert a response.
             $rid = $this->response_insert($response, $userid);
         }
 

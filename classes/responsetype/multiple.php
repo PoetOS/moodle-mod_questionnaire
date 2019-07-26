@@ -87,7 +87,7 @@ class multiple extends single {
         $qname = 'q'.$question->id;
         if (isset($responsedata->{$qname}) && !empty($responsedata->{$qname})) {
             foreach ($responsedata->{$qname} as $choiceid => $choicevalue) {
-                if ($choicevalue == 'true') {
+                if ($choicevalue) {
                     $record = new \stdClass();
                     $record->responseid = $responsedata->rid;
                     $record->questionid = $question->id;
