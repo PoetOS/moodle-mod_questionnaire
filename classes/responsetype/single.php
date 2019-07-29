@@ -113,25 +113,26 @@ class single extends responsetype {
         $resid = false;
         if (!empty($response) && isset($response->answers[$this->question->id])) {
             foreach ($response->answers[$this->question->id] as $answer) {
-                if (isset($this->question->choices[$answer->choiceid]) &&
-                    $this->question->choices[$answer->choiceid]->is_other_choice()) {
-                    // If no input specified, ignore this choice.
-                    if (empty($answer->value) || preg_match("/^[\s]*$/", $answer->value)) {
-                        continue;
+                if (isset($this->question->choices[$answer->choiceid])) {
+                    if ($this->question->choices[$answer->choiceid]->is_other_choice()) {
+                        // If no input specified, ignore this choice.
+                        if (empty($answer->value) || preg_match("/^[\s]*$/", $answer->value)) {
+                            continue;
+                        }
+                        $record = new \stdClass();
+                        $record->response_id = $response->id;
+                        $record->question_id = $this->question->id;
+                        $record->choice_id = $answer->choiceid;
+                        $record->response = $answer->value;
+                        $DB->insert_record('questionnaire_response_other', $record);
                     }
+                    // Record the choice selection.
                     $record = new \stdClass();
                     $record->response_id = $response->id;
                     $record->question_id = $this->question->id;
                     $record->choice_id = $answer->choiceid;
-                    $record->response = $answer->value;
-                    $DB->insert_record('questionnaire_response_other', $record);
+                    $resid = $DB->insert_record(static::response_table(), $record);
                 }
-                // Record the choice selection.
-                $record = new \stdClass();
-                $record->response_id = $response->id;
-                $record->question_id = $this->question->id;
-                $record->choice_id = $answer->choiceid;
-                $resid = $DB->insert_record(static::response_table(), $record);
             }
         }
         return $resid;

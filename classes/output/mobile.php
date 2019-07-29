@@ -98,22 +98,25 @@ class mobile {
             case 'previouspage':
                 // Completing a questionnaire.
                 if (!$data['notifications']) {
-                    if ($questionnaire->user_has_saved_response($USER->id) && empty($rid)) {
-                        $rid = $questionnaire->get_latest_responseid($USER->id);
+                    if ($questionnaire->user_has_saved_response($USER->id)) {
+                        if (empty($rid)) {
+                            $rid = $questionnaire->get_latest_responseid($USER->id);
+                        }
                         $questionnaire->add_response($rid);
                         $data['rid'] = $rid;
                     }
                     $response = (isset($questionnaire->responses) && !empty($questionnaire->responses)) ?
                         end($questionnaire->responses) : null;
+                    $responseid = ($response === null) ? 0 : $response->id;
                     if ($action == 'nextpage') {
-                        $nextpage = $questionnaire->next_page($pagenum, $response->id);
+                        $nextpage = $questionnaire->next_page($pagenum, $responseid);
                         if ($nextpage === false) {
                             $pagenum = count($questionnaire->questionsbysec);
                         } else {
                             $pagenum = $nextpage;
                         }
                     } else if ($action == 'previouspage') {
-                        $prevpage = $questionnaire->prev_page($pagenum, $response->id);
+                        $prevpage = $questionnaire->prev_page($pagenum, $responseid);
                         if ($prevpage === false) {
                             $pagenum = 1;
                         } else {
