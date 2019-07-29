@@ -56,6 +56,7 @@
 <ion-item>
     <ion-range min="<%min%>" max="<%max%>"
                snaps="true" pin="true" color="secondary"
+                <%#completed%> disabled="true"<%/completed%>
                [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
         <ion-label range-left><%minstr%></ion-label>
         <ion-label range-right><%#na%><ion-icon name="eye-off"></ion-icon><%/na%><%^na%><%maxstr%><%/na%></ion-label>
