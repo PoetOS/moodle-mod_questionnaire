@@ -1520,6 +1520,8 @@ abstract class question {
         if ($this->has_choices()) {
             foreach ($this->choices as $choice) {
                 $choices[$cnum] = clone($choice);
+                $contents = questionnaire_choice_values($choice->content);
+                $choices[$cnum]->content = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
                 $cnum++;
             }
         }
