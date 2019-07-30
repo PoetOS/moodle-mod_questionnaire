@@ -192,7 +192,7 @@ switch ($action) {
 
         if (empty($questionnaire->survey)) {
             $id = $questionnaire->survey;
-            notify ("questionnaire->survey = /$id/");
+            $OUTPUT->notification("questionnaire->survey = /$id/");
             print_error('surveynotexists', 'questionnaire');
         } else if ($questionnaire->survey->courseid != $course->id) {
             print_error('surveyowner', 'questionnaire');

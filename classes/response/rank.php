@@ -49,7 +49,7 @@ class rank extends base {
         if ($this->question->type_id == QUESRATE) {
             $resid = false;
             foreach ($this->question->choices as $cid => $choice) {
-                $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_CLEAN);
+                $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_ALPHANUMEXT);
                 // Choice not set or not answered.
                 if (!isset($other) || $other == '') {
                     continue;

@@ -48,7 +48,7 @@ class multiple extends single {
         $resid = '';
         foreach ($this->question->choices as $cid => $choice) {
             if (strpos($choice->content, '!other') === 0) {
-                $other = optional_param('q'.$this->question->id.'_'.$cid, '', PARAM_CLEAN);
+                $other = optional_param('q'.$this->question->id.'_'.$cid, '', PARAM_ALPHANUMEXT);
                 if (empty($other)) {
                     continue;
                 }
@@ -73,7 +73,7 @@ class multiple extends single {
         }
 
         foreach ($val as $cid) {
-            $cid = clean_param($cid, PARAM_CLEAN);
+            $cid = clean_param($cid, PARAM_ALPHANUMEXT);
             if ($cid != 0) { // Do not save response if choice is empty.
                 if (preg_match("/other_q[0-9]+/", $cid)) {
                     continue;

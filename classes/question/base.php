@@ -1352,7 +1352,7 @@ abstract class base {
      */
     protected function form_preprocess_choicedata($formdata) {
         if (empty($formdata->allchoices)) {
-            error (get_string('enterpossibleanswers', 'questionnaire'));
+            print_error('enterpossibleanswers', 'questionnaire');
         }
         return false;
     }

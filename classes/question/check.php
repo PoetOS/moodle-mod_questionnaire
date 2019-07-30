@@ -283,7 +283,7 @@ class check extends base {
      */
     protected function form_preprocess_choicedata($formdata) {
         if (empty($formdata->allchoices)) {
-            error (get_string('enterpossibleanswers', 'questionnaire'));
+            print_error('enterpossibleanswers', 'questionnaire');
         } else {
             // Sanity checks for min and max checked boxes.
             $allchoices = $formdata->allchoices;
