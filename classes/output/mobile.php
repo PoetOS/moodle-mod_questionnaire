@@ -40,15 +40,16 @@ class mobile {
 
         $cmid = $args->cmid;
         $rid = isset($args->rid) ? $args->rid : 0;
-        $action = (isset($args->action)) ? $args->action : 'index';
+        $action = isset($args->action) ? $args->action : 'index';
         $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
+        $userid = isset($args->userid) ? $args->userid : $USER->id;
 
         list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
         $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
 
         $data = [];
         $data['cmid'] = $cmid;
-        $data['userid'] = $USER->id;
+        $data['userid'] = $userid;
         $data['intro'] = $questionnaire->intro;
         $data['autonumquestions'] = $questionnaire->autonum;
         $data['id'] = $questionnaire->id;
@@ -64,7 +65,7 @@ class mobile {
 
         // Any notifications will be displayed on top of main page, and prevent questionnaire from being completed. This also checks
         // appropriate capabilities.
-        $data['notifications'] = $questionnaire->user_access_messages($USER->id);
+        $data['notifications'] = $questionnaire->user_access_messages($userid);
         $responses = [];
 
         $data['emptypage'] = 1;
@@ -84,7 +85,7 @@ class mobile {
                     } else {
                         $data['emptypage'] = 1;
                     }
-                    if ($questionnaire->user_has_saved_response($USER->id)) {
+                    if ($questionnaire->user_has_saved_response($userid)) {
                         $data['resume'] = 1;
                     }
                     $data['emptypage'] = 0;
@@ -98,9 +99,9 @@ class mobile {
             case 'previouspage':
                 // Completing a questionnaire.
                 if (!$data['notifications']) {
-                    if ($questionnaire->user_has_saved_response($USER->id)) {
+                    if ($questionnaire->user_has_saved_response($userid)) {
                         if (empty($rid)) {
-                            $rid = $questionnaire->get_latest_responseid($USER->id);
+                            $rid = $questionnaire->get_latest_responseid($userid);
                         }
                         $questionnaire->add_response($rid);
                         $data['rid'] = $rid;

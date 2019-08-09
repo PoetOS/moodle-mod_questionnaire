@@ -1004,11 +1004,16 @@ class questionnaire {
     /**
      * @param $response
      * @param $userid
-     * @return bool|int
+     * @return bool|int|string
      */
     public function next_page_action($response, $userid) {
-        $response->rid = $this->existing_response_action($response, $userid);
-        return $this->next_page($response->sec, $response->rid);
+        $msg = $this->response_check_format($response->sec, $response);
+        if (empty($msg)) {
+            $response->rid = $this->existing_response_action($response, $userid);
+            return $this->next_page($response->sec, $response->rid);
+        } else {
+            return $msg;
+        }
     }
 
     /**
@@ -1644,6 +1649,14 @@ class questionnaire {
 
     // RESPONSE LIBRARY.
 
+    /**
+     * @param $section
+     * @param $formdata
+     * @param bool $checkmissing
+     * @param bool $checkwrongformat
+     * @return string
+     * @throws coding_exception
+     */
     private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
         $missing = 0;
         $strmissing = '';     // Missing questions.
@@ -2234,8 +2247,10 @@ class questionnaire {
         if (!isset($responsedata->sec)) {
             $responsedata->sec = 1;
         }
+error_log(print_r($responsedata, true));
         if (!empty($this->questionsbysec[$responsedata->sec])) {
             foreach ($this->questionsbysec[$responsedata->sec] as $questionid) {
+error_log(print_r($responsedata->answers[$questionid], true));
                 $this->questions[$questionid]->insert_response($responsedata);
             }
         }
@@ -3726,7 +3741,10 @@ class questionnaire {
         $response->id = $rid;
 
         if ($action == 'nextpage') {
-            $this->next_page_action($response, $userid);
+            $result = $this->next_page_action($response, $userid);
+            if (is_string($result)) {
+                $ret['warnings'] = $result;
+            }
         } else if ($action == 'prevpage') {
             $this->previous_page_action($response, $userid);
         } else if (!$completed) {
