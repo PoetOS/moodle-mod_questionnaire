@@ -53,13 +53,13 @@
                     <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
                     <ion-checkbox <%#value%> checked="true"<%/value%> value="<%id%>"
                     <%#completed%> disabled="true"<%/completed%>
-                    [(ngModel)]="CONTENT_OTHERDATA.responses['<%choicefieldkey%>']"></ion-checkbox>
+                    [(ngModel)]="CONTENT_OTHERDATA.<%choicefieldkey%>"></ion-checkbox>
                 </ion-item>
             </ion-col>
             <%#otherchoicekey%>
             <ion-col>
                 <ion-item>
-                    <ion-input placeholder="Enter: " [(ngModel)]="CONTENT_OTHERDATA.responses['<%otherchoicekey%>']"
+                    <ion-input placeholder="Enter: " [(ngModel)]="CONTENT_OTHERDATA.<%otherchoicekey%>"
                     <%#completed%> disabled="true"<%/completed%>></ion-input>
                 </ion-item>
             </ion-col>

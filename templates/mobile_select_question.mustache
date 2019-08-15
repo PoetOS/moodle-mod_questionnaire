@@ -41,7 +41,7 @@
     }
 }}
 {{=<% %>=}}
-<ion-select [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
+<ion-select [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>">
     <%#choices%>
     <ion-option<%#completed%> disabled="true"<%/completed%><%#value%> selected="true"<%/value%> value="<%id%>"><%content%></ion-option>
     <%/choices%>

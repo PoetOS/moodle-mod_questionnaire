@@ -512,9 +512,22 @@ class rate extends question {
      * @return boolean
      */
     public function response_valid($responsedata) {
+        // Work with a response object.
+        if (!is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this]);
+        } else {
+            $response = $responsedata;
+        }
         $num = 0;
         $nbchoices = count($this->choices);
         $na = get_string('notapplicable', 'questionnaire');
+
+        // Create an answers array indexed by choiceid for ease.
+        $answers = [];
+        foreach ($response->answers[$this->id] as $answer) {
+            $answers[$answer->choiceid] = $answer;
+        }
+
         foreach ($this->choices as $cid => $choice) {
             // In case we have named degrees on the Likert scale, count them to substract from nbchoices.
             $nameddegrees = 0;
@@ -522,12 +535,11 @@ class rate extends question {
             if (preg_match("/^[0-9]{1,3}=/", $content)) {
                 $nameddegrees++;
             } else {
-                $str = 'q'."{$this->id}_$cid";
-                if (isset($responsedata->$str) && ($responsedata->$str == $na)) {
-                    $responsedata->$str = -1;
+                if (isset($answers[$cid]) && ($answers[$cid]->value == $na)) {
+                    $answers[$cid]->value = -1;
                 }
                 // If choice value == -999 this is a not yet answered choice.
-                $num += (isset($responsedata->$str) && ($responsedata->$str != -999));
+                $num += (isset($answers[$cid]) && ($answers[$cid]->value != -999));
             }
             $nbchoices -= $nameddegrees;
         }

@@ -198,38 +198,50 @@ class check extends question {
      * @return boolean
      */
     public function response_valid($responsedata) {
+        $nbrespchoices = 0;
         $valid = true;
-        if (isset($responsedata->{'q'.$this->id})) {
-            $nbrespchoices = 0;
-            foreach ($responsedata->{'q'.$this->id} as $resp) {
-                if (strpos($resp, 'other_') !== false) {
+        if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            // If $responsedata is a response object, look through the answers.
+            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
+                foreach ($responsedata->answers[$this->id] as $answer) {
+                    if (isset($this->choices[$answer->choiceid]) && $this->choices[$answer->choiceid]->is_other_choice()) {
+                        $valid = !empty($answer->value);
+                    } else {
+                        $nbrespchoices++;
+                    }
+                }
+            }
+        } else if (isset($responsedata->{'q'.$this->id})) {
+            foreach ($responsedata->{'q'.$this->id} as $answer) {
+                if (strpos($answer, 'other_') !== false) {
                     // ..."other" choice is checked but text box is empty.
-                    $othercontent = "q".$this->id.substr($resp, 5);
+                    $othercontent = "q".$this->id.substr($answer, 5);
                     if (trim($responsedata->$othercontent) == false) {
                         $valid = false;
                         break;
                     }
                     $nbrespchoices++;
-                } else if (is_numeric($resp)) {
+                } else if (is_numeric($answer)) {
                     $nbrespchoices++;
                 }
             }
-            $nbquestchoices = count($this->choices);
-            $min = $this->length;
-            $max = $this->precise;
-            if ($max == 0) {
-                $max = $nbquestchoices;
-            }
-            if ($min > $max) {
-                $min = $max;     // Sanity check.
-            }
-            $min = min($nbquestchoices, $min);
-            if ($nbrespchoices && (($nbrespchoices < $min) || ($nbrespchoices > $max))) {
-                // Number of ticked boxes is not within min and max set limits.
-                $valid = false;
-            }
         } else {
-            $valid = parent::response_valid($responsedata);
+            return parent::response_valid($responsedata);
+        }
+
+        $nbquestchoices = count($this->choices);
+        $min = $this->length;
+        $max = $this->precise;
+        if ($max == 0) {
+            $max = $nbquestchoices;
+        }
+        if ($min > $max) {
+            $min = $max;     // Sanity check.
+        }
+        $min = min($nbquestchoices, $min);
+        if ($nbrespchoices && (($nbrespchoices < $min) || ($nbrespchoices > $max))) {
+            // Number of ticked boxes is not within min and max set limits.
+            $valid = false;
         }
 
         return $valid;

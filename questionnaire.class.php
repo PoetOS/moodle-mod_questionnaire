@@ -2247,10 +2247,8 @@ class questionnaire {
         if (!isset($responsedata->sec)) {
             $responsedata->sec = 1;
         }
-error_log(print_r($responsedata, true));
         if (!empty($this->questionsbysec[$responsedata->sec])) {
             foreach ($this->questionsbysec[$responsedata->sec] as $questionid) {
-error_log(print_r($responsedata->answers[$questionid], true));
                 $this->questions[$questionid]->insert_response($responsedata);
             }
         }
@@ -3744,9 +3742,11 @@ error_log(print_r($responsedata->answers[$questionid], true));
             $result = $this->next_page_action($response, $userid);
             if (is_string($result)) {
                 $ret['warnings'] = $result;
+            } else {
+                $ret['nextpagenum'] = $result;
             }
         } else if ($action == 'prevpage') {
-            $this->previous_page_action($response, $userid);
+            $ret['nextpagenum'] = $this->previous_page_action($response, $userid);
         } else if (!$completed) {
             // If reviewing a completed questionnaire, don't insert a response.
             $rid = $this->response_insert($response, $userid);

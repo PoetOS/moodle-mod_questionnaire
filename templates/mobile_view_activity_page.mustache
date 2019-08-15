@@ -128,20 +128,7 @@
                 <%/pagequestions%>
 
                 <%#prevpage%>
-                <button ion-button item-end outline icon-start block core-site-plugins-call-ws-new-content
-                        name="mod_questionnaire_submit_questionnaire_response"
-                        [params]="{
-                                        questionnaireid: <%id%>,
-                                        surveyid: <%surveyid%>,
-                                        userid: <%userid%>,
-                                        cmid: <%cmid%>,
-                                        sec: <%pagenum%>,
-                                        completed: <%completed%>,
-                                        rid: <%rid%>,
-                                        submit: 0,
-                                        action: 'previouspage',
-                                        responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
-                                    }"
+                <button ion-button item-end outline icon-start block core-site-plugins-new-content component="mod_questionnaire" method="mobile_view_activity"
                         [args]="{
                                         cmid: <%cmid%>,
                                         rid: <%rid%>,
@@ -149,40 +136,32 @@
                                         action: 'previouspage',
                                         pagenum: <%pagenum%>
                                     }"
-                        type="submit"
+                        [useOtherData]="null"
+                        [preSets]="{getFromCache: 0, saveToCache: 0}"
+                        refreshOnSuccess="true"
+                        samePage="true" type="submit"
                 ><ion-icon name="arrow-back"></ion-icon> {{ 'plugin.mod_questionnaire.previouspage' | translate }}</button>
                 <%/prevpage%>
 
                 <%#nextpage%>
-                <button ion-button item-end outline icon-end block core-site-plugins-call-ws-new-content
-                        name="mod_questionnaire_submit_questionnaire_response"
-                        [params]="{
-                                        questionnaireid: <%id%>,
-                                        surveyid: <%surveyid%>,
-                                        userid: <%userid%>,
-                                        cmid: <%cmid%>,
-                                        sec: <%pagenum%>,
-                                        completed: <%completed%>,
-                                        rid: <%rid%>,
-                                        submit: 0,
-                                        action: 'nextpage',
-                                        responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
-                                    }"
+                <button ion-button item-end outline icon-end block core-site-plugins-new-content component="mod_questionnaire" method="mobile_view_activity"
                         [args]="{
-                                        cmid: <%cmid%>,
-                                        rid: <%rid%>,
-                                        completeq: 1,
-                                        action: 'nextpage',
-                                        pagenum: <%pagenum%>
-                                    }"
-                        type="submit"
+                                    cmid: <%cmid%>,
+                                    rid: <%rid%>,
+                                    completeq: 1,
+                                    action: 'nextpage',
+                                    pagenum: <%pagenum%>
+                                }"
+                        [useOtherData]="null"
+                        [preSets]="{getFromCache: 0, saveToCache: 0}"
+                        refreshOnSuccess="true"
+                        samePage="true" type="submit"
                 >{{ 'plugin.mod_questionnaire.nextpage' | translate }} <ion-icon name="arrow-forward"></ion-icon></button>
                 <%/nextpage%>
 
                 <%^nextpage%><%^completed%>
-                <button ion-button block core-site-plugins-call-ws
-                        name="mod_questionnaire_submit_questionnaire_response"
-                        [params]="{
+                <button ion-button block core-site-plugins-new-content component="mod_questionnaire" method="mobile_view_activity"
+                        [args]="{
                                     questionnaireid: <%id%>,
                                     surveyid: <%surveyid%>,
                                     userid: <%userid%>,
@@ -191,9 +170,9 @@
                                     completed: <%completed%>,
                                     rid: <%rid%>,
                                     submit: 1,
-                                    action: 'index',
-                                    responses: CoreUtilsProvider.objectToArrayOfObjects(CONTENT_OTHERDATA.responses, 'name', 'value')
+                                    action: 'submit'
                                 }"
+                        [useOtherData]="null"
                         confirmMessage="{{ 'plugin.mod_questionnaire.areyousure' | translate }}"
                         refreshOnSuccess="true"
                         type="submit"

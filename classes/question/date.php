@@ -106,10 +106,20 @@ class date extends question {
      * @return boolean
      */
     public function response_valid($responsedata) {
-        if (isset($responsedata->{'q'.$this->id})) {
+        $responseval = false;
+        if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            // If $responsedata is a response object, look through the answers.
+            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
+                $answer = $responsedata->answers[$this->id][0];
+                $responseval = $answer->value;
+            }
+        } else if (isset($responsedata->{'q'.$this->id})) {
+            $responseval = $responsedata->{'q' . $this->id};
+        }
+        if ($responseval !== false) {
             $checkdateresult = '';
-            if ($responsedata->{'q'.$this->id} != '') {
-                $checkdateresult = questionnaire_check_date($responsedata->{'q'.$this->id});
+            if ($responseval != '') {
+                $checkdateresult = questionnaire_check_date($responseval);
             }
             return (substr($checkdateresult, 0, 5) != 'wrong');
         } else {

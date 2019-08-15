@@ -525,8 +525,23 @@ abstract class question {
      * @return boolean
      */
     public function response_complete($responsedata) {
-        return !($this->required() && ($this->deleted == 'n') &&
-                 (!isset($responsedata->{'q'.$this->id}) || $responsedata->{'q'.$this->id} == ''));
+        if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            // If $responsedata is a response object, look through the answers.
+            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
+                $answer = $responsedata->answers[$this->id][0];
+                if (!empty($answer->choiceid) && $this->choices[$answer->choiceid]->is_other_choice()) {
+                    $answered = !empty($answer->value);
+                } else {
+                    $answered = (!empty($answer->choiceid) || !empty($answer->value));
+                }
+            } else {
+                $answered = false;
+            }
+        } else {
+            // If $responsedata is webform data, check that its not empty.
+            $answered = isset($responsedata->{'q'.$this->id}) && ($responsedata->{'q'.$this->id} != '');
+        }
+        return !($this->required() && ($this->deleted == 'n') && !$answered);
     }
 
     /**

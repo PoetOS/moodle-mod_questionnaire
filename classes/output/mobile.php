@@ -43,6 +43,8 @@ class mobile {
         $action = isset($args->action) ? $args->action : 'index';
         $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
         $userid = isset($args->userid) ? $args->userid : $USER->id;
+        $submit = isset($args->submit) ? $args->submit : false;
+        $completed = isset($args->completed) ? $args->completed : false;
 
         list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
         $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
@@ -72,6 +74,10 @@ class mobile {
         $template = 'mod_questionnaire/mobile_main_index_page';
 
         switch ($action) {
+            case 'submit':
+                if (!$data['notifications']) {
+                    $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
+                }
             case 'index':
                 // List any existing submissions, if user is allowed to review them.
                 if ($questionnaire->capabilities->readownresponses) {
@@ -93,10 +99,15 @@ class mobile {
                 }
                 break;
 
-            case 'respond':
-            case 'resume':
             case 'nextpage':
             case 'previouspage':
+            case 'submit':
+                if (!$data['notifications']) {
+                    $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
+                }
+
+            case 'respond':
+            case 'resume':
                 // Completing a questionnaire.
                 if (!$data['notifications']) {
                     if ($questionnaire->user_has_saved_response($userid)) {
@@ -185,9 +196,7 @@ class mobile {
                     'html' => $OUTPUT->render_from_template($template, $data)
                 ],
             ],
-            'otherdata' => [
-                'responses' => json_encode($responses),
-            ],
+            'otherdata' => $responses,
             'files' => null
         ];
         return $return;

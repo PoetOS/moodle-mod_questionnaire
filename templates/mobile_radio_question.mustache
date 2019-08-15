@@ -43,7 +43,7 @@
     }
 }}
 {{=<% %>=}}
-<ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']">
+<ion-list radio-group [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>">
     <%#choices%>
     <ion-grid no-padding>
         <ion-row>
@@ -58,7 +58,7 @@
             <%#otherchoicekey%>
             <ion-col>
                 <ion-item>
-                    <ion-input placeholder="Enter: " [(ngModel)]="CONTENT_OTHERDATA.responses['<%otherchoicekey%>']"
+                    <ion-input placeholder="Enter: " [(ngModel)]="CONTENT_OTHERDATA.<%otherchoicekey%>"
                     <%#completed%> disabled="true"<%/completed%>></ion-input>
                 </ion-item>
             </ion-col>

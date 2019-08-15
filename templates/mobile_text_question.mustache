@@ -32,10 +32,10 @@
 {{=<% %>=}}
 <ion-item>
     <%^completed%>
-    <ion-textarea aria-multiline="true" [(ngModel)]="CONTENT_OTHERDATA.responses['<%fieldkey%>']"
+    <ion-textarea aria-multiline="true" [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>"
                   core-auto-rows></ion-textarea>
     <%/completed%>
     <%#completed%>
-    <ion-note><core-format-text text="{{ CONTENT_OTHERDATA.responses['<%fieldkey%>'] }}"></core-format-text></ion-note>
+    <ion-note><core-format-text text="{{ CONTENT_OTHERDATA.<%fieldkey%> }}"></core-format-text></ion-note>
     <%/completed%>
 </ion-item>

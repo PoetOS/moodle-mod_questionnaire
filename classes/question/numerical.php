@@ -138,9 +138,19 @@ class numerical extends question {
      * @return boolean
      */
     public function response_valid($responsedata) {
-        if (isset($responsedata->{'q'.$this->id})) {
+        $responseval = false;
+        if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            // If $responsedata is a response object, look through the answers.
+            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
+                $answer = $responsedata->answers[$this->id][0];
+                $responseval = $answer->value;
+            }
+        } else if (isset($responsedata->{'q'.$this->id})) {
+            $responseval = $responsedata->{'q' . $this->id};
+        }
+        if ($responseval !== false) {
             // If commas are present, replace them with periods, in case that was meant as the European decimal place.
-            $responseval = str_replace(',', '.', $responsedata->{'q'.$this->id});
+            $responseval = str_replace(',', '.', $responseval);
             return (($responseval == '') || is_numeric($responseval));
         } else {
             return parent::response_valid($responsedata);

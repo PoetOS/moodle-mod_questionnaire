@@ -229,22 +229,6 @@ class radio extends question {
         }
     }
 
-    /**
-     * Check question's form data for valid response. Override this is type has specific format requirements.
-     *
-     * @param object $responsedata The data entered into the response.
-     * @return boolean
-     */
-    public function response_valid($responsedata) {
-        if (isset($responsedata->{'q'.$this->id}) && isset($this->choices[$responsedata->{'q'.$this->id}]) &&
-            $this->choices[$responsedata->{'q'.$this->id}]->is_other_choice()) {
-            // False if "other" choice is checked but text box is empty.
-            return !empty($responsedata->{'q'.$this->id.choice::id_other_choice_name($responsedata->{'q'.$this->id})});
-        } else {
-            return parent::response_valid($responsedata);
-        }
-    }
-
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         $lengroup = [];
         $lengroup[] =& $mform->createElement('radio', 'length', '', get_string('vertical', 'questionnaire'), '0');

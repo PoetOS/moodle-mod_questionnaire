@@ -141,18 +141,20 @@ class response {
         // Process app data by question and choice and create a webform structure.
         $processedresponses = new \stdClass();
         $processedresponses->rid = $responseid;
-        foreach ($responsedata as $questiondata) {
-            $parts = explode('_', $questiondata['name']);
-            $property = 'q' . $parts[2];
-            if (!isset($processedresponses->{$property})) {
-                $processedresponses->{$property} = [];
+        foreach ($responsedata as $answerid => $value) {
+            $parts = explode('_', $answerid);
+            if ($parts[0] == 'response') {
+                $qid = 'q' . $parts[2];
+                if (!isset($processedresponses->{$qid})) {
+                    $processedresponses->{$qid} = [];
+                }
+                if (isset($parts[3])) {
+                    $cid = $parts[3];
+                } else {
+                    $cid = 0;
+                }
+                $processedresponses->{$qid}[$cid] = $value;
             }
-            if (isset($parts[3])) {
-                $cidx = $parts[3];
-            } else {
-                $cidx = 0;
-            }
-            $processedresponses->{$property}[$cidx] = $questiondata['value'];
         }
 
         foreach ($questions as $question) {
