@@ -1,11 +1,10 @@
 language: php
 
-sudo: required
+sudo: true
 
 addons:
   firefox: "47.0.1"
   postgresql: "9.4"
-  mysql: "8.0.2"
   apt:
     packages:
       - openjdk-8-jre-headless
@@ -67,7 +66,7 @@ before_install:
   - nvm use 8.9
   - cd ../..
   - composer selfupdate
-  - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2
+  - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
@@ -84,4 +83,3 @@ script:
   - moodle-plugin-ci grunt
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
-  - moodle-plugin-ci phpunit --coverage-text
