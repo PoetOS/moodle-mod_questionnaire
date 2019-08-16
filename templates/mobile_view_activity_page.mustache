@@ -166,14 +166,13 @@
                                     surveyid: <%surveyid%>,
                                     userid: <%userid%>,
                                     cmid: <%cmid%>,
-                                    sec: <%pagenum%>,
+                                    pagenum: <%pagenum%>,
                                     completed: <%completed%>,
                                     rid: <%rid%>,
                                     submit: 1,
                                     action: 'submit'
                                 }"
                         [useOtherData]="null"
-                        confirmMessage="{{ 'plugin.mod_questionnaire.areyousure' | translate }}"
                         refreshOnSuccess="true"
                         type="submit"
                 >{{ 'plugin.mod_questionnaire.savechanges' | translate }}</button>
