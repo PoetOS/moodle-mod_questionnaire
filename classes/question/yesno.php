@@ -260,9 +260,9 @@ class yesno extends question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        if (isset($response->answers[$this->id][0])) {
+        if (isset($response->answers[$this->id][0]) && ($response->answers[$this->id][0]->value == 'n')) {
             $resultdata[$this->mobile_fieldkey()] = 0;
-        } else if (isset($response->answers[$this->id][1])) {
+        } else if (isset($response->answers[$this->id][0]) && ($response->answers[$this->id][0]->value == 'y')) {
             $resultdata[$this->mobile_fieldkey()] = 1;
         }
 
