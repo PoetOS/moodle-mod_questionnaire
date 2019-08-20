@@ -89,6 +89,10 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
         $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
 
+        $options = array('0' => get_string('no'), '1' => get_string('yes'));
+        $mform->addElement('select', 'enrolledonly', get_string('enrolledonly', 'questionnaire'), $options);
+        $mform->addHelpButton('enrolledonly', 'enrolledonly', 'questionnaire');
+
         $mform->addElement('select', 'autonum', get_string('autonumbering', 'questionnaire'), $autonumbering);
         $mform->addHelpButton('autonum', 'autonumbering', 'questionnaire');
         // Default = autonumber both questions and pages.

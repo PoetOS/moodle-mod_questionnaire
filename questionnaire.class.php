@@ -397,7 +397,13 @@ class questionnaire {
     }
 
     public function user_is_eligible($userid) {
-        return ($this->capabilities->view && $this->capabilities->submit);
+        if ($this->enrolledonly) {
+            return $this->capabilities->view &&
+                   $this->capabilities->submit &&
+                   get_user_roles(context_course::instance($this->course->id), $userid, false);
+        } else {
+            return ($this->capabilities->view && $this->capabilities->submit);
+        }
     }
 
     public function user_has_saved_response($userid) {

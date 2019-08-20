@@ -87,6 +87,7 @@ $questionnaire->add_page(new \mod_questionnaire\output\nonrespondentspage());
 $resume = $questionnaire->resume;
 $fullname = $questionnaire->respondenttype == 'fullname';
 $sid = $questionnaire->sid;
+$enrolledonly = $questionnaire->enrolledonly ? true : false;
 
 if (($formdata = data_submitted()) && !confirm_sesskey()) {
     print_error('invalidsesskey');
@@ -96,7 +97,7 @@ require_capability('mod/questionnaire:viewsingleresponse', $context);
 
 // Anonymous questionnaire.
 if (!$fullname) {
-    $nonrespondents = questionnaire_get_incomplete_users($cm, $sid);
+    $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, false, '', false, false, $enrolledonly);
     $countnonrespondents = count($nonrespondents);
     if ($resume) {
         $countstarted = 0;
@@ -270,7 +271,7 @@ if ($fullname) {
     } else {
         $usedgroupid = false;
     }
-    $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid);
+    $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid, '', false, false, $enrolledonly);
     $countnonrespondents = count($nonrespondents);
 
     $table->initialbars(false);
@@ -285,7 +286,7 @@ if ($fullname) {
     }
 }
 
-$nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid, $sort, $startpage, $pagecount);
+$nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid, $sort, $startpage, $pagecount, $enrolledonly);
 
 // Viewreports-start.
 // Print the list of students.
