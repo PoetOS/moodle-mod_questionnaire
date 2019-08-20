@@ -22,7 +22,7 @@ To Upgrade:
    the owner. Surveys that are not deleted but have no associated questionnaires
    are set to 'template' with the site ID as the owner.
 
-*** IMPORTANT ***
+** IMPORTANT **
 
 IF YOU ARE UPGRADING TO MOODLE 2.3...
 
