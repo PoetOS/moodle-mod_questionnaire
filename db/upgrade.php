@@ -808,6 +808,15 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2018050106, 'questionnaire');
     }
 
+    if ($oldversion < 2018110102) {
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('enrolledonly', XMLDB_TYPE_INTEGER, '2', null, null, null, '0');
+        $dbman->add_field($table, $field);
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2018110102, 'questionnaire');
+    }
+
     return $result;
 }
 

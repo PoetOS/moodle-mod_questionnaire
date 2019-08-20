@@ -25,6 +25,7 @@
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The timestamp record last modified."/>
         <FIELD NAME="completionsubmit" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questionnaire marked as 'complete' when submitted."/>
         <FIELD NAME="autonum" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="3" SEQUENCE="false" COMMENT="option for auto numbering questions and pages (both selected by default)"/>
+        <FIELD NAME="enrolledonly" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Questionnaire can be used by enrolled users."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

@@ -526,21 +526,26 @@ function questionnaire_get_incomplete_users($cm, $sid,
     global $DB;
 
     $context = context_module::instance($cm->id);
-
-    // First get all users who can complete this questionnaire.
     $cap = 'mod/questionnaire:submit';
     $fields = 'u.id, u.username';
-    if (!$allusers = get_users_by_capability($context,
-                    $cap,
-                    $fields,
-                    $sort,
-                    '',
-                    '',
-                    $group,
-                    '',
-                    true)) {
-        return false;
+
+    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+        print_error('invalidcoursemodule');
     }
+
+    // First get all users who can complete this questionnaire.
+    if ($questionnaire->enrolledonly) {
+        // Retrieve enrolled users.
+        if (!$allusers = get_enrolled_users($context, $cap, $group, $fields, $sort, 0, 0, true)) {
+          return false;
+        }
+    } else {
+        // Retrieve all capable users.
+        if (!$allusers = get_enrolled_users($context, $cap, $group, $fields, $sort, 0, 0, false)) {
+            return false;
+        }
+    }
+
     $allusers = array_keys($allusers);
 
     // Nnow get all completed questionnaires.
