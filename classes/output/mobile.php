@@ -69,39 +69,35 @@ class mobile {
         // appropriate capabilities.
         $data['notifications'] = $questionnaire->user_access_messages($userid);
         $responses = [];
+        $result = '';
 
         $data['emptypage'] = 1;
         $template = 'mod_questionnaire/mobile_main_index_page';
 
         switch ($action) {
+            case 'index':
+                self::add_index_data($questionnaire, $data);
+                $template = 'mod_questionnaire/mobile_main_index_page';
+                break;
+
             case 'submit':
                 if (!$data['notifications']) {
                     $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
-                }
-            case 'index':
-                // List any existing submissions, if user is allowed to review them.
-                if ($questionnaire->capabilities->readownresponses) {
-                    $questionnaire->add_user_responses();
-                    $submissions = [];
-                    foreach ($questionnaire->responses as $response) {
-                        $submissions[] = ['submissiondate' => userdate($response->submitted), 'submissionid' => $response->id];
-                    }
-                    if (!empty($submissions)) {
-                        $data['submissions'] = $submissions;
+                    if (isset($result['warnings'])) {
+                        $data['notifications'] = $result['warnings'];
+                        $pagequestiondata = self::add_pagequestion_data($questionnaire, $pagenum);
+                        $data['pagequestions'] = $pagequestiondata['pagequestions'];
+                        $responses = $pagequestiondata['responses'];
+                        $template = 'mod_questionnaire/mobile_view_activity_page';
                     } else {
-                        $data['emptypage'] = 1;
+                        self::add_index_data($questionnaire, $data);
+                        $template = 'mod_questionnaire/mobile_main_index_page';
                     }
-                    if ($questionnaire->user_has_saved_response($userid)) {
-                        $data['resume'] = 1;
-                    }
-                    $data['emptypage'] = 0;
-                    $template = 'mod_questionnaire/mobile_main_index_page';
                 }
                 break;
 
             case 'nextpage':
             case 'previouspage':
-            case 'submit':
                 if (!$data['notifications']) {
                     $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
                 }
@@ -119,34 +115,29 @@ class mobile {
                     }
                     $response = (isset($questionnaire->responses) && !empty($questionnaire->responses)) ?
                         end($questionnaire->responses) : null;
-                    $responseid = ($response === null) ? 0 : $response->id;
-                    if ($action == 'nextpage') {
-                        $nextpage = $questionnaire->next_page($pagenum, $responseid);
-                        if ($nextpage === false) {
+                    $response->sec = $pagenum;
+                    if (isset($result['warnings'])) {
+                        $data['notifications'] = $result['warnings'];
+                    } else if ($action == 'nextpage') {
+                        $pageresult = $result['nextpagenum'];
+                        if ($pageresult === false) {
                             $pagenum = count($questionnaire->questionsbysec);
+                        } else if (is_string($pageresult)) {
+                            $data['notifications'] .= !empty($data['notifications']) ? "\n<br />$pageresult" : $pageresult;
                         } else {
-                            $pagenum = $nextpage;
+                            $pagenum = $pageresult;
                         }
                     } else if ($action == 'previouspage') {
-                        $prevpage = $questionnaire->prev_page($pagenum, $responseid);
+                        $prevpage = $result['nextpagenum'];
                         if ($prevpage === false) {
                             $pagenum = 1;
                         } else {
                             $pagenum = $prevpage;
                         }
                     }
-                    $qnum = 1;
-                    $pagequestions = [];
-                    foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
-                        $question = $questionnaire->questions[$questionid];
-                        if ($question->supports_mobile()) {
-                            $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum, $response);
-                            if (($response !== null) && isset($response->answers[$questionid])) {
-                                $responses = array_merge($responses, $question->get_mobile_response_data($response));
-                            }
-                        }
-                        $qnum++;
-                    }
+                    $pagequestiondata = self::add_pagequestion_data($questionnaire, $pagenum, $response);
+                    $data['pagequestions'] = $pagequestiondata['pagequestions'];
+                    $responses = $pagequestiondata['responses'];
                     $numpages = count($questionnaire->questionsbysec);
                     // Set some variables we are going to be using.
                     if (!empty($questionnaire->questionsbysec) && ($numpages > 1)) {
@@ -158,7 +149,6 @@ class mobile {
                         }
                     }
                     $data['pagenum'] = $pagenum;
-                    $data['pagequestions'] = $pagequestions;
                     $data['completed'] = 0;
                     $data['emptypage'] = 0;
                     $template = 'mod_questionnaire/mobile_view_activity_page';
@@ -212,5 +202,53 @@ class mobile {
     protected static function require_capability(\stdClass $cm, \context $context, string $cap) {
         require_login($cm->course, false, $cm, true, true);
         require_capability($cap, $context);
+    }
+
+    /**
+     * @param $questionnaire
+     * @param $data
+     */
+    protected static function add_index_data($questionnaire, &$data) {
+        // List any existing submissions, if user is allowed to review them.
+        if ($questionnaire->capabilities->readownresponses) {
+            $questionnaire->add_user_responses();
+            $submissions = [];
+            foreach ($questionnaire->responses as $response) {
+                $submissions[] = ['submissiondate' => userdate($response->submitted), 'submissionid' => $response->id];
+            }
+            if (!empty($submissions)) {
+                $data['submissions'] = $submissions;
+            } else {
+                $data['emptypage'] = 1;
+            }
+            if ($questionnaire->user_has_saved_response($userid)) {
+                $data['resume'] = 1;
+            }
+            $data['emptypage'] = 0;
+        }
+    }
+
+    /**
+     * @param $questionnaire
+     * @param $pagenum
+     * @param null $response
+     * @return array
+     */
+    protected static function add_pagequestion_data($questionnaire, $pagenum, $response=null) {
+        $qnum = 1;
+        $pagequestions = [];
+        $responses = [];
+        foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
+            $question = $questionnaire->questions[$questionid];
+            if ($question->supports_mobile()) {
+                $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum, $response);
+                if (($response !== null) && isset($response->answers[$questionid])) {
+                    $responses = array_merge($responses, $question->get_mobile_response_data($response));
+                }
+            }
+            $qnum++;
+        }
+
+        return ['pagequestions' => $pagequestions, 'responses' => $responses];
     }
 }

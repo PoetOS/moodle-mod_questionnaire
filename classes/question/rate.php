@@ -474,10 +474,22 @@ class rate extends question {
      *
      */
     public function response_complete($responsedata) {
+        if (!is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this]);
+        } else {
+            $response = $responsedata;
+        }
+
+        // To make it easier, create an array of answers by choiceid.
+        $answers = [];
+        foreach ($response->answers[$this->id] as $answer) {
+            $answers[$answer->choiceid] = $answer;
+        }
+
+        $answered = true;
         $num = 0;
         $nbchoices = count($this->choices);
         $na = get_string('notapplicable', 'questionnaire');
-        $complete = true;
         foreach ($this->choices as $cid => $choice) {
             // In case we have named degrees on the Likert scale, count them to substract from nbchoices.
             $nameddegrees = 0;
@@ -485,12 +497,11 @@ class rate extends question {
             if (preg_match("/^[0-9]{1,3}=/", $content)) {
                 $nameddegrees++;
             } else {
-                $str = 'q'."{$this->id}_$cid";
-                if (isset($responsedata->$str) && $responsedata->$str == $na) {
-                    $responsedata->$str = -1;
+                if (isset($answers[$cid]) && !empty($answers[$cid]) && ($answers[$cid]->value == $na)) {
+                    $answers[$cid]->value = -1;
                 }
                 // If choice value == -999 this is a not yet answered choice.
-                $num += (isset($responsedata->$str) && ($responsedata->$str != -999));
+                $num += (isset($answers[$cid]) && ($answers[$cid]->value != -999));
             }
             $nbchoices -= $nameddegrees;
         }
@@ -498,11 +509,11 @@ class rate extends question {
         if ($num == 0) {
             if (!$this->has_dependencies()) {
                 if ($this->required()) {
-                    $complete = false;
+                    $answered = false;
                 }
             }
         }
-        return $complete;
+        return $answered;
     }
 
     /**

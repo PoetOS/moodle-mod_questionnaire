@@ -3749,10 +3749,16 @@ class questionnaire {
             $ret['nextpagenum'] = $this->previous_page_action($response, $userid);
         } else if (!$completed) {
             // If reviewing a completed questionnaire, don't insert a response.
-            $rid = $this->response_insert($response, $userid);
+            $msg = $this->response_check_format($response->sec, $response);
+            if (empty($msg)) {
+                $rid = $this->response_insert($response, $userid);
+            } else {
+                $ret['warnings'] = $msg;
+            }
         }
 
         if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
+error_log('Rid: '.$rid);
             $this->commit_submission_response($rid, $userid);
         }
         return $ret;

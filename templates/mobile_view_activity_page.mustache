@@ -173,8 +173,9 @@
                                     action: 'submit'
                                 }"
                         [useOtherData]="null"
+                        [preSets]="{getFromCache: 0, saveToCache: 0}"
                         refreshOnSuccess="true"
-                        type="submit"
+                        samePage="true" type="submit"
                 >{{ 'plugin.mod_questionnaire.savechanges' | translate }}</button>
                 <%/completed%><%/nextpage%>
             </ion-list>

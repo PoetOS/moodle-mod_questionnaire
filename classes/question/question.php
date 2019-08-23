@@ -529,7 +529,8 @@ abstract class question {
             // If $responsedata is a response object, look through the answers.
             if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
                 $answer = $responsedata->answers[$this->id][0];
-                if (!empty($answer->choiceid) && $this->choices[$answer->choiceid]->is_other_choice()) {
+                if (!empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
+                    $this->choices[$answer->choiceid]->is_other_choice()) {
                     $answered = !empty($answer->value);
                 } else {
                     $answered = (!empty($answer->choiceid) || !empty($answer->value));
