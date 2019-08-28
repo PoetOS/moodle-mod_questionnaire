@@ -93,13 +93,13 @@
         <ion-card-content>
             <%#resume%>
             <button ion-button core-site-plugins-new-content component="mod_questionnaire" method="mobile_view_activity"
-                    [args]="{cmid: <%cmid%>, action: 'resume'}" samePage="true">
+                    [args]="{cmid: <%cmid%>, action: 'resume'}">
                 {{ 'plugin.mod_questionnaire.resumesurvey' | translate }}
             </button>
             <%/resume%>
             <%^resume%>
             <button ion-button core-site-plugins-new-content component="mod_questionnaire" method="mobile_view_activity"
-                    [args]="{cmid: <%cmid%>, action: 'respond'}" samePage="true">
+                    [args]="{cmid: <%cmid%>, action: 'respond'}">
                 {{ 'plugin.mod_questionnaire.answerquestions' | translate }}
             </button>
             <%/resume%>
@@ -111,7 +111,7 @@
         <ion-card-content>
             <%#submissions%>
             <a ion-item core-site-plugins-new-content component="mod_questionnaire" method="mobile_view_activity"
-                [args]="{cmid: <%cmid%>, action: 'review', submissionid: <%submissionid%>}" samePage="true">
+                [args]="{cmid: <%cmid%>, action: 'review', submissionid: <%submissionid%>}">
                 {{ 'plugin.mod_questionnaire.submitted' | translate }} <%submissiondate%>
             </a>
             <%/submissions%>

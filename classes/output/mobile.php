@@ -76,7 +76,7 @@ class mobile {
 
         switch ($action) {
             case 'index':
-                self::add_index_data($questionnaire, $data);
+                self::add_index_data($questionnaire, $data, $userid);
                 $template = 'mod_questionnaire/mobile_main_index_page';
                 break;
 
@@ -90,7 +90,7 @@ class mobile {
                         $responses = $pagequestiondata['responses'];
                         $template = 'mod_questionnaire/mobile_view_activity_page';
                     } else {
-                        self::add_index_data($questionnaire, $data);
+                        self::add_index_data($questionnaire, $data, $userid);
                         $template = 'mod_questionnaire/mobile_main_index_page';
                     }
                 }
@@ -208,7 +208,7 @@ class mobile {
      * @param $questionnaire
      * @param $data
      */
-    protected static function add_index_data($questionnaire, &$data) {
+    protected static function add_index_data($questionnaire, &$data, $userid) {
         // List any existing submissions, if user is allowed to review them.
         if ($questionnaire->capabilities->readownresponses) {
             $questionnaire->add_user_responses();
@@ -238,6 +238,20 @@ class mobile {
         $qnum = 1;
         $pagequestions = [];
         $responses = [];
+
+        // Find out what question number we are on $i New fix for question numbering.
+        $i = 0;
+        if ($pagenum > 1) {
+            for ($j = 2; $j <= $pagenum; $j++) {
+                foreach ($questionnaire->questionsbysec[$j - 1] as $questionid) {
+                    if ($questionnaire->questions[$questionid]->type_id < QUESPAGEBREAK) {
+                        $i++;
+                    }
+                }
+            }
+        }
+        $qnum = $i+1;
+
         foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
             $question = $questionnaire->questions[$questionid];
             if ($question->supports_mobile()) {
