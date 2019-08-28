@@ -28,19 +28,9 @@ env:
   - MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
   - MOODLE_BRANCH=MOODLE_35_STABLE DB=pgsql
   - MOODLE_BRANCH=MOODLE_35_STABLE DB=mysqli
-  - MOODLE_BRANCH=MOODLE_34_STABLE DB=pgsql
-  - MOODLE_BRANCH=MOODLE_34_STABLE DB=mysqli
 
 matrix:
   exclude:
-  - php: 7.1
-    env: MOODLE_BRANCH=MOODLE_34_STABLE DB=mysqli
-  - php: 7.1
-    env: MOODLE_BRANCH=MOODLE_34_STABLE DB=pgsql
-  - php: 7.2
-    env: MOODLE_BRANCH=MOODLE_34_STABLE DB=mysqli
-  - php: 7.2
-    env: MOODLE_BRANCH=MOODLE_34_STABLE DB=pgsql
   - php: 7.1
     env: MOODLE_BRANCH=MOODLE_35_STABLE DB=mysqli
   - php: 7.1

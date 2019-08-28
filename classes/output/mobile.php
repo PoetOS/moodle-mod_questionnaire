@@ -250,7 +250,7 @@ class mobile {
                 }
             }
         }
-        $qnum = $i+1;
+        $qnum = $i + 1;
 
         foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
             $question = $questionnaire->questions[$questionid];

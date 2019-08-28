@@ -3758,7 +3758,6 @@ class questionnaire {
         }
 
         if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
-error_log('Rid: '.$rid);
             $this->commit_submission_response($rid, $userid);
         }
         return $ret;
