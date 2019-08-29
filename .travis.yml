@@ -5,10 +5,11 @@ sudo: true
 addons:
   firefox: "47.0.1"
   postgresql: "9.4"
-  mysql: "8.0.2"
   apt:
     packages:
       - openjdk-8-jre-headless
+
+services: mysql
 
 cache:
   directories:
@@ -20,13 +21,12 @@ php:
  - 7.2
 
 env:
-  - MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
-  - MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
   - MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
   - MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
+  - MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
+  - MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
 
 matrix:
-  exclude:
   - php: 7.2
     env: MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
   - php: 7.2

@@ -27,25 +27,77 @@ use mod_questionnaire\edit_question_form;
 use \questionnaire;
 defined('MOODLE_INTERNAL') || die();
 
-class pagebreak extends base {
+class pagebreak extends question {
 
+    /**
+     * @return object|string
+     */
     protected function responseclass() {
         return '';
     }
 
+    /**
+     * @return string
+     */
     public function helpname() {
         return '';
     }
 
+    /**
+     * @param int $qnum
+     * @param null $response
+     * @return \stdClass|string
+     */
+    public function questionstart_survey_display($qnum, $response=null) {
+        return '';
+    }
+
+    /**
+     * @param object $data
+     * @param $descendantsdata
+     * @param bool $blankquestionnaire
+     * @return string
+     */
     protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
         return '';
     }
 
+    /**
+     * @param object $data
+     * @return string
+     */
     protected function response_survey_display($data) {
         return '';
     }
 
+    /**
+     * @param edit_question_form $form
+     * @param questionnaire $questionnaire
+     * @return bool
+     */
     public function edit_form(edit_question_form $form, questionnaire $questionnaire) {
+        return false;
+    }
+
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return false;
+    }
+
+    /**
+     * Override and return false if not supporting mobile app.
+     *
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function mobile_question_display($qnum, $autonum = false) {
         return false;
     }
 }

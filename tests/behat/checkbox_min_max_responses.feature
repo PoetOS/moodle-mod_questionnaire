@@ -43,7 +43,7 @@ Feature: Checkbox questions can have forced minimum and maximum numbers of boxes
     And I navigate to "Answer the questions..." in current page administration
     Then I should see "Select one or two choices only"
     And I press "Submit questionnaire"
-    Then I should see "Please answer Required question #1."
+    Then I should see "Please answer required question #1."
     And I set the field "One" to "checked"
     And I set the field "Two" to "checked"
     And I set the field "Three" to "checked"

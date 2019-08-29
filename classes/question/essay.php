@@ -26,17 +26,45 @@ namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 
-class essay extends base {
+class essay extends text {
 
+    /**
+     * @return object|string
+     */
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\text';
+        return '\\mod_questionnaire\\responsetype\\text';
     }
 
+    /**
+     * @return string
+     */
     public function helpname() {
         return 'essaybox';
     }
 
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    /**
+     * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function question_template() {
+        return false;
+    }
+
+    /**
+     * Override and return a response template if provided. Output of response_survey_display is iterpreted based on this.
+     * @return boolean | string
+     */
+    public function response_template() {
+        return false;
+    }
+
+    /**
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @param $descendantsdata
+     * @param bool $blankquestionnaire
+     * @return object|string
+     */
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         $output = '';
 
         // Essay.
@@ -53,8 +81,8 @@ class essay extends base {
             $rows = $this->precise > 1 ? $this->precise : $this->length;
         }
         $name = 'q'.$this->id;
-        if (isset($data->{'q'.$this->id})) {
-            $value = $data->{'q'.$this->id};
+        if (isset($response->answers[$this->id][0])) {
+            $value = $response->answers[$this->id][0]->value;
         } else {
             $value = '';
         }
@@ -73,16 +101,31 @@ class essay extends base {
         return $output;
     }
 
-    protected function response_survey_display($data) {
+    /**
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @return object|string
+     */
+    protected function response_survey_display($response) {
+        if (isset($response->answers[$this->id])) {
+            $answer = reset($response->answers[$this->id]);
+            $answer = $answer->value;
+        } else {
+            $answer = '&nbsp;';
+        }
         $output = '';
         $output .= '<div class="response text">';
-        $output .= !empty($data->{'q'.$this->id}) ? format_text($data->{'q'.$this->id}, FORMAT_HTML) : '&nbsp;';
+        $output .= $answer;
         $output .= '</div>';
         return $output;
     }
 
     // Note - intentianally returning 'precise' for length and 'length' for precise.
-
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helptext
+     * @return \MoodleQuickForm|void
+     * @throws \coding_exception
+     */
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         $responseformats = array(
                         "0" => get_string('formateditor', 'questionnaire'),
@@ -92,6 +135,21 @@ class essay extends base {
         return $mform;
     }
 
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helptext
+     * @return \MoodleQuickForm|void
+     * @throws \coding_exception
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         $choices = array();
         for ($lines = 5; $lines <= 40; $lines += 5) {

@@ -61,6 +61,11 @@ function questionnaire_get_extra_capabilities() {
     return array('moodle/site:accessallgroups');
 }
 
+function questionnaire_get_instance($questionnaireid) {
+    global $DB;
+    return $DB->get_record('questionnaire', array('id' => $questionnaireid));
+}
+
 function questionnaire_add_instance($questionnaire) {
     // Given an object containing all the necessary data,
     // (defined by the form in mod.html) this function

@@ -26,7 +26,7 @@ namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 
-class rate extends base {
+class rate extends question {
 
     /**
      * Constructor. Use to set any default properties.
@@ -38,7 +38,7 @@ class rate extends base {
     }
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\rank';
+        return '\\mod_questionnaire\\responsetype\\rank';
     }
 
     public function helpname() {
@@ -109,13 +109,13 @@ class rate extends base {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $data
      * @param string $descendantdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
 
@@ -168,15 +168,16 @@ class rate extends base {
         // If Osgood, adjust central columns to width of named degrees if any.
         if ($osgood) {
             if ($maxndlen < 4) {
-                $width = '45%';
+                $width = 45;
             } else if ($maxndlen < 13) {
-                $width = '40%';
+                $width = 40;
             } else {
-                $width = '30%';
+                $width = 30;
             }
             $nn = 100 - ($width * 2);
             $colwidth = ($nn / $this->length).'%';
             $textalign = 'right';
+            $width = $width . '%';
         } else if ($nocontent) {
             $width = '0%';
             $colwidth = (100 / $this->length).'%';
@@ -238,8 +239,7 @@ class rate extends base {
 
         $num = 0;
         foreach ($this->choices as $cid => $choice) {
-            $str = 'q'."{$this->id}_$cid";
-            $num += (isset($data->$str) && ($data->$str != -999));
+            $num += (isset($response->answers[$this->id][$cid]) && ($response->answers[$this->id][$cid]->value != -999));
         }
 
         $notcomplete = false;
@@ -267,7 +267,8 @@ class rate extends base {
                     $checked = ' checked="checked"';
                     $completeclass = 'notanswered';
                     $title = '';
-                    if ($notcomplete && isset($data->$str) && ($data->$str == -999)) {
+                    if ($notcomplete && isset($response->answers[$this->id][$cid]) &&
+                        ($response->answers[$this->id][$cid]->value == -999)) {
                         $completeclass = 'notcompleted';
                         $title = get_string('pleasecomplete', 'questionnaire');
                     }
@@ -284,10 +285,10 @@ class rate extends base {
                 }
                 for ($j = 0; $j < $this->length + $isna; $j++) {
                     $col = [];
-                    $checked = ((isset($data->$str) && ($j == $data->$str ||
-                                 $j == $this->length && $data->$str == -1)) ? ' checked="checked"' : '');
                     $checked = '';
-                    if (isset($data->$str) && ($j == $data->$str || $j == $this->length && $data->$str == -1)) {
+                    if (isset($response->answers[$this->id][$cid]) &&
+                        (($j == $response->answers[$this->id][$cid]->value) ||
+                            (($j == $this->length) && ($response->answers[$this->id][$cid]->value == -1)))) {
                         $checked = ' checked="checked"';
                     }
                     $col['colstyle'] = 'text-align:center';
@@ -328,24 +329,23 @@ class rate extends base {
 
     /**
      * Return the context tags for the rate response template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object The rate question response context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
         $resptags->headers = [];
         $resptags->rows = [];
 
-        if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
-            $data->{'q'.$this->id} = array();
+        if (!isset($response->answers[$this->id])) {
+            $response->answers[$this->id][] = new \mod_questionnaire\responsetype\answer\answer();
         }
         // Check if rate question has one line only to display full width columns of choices.
         $nocontent = false;
         foreach ($this->choices as $cid => $choice) {
-            $content = $choice->content;
             if ($choice->content == '') {
                 $nocontent = true;
                 break;
@@ -376,12 +376,15 @@ class rate extends base {
             $resptags->osgood = 1;
             if ($maxndlen < 4) {
                 $sidecolwidth = '45%';
+                $sidecolwidthn = 45;
             } else if ($maxndlen < 13) {
                 $sidecolwidth = '40%';
+                $sidecolwidthn = 40;
             } else {
                 $sidecolwidth = '30%';
+                $sidecolwidthn = 30;
             }
-            $nn = 100 - ($sidecolwidth * 2);
+            $nn = 100 - ($sidecolwidthn * 2);
             $resptags->sidecolwidth = $sidecolwidth;
             $resptags->colwidth = ($nn / $this->length).'%';
             $resptags->textalign = 'right';
@@ -430,13 +433,13 @@ class rate extends base {
                 $cols = [];
                 for ($j = 0; $j < $this->length; $j++) {
                     $cellobj = new \stdClass();
-                    if (isset($data->$str) && ($j == $data->$str)) {
+                    if (isset($response->answers[$this->id][$cid]) && ($j == $response->answers[$this->id][$cid]->value)) {
                         $cellobj->checked = 1;
                     }
                     $cellobj->str = $str.$j.$uniquetag++;
                     $cellobj->bg = $bg;
                     // N/A column checked.
-                    $checkedna = (isset($data->$str) && ($data->$str == -1));
+                    $checkedna = (isset($response->answers[$this->id][$cid]) && ($response->answers[$this->id][$cid]->value == -1));
                     if ($bg == 'c0') {
                         $bg = 'c1';
                     } else {
@@ -471,10 +474,22 @@ class rate extends base {
      *
      */
     public function response_complete($responsedata) {
+        if (!is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this]);
+        } else {
+            $response = $responsedata;
+        }
+
+        // To make it easier, create an array of answers by choiceid.
+        $answers = [];
+        foreach ($response->answers[$this->id] as $answer) {
+            $answers[$answer->choiceid] = $answer;
+        }
+
+        $answered = true;
         $num = 0;
         $nbchoices = count($this->choices);
         $na = get_string('notapplicable', 'questionnaire');
-        $complete = true;
         foreach ($this->choices as $cid => $choice) {
             // In case we have named degrees on the Likert scale, count them to substract from nbchoices.
             $nameddegrees = 0;
@@ -482,12 +497,11 @@ class rate extends base {
             if (preg_match("/^[0-9]{1,3}=/", $content)) {
                 $nameddegrees++;
             } else {
-                $str = 'q'."{$this->id}_$cid";
-                if (isset($responsedata->$str) && $responsedata->$str == $na) {
-                    $responsedata->$str = -1;
+                if (isset($answers[$cid]) && !empty($answers[$cid]) && ($answers[$cid]->value == $na)) {
+                    $answers[$cid]->value = -1;
                 }
                 // If choice value == -999 this is a not yet answered choice.
-                $num += (isset($responsedata->$str) && ($responsedata->$str != -999));
+                $num += (isset($answers[$cid]) && ($answers[$cid]->value != -999));
             }
             $nbchoices -= $nameddegrees;
         }
@@ -495,11 +509,11 @@ class rate extends base {
         if ($num == 0) {
             if (!$this->has_dependencies()) {
                 if ($this->required()) {
-                    $complete = false;
+                    $answered = false;
                 }
             }
         }
-        return $complete;
+        return $answered;
     }
 
     /**
@@ -509,9 +523,22 @@ class rate extends base {
      * @return boolean
      */
     public function response_valid($responsedata) {
+        // Work with a response object.
+        if (!is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this]);
+        } else {
+            $response = $responsedata;
+        }
         $num = 0;
         $nbchoices = count($this->choices);
         $na = get_string('notapplicable', 'questionnaire');
+
+        // Create an answers array indexed by choiceid for ease.
+        $answers = [];
+        foreach ($response->answers[$this->id] as $answer) {
+            $answers[$answer->choiceid] = $answer;
+        }
+
         foreach ($this->choices as $cid => $choice) {
             // In case we have named degrees on the Likert scale, count them to substract from nbchoices.
             $nameddegrees = 0;
@@ -519,12 +546,11 @@ class rate extends base {
             if (preg_match("/^[0-9]{1,3}=/", $content)) {
                 $nameddegrees++;
             } else {
-                $str = 'q'."{$this->id}_$cid";
-                if (isset($responsedata->$str) && ($responsedata->$str == $na)) {
-                    $responsedata->$str = -1;
+                if (isset($answers[$cid]) && ($answers[$cid]->value == $na)) {
+                    $answers[$cid]->value = -1;
                 }
                 // If choice value == -999 this is a not yet answered choice.
-                $num += (isset($responsedata->$str) && ($responsedata->$str != -999));
+                $num += (isset($answers[$cid]) && ($answers[$cid]->value != -999));
             }
             $nbchoices -= $nameddegrees;
         }
@@ -597,5 +623,133 @@ class rate extends base {
             }
         }
         return true;
+    }
+
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata['israte'] = true;
+        return $mobiledata;
+    }
+
+    /**
+     * @return mixed
+     * @throws \coding_exception
+     */
+    public function mobile_question_choices_display() {
+        $choices = [];
+        $excludes = [];
+        $vals = $extracontents = [];
+        $cnum = 0;
+        foreach ($this->choices as $choiceid => $choice) {
+            $choice->na = false;
+            $choice->choice_id = $choiceid;
+            $choice->id = $choiceid;
+            $choice->question_id = $this->id;
+            // Add a fieldkey for each choice.
+            $choice->fieldkey = $this->mobile_fieldkey($choiceid);
+
+            if ($this->precise == 0) {
+                $choices[$cnum] = $choice;
+                if ($this->required()) {
+                    $choices[$cnum]->min = 0;
+                    $choices[$cnum]->minstr = 1;
+                } else {
+                    $choices[$cnum]->min = 0;
+                    $choices[$cnum]->minstr = 1;
+                }
+                $choices[$cnum]->max = intval($this->length) - 1;
+                $choices[$cnum]->maxstr = intval($this->length);
+            } else if ($this->precise == 1) {
+                $choices[$cnum] = $choice;
+                if ($this->required()) {
+                    $choices[$cnum]->min = 0;
+                    $choices[$cnum]->minstr = 1;
+                } else {
+                    $choices[$cnum]->min = 0;
+                    $choices[$cnum]->minstr = 1;
+                }
+                $choices[$cnum]->max = intval($this->length);
+                $choices[$cnum]->na = true;
+                $extracontents[] = $choices[$cnum]->max . ' = ' . get_string('notapplicable', 'mod_questionnaire');
+            } else if ($this->precise > 1) {
+                $excludes[$choiceid] = $choiceid;
+                if ($choice->value == null) {
+                    if ($arr = explode('|', $choice->content)) {
+                        if (count($arr) == 2) {
+                            $choices[$cnum] = $choice;
+                            $choices[$cnum]->content = '';
+                            $choices[$cnum]->minstr = $arr[0];
+                            $choices[$cnum]->maxstr = $arr[1];
+                        }
+                    }
+                } else {
+                    $val = intval($choice->value);
+                    $vals[$val] = $val;
+                    $extracontents[] = $choice->content;
+                }
+            }
+            if ($vals) {
+                if ($q = $choices) {
+                    foreach (array_keys($q) as $itemid) {
+                        $choices[$itemid]->min = min($vals);
+                        $choices[$itemid]->max = max($vals);
+                    }
+                }
+            }
+            if ($extracontents) {
+                $extracontents = array_unique($extracontents);
+                $extrahtml = '<br><ul>';
+                foreach ($extracontents as $extracontent) {
+                    $extrahtml .= '<li>'.$extracontent.'</li>';
+                }
+                $extrahtml .= '</ul>';
+                $options = ['noclean' => true, 'para' => false, 'filter' => true,
+                    'context' => $this->context, 'overflowdiv' => true];
+                $choice->content .= format_text($extrahtml, FORMAT_HTML, $options);
+            }
+
+            if (!in_array($choiceid, $excludes)) {
+                $choice->choice_id = $choiceid;
+                if ($choice->value == null) {
+                    $choice->value = '';
+                }
+                $choices[$cnum] = $choice;
+            }
+            $cnum++;
+        }
+
+        return $choices;
+    }
+
+    /**
+     * @param $response
+     * @return array
+     */
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        foreach ($this->choices as $choiceid => $choice) {
+            if (isset($response->answers[$this->id][$choiceid])) {
+                // Add a fieldkey for each choice.
+                $resultdata[$this->mobile_fieldkey($choiceid)] = $response->answers[$this->id][$choiceid]->value;
+            }
+        }
+
+        return $resultdata;
     }
 }

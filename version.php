@@ -29,5 +29,5 @@ $plugin->requires = 2018120300; // Moodle version.
 
 $plugin->component = 'mod_questionnaire';
 
-$plugin->release  = '3.6.1 (Build - 2019052400)';
-$plugin->maturity  = MATURITY_STABLE;
+$plugin->release  = '3.6.2 (Build - 2019082900)';
+$plugin->maturity  = MATURITY_BETA;

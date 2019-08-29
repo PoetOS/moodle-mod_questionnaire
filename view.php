@@ -69,49 +69,9 @@ if (!groups_is_member($currentgroupid, $USER->id)) {
     $currentgroupid = 0;
 }
 
-if (!$questionnaire->is_active()) {
-    if ($questionnaire->capabilities->manage) {
-        $msg = 'removenotinuse';
-    } else {
-        $msg = 'notavail';
-    }
-    $questionnaire->page->add_to_page('message', get_string($msg, 'questionnaire'));
-
-} else if ($questionnaire->survey->realm == 'template') {
-    // If this is a template survey, notify and exit.
-    $questionnaire->page->add_to_page('message', get_string('templatenotviewable', 'questionnaire'));
-    echo $questionnaire->renderer->render($questionnaire->page);
-    echo $questionnaire->renderer->footer($questionnaire->course);
-    exit();
-
-} else if (!$questionnaire->is_open()) {
-    $questionnaire->page->add_to_page('message', get_string('notopen', 'questionnaire', userdate($questionnaire->opendate)));
-
-} else if ($questionnaire->is_closed()) {
-    $questionnaire->page->add_to_page('message', get_string('closed', 'questionnaire', userdate($questionnaire->closedate)));
-
-} else if (!$questionnaire->user_is_eligible($USER->id)) {
-    if ($questionnaire->questions) {
-        $questionnaire->page->add_to_page('message', get_string('noteligible', 'questionnaire'));
-    }
-
-} else if (!$questionnaire->user_can_take($USER->id)) {
-    switch ($questionnaire->qtype) {
-        case QUESTIONNAIREDAILY:
-            $msgstring = ' '.get_string('today', 'questionnaire');
-            break;
-        case QUESTIONNAIREWEEKLY:
-            $msgstring = ' '.get_string('thisweek', 'questionnaire');
-            break;
-        case QUESTIONNAIREMONTHLY:
-            $msgstring = ' '.get_string('thismonth', 'questionnaire');
-            break;
-        default:
-            $msgstring = '';
-            break;
-    }
-    $questionnaire->page->add_to_page('message', get_string("alreadyfilled", "questionnaire", $msgstring));
-
+$message = $questionnaire->user_access_messages($USER->id);
+if ($message !== false) {
+    $questionnaire->page->add_to_page('message', $message);
 } else if ($questionnaire->user_can_take($USER->id)) {
     if ($questionnaire->questions) { // Sanity check.
         if (!$questionnaire->user_has_saved_response($USER->id)) {
