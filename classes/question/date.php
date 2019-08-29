@@ -65,7 +65,7 @@ class date extends question {
         $questiontags = new \stdClass();
         if (!empty($response->answers[$this->id])) {
             $dateentered = $response->answers[$this->id][0]->value;
-            $setdate = questionnaire_check_date($dateentered, false);
+            $setdate = $this->check_date_format($dateentered);
             if ($setdate == 'wrongdateformat') {
                 $msg = get_string('wrongdateformat', 'questionnaire', $dateentered);
                 $this->add_notification($msg);
@@ -120,7 +120,7 @@ class date extends question {
         if ($responseval !== false) {
             $checkdateresult = '';
             if ($responseval != '') {
-                $checkdateresult = questionnaire_check_date($responseval);
+                $checkdateresult = $this->check_date_format($responseval);
             }
             return (substr($checkdateresult, 0, 5) != 'wrong');
         } else {
@@ -226,7 +226,7 @@ class date extends question {
             // For pre-3.6, the answer date will be in the requested format in the language string. Convert it back to yy-mm-dd.
             // This method can be removed in 3.6.
             $date = $response->answers[$this->id][0]->value;
-            $date = questionnaire_check_date ($date, true);
+            $date = $this->check_date_format($date);
             $resultdata[$this->mobile_fieldkey()] = $date;
         } else {
             $resultdata[$this->mobile_fieldkey()] = false;

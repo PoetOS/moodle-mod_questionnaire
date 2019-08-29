@@ -105,17 +105,15 @@ class date extends responsetype {
         }
 
         if (!empty($response) && isset($response->answers[$this->question->id][0])) {
-            $checkdateresult = questionnaire_check_date($response->answers[$this->question->id][0]->value);
             $thisdate = $response->answers[$this->question->id][0]->value;
-            if (substr($checkdateresult, 0, 5) == 'wrong') {
+            if (!$this->question->check_date_format($thisdate)) {
                 return false;
             }
             // Now use ISO date formatting.
-            $checkdateresult = questionnaire_check_date($thisdate, true);
             $record = new \stdClass();
             $record->response_id = $response->id;
             $record->question_id = $this->question->id;
-            $record->response = $checkdateresult;
+            $record->response = $thisdate;
             return $DB->insert_record(self::response_table(), $record);
         } else {
             return false;
