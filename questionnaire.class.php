@@ -3745,7 +3745,7 @@ class questionnaire {
             } else {
                 $ret['nextpagenum'] = $result;
             }
-        } else if ($action == 'prevpage') {
+        } else if ($action == 'previouspage') {
             $ret['nextpagenum'] = $this->previous_page_action($response, $userid);
         } else if (!$completed) {
             // If reviewing a completed questionnaire, don't insert a response.

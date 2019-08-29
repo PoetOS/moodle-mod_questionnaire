@@ -114,7 +114,7 @@ class mobile {
                         $data['rid'] = $rid;
                     }
                     $response = (isset($questionnaire->responses) && !empty($questionnaire->responses)) ?
-                        end($questionnaire->responses) : null;
+                        end($questionnaire->responses) : \mod_questionnaire\responsetype\response\response::create_from_data([]);
                     $response->sec = $pagenum;
                     if (isset($result['warnings'])) {
                         $data['notifications'] = $result['warnings'];

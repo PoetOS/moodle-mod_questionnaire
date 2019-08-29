@@ -65,8 +65,6 @@ class response {
      */
     public function __construct($id = null, $questionnaireid = null, $userid = null, $submitted = null, $complete = null,
                                 $grade = null, $addanswers = true) {
-        global $DB;
-
         $this->id = $id;
         $this->questionnaireid = $questionnaireid;
         $this->userid = $userid;
