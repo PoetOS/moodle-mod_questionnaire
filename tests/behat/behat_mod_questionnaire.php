@@ -98,7 +98,6 @@ class behat_mod_questionnaire extends behat_base {
             $fielddata = new TableNode($rows);
         }
 
-
         $this->execute('behat_forms::i_set_the_field_to', array('id_type_id', $questiontype));
         $this->execute('behat_forms::press_button', 'Add selected question type');
         if (isset($hashrows['id_dependquestions_and_1'])) {

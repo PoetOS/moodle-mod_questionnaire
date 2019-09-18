@@ -863,10 +863,10 @@ class rate extends question {
         $nameddegrees = [];
         $oldchoiceids = [];
         foreach ($question->choices as $choice) {
-             if ($nameddegree = $choice->is_named_degree_choice()) {
-                 $nameddegrees += $nameddegree;
-                 $oldchoiceids[] = $choice->id;
-             }
+            if ($nameddegree = $choice->is_named_degree_choice()) {
+                $nameddegrees += $nameddegree;
+                $oldchoiceids[] = $choice->id;
+            }
         }
 
         if (!empty($nameddegrees)) {
