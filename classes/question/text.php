@@ -95,7 +95,6 @@ class text extends question {
      * Return the context tags for the text response template.
      * @param object $data
      * @return object The radio question response context tags.
-     *
      */
     protected function response_survey_display($response) {
         $resptags = new \stdClass();

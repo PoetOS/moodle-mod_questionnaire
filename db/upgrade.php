@@ -808,6 +808,24 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2018050106, 'questionnaire');
     }
 
+    if ($oldversion < 2018110103) {
+
+        // Define field id to be added to questionnaire_question.
+        $table = new xmldb_table('questionnaire_question');
+        $field = new xmldb_field('extradata', XMLDB_TYPE_TEXT, null, null, null, null, null, 'deleted');
+
+        // Conditionally launch add field id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Need to move rank named degree choices to the new field.
+        \mod_questionnaire\question\rate::move_all_nameddegree_choices();
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2018110103, 'questionnaire');
+    }
+
     return $result;
 }
 

@@ -54,6 +54,11 @@
     <ion-badge item-end>{{ CONTENT_OTHERDATA.<%fieldkey%> }}</ion-badge>
 </ion-list-header>
 <ion-item>
+    <ion-segment scrollable>
+        <ion-segment-button>
+            <ion-label><%content%></ion-label>
+        </ion-segment-button>
+    </ion-segment>
     <ion-range min="<%min%>" max="<%max%>"
                snaps="true" pin="true" color="secondary"
                 <%#completed%> disabled="true"<%/completed%>

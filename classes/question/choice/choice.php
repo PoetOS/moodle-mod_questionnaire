@@ -111,6 +111,22 @@ class choice {
     }
 
     /**
+     *
+     */
+    public static function delete_from_db_by_id($id) {
+        global $DB;
+        return $DB->delete_records(self::tablename(), ['id' => $id]);
+    }
+
+    /**
+     * @return bool
+     * @throws \dml_exception
+     */
+    public function delete_from_db() {
+        return self::delete_from_db_by_id($this->id);
+    }
+
+    /**
      * Return true if the content string is an "other" choice.
      *
      * @param string $content
@@ -152,6 +168,27 @@ class choice {
      */
     public function other_choice_display() {
         return self::content_other_choice_display($this->content);
+    }
+
+    /**
+     * Is the content a named degree rate choice.
+     * @param $content
+     * @return array|bool
+     */
+    public static function content_is_named_degree_choice($content) {
+        if (preg_match("/^([0-9]{1,3})=(.*)$/", $content, $ndegrees)) {
+            return [$ndegrees[1] => $ndegrees[2]];
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Is the choice object a named degree rate choice.
+     * @return array|bool
+     */
+    public function is_named_degree_choice() {
+        return self::content_is_named_degree_choice($this->content);
     }
 
     /**

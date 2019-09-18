@@ -100,6 +100,9 @@ abstract class question {
     /** @var boolean $deleted The deleted flag. */
     public $deleted     = 'n';
 
+    /** @var mixed $extradata Any custom data for the question type. */
+    public $extradata = '';
+
     /** @var array $qtypenames List of all question names. */
     private static $qtypenames = [
         QUESYESNO => 'yesno',
@@ -147,11 +150,15 @@ abstract class question {
             $this->content = $question->content;
             $this->required = $question->required;
             $this->deleted = $question->deleted;
+            $this->extradata = $question->extradata;
 
             $this->type_id = $question->type_id;
             $this->type = $qtypes[$this->type_id]->type;
             $this->responsetable = $qtypes[$this->type_id]->response_table;
-            if ($qtypes[$this->type_id]->has_choices == 'y') {
+
+            if (!empty($question->choices)) {
+                $this->choices = $question->choices;
+            } else if ($qtypes[$this->type_id]->has_choices == 'y') {
                 $this->get_choices();
             }
             // Added for dependencies.
@@ -577,6 +584,7 @@ abstract class question {
             $questionrecord->content = $this->content;
             $questionrecord->required = $this->required;
             $questionrecord->deleted = $this->deleted;
+            $questionrecord->extradata = $this->extradata;
             $questionrecord->dependquestion = $this->dependquestion;
             $questionrecord->dependchoice = $this->dependchoice;
         } else {
@@ -690,20 +698,29 @@ abstract class question {
      * @param integer|object $choice Either the integer id of the choice, or the choice record.
      */
     public function delete_choice($choice) {
-        global $DB;
-
         $retvalue = true;
         if (is_int($choice)) {
             $cid = $choice;
         } else {
             $cid = $choice->id;
         }
-        if ($DB->delete_records('questionnaire_quest_choice', ['id' => $cid])) {
+        if (\mod_questionnaire\question\choice\choice::delete_from_db_by_id($cid)) {
             unset($this->choices[$cid]);
         } else {
             $retvalue = false;
         }
         return $retvalue;
+    }
+
+    /**
+     * Insert extradata field into db. This will be stored as a string. If a question needs a different format, override this.
+     * @param $extradata
+     * @return bool
+     * @throws \dml_exception
+     */
+    public function insert_extradata($extradata) {
+        global $DB;
+        return $DB->set_field('questionnaire_question', 'extradata', $extradata, ['id' => $this->id]);
     }
 
     /**
@@ -961,6 +978,8 @@ abstract class question {
             $this->allchoices = $this->form_choices($mform);
         }
 
+        $this->form_extradata($mform);
+
         // Added for advanced dependencies, parameter $editformobject is needed to use repeat_elements.
         if ($questionnaire->navigate > 0) {
             $this->form_dependencies($form, $questionnaire->questions);
@@ -1189,6 +1208,18 @@ abstract class question {
         return $allchoices;
     }
 
+    /**
+     * Override if the question uses the extradata field.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm
+     */
+    protected function form_extradata(\MoodleQuickForm $mform, $helpname = '') {
+        $mform->addElement('hidden', 'extradata');
+        $mform->setType('extradata', PARAM_INT);
+        return $mform;
+    }
+
     // Helper functions for commonly used editing functions.
 
     /**
@@ -1262,7 +1293,7 @@ abstract class question {
             $formdata->content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
                 'question', $formdata->qid, ['subdirs' => true], $formdata->content);
 
-            $fields = ['name', 'type_id', 'length', 'precise', 'required', 'content'];
+            $fields = ['name', 'type_id', 'length', 'precise', 'required', 'content', 'extradata'];
             $questionrecord = new \stdClass();
             $questionrecord->id = $formdata->qid;
             foreach ($fields as $f) {
@@ -1280,7 +1311,7 @@ abstract class question {
             // Create new question:
             // Need to update any image content after the question is created, so create then update the content.
             $formdata->surveyid = $formdata->sid;
-            $fields = ['surveyid', 'name', 'type_id', 'length', 'precise', 'required', 'position'];
+            $fields = ['surveyid', 'name', 'type_id', 'length', 'precise', 'required', 'position', 'extradata'];
             $questionrecord = new \stdClass();
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {

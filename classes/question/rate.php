@@ -28,13 +28,16 @@ use \html_writer;
 
 class rate extends question {
 
+    public $nameddegrees = [];
+
     /**
      * Constructor. Use to set any default properties.
      *
      */
     public function __construct($id = 0, $question = null, $context = null, $params = array()) {
         $this->length = 5;
-        return parent::__construct($id, $question, $context, $params);
+        parent::__construct($id, $question, $context, $params);
+        $this->add_nameddegrees_from_extradata();
     }
 
     protected function responseclass() {
@@ -79,7 +82,8 @@ class rate extends question {
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
      */
     public function valid_feedback() {
-        return parent::valid_feedback() && (($this->precise == 0) || ($this->precise == 3));
+        return $this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name) &&
+            (($this->precise == 0) || ($this->precise == 3)) && !empty($this->nameddegrees);
     }
 
     /**
@@ -89,14 +93,10 @@ class rate extends question {
     public function get_feedback_maxscore() {
         if ($this->valid_feedback()) {
             $maxscore = 0;
-            $nbchoices = 0;
-            foreach ($this->choices as $choice) {
-                if (isset($choice->value) && ($choice->value != null)) {
-                    if ($choice->value > $maxscore) {
-                        $maxscore = $choice->value;
-                    }
-                } else {
-                    $nbchoices++;
+            $nbchoices = count($this->choices);
+            foreach ($this->nameddegrees as $value => $label) {
+                if ($value > $maxscore) {
+                    $maxscore = $value;
                 }
             }
             // The maximum score needs to be multiplied by the number of items to rate.
@@ -113,6 +113,8 @@ class rate extends question {
      * @param string $descendantdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
+     *
+     * TODO: This function needs to be rewritten. It is a mess!
      *
      */
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
@@ -141,18 +143,10 @@ class rate extends question {
             if (!$nocontent && $content == '') {
                 $nocontent = true;
             }
-            // Check for number from 1 to 3 digits, followed by the equal sign = (to accomodate named degrees).
-            if (preg_match("/^([0-9]{1,3})=(.*)$/", $content, $ndd)) {
-                $n[$nameddegrees] = format_text($ndd[2], FORMAT_HTML, ['noclean' => true]);
-                if (strlen($n[$nameddegrees]) > $maxndlen) {
-                    $maxndlen = strlen($n[$nameddegrees]);
-                }
-                $v[$nameddegrees] = $ndd[1];
-                $this->choices[$cid] = '';
-                $nameddegrees++;
-            } else {
-                // Something wrong here. $choice->content is being set, but it will never be used. This code exists as far back as
-                // 2.0.
+            $nameddegrees = count($this->nameddegrees);
+
+            if ($nameddegrees == 0) {
+                // Determine if the choices have named values.
                 $contents = questionnaire_choice_values($content);
                 if ($contents->modname) {
                     $choice->content = $contents->text;
@@ -213,15 +207,18 @@ class rate extends question {
         }
 
         $collabel = [];
+        if ($nameddegrees > 0) {
+            $currentdegree = reset($this->nameddegrees);
+        }
         for ($j = 0; $j < $this->length; $j++) {
             $col = [];
-            if (isset($n[$j])) {
-                $str = $n[$j];
-                $val = $v[$j];
+            if (($nameddegrees > 0) && ($currentdegree !== false)) {
+                $str = format_text($currentdegree, FORMAT_HTML, ['noclean' => true]);
+                $currentdegree = next($this->nameddegrees);
             } else {
                 $str = $j + 1;
-                $val = $j + 1;
             }
+            $val = $j + 1;
             if ($blankquestionnaire) {
                 $val = '<br />('.$val.')';
             } else {
@@ -284,6 +281,10 @@ class rate extends question {
                         'colinput' => $colinput];
                 }
                 for ($j = 0; $j < $this->length + $isna; $j++) {
+                    if (!isset($collabel[$j])) {
+                        // If not using this value, continue.
+                        continue;
+                    }
                     $col = [];
                     $checked = '';
                     if (isset($response->answers[$this->id][$cid]) &&
@@ -583,6 +584,52 @@ class rate extends question {
     }
 
     /**
+     * Override if the question uses the extradata field.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm
+     */
+    protected function form_extradata(\MoodleQuickForm $mform, $helpname = '') {
+        $defaultvalue = '';
+        for ($i = 1; $i <= $this->length; $i++) {
+            if (isset($this->nameddegrees[$i])) {
+                $defaultvalue .= $i . '=' . $this->nameddegrees[$i] . "\n";
+            }
+        }
+
+        $options = ['wrap' => 'virtual'];
+        $mform->addElement('textarea', 'allnameddegrees', get_string('allnameddegrees', 'questionnaire'), $options);
+        $mform->setDefault('allnameddegrees', $defaultvalue);
+        $mform->setType('allnameddegrees', PARAM_RAW);
+        $mform->addHelpButton('allnameddegrees', 'allnameddegrees', 'questionnaire');
+
+        return $mform;
+    }
+
+    /**
+     * @param $formdata
+     * @return bool
+     */
+    protected function form_preprocess_data($formdata) {
+        $nameddegrees = [];
+        // Named degrees are put one per line in the form "[value]=[label]."
+        if (!empty($formdata->allnameddegrees)) {
+            $nameddegreelines = explode("\n", $formdata->allnameddegrees);
+            foreach ($nameddegreelines as $nameddegreeline) {
+                $nameddegreeline = trim($nameddegreeline);
+                if (($nameddegree = \mod_questionnaire\question\choice\choice::content_is_named_degree_choice($nameddegreeline)) !==
+                    false) {
+                    $nameddegrees += $nameddegree;
+                }
+            }
+        }
+
+        // Now store the new named degrees in extradata.
+        $formdata->extradata = json_encode($nameddegrees);
+        return parent::form_preprocess_data($formdata);
+    }
+
+    /**
      * Preprocess choice data.
      */
     protected function form_preprocess_choicedata($formdata) {
@@ -623,6 +670,34 @@ class rate extends question {
             }
         }
         return true;
+    }
+
+    /**
+     * @param $choicerecord
+     * @return bool
+     * @throws \dml_exception
+     */
+    public function update_choice($choicerecord) {
+        if ($nameddegree = choice\choice::content_is_named_degree_choice($choicerecord->content)) {
+            // Preserve any existing value from the new array.
+            $this->nameddegrees = $nameddegree + $this->nameddegrees;
+            $this->insert_nameddegrees($this->nameddegrees);
+        }
+        return parent::update_choice($choicerecord);
+    }
+
+    /**
+     * @param $choicerecord
+     * @return bool
+     * @throws \dml_exception
+     */
+    public function add_choice($choicerecord) {
+        if ($nameddegree = choice\choice::content_is_named_degree_choice($choicerecord->content)) {
+            // Preserve any existing value from the new array.
+            $this->nameddegrees = $nameddegree + $this->nameddegrees;
+            $this->insert_nameddegrees($this->nameddegrees);
+        }
+        return parent::add_choice($choicerecord);
     }
 
     /**
@@ -751,5 +826,67 @@ class rate extends question {
         }
 
         return $resultdata;
+    }
+
+    /**
+     * Add the nameddegrees property.
+     */
+    private function add_nameddegrees_from_extradata() {
+        if (!empty($this->extradata)) {
+            $this->nameddegrees = json_decode($this->extradata, true);
+        }
+    }
+
+    /**
+     * Insert nameddegress to the extradata database field.
+     * @param array $nameddegrees
+     * @return bool
+     * @throws \dml_exception
+     */
+    public function insert_nameddegrees(array $nameddegrees) {
+        return $this->insert_extradata(json_encode($nameddegrees));
+    }
+
+    /**
+     * Helper function used to move existing named degree choices for the specified question from the "quest_choice" table to the
+     * "question" table.
+     * @param int $qid
+     * @param \stdClass | null $questionrec
+     * @throws \dml_exception
+     */
+    public static function move_nameddegree_choices(int $qid = 0, \stdClass $questionrec = null) {
+        if ($qid !== 0) {
+            $question = new rate($qid);
+        } else {
+            $question = new rate(0, $questionrec);
+        }
+        $nameddegrees = [];
+        $oldchoiceids = [];
+        foreach ($question->choices as $choice) {
+             if ($nameddegree = $choice->is_named_degree_choice()) {
+                 $nameddegrees += $nameddegree;
+                 $oldchoiceids[] = $choice->id;
+             }
+        }
+
+        if (!empty($nameddegrees)) {
+            if ($question->insert_nameddegrees($nameddegrees)) {
+                foreach ($oldchoiceids as $choiceid) {
+                    \mod_questionnaire\question\choice\choice::delete_from_db_by_id($choiceid);
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper function to move named degree choices for all questions.
+     */
+    public static function move_all_nameddegree_choices() {
+        global $DB;
+
+        $ratequests = $DB->get_recordset('questionnaire_question', ['type_id' => QUESRATE]);
+        foreach ($ratequests as $questionrec) {
+            self::move_nameddegree_choices(0, $questionrec);
+        }
     }
 }

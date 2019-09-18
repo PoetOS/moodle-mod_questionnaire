@@ -260,6 +260,10 @@ class rank extends responsetype {
             $scores[] = $scorerec->value;
         }
 
+        foreach ($this->question->nameddegrees as $score => $label) {
+            $scores[] = $score;
+        }
+
         $rid = 0;
         $feedbackscores = [];
         foreach ($responses as $response) {

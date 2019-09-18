@@ -34,7 +34,8 @@ Feature: In questionnaire, rate questions can be defined with scores attributed 
       | Nb of scale items | 4 |
       | Type of rate scale | Osgood |
       | Question Text | Rate these |
-      | Possible answers | 1=One,2=Two,3=Three,4=Four |
+      | Possible answers | "Cold\|Hot","Wet\|Dry" |
+      | Named degrees | 1=One,2=Two,3=Three,4=Four |
     Then I should see "[Rate (scale 1..5)] (Q7)"
     And I follow "Feedback"
     And I should see "Feedback options"
