@@ -879,12 +879,16 @@ class rate extends question {
     }
 
     /**
-     * Helper function to move named degree choices for all questions.
+     * Helper function to move named degree choices for all questions, optionally for a specific surveyid.
      */
-    public static function move_all_nameddegree_choices() {
+    public static function move_all_nameddegree_choices(int $surveyid = null) {
         global $DB;
 
-        $ratequests = $DB->get_recordset('questionnaire_question', ['type_id' => QUESRATE]);
+        $args = ['type_id' => QUESRATE];
+        if ($surveyid !== null) {
+            $args['surveyid'] = $surveyid;
+        }
+        $ratequests = $DB->get_recordset('questionnaire_question', $args);
         foreach ($ratequests as $questionrec) {
             self::move_nameddegree_choices(0, $questionrec);
         }
