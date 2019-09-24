@@ -3243,7 +3243,10 @@ class questionnaire {
         if ($resp = $DB->get_record('questionnaire_response', ['id' => $rid]) ) {
             $userid = $resp->userid;
             if ($user = $DB->get_record('user', ['id' => $userid])) {
-                $ruser = fullname($user);
+                if ($this->respondenttype == 'anonymous')
+                    $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
+                else
+                    $ruser = fullname($user);
             }
         }
         // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
