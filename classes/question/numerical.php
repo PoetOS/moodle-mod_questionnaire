@@ -184,7 +184,7 @@ class numerical extends question {
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
-        $mobiledata['isnumeric'] = true;
+        $mobiledata->isnumeric = true;
         return $mobiledata;
     }
 

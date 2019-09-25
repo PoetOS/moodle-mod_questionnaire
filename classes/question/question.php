@@ -1532,7 +1532,7 @@ abstract class question {
     public function mobile_question_display($qnum, $autonum = false) {
         $options = ['noclean' => true, 'para' => false, 'filter' => true,
             'context' => $this->context, 'overflowdiv' => true];
-        $mobiledata = [
+        $mobiledata = (object)[
             'id' => $this->id,
             'name' => $this->name,
             'type_id' => $this->type_id,
@@ -1548,13 +1548,13 @@ abstract class question {
             'qnum' => $qnum,
             'errormessage' => get_string('required') . ': ' . $this->name
         ];
-        $mobiledata['choices'] = $this->mobile_question_choices_display();
+        $mobiledata->choices = $this->mobile_question_choices_display();
 
         if ($autonum) {
-            $mobiledata['content'] = $qnum . '. ' . $mobiledata['content'];
-            $mobiledata['content_stripped'] = $qnum . '. ' . $mobiledata['content_stripped'];
+            $mobiledata->content = $qnum . '. ' . $mobiledata->content;
+            $mobiledata->content_stripped = $qnum . '. ' . $mobiledata->content_stripped;
         }
-        $mobiledata['responses'] = '';
+        $mobiledata->responses = '';
         return $mobiledata;
     }
 

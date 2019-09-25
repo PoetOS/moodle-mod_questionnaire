@@ -139,7 +139,7 @@ class text extends question {
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
-        $mobiledata['istextessay'] = true;
+        $mobiledata->istextessay = true;
         return $mobiledata;
     }
 

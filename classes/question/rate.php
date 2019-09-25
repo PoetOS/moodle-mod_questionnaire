@@ -358,21 +358,8 @@ class rate extends question {
         $bg = 'c0';
         $nameddegrees = 0;
         $cidnamed = array();
-        $n = array();
         // Max length of potential named degree in column head.
         $maxndlen = 0;
-        foreach ($this->choices as $cid => $choice) {
-            $content = $choice->content;
-            if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
-                $ndd = format_text(substr($content, strlen($ndd[0])), FORMAT_HTML, ['noclean' => true]);
-                $n[$nameddegrees] = $ndd;
-                if (strlen($ndd) > $maxndlen) {
-                    $maxndlen = strlen($ndd);
-                }
-                $cidnamed[$cid] = true;
-                $nameddegrees++;
-            }
-        }
         if ($osgood) {
             $resptags->osgood = 1;
             if ($maxndlen < 4) {
@@ -394,13 +381,13 @@ class rate extends question {
             $resptags->colwidth = (50 / $this->length).'%';
             $resptags->textalign = 'left';
         }
-        for ($j = 0; $j < $this->length; $j++) {
+        for ($j = 1; $j <= $this->length; $j++) {
             $cellobj = new \stdClass();
             $cellobj->bg = $bg;
-            if (isset($n[$j])) {
-                $cellobj->str = $n[$j];
+            if (isset($this->nameddegrees[$j])) {
+                $cellobj->str = $this->nameddegrees[$j];
             } else {
-                $cellobj->str = $j + 1;
+                $cellobj->str = $j;
             }
             if ($bg == 'c0') {
                 $bg = 'c1';
@@ -718,7 +705,8 @@ class rate extends question {
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
-        $mobiledata['israte'] = true;
+        $mobiledata->rates = $this->mobile_question_rates_display();
+        $mobiledata->israte = true;
         return $mobiledata;
     }
 
@@ -750,6 +738,7 @@ class rate extends question {
                 }
                 $choices[$cnum]->max = intval($this->length) - 1;
                 $choices[$cnum]->maxstr = intval($this->length);
+
             } else if ($this->precise == 1) {
                 $choices[$cnum] = $choice;
                 if ($this->required()) {
@@ -762,6 +751,7 @@ class rate extends question {
                 $choices[$cnum]->max = intval($this->length);
                 $choices[$cnum]->na = true;
                 $extracontents[] = $choices[$cnum]->max . ' = ' . get_string('notapplicable', 'mod_questionnaire');
+
             } else if ($this->precise > 1) {
                 $excludes[$choiceid] = $choiceid;
                 if ($choice->value == null) {
@@ -813,6 +803,24 @@ class rate extends question {
     }
 
     /**
+     * @return mixed
+     * @throws \coding_exception
+     */
+    public function mobile_question_rates_display() {
+        $rates = [];
+        if (!empty($this->nameddegrees)) {
+            foreach ($this->nameddegrees as $value => $label) {
+                $rates[] = (object)['value' => $value, 'label' => $label];
+            }
+        } else {
+            for ($i = 0; $i < $this->length; $i++) {
+                $rates[] = (object)['value' => $i, 'label' => $i];
+            }
+        }
+        return $rates;
+    }
+
+    /**
      * @param $response
      * @return array
      */
@@ -821,7 +829,12 @@ class rate extends question {
         foreach ($this->choices as $choiceid => $choice) {
             if (isset($response->answers[$this->id][$choiceid])) {
                 // Add a fieldkey for each choice.
-                $resultdata[$this->mobile_fieldkey($choiceid)] = $response->answers[$this->id][$choiceid]->value;
+                if (!empty($this->nameddegrees)) {
+                    $resultdata[$this->mobile_fieldkey($choiceid)] =
+                        $this->nameddegrees[$response->answers[$this->id][$choiceid]->value];
+                } else {
+                    $resultdata[$this->mobile_fieldkey($choiceid)] = $response->answers[$this->id][$choiceid]->value;
+                }
             }
         }
 

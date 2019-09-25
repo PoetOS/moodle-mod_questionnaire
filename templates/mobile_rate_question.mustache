@@ -33,7 +33,7 @@
                 "max": 5,
                 "minstr": "zero",
                 "maxstr": "five",
-                "na": 1
+                "na": 1,
             },
             {
                 "fieldkey": 986,
@@ -44,27 +44,31 @@
                 "maxstr": "five",
                 "na": 1
             }
+        ],
+        "rates": [
+            {
+                "value": 0,
+                "label": "Good"
+            },
+            {
+                "value": 1,
+                "label": 1
+            }
         ]
     }
 }}
 {{=<% %>=}}
 <%#choices%>
-<ion-list-header text-wrap>
+<ion-list-header style="margin-bottom: 0; border-top-style: none;">
     <core-format-text text="<%content%>"></core-format-text>
     <ion-badge item-end>{{ CONTENT_OTHERDATA.<%fieldkey%> }}</ion-badge>
 </ion-list-header>
-<ion-item>
-    <ion-segment scrollable>
-        <ion-segment-button>
-            <ion-label><%content%></ion-label>
-        </ion-segment-button>
-    </ion-segment>
-    <ion-range min="<%min%>" max="<%max%>"
-               snaps="true" pin="true" color="secondary"
-                <%#completed%> disabled="true"<%/completed%>
-               [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>">
-        <ion-label range-left><%minstr%></ion-label>
-        <ion-label range-right><%#na%><ion-icon name="eye-off"></ion-icon><%/na%><%^na%><%maxstr%><%/na%></ion-label>
-    </ion-range>
-</ion-item>
+<ion-segment scrollable style="margin-bottom: 13px;" [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>">
+    <%#rates%>
+    <ion-segment-button value="<%label%>" layout="icon-hide" style="min-width: 70px; line-height: inherit;" class="mobileratequestion"
+        <%#completed%> disabled="true"<%/completed%>>
+        <ion-label><%label%></ion-label>
+    </ion-segment-button>
+    <%/rates%>
+</ion-segment>
 <%/choices%>
