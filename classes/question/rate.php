@@ -210,15 +210,15 @@ class rate extends question {
         if ($nameddegrees > 0) {
             $currentdegree = reset($this->nameddegrees);
         }
-        for ($j = 0; $j < $this->length; $j++) {
+        for ($j = 1; $j <= $this->length; $j++) {
             $col = [];
             if (($nameddegrees > 0) && ($currentdegree !== false)) {
                 $str = format_text($currentdegree, FORMAT_HTML, ['noclean' => true]);
                 $currentdegree = next($this->nameddegrees);
             } else {
-                $str = $j + 1;
+                $str = $j;
             }
-            $val = $j + 1;
+            $val = $j;
             if ($blankquestionnaire) {
                 $val = '<br />('.$val.')';
             } else {
@@ -280,7 +280,10 @@ class rate extends question {
                     $cols[] = ['colstyle' => 'width:1%;', 'colclass' => $completeclass, 'coltitle' => $title,
                         'colinput' => $colinput];
                 }
-                for ($j = 0; $j < $this->length + $isna; $j++) {
+                if ($nameddegrees > 0) {
+                    reset($this->nameddegrees);
+                }
+                for ($j = 1; $j <= $this->length + $isna; $j++) {
                     if (!isset($collabel[$j])) {
                         // If not using this value, continue.
                         continue;
@@ -294,10 +297,14 @@ class rate extends question {
                     }
                     $col['colstyle'] = 'text-align:center';
                     $col['colclass'] = $bg;
-                    $i = $j + 1;
-                    $col['colhiddentext'] = get_string('option', 'questionnaire', $i);
+                    $col['colhiddentext'] = get_string('option', 'questionnaire', $j);
                     // If isna column then set na choice to -1 value.
-                    $value = ($j < $this->length ? $j : - 1);
+                    if (!empty($this->nameddegrees)) {
+                        $value = key($this->nameddegrees);
+                        next($this->nameddegrees);
+                    } else {
+                        $value = ($j <= $this->length ? $j : -1);
+                    }
                     $col['colinput']['name'] = $str;
                     $col['colinput']['value'] = $value;
                     $col['colinput']['id'] = $str.'_'.$value;
@@ -381,11 +388,16 @@ class rate extends question {
             $resptags->colwidth = (50 / $this->length).'%';
             $resptags->textalign = 'left';
         }
+        if (!empty($this->nameddegrees)) {
+            $this->length = count($this->nameddegrees);
+            reset($this->nameddegrees);
+        }
         for ($j = 1; $j <= $this->length; $j++) {
             $cellobj = new \stdClass();
             $cellobj->bg = $bg;
-            if (isset($this->nameddegrees[$j])) {
-                $cellobj->str = $this->nameddegrees[$j];
+            if (!empty($this->nameddegrees)) {
+                $cellobj->str = current($this->nameddegrees);
+                next($this->nameddegrees);
             } else {
                 $cellobj->str = $j;
             }
@@ -419,10 +431,21 @@ class rate extends question {
                 $rowobj->content = format_text($content, FORMAT_HTML, ['noclean' => true]).'&nbsp;';
                 $bg = 'c0';
                 $cols = [];
-                for ($j = 0; $j < $this->length; $j++) {
+                if (!empty($this->nameddegrees)) {
+                    $this->length = count($this->nameddegrees);
+                    reset($this->nameddegrees);
+                }
+                for ($j = 1; $j <= $this->length; $j++) {
                     $cellobj = new \stdClass();
-                    if (isset($response->answers[$this->id][$cid]) && ($j == $response->answers[$this->id][$cid]->value)) {
-                        $cellobj->checked = 1;
+                    if (isset($response->answers[$this->id][$cid])) {
+                        if (!empty($this->nameddegrees)) {
+                            if ($response->answers[$this->id][$cid]->value == key($this->nameddegrees)) {
+                                $cellobj->checked = 1;
+                            }
+                            next($this->nameddegrees);
+                        } else if ($j == $response->answers[$this->id][$cid]->value) {
+                            $cellobj->checked = 1;
+                        }
                     }
                     $cellobj->str = $str.$j.$uniquetag++;
                     $cellobj->bg = $bg;
@@ -578,10 +601,8 @@ class rate extends question {
      */
     protected function form_extradata(\MoodleQuickForm $mform, $helpname = '') {
         $defaultvalue = '';
-        for ($i = 1; $i <= $this->length; $i++) {
-            if (isset($this->nameddegrees[$i])) {
-                $defaultvalue .= $i . '=' . $this->nameddegrees[$i] . "\n";
-            }
+        foreach ($this->nameddegrees as $value => $label) {
+            $defaultvalue .= $value . '=' . $label . "\n";
         }
 
         $options = ['wrap' => 'virtual'];
@@ -813,7 +834,7 @@ class rate extends question {
                 $rates[] = (object)['value' => $value, 'label' => $label];
             }
         } else {
-            for ($i = 0; $i < $this->length; $i++) {
+            for ($i = 1; $i <= $this->length; $i++) {
                 $rates[] = (object)['value' => $i, 'label' => $i];
             }
         }
@@ -868,6 +889,8 @@ class rate extends question {
      * @throws \dml_exception
      */
     public static function move_nameddegree_choices(int $qid = 0, \stdClass $questionrec = null) {
+        global $DB;
+
         if ($qid !== 0) {
             $question = new rate($qid);
         } else {
@@ -875,17 +898,35 @@ class rate extends question {
         }
         $nameddegrees = [];
         $oldchoiceids = [];
+        // There was an issue where rate values were being stored as 1..n, no matter what the named degree value was. We need to fix
+        // the old responses now. This also assumes that the values are now 1 based rather than 0 based.
+        $newvalues = [];
+        $oldval = 1;
         foreach ($question->choices as $choice) {
             if ($nameddegree = $choice->is_named_degree_choice()) {
                 $nameddegrees += $nameddegree;
                 $oldchoiceids[] = $choice->id;
+                reset($nameddegree);
+                $newvalues[$oldval++] = key($nameddegree);
             }
         }
 
         if (!empty($nameddegrees)) {
             if ($question->insert_nameddegrees($nameddegrees)) {
+                // Remove the old named desgree from the choices table.
                 foreach ($oldchoiceids as $choiceid) {
                     \mod_questionnaire\question\choice\choice::delete_from_db_by_id($choiceid);
+                }
+
+                // First get all existing rank responses for this question.
+                $responses = $DB->get_recordset('questionnaire_response_rank', ['question_id' => $question->id]);
+                // Iterating over each response record ensures we won't change an existing record more than once.
+                foreach ($responses as $response) {
+                    // Then, if the old value exists, set it to the new one.
+                    if (isset($newvalues[$response->rankvalue])) {
+                        $DB->set_field('questionnaire_response_rank', 'rankvalue', $newvalues[$response->rankvalue],
+                            ['id' => $response->id]);
+                    }
                 }
             }
         }
@@ -896,6 +937,22 @@ class rate extends question {
      */
     public static function move_all_nameddegree_choices(int $surveyid = null) {
         global $DB;
+
+        // First, let's adjust all rate answers from zero based to one based (see GHI223).
+        $select = 'SELECT qrr.* ';
+        $from = 'FROM {questionnaire_question} qq ';
+        $join = 'INNER JOIN {questionnaire_response_rank} qrr ON qq.id = qrr.question_id ';
+        $where = 'WHERE qq.type_id = :typeid AND qrr.rankvalue >= :rankvalue';
+        $args = ['typeid' => QUESRATE, 'rankvalue' => 0];
+        if ($surveyid !== null) {
+            $where .= ' AMD qq.surveyid = :surveyid';
+            $args['surveyid'] = $surveyid;
+        }
+        $sql = $select . $from . $join . $where;
+        $recordset = $DB->get_recordset_sql($sql, $args);
+        foreach ($recordset as $record) {
+            $DB->set_field('questionnaire_response_rank', 'rankvalue', $record->rankvalue + 1, ['id' => $record->id]);
+        }
 
         $args = ['type_id' => QUESRATE];
         if ($surveyid !== null) {

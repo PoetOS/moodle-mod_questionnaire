@@ -252,22 +252,6 @@ class rank extends responsetype {
             'ORDER BY rid,cid ASC';
         $responses = $DB->get_recordset_sql($sql, $params);
 
-        $sql = 'SELECT id, value ' .
-            'FROM {questionnaire_quest_choice} ' .
-            'WHERE question_id = ? AND value IS NOT NULL ' .
-            'ORDER BY id ASC ';
-        $scorerecs = $DB->get_records_sql($sql, $params);
-
-        // Reindex $scores as a zero starting array.
-        $scores = [];
-        foreach ($scorerecs as $scorerec) {
-            $scores[] = $scorerec->value;
-        }
-
-        foreach ($this->question->nameddegrees as $score => $label) {
-            $scores[] = $score;
-        }
-
         $rid = 0;
         $feedbackscores = [];
         foreach ($responses as $response) {
@@ -277,7 +261,8 @@ class rank extends responsetype {
                 $feedbackscores[$rid]->rid = $rid;
                 $feedbackscores[$rid]->score = 0;
             }
-            $feedbackscores[$rid]->score += isset($scores[$response->rankvalue]) ? $scores[$response->rankvalue] : 0;
+            // Only count scores that are currently defined (in case old responses are using older data).
+            $feedbackscores[$rid]->score += isset($this->question->nameddegrees[$response->rankvalue]) ? $response->rankvalue : 0;
         }
 
         return (!empty($feedbackscores) ? $feedbackscores : false);
