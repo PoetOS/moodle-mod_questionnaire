@@ -215,23 +215,4 @@ class date extends question {
         $choices[0]->value = null;
         return $choices;
     }
-
-    /**
-     * @param $response
-     * @return array
-     */
-    public function get_mobile_response_data($response) {
-        $resultdata = [];
-        if (isset($response->answers[$this->id][0])) {
-            // For pre-3.6, the answer date will be in the requested format in the language string. Convert it back to yy-mm-dd.
-            // This method can be removed in 3.6.
-            $date = $response->answers[$this->id][0]->value;
-            $date = $this->check_date_format($date);
-            $resultdata[$this->mobile_fieldkey()] = $date;
-        } else {
-            $resultdata[$this->mobile_fieldkey()] = false;
-        }
-
-        return $resultdata;
-    }
 }

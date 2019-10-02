@@ -62,34 +62,6 @@ class date extends responsetype {
     }
 
     /**
-     * Provide an array of answer objects from mobile data for the question.
-     *
-     * @param \stdClass $responsedata All of the responsedata as an object.
-     * @param \mod_questionnaire\question\question $question
-     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
-     */
-    static public function answers_from_appdata($responsedata, $question) {
-        $answers = [];
-        $qname = 'q'.$question->id;
-        if (isset($responsedata->{$qname}[0]) && !empty($responsedata->{$qname}[0])) {
-            $record = new \stdClass();
-            $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
-            // For pre-3.6, make the date the requested format in the language string. This method can be removed in 3.6.
-            $dateformat = get_string('strfdate', 'questionnaire');
-            $date = $responsedata->{$qname}[0];
-            if (preg_match('/(%[mdyY])(.+)(%[mdyY])(.+)(%[mdyY])/', $dateformat, $matches)) {
-                list($year, $month, $day) = explode('-', $date);
-                $date = gmmktime(0, 0, 0, $month, $day, $year);
-                $date = trim(userdate($date, $dateformat, '1', false));
-            }
-            $record->value = $date;
-            $answers[] = answer\answer::create_from_data($record);
-        }
-        return $answers;
-    }
-
-    /**
      * @param \mod_questionnaire\responsetype\response\response\ $responsedata
      * @return bool|int
      * @throws \coding_exception

@@ -489,8 +489,10 @@ class rate extends question {
 
         // To make it easier, create an array of answers by choiceid.
         $answers = [];
-        foreach ($response->answers[$this->id] as $answer) {
-            $answers[$answer->choiceid] = $answer;
+        if (isset($response->answers[$this->id])) {
+            foreach ($response->answers[$this->id] as $answer) {
+                $answers[$answer->choiceid] = $answer;
+            }
         }
 
         $answered = true;
@@ -542,8 +544,10 @@ class rate extends question {
 
         // Create an answers array indexed by choiceid for ease.
         $answers = [];
-        foreach ($response->answers[$this->id] as $answer) {
-            $answers[$answer->choiceid] = $answer;
+        if (isset($response->answers[$this->id])) {
+            foreach ($response->answers[$this->id] as $answer) {
+                $answers[$answer->choiceid] = $answer;
+            }
         }
 
         foreach ($this->choices as $cid => $choice) {

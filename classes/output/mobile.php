@@ -164,7 +164,7 @@ class mobile {
                     $pagequestions = [];
                     foreach ($questionnaire->questions as $question) {
                         if ($question->supports_mobile()) {
-                            $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum, $response);
+                            $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
                             $responses = array_merge($responses, $question->get_mobile_response_data($response));
                             $qnum++;
                         }
@@ -255,7 +255,7 @@ class mobile {
         foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
             $question = $questionnaire->questions[$questionid];
             if ($question->supports_mobile()) {
-                $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum, $response);
+                $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
                 if (($response !== null) && isset($response->answers[$questionid])) {
                     $responses = array_merge($responses, $question->get_mobile_response_data($response));
                 }
