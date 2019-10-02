@@ -134,7 +134,7 @@ class rate extends question {
 
         // Check if rate question has one line only to display full width columns of choices.
         $nocontent = false;
-        $nameddegrees = 0;
+        $nameddegrees = count($this->nameddegrees);
         $n = [];
         $v = [];
         $maxndlen = 0;
@@ -143,8 +143,6 @@ class rate extends question {
             if (!$nocontent && $content == '') {
                 $nocontent = true;
             }
-            $nameddegrees = count($this->nameddegrees);
-
             if ($nameddegrees == 0) {
                 // Determine if the choices have named values.
                 $contents = questionnaire_choice_values($content);
@@ -196,7 +194,7 @@ class rate extends question {
         }
 
         if ($this->precise != 2) {
-            $nbchoices = count($this->choices) - $nameddegrees;
+            $nbchoices = count($this->choices);
         } else { // If "No duplicate choices", can restrict nbchoices to number of rate items specified.
             $nbchoices = $this->length;
         }
@@ -290,14 +288,6 @@ class rate extends question {
                     }
                     $col = [];
                     $checked = '';
-                    if (isset($response->answers[$this->id][$cid]) &&
-                        (($j == $response->answers[$this->id][$cid]->value) ||
-                            (($j == $this->length) && ($response->answers[$this->id][$cid]->value == -1)))) {
-                        $checked = ' checked="checked"';
-                    }
-                    $col['colstyle'] = 'text-align:center';
-                    $col['colclass'] = $bg;
-                    $col['colhiddentext'] = get_string('option', 'questionnaire', $j);
                     // If isna column then set na choice to -1 value.
                     if (!empty($this->nameddegrees)) {
                         $value = key($this->nameddegrees);
@@ -305,6 +295,12 @@ class rate extends question {
                     } else {
                         $value = ($j <= $this->length ? $j : -1);
                     }
+                    if (isset($response->answers[$this->id][$cid]) && ($value == $response->answers[$this->id][$cid]->value)) {
+                        $checked = ' checked="checked"';
+                    }
+                    $col['colstyle'] = 'text-align:center';
+                    $col['colclass'] = $bg;
+                    $col['colhiddentext'] = get_string('option', 'questionnaire', $j);
                     $col['colinput']['name'] = $str;
                     $col['colinput']['value'] = $value;
                     $col['colinput']['id'] = $str.'_'.$value;

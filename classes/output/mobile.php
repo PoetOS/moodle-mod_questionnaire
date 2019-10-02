@@ -179,7 +179,6 @@ class mobile {
                 break;
         }
 
-error_log(print_r($responses, true));
         $return = [
             'templates' => [
                 [
