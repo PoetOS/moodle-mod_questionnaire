@@ -25,6 +25,7 @@
 namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 
+use Composer\Package\Package;
 use mod_questionnaire\db\bulk_sql_config;
 
 /**
@@ -92,7 +93,10 @@ class rank extends responsetype {
                     $record->choiceid = $choiceid;
                     if (!empty($question->nameddegrees)) {
                         // If using named degrees, the app returns the label string. Find the value.
-                        $choicevalue = array_search($choicevalue, $question->nameddegrees);
+                        $nameddegreevalue = array_search($choicevalue, $question->nameddegrees);
+                        if ($nameddegreevalue !== false) {
+                            $choicevalue = $nameddegreevalue;
+                        }
                     }
                     $record->value = $choicevalue;
                     $answers[] = answer\answer::create_from_data($record);
@@ -165,7 +169,7 @@ class rank extends responsetype {
             }
         }
 
-        $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->precise == 2;
+        $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->no_duplicate_choices();
         // Usual case.
         if (!$isrestricted) {
             if (!empty ($rankvalue)) {
@@ -293,7 +297,7 @@ class rank extends responsetype {
                     if (isset($rows[$ccontent]->averagevalue)) {
                         $avgvalue = $rows[$ccontent]->averagevalue;
                         $osgood = false;
-                        if ($this->question->precise == 3) { // Osgood's semantic differential.
+                        if ($this->question->osgood_rate_scale()) { // Osgood's semantic differential.
                             $osgood = true;
                         }
                         if ($stravgvalue == '' && !$osgood) {
@@ -338,7 +342,7 @@ class rank extends responsetype {
         foreach ($records as $row) {
             // Next two are 'qid' and 'cid', each with numeric and hash keys.
             $osgood = false;
-            if ($row->precise == 3) {
+            if (\mod_questionnaire\question\rate::type_is_osgood_rate_scale($row->precise)) {
                 $osgood = true;
             }
             $qid = $row->qid.'_'.$row->cid;

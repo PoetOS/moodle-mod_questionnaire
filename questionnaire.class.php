@@ -3126,7 +3126,7 @@ class questionnaire {
                             $modality = '';
                             $content = $choice->content;
                             $osgood = false;
-                            if ($choice->precise == 3) {
+                            if (\mod_questionnaire\question\rate::type_is_osgood_rate_scale($choice->precise)) {
                                 $osgood = true;
                             }
                             if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {

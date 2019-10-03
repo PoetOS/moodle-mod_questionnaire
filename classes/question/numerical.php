@@ -117,21 +117,6 @@ class numerical extends question {
     }
 
     /**
-     * Return the context tags for the numeric response template.
-     * @param object $data
-     * @return object The numeric question response context tags.
-     *
-     */
-    protected function response_survey_display($response) {
-        $resptags = new \stdClass();
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
-            $resptags->content = $answer->value;
-        }
-        return $resptags;
-    }
-
-    /**
      * Check question's form data for valid response. Override this is type has specific format requirements.
      *
      * @param object $responsedata The data entered into the response.
@@ -155,6 +140,21 @@ class numerical extends question {
         } else {
             return parent::response_valid($responsedata);
         }
+    }
+
+    /**
+     * Return the context tags for the numeric response template.
+     * @param object $data
+     * @return object The numeric question response context tags.
+     *
+     */
+    protected function response_survey_display($response) {
+        $resptags = new \stdClass();
+        if (isset($response->answers[$this->id])) {
+            $answer = reset($response->answers[$this->id]);
+            $resptags->content = $answer->value;
+        }
+        return $resptags;
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {

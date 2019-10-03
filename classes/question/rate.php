@@ -72,6 +72,74 @@ class rate extends question {
     }
 
     /**
+     * Return true if rate scale type is set to "Normal".
+     * @param $scaletype
+     * @return bool
+     */
+    public static function type_is_normal_rate_scale($scaletype) {
+        return ($scaletype == 0);
+    }
+
+    /**
+     * Return true if rate scale type is set to "N/A column".
+     * @param $scaletype
+     * @return bool
+     */
+    public static function type_is_na_column($scaletype) {
+        return ($scaletype == 1);
+    }
+
+    /**
+     * Return true if rate scale type is set to "No duplicate choices".
+     * @param $scaletype
+     * @return bool
+     */
+    public static function type_is_no_duplicate_choices($scaletype) {
+        return ($scaletype == 2);
+    }
+
+    /**
+     * Return true if rate scale type is set to "Osgood".
+     * @param $scaletype
+     * @return bool
+     */
+    public static function type_is_osgood_rate_scale($scaletype) {
+        return ($scaletype == 3);
+    }
+
+    /**
+     * Return true if rate scale type is set to "Normal".
+     * @return bool
+     */
+    public function normal_rate_scale() {
+        return self::type_is_normal_rate_scale($this->precise);
+    }
+
+    /**
+     * Return true if rate scale type is set to "N/A column".
+     * @return bool
+     */
+    public function has_na_column() {
+        return self::type_is_na_column($this->precise);
+    }
+
+    /**
+     * Return true if rate scale type is set to "No duplicate choices".
+     * @return bool
+     */
+    public function no_duplicate_choices() {
+        return self::type_is_no_duplicate_choices($this->precise);
+    }
+
+    /**
+     * Return true if rate scale type is set to "Osgood".
+     * @return bool
+     */
+    public function osgood_rate_scale() {
+        return self::type_is_osgood_rate_scale($this->precise);
+    }
+
+    /**
      * True if question type supports feedback options. False by default.
      */
     public function supports_feedback() {
@@ -83,7 +151,7 @@ class rate extends question {
      */
     public function valid_feedback() {
         return $this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name) &&
-            (($this->precise == 0) || ($this->precise == 3)) && !empty($this->nameddegrees);
+            ($this->normal_rate_scale() || $this->osgood_rate_scale()) && !empty($this->nameddegrees);
     }
 
     /**
@@ -129,9 +197,6 @@ class rate extends question {
             $data->{'q'.$this->id} = [];
         }
 
-        $isna = $this->precise == 1;
-        $osgood = $this->precise == 3;
-
         // Check if rate question has one line only to display full width columns of choices.
         $nocontent = false;
         $nameddegrees = count($this->nameddegrees);
@@ -158,7 +223,7 @@ class rate extends question {
         $choicetags->qelements['twidth'] = $width;
         $choicetags->qelements['headerrow'] = [];
         // If Osgood, adjust central columns to width of named degrees if any.
-        if ($osgood) {
+        if ($this->osgood_rate_scale()) {
             if ($maxndlen < 4) {
                 $width = 45;
             } else if ($maxndlen < 13) {
@@ -182,25 +247,25 @@ class rate extends question {
 
         $choicetags->qelements['headerrow']['col1width'] = $width;
 
-        if ($isna) {
+        if ($this->has_na_column()) {
             $na = get_string('notapplicable', 'questionnaire');
         } else {
             $na = '';
         }
-        if ($this->precise == 2) {
+        if ($this->no_duplicate_choices()) {
             $order = 'other_rate_uncheck(name, value)';
         } else {
             $order = '';
         }
 
-        if ($this->precise != 2) {
+        if (!$this->no_duplicate_choices()) {
             $nbchoices = count($this->choices);
         } else { // If "No duplicate choices", can restrict nbchoices to number of rate items specified.
             $nbchoices = $this->length;
         }
 
         // Display empty td for Not yet answered column.
-        if ($nbchoices > 1 && $this->precise != 2 && !$blankquestionnaire) {
+        if (($nbchoices > 1) && !$this->no_duplicate_choices() && !$blankquestionnaire) {
             $choicetags->qelements['headerrow']['colnya'] = true;
         }
 
@@ -251,14 +316,14 @@ class rate extends question {
                 $row++;
                 $str = 'q'."{$this->id}_$cid";
                 $content = $choice->content;
-                if ($osgood) {
+                if ($this->osgood_rate_scale()) {
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }
                 $cols[] = ['colstyle' => 'text-align: '.$textalign.';',
                            'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]).'&nbsp;'];
 
                 $bg = 'c0 raterow';
-                if ($nbchoices > 1 && $this->precise != 2  && !$blankquestionnaire) {
+                if (($nbchoices > 1) && !$this->no_duplicate_choices()  && !$blankquestionnaire) {
                     $checked = ' checked="checked"';
                     $completeclass = 'notanswered';
                     $title = '';
@@ -281,7 +346,7 @@ class rate extends question {
                 if ($nameddegrees > 0) {
                     reset($this->nameddegrees);
                 }
-                for ($j = 1; $j <= $this->length + $isna; $j++) {
+                for ($j = 1; $j <= $this->length + $this->has_na_column(); $j++) {
                     if (!isset($collabel[$j])) {
                         // If not using this value, continue.
                         continue;
@@ -321,7 +386,7 @@ class rate extends question {
                     }
                     $cols[] = $col;
                 }
-                if ($osgood) {
+                if ($this->osgood_rate_scale()) {
                     $cols[] = ['coltext' => '&nbsp;'.format_text($contentright, FORMAT_HTML, ['noclean' => true])];
                 }
                 $choicetags->qelements['rows'][] = ['cols' => $cols];
@@ -357,13 +422,12 @@ class rate extends question {
         }
         $resptags->twidth = $nocontent ? "50%" : "99.9%";
 
-        $osgood = $this->precise == 3;
         $bg = 'c0';
         $nameddegrees = 0;
         $cidnamed = array();
         // Max length of potential named degree in column head.
         $maxndlen = 0;
-        if ($osgood) {
+        if ($this->osgood_rate_scale()) {
             $resptags->osgood = 1;
             if ($maxndlen < 4) {
                 $sidecolwidth = '45%';
@@ -404,7 +468,7 @@ class rate extends question {
             }
             $resptags->headers[] = $cellobj;
         }
-        if ($this->precise == 1) {
+        if ($this->has_na_column()) {
             $cellobj = new \stdClass();
             $cellobj->bg = $bg;
             $cellobj->str = get_string('notapplicable', 'questionnaire');
@@ -421,7 +485,7 @@ class rate extends question {
                 if ($contents->modname) {
                     $content = $contents->text;
                 }
-                if ($osgood) {
+                if ($this->osgood_rate_scale()) {
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }
                 $rowobj->content = format_text($content, FORMAT_HTML, ['noclean' => true]).'&nbsp;';
@@ -454,7 +518,7 @@ class rate extends question {
                     }
                     $cols[] = $cellobj;
                 }
-                if ($this->precise == 1) { // N/A column.
+                if ($this->has_na_column()) { // N/A column.
                     $cellobj = new \stdClass();
                     if ($checkedna) {
                         $cellobj->checked = 1;
@@ -464,7 +528,7 @@ class rate extends question {
                     $cols[] = $cellobj;
                 }
                 $rowobj->cols = $cols;
-                if ($osgood) {
+                if ($this->osgood_rate_scale()) {
                     $rowobj->osgoodstr = '&nbsp;'.format_text($contentright, FORMAT_HTML, ['noclean' => true]);
                 }
                 $resptags->rows[] = $rowobj;
@@ -566,7 +630,7 @@ class rate extends question {
             $nbchoices -= $nameddegrees;
         }
         // If nodupes and nb choice restricted, nbchoices may be > actual choices, so limit it to $question->length.
-        $isrestricted = ($this->length < count($this->choices)) && ($this->precise == 2);
+        $isrestricted = ($this->length < count($this->choices)) && $this->no_duplicate_choices();
         if ($isrestricted) {
             $nbchoices = min ($nbchoices, $this->length);
         }
@@ -673,7 +737,7 @@ class rate extends question {
                 $formdata->length = $nbnameddegrees;
             }
             // Sanity check for "no duplicate choices"".
-            if ($formdata->precise == 2 && ($formdata->length > $nbvalues || !$formdata->length)) {
+            if (self::type_is_no_duplicate_choices($formdata->precise) && ($formdata->length > $nbvalues || !$formdata->length)) {
                 $formdata->length = $nbvalues;
             }
         }
@@ -727,6 +791,10 @@ class rate extends question {
     public function mobile_question_display($qnum, $autonum = false) {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
         $mobiledata->rates = $this->mobile_question_rates_display();
+        if ($this->has_na_column()) {
+            $mobiledata->hasnacolumn = (object)['value' => -1, 'label' => get_string('notapplicable', 'questionnaire')];
+        }
+
         $mobiledata->israte = true;
         return $mobiledata;
     }
@@ -748,7 +816,7 @@ class rate extends question {
             // Add a fieldkey for each choice.
             $choice->fieldkey = $this->mobile_fieldkey($choiceid);
 
-            if ($this->precise == 0) {
+            if ($this->normal_rate_scale()) {
                 $choices[$cnum] = $choice;
                 if ($this->required()) {
                     $choices[$cnum]->min = 0;
@@ -760,7 +828,7 @@ class rate extends question {
                 $choices[$cnum]->max = intval($this->length) - 1;
                 $choices[$cnum]->maxstr = intval($this->length);
 
-            } else if ($this->precise == 1) {
+            } else if ($this->has_na_column()) {
                 $choices[$cnum] = $choice;
                 if ($this->required()) {
                     $choices[$cnum]->min = 0;
@@ -771,9 +839,8 @@ class rate extends question {
                 }
                 $choices[$cnum]->max = intval($this->length);
                 $choices[$cnum]->na = true;
-                $extracontents[] = $choices[$cnum]->max . ' = ' . get_string('notapplicable', 'mod_questionnaire');
 
-            } else if ($this->precise > 1) {
+            } else {
                 $excludes[$choiceid] = $choiceid;
                 if ($choice->value == null) {
                     if ($arr = explode('|', $choice->content)) {
@@ -851,8 +918,12 @@ class rate extends question {
             if (isset($response->answers[$this->id][$choiceid])) {
                 // Add a fieldkey for each choice.
                 if (!empty($this->nameddegrees)) {
-                    $resultdata[$this->mobile_fieldkey($choiceid)] =
-                        $this->nameddegrees[$response->answers[$this->id][$choiceid]->value];
+                    if (isset($this->nameddegrees[$response->answers[$this->id][$choiceid]->value])) {
+                        $resultdata[$this->mobile_fieldkey($choiceid)] =
+                            $this->nameddegrees[$response->answers[$this->id][$choiceid]->value];
+                    } else {
+                        $resultdata[$this->mobile_fieldkey($choiceid)] = $response->answers[$this->id][$choiceid]->value;
+                    }
                 } else {
                     $resultdata[$this->mobile_fieldkey($choiceid)] = $response->answers[$this->id][$choiceid]->value;
                 }
