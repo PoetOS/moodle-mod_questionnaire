@@ -1,2 +1,13 @@
-.mobileratequestion {
+ion-list-header {
+    margin-bottom: 0;
+    border-top-style: none;
+}
+
+ion-segment.mobileratequestion {
+    margin-bottom: 13px;
+}
+
+span.mobileratequestion {
+    padding-left: 2em;
+    padding-right: 2em;
 }

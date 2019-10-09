@@ -64,6 +64,7 @@
     <ion-badge item-end>{{ CONTENT_OTHERDATA.<%fieldkey%> }}</ion-badge>
 </ion-list-header>
 <ion-segment scrollable style="margin-bottom: 13px;" [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>">
+    <%#leftlabel%><span style="padding-left: 1.5em; padding-right: 1em;"><%leftlabel%></span><%/leftlabel%>
     <%#rates%>
     <ion-segment-button value="<%label%>" layout="icon-hide" style="min-width: 70px; line-height: inherit;" class="mobileratequestion"
         <%#completed%> disabled="true"<%/completed%>>
@@ -76,5 +77,6 @@
         <ion-label><%label%></ion-label>
     </ion-segment-button>
     <%/hasnacolumn%>
+    <%#rightlabel%><span style="padding-left: 1em; padding-right: 1.5em;"><%rightlabel%></span><%/rightlabel%>
 </ion-segment>
 <%/choices%>

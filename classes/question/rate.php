@@ -813,8 +813,13 @@ class rate extends question {
             $choice->choice_id = $choiceid;
             $choice->id = $choiceid;
             $choice->question_id = $this->id;
+
             // Add a fieldkey for each choice.
             $choice->fieldkey = $this->mobile_fieldkey($choiceid);
+
+            if ($this->osgood_rate_scale()) {
+                list($choice->leftlabel, $choice->rightlabel) = array_merge(preg_split('/[|]/', $choice->content), []);
+            }
 
             if ($this->normal_rate_scale()) {
                 $choices[$cnum] = $choice;
