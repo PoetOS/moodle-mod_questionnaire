@@ -186,6 +186,7 @@ class mobile {
                     'html' => $OUTPUT->render_from_template($template, $data)
                 ],
             ],
+            'javascript' => file_get_contents($CFG->dirroot . '/mod/questionnaire/appjs/uncheckother.js'),
             'otherdata' => $responses,
             'files' => null
         ];

@@ -608,9 +608,11 @@ class rate extends question {
 
         // Create an answers array indexed by choiceid for ease.
         $answers = [];
+        $nodups = [];
         if (isset($response->answers[$this->id])) {
             foreach ($response->answers[$this->id] as $answer) {
                 $answers[$answer->choiceid] = $answer;
+                $nodups[] = $answer->value;
             }
         }
 
@@ -634,6 +636,17 @@ class rate extends question {
         if ($isrestricted) {
             $nbchoices = min ($nbchoices, $this->length);
         }
+
+        // Test for duplicate answers in a no duplicate question type.
+        if ($this->no_duplicate_choices()) {
+            foreach ($answers as $answer) {
+                if (count(array_keys($nodups, $answer->value)) > 1) {
+error_log(print_r($nodups, true));
+                    return false;
+                }
+            }
+        }
+
         if (($num != $nbchoices) && ($num != 0)) {
             return false;
         } else {
@@ -821,7 +834,7 @@ class rate extends question {
                 list($choice->leftlabel, $choice->rightlabel) = array_merge(preg_split('/[|]/', $choice->content), []);
             }
 
-            if ($this->normal_rate_scale()) {
+            if ($this->normal_rate_scale() || $this->no_duplicate_choices()) {
                 $choices[$cnum] = $choice;
                 if ($this->required()) {
                     $choices[$cnum]->min = 0;

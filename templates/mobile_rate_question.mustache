@@ -58,12 +58,13 @@
     }
 }}
 {{=<% %>=}}
+<ion-list>
 <%#choices%>
 <ion-list-header style="margin-bottom: 0; border-top-style: none;">
     <core-format-text text="<%content%>"></core-format-text>
     <ion-badge item-end>{{ CONTENT_OTHERDATA.<%fieldkey%> }}</ion-badge>
 </ion-list-header>
-<ion-segment scrollable style="margin-bottom: 13px;" [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>">
+<ion-segment scrollable style="margin-bottom: 13px;" [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>" (ionChange)="toggleRatebox($event, '<%fieldkey%>')">
     <%#leftlabel%><span style="padding-left: 1.5em; padding-right: 1em;"><%leftlabel%></span><%/leftlabel%>
     <%#rates%>
     <ion-segment-button value="<%label%>" layout="icon-hide" style="min-width: 70px; line-height: inherit;" class="mobileratequestion"
@@ -80,3 +81,4 @@
     <%#rightlabel%><span style="padding-left: 1em; padding-right: 1.5em;"><%rightlabel%></span><%/rightlabel%>
 </ion-segment>
 <%/choices%>
+</ion-list>
