@@ -641,7 +641,6 @@ class rate extends question {
         if ($this->no_duplicate_choices()) {
             foreach ($answers as $answer) {
                 if (count(array_keys($nodups, $answer->value)) > 1) {
-error_log(print_r($nodups, true));
                     return false;
                 }
             }
