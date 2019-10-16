@@ -931,22 +931,20 @@ class rate extends question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        foreach ($this->choices as $choiceid => $choice) {
-            if (isset($response->answers[$this->id][$choiceid])) {
+        if (isset($response->answers[$this->id])) {
+            foreach ($response->answers[$this->id] as $answer) {
                 // Add a fieldkey for each choice.
                 if (!empty($this->nameddegrees)) {
-                    if (isset($this->nameddegrees[$response->answers[$this->id][$choiceid]->value])) {
-                        $resultdata[$this->mobile_fieldkey($choiceid)] =
-                            $this->nameddegrees[$response->answers[$this->id][$choiceid]->value];
+                    if (isset($this->nameddegrees[$answer->value])) {
+                        $resultdata[$this->mobile_fieldkey($answer->choiceid)] = $this->nameddegrees[$answer->value];
                     } else {
-                        $resultdata[$this->mobile_fieldkey($choiceid)] = $response->answers[$this->id][$choiceid]->value;
+                        $resultdata[$this->mobile_fieldkey($answer->choiceid)] = $answer->value;
                     }
                 } else {
-                    $resultdata[$this->mobile_fieldkey($choiceid)] = $response->answers[$this->id][$choiceid]->value;
+                    $resultdata[$this->mobile_fieldkey($answer->choiceid)] = $answer->value;
                 }
             }
         }
-
         return $resultdata;
     }
 

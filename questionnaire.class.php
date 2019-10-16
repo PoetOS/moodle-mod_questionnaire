@@ -3754,6 +3754,7 @@ class questionnaire {
                 $rid = $this->response_insert($response, $userid);
             } else {
                 $ret['warnings'] = $msg;
+                $ret['response'] = $response;
             }
         }
 

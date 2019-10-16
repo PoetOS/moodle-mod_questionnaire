@@ -287,17 +287,16 @@ class radio extends question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        foreach ($this->choices as $choiceid => $choice) {
-            if (isset($response->answers[$this->id][$choiceid])) {
+        if (isset($response->answers[$this->id])) {
+            foreach ($response->answers[$this->id] as $answer) {
                 // Add a fieldkey for each choice.
-                $resultdata[$this->mobile_fieldkey()] = $choiceid;
-                if ($choice->is_other_choice()) {
-                    $resultdata[$this->mobile_fieldkey($choice->other_choice_name())] =
-                        $response->answers[$this->id][$choiceid]->value;
+                $resultdata[$this->mobile_fieldkey()] = $answer->choiceid;
+                if ($this->choices[$answer->choiceid]->is_other_choice()) {
+                    $resultdata[$this->mobile_fieldkey($this->choices[$answer->choiceid]->other_choice_name())] =
+                        $response->answers[$this->id][$answer->choiceid]->value;
                 }
             }
         }
-
         return $resultdata;
     }
 }

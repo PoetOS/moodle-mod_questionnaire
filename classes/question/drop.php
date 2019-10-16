@@ -183,13 +183,12 @@ class drop extends question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        foreach ($this->choices as $choiceid => $choice) {
-            if (isset($response->answers[$this->id][$choiceid])) {
+        if (isset($response->answers[$this->id])) {
+            foreach ($response->answers[$this->id] as $answer) {
                 // Add a fieldkey for each choice.
-                $resultdata[$this->mobile_fieldkey()] = $choiceid;
+                $resultdata[$this->mobile_fieldkey()] = $answer->choiceid;
             }
         }
-
         return $resultdata;
     }
 }

@@ -81,21 +81,6 @@ class mobile {
                 break;
 
             case 'submit':
-                if (!$data['notifications']) {
-                    $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
-                    if (isset($result['warnings'])) {
-                        $data['notifications'] = $result['warnings'];
-                        $pagequestiondata = self::add_pagequestion_data($questionnaire, $pagenum);
-                        $data['pagequestions'] = $pagequestiondata['pagequestions'];
-                        $responses = $pagequestiondata['responses'];
-                        $template = 'mod_questionnaire/mobile_view_activity_page';
-                    } else {
-                        self::add_index_data($questionnaire, $data, $userid);
-                        $template = 'mod_questionnaire/mobile_main_index_page';
-                    }
-                }
-                break;
-
             case 'nextpage':
             case 'previouspage':
                 if (!$data['notifications']) {
@@ -117,6 +102,9 @@ class mobile {
                         end($questionnaire->responses) : \mod_questionnaire\responsetype\response\response::create_from_data([]);
                     $response->sec = $pagenum;
                     if (isset($result['warnings'])) {
+                        if ($action == 'submit') {
+                            $response = $result['response'];
+                        }
                         $data['notifications'] = $result['warnings'];
                     } else if ($action == 'nextpage') {
                         $pageresult = $result['nextpagenum'];
@@ -134,6 +122,10 @@ class mobile {
                         } else {
                             $pagenum = $prevpage;
                         }
+                    } else if ($action == 'submit') {
+                        self::add_index_data($questionnaire, $data, $userid);
+                        $template = 'mod_questionnaire/mobile_main_index_page';
+                        break;
                     }
                     $pagequestiondata = self::add_pagequestion_data($questionnaire, $pagenum, $response);
                     $data['pagequestions'] = $pagequestiondata['pagequestions'];
