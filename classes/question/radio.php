@@ -292,8 +292,7 @@ class radio extends question {
                 // Add a fieldkey for each choice.
                 $resultdata[$this->mobile_fieldkey()] = $answer->choiceid;
                 if ($this->choices[$answer->choiceid]->is_other_choice()) {
-                    $resultdata[$this->mobile_fieldkey($this->choices[$answer->choiceid]->other_choice_name())] =
-                        $response->answers[$this->id][$answer->choiceid]->value;
+                    $resultdata[$this->mobile_fieldkey($this->choices[$answer->choiceid]->other_choice_name())] = $answer->value;
                 }
             }
         }
