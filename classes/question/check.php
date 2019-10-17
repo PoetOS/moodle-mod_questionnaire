@@ -329,7 +329,8 @@ class check extends question {
                     // Add a fieldkey for each choice.
                     $resultdata[$this->mobile_fieldkey($answer->choiceid)] = 1;
                     if ($this->choices[$answer->choiceid]->is_other_choice()) {
-                        $resultdata[$this->mobile_fieldkey($this->choices[$answer->choiceid]->other_choice_name())] = $answer->value;
+                        $resultdata[$this->mobile_fieldkey($this->choices[$answer->choiceid]->other_choice_name())] =
+                            $answer->value;
                     }
                 }
             }

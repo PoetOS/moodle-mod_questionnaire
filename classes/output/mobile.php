@@ -124,6 +124,7 @@ class mobile {
                         }
                     } else if ($action == 'submit') {
                         self::add_index_data($questionnaire, $data, $userid);
+                        $data['action'] = 'index';
                         $template = 'mod_questionnaire/mobile_main_index_page';
                         break;
                     }
