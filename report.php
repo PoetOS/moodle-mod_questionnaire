@@ -437,21 +437,16 @@ switch ($action) {
             get_string('responses', 'questionnaire').'&nbsp;'.$groupname;
         $output .= $questionnaire->renderer->heading(get_string('textdownloadoptions', 'questionnaire'));
         $output .= $questionnaire->renderer->box_start();
-        $output .= "<form action=\"{$CFG->wwwroot}/mod/questionnaire/report.php\" method=\"GET\">\n";
-        $output .= "<input type=\"hidden\" name=\"instance\" value=\"$instance\" />\n";
-        $output .= "<input type=\"hidden\" name=\"user\" value=\"$user\" />\n";
-        $output .= "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
-        $output .= "<input type=\"hidden\" name=\"action\" value=\"dcsv\" />\n";
-        $output .= "<input type=\"hidden\" name=\"group\" value=\"$currentgroupid\" />\n";
-        $output .= html_writer::checkbox('choicecodes', 1, true, get_string('includechoicecodes', 'questionnaire'));
-        $output .= "<br />\n";
-        $output .= html_writer::checkbox('choicetext', 1, true, get_string('includechoicetext', 'questionnaire'));
-        $output .= "<br />\n";
-        $output .= html_writer::checkbox('complete', 1, false, get_string('includeincomplete', 'questionnaire'));
-        $output .= "<br />\n";
-        $output .= "<br />\n";
-        $output .= "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
-        $output .= "</form>\n";
+        $downloadparams = [
+            'instance' => $instance,
+            'user' => $user,
+            'sid' => $sid,
+            'action' => 'dfs',
+            'group' => $currentgroupid
+        ];
+        $extrafields = $questionnaire->renderer->render_from_template('mod_questionnaire/extrafields', []);
+        $output .= $questionnaire->renderer->download_dataformat_selector(get_string('download', 'questionnaire'),
+            'report.php', 'downloadformat', $downloadparams, $extrafields);
         $output .= $questionnaire->renderer->box_end();
 
         $questionnaire->page->add_to_page('respondentinfo', $output);
@@ -471,10 +466,9 @@ switch ($action) {
         exit();
         break;
 
-    case 'dcsv': // Download responses data as text (cvs) format.
+    case 'dfs':
         require_capability('mod/questionnaire:downloadresponses', $context);
-        require_once($CFG->libdir.'/dataformatlib.php');
-
+        require_once($CFG->dirroot . '/lib/dataformatlib.php');
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($questionnaire->name, PARAM_FILE);
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
@@ -482,11 +476,14 @@ switch ($action) {
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
         $choicetext  = optional_param('choicetext', '0', PARAM_INT);
         $showincompletes  = optional_param('complete', '0', PARAM_INT);
+        $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
+
         $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes);
 
-        // Use Moodle's core download function for outputting csv.
-        $rowheaders = array_shift($output);
-        download_as_dataformat($name, 'csv', $rowheaders, $output);
+        $columns = $output[0];
+        unset($output[0]);
+        download_as_dataformat($name, $dataformat, $columns, $output);
+
         exit();
         break;
 
