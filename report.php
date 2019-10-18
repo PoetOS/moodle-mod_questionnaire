@@ -466,24 +466,6 @@ switch ($action) {
         exit();
         break;
 
-    case 'dcsv': // Download responses data as text (cvs) format.
-        require_capability('mod/questionnaire:downloadresponses', $context);
-        require_once($CFG->libdir.'/dataformatlib.php');
-
-        // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
-        $name = clean_param($questionnaire->name, PARAM_FILE);
-        $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
-
-        $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
-        $choicetext  = optional_param('choicetext', '0', PARAM_INT);
-        $showincompletes  = optional_param('complete', '0', PARAM_INT);
-        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes);
-
-        // Use Moodle's core download function for outputting csv.
-        $rowheaders = array_shift($output);
-        download_as_dataformat($name, 'csv', $rowheaders, $output);
-        exit();
-        break;
     case 'dfs':
         require_capability('mod/questionnaire:downloadresponses', $context);
         require_once($CFG->dirroot . '/lib/dataformatlib.php');
@@ -493,9 +475,10 @@ switch ($action) {
 
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
         $choicetext  = optional_param('choicetext', '0', PARAM_INT);
+        $showincompletes  = optional_param('complete', '0', PARAM_INT);
         $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
 
-        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid);
+        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes);
 
         $columns = $output[0];
         unset($output[0]);
