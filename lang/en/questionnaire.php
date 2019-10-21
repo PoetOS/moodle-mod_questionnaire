@@ -135,7 +135,7 @@ $string['didnotrespondtoquestion'] = 'Did not respond to question';
 $string['directwarnings'] = 'Direct dependencies to this question will be removed. This will affect:';
 $string['displaymethod'] = 'Display method not defined for question.';
 $string['download'] = 'Download';
-$string['downloadtextformat'] = 'Download as CSV';
+$string['downloadtextformat'] = 'Download';
 $string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a text file (CSV).
  This file can then be imported into a spreadsheet (e.g. MS Excel or Open Office Calc) or a statistical package for further processing the data.';
 $string['downloadtextformat_link'] = 'mod/questionnaire/report#Download_in_text_format';
