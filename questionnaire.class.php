@@ -282,9 +282,19 @@ class questionnaire {
     * Function to view an entire responses data.
     *
     */
-    public function view_response($rid, $referer= '', $blankquestionnaire = false, $resps = '', $compare = false,
-                                  $isgroupmember = false, $allresponses = false, $currentgroupid = 0) {
-        $this->print_survey_start('', 1, 1, 0, $rid, false);
+    /**
+     * @param $rid
+     * @param string $referer
+     * @param string $resps
+     * @param bool $compare
+     * @param bool $isgroupmember
+     * @param bool $allresponses
+     * @param int $currentgroupid
+     * @param string $outputtarget
+     */
+    public function view_response($rid, $referer= '', $resps = '', $compare = false, $isgroupmember = false, $allresponses = false,
+                                  $currentgroupid = 0, $outputtarget = 'html') {
+        $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
 
         $data = new stdClass();
         $i = 0;
@@ -306,12 +316,13 @@ class questionnaire {
                 $this->page->add_to_page('feedbacknotes', $this->renderer->box(format_text($text, FORMAT_HTML)));
             }
         }
+        $pdf = ($outputtarget == 'pdf') ? true : false;
         foreach ($this->questions as $question) {
             if ($question->type_id < QUESPAGEBREAK) {
                 $i++;
             }
             if ($question->type_id != QUESPAGEBREAK) {
-                $this->page->add_to_page('responses', $this->renderer->response_output($question, $data, $i));
+                $this->page->add_to_page('responses', $this->renderer->response_output($question, $data, $i, $pdf));
             }
         }
     }
@@ -1047,7 +1058,8 @@ class questionnaire {
         return;
     }
 
-    private function print_survey_start($message, $section, $numsections, $hasrequired, $rid='', $blankquestionnaire=false) {
+    private function print_survey_start($message, $section, $numsections, $hasrequired, $rid='', $blankquestionnaire=false,
+                                        $outputtarget = 'html') {
         global $CFG, $DB;
         require_once($CFG->libdir.'/filelib.php');
 
@@ -1110,7 +1122,15 @@ class questionnaire {
             }
         }
         if ($ruser) {
-            $respinfo = get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>';
+            $respinfo = '';
+            if ($outputtarget == 'html') {
+                $linkname = 'Download PDF';
+                $link = new moodle_url('/mod/questionnaire/report.php',
+                    ['action' => 'vresp', 'instance' => $this->id, 'target' => 'pdf', 'individualresponse' => 1, 'rid' => $rid]);
+                $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
+                $respinfo .= $this->renderer->action_link($link, null, null, null, $downpdficon);
+            }
+            $respinfo .= get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>';
             if ($this->survey_is_public()) {
                 // For a public questionnaire, look for the course that used it.
                 $coursename = '';
@@ -1191,7 +1211,7 @@ class questionnaire {
 
         if (!empty($rid)) {
             // If we're viewing a response, use this method.
-            $this->view_response($rid, $referer, $blankquestionnaire);
+            $this->view_response($rid, $referer);
             return;
         }
 
@@ -2419,33 +2439,22 @@ class questionnaire {
         $this->page->add_to_page('bottomnavigationbar', $this->renderer->usernavigationbar($navbar));
     }
 
-    /* {{{ proto string survey_results(int surveyid, int precision, bool show_totals, int question_id,
-     * array choice_ids, int response_id)
-        Builds HTML for the results for the survey. If a
-        question id and choice id(s) are given, then the results
-        are only calculated for respodants who chose from the
-        choice ids for the given question id.
-        Returns empty string on sucess, else returns an error
-        string. */
-
-    public function survey_results($precision = 1, $showtotals = 1, $qid = '', $cids = '', $rid = '',
-                                   $uid=false, $currentgroupid='', $sort='') {
+    /**
+     * Builds HTML for the results for the survey. If a question id and choice id(s) are given, then the results are only calculated
+     * for respodants who chose from the choice ids for the given question id. Returns empty string on success, else returns an
+     * error string.
+     * @param string $rid
+     * @param bool $uid
+     * @param string $currentgroupid
+     * @param string $sort
+     * @return string|void
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function survey_results($rid = '', $uid=false, $pdf = false, $currentgroupid='', $sort='') {
         global $SESSION, $DB;
 
         $SESSION->questionnaire->noresponses = false;
-        if (empty($precision)) {
-            $precision  = 1;
-        }
-        if ($showtotals === '') {
-            $showtotals = 1;
-        }
-
-        if (is_int($cids)) {
-            $cids = array($cids);
-        }
-        if (is_string($cids)) {
-            $cids = preg_split("/ /", $cids); // Turn space seperated list into array.
-        }
 
         // Build associative array holding whether each question
         // type has answer choices or not and the table the answers are in
@@ -2536,27 +2545,41 @@ class questionnaire {
             if ($question->type_id == QUESPAGEBREAK) {
                 continue;
             }
-            $this->page->add_to_page('responses', $this->renderer->container_start('qn-container'));
             if ($question->type_id != QUESSECTIONTEXT) {
                 $qnum++;
+            }
+            if (!$pdf) {
+                $this->page->add_to_page('responses', $this->renderer->container_start('qn-container'));
                 $this->page->add_to_page('responses', $this->renderer->container_start('qn-info'));
                 if ($question->type_id != QUESSECTIONTEXT) {
                     $this->page->add_to_page('responses', $this->renderer->heading($qnum, 2, 'qn-number'));
                 }
                 $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-info.
+                $this->page->add_to_page('responses', $this->renderer->container_start('qn-content'));
             }
-            $this->page->add_to_page('responses', $this->renderer->container_start('qn-content'));
             // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
             if ($question->content == '<p>  </p>') {
                 $question->content = '';
             }
-            $this->page->add_to_page('responses',
-                $this->renderer->container(format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
+            if ($pdf) {
+                $response = new stdClass();
+                if ($question->type_id != QUESSECTIONTEXT) {
+                    $response->qnum = $qnum;
+                }
+                $response->qcontent = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
                     $question->context->id, 'mod_questionnaire', 'question', $question->id),
-                    FORMAT_HTML, ['noclean' => true]), 'qn-question'));
-            $this->page->add_to_page('responses', $this->renderer->results_output($question, $rids, $sort, $anonymous));
-            $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-content.
-            $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-container.
+                    FORMAT_HTML, ['noclean' => true]);
+                $response->results = $this->renderer->results_output($question, $rids, $sort, $anonymous, $pdf);
+                $this->page->add_to_page('responses', $response);
+            } else {
+                $this->page->add_to_page('responses',
+                    $this->renderer->container(format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
+                        $question->context->id, 'mod_questionnaire', 'question', $question->id),
+                        FORMAT_HTML, ['noclean' => true]), 'qn-question'));
+                $this->page->add_to_page('responses', $this->renderer->results_output($question, $rids, $sort, $anonymous));
+                $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-content.
+                $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-container.
+            }
         }
 
         return;
@@ -3117,7 +3140,8 @@ class questionnaire {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
                     if (preg_match('/^!other/', $content)) {
                         // If this has an "other" text, use it.
-                        $responsetxt = preg_replace(["/^!other=/", "/^!other/"], ['', get_string('other', 'questionnaire')], $content);
+                        $responsetxt = preg_replace(["/^!other=/", "/^!other/"],
+                            ['', get_string('other', 'questionnaire')], $content);
                         $responsetxt1 = $responserow->response;
                     } else if (($choicecodes == 1) && ($choicetext == 1)) {
                         $responsetxt = $c.' : '.$content;

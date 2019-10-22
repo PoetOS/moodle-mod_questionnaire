@@ -59,6 +59,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Fill out the PDF report page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_reportpagepdf($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/reportpagepdf', $data);
+    }
+
+    /**
      * Fill out the qsettings page.
      * @param \templateable $page
      * @return string | boolean
@@ -206,14 +216,19 @@ class renderer extends \plugin_renderer_base {
      * @param mod_questionnaire\question\base $question The question object.
      * @param stdClass $data All of the response data.
      * @param int $qnum The question number.
+     * @param bool $pdf
      * @return string The output for the page.
+     * @throws \moodle_exception
      */
-    public function response_output($question, $data, $qnum=null) {
+    public function response_output($question, $data, $qnum=null, $pdf=false) {
         $pagetags = $question->response_output($data, $qnum);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
         if (($template = $question->response_template())) {
+            if ($pdf) {
+                $pagetags->qformelement->pdf = 1;
+            }
             $pagetags->qformelement = $this->render_from_template($template, $pagetags->qformelement);
         }
 
@@ -223,7 +238,11 @@ class renderer extends \plugin_renderer_base {
                 $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
             }
         }
-        return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
+        if (!$pdf) {
+            return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
+        } else {
+            return $this->render_from_template('mod_questionnaire/questionpdf_container', $pagetags);
+        }
     }
 
     /**
@@ -263,13 +282,15 @@ class renderer extends \plugin_renderer_base {
      * @param array $rids The response ids.
      * @param string $sort The sort order being used.
      * @param string $anonymous The value of the anonymous setting.
+     * @param bool $pdf
      * @return string The output for the page.
+     * @throws \moodle_exception
      */
-    public function results_output($question, $rids, $sort, $anonymous) {
+    public function results_output($question, $rids, $sort, $anonymous, $pdf = false) {
         $pagetags = $question->display_results($rids, $sort, $anonymous);
 
         // If the response has a template, then render it from $pagetags. If no template, then $pagetags already contains HTML.
-        if (($template = $question->results_template())) {
+        if (($template = $question->results_template($pdf))) {
             return $this->render_from_template($template, $pagetags);
         } else {
             return $pagetags;
@@ -504,6 +525,4 @@ class renderer extends \plugin_renderer_base {
 
         return $this->render_from_template('mod_questionnaire/dataformat_selector', $data);
     }
-
-
 }

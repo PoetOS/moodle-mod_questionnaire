@@ -49,11 +49,18 @@
     }}
 <!-- Begin HTML generated from response_drop template. -->
 <div class="questionnaire_response questionnaire_drop">
+    {{^pdf}}
     <select id="{{id}}" name="{{name}}" class="{{class}}" disabled="disabled">
         {{#options}}
         <option {{#selected}}selected="selected" {{/selected}}value="{{value}}">{{label}}</option>
         {{/options}}
     </select>
     {{#selectedlabel}}: <span class="selected">{{.}}</span>{{/selectedlabel}}
+    {{/pdf}}
+    {{#pdf}}
+        {{#options}}
+            <span{{^selected}} color="gray"{{/selected}}>{{label}}</span>{{#selected}} &#10003;{{/selected}}<br />
+        {{/options}}
+    {{/pdf}}
 </div>
 <!-- End HTML generated from response_drop template. -->

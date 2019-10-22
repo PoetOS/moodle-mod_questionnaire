@@ -60,7 +60,7 @@ class display_support {
         $table = new html_table();
 
         $table->align = array('', '', 'center', 'right');
-        $table->width = '    99%';
+        $table->width = '99%';
         if ($isna) {
             $table->head = array('', $stravg, '&dArr;', $isnahead);
         } else {
@@ -120,7 +120,11 @@ class display_support {
             $out .= '<td style="text-align: center; width:'.$width.'%" class="smalltext">'.$str.'</td>';
         }
         $out .= '</tr></table>';
-        $table->data[] = array('', $out, '');
+        if ($isna) {
+            $table->data[] = array('', $out, '', '');
+        } else {
+            $table->data[] = array('', $out, '');
+        }
 
         switch ($sort) {
             case 'ascending':
@@ -347,7 +351,7 @@ class display_support {
                 $nbna = $counts[$content]->nbna;
                 // TOTAL number of responses for this possible answer.
                 $total = $counts[$content]->num;
-                $nbresp = '<strong>'.$total.'<strong>';
+                $nbresp = '<strong>'.$total.'</strong>';
                 if ($osgood) {
                     // Ensure there are two bits of content.
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));

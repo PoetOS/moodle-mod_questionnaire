@@ -45,15 +45,15 @@
     }
     }}
 <!-- Begin HTML generated from response_check template. -->
-<div class="questionnaire_response questionnaire_check">
-{{#choices}}
-    {{#selected}}
-    <span class="selected"><input type="checkbox" name="{{name}}" checked="checked" disabled="disabled" />
-        {{{content}}}</span>
+<div class="questionnaire_response questionnaire_check">{{!
+}}{{#choices}}{{!
+    }}{{#selected}}{{!
+    }}<span class="selected">{{^pdf}}<input type="checkbox" name="{{name}}" checked="checked" disabled="disabled" />{{/pdf}}
+        {{{content}}}{{#pdf}} &#10003;{{/pdf}}</span>
     {{#othercontent}}<span class="response text">{{{.}}}</span>{{/othercontent}}
     {{/selected}}
     {{^selected}}
-    <span class="unselected"><input type="checkbox" name="{{name}}" disabled="disabled" />
+    <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}<input type="checkbox" name="{{name}}" disabled="disabled" />{{/pdf}}
         {{{content}}}</span>
     {{/selected}}
     <br />

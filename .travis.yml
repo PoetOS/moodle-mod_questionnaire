@@ -1,6 +1,10 @@
 language: php
 
-sudo: required
+# We use trusty as currently there is an issue with java and moodle-plugin-ci mustache linting which
+# causes causes tests to fail on xenial and bionic. (See https://github.com/blackboard-open-source/moodle-plugin-ci/issues/91).
+dist: trusty
+
+sudo: true
 
 addons:
   firefox: "47.0.1"

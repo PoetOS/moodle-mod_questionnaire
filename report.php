@@ -26,6 +26,8 @@ $byresponse = optional_param('byresponse', false, PARAM_INT);
 $individualresponse = optional_param('individualresponse', false, PARAM_INT);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $user = optional_param('user', '', PARAM_INT);
+$outputtarget = optional_param('target', 'html', PARAM_ALPHA); // Default 'html'. Could be 'pdf'.
+
 $userid = $USER->id;
 switch ($action) {
     case 'vallasort':
@@ -64,7 +66,15 @@ $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+if ($outputtarget == 'pdf') {
+    if ($action == 'vresp') {
+        $questionnaire->add_page(new \mod_questionnaire\output\responsepagepdf());
+    } else {
+        $questionnaire->add_page(new \mod_questionnaire\output\reportpagepdf());
+    }
+} else { // Default to HTML.
+    $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+}
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = context_module::instance($cm->id);
@@ -187,7 +197,6 @@ if ($usergraph) {
 switch ($action) {
 
     case 'dresp':  // Delete individual response? Ask for confirmation.
-
         require_capability('mod/questionnaire:deleteresponses', $context);
 
         if (empty($questionnaire->survey)) {
@@ -281,7 +290,6 @@ switch ($action) {
         break;
 
     case 'dvresp': // Delete single response. Do it!
-
         require_capability('mod/questionnaire:deleteresponses', $context);
 
         if (empty($questionnaire->survey)) {
@@ -330,7 +338,6 @@ switch ($action) {
         break;
 
     case 'dvallresp': // Delete all responses in questionnaire (or group). Do it!
-
         require_capability('mod/questionnaire:deleteresponses', $context);
 
         if (empty($questionnaire->survey)) {
@@ -402,7 +409,6 @@ switch ($action) {
         break;
 
     case 'dwnpg': // Download page options.
-
         require_capability('mod/questionnaire:downloadresponses', $context);
 
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
@@ -508,11 +514,10 @@ switch ($action) {
     case 'vall':         // View all responses.
     case 'vallasort':    // View all responses sorted in ascending order.
     case 'vallarsort':   // View all responses sorted in descending order.
-
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $questionnaire->renderer->header();
         if (!$questionnaire->capabilities->readallresponses && !$questionnaire->capabilities->readallresponseanytime) {
+            echo $questionnaire->renderer->header();
             // Should never happen, unless called directly by a snoop.
             print_error('nopermissions', '', '', get_string('viewallresponses', 'questionnaire'));
             // Finish the page.
@@ -599,25 +604,70 @@ switch ($action) {
             'courseid' => $course->id,
             'other' => array('action' => $action, 'instance' => $instance, 'groupid' => $currentgroupid)
         );
-        $event = \mod_questionnaire\event\all_responses_viewed::create($params);
-        $event->trigger();
 
-        $respinfo .= get_string('viewallresponses', 'questionnaire').'. '.$groupname.'. ';
-        $strsort = get_string('order_'.$sort, 'questionnaire');
-        $respinfo .= $strsort;
-        $respinfo .= $questionnaire->renderer->help_icon('orderresponses', 'questionnaire');
-        $questionnaire->page->add_to_page('respondentinfo', $respinfo);
+        if ($outputtarget == 'pdf') {
+            require_once($CFG->libdir . '/pdflib.php');
+            $pdf = new pdf();
+            $pdf->SetCreator(PDF_CREATOR);
+            $pdf->SetAuthor('Moodle Questionnaire');
+            $pdf->SetTitle('All responses');
+            $pdf->setPrintHeader(false);
+            // Set default monospaced font.
+            $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
-        $ret = $questionnaire->survey_results(1, 1, '', '', '', false, $currentgroupid, $sort);
+            // Set margins.
+            $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
-        echo $questionnaire->renderer->render($questionnaire->page);
+            // Set auto page breaks.
+            $pdf->SetAutoPageBreak(true, PDF_MARGIN_BOTTOM);
 
-        // Finish the page.
-        echo $questionnaire->renderer->footer($course);
+            // Set image scale factor.
+            $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+            // Set background color for headings.
+            $pdf->SetFillColor(238, 238, 238);
+            $pdf->AddPage('L');
+
+            if ($currentgroupid > 0) {
+                $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
+            } else {
+                $groupname = '<strong>' . get_string('allparticipants') . '</strong>';
+            }
+            $respinfo = get_string('viewallresponses', 'questionnaire') . '. ' . $groupname . '. ';
+            $strsort = get_string('order_' . $sort, 'questionnaire');
+            $respinfo .= $strsort;
+            $questionnaire->page->add_to_page('respondentinfo', $respinfo);
+            $questionnaire->survey_results('', false, true, $currentgroupid, $sort);
+            $html = $questionnaire->renderer->render($questionnaire->page);
+            $pdf->writeHTML($html);
+            $pdf->Output('dump.pdf', 'D');
+
+        } else { // Default to HTML.
+            $event = \mod_questionnaire\event\all_responses_viewed::create($params);
+            $event->trigger();
+
+            $linkname = 'Download PDF';
+            $link = new moodle_url('/mod/questionnaire/report.php',
+                ['action' => 'vall', 'instance' => $instance, 'group' => $currentgroupid, 'target' => 'pdf']);
+            $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
+            $respinfo .= $questionnaire->renderer->action_link($link, null, null, null, $downpdficon);
+
+            $respinfo .= get_string('viewallresponses', 'questionnaire').'. '.$groupname.'. ';
+            $strsort = get_string('order_'.$sort, 'questionnaire');
+            $respinfo .= $strsort;
+            $respinfo .= $questionnaire->renderer->help_icon('orderresponses', 'questionnaire');
+            $questionnaire->page->add_to_page('respondentinfo', $respinfo);
+
+            $ret = $questionnaire->survey_results('', false, false, $currentgroupid, $sort);
+
+            echo $questionnaire->renderer->header();
+            echo $questionnaire->renderer->render($questionnaire->page);
+            echo $questionnaire->renderer->footer($course);
+        }
         break;
 
     case 'vresp': // View by response.
-
     default:
         if (empty($questionnaire->survey)) {
             print_error('surveynotexists', 'questionnaire');
@@ -689,28 +739,64 @@ switch ($action) {
             $rid = $rids[0];
         }
 
-        // Print the page header.
-        $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->set_heading(format_string($course->fullname));
-        echo $questionnaire->renderer->header();
-
-        // Print the tabs.
-        if ($byresponse) {
-            $SESSION->questionnaire->current_tab = 'vrespsummary';
-        }
-        if ($individualresponse) {
-            $SESSION->questionnaire->current_tab = 'individualresp';
-        }
-        include('tabs.php');
-
-        // Print the main part of the page.
-        // TODO provide option to select how many columns and/or responses per page.
-
         if ($noresponses) {
             $questionnaire->page->add_to_page('respondentinfo',
-                get_string('group').' <strong>'.groups_get_group_name($currentgroupid).'</strong>: '.
+                get_string('group') . ' <strong>' . groups_get_group_name($currentgroupid) . '</strong>: ' .
                 get_string('noresponses', 'questionnaire'));
-        } else {
+
+        } else if ($outputtarget == 'pdf') {
+            require_once($CFG->libdir . '/pdflib.php');
+            $pdf = new pdf();
+            $pdf->SetCreator(PDF_CREATOR);
+            $pdf->SetAuthor('Moodle Questionnaire');
+            $pdf->SetTitle('All responses');
+            $pdf->setPrintHeader(false);
+            // Set default monospaced font.
+            $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+            // Set margins.
+            $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+            // Set auto page breaks.
+            $pdf->SetAutoPageBreak(true, PDF_MARGIN_BOTTOM);
+
+            // Set image scale factor.
+            $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+            // Set background color for headings.
+            $pdf->SetFillColor(238, 238, 238);
+            $pdf->AddPage('L');
+
+            if ($currentgroupid > 0) {
+                $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
+            } else {
+                $groupname = '<strong>' . get_string('allparticipants') . '</strong>';
+            }
+            if (!$byresponse) { // Show respondents individual responses.
+                $questionnaire->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
+            }
+            $html = $questionnaire->renderer->render($questionnaire->page);
+            $pdf->writeHTML($html);
+            $pdf->Output('dump.pdf', 'D');
+
+        } else { // Default to HTML.
+            // Print the page header.
+            $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
+            $PAGE->set_heading(format_string($course->fullname));
+
+            // Print the tabs.
+            if ($byresponse) {
+                $SESSION->questionnaire->current_tab = 'vrespsummary';
+            }
+            if ($individualresponse) {
+                $SESSION->questionnaire->current_tab = 'individualresp';
+            }
+            include('tabs.php');
+
+            // Print the main part of the page.
+            // TODO provide option to select how many columns and/or responses per page.
+
             $groupname = get_string('group').': <strong>'.groups_get_group_name($currentgroupid).'</strong>';
             if ($currentgroupid == 0 ) {
                 $groupname = get_string('allparticipants');
@@ -725,13 +811,11 @@ switch ($action) {
             }
             $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->view_response($rid, '', false, $resps, true, true, false, $currentgroupid);
+                $questionnaire->view_response($rid, '', $resps, true, true, false, $currentgroupid);
             }
+            echo $questionnaire->renderer->header();
+            echo $questionnaire->renderer->render($questionnaire->page);
+            echo $questionnaire->renderer->footer($course);
         }
-
-        echo $questionnaire->renderer->render($questionnaire->page);
-
-        // Finish the page.
-        echo $questionnaire->renderer->footer($course);
         break;
 }

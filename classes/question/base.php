@@ -757,12 +757,13 @@ abstract class base {
 
     /**
      * Override and return a form template if provided. Output of results_output is iterpreted based on this.
+     * @param bool $pdf
      * @return boolean | string
      */
-    public function results_template() {
+    public function results_template($pdf = false) {
         if (isset ($this->response) && is_object($this->response) &&
             is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->results_template();
+            return $this->response->results_template($pdf);
         } else {
             return false;
         }
