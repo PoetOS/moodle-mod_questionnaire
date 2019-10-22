@@ -1031,7 +1031,7 @@ class rate extends question {
         $where = 'WHERE qq.type_id = :typeid AND qrr.rankvalue >= :rankvalue';
         $args = ['typeid' => QUESRATE, 'rankvalue' => 0];
         if ($surveyid !== null) {
-            $where .= ' AMD qq.surveyid = :surveyid';
+            $where .= ' AND qq.surveyid = :surveyid';
             $args['surveyid'] = $surveyid;
         }
         $sql = $select . $from . $join . $where;
