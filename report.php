@@ -444,7 +444,11 @@ switch ($action) {
             'action' => 'dfs',
             'group' => $currentgroupid
         ];
-        $extrafields = $questionnaire->renderer->render_from_template('mod_questionnaire/extrafields', []);
+
+        $extrafieldsdata = (object)['emailroleshelp' => $questionnaire->renderer->help_icon('emailroles', 'questionnaire'),
+            'emailextrahelp' => $questionnaire->renderer->help_icon('emailextra', 'questionnaire'),
+            'allowemailreporting' => get_config('questionnaire', 'allowemailreporting')];
+        $extrafields = $questionnaire->renderer->render_from_template('mod_questionnaire/extrafields', $extrafieldsdata);
         $output .= $questionnaire->renderer->download_dataformat_selector(get_string('download', 'questionnaire'),
             'report.php', 'downloadformat', $downloadparams, $extrafields);
         $output .= $questionnaire->renderer->box_end();
@@ -477,12 +481,26 @@ switch ($action) {
         $choicetext  = optional_param('choicetext', '0', PARAM_INT);
         $showincompletes  = optional_param('complete', '0', PARAM_INT);
         $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
+        $emailroles = optional_param('emailroles', 0, PARAM_INT);
+        $emailextra = optional_param('emailextra', '', PARAM_RAW);
 
         $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes);
 
         $columns = $output[0];
         unset($output[0]);
-        download_as_dataformat($name, $dataformat, $columns, $output);
+
+        if (!get_config('questionnaire', 'allowemailreporting') || (empty($emailroles) && empty($emailextra))) {
+            download_as_dataformat($name, $dataformat, $columns, $output);
+        } else {
+            require_once('savefileformat.php');
+            $users = !empty($emailroles) ? $questionnaire->get_notifiable_users($USER->id) : [];
+            $otheremails = explode(',', $emailextra);
+            if (!empty($users) || !empty($otheremails)) {
+                save_as_dataformat($name, $dataformat, $columns, $output, $users, $otheremails);
+            } else {
+                download_as_dataformat($name, $dataformat, $columns, $output);
+            }
+        }
 
         exit();
         break;

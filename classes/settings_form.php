@@ -88,7 +88,13 @@ class settings_form extends \moodleform {
         $mform->setType('thank_body', PARAM_RAW);
         $mform->setDefault('thank_body', $questionnaire->survey->thank_body);
 
-        $mform->addElement('text', 'email', get_string('email', 'questionnaire'), array('size' => '75'));
+        $allowemailreporting = get_config('questionnaire', 'allowemailreporting');
+        if (!$allowemailreporting) {
+            $attributes = ['size' => '75', 'disabled' => 'disabled'];
+        } else {
+            $attributes = ['size' => '75'];
+        }
+        $mform->addElement('text', 'email', get_string('email', 'questionnaire'), $attributes);
         $mform->setType('email', PARAM_TEXT);
         $mform->setDefault('email', $questionnaire->survey->email);
         $mform->addHelpButton('email', 'sendemail', 'questionnaire');

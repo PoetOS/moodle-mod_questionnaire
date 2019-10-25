@@ -92,6 +92,8 @@ $string['closedate_help'] = 'You can specify a date to close the questionnaire h
 $string['completionsubmit'] = 'Student must submit this questionnaire to complete it';
 $string['condition'] = 'Condition';
 $string['confalts'] = '- OR - <br />Confirmation page';
+$string['configemailreporting'] = 'Allow reports by email';
+$string['configemailreportinglong'] = 'Enables options for some reports to be emailed directly to specified email addresses.';
 $string['configusergraph'] = 'Display charts for "Personality Test" feedback';
 $string['configusergraphlong'] = 'Use the <a href="http://www.rgraph.net/">Rgraph</a> library to display "Personality Test" feedback charts.';
 $string['configmaxsections'] = 'Maximum feedback sections';
@@ -136,8 +138,8 @@ $string['directwarnings'] = 'Direct dependencies to this question will be remove
 $string['displaymethod'] = 'Display method not defined for question.';
 $string['download'] = 'Download';
 $string['downloadtextformat'] = 'Download';
-$string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a text file (CSV).
- This file can then be imported into a spreadsheet (e.g. MS Excel or Open Office Calc) or a statistical package for further processing the data.';
+$string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a selectable, supported file format.
+ You can choose to include extra data items in the export, as well as choose to automatically send the file to selected users.';
 $string['downloadtextformat_link'] = 'mod/questionnaire/report#Download_in_text_format';
 $string['dropdown'] = 'Dropdown Box';
 $string['dropdown_help'] = 'There is no real advantage to using the Dropdown Box over using the Radio Buttons
@@ -148,6 +150,12 @@ $string['editingfeedback'] = 'Editing feedback settings';
 $string['editingquestionnaire'] = 'Editing Questionnaire Settings';
 $string['editquestion'] = 'Editing {$a} question';
 $string['email'] = 'Email';
+$string['emailextra'] = 'Send download to emails';
+$string['emailextra_help'] = 'Will send the download file to the listed email addresses, separated by commas. Note that NO security or privacy checking is done.
+ \'allowemailreporting\' must be enabled in module settings to access this.';
+$string['emailroles'] = 'Send download to roles';
+$string['emailroles_help'] = 'Will send the download file to all roles with "mod/questionnaire:submissionnotification" capability via email.
+ \'allowemailreporting\' must be enabled in module settings to access this.';
 $string['errnewname'] = 'Sorry, name already in use. Pick a new name.';
 $string['erroropening'] = 'Error opening questionnaire.';
 $string['errortable'] = 'Error system table corrupt.';
@@ -546,7 +554,7 @@ $string['send_message'] = 'Send message to selected users';
 $string['send_message_to'] = 'Send message to:';
 $string['sendemail_help'] = 'Sends a copy of each submission to the specified address or addresses.
 You can provide more than one address by separating them with commas.
-Leave blank for no email backup.';
+Leave blank for no email backup. \'allowemailreporting\' must be enabled in module settings to access this.';
 $string['set'] = 'set';
 $string['settings'] = 'Settings';
 $string['settingssaved'] = 'Settings saved';
