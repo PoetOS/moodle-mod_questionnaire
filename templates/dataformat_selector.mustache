@@ -58,14 +58,20 @@
     <div>
         <input type="hidden" name="sesskey" value="{{sesskey}}">
         {{#extrafields}}{{{extrafields}}}{{/extrafields}}
-        <label for="downloadtype_{{name}}">{{label}}</label>
+        <div><label for="downloadtype_{{name}}">{{label}}</label>
         <select name="{{name}}" id="downloadtype_{{name}}">
         {{#options}}
             <option value="{{value}}">{{label}}</option>
         {{/options}}
         </select>
-
-        <input type="submit" value="{{submit}}">
+        <input type="submit" value="{{submit}}" class="btn btn-primary"></div><br />
+        {{#allowemailreporting}}
+        <div><input type="checkbox" name="emailroles" id="emailroles" value="1" />
+        <label for="emailroles">{{#str}}emailroles, questionnaire{{/str}}</label> {{{emailroleshelp}}}
+        <input type="text" name="emailextra" id="emailextra" value="" />
+        <label for="emailextra">{{#str}}emailextra, questionnaire{{/str}}</label> {{{emailextrahelp}}}
+        <input type="submit" value="{{#str}}emailsend, questionnaire{{/str}}" name="emailreport" class="btn btn-primary" /></div>
+        {{/allowemailreporting}}
         {{#params}}
         <input type="hidden" name="{{name}}" value="{{value}}" />
         {{/params}}

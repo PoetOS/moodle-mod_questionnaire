@@ -524,6 +524,9 @@ class renderer extends \plugin_renderer_base {
             'extrafields' => $extrafields,
             'sesskey' => sesskey(),
             'submit' => get_string('download'),
+            'emailroleshelp' => $this->help_icon('emailroles', 'questionnaire'),
+            'emailextrahelp' => $this->help_icon('emailextra', 'questionnaire'),
+            'allowemailreporting' => get_config('questionnaire', 'allowemailreporting'),
         );
 
         return $this->render_from_template('mod_questionnaire/dataformat_selector', $data);

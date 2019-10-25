@@ -34,8 +34,8 @@
  * @param function $callback An option function applied to each record before writing
  * @param mixed $extra An optional value which is passed into the callback function
  */
-function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users = [], $emails = []) {
-    global $CFG;
+function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users = [], $emails = [], $redirect = '') {
+    global $CFG, $OUTPUT;
 
     $classname = 'dataformat_' . $dataformat . '\writer';
     if (!class_exists($classname)) {
@@ -50,7 +50,13 @@ function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users 
     \core\session\manager::write_close();
 
     $format->set_filename($filename);
+    // File creation for any data format is initiated by "send_http_headers()". This is required. But, this also will cause the
+    // browser to respond with a "save / open" dialogue. To get rid of the dialogue, immediately retract the headers with
+    // "header_remove()".
     $format->send_http_headers();
+    header_remove();
+
+    // Start capturing output to write to a file.
     ob_start();
     // This exists to support all dataformats - see MDL-56046.
     if (method_exists($format, 'write_header')) {
@@ -74,24 +80,25 @@ function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users 
             'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.');
         $format->write_footer($columns);
     } else {
+        $format->close_sheet($columns);
+        $format->close_output();
         $output = ob_get_contents();
         $ext = $format->get_extension();
         $filepath = make_temp_directory('mod_questionnaire') . '/' . $filename . $ext;
         $fp = fopen($filepath, 'wb');
         fwrite($fp, $output);
         fclose($fp);
+        $subjecttext = get_string('summaryreportattached', 'questionnaire');
         foreach ($users as $user) {
-            email_to_user($user, fullname($user), "Test attach", "This is the message", '', $filepath, $filename.$ext);
+            email_to_user($user, $CFG->noreplyaddress, $subjecttext, $subjecttext, '', $filepath, $filename.$ext);
         }
         foreach ($emails as $email) {
             $email = trim($email);
-            $user = (object)['id' => -10, 'email' => $email, 'firstname' => $email, 'mailformat' => 1];
-            email_to_user($user, $CFG->noreplyaddress, "Test attach", "This is the message", '', $filepath, $filename.$ext);
+            $user = (object)['id' => -10, 'email' => $email, 'firstname' => $email, 'lastname' => $email, 'mailformat' => 1];
+            email_to_user($user, $CFG->noreplyaddress, $subjecttext, $subjecttext, '', $filepath, $filename.$ext);
         }
         unlink($filepath);
-
-        $format->close_sheet($columns);
-        $format->close_output();
     }
     ob_end_clean();
+    echo $OUTPUT->redirect_message($redirect, get_string('emailssent', 'questionnaire'), 3, false);
 }

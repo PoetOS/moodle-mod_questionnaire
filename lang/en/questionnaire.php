@@ -146,6 +146,7 @@ $string['downloadtextformat'] = 'Download';
 $string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a selectable, supported file format.
  You can choose to include extra data items in the export, as well as choose to automatically send the file to selected users.';
 $string['downloadtextformat_link'] = 'mod/questionnaire/report#Download_in_text_format';
+$string['downloadtypes'] = 'Report type';
 $string['dropdown'] = 'Dropdown Box';
 $string['dropdown_help'] = 'There is no real advantage to using the Dropdown Box over using the Radio Buttons
  except perhaps for longish lists of options, to save screen space.';
@@ -158,9 +159,12 @@ $string['email'] = 'Email';
 $string['emailextra'] = 'Send download to emails';
 $string['emailextra_help'] = 'Will send the download file to the listed email addresses, separated by commas. Note that NO security or privacy checking is done.
  \'allowemailreporting\' must be enabled in module settings to access this.';
+$string['emailsnotspecified'] = 'No email(s) were specified.';
 $string['emailroles'] = 'Send download to roles';
 $string['emailroles_help'] = 'Will send the download file to all roles with "mod/questionnaire:submissionnotification" capability via email.
  \'allowemailreporting\' must be enabled in module settings to access this.';
+$string['emailsend'] = 'Send reports';
+$string['emailssent'] = 'Downloads sent to specified email(s).';
 $string['errnewname'] = 'Sorry, name already in use. Pick a new name.';
 $string['erroropening'] = 'Error opening questionnaire.';
 $string['errortable'] = 'Error system table corrupt.';
@@ -582,6 +586,7 @@ $string['subtitle'] = 'Subtitle';
 $string['subtitle_help'] = 'Subtitle of this questionnaire. Appears below the title on the first page only.';
 $string['subject'] = 'Subject';
 $string['summary'] = 'Summary';
+$string['summaryreportattached'] = 'Questionnaire summary report attached';
 $string['surveynotexists'] = 'questionnaire does not exist.';
 $string['surveyowner'] = 'You must be a questionnaire owner to perform this operation.';
 $string['surveyresponse'] = 'Response from questionnaire';

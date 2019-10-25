@@ -450,12 +450,8 @@ switch ($action) {
             'action' => 'dfs',
             'group' => $currentgroupid
         ];
-
-        $extrafieldsdata = (object)['emailroleshelp' => $questionnaire->renderer->help_icon('emailroles', 'questionnaire'),
-            'emailextrahelp' => $questionnaire->renderer->help_icon('emailextra', 'questionnaire'),
-            'allowemailreporting' => get_config('questionnaire', 'allowemailreporting')];
-        $extrafields = $questionnaire->renderer->render_from_template('mod_questionnaire/extrafields', $extrafieldsdata);
-        $output .= $questionnaire->renderer->download_dataformat_selector(get_string('download', 'questionnaire'),
+        $extrafields = $questionnaire->renderer->render_from_template('mod_questionnaire/extrafields', []);
+        $output .= $questionnaire->renderer->download_dataformat_selector(get_string('downloadtypes', 'questionnaire'),
             'report.php', 'downloadformat', $downloadparams, $extrafields);
         $output .= $questionnaire->renderer->box_end();
 
@@ -495,19 +491,25 @@ switch ($action) {
         $columns = $output[0];
         unset($output[0]);
 
-        if (!get_config('questionnaire', 'allowemailreporting') || (empty($emailroles) && empty($emailextra))) {
+        // Check if email report was selected.
+        $emailreport = optional_param('emailreport', '', PARAM_ALPHA);
+        if (empty($emailreport)) {
             download_as_dataformat($name, $dataformat, $columns, $output);
         } else {
-            require_once('savefileformat.php');
-            $users = !empty($emailroles) ? $questionnaire->get_notifiable_users($USER->id) : [];
-            $otheremails = explode(',', $emailextra);
-            if (!empty($users) || !empty($otheremails)) {
-                save_as_dataformat($name, $dataformat, $columns, $output, $users, $otheremails);
+            // Emailreport button selected.
+            if (get_config('questionnaire', 'allowemailreporting') && (!empty($emailroles) || !empty($emailextra))) {
+                require_once('savefileformat.php');
+                $users = !empty($emailroles) ? $questionnaire->get_notifiable_users($USER->id) : [];
+                $otheremails = explode(',', $emailextra);
+                if (!empty($users) || !empty($otheremails)) {
+                    $thisurl = new moodle_url('report.php', ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]);
+                    save_as_dataformat($name, $dataformat, $columns, $output, $users, $otheremails, $thisurl);
+                }
             } else {
-                download_as_dataformat($name, $dataformat, $columns, $output);
+                redirect(new moodle_url('report.php', ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]),
+                    get_string('emailsnotspecified', 'questionnaire'));
             }
         }
-
         exit();
         break;
 
