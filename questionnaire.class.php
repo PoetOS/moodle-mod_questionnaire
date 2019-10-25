@@ -1599,7 +1599,7 @@ class questionnaire {
      * @param int $userid The submission to grade
      * @return array
      */
-    protected function get_notifiable_users($userid) {
+    public function get_notifiable_users($userid) {
         // Potential users should be active users only.
         $potentialusers = get_enrolled_users($this->context, 'mod/questionnaire:submissionnotification',
             null, 'u.*', null, null, null, true);
