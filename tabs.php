@@ -85,7 +85,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg';
             $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
-            $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtext'));
+            $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
     } else if (in_array($currenttab, array('mybyresponse', 'mysummary'))) {
         $inactive[] = 'myreport';
@@ -161,7 +161,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg&group='.$currentgroupid;
             $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
-            $row3[] = new tabobject('downloadcsv', $link, get_string('downloadtext'));
+            $row3[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
     }
 
@@ -216,7 +216,7 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg';
             $link  = htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
-            $row2[] = new tabobject('downloadcsv', $link, get_string('downloadtext'));
+            $row2[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
         if (count($row2) <= 1) {
             $currenttab = 'allreport';
