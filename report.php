@@ -482,11 +482,13 @@ switch ($action) {
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
         $choicetext  = optional_param('choicetext', '0', PARAM_INT);
         $showincompletes  = optional_param('complete', '0', PARAM_INT);
+        $rankaverages = optional_param('rankaverages', '0', PARAM_INT);
         $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
         $emailroles = optional_param('emailroles', 0, PARAM_INT);
         $emailextra = optional_param('emailextra', '', PARAM_RAW);
 
-        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes);
+        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes,
+            $rankaverages);
 
         $columns = $output[0];
         unset($output[0]);

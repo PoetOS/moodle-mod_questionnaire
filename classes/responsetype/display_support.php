@@ -60,7 +60,6 @@ class display_support {
         $table = new html_table();
 
         $table->align = array('', '', 'center', 'right');
-        $table->width = '99%';
         if ($isna) {
             $table->head = array('', $stravg, '&dArr;', $isnahead);
         } else {
