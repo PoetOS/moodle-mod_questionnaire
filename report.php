@@ -474,29 +474,6 @@ switch ($action) {
         exit();
         break;
 
-    case 'dcsv': // Download responses data as text (cvs) format.
-        require_capability('mod/questionnaire:downloadresponses', $context);
-
-        // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
-        $name = clean_param($questionnaire->name, PARAM_FILE);
-        $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
-
-        $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
-        $choicetext  = optional_param('choicetext', '0', PARAM_INT);
-        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid);
-
-        // CSV
-        // SEP. 2007 JR changed file extension to *.txt for non-English Excel users' sake
-        // and changed separator to tabulation
-        // JAN. 2008 added \r carriage return for better Windows implementation.
-        header("Content-Disposition: attachment; filename=$name.txt");
-        header("Content-Type: text/comma-separated-values");
-        foreach ($output as $row) {
-            $text = implode("\t", $row);
-            echo $text."\r\n";
-        }
-        exit();
-        break;
     case 'dfs':
         require_capability('mod/questionnaire:downloadresponses', $context);
         require_once($CFG->dirroot . '/lib/dataformatlib.php');
@@ -506,11 +483,12 @@ switch ($action) {
 
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
         $choicetext  = optional_param('choicetext', '0', PARAM_INT);
+        $rankaverages = optional_param('rankaverages', '0', PARAM_INT);
         $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
         $emailroles = optional_param('emailroles', 0, PARAM_INT);
         $emailextra = optional_param('emailextra', '', PARAM_RAW);
 
-        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid);
+        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $rankaverages);
 
         $columns = $output[0];
         unset($output[0]);

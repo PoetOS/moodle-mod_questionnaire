@@ -65,7 +65,7 @@ abstract class base {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return array - Array of data records.
      */
-    abstract protected function get_results($rids=false, $anonymous=false);
+    abstract public function get_results($rids=false, $anonymous=false);
 
     /**
      * Provide the result information for the specified result records.

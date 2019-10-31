@@ -55,7 +55,7 @@ class date extends base {
         return $DB->insert_record($this->response_table(), $record);
     }
 
-    protected function get_results($rids=false, $anonymous=false) {
+    public function get_results($rids=false, $anonymous=false) {
         global $DB;
 
         $rsql = '';

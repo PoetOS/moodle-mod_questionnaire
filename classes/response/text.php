@@ -57,7 +57,7 @@ class text extends base {
         }
     }
 
-    protected function get_results($rids=false, $anonymous=false) {
+    public function get_results($rids=false, $anonymous=false) {
         global $DB;
 
         $rsql = '';
