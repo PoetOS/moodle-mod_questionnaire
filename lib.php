@@ -270,18 +270,6 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     return true;
 }
 
-// Given a course and a time, this module should find recent activity
-// that has occurred in questionnaire activities and print it out.
-// Return true if there was output, or false is there was none.
-/**
- * $course, $isteacher and $timestart are unused, but API requires them. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
- */
-function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
-    return false;  // True if anything was printed, otherwise false.
-}
-
 // Must return an array of grades for a given instance of this module,
 // indexed by user.  It also returns a maximum allowed grade.
 /**

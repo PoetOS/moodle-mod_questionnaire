@@ -212,12 +212,6 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->expectOutputString(get_string('noresponses', 'questionnaire'));
     }
 
-    public function test_questionnaire_print_recent_activity() {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-        $this->assertFalse(questionnaire_print_recent_activity(null, null, null));
-    }
-
     public function test_questionnaire_grades() {
         $this->resetAfterTest();
         $this->setAdminUser();
