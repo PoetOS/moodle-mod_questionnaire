@@ -256,7 +256,7 @@ class display_support {
             foreach ($choices as $choice) {
                 if ($choice->choiceid == $choiceid) {
                     $n = 0;
-                    for ($i = 0; $i < $nbranks; $i++) {
+                    for ($i = 1; $i <= $nbranks; $i++) {
                         if ($choice->rankvalue == $i) {
                             $n++;
                             if (!isset($ranks[$choice->content][$i])) {
@@ -362,7 +362,7 @@ class display_support {
                 }
                 // Display ranks/rates numbers.
                 $maxrank = max($rank);
-                for ($i = 0; $i <= $length - 1; $i++) {
+                for ($i = 1; $i <= $length; $i++) {
                     $percent = '';
                     if (isset($rank[$i])) {
                         $str = $rank[$i];

@@ -193,7 +193,7 @@ class rank extends responsetype {
             $sql = "SELECT c.id, c.content, a.average, a.num
                     FROM {questionnaire_quest_choice} c
                     INNER JOIN
-                         (SELECT c2.id, AVG(a2.rankvalue+1) AS average, COUNT(a2.response_id) AS num
+                         (SELECT c2.id, AVG(a2.rankvalue) AS average, COUNT(a2.response_id) AS num
                           FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
                           GROUP BY c2.id) a ON a.id = c.id
@@ -215,7 +215,7 @@ class rank extends responsetype {
             $sql = "SELECT c.id, c.content, a.sum, a.num
                     FROM {questionnaire_quest_choice} c
                     INNER JOIN
-                         (SELECT c2.id, SUM(a2.rankvalue+1) AS sum, COUNT(a2.response_id) AS num
+                         (SELECT c2.id, SUM(a2.rankvalue) AS sum, COUNT(a2.response_id) AS num
                           FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id AND a2.rankvalue >= 0{$rsql}
                           GROUP BY c2.id) a ON a.id = c.id";
