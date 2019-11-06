@@ -153,8 +153,6 @@ class rank extends responsetype {
             $rsql = ' AND response_id ' . $rsql;
         }
 
-        // JR there can't be an !other field in rating questions ???
-        $rankvalue = [];
         $select = 'question_id=' . $this->question->id . ' AND content NOT LIKE \'!other%\' ORDER BY id ASC';
         if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
             foreach ($rows as $row) {
@@ -162,11 +160,13 @@ class rank extends responsetype {
                 $nbna = $DB->count_records(static::response_table(), array('question_id' => $this->question->id,
                                 'choice_id' => $row->id, 'rankvalue' => '-1'));
                 $this->counts[$row->content]->nbna = $nbna;
-                // The $row->value may be null (i.e. empty) or have a 'NULL' value.
-                if (($row->value !== null) && ($row->value !== 'NULL') && ($row->value !== '')) {
-                    $rankvalue[] = $row->value;
-                }
             }
+        }
+
+        // For nameddegrees, need a positionally based array of values.
+        $rankvalue = [];
+        if (!empty($this->question->nameddegrees)) {
+            $rankvalue = array_keys($this->question->nameddegrees);
         }
 
         $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->no_duplicate_choices();
@@ -182,10 +182,12 @@ class rank extends responsetype {
                 $results = $DB->get_records_sql($sql, $params);
                 $value = array();
                 foreach ($results as $result) {
-                    if (isset ($value[$result->choiceid])) {
-                        $value[$result->choiceid] += $rankvalue[$result->rankvalue];
-                    } else {
-                        $value[$result->choiceid] = $rankvalue[$result->rankvalue];
+                    if (isset($rankvalue[$result->rankvalue])) {
+                        if (isset ($value[$result->choiceid])) {
+                            $value[$result->choiceid] += $rankvalue[$result->rankvalue];
+                        } else {
+                            $value[$result->choiceid] = $rankvalue[$result->rankvalue];
+                        }
                     }
                 }
             }
@@ -313,10 +315,10 @@ class rank extends responsetype {
                 $this->counts[$ccontent]->avgvalue = $avgvalue;
             }
             $output .= \mod_questionnaire\responsetype\display_support::mkresavg($this->counts, count($rids),
-                $this->question->choices, $this->question->precise, $prtotal, $this->question->length, $sort, $stravgvalue);
+                $this->question, $prtotal, $sort, $stravgvalue);
 
             $output .= \mod_questionnaire\responsetype\display_support::mkrescount($this->counts, $rids, $rows, $this->question,
-                $this->question->precise, $this->question->length, $sort);
+                $sort);
         } else {
             $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
         }
