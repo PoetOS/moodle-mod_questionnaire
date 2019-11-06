@@ -353,8 +353,8 @@ class rate extends question {
                     }
                     $col = [];
                     $checked = '';
-                    // If isna column then set na choice to -1 value.
-                    if (!empty($this->nameddegrees)) {
+                    // If isna column then set na choice to -1 value. This needs work!
+                    if (!empty($this->nameddegrees) && (key($this->nameddegrees) !== null)) {
                         $value = key($this->nameddegrees);
                         next($this->nameddegrees);
                     } else {
