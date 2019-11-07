@@ -22,7 +22,7 @@
  * @package questiontypes
  */
 
-namespace mod_questionnaire\response;
+namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\db\bulk_sql_config;
@@ -34,24 +34,71 @@ use mod_questionnaire\db\bulk_sql_config;
  * @package responsetypes
  */
 
-class date extends base {
+class date extends responsetype {
+    /**
+     * @return string
+     */
     static public function response_table() {
         return 'questionnaire_response_date';
     }
 
-    public function insert_response($rid, $val) {
-        global $DB;
-
-        if (!$this->question->check_date_format($val)) {
-            return false;
+    /**
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_webform($responsedata, $question) {
+        $answers = [];
+        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+            $record = new \stdClass();
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->value = $responsedata->{'q' . $question->id};
+            $answers[] = answer\answer::create_from_data($record);
         }
-        $record = new \stdClass();
-        $record->response_id = $rid;
-        $record->question_id = $this->question->id;
-        $record->response = $val;
-        return $DB->insert_record(self::response_table(), $record);
+        return $answers;
     }
 
+    /**
+     * @param \mod_questionnaire\responsetype\response\response\ $responsedata
+     * @return bool|int
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function insert_response($responsedata) {
+        global $DB;
+
+        if (!$responsedata instanceof \mod_questionnaire\responsetype\response\response) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this->question]);
+        } else {
+            $response = $responsedata;
+        }
+
+        if (!empty($response) && isset($response->answers[$this->question->id][0])) {
+            $thisdate = $response->answers[$this->question->id][0]->value;
+            if (!$this->question->check_date_format($thisdate)) {
+                return false;
+            }
+            // Now use ISO date formatting.
+            $record = new \stdClass();
+            $record->response_id = $response->id;
+            $record->question_id = $this->question->id;
+            $record->response = $thisdate;
+            return $DB->insert_record(self::response_table(), $record);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @param bool $rids
+     * @param bool $anonymous
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
 
@@ -64,7 +111,7 @@ class date extends base {
         }
 
         $sql = 'SELECT id, response ' .
-               'FROM {'.self::response_table().'} ' .
+               'FROM {'.static::response_table().'} ' .
                'WHERE question_id= ? ' . $rsql;
 
         return $DB->get_records_sql($sql, $params);
@@ -89,17 +136,17 @@ class date extends base {
         $numresps = count($rids);
         if ($rows = $this->get_results($rids, $anonymous)) {
             $numrespondents = count($rows);
+            $counts = [];
             foreach ($rows as $row) {
                 // Count identical answers (case insensitive).
-                $this->text = $row->response;
-                if (!empty($this->text)) {
-                    $dateparts = preg_split('/-/', $this->text);
-                    $this->text = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
-                    $textidx = clean_text($this->text);
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                if (!empty($row->response)) {
+                    $dateparts = preg_split('/-/', $row->response);
+                    $text = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
+                    $textidx = clean_text($text);
+                    $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 }
             }
-            $pagetags = $this->get_results_tags($this->counts, $numresps, $numrespondents);
+            $pagetags = $this->get_results_tags($counts, $numresps, $numrespondents);
         } else {
             $pagetags = new \stdClass();
         }
@@ -150,18 +197,14 @@ class date extends base {
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id '.$col.', a.response as aresponse '.
-            'FROM {'.self::response_table().'} a, {questionnaire_question} q '.
+        $sql = 'SELECT q.id, q.content, a.response as aresponse '.
+            'FROM {'.static::response_table().'} a, {questionnaire_question} q '.
             'WHERE a.response_id=? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         $dateformat = get_string('strfdate', 'questionnaire');
@@ -177,7 +220,7 @@ class date extends base {
                     if (preg_match('/\d\d\d\d-\d\d-\d\d/', $val)) {
                         $dateparts = preg_split('/-/', $val);
                         $val = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
-                        $val = userdate($val, $dateformat);
+                        $val = userdate ( $val, $dateformat);
                         $newrow[] = $val;
                     }
                 }
@@ -191,11 +234,42 @@ class date extends base {
     }
 
     /**
+     * Return an array of answer objects by question for the given response id.
+     * THIS SHOULD REPLACE response_select.
+     *
+     * @param int $rid The response id.
+     * @return array array answer
+     * @throws \dml_exception
+     */
+    static public function response_answers_by_question($rid) {
+        global $DB;
+
+        $dateformat = get_string('strfdate', 'questionnaire');
+        $answers = [];
+        $sql = 'SELECT id, response_id as responseid, question_id as questionid, 0 as choiceid, response as value ' .
+            'FROM {' . static::response_table() .'} ' .
+            'WHERE response_id = ? ';
+        $records = $DB->get_records_sql($sql, [$rid]);
+        foreach ($records as $record) {
+            // Convert date from yyyy-mm-dd database format to actual questionnaire dateformat.
+            // does not work with dates prior to 1900 under Windows.
+            if (preg_match('/\d\d\d\d-\d\d-\d\d/', $record->value)) {
+                $dateparts = preg_split('/-/', $record->value);
+                $val = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
+                $val = userdate ( $val, $dateformat);
+                $record->value = $val;
+            }
+            $answers[$record->questionid][] = answer\answer::create_from_data($record);
+        }
+
+        return $answers;
+    }
+
+    /**
      * Configure bulk sql
      * @return bulk_sql_config
      */
     protected function bulk_sql_config() {
-        return new bulk_sql_config(self::response_table(), 'qrd', false, true, false);
+        return new bulk_sql_config(static::response_table(), 'qrd', false, true, false);
     }
 }
-

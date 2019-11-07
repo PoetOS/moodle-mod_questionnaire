@@ -22,7 +22,8 @@
  * @package questiontypes
  */
 
-namespace mod_questionnaire\response;
+namespace mod_questionnaire\responsetype;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -32,63 +33,118 @@ defined('MOODLE_INTERNAL') || die();
  * @package responsetypes
  */
 
-class single extends base {
+class single extends responsetype {
+    /**
+     * @return string
+     */
     static public function response_table() {
         return 'questionnaire_resp_single';
     }
 
-    public function insert_response($rid, $val) {
+    /**
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     * @throws \coding_exception
+     */
+    static public function answers_from_webform($responsedata, $question) {
+        $answers = [];
+        if (isset($responsedata->{'q'.$question->id}) && isset($question->choices[$responsedata->{'q'.$question->id}])) {
+            $record = new \stdClass();
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->choiceid = $responsedata->{'q'.$question->id};
+            // If this choice is an "other" choice, look for the added input.
+            if ($question->choices[$responsedata->{'q'.$question->id}]->is_other_choice()) {
+                $cname = 'q' . $question->id .
+                    \mod_questionnaire\question\choice\choice::id_other_choice_name($responsedata->{'q'.$question->id});
+                $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
+            }
+            $answers[$responsedata->{'q'.$question->id}] = answer\answer::create_from_data($record);
+        }
+        return $answers;
+    }
+
+    /**
+     * Provide an array of answer objects from mobile data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_appdata($responsedata, $question) {
+        $answers = [];
+        $qname = 'q'.$question->id;
+        if (isset($responsedata->{$qname}[0]) && !empty($responsedata->{$qname}[0])) {
+            $record = new \stdClass();
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->choiceid = $responsedata->{$qname}[0];
+            // If this choice is an "other" choice, look for the added input.
+            if ($question->choices[$record->choiceid]->is_other_choice()) {
+                $cname = \mod_questionnaire\question\choice\choice::id_other_choice_name($record->choiceid);
+                $record->value =
+                    isset($responsedata->{$qname}[$cname]) ? $responsedata->{$qname}[$cname] : '';
+            } else {
+                $record->value = '';
+            }
+            $answers[] = answer\answer::create_from_data($record);
+        }
+        return $answers;
+    }
+
+    /**
+     * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
+     * @return bool|int
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function insert_response($responsedata) {
         global $DB;
-        if (!empty($val)) {
-            foreach ($this->question->choices as $cid => $choice) {
-                if (strpos($choice->content, '!other') === 0) {
-                    $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_TEXT);
-                    if (!isset($other)) {
-                        continue;
-                    }
-                    if (preg_match("/[^ \t\n]/", $other)) {
+
+        if (!$responsedata instanceof \mod_questionnaire\responsetype\response\response) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this->question]);
+        } else {
+            $response = $responsedata;
+        }
+
+        $resid = false;
+        if (!empty($response) && isset($response->answers[$this->question->id])) {
+            foreach ($response->answers[$this->question->id] as $answer) {
+                if (isset($this->question->choices[$answer->choiceid])) {
+                    if ($this->question->choices[$answer->choiceid]->is_other_choice()) {
+                        // If no input specified, ignore this choice.
+                        if (empty($answer->value) || preg_match("/^[\s]*$/", $answer->value)) {
+                            continue;
+                        }
                         $record = new \stdClass();
-                        $record->response_id = $rid;
+                        $record->response_id = $response->id;
                         $record->question_id = $this->question->id;
-                        $record->choice_id = $cid;
-                        $record->response = $other;
-                        $resid = $DB->insert_record('questionnaire_response_other', $record);
-                        $val = $cid;
-                        break;
+                        $record->choice_id = $answer->choiceid;
+                        $record->response = $answer->value;
+                        $DB->insert_record('questionnaire_response_other', $record);
                     }
+                    // Record the choice selection.
+                    $record = new \stdClass();
+                    $record->response_id = $response->id;
+                    $record->question_id = $this->question->id;
+                    $record->choice_id = $answer->choiceid;
+                    $resid = $DB->insert_record(static::response_table(), $record);
                 }
             }
         }
-        if (preg_match("/other_q([0-9]+)/", (isset($val) ? $val : ''), $regs)) {
-            $cid = $regs[1];
-            if (!isset($other)) {
-                $other = optional_param('q'.$this->question->id.'_'.$cid, null, PARAM_TEXT);
-            }
-            if (preg_match("/[^ \t\n]/", $other)) {
-                $record = new \stdClass();
-                $record->response_id = $rid;
-                $record->question_id = $this->question->id;
-                $record->choice_id = $cid;
-                $record->response = $other;
-                $resid = $DB->insert_record('questionnaire_response_other', $record);
-                $val = $cid;
-            }
-        }
-        $record = new \stdClass();
-        $record->response_id = $rid;
-        $record->question_id = $this->question->id;
-        $record->choice_id = isset($val) ? $val : 0;
-        if ($record->choice_id) {// If "no answer" then choice_id is empty (CONTRIB-846).
-            try {
-                return $DB->insert_record(static::response_table(), $record);
-            } catch (\dml_write_exception $ex) {
-                return false;
-            }
-        } else {
-            return false;
-        }
+        return $resid;
     }
 
+    /**
+     * @param bool $rids
+     * @param bool $anonymous
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
 
@@ -188,23 +244,22 @@ class single extends base {
         $numrespondents = $DB->count_records_sql($responsecountsql, [$this->question->id]);
 
         if ($rows) {
+            $counts = [];
             foreach ($rows as $idx => $row) {
                 if (strpos($idx, 'other') === 0) {
                     $answer = $row->response;
                     $ccontent = $row->content;
-                    $content = preg_replace(array('/^!other=/', '/^!other/'),
-                        array('', get_string('other', 'questionnaire')), $ccontent);
+                    $content = \mod_questionnaire\question\choice\choice::content_other_choice_display($ccontent);
                     $content .= ' ' . clean_text($answer);
                     $textidx = $content;
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                    $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 } else {
                     $contents = questionnaire_choice_values($row->content);
-                    $this->choice = $contents->text.$contents->image;
-                    $textidx = $this->choice;
-                    $this->counts[$textidx] = !empty($this->counts[$textidx]) ? ($this->counts[$textidx] + 1) : 1;
+                    $textidx = $contents->text.$contents->image;
+                    $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 }
             }
-            $pagetags = $this->get_results_tags($this->counts, $numresps, $numrespondents, $prtotal, $sort);
+            $pagetags = $this->get_results_tags($counts, $numresps, $numrespondents, $prtotal, $sort);
         } else {
             $pagetags = new \stdClass();
         }
@@ -213,69 +268,60 @@ class single extends base {
 
     /**
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
+     * Array is indexed by question, and contains an array by choice code of selected choices.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id '.$col.', q.type_id as q_type, c.content as ccontent,c.id as cid '.
-            'FROM {'.static::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
-            'WHERE a.response_id = ? AND a.question_id=q.id AND a.choice_id=c.id ';
+        $sql = 'SELECT a.id, q.id as qid, q.content, c.content as ccontent, c.id as cid, o.response ' .
+            'FROM {'.static::response_table().'} a ' .
+            'INNER JOIN {questionnaire_question} q ON a.question_id = q.id ' .
+            'INNER JOIN {questionnaire_quest_choice} c ON a.choice_id = c.id ' .
+            'LEFT JOIN {questionnaire_response_other} o ON a.response_id = o.response_id AND c.id = o.choice_id ' .
+            'WHERE a.response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
-        foreach ($records as $qid => $row) {
-            $cid = $row->cid;
-            if ($csvexport) {
-                static $i = 1;
-                $qrecords = $DB->get_records('questionnaire_quest_choice', ['question_id' => $qid]);
-                foreach ($qrecords as $value) {
-                    if ($value->id == $cid) {
-                        $contents = questionnaire_choice_values($value->content);
-                        if ($contents->modname) {
-                            $row->ccontent = $contents->modname;
-                        } else {
-                            $content = $contents->text;
-                            if (preg_match('/^!other/', $content)) {
-                                $row->ccontent = get_string('other', 'questionnaire');
-                            } else if (($choicecodes == 1) && ($choicetext == 1)) {
-                                $row->ccontent = "$i : $content";
-                            } else if ($choicecodes == 1) {
-                                $row->ccontent = "$i";
-                            } else {
-                                $row->ccontent = $content;
-                            }
-                        }
-                        $i = 1;
-                        break;
-                    }
-                    $i++;
-                }
+        foreach ($records as $row) {
+            $newrow['content'] = $row->content;
+            $newrow['ccontent'] = $row->ccontent;
+            $newrow['responses'] = [];
+            $newrow['responses'][$row->cid] = $row->cid;
+            if (\mod_questionnaire\question\choice\choice::content_is_other_choice($row->ccontent)) {
+                $newrow['responses'][\mod_questionnaire\question\choice\choice::id_other_choice_name($row->cid)] = $row->response;
             }
-            unset($row->id);
-            unset($row->cid);
-            unset($row->q_type);
-            $arow = get_object_vars($row);
-            $newrow = [];
-            foreach ($arow as $key => $val) {
-                if (!is_numeric($key)) {
-                    $newrow[] = $val;
-                }
-            }
-            if (preg_match('/^!other/', $row->ccontent)) {
-                $newrow[] = 'other_' . $cid;
-            } else {
-                $newrow[] = (int)$cid;
-            }
-            $values[$qid] = $newrow;
+            $values[$row->qid] = $newrow;
         }
 
         return $values;
+    }
+
+    /**
+     * Return an array of answer objects by question for the given response id.
+     * THIS SHOULD REPLACE response_select.
+     *
+     * @param int $rid The response id.
+     * @return array array answer
+     * @throws \dml_exception
+     */
+    static public function response_answers_by_question($rid) {
+        global $DB;
+
+        $answers = [];
+        $sql = 'SELECT r.id as id, r.response_id as responseid, r.question_id as questionid, r.choice_id as choiceid, ' .
+            'o.response as value ' .
+            'FROM {' . static::response_table() .'} r ' .
+            'LEFT JOIN {questionnaire_response_other} o ON r.response_id = o.response_id AND r.question_id = o.question_id AND ' .
+            'r.choice_id = o.choice_id ' .
+            'WHERE r.response_id = ? ';
+        $records = $DB->get_records_sql($sql, [$rid]);
+        foreach ($records as $record) {
+            $answers[$record->questionid][$record->choiceid] = answer\answer::create_from_data($record);
+        }
+
+        return $answers;
     }
 
     /**

@@ -45,7 +45,8 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
       | Nb of scale items | 4 |
       | Type of rate scale | Normal |
       | Question Text | Rate these |
-      | Possible answers | 1=One,2=Two,3=Three,4=Four,Cheese,Bread,Meat,Fruit |
+      | Possible answers | Cheese,Bread,Meat,Fruit |
+      | Named degrees    | 1=One,2=Two,3=Three,4=Four |
     Then I should see "[Rate (scale 1..5)] (Q3)"
     And I add a "Yes/No" question and I fill the form with:
       | Question Name | Q4 |
@@ -58,7 +59,8 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
       | Nb of scale items | 5 |
       | Type of rate scale | Normal |
       | Question Text | Rate these |
-      | Possible answers | 0=Zero,2=Two,4=Four,8=Eight,16=Sixteen,Clubs,Diamonds,Hearts,Spades |
+      | Possible answers | Clubs,Diamonds,Hearts,Spades |
+      | Named degrees    | 0=Zero,2=Two,4=Four,8=Eight,16=Sixteen |
     Then I should see "[Rate (scale 1..5)] (Q5)"
     And I follow "Feedback"
     And I should see "Feedback options"

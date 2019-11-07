@@ -22,10 +22,13 @@
  * @package questiontypes
  */
 
-namespace mod_questionnaire\response;
+namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
+use dml_exception;
 use mod_questionnaire\db\bulk_sql_config;
+use stdClass;
 
 /**
  * Class for boolean response types.
@@ -34,25 +37,82 @@ use mod_questionnaire\db\bulk_sql_config;
  * @package response
  */
 
-class boolean extends base {
+class boolean extends responsetype {
 
+    /**
+     * @return string
+     */
     static public function response_table() {
         return 'questionnaire_response_bool';
     }
 
-    public function insert_response($rid, $val) {
-        global $DB;
-        if (!empty($val)) { // If "no answer" then choice is empty (CONTRIB-846).
+    /**
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_webform($responsedata, $question) {
+        $answers = [];
+        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
             $record = new \stdClass();
-            $record->response_id = $rid;
+            $record->responseid = $responsedata->rid;
+            $record->questionid = $question->id;
+            $record->choiceid = $responsedata->{'q' . $question->id};
+            $record->value = $responsedata->{'q' . $question->id};
+            $answers[] = answer\answer::create_from_data($record);
+        }
+        return $answers;
+    }
+
+    /**
+     * Provide an array of answer objects from mobile data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_appdata($responsedata, $question) {
+        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+            $responsedata->{'q'.$question->id} = ($responsedata->{'q'.$question->id}[0] == 1) ? 'y' : 'n';
+        }
+        return static::answers_from_webform($responsedata, $question);
+    }
+
+    /**
+     * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
+     * @return bool|int
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function insert_response($responsedata) {
+        global $DB;
+
+        if (!$responsedata instanceof \mod_questionnaire\responsetype\response\response) {
+            $response = \mod_questionnaire\responsetype\response\response::response_from_webform($responsedata, [$this->question]);
+        } else {
+            $response = $responsedata;
+        }
+
+        if (!empty($response) && isset($response->answers[$this->question->id][0])) {
+            $record = new \stdClass();
+            $record->response_id = $response->id;
             $record->question_id = $this->question->id;
-            $record->choice_id = $val;
-            return $DB->insert_record(self::response_table(), $record);
+            $record->choice_id = $response->answers[$this->question->id][0]->choiceid;
+            return $DB->insert_record(static::response_table(), $record);
         } else {
             return false;
         }
     }
 
+    /**
+     * @param bool $rids
+     * @param bool $anonymous
+     * @return array
+     * @throws coding_exception
+     * @throws dml_exception
+     */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
 
@@ -66,7 +126,7 @@ class boolean extends base {
         $params[] = '';
 
         $sql = 'SELECT choice_id, COUNT(response_id) AS num ' .
-               'FROM {'.self::response_table().'} ' .
+               'FROM {'.static::response_table().'} ' .
                'WHERE question_id= ? ' . $rsql . ' AND choice_id != ? ' .
                'GROUP BY choice_id';
         return $DB->get_records_sql($sql, $params);
@@ -111,7 +171,7 @@ class boolean extends base {
         if ($responses = $DB->get_recordset_sql($sql, $params)) {
             $feedbackscores = [];
             foreach ($responses as $rid => $response) {
-                $feedbackscores[$rid] = new \stdClass();
+                $feedbackscores[$rid] = new stdClass();
                 $feedbackscores[$rid]->rid = $rid;
                 $feedbackscores[$rid]->score = ($response->choice_id == 'y') ? 1 : 0;
             }
@@ -136,10 +196,8 @@ class boolean extends base {
      * @return string
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        if (empty($this->stryes)) {
-            $this->stryes = get_string('yes');
-            $this->strno = get_string('no');
-        }
+        $stryes = get_string('yes');
+        $strno = get_string('no');
 
         if (is_array($rids)) {
             $prtotal = 1;
@@ -148,23 +206,23 @@ class boolean extends base {
         }
         $numresps = count($rids);
 
-        $this->counts = [$this->stryes => 0, $this->strno => 0];
+        $counts = [$stryes => 0, $strno => 0];
         $numrespondents = 0;
         if ($rows = $this->get_results($rids, $anonymous)) {
             foreach ($rows as $row) {
-                $this->choice = $row->choice_id;
+                $choice = $row->choice_id;
                 $count = $row->num;
-                if ($this->choice == 'y') {
-                    $this->choice = $this->stryes;
+                if ($choice == 'y') {
+                    $choice = $stryes;
                 } else {
-                    $this->choice = $this->strno;
+                    $choice = $strno;
                 }
-                $this->counts[$this->choice] = intval($count);
-                $numrespondents += $this->counts[$this->choice];
+                $counts[$choice] = intval($count);
+                $numrespondents += $counts[$choice];
             }
-            $pagetags = $this->get_results_tags($this->counts, $numresps, $numrespondents, $prtotal, '');
+            $pagetags = $this->get_results_tags($counts, $numresps, $numrespondents, $prtotal, '');
         } else {
-            $pagetags = new \stdClass();
+            $pagetags = new stdClass();
         }
         return $pagetags;
     }
@@ -173,18 +231,14 @@ class boolean extends base {
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id '.$col.', a.choice_id '.
-            'FROM {'.self::response_table().'} a, {questionnaire_question} q '.
+        $sql = 'SELECT q.id, q.content, a.choice_id '.
+            'FROM {'.static::response_table().'} a, {questionnaire_question} q '.
             'WHERE a.response_id= ? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {
@@ -200,12 +254,34 @@ class boolean extends base {
             }
             $values[$qid] = $newrow;
             array_push($values[$qid], ($choice == 'y') ? '1' : '0');
-            if (!$csvexport) {
-                array_push($values[$qid], $choice); // DEV still needed for responses display.
-            }
+            array_push($values[$qid], $choice); // DEV still needed for responses display.
         }
 
         return $values;
+    }
+
+    /**
+     * Return an array of answer objects by question for the given response id.
+     * THIS SHOULD REPLACE response_select.
+     *
+     * @param int $rid The response id.
+     * @return array array answer
+     * @throws dml_exception
+     */
+    static public function response_answers_by_question($rid) {
+        global $DB;
+
+        $answers = [];
+        $sql = 'SELECT id, response_id as responseid, question_id as questionid, choice_id as choiceid, choice_id as value ' .
+            'FROM {' . static::response_table() .'} ' .
+            'WHERE response_id = ? ';
+        $records = $DB->get_records_sql($sql, [$rid]);
+        foreach ($records as $record) {
+            $record->choiceid = ($record->choiceid == 'y') ? 1 : 0;
+            $answers[$record->questionid][] = answer\answer::create_from_data($record);
+        }
+
+        return $answers;
     }
 
     /**
@@ -213,7 +289,7 @@ class boolean extends base {
      * @return bulk_sql_config
      */
     protected function bulk_sql_config() {
-        return new bulk_sql_config(self::response_table(), 'qrb', true, false, false);
+        return new bulk_sql_config(static::response_table(), 'qrb', true, false, false);
     }
 
     /**
@@ -238,7 +314,7 @@ class boolean extends base {
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".self::response_table()."} $alias ON $alias.response_id = qr.id
+              JOIN {".static::response_table()."} $alias ON $alias.response_id = qr.id
         ";
     }
 }

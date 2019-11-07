@@ -22,7 +22,7 @@
  * @package questiontypes
  */
 
-namespace mod_questionnaire\response;
+namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 use \html_table;
@@ -39,20 +39,20 @@ class display_support {
     /* {{{ proto void mkresavg(array weights, int total, int precision, bool show_totals)
         Builds HTML showing AVG results. */
 
-    public static function mkresavg($counts, $total, $choices, $precision, $showtotals, $length, $sort, $stravgvalue='') {
+    public static function mkresavg($counts, $total, $question, $showtotals, $sort, $stravgvalue='') {
         global $CFG;
         $stravgrank = get_string('averagerank', 'questionnaire');
         $osgood = false;
-        if ($precision == 3) { // Osgood's semantic differential.
+        if ($question->precise == 3) { // Osgood's semantic differential.
             $osgood = true;
             $stravgrank = get_string('averageposition', 'questionnaire');
         }
         $stravg = '<div style="text-align:right">'.$stravgrank.$stravgvalue.'</div>';
 
-        $isna = $precision == 1;
+        $isna = $question->precise == 1;
         $isnahead = '';
         $nbchoices = count ($counts);
-        $isrestricted = ($length < $nbchoices) && $precision == 2;
+        $isrestricted = ($question->length < $nbchoices) && $question->precise == 2;
 
         if ($isna) {
             $isnahead = get_string('notapplicable', 'questionnaire');
@@ -82,7 +82,7 @@ class display_support {
         }
 
         $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
-        $llength = $length;
+        $llength = $question->length;
         if (!$llength) {
             $llength = 5;
         }
@@ -91,16 +91,14 @@ class display_support {
         $width = 100 / $llength;
         $n = array();
         $nameddegrees = 0;
-        foreach ($choices as $choice) {
+        foreach ($question->nameddegrees as $degree) {
             // To take into account languages filter.
-            $content = (format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
-            if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
-                $n[$nameddegrees] = substr($content, strlen($ndd[0]));
-                $nameddegrees++;
-            }
+            $content = (format_text($degree, FORMAT_HTML, ['noclean' => true]));
+            $n[$nameddegrees] = $degree;
+            $nameddegrees++;
         }
-        $nbchoices = $length;
-        for ($j = 0; $j < $length; $j++) {
+        $nbchoices = $question->length;
+        for ($j = 0; $j < $question->length; $j++) {
             if (isset($n[$j])) {
                 $str = $n[$j];
             } else {
@@ -120,7 +118,11 @@ class display_support {
             $out .= '<td style="text-align: center; width:'.$width.'%" class="smalltext">'.$str.'</td>';
         }
         $out .= '</tr></table>';
-        $table->data[] = array('', $out, '');
+        if (!$isna) {
+            $table->data[] = array('', $out, '');
+        } else {
+            $table->data[] = array('', $out, '', '');
+        }
 
         switch ($sort) {
             case 'ascending':
@@ -152,7 +154,7 @@ class display_support {
                     if ($avg) {
                         $out = '';
                         if (($j = $avg * $width) > 0) {
-                            $marginposition = ($avg - 0.5 ) / ($length + $isrestricted) * 100;
+                            $marginposition = ($avg - 0.5 ) / ($question->length + $isrestricted) * 100;
                         }
                         if (!right_to_left()) {
                             $out .= '<img style="height:12px; width: 6px; margin-left: '.$marginposition.
@@ -204,12 +206,13 @@ class display_support {
         return html_writer::table($table);
     }
 
-    public static function mkrescount($counts, $rids, $rows, $question, $precision, $length, $sort) {
+    public static function mkrescount($counts, $rids, $rows, $question, $sort) {
         // Display number of responses to Rate questions - see http://moodle.org/mod/forum/discuss.php?d=185106.
         global $DB;
+
         $nbresponses = count($rids);
         // Prepare data to be displayed.
-        $isrestricted = ($length < count($question->choices)) && $precision == 2;
+        $isrestricted = ($question->length < count($question->choices)) && $question->precise == 2;
 
         $rsql = '';
         if (!empty($rids)) {
@@ -249,14 +252,14 @@ class display_support {
                     break;
             }
         }
-        $nbranks = $length;
+        $nbranks = $question->length;
         $ranks = array();
         foreach ($rows as $row) {
             $choiceid = $row->id;
             foreach ($choices as $choice) {
                 if ($choice->choiceid == $choiceid) {
                     $n = 0;
-                    for ($i = 0; $i < $nbranks; $i++) {
+                    for ($i = 1; $i <= $nbranks; $i++) {
                         if ($choice->rankvalue == $i) {
                             $n++;
                             if (!isset($ranks[$choice->content][$i])) {
@@ -271,33 +274,31 @@ class display_support {
 
         // Psettings for display.
         $strtotal = '<strong>'.get_string('total', 'questionnaire').'</strong>';
-        $isna = $precision == 1;
+        $isna = $question->precise == 1;
         $isnahead = '';
         $osgood = false;
-        if ($precision == 3) { // Osgood's semantic differential.
+        if ($question->precise == 3) { // Osgood's semantic differential.
             $osgood = true;
         }
         if ($isna) {
             $isnahead = get_string('notapplicable', 'questionnaire').'<br />(#)';
         }
-        if ($precision == 1) {
+        if ($question->precise == 1) {
             $na = get_string('notapplicable', 'questionnaire');
         } else {
             $na = '';
         }
         $nameddegrees = 0;
         $n = array();
+        foreach ($question->nameddegrees as $degree) {
+            $content = $degree;
+            $n[$nameddegrees] = format_text($content, FORMAT_HTML, ['noclean' => true]);
+            $nameddegrees++;
+        }
         foreach ($question->choices as $choice) {
-            $content = $choice->content;
-            // Check for number from 1 to 3 digits, followed by the equal sign = (to accomodate named degrees).
-            if (preg_match("/^([0-9]{1,3})=(.*)$/", $content, $ndd)) {
-                $n[$nameddegrees] = format_text($ndd[2], FORMAT_HTML, ['noclean' => true]);
-                $nameddegrees++;
-            } else {
-                $contents = questionnaire_choice_values($content);
-                if ($contents->modname) {
-                    $choice->content = $contents->text;
-                }
+            $contents = questionnaire_choice_values($choice->content);
+            if ($contents->modname) {
+                $choice->content = $contents->text;
             }
         }
 
@@ -309,7 +310,7 @@ class display_support {
         }
 
         // Display the column titles.
-        for ($j = 0; $j < $length; $j++) {
+        for ($j = 0; $j < $question->length; $j++) {
             if (isset($n[$j])) {
                 $str = $n[$j];
             } else {
@@ -362,7 +363,7 @@ class display_support {
                 }
                 // Display ranks/rates numbers.
                 $maxrank = max($rank);
-                for ($i = 0; $i <= $length - 1; $i++) {
+                for ($i = 1; $i <= $question->length; $i++) {
                     $percent = '';
                     if (isset($rank[$i])) {
                         $str = $rank[$i];

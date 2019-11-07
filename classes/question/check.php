@@ -26,10 +26,10 @@ namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 
-class check extends base {
+class check extends question {
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\multiple';
+        return '\\mod_questionnaire\\responsetype\\multiple';
     }
 
     public function helpname() {
@@ -69,31 +69,24 @@ class check extends base {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($data, $dependants, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants, $blankquestionnaire=false) {
         // Check boxes.
         $otherempty = false;
-        if (!empty($data) ) {
-            if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
-                $data->{'q'.$this->id} = array();
-            }
+        if (!empty($response)) {
             // Verify that number of checked boxes (nbboxes) is within set limits (length = min; precision = max).
-            if ( $data->{'q'.$this->id} ) {
+            if (!empty($response->answers[$this->id])) {
                 $otherempty = false;
-                $boxes = $data->{'q'.$this->id};
-                $nbboxes = count($boxes);
-                foreach ($boxes as $box) {
-                    $pos = strpos($box, 'other_');
-                    if (is_int($pos) == true) {
-                        $resp = 'q'.$this->id.''.substr($box, 5);
-                        if (isset($data->$resp) && (trim($data->$resp) == false)) {
-                            $otherempty = true;
-                        }
+                $nbboxes = count($response->answers[$this->id]);
+                foreach ($response->answers[$this->id] as $answer) {
+                    $choice = $this->choices[$answer->choiceid];
+                    if ($choice->is_other_choice()) {
+                        $otherempty = empty($answer->value);
                     }
                 }
                 $nbchoices = count($this->choices);
@@ -130,93 +123,65 @@ class check extends base {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
         foreach ($this->choices as $id => $choice) {
-
-            $other = strpos($choice->content, '!other');
             $checkbox = new \stdClass();
-            if ($other !== 0) { // This is a normal check box.
-                $contents = questionnaire_choice_values($choice->content);
-                $checked = false;
-                if (!empty($data) ) {
-                    $checked = in_array($id, $data->{'q'.$this->id});
-                }
-                $checkbox->name = 'q'.$this->id.'[]';
-                $checkbox->value = $id;
-                $checkbox->id = 'checkbox_'.$id;
-                $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
-                if ($checked) {
-                    $checkbox->checked = $checked;
-                }
-            } else {             // Check box with associated !other text field.
-                // In case length field has been used to enter max number of choices, set it to 20.
-                $othertext = preg_replace(
-                        array("/^!other=/", "/^!other/"),
-                        array('', get_string('other', 'questionnaire')),
-                        $choice->content);
-                $cid = 'q'.$this->id.'_'.$id;
-                if (!empty($data) && isset($data->$cid) && (trim($data->$cid) != false)) {
-                    $checked = true;
-                } else {
-                    $checked = false;
-                }
-                $name = 'q'.$this->id.'[]';
-                $value = 'other_'.$id;
-
-                $checkbox->name = $name;
-                $checkbox->oname = $cid;
-                $checkbox->value = $value;
-                $checkbox->ovalue = (isset($data->$cid) && !empty($data->$cid) ? stripslashes($data->$cid) : '');
-                $checkbox->id = 'checkbox_'.$id;
-                $checkbox->label = format_text($othertext.'', FORMAT_HTML, ['noclean' => true]);
-                if ($checked) {
-                    $checkbox->checked = $checked;
-                }
+            $contents = questionnaire_choice_values($choice->content);
+            $checked = false;
+            if (!empty($response->answers[$this->id]) ) {
+                $checked = isset($response->answers[$this->id][$id]);
+            }
+            $checkbox->name = 'q'.$this->id.'['.$id.']';
+            $checkbox->value = $id;
+            $checkbox->id = 'checkbox_'.$id;
+            $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
+            if ($checked) {
+                $checkbox->checked = $checked;
+            }
+            if ($choice->is_other_choice()) {
+                $checkbox->oname = 'q'.$this->id.'['.$choice->other_choice_name().']';
+                $checkbox->ovalue = (isset($response->answers[$this->id][$id]) && !empty($response->answers[$this->id][$id]) ?
+                    stripslashes($response->answers[$this->id][$id]->value) : '');
+                $checkbox->label = format_text($choice->other_choice_display().'', FORMAT_HTML, ['noclean' => true]);
             }
             $choicetags->qelements[] = (object)['choice' => $checkbox];
         }
         if ($otherempty) {
             $this->add_notification(get_string('otherempty', 'questionnaire'));
         }
-
         return $choicetags;
     }
 
     /**
      * Return the context tags for the check response template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object The check question response context tags.
-     *
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
         $resptags->choices = [];
 
-        if (!isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id})) {
-            $data->{'q'.$this->id} = array();
+        if (!isset($response->answers[$this->id])) {
+            $response->answers[$this->id][] = new \mod_questionnaire\responsetype\answer\answer();
         }
 
         foreach ($this->choices as $id => $choice) {
             $chobj = new \stdClass();
-            if (strpos($choice->content, '!other') !== 0) {
+            if (!$choice->is_other_choice()) {
                 $contents = questionnaire_choice_values($choice->content);
                 $choice->content = $contents->text.$contents->image;
-                if (in_array($id, $data->{'q'.$this->id})) {
+                if (isset($response->answers[$this->id][$id])) {
                     $chobj->selected = 1;
                 }
                 $chobj->name = $id.$uniquetag++;
                 $chobj->content = (($choice->content === '') ? $id : format_text($choice->content, FORMAT_HTML,
                     ['noclean' => true]));
             } else {
-                $othertext = preg_replace(
-                        array("/^!other=/", "/^!other/"),
-                        array('', get_string('other', 'questionnaire')),
-                        $choice->content);
-                $cid = 'q'.$this->id.'_'.$id;
-
-                if (isset($data->$cid)) {
+                $othertext = $choice->other_choice_display();
+                if (isset($response->answers[$this->id][$id])) {
+                    $oresp = $response->answers[$this->id][$id]->value;
                     $chobj->selected = 1;
-                    $chobj->othercontent = (!empty($data->$cid) ? htmlspecialchars($data->$cid) : '&nbsp;');
+                    $chobj->othercontent = (!empty($oresp) ? htmlspecialchars($oresp) : '&nbsp;');
                 }
                 $chobj->name = $id.$uniquetag++;
                 $chobj->content = (($othertext === '') ? $id : $othertext);
@@ -233,38 +198,50 @@ class check extends base {
      * @return boolean
      */
     public function response_valid($responsedata) {
+        $nbrespchoices = 0;
         $valid = true;
-        if (isset($responsedata->{'q'.$this->id})) {
-            $nbrespchoices = 0;
-            foreach ($responsedata->{'q'.$this->id} as $resp) {
-                if (strpos($resp, 'other_') !== false) {
+        if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            // If $responsedata is a response object, look through the answers.
+            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
+                foreach ($responsedata->answers[$this->id] as $answer) {
+                    if (isset($this->choices[$answer->choiceid]) && $this->choices[$answer->choiceid]->is_other_choice()) {
+                        $valid = !empty($answer->value);
+                    } else {
+                        $nbrespchoices++;
+                    }
+                }
+            }
+        } else if (isset($responsedata->{'q'.$this->id})) {
+            foreach ($responsedata->{'q'.$this->id} as $answer) {
+                if (strpos($answer, 'other_') !== false) {
                     // ..."other" choice is checked but text box is empty.
-                    $othercontent = "q".$this->id.substr($resp, 5);
+                    $othercontent = "q".$this->id.substr($answer, 5);
                     if (trim($responsedata->$othercontent) == false) {
                         $valid = false;
                         break;
                     }
                     $nbrespchoices++;
-                } else if (is_numeric($resp)) {
+                } else if (is_numeric($answer)) {
                     $nbrespchoices++;
                 }
             }
-            $nbquestchoices = count($this->choices);
-            $min = $this->length;
-            $max = $this->precise;
-            if ($max == 0) {
-                $max = $nbquestchoices;
-            }
-            if ($min > $max) {
-                $min = $max;     // Sanity check.
-            }
-            $min = min($nbquestchoices, $min);
-            if ($nbrespchoices && (($nbrespchoices < $min) || ($nbrespchoices > $max))) {
-                // Number of ticked boxes is not within min and max set limits.
-                $valid = false;
-            }
         } else {
-            $valid = parent::response_valid($responsedata);
+            return parent::response_valid($responsedata);
+        }
+
+        $nbquestchoices = count($this->choices);
+        $min = $this->length;
+        $max = $this->precise;
+        if ($max == 0) {
+            $max = $nbquestchoices;
+        }
+        if ($min > $max) {
+            $min = $max;     // Sanity check.
+        }
+        $min = min($nbquestchoices, $min);
+        if ($nbrespchoices && (($nbrespchoices < $min) || ($nbrespchoices > $max))) {
+            // Number of ticked boxes is not within min and max set limits.
+            $valid = false;
         }
 
         return $valid;
@@ -276,6 +253,15 @@ class check extends base {
 
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_precise($mform, 'maxforcedresponses');
+    }
+
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
     }
 
     /**
@@ -299,5 +285,56 @@ class check extends base {
             $formdata->precise = max($formdata->length, $formdata->precise);
         }
         return true;
+    }
+
+    /**
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata->ischeckbox = true;
+        return $mobiledata;
+    }
+
+    /**
+     * @param $mobiledata
+     * @return mixed
+     */
+    public function mobile_question_choices_display() {
+        $choices = parent::mobile_question_choices_display();
+        foreach ($choices as $choicenum => $choice) {
+            // Add a fieldkey for each choice.
+            $choices[$choicenum]->choicefieldkey = $this->mobile_fieldkey($choice->id);
+            if ($choice->is_other_choice()) {
+                $choices[$choicenum]->otherchoicekey = $this->mobile_fieldkey($choice->other_choice_name());
+                $choices[$choicenum]->content = format_text($choice->other_choice_display(), FORMAT_HTML, ['noclean' => true]);
+            }
+        }
+        return $choices;
+    }
+
+    /**
+     * @param $response
+     * @return array
+     */
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        if (isset($response->answers[$this->id])) {
+            foreach ($response->answers[$this->id] as $answer) {
+                if (isset($this->choices[$answer->choiceid])) {
+                    // Add a fieldkey for each choice.
+                    $resultdata[$this->mobile_fieldkey($answer->choiceid)] = 1;
+                    if ($this->choices[$answer->choiceid]->is_other_choice()) {
+                        $resultdata[$this->mobile_fieldkey($this->choices[$answer->choiceid]->other_choice_name())] =
+                            $answer->value;
+                    }
+                }
+            }
+        }
+        return $resultdata;
     }
 }

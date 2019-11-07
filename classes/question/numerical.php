@@ -25,7 +25,7 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 
-class numerical extends base {
+class numerical extends question {
 
     /**
      * Constructor. Use to set any default properties.
@@ -37,7 +37,7 @@ class numerical extends base {
     }
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\text';
+        return '\\mod_questionnaire\\responsetype\\text';
     }
 
     public function helpname() {
@@ -62,19 +62,19 @@ class numerical extends base {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
-     * @param string $descendantdata
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @param $descendantsdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         // Numeric.
         $questiontags = new \stdClass();
         $precision = $this->precise;
         $a = '';
-        if (isset($data->{'q'.$this->id})) {
-            $mynumber = $data->{'q'.$this->id};
+        if (isset($response->answers[$this->id][0])) {
+            $mynumber = $response->answers[$this->id][0]->value;
             if ($mynumber != '') {
                 $mynumber0 = $mynumber;
                 if (!is_numeric($mynumber) ) {
@@ -100,7 +100,7 @@ class numerical extends base {
                 }
             }
             if ($mynumber != '') {
-                $data->{'q'.$this->id} = $mynumber;
+                $response->answers[$this->id][0]->value = $mynumber;
             }
         }
 
@@ -109,25 +109,11 @@ class numerical extends base {
         $choice->size = $this->length;
         $choice->name = 'q'.$this->id;
         $choice->maxlength = $this->length;
-        $choice->value = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $choice->value = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
         $choice->id = self::qtypename($this->type_id) . $this->id;
         $questiontags->qelements = new \stdClass();
         $questiontags->qelements->choice = $choice;
         return $questiontags;
-    }
-
-    /**
-     * Return the context tags for the numeric response template.
-     * @param object $data
-     * @return object The numeric question response context tags.
-     *
-     */
-    protected function response_survey_display($data) {
-        $resptags = new \stdClass();
-        if (isset($data->{'q'.$this->id})) {
-            $resptags->content = $data->{'q'.$this->id};
-        }
-        return $resptags;
     }
 
     /**
@@ -137,13 +123,38 @@ class numerical extends base {
      * @return boolean
      */
     public function response_valid($responsedata) {
-        if (isset($responsedata->{'q'.$this->id})) {
+        $responseval = false;
+        if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            // If $responsedata is a response object, look through the answers.
+            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
+                $answer = $responsedata->answers[$this->id][0];
+                $responseval = $answer->value;
+            }
+        } else if (isset($responsedata->{'q'.$this->id})) {
+            $responseval = $responsedata->{'q' . $this->id};
+        }
+        if ($responseval !== false) {
             // If commas are present, replace them with periods, in case that was meant as the European decimal place.
-            $responseval = str_replace(',', '.', $responsedata->{'q'.$this->id});
+            $responseval = str_replace(',', '.', $responseval);
             return (($responseval == '') || is_numeric($responseval));
         } else {
             return parent::response_valid($responsedata);
         }
+    }
+
+    /**
+     * Return the context tags for the numeric response template.
+     * @param object $data
+     * @return object The numeric question response context tags.
+     *
+     */
+    protected function response_survey_display($response) {
+        $resptags = new \stdClass();
+        if (isset($response->answers[$this->id])) {
+            $answer = reset($response->answers[$this->id]);
+            $resptags->content = $answer->value;
+        }
+        return $resptags;
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
@@ -153,5 +164,41 @@ class numerical extends base {
 
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_precise($mform, 'numberofdecimaldigits');
+    }
+
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata->isnumeric = true;
+        return $mobiledata;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function mobile_question_choices_display() {
+        $choices = [];
+        $choices[0] = new \stdClass();
+        $choices[0]->id = 0;
+        $choices[0]->choice_id = 0;
+        $choices[0]->question_id = $this->id;
+        $choices[0]->content = '';
+        $choices[0]->value = null;
+        return $choices;
     }
 }

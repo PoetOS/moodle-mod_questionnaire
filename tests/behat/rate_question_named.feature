@@ -30,7 +30,8 @@ Feature: Rate scale questions can use names for degrees
       | Nb of scale items | 3 |
       | Type of rate scale | Normal |
       | Question Text | What did you think of these movies? |
-      | Possible answers | 1=I did not like,2=Ehhh,3=I liked,Star Wars,Casablanca,Airplane |
+      | Possible answers | Star Wars,Casablanca,Airplane |
+      | Named degrees    | 1=I did not like,2=Ehhh,3=I liked |
     Then I should see "position 1"
     And I should see "[Rate (scale 1..5)] (Q1)"
     And I should see "What did you think of these movies?"

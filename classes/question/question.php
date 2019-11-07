@@ -55,7 +55,7 @@ $idcounter = 0;
 
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
-abstract class base {
+abstract class question {
 
     // Class Properties.
     /** @var int $id The database id of this question. */
@@ -99,6 +99,9 @@ abstract class base {
 
     /** @var boolean $deleted The deleted flag. */
     public $deleted     = 'n';
+
+    /** @var mixed $extradata Any custom data for the question type. */
+    public $extradata = '';
 
     /** @var array $qtypenames List of all question names. */
     private static $qtypenames = [
@@ -147,11 +150,15 @@ abstract class base {
             $this->content = $question->content;
             $this->required = $question->required;
             $this->deleted = $question->deleted;
+            $this->extradata = $question->extradata;
 
             $this->type_id = $question->type_id;
             $this->type = $qtypes[$this->type_id]->type;
             $this->responsetable = $qtypes[$this->type_id]->response_table;
-            if ($qtypes[$this->type_id]->has_choices == 'y') {
+
+            if (!empty($question->choices)) {
+                $this->choices = $question->choices;
+            } else if ($qtypes[$this->type_id]->has_choices == 'y') {
                 $this->get_choices();
             }
             // Added for dependencies.
@@ -164,7 +171,7 @@ abstract class base {
         }
 
         if ($respclass = $this->responseclass()) {
-            $this->response = new $respclass($this);
+            $this->responsetype = new $respclass($this);
         }
     }
 
@@ -194,7 +201,8 @@ abstract class base {
 
     /**
      * Return the different question type names.
-     * @return array
+     * @param $qtype
+     * @return string
      */
     static public function qtypename($qtype) {
         if (array_key_exists($qtype, self::$qtypenames)) {
@@ -205,20 +213,29 @@ abstract class base {
     }
 
     /**
+     * Return all of the different question type names.
+     * @return array
+     */
+    static public function qtypenames() {
+        return self::$qtypenames;
+    }
+
+    /**
      * Override and return true if the question has choices.
      */
     public function has_choices() {
         return false;
     }
 
+    /**
+     * @throws \dml_exception
+     */
     private function get_choices() {
         global $DB;
 
         if ($choices = $DB->get_records('questionnaire_quest_choice', ['question_id' => $this->id], 'id ASC')) {
             foreach ($choices as $choice) {
-                $this->choices[$choice->id] = new \stdClass();
-                $this->choices[$choice->id]->content = $choice->content;
-                $this->choices[$choice->id]->value = $choice->value;
+                $this->choices[$choice->id] = choice\choice::create_from_data($choice);
             }
         } else {
             $this->choices = [];
@@ -249,6 +266,9 @@ abstract class base {
         return false;
     }
 
+    /**
+     * @throws \dml_exception
+     */
     private function get_dependencies() {
         global $DB;
 
@@ -349,8 +369,11 @@ abstract class base {
         return $fulfilled;
     }
 
+    /**
+     * @return mixed
+     */
     public function response_table() {
-        return $this->response->response_table();
+        return $this->responsetype->response_table();
     }
 
     /**
@@ -361,18 +384,20 @@ abstract class base {
      */
     public function response_has_choice($rid, $choiceid) {
         global $DB;
-        $choiceval = $this->response->transform_choiceid($choiceid);
+        $choiceval = $this->responsetype->transform_choiceid($choiceid);
         return $DB->record_exists($this->response_table(),
             ['response_id' => $rid, 'question_id' => $this->id, 'choice_id' => $choiceval]);
     }
 
     /**
      * Insert response data method.
+     * @param object $responsedata All of the responsedata.
+     * @return bool
      */
-    public function insert_response($rid, $val) {
-        if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->insert_response($rid, $val);
+    public function insert_response($responsedata) {
+        if (isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->insert_response($responsedata);
         } else {
             return false;
         }
@@ -382,9 +407,9 @@ abstract class base {
      * Get results data method.
      */
     public function get_results($rids = false) {
-        if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->get_results($rids);
+        if (isset ($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->get_results($rids);
         } else {
             return false;
         }
@@ -394,9 +419,9 @@ abstract class base {
      * Display results method.
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->display_results($rids, $sort, $anonymous);
+        if (isset ($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->display_results($rids, $sort, $anonymous);
         } else {
             return false;
         }
@@ -472,9 +497,9 @@ abstract class base {
      * @return array | boolean
      */
     public function get_feedback_scores(array $rids) {
-        if ($this->valid_feedback() && isset($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->get_feedback_scores($rids);
+        if ($this->valid_feedback() && isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->get_feedback_scores($rids);
         } else {
             return false;
         }
@@ -507,8 +532,24 @@ abstract class base {
      * @return boolean
      */
     public function response_complete($responsedata) {
-        return !($this->required() && ($this->deleted == 'n') &&
-                 (!isset($responsedata->{'q'.$this->id}) || $responsedata->{'q'.$this->id} == ''));
+        if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
+            // If $responsedata is a response object, look through the answers.
+            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
+                $answer = $responsedata->answers[$this->id][0];
+                if (!empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
+                    $this->choices[$answer->choiceid]->is_other_choice()) {
+                    $answered = !empty($answer->value);
+                } else {
+                    $answered = (!empty($answer->choiceid) || !empty($answer->value));
+                }
+            } else {
+                $answered = false;
+            }
+        } else {
+            // If $responsedata is webform data, check that its not empty.
+            $answered = isset($responsedata->{'q'.$this->id}) && ($responsedata->{'q'.$this->id} != '');
+        }
+        return !($this->required() && ($this->deleted == 'n') && !$answered);
     }
 
     /**
@@ -543,6 +584,7 @@ abstract class base {
             $questionrecord->content = $this->content;
             $questionrecord->required = $this->required;
             $questionrecord->deleted = $this->deleted;
+            $questionrecord->extradata = $this->extradata;
             $questionrecord->dependquestion = $this->dependquestion;
             $questionrecord->dependchoice = $this->dependchoice;
         } else {
@@ -598,6 +640,9 @@ abstract class base {
         }
     }
 
+    /**
+     * @return bool
+     */
     public function update_choices() {
         $retvalue = true;
         if ($this->has_choices() && isset($this->choices)) {
@@ -619,11 +664,21 @@ abstract class base {
         return $retvalue;
     }
 
+    /**
+     * @param $choicerecord
+     * @return bool
+     * @throws \dml_exception
+     */
     public function update_choice($choicerecord) {
         global $DB;
         return $DB->update_record('questionnaire_quest_choice', $choicerecord);
     }
 
+    /**
+     * @param $choicerecord
+     * @return bool
+     * @throws \dml_exception
+     */
     public function add_choice($choicerecord) {
         global $DB;
         $retvalue = true;
@@ -643,15 +698,13 @@ abstract class base {
      * @param integer|object $choice Either the integer id of the choice, or the choice record.
      */
     public function delete_choice($choice) {
-        global $DB;
-
         $retvalue = true;
         if (is_int($choice)) {
             $cid = $choice;
         } else {
             $cid = $choice->id;
         }
-        if ($DB->delete_records('questionnaire_quest_choice', ['id' => $cid])) {
+        if (\mod_questionnaire\question\choice\choice::delete_from_db_by_id($cid)) {
             unset($this->choices[$cid]);
         } else {
             $retvalue = false;
@@ -659,11 +712,32 @@ abstract class base {
         return $retvalue;
     }
 
+    /**
+     * Insert extradata field into db. This will be stored as a string. If a question needs a different format, override this.
+     * @param $extradata
+     * @return bool
+     * @throws \dml_exception
+     */
+    public function insert_extradata($extradata) {
+        global $DB;
+        return $DB->set_field('questionnaire_question', 'extradata', $extradata, ['id' => $this->id]);
+    }
+
+    /**
+     * @param $dependencyrecord
+     * @return bool
+     * @throws \dml_exception
+     */
     public function update_dependency($dependencyrecord) {
         global $DB;
         return $DB->update_record('questionnaire_dependency', $dependencyrecord);
     }
 
+    /**
+     * @param $dependencyrecord
+     * @return bool
+     * @throws \dml_exception
+     */
     public function add_dependency($dependencyrecord) {
         global $DB;
 
@@ -760,9 +834,9 @@ abstract class base {
      * @return boolean | string
      */
     public function results_template() {
-        if (isset ($this->response) && is_object($this->response) &&
-            is_subclass_of($this->response, '\\mod_questionnaire\\response\\base')) {
-            return $this->response->results_template();
+        if (isset ($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+            return $this->responsetype->results_template();
         } else {
             return false;
         }
@@ -770,55 +844,61 @@ abstract class base {
 
     /**
      * Get the output for question renderers / templates.
-     * @param object $formdata
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param integer $qnum
      * @param boolean $blankquestionnaire
+     * @return \stdClass
      */
-    public function question_output($formdata, $dependants=[], $qnum='', $blankquestionnaire) {
-        $pagetags = $this->questionstart_survey_display($qnum, $formdata);
-        $pagetags->qformelement = $this->question_survey_display($formdata, $dependants, $blankquestionnaire);
+    public function question_output($response, $dependants=[], $qnum='', $blankquestionnaire) {
+        $pagetags = $this->questionstart_survey_display($qnum, $response);
+        $pagetags->qformelement = $this->question_survey_display($response, $dependants, $blankquestionnaire);
         return $pagetags;
     }
 
     /**
      * Get the output for question renderers / templates.
-     * @param object $formdata
-     * @param string $descendantdata
-     * @param integer $qnum
-     * @param boolean $blankquestionnaire
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @param string $qnum
+     * @return \stdClass
      */
-    public function response_output($data, $qnum='') {
-        $pagetags = $this->questionstart_survey_display($qnum, $data);
-        $pagetags->qformelement = $this->response_survey_display($data);
+    public function response_output($response, $qnum='') {
+        $pagetags = $this->questionstart_survey_display($qnum, $response);
+        $pagetags->qformelement = $this->response_survey_display($response);
         return $pagetags;
     }
 
     /**
      * Get the output for the start of the questions in a survey.
      * @param integer $qnum
-     * @param object $formdata
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @return \stdClass
+     * @throws \coding_exception
      */
-    public function questionstart_survey_display($qnum, $formdata='') {
+    public function questionstart_survey_display($qnum, $response=null) {
         global $OUTPUT, $SESSION, $questionnaire, $PAGE;
 
         $pagetags = new \stdClass();
         $currenttab = $SESSION->questionnaire->current_tab;
         $pagetype = $PAGE->pagetype;
-        $skippedquestion = false;
         $skippedclass = '';
-        $autonum = $questionnaire->autonum;
         // If no questions autonumbering.
         $nonumbering = false;
-        if ($autonum != 1 && $autonum != 3) {
+        if (!$questionnaire->questions_autonumbered()) {
             $qnum = '';
             $nonumbering = true;
         }
+
+        // For now, check what the response type is until we've got it all refactored.
+        if ($response instanceof \mod_questionnaire\responsetype\response\response) {
+            $skippedquestion = !isset($response->answers[$this->id]);
+        } else {
+            $skippedquestion = !empty($response) && !array_key_exists('q'.$this->id, $response);
+        }
+
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
         if (($pagetype == 'mod-questionnaire-myreport' || $pagetype == 'mod-questionnaire-report') &&
-            ($nonumbering == false) && !empty($formdata) && !empty($this->dependencies) &&
-            !array_key_exists('q'.$this->id, $formdata)) {
-            $skippedquestion = true;
+            ($nonumbering == false) && !empty($this->dependencies) && $skippedquestion) {
             $skippedclass = ' unselected';
             $qnum = '<span class="'.$skippedclass.'">('.$qnum.')</span>';
         }
@@ -894,8 +974,11 @@ abstract class base {
         $this->form_question_text($mform, $form->_customdata['modcontext']);
 
         if ($this->has_choices()) {
-            $this->allchoices = $this->form_choices($mform, $this->choices);
+            // This is used only by the question editing form.
+            $this->allchoices = $this->form_choices($mform);
         }
+
+        $this->form_extradata($mform);
 
         // Added for advanced dependencies, parameter $editformobject is needed to use repeat_elements.
         if ($questionnaire->navigate > 0) {
@@ -928,6 +1011,11 @@ abstract class base {
         return true;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @throws \coding_exception
+     */
     protected function form_header(\MoodleQuickForm $mform, $helpname = '') {
         // Display different messages for new question creation and existing question modification.
         if (isset($this->qid) && !empty($this->qid)) {
@@ -943,6 +1031,11 @@ abstract class base {
         $mform->addHelpButton('questionhdredit', $helpname, 'questionnaire');
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     protected function form_name(\MoodleQuickForm $mform) {
         $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'),
                         ['size' => '30', 'maxlength' => '30']);
@@ -951,6 +1044,11 @@ abstract class base {
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     protected function form_required(\MoodleQuickForm $mform) {
         $reqgroup = [];
         $reqgroup[] =& $mform->createElement('radio', 'required', '', get_string('yes'), 'y');
@@ -960,10 +1058,18 @@ abstract class base {
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
         self::form_length_text($mform, $helpname);
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         self::form_precise_text($mform, $helpname);
     }
@@ -1057,6 +1163,12 @@ abstract class base {
         return true;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param $context
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     protected function form_question_text(\MoodleQuickForm $mform, $context) {
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true, 'context' => $context];
         $mform->addElement('editor', 'content', get_string('text', 'questionnaire'), null, $editoroptions);
@@ -1065,39 +1177,69 @@ abstract class base {
         return $mform;
     }
 
-    protected function form_choices(\MoodleQuickForm $mform, array $choices, $helpname = '') {
-        $numchoices = count($choices);
-        $allchoices = '';
-        foreach ($choices as $choice) {
-            if (!empty($allchoices)) {
-                $allchoices .= "\n";
+    /**
+     * @param \MoodleQuickForm $mform
+     * @return string
+     * @throws \coding_exception
+     */
+    protected function form_choices(\MoodleQuickForm $mform) {
+        if ($this->has_choices()) {
+            $numchoices = count($this->choices);
+            $allchoices = '';
+            foreach ($this->choices as $choice) {
+                if (!empty($allchoices)) {
+                    $allchoices .= "\n";
+                }
+                $allchoices .= $choice->content;
             }
-            $allchoices .= $choice->content;
-        }
-        if (empty($helpname)) {
-            $helpname = $this->helpname();
-        }
 
-        $mform->addElement('html', '<div class="qoptcontainer">');
-        $options = ['wrap' => 'virtual', 'class' => 'qopts'];
-        $mform->addElement('textarea', 'allchoices', get_string('possibleanswers', 'questionnaire'), $options);
-        $mform->setType('allchoices', PARAM_RAW);
-        $mform->addRule('allchoices', null, 'required', null, 'client');
-        $mform->addHelpButton('allchoices', $helpname, 'questionnaire');
-        $mform->addElement('html', '</div>');
-        $mform->addElement('hidden', 'num_choices', $numchoices);
-        $mform->setType('num_choices', PARAM_INT);
+            $helpname = $this->helpname();
+
+            $mform->addElement('html', '<div class="qoptcontainer">');
+            $options = ['wrap' => 'virtual', 'class' => 'qopts'];
+            $mform->addElement('textarea', 'allchoices', get_string('possibleanswers', 'questionnaire'), $options);
+            $mform->setType('allchoices', PARAM_RAW);
+            $mform->addRule('allchoices', null, 'required', null, 'client');
+            $mform->addHelpButton('allchoices', $helpname, 'questionnaire');
+            $mform->addElement('html', '</div>');
+            $mform->addElement('hidden', 'num_choices', $numchoices);
+            $mform->setType('num_choices', PARAM_INT);
+        }
         return $allchoices;
+    }
+
+    /**
+     * Override if the question uses the extradata field.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm
+     */
+    protected function form_extradata(\MoodleQuickForm $mform, $helpname = '') {
+        $mform->addElement('hidden', 'extradata');
+        $mform->setType('extradata', PARAM_INT);
+        return $mform;
     }
 
     // Helper functions for commonly used editing functions.
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param int $value
+     * @return \MoodleQuickForm
+     */
     static public function form_length_hidden(\MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'length', $value);
         $mform->setType('length', PARAM_INT);
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @param int $value
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     static public function form_length_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'length', get_string($helpname, 'questionnaire'), ['size' => '1'], $value);
         $mform->setType('length', PARAM_INT);
@@ -1107,12 +1249,24 @@ abstract class base {
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param int $value
+     * @return \MoodleQuickForm
+     */
     static public function form_precise_hidden(\MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'precise', $value);
         $mform->setType('precise', PARAM_INT);
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @param int $value
+     * @return \MoodleQuickForm
+     * @throws \coding_exception
+     */
     static public function form_precise_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'precise', get_string($helpname, 'questionnaire'), ['size' => '1']);
         $mform->setType('precise', PARAM_INT);
@@ -1139,7 +1293,7 @@ abstract class base {
             $formdata->content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
                 'question', $formdata->qid, ['subdirs' => true], $formdata->content);
 
-            $fields = ['name', 'type_id', 'length', 'precise', 'required', 'content'];
+            $fields = ['name', 'type_id', 'length', 'precise', 'required', 'content', 'extradata'];
             $questionrecord = new \stdClass();
             $questionrecord->id = $formdata->qid;
             foreach ($fields as $f) {
@@ -1157,7 +1311,7 @@ abstract class base {
             // Create new question:
             // Need to update any image content after the question is created, so create then update the content.
             $formdata->surveyid = $formdata->sid;
-            $fields = ['surveyid', 'name', 'type_id', 'length', 'precise', 'required', 'position'];
+            $fields = ['surveyid', 'name', 'type_id', 'length', 'precise', 'required', 'position', 'extradata'];
             $questionrecord = new \stdClass();
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {
@@ -1355,5 +1509,97 @@ abstract class base {
             error (get_string('enterpossibleanswers', 'questionnaire'));
         }
         return false;
+    }
+
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return false;
+    }
+
+    /**
+     * Override and return false if not supporting mobile app.
+     *
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function mobile_question_display($qnum, $autonum = false) {
+        $options = ['noclean' => true, 'para' => false, 'filter' => true,
+            'context' => $this->context, 'overflowdiv' => true];
+        $mobiledata = (object)[
+            'id' => $this->id,
+            'name' => $this->name,
+            'type_id' => $this->type_id,
+            'length' => $this->length,
+            'content' => format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php', $this->context->id,
+                'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options),
+            'content_stripped' => strip_tags($this->content),
+            'required' => ($this->required == 'y') ? 1 : 0,
+            'deleted' => $this->deleted,
+            'response_table' => $this->responsetable,
+            'fieldkey' => $this->mobile_fieldkey(),
+            'precise' => $this->precise,
+            'qnum' => $qnum,
+            'errormessage' => get_string('required') . ': ' . $this->name
+        ];
+        $mobiledata->choices = $this->mobile_question_choices_display();
+
+        if ($autonum) {
+            $mobiledata->content = $qnum . '. ' . $mobiledata->content;
+            $mobiledata->content_stripped = $qnum . '. ' . $mobiledata->content_stripped;
+        }
+        $mobiledata->responses = '';
+        return $mobiledata;
+    }
+
+    /**
+     * @return array
+     */
+    public function mobile_question_choices_display() {
+        $choices = [];
+        $cnum = 0;
+        if ($this->has_choices()) {
+            foreach ($this->choices as $choice) {
+                $choices[$cnum] = clone($choice);
+                $contents = questionnaire_choice_values($choice->content);
+                $choices[$cnum]->content = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
+                $cnum++;
+            }
+        }
+        return $choices;
+    }
+
+    /**
+     * Return a field key to be used by the mobile app.
+     * @param $choiceid
+     * @return string
+     */
+    public function mobile_fieldkey($choiceid = 0) {
+        $choicefield = '';
+        if ($choiceid !== 0) {
+            $choicefield = '_' . $choiceid;
+        }
+        return 'response_' . $this->type_id . '_' . $this->id . $choicefield;
+    }
+
+    /**
+     * @param $response
+     * @return array
+     */
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        if (isset($response->answers[$this->id][0])) {
+            $resultdata[$this->mobile_fieldkey()] = $response->answers[$this->id][0]->value;
+        } else {
+            $resultdata[$this->mobile_fieldkey()] = false;
+        }
+
+        return $resultdata;
     }
 }

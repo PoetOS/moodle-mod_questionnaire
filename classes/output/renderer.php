@@ -164,7 +164,7 @@ class renderer extends \plugin_renderer_base {
         $output = '';
         if (is_array($inputs)) {
             foreach ($inputs as $name => $attributes) {
-                $output .= \html_writer::empty_tag('input', array_merge(['name' => $name], $attributes));
+                $output .= \html_writer::empty_tag('input', array_merge(['name' => $name], $attributes)) . ' ';
             }
         } else if (is_string($inputs)) {
             $output .= \html_writer::tag('p', $inputs);
@@ -174,16 +174,16 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question for a survey.
-     * @param mod_questionnaire\question\base $question The question object.
-     * @param array $formdata Any returned form data.
+     * @param \mod_questionnaire\question\question $question The question object.
+     * @param \mod_questionnaire\responsetype\response\response $response Any current response data.
      * @param array $dependants Array of all questions/choices depending on $question.
      * @param int $qnum The question number.
      * @param boolean $blankquestionnaire Used for printing a blank one.
      * @return string The output for the page.
      */
-    public function question_output($question, $formdata, $dependants=[], $qnum, $blankquestionnaire) {
+    public function question_output($question, $response, $dependants=[], $qnum, $blankquestionnaire) {
 
-        $pagetags = $question->question_output($formdata, $dependants, $qnum, $blankquestionnaire);
+        $pagetags = $question->question_output($response, $dependants, $qnum, $blankquestionnaire);
 
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -203,13 +203,14 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question response.
-     * @param mod_questionnaire\question\base $question The question object.
-     * @param stdClass $data All of the response data.
+     * @param \mod_questionnaire\question\question $question The question object.
+     * @param \mod_questionnaire\responsetype\response\response $response The response object.
      * @param int $qnum The question number.
      * @return string The output for the page.
+     * @throws \moodle_exception
      */
-    public function response_output($question, $data, $qnum=null) {
-        $pagetags = $question->response_output($data, $qnum);
+    public function response_output($question, $response, $qnum=null) {
+        $pagetags = $question->response_output($response, $qnum);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -228,29 +229,32 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render all responses for a question.
-     * @param stdClass $data All of the response data.
+     * @param array \mod_questionnaire\responstype\response\response | string $responses
+     * @param array \mod_questionnaire\question\question $questions
      * @return string The output for the page.
+     * @throws \moodle_exception
      */
-    public function all_response_output($data=null) {
+    public function all_response_output($responses, $questions = null) {
         $output = '';
-        if (is_string($data)) {
-            $output .= $data;
+        if (is_string($responses)) {
+            $output .= $responses;
         } else {
-            foreach ($data as $qnum => $responses) {
-                $question = $responses['question'];
-                $pagetags = $question->questionstart_survey_display($qnum);
-                foreach ($responses as $item => $response) {
-                    if ($item !== 'question') {
-                        $resptags = $question->response_output($response['respdata']);
-                        // If the response has a template, then render it from the 'qformelement' context.
-                        // If no template, then 'qformelement' already contains HTML.
-                        if (($template = $question->response_template())) {
-                            $resptags->qformelement = $this->render_from_template($template, $resptags->qformelement);
-                        }
-                        $resptags->respdate = $response['respdate'];
-                        $pagetags->responses[] = $resptags;
-                    }
+            $qnum = 1;
+            foreach ($questions as $question) {
+                if (empty($pagetags = $question->questionstart_survey_display($qnum))) {
+                    continue;
                 }
+                foreach ($responses as $response) {
+                    $resptags = $question->response_output($response);
+                    // If the response has a template, then render it from the 'qformelement' context.
+                    // If no template, then 'qformelement' already contains HTML.
+                    if (($template = $question->response_template())) {
+                        $resptags->qformelement = $this->render_from_template($template, $resptags->qformelement);
+                    }
+                    $resptags->respdate = userdate($response->submitted);
+                    $pagetags->responses[] = $resptags;
+                }
+                $qnum++;
                 $output .= $this->render_from_template('mod_questionnaire/response_container', $pagetags);
             }
         }
@@ -259,7 +263,7 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question results summary.
-     * @param mod_questionnaire\question\base $question The question object.
+     * @param mod_questionnaire\question\question $question The question object.
      * @param array $rids The response ids.
      * @param string $sort The sort order being used.
      * @param string $anonymous The value of the anonymous setting.
@@ -322,7 +326,7 @@ class renderer extends \plugin_renderer_base {
     public function print_preview_formend($url, $submitstr, $resetstr) {
         $output = '';
         $output .= \html_writer::start_tag('div');
-        $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr]);
+        $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr, 'class' => 'btn btn-primary']);
         $output .= ' ';
         $output .= \html_writer::tag('a', $resetstr, ['href' => $url]);
         $output .= \html_writer::end_tag('div') . "\n";

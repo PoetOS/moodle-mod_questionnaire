@@ -126,9 +126,13 @@ function dependdrop(qId, children) {
 /* exported other_check */
 function other_check(name) {
     var other = name.split("_");
+    var other = name.slice(name.indexOf("o")+1);
+    if (other.indexOf("]") != -1) {
+        other = other.slice(0, other.indexOf("]"));
+    }
     var f = document.getElementById("phpesp_response");
     for (var i = 0; i <= f.elements.length; i++) {
-        if (f.elements[i].value == "other_" + other[1]) {
+        if (f.elements[i].value == other) {
             f.elements[i].checked = true;
             break;
         }

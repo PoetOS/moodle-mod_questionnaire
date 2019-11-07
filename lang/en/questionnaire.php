@@ -37,6 +37,8 @@ $string['alignment'] = 'Radio buttons Alignment';
 $string['alignment_help'] = 'Select buttons alignment: vertical (default) or horizontal.';
 $string['alignment_link'] = 'mod/questionnaire/questions#Radio_Buttons';
 $string['all'] = 'All';
+$string['allnameddegrees'] = 'Named degrees';
+$string['allnameddegrees_help'] = 'Specify text to display for rate values instead of the number. Leave a value blank to not use.';
 $string['alreadyfilled'] = 'You have already filled out this questionnaire for us{$a}. Thank you.';
 $string['andaveragevalues'] = 'and average values';
 $string['anonymous'] = 'Anonymous';
@@ -279,10 +281,11 @@ value to its default **0** value. If you set **Min.** or **Max.** to values othe
 respondent does not comply with your requirements. Obviously you should make any requirements clear to the respondent either in the general instructions of
 your Questionnaire or in the text of relevant questions.';
 $string['misconfigured'] = 'Course is misconfigured';
-$string['missingquestion'] = 'Please answer Required question ';
-$string['missingquestions'] = 'Please answer Required questions: ';
+$string['missingquestion'] = 'Please answer required question ';
+$string['missingquestions'] = 'Please answer required questions: ';
 $string['modulename'] = 'Questionnaire';
 $string['modulename_help'] = 'The questionnaire module allows you to construct surveys using a variety of question types, for the purpose of gathering data from users.';
+$string['modulename_link'] = 'mod/questionnaire/view';
 $string['modulenameplural'] = 'Questionnaires';
 $string['movedisabled'] = 'This item cannot be moved';
 $string['myresponses'] = 'All your responses';

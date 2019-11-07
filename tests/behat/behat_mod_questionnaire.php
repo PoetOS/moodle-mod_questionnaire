@@ -85,6 +85,18 @@ class behat_mod_questionnaire extends behat_base {
             }
             $fielddata = new TableNode($rows);
         }
+        if (isset($hashrows['Named degrees'])) {
+            // Find the row that contained multiline data and add line breaks. Rows are two item arrays where the
+            // first is an identifier and the second is the value.
+            foreach ($rows as $key => $row) {
+                if ($row[0] == 'Named degrees') {
+                    $row[1] = str_replace(',', "\n", $row[1]);
+                    $rows[$key] = $row;
+                    break;
+                }
+            }
+            $fielddata = new TableNode($rows);
+        }
 
         $this->execute('behat_forms::i_set_the_field_to', array('id_type_id', $questiontype));
         $this->execute('behat_forms::press_button', 'Add selected question type');

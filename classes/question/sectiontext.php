@@ -25,12 +25,18 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 
-class sectiontext extends base {
+class sectiontext extends question {
 
+    /**
+     * @return object|string
+     */
     protected function responseclass() {
         return '';
     }
 
+    /**
+     * @return string
+     */
     public function helpname() {
         return 'sectiontext';
     }
@@ -72,12 +78,20 @@ class sectiontext extends base {
         return 'mod_questionnaire/question_sectionfb';
     }
 
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    /**
+     * Return the context tags for the check question template.
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @param array $dependants Array of all questions/choices depending on this question.
+     * @param boolean $blankquestionnaire
+     * @return object The check question context tags.
+     *
+     */
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         global $DB, $CFG, $PAGE;
         require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
         // If !isset then normal behavior as sectiontext question.
-        if (!isset($data->questionnaire_id)) {
+        if (!isset($response->questionnaireid)) {
             return '';
         }
 
@@ -97,7 +111,7 @@ class sectiontext extends base {
             return '';
         }
 
-        list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items(null, $data->questionnaire_id);
+        list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items(null, $response->questionnaireid);
         $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
         $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
         $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
@@ -106,8 +120,8 @@ class sectiontext extends base {
         $allresponses = false;
         $currentgroupid = 0;
         $isgroupmember = false;
-        $resps = [$data->rid => null];
-        $rid = $data->rid;
+        $rid = (isset($response->id) && !empty($response->id)) ? $response->id : 0;
+        $resps = [$rid => null];
         // For $filteredsections -> get the feedback messages only for this sections!
         $feedbackmessages = $questionnaire->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses,
             $currentgroupid, $filteredsections);
@@ -121,9 +135,12 @@ class sectiontext extends base {
 
         $questiontags->qelements->choice = $choice;
         return $questiontags;
-
     }
 
+    /**
+     * @param object $data
+     * @return string
+     */
     protected function response_survey_display($data) {
         return '';
     }
@@ -138,22 +155,29 @@ class sectiontext extends base {
         return true;
     }
 
-    /*
-    //name is required for feedbacksections and better organization of different sectiontext questions
-    protected function form_name(\MoodleQuickForm $mform) {
-        return $mform;
-    }
-    */
-
+    /**
+     * @param \MoodleQuickForm $mform
+     * @return \MoodleQuickForm
+     */
     protected function form_required(\MoodleQuickForm $mform) {
         return $mform;
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm|void
+     */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_length_hidden($mform);
+        return question::form_length_hidden($mform);
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm|void
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_precise_hidden($mform);
+        return question::form_precise_hidden($mform);
     }
 }

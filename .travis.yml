@@ -1,14 +1,19 @@
 language: php
 
+# We use trusty as currently there is an issue with java and moodle-plugin-ci mustache linting which
+# causes causes tests to fail on xenial and bionic. (See https://github.com/blackboard-open-source/moodle-plugin-ci/issues/91).
+dist: trusty
+
 sudo: true
 
 addons:
   firefox: "47.0.1"
   postgresql: "9.4"
-  mysql: "8.0.2"
   apt:
     packages:
       - openjdk-8-jre-headless
+
+services: mysql
 
 cache:
   directories:
@@ -23,21 +28,16 @@ env:
  global:
   - MOODLE_BRANCH=master DB=pgsql
   - MOODLE_BRANCH=master DB=mysqli
-  - MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
-  - MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
-  - MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
-  - MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
+
+global:
+  IGNORE_NAMES=mobile_*.mustache
 
 matrix:
   exclude:
   - php: 7.2
-    env: MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
-  - php: 7.2
-    env: MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
+    env: MOODLE_BRANCH=master DB=mysqli
   - php: 7.1
-    env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
-  - php: 7.1
-    env: MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
+    env: MOODLE_BRANCH=master DB=pgsql
 
 before_install:
   - phpenv config-rm xdebug.ini

@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the parent class for questionnaire question types.
+ * This file contains the parent class for questionnaire response types.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package response
  */
 
-namespace mod_questionnaire\response;
+namespace mod_questionnaire\responsetype;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
 use \html_table;
@@ -36,14 +36,33 @@ use mod_questionnaire\db\bulk_sql_config;
  * @package response
  */
 
-abstract class base {
+abstract class responsetype {
 
-    public function __construct($question) {
+    // Class properties.
+    /** @var \mod_questionnaire\question\question $question The question for this response. */
+    public $question;
+
+    /** @var int $responseid The id of the response this is for. */
+    public $responseid;
+
+    /** @var array $choices An array of \mod_questionnaire\responsetype\choice objects. */
+    public $choices;
+
+    /**
+     * responsetype constructor.
+     * @param \mod_questionnaire\question\question $question
+     * @param int|null $responseid
+     * @param array $choices
+     */
+    public function __construct(\mod_questionnaire\question\question $question, int $responseid = null, array $choices = []) {
         $this->question = $question;
+        $this->responseid = $responseid;
+        $this->choices = $choices;
     }
 
     /**
-     * Provide the necessary response data table name.
+     * Provide the necessary response data table name. Should probably always be used with late static binding 'static::' form
+     * rather than 'self::' form to allow for class extending.
      *
      * @return string response table name.
      */
@@ -52,13 +71,31 @@ abstract class base {
     }
 
     /**
+     * Return the known response tables. Should be replaced by a better management system eventually.
+     * @return array
+     */
+    static public function all_response_tables() {
+        return ['questionnaire_response_bool', 'questionnaire_response_date', 'questionnaire_response_other',
+            'questionnaire_response_rank', 'questionnaire_response_text', 'questionnaire_resp_multiple',
+            'questionnaire_resp_single'];
+    }
+
+    /**
+     * Provide an array of answer objects from web form data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    abstract static public function answers_from_webform($responsedata, $question);
+
+    /**
      * Insert a provided response to the question.
      *
-     * @param integer $rid - The data id of the response table id.
-     * @param mixed $val - The response data provided.
+     * @param object $responsedata All of the responsedata as an object.
      * @return int|bool - on error the subtype should call set_error and return false.
      */
-    abstract public function insert_response($rid, $val);
+    abstract public function insert_response($responsedata);
 
     /**
      * Provide the result information for the specified result records.
@@ -206,14 +243,37 @@ abstract class base {
      * Return an array of answers by question/choice for the given response. Must be implemented by the subclass.
      *
      * @param int $rid The response id.
-     * @param null $col Other data columns to return.
-     * @param bool $csvexport Using for CSV export.
-     * @param int $choicecodes CSV choicecodes are required.
-     * @param int $choicetext CSV choicetext is required.
      * @return array
      */
-    static public function response_select($rid, $col = null, $csvexport = false, $choicecodes = 0, $choicetext = 1) {
+    static public function response_select($rid) {
         return [];
+    }
+
+    /**
+     * Return an array of answer objects by question for the given response id.
+     * THIS SHOULD REPLACE response_select.
+     *
+     * @param int $rid The response id.
+     * @return array array answer
+     */
+    static public function response_answers_by_question($rid) {
+        return [];
+    }
+
+    /**
+     * Provide an array of answer objects from mobile data for the question.
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\question\question $question
+     * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
+     */
+    static public function answers_from_appdata($responsedata, $question) {
+        // In most cases this can be a direct call to answers_from_webform with the one modification below. Override when this will
+        // not work.
+        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+            $responsedata->{'q'.$question->id} = $responsedata->{'q'.$question->id}[0];
+        }
+        return static::answers_from_webform($responsedata, $question);
     }
 
     /**

@@ -210,8 +210,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $data = (object)$data;
 
-        // Replace the = separator with :: separator in quest_choice content.
-        // This fixes radio button options using old "value"="display" formats.
         require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
         // Some old systems had '' instead of NULL. Change it to NULL.
@@ -219,6 +217,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
             $data->value = null;
         }
 
+        // Replace the = separator with :: separator in quest_choice content.
+        // This fixes radio button options using old "value"="display" formats.
         if (($data->value == null || $data->value == 'NULL') && !preg_match("/^([0-9]{1,3}=.*|!other=.*)$/", $data->content)) {
             $content = questionnaire_choice_values($data->content);
             if (strpos($content->text, '=')) {
@@ -401,5 +401,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->add_related_files('mod_questionnaire', 'question', 'questionnaire_question');
         $this->add_related_files('mod_questionnaire', 'sectionheading', 'questionnaire_fb_sections');
         $this->add_related_files('mod_questionnaire', 'feedback', 'questionnaire_feedback');
+
+        // Process any old rate question named degree choices after all questions and choices have been restored.
+        \mod_questionnaire\question\rate::move_all_nameddegree_choices($this->get_new_parentid('questionnaire_survey'));
     }
 }

@@ -25,10 +25,10 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 
-class yesno extends base {
+class yesno extends question {
 
     protected function responseclass() {
-        return '\\mod_questionnaire\\response\\boolean';
+        return '\\mod_questionnaire\\responsetype\\boolean';
     }
 
     public function helpname() {
@@ -102,13 +102,13 @@ class yesno extends base {
 
     /**
      * Return the context tags for the check question template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function question_survey_display($data, $dependants=[], $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants=[], $blankquestionnaire=false) {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $stryes = get_string('yes');
@@ -124,7 +124,7 @@ class yesno extends base {
 
         $options = [$val1 => $stryes, $val2 => $strno];
         $name = 'q'.$this->id;
-        $checked = (isset($data->{'q'.$this->id}) ? $data->{'q'.$this->id} : '');
+        $checked = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
         $ischecked = false;
 
         $choicetags = new \stdClass();
@@ -169,11 +169,11 @@ class yesno extends base {
 
     /**
      * Return the context tags for the text response template.
-     * @param object $data
+     * @param \mod_questionnaire\responsetype\response\response $response
      * @return object The radio question response context tags.
-     *
+     * @throws \coding_exception
      */
-    protected function response_survey_display($data) {
+    protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
@@ -182,10 +182,14 @@ class yesno extends base {
         $resptags->noname = 'q'.$this->id.$uniquetag++.'n';
         $resptags->stryes = get_string('yes');
         $resptags->strno = get_string('no');
-        if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == 'y')) {
+        if (!isset($response->answers[$this->id])) {
+            $response->answers[$this->id][] = new \mod_questionnaire\responsetype\answer\answer();
+        }
+        $answer = reset($response->answers[$this->id]);
+        if ($answer->value == 'y') {
             $resptags->yesselected = 1;
         }
-        if (isset($data->{'q'.$this->id}) && ($data->{'q'.$this->id} == 'n')) {
+        if ($answer->value == 'n') {
             $resptags->noselected = 1;
         }
 
@@ -193,10 +197,75 @@ class yesno extends base {
     }
 
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_length_hidden($mform);
+        return question::form_length_hidden($mform);
     }
 
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return base::form_precise_hidden($mform);
+        return question::form_precise_hidden($mform);
+    }
+
+    /**
+     * True if question provides mobile support.
+     *
+     * @return bool
+     */
+    public function supports_mobile() {
+        return true;
+    }
+
+    /**
+     * @param $qnum
+     * @param $fieldkey
+     * @param bool $autonum
+     * @return \stdClass
+     * @throws \coding_exception
+     */
+    public function mobile_question_display($qnum, $autonum = false) {
+        $mobiledata = parent::mobile_question_display($qnum, $autonum);
+        $mobiledata->isbool = true;
+        return $mobiledata;
+    }
+
+    /**
+     * @return mixed
+     * @throws \coding_exception
+     */
+    public function mobile_question_choices_display() {
+        $choices = [];
+        $choices[0] = new \stdClass();
+        $choices[0]->id = 0;
+        $choices[0]->choice_id = 'n';
+        $choices[0]->question_id = $this->id;
+        $choices[0]->value = null;
+        $choices[0]->content = get_string('no');
+        $choices[0]->isbool = true;
+        $choices[1] = new \stdClass();
+        $choices[1]->id = 1;
+        $choices[1]->choice_id = 'y';
+        $choices[1]->question_id = $this->id;
+        $choices[1]->value = null;
+        $choices[1]->content = get_string('yes');
+        $choices[1]->isbool = true;
+        if ($this->required()) {
+            $choices[1]->value = 'y';
+            $choices[1]->firstone = true;
+        }
+
+        return $choices;
+    }
+
+    /**
+     * @param $response
+     * @return array
+     */
+    public function get_mobile_response_data($response) {
+        $resultdata = [];
+        if (isset($response->answers[$this->id][0]) && ($response->answers[$this->id][0]->value == 'n')) {
+            $resultdata[$this->mobile_fieldkey()] = 0;
+        } else if (isset($response->answers[$this->id][0]) && ($response->answers[$this->id][0]->value == 'y')) {
+            $resultdata[$this->mobile_fieldkey()] = 1;
+        }
+
+        return $resultdata;
     }
 }
