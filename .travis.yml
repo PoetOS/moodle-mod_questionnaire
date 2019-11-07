@@ -27,22 +27,22 @@ php:
 matrix:
   exclude:
     - php: 7.1
-      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
+      env: MOODLE_BRANCH=master DB=mysqli
     - php: 7.1
+      env: MOODLE_BRANCH=master DB=pgsql
+    - php: 7.2
+      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
+    - php: 7.2
       env: MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
-    - php: 7.2
-      env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
-    - php: 7.2
-      env: MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
 
 env:
   global:
     - IGNORE_NAMES=mobile_*.mustache
   matrix:
+    - MOODLE_BRANCH=master DB=pgsql
+    - MOODLE_BRANCH=master DB=mysqli
     - MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
     - MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
-    - MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
-    - MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
 
 before_install:
   - phpenv config-rm xdebug.ini
