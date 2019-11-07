@@ -1157,19 +1157,23 @@ class questionnaire {
             $this->survey_render($formdata->sec, $msg, $formdata);
             $controlbuttons = [];
             if ($formdata->sec > 1) {
-                $controlbuttons['prev'] = ['type' => 'submit', 'value' => '<< '.get_string('previouspage', 'questionnaire')];
+                $controlbuttons['prev'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
+                    'value' => '<< '.get_string('previouspage', 'questionnaire')];
             }
             if ($this->resume) {
-                $controlbuttons['resume'] = ['type' => 'submit', 'value' => get_string('save', 'questionnaire')];
+                $controlbuttons['resume'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
+                    'value' => get_string('save', 'questionnaire')];
             }
 
             // Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
 
             if ($formdata->sec == $numsections) {
                 $controlbuttons['submittype'] = ['type' => 'hidden', 'value' => 'Submit Survey'];
-                $controlbuttons['submit'] = ['type' => 'submit', 'value' => get_string('submitsurvey', 'questionnaire')];
+                $controlbuttons['submit'] = ['type' => 'submit', 'class' => 'btn btn-primary',
+                    'value' => get_string('submitsurvey', 'questionnaire')];
             } else {
-                $controlbuttons['next'] = ['type' => 'submit', 'value' => get_string('nextpage', 'questionnaire').' >>'];
+                $controlbuttons['next'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
+                    'value' => get_string('nextpage', 'questionnaire').' >>'];
             }
             $this->page->add_to_page('controlbuttons', $this->renderer->complete_controlbuttons($controlbuttons));
         } else {
