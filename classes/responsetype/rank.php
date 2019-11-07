@@ -203,7 +203,9 @@ class rank extends responsetype {
             $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
             if (!empty ($rankvalue)) {
                 foreach ($results as $key => $result) {
-                    $result->averagevalue = $value[$key] / $result->num;
+                    if (isset($value[$key])) {
+                        $result->averagevalue = $value[$key] / $result->num;
+                    }
                 }
             }
             // Reindex by 'content'. Can't do this from the query as it won't work with MS-SQL.

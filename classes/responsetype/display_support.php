@@ -209,6 +209,7 @@ class display_support {
     public static function mkrescount($counts, $rids, $rows, $question, $sort) {
         // Display number of responses to Rate questions - see http://moodle.org/mod/forum/discuss.php?d=185106.
         global $DB;
+
         $nbresponses = count($rids);
         // Prepare data to be displayed.
         $isrestricted = ($question->length < count($question->choices)) && $question->precise == 2;
