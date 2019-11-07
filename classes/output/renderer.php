@@ -164,7 +164,7 @@ class renderer extends \plugin_renderer_base {
         $output = '';
         if (is_array($inputs)) {
             foreach ($inputs as $name => $attributes) {
-                $output .= \html_writer::empty_tag('input', array_merge(['name' => $name], $attributes));
+                $output .= \html_writer::empty_tag('input', array_merge(['name' => $name], $attributes)) . ' ';
             }
         } else if (is_string($inputs)) {
             $output .= \html_writer::tag('p', $inputs);
