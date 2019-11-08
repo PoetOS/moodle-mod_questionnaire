@@ -2329,14 +2329,12 @@ class questionnaire {
             $currentgroupid = 0;
         }
         if ($this->capabilities->readownresponses) {
-            $this->page->add_to_page('message',
-                ('<a href="'.$CFG->wwwroot.'/mod/questionnaire/myreport.php?id='.
-                    $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'&byresponse=0&action=vresp">'.
-                    get_string("continue").'</a>'));
+            $url = new moodle_url('myreport.php', ['id' => $this->cm->id, 'instance' => $this->cm->instance, 'user' => $USER->id,
+                'byresponse' => 0, 'action' => 'vresp']);
+            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
         } else {
-            $this->page->add_to_page('message',
-                ('<a href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'">'.
-                    get_string("continue").'</a>'));
+            $url = new moodle_url('/course/view.php', ['id' => $this->course->id]);
+            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
         }
         return;
     }
@@ -3397,9 +3395,11 @@ class questionnaire {
 
         $action = optional_param('action', 'vall', PARAM_ALPHA);
 
-        if ($resp = $DB->get_record('questionnaire_response', ['id' => $rid]) ) {
+        $resp = $DB->get_record('questionnaire_response', ['id' => $rid]);
+        if (!empty($resp)) {
             $userid = $resp->userid;
-            if ($user = $DB->get_record('user', ['id' => $userid])) {
+            $user = $DB->get_record('user', ['id' => $userid]);
+            if (!empty($user)) {
                 if ($this->respondenttype == 'anonymous')
                     $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
                 else
