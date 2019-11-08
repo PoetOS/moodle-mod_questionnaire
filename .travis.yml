@@ -24,15 +24,8 @@ php:
  - 7.1
  - 7.2
 
-env:
-  - MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
-  - MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
-  - MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
-  - MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
-  global:
-    - IGNORE_NAMES=mobile_*.mustache
-  matrix:
-    exclude:
+matrix:
+  exclude:
     - php: 7.2
       env: MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
     - php: 7.2
@@ -41,6 +34,14 @@ env:
       env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
     - php: 7.1
       env: MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
+env:
+  global:
+    - IGNORE_NAMES=mobile_*.mustache
+  matrix:
+    - MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
+    - MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
+    - MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql
+    - MOODLE_BRANCH=MOODLE_36_STABLE DB=mysqli
 
 before_install:
   - phpenv config-rm xdebug.ini
