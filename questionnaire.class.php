@@ -2072,10 +2072,10 @@ class questionnaire {
                         $cid = substr($rqid, (strpos($rqid, '_') + 1));
                         if (isset($this->responses[$rid]->answers[$question->id][$cid])) {
                             if (isset($question->choices[$cid]) &&
-                                isset($choices[$this->responses[$rid]->answers[$question->id][$cid]->value + 1])) {
-                                $rating = $choices[$this->responses[$rid]->answers[$question->id][$cid]->value + 1];
+                                isset($choices[$this->responses[$rid]->answers[$question->id][$cid]->value])) {
+                                $rating = $choices[$this->responses[$rid]->answers[$question->id][$cid]->value];
                             } else {
-                                $rating = $this->responses[$rid]->answers[$question->id][$cid]->value + 1;
+                                $rating = $this->responses[$rid]->answers[$question->id][$cid]->value;
                             }
                             $response->answers[] = $question->choices[$cid]->content . ' = ' . $rating;
                         }
@@ -3239,7 +3239,7 @@ class questionnaire {
                 $key = $qid.'_'.$responserow->choice_id;
                 $position = $questionpositions[$key];
                 if ($qtype === QUESRATE) {
-                    $choicetxt = $responserow->rankvalue + 1;
+                    $choicetxt = $responserow->rankvalue;
                 } else {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
                     if (\mod_questionnaire\question\choice\choice::content_is_other_choice($content)) {
@@ -3400,10 +3400,11 @@ class questionnaire {
             $userid = $resp->userid;
             $user = $DB->get_record('user', ['id' => $userid]);
             if (!empty($user)) {
-                if ($this->respondenttype == 'anonymous')
-                    $ruser = '- '.get_string('anonymous', 'questionnaire').' -';
-                else
+                if ($this->respondenttype == 'anonymous') {
+                    $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
+                } else {
                     $ruser = fullname($user);
+                }
             }
         }
         // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
