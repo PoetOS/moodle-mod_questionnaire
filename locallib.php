@@ -480,7 +480,7 @@ function questionnaire_set_events($questionnaire) {
     $event->modulename = 'questionnaire';
     $event->instance = $questionnaire->id;
     $event->eventtype = 'open';
-    $event->type = CALENDAR_EVENT_TYPE_ACTION,
+    $event->type = CALENDAR_EVENT_TYPE_ACTION;
     $event->timestart = $questionnaire->opendate;
     $event->visible = instance_is_visible('questionnaire', $questionnaire);
     $event->timeduration = ($questionnaire->closedate - $questionnaire->opendate);
