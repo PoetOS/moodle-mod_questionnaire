@@ -44,7 +44,7 @@ Feature: Numeric questions can specify a maximum number of digits, and minimum n
     And I set the field "Enter no more than six digits including the decimal point" to "1.23456"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
-    And I follow "Continue"
+    And I press "Continue"
     Then I should see "Your response"
     And I should see "Test questionnaire"
     And I should see "Enter no more than six digits including the decimal point"
