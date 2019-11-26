@@ -29,7 +29,7 @@ $addons = [
         'handlers' => [
             'questionsview' => [
                 'displaydata' => [
-                    'icon' => $CFG->wwwroot . '/mod/questionnaire/pix/icon.gif',
+                    'icon' => $CFG->wwwroot . '/mod/questionnaire/pix/icon.svg',
                     'class' => '',
                 ],
                 'delegate' => 'CoreCourseModuleDelegate',
