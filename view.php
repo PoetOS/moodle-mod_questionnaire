@@ -77,7 +77,8 @@ if ($message !== false) {
         if (!$questionnaire->user_has_saved_response($USER->id)) {
             $questionnaire->page->add_to_page('complete',
                 '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
-                'id='.$questionnaire->cm->id).'">'.get_string('answerquestions', 'questionnaire').'</a>');
+                'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' .
+                get_string('answerquestions', 'questionnaire') . '</a>');
         } else {
             $resumesurvey = get_string('resumesurvey', 'questionnaire');
             $questionnaire->page->add_to_page('complete',
@@ -92,7 +93,8 @@ if ($message !== false) {
 if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
     $questionnaire->page->add_to_page('complete',
         '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
-        'id='.$questionnaire->cm->id).'">'.'<strong>'.get_string('addquestions', 'questionnaire').'</strong></a>');
+        'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' . '<strong>' .
+        get_string('addquestions', 'questionnaire') . '</strong></a>');
 }
 
 if (isguestuser()) {
