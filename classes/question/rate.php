@@ -1026,21 +1026,17 @@ class rate extends question {
         global $DB;
 
         // First, let's adjust all rate answers from zero based to one based (see GHI223).
-        $select = 'SELECT qrr.* ';
-        $from = 'FROM {questionnaire_question} qq ';
+        $update = 'UPDATE {questionnaire_question} qq ';
         $join = 'INNER JOIN {questionnaire_response_rank} qrr ON qq.id = qrr.question_id ';
+        $set = 'SET qrr.rankvalue = (qrr.rankvalue + 1) ';
         $where = 'WHERE qq.type_id = :typeid AND qrr.rankvalue >= :rankvalue';
         $args = ['typeid' => QUESRATE, 'rankvalue' => 0];
         if ($surveyid !== null) {
             $where .= ' AND qq.surveyid = :surveyid';
             $args['surveyid'] = $surveyid;
         }
-        $sql = $select . $from . $join . $where;
-        $recordset = $DB->get_recordset_sql($sql, $args);
-        foreach ($recordset as $record) {
-            $DB->set_field('questionnaire_response_rank', 'rankvalue', $record->rankvalue + 1, ['id' => $record->id]);
-        }
-        $recordset->close();
+        $sql = $update . $join . $set . $where;
+        $DB->execute($sql, $args);
 
         $args = ['type_id' => QUESRATE];
         if ($surveyid !== null) {
