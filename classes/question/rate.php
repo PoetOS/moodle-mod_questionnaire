@@ -1014,6 +1014,7 @@ class rate extends question {
                             ['id' => $response->id]);
                     }
                 }
+                $responses->close();
             }
         }
     }
@@ -1039,6 +1040,7 @@ class rate extends question {
         foreach ($recordset as $record) {
             $DB->set_field('questionnaire_response_rank', 'rankvalue', $record->rankvalue + 1, ['id' => $record->id]);
         }
+        $recordset->close();
 
         $args = ['type_id' => QUESRATE];
         if ($surveyid !== null) {
@@ -1048,5 +1050,6 @@ class rate extends question {
         foreach ($ratequests as $questionrec) {
             self::move_nameddegree_choices(0, $questionrec);
         }
+        $ratequests->close();
     }
 }
