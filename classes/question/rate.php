@@ -1025,6 +1025,9 @@ class rate extends question {
     public static function move_all_nameddegree_choices(int $surveyid = null) {
         global $DB;
 
+        // This operation might take a while. Cancel PHP timeouts for this.
+        \core_php_time_limit::raise();
+
         // First, let's adjust all rate answers from zero based to one based (see GHI223).
         $update = 'UPDATE {questionnaire_question} qq ';
         $join = 'INNER JOIN {questionnaire_response_rank} qrr ON qq.id = qrr.question_id ';
