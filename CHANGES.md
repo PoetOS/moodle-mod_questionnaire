@@ -3,6 +3,19 @@ Release Notes
 _NOTE - The 3.7 releases will only work on Moodle 3.6 and Moodle 3.7. The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4
 and 3.3._
 
+##### Version 3.7.2 (Build - 2019120400)
+This release fixes some serious bugs identified in previous releases, as well as some improvements.
+Due to a restore data corruption issue, it is recommended to upgrade to this version as soon as possible.
+
+Improvements:
+* [GHI252](https://github.com/PoetOS/moodle-mod_questionnaire/issues/252) - Improved icon in mobile app.
+* [GHI251](https://github.com/PoetOS/moodle-mod_questionnaire/issues/251) - Better styling of answer buttons.
+* [GHI249](https://github.com/PoetOS/moodle-mod_questionnaire/issues/249) - Improving upgrade performance for rate questions.
+
+Bug Fixes:
+* [GHI256](https://github.com/PoetOS/moodle-mod_questionnaire/issues/256) - Fixing potential data corruption for user data restores.
+* [GHI255](https://github.com/PoetOS/moodle-mod_questionnaire/issues/255) - Fixing summary display for rate questions with named degrees.
+
 ##### Version 3.7.1 (Build - 2019110800)
 This release provides a number of bug fixes repoerted in 3.7.0 and some UI improvements to the button styling.
 Thanks to lucaboesch (Luca Bösch), scippie75 (Dirk Schippers), anatolyg, yexiangwu, camiernes,
