@@ -403,6 +403,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->add_related_files('mod_questionnaire', 'feedback', 'questionnaire_feedback');
 
         // Process any old rate question named degree choices after all questions and choices have been restored.
-        \mod_questionnaire\question\rate::move_all_nameddegree_choices($this->get_new_parentid('questionnaire_survey'));
+        if ($this->task->get_old_moduleversion() < 2018110103) {
+            \mod_questionnaire\question\rate::move_all_nameddegree_choices($this->get_new_parentid('questionnaire_survey'));
+        }
     }
 }
