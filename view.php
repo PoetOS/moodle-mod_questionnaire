@@ -93,8 +93,8 @@ if ($message !== false) {
 if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
     $questionnaire->page->add_to_page('complete',
         '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
-        'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' . '<strong>' .
-        get_string('addquestions', 'questionnaire') . '</strong></a>');
+        'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' .
+        get_string('addquestions', 'questionnaire') . '</a>');
 }
 
 if (isguestuser()) {
