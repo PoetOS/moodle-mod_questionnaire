@@ -1021,6 +1021,8 @@ class rate extends question {
 
     /**
      * Helper function to move named degree choices for all questions, optionally for a specific surveyid.
+     * This should only be called for an upgrade from before '2018110103', or from a restore operation for a version of a
+     * questionnaire before '2018110103'.
      */
     public static function move_all_nameddegree_choices(int $surveyid = null) {
         global $DB;
@@ -1029,17 +1031,31 @@ class rate extends question {
         \core_php_time_limit::raise();
 
         // First, let's adjust all rate answers from zero based to one based (see GHI223).
-        $update = 'UPDATE {questionnaire_question} qq ';
-        $join = 'INNER JOIN {questionnaire_response_rank} qrr ON qq.id = qrr.question_id ';
-        $set = 'SET qrr.rankvalue = (qrr.rankvalue + 1) ';
-        $where = 'WHERE qq.type_id = :typeid AND qrr.rankvalue >= :rankvalue';
-        $args = ['typeid' => QUESRATE, 'rankvalue' => 0];
+        // If a specific survey is being dealt with, only use the questions from that survey.
+        $skip = false;
         if ($surveyid !== null) {
-            $where .= ' AND qq.surveyid = :surveyid';
-            $args['surveyid'] = $surveyid;
+            $qids = $DB->get_records_menu('questionnaire_question', ['surveyid' => $surveyid, 'type_id' => QUESRATE],
+                '', 'id,surveyid');
+            if (!empty($qids)) {
+                list($qsql, $qparams) = $DB->get_in_or_equal(array_keys($qids));
+            } else {
+                // No relevant questions, so no need to do this step.
+                $skip = true;
+            }
         }
-        $sql = $update . $join . $set . $where;
-        $DB->execute($sql, $args);
+
+        // If we're doing this step, let's do it.
+        if (!$skip) {
+            $select = 'UPDATE {questionnaire_response_rank} qr ' .
+                'SET qr.rankvalue = (qr.rankvalue + 1) ' .
+                'WHERE (qr.rankvalue >= 0)';
+            if ($surveyid !== null) {
+                $select .= ' AND (question_id ' . $qsql . ')';
+            } else {
+                $qparams = [];
+            }
+            $DB->execute($select, $qparams);
+        }
 
         $args = ['type_id' => QUESRATE];
         if ($surveyid !== null) {

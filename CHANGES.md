@@ -1,6 +1,6 @@
 Release Notes
 
-_NOTE - The 3.7 releases will only work on Moodle 3.6 and Moodle 3.7. The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4
+_NOTE - The 3.7 releases will only work on Moodle 3.6, Moodle 3.7, and Moodle 3.8. The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4
 and 3.3._
 
 ##### Version 3.7.2 (Build - 2019120400)
