@@ -3,6 +3,12 @@ Release Notes
 _NOTE - The 3.7 releases will only work on Moodle 3.6, Moodle 3.7, and Moodle 3.8. The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4
 and 3.3._
 
+##### Version 3.7.3 (Build - 2019120500)
+This release fixes a bug preventing Postgres users from upgrading correctly.
+
+Bug Fixes:
+* [GHI260](https://github.com/PoetOS/moodle-mod_questionnaire/issues/260) - Postgres can now upgrade correctly.
+
 ##### Version 3.7.2 (Build - 2019120400)
 This release fixes some serious bugs identified in previous releases, as well as some improvements.
 Due to a restore data corruption issue, it is recommended to upgrade to this version as soon as possible.
