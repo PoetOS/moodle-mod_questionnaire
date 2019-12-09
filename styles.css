@@ -253,6 +253,14 @@ td.selected {
     overflow: auto;
 }
 
+.qn-answer input[type=radio] {
+    margin-left: 0.5em;
+}
+
+.qn-answer > label + input[type=radio] {
+    margin-left: 0;
+}
+
 #notice .qn-question {
     margin: 0;
 }
