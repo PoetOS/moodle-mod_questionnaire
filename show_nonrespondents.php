@@ -391,14 +391,14 @@ if (!$nonrespondents) {
                 $questionnaire->renderer->box_start('mdl-align')); // Selection buttons container.
             $questionnaire->page->add_to_page('formarea', '<div class="buttons">');
             $questionnaire->page->add_to_page('formarea',
-                '<input type="button" id="checkall" value="'.get_string('selectall').'" /> ');
+                '<input type="button" id="checkall" class="btn btn-secondary" value="'.get_string('selectall').'" /> ');
             $questionnaire->page->add_to_page('formarea',
-                '<input type="button" id="checknone" value="'.get_string('deselectall').'" /> ');
+                '<input type="button" id="checknone" class="btn btn-secondary" value="'.get_string('deselectall').'" /> ');
             if ($resume) {
                 if ($perpage >= $countnonrespondents) {
                     $questionnaire->page->add_to_page('formarea',
-                        '<input type="button" id="checkstarted" value="'.get_string('checkstarted', 'questionnaire').'" />'."\n");
-                    $questionnaire->page->add_to_page('formarea', '<input type="button" id="checknotstarted" value="'.
+                        '<input type="button" id="checkstarted" class="btn btn-secondary" value="'.get_string('checkstarted', 'questionnaire').'" />'."\n");
+                    $questionnaire->page->add_to_page('formarea', '<input type="button" id="checknotstarted" class="btn btn-secondary" value="'.
                         get_string('checknotstarted', 'questionnaire').'" />'."\n");
                 }
             }
@@ -459,13 +459,13 @@ if (!$nonrespondents) {
         $questionnaire->page->add_to_page('formarea',
             '<legend class="ftoggler">'.get_string('send_message', 'questionnaire').'</legend>');
         $id = 'message' . '_id';
-        $subjecteditor = '&nbsp;&nbsp;&nbsp;<input type="text" id="questionnaire_subject" size="65"
+        $subjecteditor = '&nbsp;&nbsp;&nbsp;<input type="text" id="questionnaire_subject" class="form-control" size="65"
             maxlength="255" name="subject" value="'.$subject.'" />';
         $format = '';
             $editor = editors_get_preferred_editor();
             $editor->use_editor($id, questionnaire_get_editor_options($context));
             $texteditor = html_writer::tag('div', html_writer::tag('textarea', $message,
-                    array('id' => $id, 'name' => "message", 'rows' => '10', 'cols' => '60')));
+                    array('id' => $id, 'name' => "message",  'class' => "form-control", 'rows' => '10', 'cols' => '60')));
             $questionnaire->page->add_to_page('formarea', '<input type="hidden" name="format" value="'.FORMAT_HTML.'" />');
 
 
@@ -481,7 +481,7 @@ if (!$nonrespondents) {
         $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->box_start('mdl-left'));
         $questionnaire->page->add_to_page('formarea', '<div class="buttons">');
         $questionnaire->page->add_to_page('formarea',
-            '<input type="submit" name="send_message" value="'.get_string('send', 'questionnaire').'" />');
+            '<input type="submit" name="send_message" class="btn btn-secondary" value="'.get_string('send', 'questionnaire').'" />');
         $questionnaire->page->add_to_page('formarea', '</div>');
         $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->box_end());
 
