@@ -486,6 +486,10 @@ switch ($action) {
 
         // Use Moodle's core download function for outputting csv.
         $rowheaders = array_shift($output);
+
+	    // Sometimes the buffer is not empty and this will throw an exception in the download_as_dataformat() function.
+	    ob_end_clean();
+
         download_as_dataformat($name, 'csv', $rowheaders, $output);
         exit();
         break;
