@@ -3,6 +3,23 @@ Release Notes
 _NOTE - The 3.7 releases will only work on Moodle 3.6, Moodle 3.7, and Moodle 3.8. The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4
 and 3.3._
 
+##### Version 3.7.4 (Build - 2020011300)
+This release added improvements to a bug preventing Postgres users from upgrading correctly fixed some potential
+security issues, and added some CSS improvements. Thanks to all contributors.
+
+Improvements:
+[GHPR257](https://github.com/PoetOS/moodle-mod_questionnaire/pull/257) - Aligning form elements and removing unnecessary css.
+[GHPR258](https://github.com/PoetOS/moodle-mod_questionnaire/pull/258) - Removing unnecessary tags from form button.
+[GHPR261](https://github.com/PoetOS/moodle-mod_questionnaire/pull/261) - CSS improvements to buttons.
+[GHPR262](https://github.com/PoetOS/moodle-mod_questionnaire/pull/262) - Aligning answer buttons.
+[GHPR270](https://github.com/PoetOS/moodle-mod_questionnaire/pull/270) - CSS improvements to buttons and form elements.
+
+Bug Fixes:
+[CONTRIB-7929](https://tracker.moodle.org/browse/CONTRIB-7929) - Fixed permissions check within all response report.
+[GHPR268](https://github.com/PoetOS/moodle-mod_questionnaire/pull/268) - Cleaning user essay responses before storing.
+[GHI191](https://github.com/PoetOS/moodle-mod_questionnaire/issues/191) - Removed potential tab characters from !OTHER answers.
+[GHI260](https://github.com/PoetOS/moodle-mod_questionnaire/issues/260) - More fixes for Postgres.
+
 ##### Version 3.7.3 (Build - 2019120500)
 This release fixes a bug preventing Postgres users from upgrading correctly.
 
