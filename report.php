@@ -68,10 +68,10 @@ $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = context_module::instance($cm->id);
-if (!has_capability('mod/questionnaire:readallresponseanytime', $context) &&
-    !($questionnaire->capabilities->view && $questionnaire->can_view_response($rid))) {
+if (!$questionnaire->can_view_all_responses()) {
     // Should never happen, unless called directly by a snoop...
-    print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
+    print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id,
+        get_string('viewallresponses', 'mod_questionnaire'));
 }
 
 $questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
