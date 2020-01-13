@@ -52,12 +52,12 @@
     {{#horizontal}}<span style="white-space:nowrap;">{{/horizontal}}
     {{#selected}}
     <span class="selected">
-        <input type="radio" name="{{name}}" checked="checked" disabled="disabled" />
-        {{{content}}}{{#othercontent}} <span class="response text">{{.}}</span>{{/othercontent}}
+        {{^pdf}}<input type="radio" name="{{name}}" checked="checked" disabled="disabled" />{{/pdf}}
+        {{#pdf}}&#10003;{{/pdf}} {{{content}}}{{#othercontent}} <span class="response text">{{.}}</span>{{/othercontent}}
     </span>
     {{/selected}}
     {{^selected}}
-    <span class="unselected"><input type="radio" name="{{name}}" disabled="disabled" />
+        <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}<input type="radio" name="{{name}}" disabled="disabled" />{{/pdf}}
         {{{content}}}</span>&nbsp;
     {{/selected}}
     {{#horizontal}}</span>{{/horizontal}}

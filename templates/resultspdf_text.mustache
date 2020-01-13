@@ -17,7 +17,8 @@
 {{!
     @template mod_questionnaire/results_text
 
-    Template which defines a results display for text responses.
+    Template which defines a results display for text responses. This template uses a simple level of HTML, suitable for being
+    translated into a PDF file by the TCPDF library.
 
     Classes required for JS:
     * /mod/questionnaire/module.js
@@ -61,17 +62,17 @@
 {{/responses.0}}
 {{#responses}}
     {{#response}}
-    <tr class="">
+    <tr class=""{{^response.evencolor}} bgcolor="#E5E5E6"{{/response.evencolor}}>
         <td class="cell c0" style="text-align:left;">{{{response.respondent}}}</td>
         <td class="cell c1 lastcol" style="text-align:right;">{{{response.text}}}</td>
     </tr>
     {{/response}}
 {{/responses}}
 {{#total}}
-    <tr>
-        <td colspan="2"><div class="tabledivider"></div></td>
+    <tr{{#total.evencolor}} bgcolor="#E5E5E6"{{/total.evencolor}}>
+        <td colspan="2"><div class="tabledivider"> </div></td>
     </tr>
-    <tr class="lastrow">
+    <tr class="lastrow"{{^total.evencolor}} bgcolor="#E5E5E6"{{/total.evencolor}}>
         <td class="cell c0" style="text-align:left;">{{#str}} totalresponses, mod_questionnaire{{/str}}</td>
         <td class="cell c1 lastcol" style="text-align:right;">{{total}}</td>
     </tr>

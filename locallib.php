@@ -742,8 +742,10 @@ function questionnaire_check_page_breaks($questionnaire) {
                 $prevtypeid = $positions[$j]['type_id'];
                 $prevdependencies = $positions[$j]['dependencies'];
 
-                $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ? $qu['dependencies'] : $prevdependencies;
-                $innerdependencies = count($qu['dependencies']) < count($prevdependencies) ? $qu['dependencies'] : $prevdependencies;
+                $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ?
+                    $qu['dependencies'] : $prevdependencies;
+                $innerdependencies = count($qu['dependencies']) < count($prevdependencies) ?
+                    $qu['dependencies'] : $prevdependencies;
 
                 foreach ($outerdependencies as $okey => $outerdependency) {
                     foreach ($innerdependencies as $ikey => $innerdependency) {

@@ -831,12 +831,13 @@ abstract class question {
 
     /**
      * Override and return a form template if provided. Output of results_output is iterpreted based on this.
+     * @param bool $pdf
      * @return boolean | string
      */
-    public function results_template() {
+    public function results_template($pdf = false) {
         if (isset ($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
-            return $this->responsetype->results_template();
+            return $this->responsetype->results_template($pdf);
         } else {
             return false;
         }

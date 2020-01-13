@@ -100,7 +100,7 @@ switch ($action) {
         include('tabs.php');
 
         $questionnaire->page->add_to_page('myheaders', $titletext);
-        $questionnaire->survey_results(1, 1, '', '', $rids, $USER->id);
+        $questionnaire->survey_results($rids, $USER->id);
 
         echo $questionnaire->renderer->render($questionnaire->page);
 
@@ -261,7 +261,7 @@ switch ($action) {
             $resps = $respsallparticipants;
         }
         $compare = true;
-        $questionnaire->view_response($rid, null, null, $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
+        $questionnaire->view_response($rid, null, $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
         // Finish the page.
         echo $questionnaire->renderer->render($questionnaire->page);
         echo $questionnaire->renderer->footer($course);
