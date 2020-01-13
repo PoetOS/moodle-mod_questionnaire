@@ -141,8 +141,10 @@ class display_support {
 
                     if (isset($contentobj->avg)) {
                         $avg = $contentobj->avg;
+                        // If named degrees were used, swap averages for display.
                         if (isset($contentobj->avgvalue)) {
-                            $avgvalue = $contentobj->avgvalue;
+                            $avg = $contentobj->avgvalue;
+                            $avgvalue = $contentobj->avg;
                         } else {
                             $avgvalue = '';
                         }
@@ -253,19 +255,26 @@ class display_support {
             }
         }
         $nbranks = $question->length;
-        $ranks = array();
+        $ranks = [];
+        $rankvalue = [];
+        if (!empty($question->nameddegrees)) {
+            $rankvalue = array_flip(array_keys($question->nameddegrees));
+        }
         foreach ($rows as $row) {
             $choiceid = $row->id;
             foreach ($choices as $choice) {
                 if ($choice->choiceid == $choiceid) {
                     $n = 0;
                     for ($i = 1; $i <= $nbranks; $i++) {
-                        if ($choice->rankvalue == $i) {
+                        if ((isset($rankvalue[$choice->rankvalue]) && ($rankvalue[$choice->rankvalue] == ($i - 1))) ||
+                            (empty($rankvalue) && ($choice->rankvalue == $i))) {
                             $n++;
                             if (!isset($ranks[$choice->content][$i])) {
                                 $ranks[$choice->content][$i] = 0;
                             }
                             $ranks[$choice->content][$i] += $n;
+                        } else if (!isset($ranks[$choice->content][$i])) {
+                            $ranks[$choice->content][$i] = 0;
                         }
                     }
                 }

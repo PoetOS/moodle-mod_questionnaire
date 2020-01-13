@@ -54,7 +54,7 @@ Feature: Radio questions allow optional "other" responses with optional labels
     And I set the field "Text for Another colour:" to "Indigo"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
-    And I follow "Continue"
+    And I press "Continue"
     Then I should see "Your response"
     And I should see "Test questionnaire"
     And I should see "Other: Yellow"

@@ -163,10 +163,10 @@ class rank extends responsetype {
             }
         }
 
-        // For nameddegrees, need a positionally based array of values.
+        // For nameddegrees, need an array by degree value of positions (zero indexed).
         $rankvalue = [];
         if (!empty($this->question->nameddegrees)) {
-            $rankvalue = array_keys($this->question->nameddegrees);
+            $rankvalue = array_flip(array_keys($this->question->nameddegrees));
         }
 
         $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->no_duplicate_choices();
@@ -180,13 +180,13 @@ class rank extends responsetype {
                 AND r.rankvalue >= 0{$rsql}
                 ORDER BY choiceid";
                 $results = $DB->get_records_sql($sql, $params);
-                $value = array();
+                $value = [];
                 foreach ($results as $result) {
                     if (isset($rankvalue[$result->rankvalue])) {
                         if (isset ($value[$result->choiceid])) {
-                            $value[$result->choiceid] += $rankvalue[$result->rankvalue];
+                            $value[$result->choiceid] += $rankvalue[$result->rankvalue] + 1;
                         } else {
-                            $value[$result->choiceid] = $rankvalue[$result->rankvalue];
+                            $value[$result->choiceid] = $rankvalue[$result->rankvalue] + 1;
                         }
                     }
                 }

@@ -208,7 +208,7 @@ class text extends responsetype {
             $users = [];
             foreach ($weights as $row) {
                 $response = new \stdClass();
-                $response->text = format_text($row->response, FORMAT_HTML, ['noclean' => true]);
+                $response->text = format_text($row->response, FORMAT_HTML);
                 if ($viewsingleresponse && $nonanonymous) {
                     $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
                     $title = userdate($row->submitted);

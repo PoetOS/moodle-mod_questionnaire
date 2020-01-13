@@ -75,7 +75,7 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     And I set the field "Enter a number" to "1"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
-    And I follow "Continue"
+    And I press "Continue"
     Then I should see "Your response"
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='1']" "xpath_element" should exist
@@ -89,7 +89,7 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     And I set the field "Enter a number" to "2"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
-    And I follow "Continue"
+    And I press "Continue"
     Then I should see "Your response"
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='2']" "xpath_element" should exist

@@ -101,15 +101,6 @@ td.selected {
     border-color: blue;
 }
 
-#page-mod-questionnaire-complete .surveyTitle,
-#page-mod-questionnaire-complete .surveySubtitle,
-#page-mod-questionnaire-complete .addInfo {
-    clear: both;
-    margin: 0;
-    margin-bottom: 4px;
-    padding: 10px;
-}
-
 .surveyPage {
     background-color: #eee;
     border-bottom-color: #000;
@@ -262,6 +253,14 @@ td.selected {
     overflow: auto;
 }
 
+.qn-answer input[type=radio] {
+    margin-left: 0.5em;
+}
+
+.qn-answer > label + input[type=radio] {
+    margin-left: 0;
+}
+
 #notice .qn-question {
     margin: 0;
 }
@@ -304,11 +303,6 @@ td.selected {
 .hidedependquestion {
     color: red;
     display: none;
-}
-.qn-container {
-    color: black;
-    display: inherit;
-    margin-left: 10px;
 }
 
 #page-mod-questionnaire-fbsections .c0,

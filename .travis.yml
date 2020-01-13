@@ -21,13 +21,14 @@ cache:
     - $HOME/.npm
 
 php:
- - 7.1
  - 7.2
+ - 7.3
 
 env:
  global:
   - MOODLE_BRANCH=master DB=pgsql
   - MOODLE_BRANCH=master DB=mysqli
+  - IGNORE_NAMES=mobile_*.mustache
 
 global:
   IGNORE_NAMES=mobile_*.mustache
@@ -36,7 +37,7 @@ matrix:
   exclude:
   - php: 7.2
     env: MOODLE_BRANCH=master DB=mysqli
-  - php: 7.1
+  - php: 7.3
     env: MOODLE_BRANCH=master DB=pgsql
 
 before_install:

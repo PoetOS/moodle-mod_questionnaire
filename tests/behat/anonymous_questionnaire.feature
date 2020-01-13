@@ -44,7 +44,7 @@ Feature: Questionnaires can be anonymous
     And I click on "Yes" "radio"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
-    And I follow "Continue"
+    And I press "Continue"
     Then I should see "Your response"
     And I should see "Anonymous questionnaire"
     And I should see "Respondent: - Anonymous -"
