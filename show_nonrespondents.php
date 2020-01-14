@@ -271,7 +271,11 @@ if ($fullname) {
         $usedgroupid = false;
     }
     $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid);
-    $countnonrespondents = count($nonrespondents);
+    if (is_array($nonrespondents) || is_object($nonrespondents)) {
+        $countnonrespondents = count($nonrespondents);
+    } else {
+        $countnonrespondents = 0;
+    }
 
     $table->initialbars(false);
 
