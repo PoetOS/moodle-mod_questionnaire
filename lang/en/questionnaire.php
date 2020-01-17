@@ -143,6 +143,7 @@ $string['didnotrespondtoquestion'] = 'Did not respond to question';
 $string['directwarnings'] = 'Direct dependencies to this question will be removed. This will affect:';
 $string['displaymethod'] = 'Display method not defined for question.';
 $string['download'] = 'Download';
+$string['downloadpdf'] = 'Download PDF';
 $string['downloadtextformat'] = 'Download';
 $string['downloadtextformat_help'] = 'This feature enables you to save all the responses of a questionnaire to a selectable, supported file format.
  You can choose to include extra data items in the export, as well as choose to automatically send the file to selected users.';

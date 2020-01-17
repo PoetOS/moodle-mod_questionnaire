@@ -81,6 +81,7 @@ class display_support {
         }
 
         $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
+        $blankimage = $CFG->wwwroot . '/mod/questionnaire/images/hbartransp.gif';
         $llength = $question->length;
         if (!$llength) {
             $llength = 5;
@@ -104,7 +105,9 @@ class display_support {
                 $str = $j + 1;
             }
         }
-        $out = '<table style="width:100%" cellpadding="2" cellspacing="0" border="1"><tr>';
+        // Using a hard value so we can have things look right in a PDF as well.
+        $innertablewidth = 450;
+        $out = '<table style="width: ' . $innertablewidth . 'px;" cellpadding="2" cellspacing="0" border="1"><tr>';
         for ($i = 0; $i <= $llength - 1; $i++) {
             if (isset($n[$i])) {
                 $str = $n[$i];
@@ -155,14 +158,16 @@ class display_support {
                     if ($avg) {
                         $out = '';
                         if (($j = $avg * $width) > 0) {
-                            $marginposition = ($avg - 0.5 ) / ($question->length + $isrestricted) * 100;
+                            $marginposition = ($avg - 0.5 ) / ($question->length + $isrestricted);
                         }
                         if (!right_to_left()) {
-                            $out .= '<img style="height:12px; width: 6px; margin-left: '.$marginposition.
-                                '%;" alt="" src="'.$imageurl.'hbar.gif" />';
+                            $out .= '<img style="height: 12px; width: ' . ($marginposition * $innertablewidth) .
+                                'px;" alt="" src="' . $blankimage . '" />' .
+                                '<img style="height:12px; width: 6px;" alt="" src="'.$imageurl.'hbar.gif" />';
                         } else {
-                            $out .= '<img style="height:12px; width: 6px; margin-right: '.$marginposition.
-                                '%;" alt="" src="'.$imageurl.'hbar.gif" />';
+                            $out .= '<img style="height: 12px; width: ' .($innertablewidth - ($marginposition * $innertablewidth)).
+                                'px;" alt="" src="' . $blankimage . '" />' .
+                                '<img style="height:12px; width: 6px;" alt="" src="'.$imageurl.'hbar.gif" />';
                         }
                     } else {
                             $out = '';

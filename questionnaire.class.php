@@ -1322,7 +1322,7 @@ class questionnaire {
         if ($ruser) {
             $respinfo = '';
             if ($outputtarget == 'html') {
-                $linkname = 'Download PDF';
+                $linkname = get_string('downloadpdf', 'mod_questionnaire');
                 $link = new moodle_url('/mod/questionnaire/report.php',
                     ['action' => 'vresp', 'instance' => $this->id, 'target' => 'pdf', 'individualresponse' => 1, 'rid' => $rid]);
                 $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
