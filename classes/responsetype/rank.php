@@ -276,6 +276,14 @@ class rank extends responsetype {
     }
 
     /**
+     * Provide a template for results screen if defined.
+     * @return mixed The template string or false/
+     */
+    public function results_template() {
+        return 'mod_questionnaire/results_rate';
+    }
+
+    /**
      * @param bool $rids
      * @param string $sort
      * @param bool $anonymous
@@ -316,13 +324,14 @@ class rank extends responsetype {
                 $this->counts[$ccontent]->avg = $avg;
                 $this->counts[$ccontent]->avgvalue = $avgvalue;
             }
-            $output .= \mod_questionnaire\responsetype\display_support::mkresavg($this->counts, count($rids),
+            $output1 = \mod_questionnaire\responsetype\display_support::mkresavg($this->counts, count($rids),
                 $this->question, $prtotal, $sort, $stravgvalue);
 
-            $output .= \mod_questionnaire\responsetype\display_support::mkrescount($this->counts, $rids, $rows, $this->question,
+            $output2 = \mod_questionnaire\responsetype\display_support::mkrescount($this->counts, $rids, $rows, $this->question,
                 $sort);
+            $output = (object)array_merge((array)$output1, (array)$output2);
         } else {
-            $output .= '<p class="generaltable">&nbsp;'.get_string('noresponsedata', 'questionnaire').'</p>';
+            $output = (object)['noresponses' => true];
         }
         return $output;
     }
