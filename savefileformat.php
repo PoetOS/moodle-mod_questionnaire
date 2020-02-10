@@ -60,8 +60,8 @@ function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users 
     ob_start();
     // This exists to support all dataformats - see MDL-56046.
     if (method_exists($format, 'write_header')) {
-        error_log('The function write_header() does not support multiple sheets. In order to support multiple sheets you ' .
-            'must implement start_output() and start_sheet() and remove write_header() in your dataformat.');
+        debugging('The function write_header() does not support multiple sheets. In order to support multiple sheets you ' .
+            'must implement start_output() and start_sheet() and remove write_header() in your dataformat.', DEBUG_DEVELOPER);
         $format->write_header($columns);
     } else {
         $format->start_output();
@@ -76,8 +76,8 @@ function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users 
     }
     // This exists to support all dataformats - see MDL-56046.
     if (method_exists($format, 'write_footer')) {
-        error_log('The function write_footer() does not support multiple sheets. In order to support multiple sheets you ' .
-            'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.');
+        debugging('The function write_footer() does not support multiple sheets. In order to support multiple sheets you ' .
+            'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.', DEBUG_DEVELOPER);
         $format->write_footer($columns);
     } else {
         $format->close_sheet($columns);

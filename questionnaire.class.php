@@ -411,7 +411,8 @@ class questionnaire {
                 $i++;
             }
             if ($question->type_id != QUESPAGEBREAK) {
-                $this->page->add_to_page('responses', $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf));
+                $this->page->add_to_page('responses',
+                    $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf));
             }
         }
     }
@@ -1322,11 +1323,24 @@ class questionnaire {
         if ($ruser) {
             $respinfo = '';
             if ($outputtarget == 'html') {
-                $linkname = get_string('downloadpdf', 'mod_questionnaire');
-                $link = new moodle_url('/mod/questionnaire/report.php',
-                    ['action' => 'vresp', 'instance' => $this->id, 'target' => 'pdf', 'individualresponse' => 1, 'rid' => $rid]);
-                $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
-                $respinfo .= $this->renderer->action_link($link, null, null, null, $downpdficon);
+                // Disable the pdf function for now, until it looks a lot better.
+                if (false) {
+                    $linkname = get_string('downloadpdf', 'mod_questionnaire');
+                    $link = new moodle_url('/mod/questionnaire/report.php',
+                        ['action' => 'vresp', 'instance' => $this->id, 'target' => 'pdf', 'individualresponse' => 1, 'rid' => $rid]);
+                    $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
+                    $respinfo .= $this->renderer->action_link($link, null, null, null, $downpdficon);
+                }
+
+                $linkname = get_string('print', 'mod_questionnaire');
+                $link = new \moodle_url('/mod/questionnaire/report.php',
+                    ['action' => 'vresp', 'instance' => $this->id, 'target' => 'print', 'individualresponse' => 1, 'rid' => $rid]);
+                $htmlicon = new pix_icon('t/print', $linkname);
+                $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
+                    'height' => 600, 'width' => 800, 'title' => $linkname];
+                $name = 'popup';
+                $action = new popup_action('click', $link, $name, $options);
+                $respinfo .= $this->renderer->action_link($link, null, $action, ['title' => $linkname], $htmlicon) . '&nbsp;';
             }
             $respinfo .= get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>';
             if ($this->survey_is_public()) {

@@ -115,6 +115,9 @@ if ($currentgroupid !== null) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
+if ($outputtarget == 'print') {
+    $PAGE->set_pagelayout('popup');
+}
 
 // Tab setup.
 if (!isset($SESSION->questionnaire)) {
@@ -504,7 +507,8 @@ switch ($action) {
                 $users = !empty($emailroles) ? $questionnaire->get_notifiable_users($USER->id) : [];
                 $otheremails = explode(',', $emailextra);
                 if (!empty($users) || !empty($otheremails)) {
-                    $thisurl = new moodle_url('report.php', ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]);
+                    $thisurl = new moodle_url('report.php',
+                        ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]);
                     save_as_dataformat($name, $dataformat, $columns, $output, $users, $otheremails, $thisurl);
                 }
             } else {
@@ -540,7 +544,9 @@ switch ($action) {
             default:
                 $SESSION->questionnaire->current_tab = 'valldefault';
         }
-        include('tabs.php');
+        if ($outputtarget != 'print') {
+            include('tabs.php');
+        }
 
         $respinfo = '';
         $resps = array();
@@ -644,24 +650,43 @@ switch ($action) {
             $questionnaire->page->add_to_page('respondentinfo', $respinfo);
             $questionnaire->survey_results('', false, true, $currentgroupid, $sort);
             $html = $questionnaire->renderer->render($questionnaire->page);
+
+            // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
+            // not an array.
+            $errorreporting = error_reporting(0);
             $pdf->writeHTML($html);
-            $pdf->Output('dump.pdf', 'D');
+            @$pdf->Output('dump.pdf', 'D');
+            error_reporting($errorreporting);
 
         } else { // Default to HTML.
             $event = \mod_questionnaire\event\all_responses_viewed::create($params);
             $event->trigger();
 
-            $linkname = 'Download PDF';
-            $link = new moodle_url('/mod/questionnaire/report.php',
-                ['action' => 'vall', 'instance' => $instance, 'group' => $currentgroupid, 'target' => 'pdf']);
-            $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
-            $respinfo .= $questionnaire->renderer->action_link($link, null, null, null, $downpdficon);
+            if ($outputtarget != 'print') {
+                $linkname = get_string('downloadpdf', 'mod_questionnaire');
+                $link = new moodle_url('/mod/questionnaire/report.php',
+                    ['action' => 'vall', 'instance' => $instance, 'group' => $currentgroupid, 'target' => 'pdf']);
+                $downpdficon = new pix_icon('f/pdf', $linkname);
+                $respinfo .= $questionnaire->renderer->action_link($link, null, null, null, $downpdficon);
 
-            $respinfo .= get_string('viewallresponses', 'questionnaire').'. '.$groupname.'. ';
-            $strsort = get_string('order_'.$sort, 'questionnaire');
-            $respinfo .= $strsort;
-            $respinfo .= $questionnaire->renderer->help_icon('orderresponses', 'questionnaire');
-            $questionnaire->page->add_to_page('respondentinfo', $respinfo);
+                $linkname = get_string('print', 'mod_questionnaire');
+                $link = new \moodle_url('/mod/questionnaire/report.php',
+                    ['action' => 'vall', 'instance' => $instance, 'group' => $currentgroupid, 'target' => 'print']);
+                $htmlicon = new pix_icon('t/print', $linkname);
+                $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
+                    'height' => 600, 'width' => 800, 'title' => $linkname];
+                $name = 'popup';
+                $action = new popup_action('click', $link, $name, $options);
+                $class = '';
+                $respinfo .= $questionnaire->renderer->action_link($link, null, $action,
+                        ['class' => $class, 'title' => $linkname], $htmlicon) . '&nbsp;';
+
+                $respinfo .= get_string('viewallresponses', 'questionnaire') . '. ' . $groupname . '. ';
+                $strsort = get_string('order_' . $sort, 'questionnaire');
+                $respinfo .= $strsort;
+                $respinfo .= $questionnaire->renderer->help_icon('orderresponses', 'questionnaire');
+                $questionnaire->page->add_to_page('respondentinfo', $respinfo);
+            }
 
             $ret = $questionnaire->survey_results('', false, false, $currentgroupid, $sort);
 
@@ -781,8 +806,12 @@ switch ($action) {
                 $questionnaire->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
             $html = $questionnaire->renderer->render($questionnaire->page);
+            // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
+            // not an array.
+            $errorreporting = error_reporting(0);
             $pdf->writeHTML($html);
-            $pdf->Output('dump.pdf', 'D');
+            @$pdf->Output('dump.pdf', 'D');
+            error_reporting($errorreporting);
 
         } else { // Default to HTML.
             // Print the page header.
@@ -796,7 +825,9 @@ switch ($action) {
             if ($individualresponse) {
                 $SESSION->questionnaire->current_tab = 'individualresp';
             }
-            include('tabs.php');
+            if ($outputtarget == 'html') {
+                include('tabs.php');
+            }
 
             // Print the main part of the page.
             // TODO provide option to select how many columns and/or responses per page.
@@ -813,9 +844,11 @@ switch ($action) {
                 $respinfo .= $questionnaire->renderer->box_end();
                 $questionnaire->page->add_to_page('respondentinfo', $respinfo);
             }
-            $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
+            if ($outputtarget == 'html') {
+                $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
+            }
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->view_response($rid, '', $resps, true, true, false, $currentgroupid);
+                $questionnaire->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
             echo $questionnaire->renderer->header();
             echo $questionnaire->renderer->render($questionnaire->page);

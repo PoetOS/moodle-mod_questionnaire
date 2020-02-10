@@ -561,7 +561,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $numopts = count($opts);
 
         if ($number > (count($opts) / 2)) {
-            throw new coding_exception('Maxiumum number of options is '.($opts / 2));
+            throw new coding_exception('Maxiumum number of options is '.(count($opts) / 2));
         }
 
         $retopts = [];

@@ -346,7 +346,8 @@ class renderer extends \plugin_renderer_base {
     public function print_preview_formend($url, $submitstr, $resetstr) {
         $output = '';
         $output .= \html_writer::start_tag('div');
-        $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr, 'class' => 'btn btn-primary']);
+        $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr,
+            'class' => 'btn btn-primary']);
         $output .= ' ';
         $output .= \html_writer::tag('a', $resetstr, ['href' => $url, 'class' => 'btn btn-secondary mr-1']);
         $output .= \html_writer::end_tag('div') . "\n";

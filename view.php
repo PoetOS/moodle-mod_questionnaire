@@ -83,7 +83,8 @@ if ($message !== false) {
             $resumesurvey = get_string('resumesurvey', 'questionnaire');
             $questionnaire->page->add_to_page('complete',
                 '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
-                'id='.$questionnaire->cm->id.'&resume=1').'" title="'.$resumesurvey.'" class="btn btn-primary">'.$resumesurvey.'</a>');
+                'id='.$questionnaire->cm->id.'&resume=1').'" title="'.$resumesurvey.
+                '" class="btn btn-primary">'.$resumesurvey.'</a>');
         }
     } else {
         $questionnaire->page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
