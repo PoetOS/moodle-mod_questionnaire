@@ -181,10 +181,15 @@ class boolean extends responsetype {
 
     /**
      * Provide a template for results screen if defined.
+     * @param bool $pdf
      * @return mixed The template string or false/
      */
-    public function results_template() {
-        return 'mod_questionnaire/results_choice';
+    public function results_template($pdf = false) {
+        if ($pdf) {
+            return 'mod_questionnaire/resultspdf_choice';
+        } else {
+            return 'mod_questionnaire/results_choice';
+        }
     }
 
     /**

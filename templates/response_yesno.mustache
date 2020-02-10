@@ -40,16 +40,16 @@
 <!-- Begin HTML generated from response_yesno template. -->
 <div class="questionnaire_response questionnaire_yesno">
     {{#yesselected}}
-    <span class="selected"><input type="radio" name="{{yesname}}" checked="checked" disabled="disabled"/> {{{stryes}}}</span>
+    {{#pdf}}&#10003;{{/pdf}}<span class="selected">{{^pdf}}<input type="radio" name="{{yesname}}" checked="checked" disabled="disabled"/>{{/pdf}} {{{stryes}}}</span>
     {{/yesselected}}
     {{^yesselected}}
-    <span class="unselected"><input type="radio" name="{{yesname}}" disabled="disabled"/> {{{stryes}}}</span>
+        <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}<input type="radio" name="{{yesname}}" disabled="disabled"/>{{/pdf}} {{{stryes}}}</span>
     {{/yesselected}}
     {{#noselected}}
-    <span class="selected"><input type="radio" name="{{noname}}" checked="checked" disabled="disabled"/> {{{strno}}}</span>
+    {{#pdf}}&nbsp; &#10003;{{/pdf}}<span class="selected">{{^pdf}}<input type="radio" name="{{noname}}" checked="checked" disabled="disabled"/>{{/pdf}} {{{strno}}}</span>
     {{/noselected}}
     {{^noselected}}
-    <span class="unselected"><input type="radio" name="{{noname}}" disabled="disabled"/> {{{strno}}}</span>
+        <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}<input type="radio" name="{{noname}}" disabled="disabled"/>{{/pdf}} {{{strno}}}</span>
     {{/noselected}}
 </div>
 <!-- End HTML generated from response_yesno template. -->

@@ -121,6 +121,7 @@ class display_support {
         }
 
         $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
+        $blankimage = $CFG->wwwroot . '/mod/questionnaire/images/hbartransp.gif';
         $llength = $question->length;
         if (!$llength) {
             $llength = 5;
@@ -206,7 +207,7 @@ class display_support {
 
                     if ($avg) {
                         if (($j = $avg * $width) > 0) {
-                            $marginposition = ($avg - 0.5 ) / ($question->length + $isrestricted) * 100;
+                            $marginposition = ($avg - 0.5 ) / ($question->length + $isrestricted);
                         }
                         if (!right_to_left()) {
                             $margin = 'margin-left:' . $marginposition . '%';
@@ -468,7 +469,7 @@ class display_support {
                 $nbna = $counts[$content]->nbna;
                 // TOTAL number of responses for this possible answer.
                 $total = $counts[$content]->num;
-                $nbresp = '<strong>'.$total.'<strong>';
+                $nbresp = '<strong>'.$total.'</strong>';
                 if ($osgood) {
                     // Ensure there are two bits of content.
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));

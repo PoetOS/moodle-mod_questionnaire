@@ -372,9 +372,19 @@ class questionnaire {
     * Function to view an entire responses data.
     *
     */
-    public function view_response($rid, $referer= '', $blankquestionnaire = false, $resps = '', $compare = false,
-                                  $isgroupmember = false, $allresponses = false, $currentgroupid = 0) {
-        $this->print_survey_start('', 1, 1, 0, $rid, false);
+    /**
+     * @param $rid
+     * @param string $referer
+     * @param string $resps
+     * @param bool $compare
+     * @param bool $isgroupmember
+     * @param bool $allresponses
+     * @param int $currentgroupid
+     * @param string $outputtarget
+     */
+    public function view_response($rid, $referer= '', $resps = '', $compare = false, $isgroupmember = false, $allresponses = false,
+                                  $currentgroupid = 0, $outputtarget = 'html') {
+        $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
 
         $i = 0;
         $this->add_response($rid);
@@ -395,12 +405,13 @@ class questionnaire {
                 $this->page->add_to_page('feedbacknotes', $this->renderer->box(format_text($text, FORMAT_HTML)));
             }
         }
+        $pdf = ($outputtarget == 'pdf') ? true : false;
         foreach ($this->questions as $question) {
             if ($question->type_id < QUESPAGEBREAK) {
                 $i++;
             }
             if ($question->type_id != QUESPAGEBREAK) {
-                $this->page->add_to_page('responses', $this->renderer->response_output($question, $this->responses[$rid], $i));
+                $this->page->add_to_page('responses', $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf));
             }
         }
     }
@@ -1245,7 +1256,8 @@ class questionnaire {
         return;
     }
 
-    private function print_survey_start($message, $section, $numsections, $hasrequired, $rid='', $blankquestionnaire=false) {
+    private function print_survey_start($message, $section, $numsections, $hasrequired, $rid='', $blankquestionnaire=false,
+                                        $outputtarget = 'html') {
         global $CFG, $DB;
         require_once($CFG->libdir.'/filelib.php');
 
@@ -1308,7 +1320,15 @@ class questionnaire {
             }
         }
         if ($ruser) {
-            $respinfo = get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>';
+            $respinfo = '';
+            if ($outputtarget == 'html') {
+                $linkname = get_string('downloadpdf', 'mod_questionnaire');
+                $link = new moodle_url('/mod/questionnaire/report.php',
+                    ['action' => 'vresp', 'instance' => $this->id, 'target' => 'pdf', 'individualresponse' => 1, 'rid' => $rid]);
+                $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
+                $respinfo .= $this->renderer->action_link($link, null, null, null, $downpdficon);
+            }
+            $respinfo .= get_string('respondent', 'questionnaire').': <strong>'.$ruser.'</strong>';
             if ($this->survey_is_public()) {
                 // For a public questionnaire, look for the course that used it.
                 $coursename = '';
@@ -1388,7 +1408,7 @@ class questionnaire {
 
         if (!empty($rid)) {
             // If we're viewing a response, use this method.
-            $this->view_response($rid, $referer, $blankquestionnaire);
+            $this->view_response($rid, $referer);
             return;
         }
 
@@ -1964,7 +1984,7 @@ class questionnaire {
      * @param int $userid The submission to grade
      * @return array
      */
-    protected function get_notifiable_users($userid) {
+    public function get_notifiable_users($userid) {
         // Potential users should be active users only.
         $potentialusers = get_enrolled_users($this->context, 'mod/questionnaire:submissionnotification',
             null, 'u.*', null, null, null, true);
@@ -2575,33 +2595,22 @@ class questionnaire {
         $this->page->add_to_page('bottomnavigationbar', $this->renderer->usernavigationbar($navbar));
     }
 
-    /* {{{ proto string survey_results(int surveyid, int precision, bool show_totals, int question_id,
-     * array choice_ids, int response_id)
-        Builds HTML for the results for the survey. If a
-        question id and choice id(s) are given, then the results
-        are only calculated for respodants who chose from the
-        choice ids for the given question id.
-        Returns empty string on sucess, else returns an error
-        string. */
-
-    public function survey_results($precision = 1, $showtotals = 1, $qid = '', $cids = '', $rid = '',
-                                   $uid=false, $currentgroupid='', $sort='') {
+    /**
+     * Builds HTML for the results for the survey. If a question id and choice id(s) are given, then the results are only calculated
+     * for respodants who chose from the choice ids for the given question id. Returns empty string on success, else returns an
+     * error string.
+     * @param string $rid
+     * @param bool $uid
+     * @param string $currentgroupid
+     * @param string $sort
+     * @return string|void
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function survey_results($rid = '', $uid=false, $pdf = false, $currentgroupid='', $sort='') {
         global $SESSION, $DB;
 
         $SESSION->questionnaire->noresponses = false;
-        if (empty($precision)) {
-            $precision  = 1;
-        }
-        if ($showtotals === '') {
-            $showtotals = 1;
-        }
-
-        if (is_int($cids)) {
-            $cids = array($cids);
-        }
-        if (is_string($cids)) {
-            $cids = preg_split("/ /", $cids); // Turn space seperated list into array.
-        }
 
         // Build associative array holding whether each question
         // type has answer choices or not and the table the answers are in
@@ -2692,27 +2701,41 @@ class questionnaire {
             if ($question->type_id == QUESPAGEBREAK) {
                 continue;
             }
-            $this->page->add_to_page('responses', $this->renderer->container_start('qn-container'));
             if ($question->type_id != QUESSECTIONTEXT) {
                 $qnum++;
+            }
+            if (!$pdf) {
+                $this->page->add_to_page('responses', $this->renderer->container_start('qn-container'));
                 $this->page->add_to_page('responses', $this->renderer->container_start('qn-info'));
                 if ($question->type_id != QUESSECTIONTEXT) {
                     $this->page->add_to_page('responses', $this->renderer->heading($qnum, 2, 'qn-number'));
                 }
                 $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-info.
+                $this->page->add_to_page('responses', $this->renderer->container_start('qn-content'));
             }
-            $this->page->add_to_page('responses', $this->renderer->container_start('qn-content'));
             // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
             if ($question->content == '<p>  </p>') {
                 $question->content = '';
             }
-            $this->page->add_to_page('responses',
-                $this->renderer->container(format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
+            if ($pdf) {
+                $response = new stdClass();
+                if ($question->type_id != QUESSECTIONTEXT) {
+                    $response->qnum = $qnum;
+                }
+                $response->qcontent = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
                     $question->context->id, 'mod_questionnaire', 'question', $question->id),
-                    FORMAT_HTML, ['noclean' => true]), 'qn-question'));
-            $this->page->add_to_page('responses', $this->renderer->results_output($question, $rids, $sort, $anonymous));
-            $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-content.
-            $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-container.
+                    FORMAT_HTML, ['noclean' => true]);
+                $response->results = $this->renderer->results_output($question, $rids, $sort, $anonymous, $pdf);
+                $this->page->add_to_page('responses', $response);
+            } else {
+                $this->page->add_to_page('responses',
+                    $this->renderer->container(format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
+                        $question->context->id, 'mod_questionnaire', 'question', $question->id),
+                        FORMAT_HTML, ['noclean' => true]), 'qn-question'));
+                $this->page->add_to_page('responses', $this->renderer->results_output($question, $rids, $sort, $anonymous));
+                $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-content.
+                $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-container.
+            }
         }
 
         return;
@@ -2977,7 +3000,8 @@ class questionnaire {
     /* {{{ proto array survey_generate_csv(int surveyid)
     Exports the results of a survey to an array.
     */
-    public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid, $showincompletes = 0) {
+    public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid, $showincompletes=0,
+                                 $rankaverages=0) {
         global $DB;
 
         raise_memory_limit('1G');
@@ -3213,9 +3237,23 @@ class questionnaire {
         $formatoptions = new stdClass();
         $formatoptions->filter = false;  // To prevent any filtering in CSV output.
 
+        if ($rankaverages) {
+            $averages = [];
+            $rids = [];
+            $allresponsesrs2 = $this->get_survey_all_responses($rid, $userid, $currentgroupid);
+            foreach ($allresponsesrs2 as $responserow) {
+                if (!isset($rids[$responserow->rid])) {
+                    $rids[$responserow->rid] = $responserow->rid;
+                }
+            }
+        }
+
         // Get textual versions of responses, add them to output at the correct col position.
         $prevresprow = false; // Previous response row.
         $row = [];
+        if ($rankaverages) {
+            $averagerow = [];
+        }
         foreach ($allresponsesrs as $responserow) {
             $rid = $responserow->rid;
             $qid = $responserow->question_id;
@@ -3227,6 +3265,16 @@ class questionnaire {
 
             $question = $this->questions[$qid];
             $qtype = intval($question->type_id);
+            if ($rankaverages) {
+                if ($qtype === QUESRATE) {
+                    if (empty($averages[$qid])) {
+                        $results = $this->questions[$qid]->responsetype->get_results($rids);
+                        foreach ($results as $qresult) {
+                            $averages[$qid][$qresult->id] = $qresult->average;
+                        }
+                    }
+                }
+            }
             $questionobj = $this->questions[$qid];
 
             if ($prevresprow !== false && $prevresprow->rid !== $rid) {
@@ -3240,6 +3288,9 @@ class questionnaire {
                 $position = $questionpositions[$key];
                 if ($qtype === QUESRATE) {
                     $choicetxt = $responserow->rankvalue;
+                    if ($rankaverages) {
+                        $averagerow[$position] = $averages[$qid][$responserow->choice_id];
+                    }
                 } else {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
                     if (\mod_questionnaire\question\choice\choice::content_is_other_choice($content)) {
@@ -3311,6 +3362,21 @@ class questionnaire {
             // Add final row to output. May not exist if no response data was ever present.
             $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition,
                 $nbinfocols, $numrespcols, $showincompletes);
+        }
+
+        // Add averages row if appropriate.
+        if ($rankaverages) {
+            $summaryrow = [];
+            $summaryrow[0] = get_string('averagesrow', 'questionnaire');
+            $i = 1;
+            for ($i = 1; $i < $nbinfocols; $i++) {
+                $summaryrow[$i] = '';
+            }
+            $pos = 0;
+            for ($i = $nbinfocols; $i < $numrespcols; $i++) {
+                $summaryrow[$i] = isset($averagerow[$i]) ? $averagerow[$i] : '';
+            }
+            $output[] = $summaryrow;
         }
 
         // Change table headers to incorporate actual question numbers.

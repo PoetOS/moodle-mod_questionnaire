@@ -59,6 +59,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Fill out the PDF report page.
+     * @param \templateable $page
+     * @return string | boolean
+     */
+    public function render_reportpagepdf($page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/reportpagepdf', $data);
+    }
+
+    /**
      * Fill out the qsettings page.
      * @param \templateable $page
      * @return string | boolean
@@ -206,15 +216,19 @@ class renderer extends \plugin_renderer_base {
      * @param \mod_questionnaire\question\question $question The question object.
      * @param \mod_questionnaire\responsetype\response\response $response The response object.
      * @param int $qnum The question number.
+     * @param bool $pdf
      * @return string The output for the page.
      * @throws \moodle_exception
      */
-    public function response_output($question, $response, $qnum=null) {
+    public function response_output($question, $response, $qnum=null, $pdf=false) {
         $pagetags = $question->response_output($response, $qnum);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
         if (($template = $question->response_template())) {
+            if ($pdf) {
+                $pagetags->qformelement->pdf = 1;
+            }
             $pagetags->qformelement = $this->render_from_template($template, $pagetags->qformelement);
         }
 
@@ -224,7 +238,11 @@ class renderer extends \plugin_renderer_base {
                 $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
             }
         }
-        return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
+        if (!$pdf) {
+            return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
+        } else {
+            return $this->render_from_template('mod_questionnaire/questionpdf_container', $pagetags);
+        }
     }
 
     /**
@@ -267,13 +285,15 @@ class renderer extends \plugin_renderer_base {
      * @param array $rids The response ids.
      * @param string $sort The sort order being used.
      * @param string $anonymous The value of the anonymous setting.
+     * @param bool $pdf
      * @return string The output for the page.
+     * @throws \moodle_exception
      */
-    public function results_output($question, $rids, $sort, $anonymous) {
+    public function results_output($question, $rids, $sort, $anonymous, $pdf = false) {
         $pagetags = $question->display_results($rids, $sort, $anonymous);
 
         // If the response has a template, then render it from $pagetags. If no template, then $pagetags already contains HTML.
-        if (($template = $question->results_template())) {
+        if (($template = $question->results_template($pdf))) {
             return $this->render_from_template($template, $pagetags);
         } else {
             return $pagetags;
@@ -464,5 +484,51 @@ class renderer extends \plugin_renderer_base {
         ob_end_clean();
 
         return $o;
+    }
+
+    /**
+     * Returns a dataformat selection and download form
+     *
+     * @param string $label A text label
+     * @param moodle_url|string $base The download page url
+     * @param string $name The query param which will hold the type of the download
+     * @param array $params Extra params sent to the download page
+     * @param string $extrafields HTML for extra form fields
+     * @return string HTML fragment
+     */
+    public function download_dataformat_selector($label, $base, $name = 'dataformat', $params = array(), $extrafields = '') {
+
+        $formats = \core_plugin_manager::instance()->get_plugins_of_type('dataformat');
+        $options = array();
+        foreach ($formats as $format) {
+            if ($format->is_enabled()) {
+                $options[] = array(
+                    'value' => $format->name,
+                    'label' => get_string('dataformat', $format->component),
+                );
+            }
+        }
+        $hiddenparams = array();
+        foreach ($params as $key => $value) {
+            $hiddenparams[] = array(
+                'name' => $key,
+                'value' => $value,
+            );
+        }
+        $data = array(
+            'label' => $label,
+            'base' => $base,
+            'name' => $name,
+            'params' => $hiddenparams,
+            'options' => $options,
+            'extrafields' => $extrafields,
+            'sesskey' => sesskey(),
+            'submit' => get_string('download'),
+            'emailroleshelp' => $this->help_icon('emailroles', 'questionnaire'),
+            'emailextrahelp' => $this->help_icon('emailextra', 'questionnaire'),
+            'allowemailreporting' => get_config('questionnaire', 'allowemailreporting'),
+        );
+
+        return $this->render_from_template('mod_questionnaire/dataformat_selector', $data);
     }
 }

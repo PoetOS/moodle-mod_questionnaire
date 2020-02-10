@@ -127,9 +127,10 @@ abstract class responsetype {
 
     /**
      * Provide a template for results screen if defined.
-     * @return mixed The template string or false/
+     * @param bool $pdf
+     * @return mixed The template string or false.
      */
-    public function results_template() {
+    public function results_template($pdf = false) {
         return false;
     }
 
@@ -165,6 +166,7 @@ abstract class responsetype {
 
             reset ($weights);
             $pagetags->responses = [];
+            $evencolor = false;
             foreach ($weights as $content => $num) {
                 $response = new \stdClass();
                 $response->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
@@ -194,8 +196,11 @@ abstract class responsetype {
                     $response->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 }
                 $response->total = $num;
+                // The 'evencolor' attribute is used by the PDF template.
+                $response->evencolor = $evencolor;
                 $pagetags->responses[] = (object)['response' => $response];
                 $pos++;
+                $evencolor = !$evencolor;
             } // End while.
 
             if ($showtotals) {
@@ -224,6 +229,7 @@ abstract class responsetype {
                 $pagetags->total->image2 = $imageurl . 'thbar.gif';
                 $pagetags->total->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
                 $pagetags->total->total = "$respondents/$participants";
+                $pagetags->total->evencolor = $evencolor;
             }
         }
 
