@@ -450,7 +450,7 @@ switch ($action) {
         $output .= html_writer::checkbox('complete', 1, false, get_string('includeincomplete', 'questionnaire'));
         $output .= "<br />\n";
         $output .= "<br />\n";
-        $output .= "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" />\n";
+        $output .= "<input type=\"submit\" name=\"submit\" value=\"".get_string('download', 'questionnaire')."\" class=\"btn btn-secondary\"/>\n";
         $output .= "</form>\n";
         $output .= $questionnaire->renderer->box_end();
 
