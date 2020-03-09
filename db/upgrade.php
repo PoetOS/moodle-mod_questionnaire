@@ -826,6 +826,20 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2018110103, 'questionnaire');
     }
 
+    if ($oldversion < 2020011501) {
+        // Add show progress bar setting.
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('progressbar', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 0, 'autonum');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2020011501, 'questionnaire');
+    }
+
     return $result;
 }
 

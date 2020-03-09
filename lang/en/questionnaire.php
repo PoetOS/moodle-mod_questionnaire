@@ -437,6 +437,10 @@ $string['privacy:metadata:questionnaire_resp_single:question_id'] = 'The ID of t
 $string['privacy:metadata:questionnaire_resp_single:choice_id'] = 'The ID of the choice record for this response.';
 
 $string['private'] = 'Private';
+$string['progressbar'] = 'Show progress bar';
+$string['progresshelp'] = 'Progress Bar';
+$string['progresshelp_help'] = 'Move on to the next page to fill up the progress bar';
+$string['progressbar_info'] = 'Questionnaire {$a} complete.';
 $string['public'] = 'Public';
 $string['publiccopy'] = 'Copy:';
 $string['publicoriginal'] = 'Original:';
