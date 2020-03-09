@@ -94,6 +94,8 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         // Default = autonumber both questions and pages.
         $mform->setDefault('autonum', 3);
 
+        $mform->addElement('advcheckbox', 'progressbar', get_string('progressbar', 'questionnaire'));
+
         // Removed potential scales from list of grades. CONTRIB-3167.
         $grades[0] = get_string('nograde');
         for ($i = 100; $i >= 1; $i--) {

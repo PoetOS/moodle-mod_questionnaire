@@ -1235,6 +1235,11 @@ class questionnaire {
         }
 
         $this->print_survey_start($message, $section, $numsections, $hasrequired, '', 1);
+        // Only show progress bar on questionnaires with more than one page.
+        if ($this->progressbar && isset($this->questionsbysec) && count($this->questionsbysec) > 1) {
+            $this->page->add_to_page('progressbar',
+                    $this->renderer->render_progress_bar($section, $this->questionsbysec));
+        }
         foreach ($this->questionsbysec[$section] as $questionid) {
             if ($this->questions[$questionid]->type_id != QUESSECTIONTEXT) {
                 $i++;
@@ -2352,6 +2357,11 @@ class questionnaire {
         }
         if (empty($thankhead)) {
             $thankhead = get_string('thank_head', 'questionnaire');
+        }
+        if ($this->progressbar && isset($this->questionsbysec) && count($this->questionsbysec) > 1) {
+            // Show 100% full progress bar on completion.
+            $this->page->add_to_page('progressbar',
+                    $this->renderer->render_progress_bar(count($this->questionsbysec) + 1, $this->questionsbysec));
         }
         $this->page->add_to_page('title', $thankhead);
         $this->page->add_to_page('addinfo',
