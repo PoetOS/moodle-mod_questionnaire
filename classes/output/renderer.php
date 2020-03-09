@@ -182,6 +182,27 @@ class renderer extends \plugin_renderer_base {
         return $output;
     }
 
+    private function calculate_progress($section, $questionsbysec) {
+        $done = 0;
+        $todo = 0;
+        for ($i = 1; $i <= count($questionsbysec); $i++) {
+            if ($i < $section) {
+                $done += count($questionsbysec[$i]);
+            } else {
+                $todo += count($questionsbysec[$i]);
+            }
+        }
+
+        return round($done / ($done + $todo) * 100);
+    }
+
+    public function render_progress_bar($section, $questionsbysec) {
+        $templatecontext['percent'] = $this->calculate_progress($section, $questionsbysec);
+        $helpicon = new \help_icon('progresshelp', 'mod_questionnaire');
+        $templatecontext['progresshelp'] = $helpicon->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/progressbar', $templatecontext);
+    }
+
     /**
      * Render a question for a survey.
      * @param \mod_questionnaire\question\question $question The question object.
