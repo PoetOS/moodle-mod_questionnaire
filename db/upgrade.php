@@ -826,6 +826,130 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2018110103, 'questionnaire');
     }
 
+    if ($oldversion < 2020011505) {
+        // Making the database tables standard across the board.
+        $table = new xmldb_table('questionnaire');
+        $field1 = new xmldb_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $field2 = new xmldb_field('sid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Changing fields that are used in indexes and keys generates errors (sometimes). Drop all foreign keys and indexes first;
+        // recreate them after. And, the might be a key or an index, so drop both and fix after.
+        $key1 = new xmldb_key('course', XMLDB_KEY_FOREIGN, ['course'], 'course', ['id']);
+        $dbman->drop_key($table, $key1);
+        $index1 = new xmldb_index('course', XMLDB_INDEX_NOTUNIQUE, ['course']);
+        if ($dbman->index_exists($table, $index1)) {
+            $dbman->drop_index($table, $index1);
+        }
+        $key2 = new xmldb_key('sid', XMLDB_KEY_FOREIGN, ['sid'], 'questionnaire_survey', ['id']);
+        $dbman->drop_key($table, $key2);
+        $index2 = new xmldb_index('sid', XMLDB_INDEX_NOTUNIQUE, ['sid']);
+        if ($dbman->index_exists($table, $index2)) {
+            $dbman->drop_index($table, $index2);
+        }
+        $index3 = new xmldb_index('respview', XMLDB_INDEX_NOTUNIQUE, ['resp_view']);
+        if ($dbman->index_exists($table, $index3)) {
+            $dbman->drop_index($table, $index3);
+        }
+        $dbman->change_field_type($table, $field1);
+        $dbman->change_field_type($table, $field2);
+        $dbman->add_key($table, $key1);
+        $dbman->add_key($table, $key2);
+        $dbman->add_index($table, $index3);
+
+        $table = new xmldb_table('questionnaire_survey');
+        $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, ['courseid']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+        $key = new xmldb_key('courseid', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+        $dbman->drop_key($table, $key);
+        $dbman->add_key($table, $key);
+
+        $table = new xmldb_table('questionnaire_question');
+        $field = new xmldb_field('surveyid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $index = new xmldb_index('quest_question_sididx', XMLDB_INDEX_NOTUNIQUE, ['surveyid', 'deleted']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+        $dbman->change_field_type($table, $field);
+        $dbman->add_index($table, $index);
+        $field = new xmldb_field('length', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $dbman->change_field_type($table, $field);
+        $field = new xmldb_field('precise', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $dbman->change_field_type($table, $field);
+
+        $table = new xmldb_table('questionnaire_quest_choice');
+        $index = new xmldb_index('questionid', XMLDB_INDEX_NOTUNIQUE, ['question_id']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+        $key = new xmldb_key('questionid', XMLDB_KEY_FOREIGN, ['question_id'], 'questionnaire_question', ['id']);
+        $dbman->drop_key($table, $key);
+        $dbman->add_key($table, $key);
+
+        $table = new xmldb_table('questionnaire_response');
+        $index = new xmldb_index('questionnaireid', XMLDB_INDEX_NOTUNIQUE, ['questionnaireid']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+        $key = new xmldb_key('questionnaireid', XMLDB_KEY_FOREIGN, ['questionnaireid'], 'questionnaire', ['id']);
+        $dbman->drop_key($table, $key);
+        $dbman->add_key($table, $key);
+
+        $table = new xmldb_table('questionnaire_response_bool');
+        $idfield = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $dbman->change_field_type($table, $idfield);
+
+        $table = new xmldb_table('questionnaire_response_date');
+        $dbman->change_field_type($table, $idfield);
+
+        $table = new xmldb_table('questionnaire_response_other');
+        $dbman->change_field_type($table, $idfield);
+
+        $table = new xmldb_table('questionnaire_response_rank');
+        $dbman->change_field_type($table, $idfield);
+        $field = new xmldb_field('rankvalue', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $dbman->change_field_type($table, $field);
+
+        $table = new xmldb_table('questionnaire_resp_single');
+        $dbman->change_field_type($table, $idfield);
+
+        $table = new xmldb_table('questionnaire_response_text');
+        $dbman->change_field_type($table, $idfield);
+
+        $table = new xmldb_table('questionnaire_fb_sections');
+        $dbman->change_field_type($table, $idfield);
+        $field = new xmldb_field('surveyid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $dbman->change_field_type($table, $field);
+        $key = new xmldb_key('surveyid', XMLDB_KEY_FOREIGN, ['surveyid'], 'questionnaire_survey', ['id']);
+        $dbman->add_key($table, $key);
+
+        $table = new xmldb_table('questionnaire_feedback');
+        $dbman->change_field_type($table, $idfield);
+        $field = new xmldb_field('sectionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $dbman->change_field_type($table, $field);
+        $key = new xmldb_key('sectionid', XMLDB_KEY_FOREIGN, ['sectionid'], 'questionnaire_fb_sections', ['id']);
+        $dbman->add_key($table, $key);
+
+        $table = new xmldb_table('questionnaire_survey');
+        $field = new xmldb_field('feedbacksections', XMLDB_TYPE_INTEGER, '2', null, null, null, '0');
+        $dbman->change_field_type($table, $field);
+
+        $table = new xmldb_table('questionnaire_dependency');
+        $index = new xmldb_index('questionid', XMLDB_INDEX_NOTUNIQUE, ['questionid']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+        $key = new xmldb_key('questionid', XMLDB_KEY_FOREIGN, ['questionid'], 'questionnaire_question', ['id']);
+        $dbman->drop_key($table, $key);
+        $dbman->add_key($table, $key);
+        $key = new xmldb_key('surveyid', XMLDB_KEY_FOREIGN, ['surveyid'], 'questionnaire_survey', ['id']);
+        $dbman->add_key($table, $key);
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2020011505, 'questionnaire');
+    }
+
     return $result;
 }
 
