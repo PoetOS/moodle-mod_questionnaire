@@ -570,20 +570,13 @@ class rank extends responsetype {
         }
         $pagetags->averages->choicelabelrow = new \stdClass();
         $pagetags->averages->choicelabelrow->innertablewidth = $header2->pdfwidth;
-        if (!$isna) {
-            $pagetags->averages->choicelabelrow->column1 = (object)['width' => $header1->width, 'align' => $header1->align,
-                'text' => '', 'pdfwidth' => $header1->pdfwidth];
-            $pagetags->averages->choicelabelrow->column2 = (object)['width' => $header2->width, 'align' => $header2->align,
-                'ranks' => $rankcols, 'pdfwidth' => $header2->pdfwidth];
-            $pagetags->averages->choicelabelrow->column3 = (object)['width' => $header3->width, 'align' => $header3->align,
-                'text' => '', 'pdfwidth' => $header3->pdfwidth];
-        } else {
-            $pagetags->averages->choicelabelrow->column1 = (object)['width' => $header1->width, 'align' => $header1->align,
-                'text' => '', 'pdfwidth' => $header1->pdfwidth];
-            $pagetags->averages->choicelabelrow->column2 = (object)['width' => $header2->width, 'align' => $header2->align,
-                'ranks' => $rankcols, 'pdfwidth' => $header2->pdfwidth];
-            $pagetags->averages->choicelabelrow->column3 = (object)['width' => $header3->width, 'align' => $header3->align,
-                'text' => '', 'pdfwidth' => $header3->pdfwidth];
+        $pagetags->averages->choicelabelrow->column1 = (object)['width' => $header1->width, 'align' => $header1->align,
+            'text' => '', 'pdfwidth' => $header1->pdfwidth];
+        $pagetags->averages->choicelabelrow->column2 = (object)['width' => $header2->width, 'align' => $header2->align,
+            'ranks' => $rankcols, 'pdfwidth' => $header2->pdfwidth];
+        $pagetags->averages->choicelabelrow->column3 = (object)['width' => $header3->width, 'align' => $header3->align,
+            'text' => '', 'pdfwidth' => $header3->pdfwidth];
+        if ($isna) {
             $pagetags->averages->choicelabelrow->column4 = (object)['width' => $header4->width, 'align' => $header4->align,
                 'text' => '', 'pdfwidth' => $header4->pdfwidth];
         }
@@ -666,12 +659,13 @@ class rank extends responsetype {
                         $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1, 'column2' => $choicecol2,
                             'column3' => $choicecol3];
                         // JR JUNE 2012 do not display meaningless average rank values for Osgood.
-                    } else {
+                    } else if ($avg || ($nbna != 0)) {
+                        $stravgval = '';
                         if ($avg) {
-                            $stravgval = '';
                             if ($stravgvalue) {
                                 $stravgval = '('.sprintf('%.1f', $avgvalue).')';
                             }
+                            $stravgval = sprintf('%.1f', $avg).'&nbsp;'.$stravgval;
                             if ($isna) {
                                 $choicecol4 = new \stdClass();
                                 $choicecol4->width = $header4->width;
@@ -679,50 +673,34 @@ class rank extends responsetype {
                                 $choicecol4->align = $header4->align;
                                 $choicecol4->text = $nbna;
                             }
-                            $choicecol1 = new \stdClass();
-                            $choicecol1->width = $header1->width;
-                            $choicecol1->pdfwidth = $header1->pdfwidth;
-                            $choicecol1->align = $header1->align;
-                            $choicecol1->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
-                            $choicecol2 = new \stdClass();
-                            $choicecol2->width = $header2->width;
-                            $choicecol2->pdfwidth = $header2->pdfwidth;
-                            $choicecol2->align = $header2->align;
-                            $choicecol2->imageurl = $imageurl;
-                            $choicecol2->spacerimage = $spacerimage;
-                            $choicecol2->margin = $margin;
-                            $choicecol2->marginpdf = $marginpdf;
-                            $choicecol3 = new \stdClass();
-                            $choicecol3->width = $header3->width;
-                            $choicecol3->pdfwidth = $header3->pdfwidth;
-                            $choicecol3->align = $header3->align;
-                            $choicecol3->text = sprintf('%.1f', $avg).'&nbsp;'.$stravgval;
+                        }
+                        $choicecol1 = new \stdClass();
+                        $choicecol1->width = $header1->width;
+                        $choicecol1->pdfwidth = $header1->pdfwidth;
+                        $choicecol1->align = $header1->align;
+                        $choicecol1->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
+                        $choicecol2 = new \stdClass();
+                        $choicecol2->width = $header2->width;
+                        $choicecol2->pdfwidth = $header2->pdfwidth;
+                        $choicecol2->align = $header2->align;
+                        $choicecol2->imageurl = $imageurl;
+                        $choicecol2->spacerimage = $spacerimage;
+                        $choicecol2->margin = $margin;
+                        $choicecol2->marginpdf = $marginpdf;
+                        $choicecol3 = new \stdClass();
+                        $choicecol3->width = $header3->width;
+                        $choicecol3->pdfwidth = $header3->pdfwidth;
+                        $choicecol3->align = $header3->align;
+                        $choicecol3->text = $stravgval;
+                        if ($avg) {
                             if (isset($choicecol4)) {
-                                $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1, 'column2' => $choicecol2,
-                                    'column3' => $choicecol3, 'column4' => $choicecol4];
+                                $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1,
+                                    'column2' => $choicecol2, 'column3' => $choicecol3, 'column4' => $choicecol4];
                             } else {
-                                $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1, 'column2' => $choicecol2,
-                                    'column3' => $choicecol3];
+                                $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1,
+                                    'column2' => $choicecol2, 'column3' => $choicecol3];
                             }
-                        } else if ($nbna != 0) {
-                            $choicecol1 = new \stdClass();
-                            $choicecol1->width = $header1->width;
-                            $choicecol1->pdfwidth = $header1->pdfwidth;
-                            $choicecol1->align = $header1->align;
-                            $choicecol1->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
-                            $choicecol2 = new \stdClass();
-                            $choicecol2->width = $header2->width;
-                            $choicecol2->pdfwidth = $header2->pdfwidth;
-                            $choicecol2->align = $header2->align;
-                            $choicecol2->imageurl = $imageurl;
-                            $choicecol2->spacerimage = $spacerimage;
-                            $choicecol2->margin = $margin;
-                            $choicecol2->marginpdf = $marginpdf;
-                            $choicecol3 = new \stdClass();
-                            $choicecol3->width = $header3->width;
-                            $choicecol3->pdfwidth = $header3->pdfwidth;
-                            $choicecol3->align = $header3->align;
-                            $choicecol3->text = '';
+                        } else {
                             $choicecol4 = new \stdClass();
                             $choicecol4->width = $header4->width;
                             $choicecol4->pdfwidth = $header4->pdfwidth;
