@@ -1379,11 +1379,11 @@ class questionnaire {
         }
         if ($section == 1) {
             if (!empty($this->survey->title)) {
-                $this->survey->title=format_string($this->survey->title);
+                $this->survey->title = format_string($this->survey->title);
                 $this->page->add_to_page('title', clean_text($this->survey->title, FORMAT_HTML));
             }
             if (!empty($this->survey->subtitle)) {
-                $this->survey->subtitle=format_string($this->survey->subtitle);
+                $this->survey->subtitle = format_string($this->survey->subtitle);
                 $this->page->add_to_page('subtitle', clean_text($this->survey->subtitle, FORMAT_HTML));
             }
             if ($this->survey->info) {
