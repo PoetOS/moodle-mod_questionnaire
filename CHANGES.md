@@ -3,8 +3,15 @@ Release Notes
 _NOTE - The 3.8 releases will only work on Moodle 3.6, Moodle 3.7, and Moodle 3.8.
 The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4 and 3.3._
 
-##### Version 3.8.0 (Build - 2020041400)
-This release provides a numnber of reporting improvements to the summary pages and the download functions. These
+##### Version 3.8.1 (Build - 2020051500)
+This release immediately replaces 3.8.0 to avoid a database issue with primary keys. If you installed 3.8.0, immediately
+upgrade to 3.8.1
+
+Bug fixes:
+* [GHI288](https://github.com/PoetOS/moodle-mod_questionnaire/issues/288) - Working on reported date selector issues.
+
+##### Version 3.8.0 (Build - 2020051400)
+This release provides a number of reporting improvements to the summary pages and the download functions. These
 changes were somewhat funded by the [Indiegogo campaign](https://www.indiegogo.com/projects/add-better-reporting-to-moodle-questionnaire/x/19609728#/).
 The bulk of financial support came from USPHSCC and Remote Learner. Please review the
 [project on Github](https://github.com/PoetOS/moodle-mod_questionnaire/projects/2) for specific details.
