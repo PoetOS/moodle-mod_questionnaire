@@ -30,9 +30,20 @@ Feature: Checkbox questions can have forced minimum and maximum numbers of boxes
       | Max. forced responses | 2 |
       | Question Text | Select one or two choices only |
       | Possible answers | One,Two,Three,Four |
-    Then I should see "position 1"
-    And I should see "[Check Boxes] (Q1)"
-    And I should see "Select one or two choices only"
+    And I add a "Check Boxes" question and I fill the form with:
+      | Question Name | Q2 |
+      | Yes | y |
+      | Min. forced responses | 1 |
+      | Max. forced responses | 0 |
+      | Question Text | Select one or two choices only |
+      | Possible answers | Red,Blue,Yellow,Green |
+    And I add a "Check Boxes" question and I fill the form with:
+      | Question Name | Q3 |
+      | Yes | y |
+      | Min. forced responses | 0 |
+      | Max. forced responses | 3 |
+      | Question Text | Select one or two choices only |
+      | Possible answers | Car,Bike,Plane,Boat |
     And I log out
 
 @javascript
@@ -43,10 +54,18 @@ Feature: Checkbox questions can have forced minimum and maximum numbers of boxes
     And I navigate to "Answer the questions..." in current page administration
     Then I should see "Select one or two choices only"
     And I press "Submit questionnaire"
-    Then I should see "Please answer required question #1."
+    Then I should see "Please answer required questions: #1. #2. #3."
     And I set the field "One" to "checked"
     And I set the field "Two" to "checked"
     And I set the field "Three" to "checked"
+    And I set the field "Red" to "checked"
+    And I set the field "Blue" to "checked"
+    And I set the field "Car" to "checked"
+    And I set the field "Bike" to "checked"
+    And I set the field "Plane" to "checked"
+    And I set the field "Boat" to "checked"
     And I press "Submit questionnaire"
 #    Then I should see "There is something wrong with your answer to question: #1." -- Need to figure out why this isn't working.
     Then I should see "For this question you must tick a maximum of 2 box(es)."
+    And I should not see "For this question you must tick exactly 1 box(es)."
+    And I should see "For this question you must tick a maximum of 3 box(es)."

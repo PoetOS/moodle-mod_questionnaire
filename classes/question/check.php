@@ -102,7 +102,7 @@ class check extends question {
                 if ($nbboxes < $min || $nbboxes > $max) {
                     $msg = get_string('boxesnbreq', 'questionnaire');
                     if ($min == $max) {
-                        $msg .= '&nbsp;'.get_string('boxesnbexact', 'questionnaire', $min);
+                        $msg .= get_string('boxesnbexact', 'questionnaire', $min);
                     } else {
                         if ($min && ($nbboxes < $min)) {
                             $msg .= get_string('boxesnbmin', 'questionnaire', $min);
@@ -269,7 +269,7 @@ class check extends question {
      */
     protected function form_preprocess_choicedata($formdata) {
         if (empty($formdata->allchoices)) {
-            error (get_string('enterpossibleanswers', 'questionnaire'));
+            print_error(get_string('enterpossibleanswers', 'questionnaire'));
         } else {
             // Sanity checks for min and max checked boxes.
             $allchoices = $formdata->allchoices;
@@ -282,7 +282,9 @@ class check extends question {
             if ($formdata->precise > $nbvalues) {
                 $formdata->precise = $nbvalues;
             }
-            $formdata->precise = max($formdata->length, $formdata->precise);
+            if ($formdata->precise != 0) {
+                $formdata->precise = max($formdata->length, $formdata->precise);
+            }
         }
         return true;
     }
