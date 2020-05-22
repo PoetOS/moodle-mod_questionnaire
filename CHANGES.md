@@ -3,11 +3,19 @@ Release Notes
 _NOTE - The 3.8 releases will only work on Moodle 3.6, Moodle 3.7, and Moodle 3.8.
 The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4 and 3.3._
 
+##### Version 3.8.2 (Build - 2020052100)
+This release fixes a problem when upgrading using Postgres.
+
+Bug fixes:
+
+* [CONTRIB-8096](https://tracker.moodle.org/browse/CONTRIB-8096) - Ignore Postgres when updating primary key sizes.
+
 ##### Version 3.8.1 (Build - 2020051500)
 This release immediately replaces 3.8.0 to avoid a database issue with primary keys. If you installed 3.8.0, immediately
 upgrade to 3.8.1
 
 Bug fixes:
+
 * [GHI288](https://github.com/PoetOS/moodle-mod_questionnaire/issues/288) - Working on reported date selector issues.
 
 ##### Version 3.8.0 (Build - 2020051400)
@@ -19,6 +27,7 @@ The bulk of financial support came from USPHSCC and Remote Learner. Please revie
 Other contributers to this release include Luca Bösch, Günter Lukas and Martin Gauk.
 
 Improvements:
+
 * [GHI235](https://github.com/PoetOS/moodle-mod_questionnaire/issues/235) - Allowing data downloads to be emailed
 directly from the server to specified email addresses.
 * [GHI237](https://github.com/PoetOS/moodle-mod_questionnaire/issues/237) - Allow rank choice averages to be
@@ -32,6 +41,7 @@ for data download feature.
 * [CONTRIB-8009](https://tracker.moodle.org/browse/CONTRIB-8009) - Allow for just a minimum value to be specified for checkbox answers.
 
 Bug fixes:
+
 * [PR271](https://github.com/PoetOS/moodle-mod_questionnaire/pull/271) - Prevent warning on Non-respondents page.
 * [PR272](https://github.com/PoetOS/moodle-mod_questionnaire/pull/273) - Apply Moodle filters to title fields.
 * [PR277](https://github.com/PoetOS/moodle-mod_questionnaire/pull/277) - Ensure questions maintain order on restores.
