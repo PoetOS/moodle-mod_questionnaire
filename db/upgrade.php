@@ -827,6 +827,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     }
 
     if ($oldversion < 2020011507) {
+        // This operation might take a while. Cancel PHP timeouts for this.
+        \core_php_time_limit::raise();
+
         // Making the database tables standard across the board.
         $table = new xmldb_table('questionnaire');
         $field1 = new xmldb_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
@@ -896,9 +899,9 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $dbman->drop_key($table, $key);
         $dbman->add_key($table, $key);
 
-        // Postgres has a bug that impacts changing fields with a sequence defined (see bug MDL-68799), so don't change this for
-        // Postgres.
-        if ($DB->get_dbfamily() !== 'postgres') {
+        // Postgres and MSSQL have a bug that impacts changing fields with a sequence defined (see bug MDL-68799), so don't change
+        // this for Postgres or MSSQL.
+        if (($DB->get_dbfamily() !== 'postgres') && ($DB->get_dbfamily() !== 'mssql')) {
             $idfield = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
 
             $table = new xmldb_table('questionnaire_response_bool');
