@@ -8,7 +8,7 @@ sudo: true
 
 addons:
   firefox: "47.0.1"
-  postgresql: "9.4"
+  postgresql: "9.5"
   apt:
     packages:
       - openjdk-8-jre-headless
@@ -23,13 +23,30 @@ cache:
 php:
  - 7.1
  - 7.2
+ - 7.3
 
 matrix:
   exclude:
+    - php: 7.2
+      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
+    - php: 7.2
+      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
+    - php: 7.1
+      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
+    - php: 7.1
+      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
+    - php: 7.3
+      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
+    - php: 7.3
+      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
     - php: 7.1
       env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
     - php: 7.1
       env: MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
+    - php: 7.3
+      env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
+    - php: 7.3
+      env: MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
     - php: 7.2
       env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
     - php: 7.2
@@ -39,6 +56,8 @@ env:
   global:
     - IGNORE_NAMES=mobile_*.mustache
   matrix:
+    - MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
+    - MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
     - MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
     - MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
     - MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
