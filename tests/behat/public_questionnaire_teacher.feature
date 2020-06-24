@@ -42,27 +42,19 @@ Feature: Public questionnaires gather all instance responses in one master cours
 
     And I log in as "teacher2"
     And I am on "Course 2" course homepage with editing mode on
-    And I follow "Add an activity or resource"
-    And I click on "Questionnaire" "radio"
-    And I click on "Add" "button" in the "Add an activity or resource" "dialogue"
-    And I set the field "Name" to "Questionnaire instance 1"
-    And I expand all fieldsets
-    Then I should see "Content options"
-    And I click on "Public questionnaire [Course 1]" "radio"
-    And I press "Save and display"
+    And I add a "Questionnaire" to section "1" and I fill the form with:
+      | Name | Questionnaire instance 1 |
+      | Description | Description |
+      | Use public | Public questionnaire [Course 1] |
     Then I should see "Questionnaire instance 1"
     And I log out
 
     And I log in as "teacher3"
     And I am on "Course 3" course homepage with editing mode on
-    And I follow "Add an activity or resource"
-    And I click on "Questionnaire" "radio"
-    And I click on "Add" "button" in the "Add an activity or resource" "dialogue"
-    And I set the field "Name" to "Questionnaire instance 2"
-    And I expand all fieldsets
-    Then I should see "Content options"
-    And I click on "Public questionnaire [Course 1]" "radio"
-    And I press "Save and display"
+    And I add a "Questionnaire" to section "1" and I fill the form with:
+      | Name | Questionnaire instance 2 |
+      | Description | Description |
+      | Use public | Public questionnaire [Course 1] |
     Then I should see "Questionnaire instance 2"
     And I log out
 

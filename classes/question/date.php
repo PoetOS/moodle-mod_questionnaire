@@ -55,10 +55,10 @@ class date extends question {
     /**
      * Return the context tags for the check question template.
      * @param \mod_questionnaire\responsetype\response\response $response
-     * @param string $descendantdata
+     * @param $descendantsdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
-     *
+     * @throws \coding_exception
      */
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         // Date.
@@ -66,14 +66,11 @@ class date extends question {
         if (!empty($response->answers[$this->id])) {
             $dateentered = $response->answers[$this->id][0]->value;
             $setdate = $this->check_date_format($dateentered);
-            if ($setdate == 'wrongdateformat') {
+            if (!$setdate) {
                 $msg = get_string('wrongdateformat', 'questionnaire', $dateentered);
                 $this->add_notification($msg);
-            } else if ($setdate == 'wrongdaterange') {
-                $msg = get_string('wrongdaterange', 'questionnaire');
-                $this->add_notification($msg);
             } else {
-                $response->answers[$this->id][0]->value = $setdate;
+                $response->answers[$this->id][0]->value = $dateentered;
             }
         }
         $choice = new \stdClass();
@@ -118,11 +115,11 @@ class date extends question {
             $responseval = $responsedata->{'q' . $this->id};
         }
         if ($responseval !== false) {
-            $checkdateresult = '';
+            $checkdateresult = true;
             if ($responseval != '') {
                 $checkdateresult = $this->check_date_format($responseval);
             }
-            return (substr($checkdateresult, 0, 5) != 'wrong');
+            return $checkdateresult;
         } else {
             return parent::response_valid($responsedata);
         }
@@ -138,7 +135,8 @@ class date extends question {
 
     /**
      * Verify that the date provided is in the proper YYYY-MM-DD format.
-     *
+     * @param $date
+     * @return bool
      */
     public function check_date_format($date) {
         $datepieces = explode('-', $date);

@@ -826,7 +826,10 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2018110103, 'questionnaire');
     }
 
-    if ($oldversion < 2020011505) {
+    if ($oldversion < 2020011507) {
+        // This operation might take a while. Cancel PHP timeouts for this.
+        \core_php_time_limit::raise();
+
         // Making the database tables standard across the board.
         $table = new xmldb_table('questionnaire');
         $field1 = new xmldb_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
@@ -896,39 +899,52 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $dbman->drop_key($table, $key);
         $dbman->add_key($table, $key);
 
-        $table = new xmldb_table('questionnaire_response_bool');
-        $idfield = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
-        $dbman->change_field_type($table, $idfield);
+        // Postgres and MSSQL have a bug that impacts changing fields with a sequence defined (see bug MDL-68799), so don't change
+        // this for Postgres or MSSQL.
+        if (($DB->get_dbfamily() !== 'postgres') && ($DB->get_dbfamily() !== 'mssql')) {
+            $idfield = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
 
-        $table = new xmldb_table('questionnaire_response_date');
-        $dbman->change_field_type($table, $idfield);
+            $table = new xmldb_table('questionnaire_response_bool');
+            $dbman->change_field_type($table, $idfield);
 
-        $table = new xmldb_table('questionnaire_response_other');
-        $dbman->change_field_type($table, $idfield);
+            $table = new xmldb_table('questionnaire_response_date');
+            $dbman->change_field_type($table, $idfield);
+
+            $table = new xmldb_table('questionnaire_response_other');
+            $dbman->change_field_type($table, $idfield);
+
+            $table = new xmldb_table('questionnaire_response_rank');
+            $dbman->change_field_type($table, $idfield);
+
+            $table = new xmldb_table('questionnaire_resp_single');
+            $dbman->change_field_type($table, $idfield);
+
+            $table = new xmldb_table('questionnaire_response_text');
+            $dbman->change_field_type($table, $idfield);
+
+            $table = new xmldb_table('questionnaire_fb_sections');
+            $dbman->change_field_type($table, $idfield);
+
+            $table = new xmldb_table('questionnaire_feedback');
+            $dbman->change_field_type($table, $idfield);
+        }
 
         $table = new xmldb_table('questionnaire_response_rank');
-        $dbman->change_field_type($table, $idfield);
         $field = new xmldb_field('rankvalue', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
         $dbman->change_field_type($table, $field);
 
-        $table = new xmldb_table('questionnaire_resp_single');
-        $dbman->change_field_type($table, $idfield);
-
-        $table = new xmldb_table('questionnaire_response_text');
-        $dbman->change_field_type($table, $idfield);
-
         $table = new xmldb_table('questionnaire_fb_sections');
-        $dbman->change_field_type($table, $idfield);
         $field = new xmldb_field('surveyid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $dbman->change_field_type($table, $field);
         $key = new xmldb_key('surveyid', XMLDB_KEY_FOREIGN, ['surveyid'], 'questionnaire_survey', ['id']);
+        $dbman->drop_key($table, $key);
+        $dbman->change_field_type($table, $field);
         $dbman->add_key($table, $key);
 
         $table = new xmldb_table('questionnaire_feedback');
-        $dbman->change_field_type($table, $idfield);
         $field = new xmldb_field('sectionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $dbman->change_field_type($table, $field);
         $key = new xmldb_key('sectionid', XMLDB_KEY_FOREIGN, ['sectionid'], 'questionnaire_fb_sections', ['id']);
+        $dbman->drop_key($table, $key);
+        $dbman->change_field_type($table, $field);
         $dbman->add_key($table, $key);
 
         $table = new xmldb_table('questionnaire_survey');
@@ -947,7 +963,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         $dbman->add_key($table, $key);
 
         // Questionnaire savepoint reached.
-        upgrade_mod_savepoint(true, 2020011505, 'questionnaire');
+        upgrade_mod_savepoint(true, 2020011507, 'questionnaire');
     }
 
     return $result;
