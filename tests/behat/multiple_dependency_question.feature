@@ -91,7 +91,7 @@ Feature: Questions can be defined to be dependent on answers to previous questio
     And I should see "Previewing Questionnaire"
     And I log out
 
-@javascript
+  @javascript
   Scenario: Student should only be asked questions on school if they have answered yes to question 1.
     And I log in as "student1"
     And I am on "Course 1" course homepage

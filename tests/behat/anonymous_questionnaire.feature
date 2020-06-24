@@ -34,7 +34,7 @@ Feature: Questionnaires can be anonymous
       | Question Text | Do you like this course |
     And I log out
 
-@javascript
+  @javascript
   Scenario: Student completes an anonymous questionnaire
     And I log in as "student1"
     And I am on "Course 1" course homepage

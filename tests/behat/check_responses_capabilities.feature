@@ -4,7 +4,7 @@ Feature: Review responses with different capabilities
   As a user
   I need proper capabilities to access the view responses features
 
-@javascript
+  @javascript
   Scenario: A teacher with mod/questionnaire:readallresponseanytime can see all responses.
     Given the following "users" exist:
       | username | firstname | lastname | email |

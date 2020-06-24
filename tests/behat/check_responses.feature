@@ -4,7 +4,7 @@ Feature: Review responses
   As a teacher
   I need to access the view responses features
 
-@javascript
+  @javascript
   Scenario: Add a questionnaire to a course without questions
     Given the following "users" exist:
       | username | firstname | lastname | email |

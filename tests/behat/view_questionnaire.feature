@@ -4,7 +4,7 @@ Feature: Questionnaires can be public, private or template
   As a user
   The type of the questionnaire affects how it is displayed.
 
-@javascript
+  @javascript
   Scenario: Add a template questionnaire
     Given the following "users" exist:
       | username | firstname | lastname | email |
@@ -32,7 +32,7 @@ Feature: Questionnaires can be public, private or template
     And I press "Save and display"
     Then I should see "Template questionnaires are not viewable"
 
-@javascript
+  @javascript
   Scenario: Add a questionnaire from a public questionnaire
     Given the following "users" exist:
       | username | firstname | lastname | email |
