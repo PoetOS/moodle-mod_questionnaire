@@ -1,7 +1,19 @@
 Release Notes
 
-_NOTE - The 3.8 releases will only work on Moodle 3.6, Moodle 3.7, and Moodle 3.8.
+_NOTE - The 3.8 releases will only work on Moodle 3.6, Moodle 3.7, Moodle 3.8, and Moodle 3.9.
 The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4 and 3.3._
+
+##### Version 3.8.3 (Build - 2020062400)
+This release ensures 3.9 compliance.
+
+Improvements:
+
+* Updated Behat tests for 3.9 compliance.
+* Fixing code style issues for CI compliance.
+
+Bug fixes:
+
+* [CONTRIB-8096](https://tracker.moodle.org/browse/CONTRIB-8096) - Ignore MSSQL when updating primary key sizes.
 
 ##### Version 3.8.2 (Build - 2020052100)
 This release fixes a problem when upgrading using Postgres.
