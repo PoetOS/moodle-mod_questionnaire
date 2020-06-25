@@ -499,7 +499,7 @@ switch ($action) {
         // Check if email report was selected.
         $emailreport = optional_param('emailreport', '', PARAM_ALPHA);
         if (empty($emailreport)) {
-            download_as_dataformat($name, $dataformat, $columns, $output);
+            \core\dataformat::download_data($name, $dataformat, $columns, $output);
         } else {
             // Emailreport button selected.
             if (get_config('questionnaire', 'allowemailreporting') && (!empty($emailroles) || !empty($emailextra))) {
