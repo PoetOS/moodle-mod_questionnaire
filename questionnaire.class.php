@@ -1385,11 +1385,11 @@ class questionnaire {
         if ($section == 1) {
             if (!empty($this->survey->title)) {
                 $this->survey->title = format_string($this->survey->title);
-                $this->page->add_to_page('title', clean_text($this->survey->title, FORMAT_HTML));
+                $this->page->add_to_page('title', $this->survey->title);
             }
             if (!empty($this->survey->subtitle)) {
                 $this->survey->subtitle = format_string($this->survey->subtitle);
-                $this->page->add_to_page('subtitle', clean_text($this->survey->subtitle, FORMAT_HTML));
+                $this->page->add_to_page('subtitle', $this->survey->subtitle);
             }
             if ($this->survey->info) {
                 $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
@@ -2709,9 +2709,9 @@ class questionnaire {
             $this->survey_results_navbar($rid);
         }
 
-        $this->page->add_to_page('title', clean_text($this->survey->title));
+        $this->page->add_to_page('title', format_string($this->survey->title));
         if ($this->survey->subtitle) {
-            $this->page->add_to_page('subtitle', clean_text($this->survey->subtitle));
+            $this->page->add_to_page('subtitle', format_string($this->survey->subtitle));
         }
         if ($this->survey->info) {
             $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
