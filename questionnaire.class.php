@@ -3864,4 +3864,40 @@ class questionnaire {
         }
         return $ret;
     }
+
+    public function get_all_file_areas() {
+        global $DB;
+
+        $areas = [];
+        $areas['info'] = $this->sid;
+        $areas['thankbody'] = $this->sid;
+
+        // Add question areas.
+        if (empty($this->questions)) {
+            $this->add_questions();
+        }
+        $areas['question'] = [];
+        foreach ($this->questions as $question) {
+            $areas['question'][] = $question->id;
+        }
+
+        // Add feedback areas.
+        $areas['feedbacknotes'] = $this->sid;
+        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->sid]);
+        if (!empty($fbsections)) {
+            $areas['sectionheading'] = [];
+            foreach ($fbsections as $section) {
+                $areas['sectionheading'][] = $section->id;
+                $feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $section->id]);
+                if (!empty($feedbacks)) {
+                    $areas['feedback'] = [];
+                    foreach ($feedbacks as $feedback) {
+                        $areas['feedback'][] = $feedback->id;
+                    }
+                }
+            }
+        }
+
+        return $areas;
+    }
 }
