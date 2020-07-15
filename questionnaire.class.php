@@ -1110,6 +1110,7 @@ class questionnaire {
             if (empty($msg)) {
                 return;
             }
+            $formdata->rid = $this->existing_response_action($formdata, $userid);
         }
 
         if (!empty($formdata->resume) && ($this->resume)) {
@@ -1124,6 +1125,7 @@ class questionnaire {
             $msg = $this->response_check_format($formdata->sec, $formdata);
             if ($msg) {
                 $formdata->next = '';
+                $formdata->rid = $this->existing_response_action($formdata, $userid);
             } else {
                 $nextsec = $this->next_page_action($formdata, $userid);
                 if ($nextsec === false) {
@@ -1147,6 +1149,7 @@ class questionnaire {
             $msg = $this->response_check_format($formdata->sec, $formdata, false, true);
             if ($msg) {
                 $formdata->prev = '';
+                $formdata->rid = $this->existing_response_action($formdata, $userid);
             } else {
                 $prevsec = $this->previous_page_action($formdata, $userid);
                 if ($prevsec === false) {
