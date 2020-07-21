@@ -107,9 +107,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $qrow->respondenttype = 'anonymous';
         $qrow->resp_eligible = 'none';
         $qrow->resp_view = 2;
-        $qrow->useopendate = true;
         $qrow->opendate = 99;
-        $qrow->useclosedate = true;
         $qrow->closedate = 50;
         $qrow->resume = 1;
         $qrow->navigate = 1;

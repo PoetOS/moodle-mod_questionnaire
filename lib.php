@@ -131,14 +131,6 @@ function questionnaire_add_instance($questionnaire) {
 
     $questionnaire->timemodified = time();
 
-    // May have to add extra stuff in here.
-    if (empty($questionnaire->useopendate)) {
-        $questionnaire->opendate = 0;
-    }
-    if (empty($questionnaire->useclosedate)) {
-        $questionnaire->closedate = 0;
-    }
-
     if ($questionnaire->resume == '1') {
         $questionnaire->resume = 1;
     } else {
@@ -172,14 +164,6 @@ function questionnaire_update_instance($questionnaire) {
 
     $questionnaire->timemodified = time();
     $questionnaire->id = $questionnaire->instance;
-
-    // May have to add extra stuff in here.
-    if (empty($questionnaire->useopendate)) {
-        $questionnaire->opendate = 0;
-    }
-    if (empty($questionnaire->useclosedate)) {
-        $questionnaire->closedate = 0;
-    }
 
     if ($questionnaire->resume == '1') {
         $questionnaire->resume = 1;

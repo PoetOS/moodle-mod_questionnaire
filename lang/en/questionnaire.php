@@ -87,11 +87,10 @@ $string['checkbreaksremoved'] = 'Removed {$a} extra Page break(s).';
 $string['checknotstarted'] = 'Select not started';
 $string['checkstarted'] = 'Select started';
 $string['clicktoswitch'] = '(click to switch)';
+$string['closebeforeopen'] = 'You have specified a close date before the open date.';
 $string['closed'] = 'The questionnaire was closed on {$a}. Thanks.';
-$string['closedate'] = 'Use Close Date';
+$string['closedate'] = 'Allow responses until';
 $string['closeson'] = 'Questionnaire closes on {$a}';
-$string['closedate_help'] = 'You can specify a date to close the questionnaire here. Check the check box, and select the date and time you want.
- Users will not be able to fill out the questionnaire after that date. If this is not selected, it will never be closed.';
 $string['completionsubmit'] = 'Student must submit this questionnaire to complete it';
 $string['condition'] = 'Condition';
 $string['confalts'] = '- OR - <br />Confirmation page';
@@ -353,9 +352,8 @@ $string['numberscaleitems_help'] = 'Nb of scale items is the *number of items* t
 $string['numeric'] = 'Numeric';
 $string['numeric_help'] = 'Use this question type if you expect the response to be a correctly formatted number.';
 $string['of'] = 'of';
-$string['opendate'] = 'Use Open Date';
-$string['opendate_help'] = 'You can specify a date to open the questionnaire here. Check the check box, and select the date and time you want.
- Users will not be able to fill out the questionnaire before that date. If this is not selected, it will be open immediately.';
+$string['openafterclose'] = 'You have specified an open date after the close date';
+$string['opendate'] = 'Allow responses from';
 $string['option'] = 'option {$a}';
 $string['optional'] = 'Optional - At least one of this dependencies has to be fulfilled.';
 $string['optionalname'] = 'Question Name';
