@@ -122,7 +122,7 @@
     }}
 <!-- Begin HTML generated from question_rate template. -->
 {{#qelements}}
-<table style="width:{{qelements.twidth}}">
+<table style="width:{{twidth}}">
   <tbody>
     {{#qelements.headerrow}}
     <tr>
@@ -135,7 +135,7 @@
     {{#qelements.rows}}
     <tr class="raterow">
       {{#cols}}
-      <td {{#colstyle}}style="{{.}}"{{/colstyle}}{{#colclass}} class="{{.}}"{{/colclass}}{{#coltitle}} title="{{.}}"{{/coltitle}} 
+      <td {{#colstyle}}style="{{.}}"{{/colstyle}}{{#colclass}} class="{{.}}"{{/colclass}}{{#coltitle}} title="{{.}}"{{/coltitle}}
 			{{#colinput}} onclick="if('{{id}}'.length>0) document.getElementById('{{id}}').click()"{{/colinput}}>
         {{#coltext}}{{{.}}}{{/coltext}}
         {{#colhiddentext}}<span class="accesshide">{{{.}}}</span>{{/colhiddentext}}
