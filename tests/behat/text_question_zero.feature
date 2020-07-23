@@ -1,7 +1,7 @@
 @mod @mod_questionnaire
-Feature: Numeric questions can have zero as a valid response
+Feature: Text questions can have zero as a valid response
 
-  Background: Add a numeric question to a questionnaire and accept zero
+  Background: Add a text question to a questionnaire and accept zero
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
@@ -20,10 +20,10 @@ Feature: Numeric questions can have zero as a valid response
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
     And I navigate to "Questions" in current page administration
-    And I add a "Numeric" question and I fill the form with:
+    And I add a "Text Box" question and I fill the form with:
       | Question Name | Q1 |
       | Yes | y |
-      | Question Text | Enter a number |
+      | Question Text | Enter zero |
     Then I log out
 
   @javascript
@@ -32,12 +32,12 @@ Feature: Numeric questions can have zero as a valid response
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
     And I navigate to "Answer the questions..." in current page administration
-    Then I should see "Enter a number"
-    And I set the field "Enter a number" to "0"
+    Then I should see "Enter zero"
+    And I set the field "Enter zero" to "0"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
     Then I should see "Your response"
     And I should see "Test questionnaire"
-    And I should see "Enter a number"
-    And I should see "0"
+    And I should see "Enter zero"
+    And "//div[contains(@class,'questionnaire_text') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='0']" "xpath_element" should exist

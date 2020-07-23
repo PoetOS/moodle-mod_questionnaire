@@ -51,7 +51,7 @@ class text extends responsetype {
      */
     static public function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+        if (isset($responsedata->{'q'.$question->id}) && (strlen($responsedata->{'q'.$question->id}) > 0)) {
             $val = $responsedata->{'q' . $question->id};
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
