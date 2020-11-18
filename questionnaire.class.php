@@ -1110,6 +1110,7 @@ class questionnaire {
             if (empty($msg)) {
                 return;
             }
+            $formdata->rid = $this->existing_response_action($formdata, $userid);
         }
 
         if (!empty($formdata->resume) && ($this->resume)) {
@@ -1124,6 +1125,7 @@ class questionnaire {
             $msg = $this->response_check_format($formdata->sec, $formdata);
             if ($msg) {
                 $formdata->next = '';
+                $formdata->rid = $this->existing_response_action($formdata, $userid);
             } else {
                 $nextsec = $this->next_page_action($formdata, $userid);
                 if ($nextsec === false) {
@@ -1147,6 +1149,7 @@ class questionnaire {
             $msg = $this->response_check_format($formdata->sec, $formdata, false, true);
             if ($msg) {
                 $formdata->prev = '';
+                $formdata->rid = $this->existing_response_action($formdata, $userid);
             } else {
                 $prevsec = $this->previous_page_action($formdata, $userid);
                 if ($prevsec === false) {
@@ -1235,6 +1238,11 @@ class questionnaire {
         }
 
         $this->print_survey_start($message, $section, $numsections, $hasrequired, '', 1);
+        // Only show progress bar on questionnaires with more than one page.
+        if ($this->progressbar && isset($this->questionsbysec) && count($this->questionsbysec) > 1) {
+            $this->page->add_to_page('progressbar',
+                    $this->renderer->render_progress_bar($section, $this->questionsbysec));
+        }
         foreach ($this->questionsbysec[$section] as $questionid) {
             if ($this->questions[$questionid]->type_id != QUESSECTIONTEXT) {
                 $i++;
@@ -1380,11 +1388,11 @@ class questionnaire {
         if ($section == 1) {
             if (!empty($this->survey->title)) {
                 $this->survey->title = format_string($this->survey->title);
-                $this->page->add_to_page('title', clean_text($this->survey->title, FORMAT_HTML));
+                $this->page->add_to_page('title', $this->survey->title);
             }
             if (!empty($this->survey->subtitle)) {
                 $this->survey->subtitle = format_string($this->survey->subtitle);
-                $this->page->add_to_page('subtitle', clean_text($this->survey->subtitle, FORMAT_HTML));
+                $this->page->add_to_page('subtitle', $this->survey->subtitle);
             }
             if ($this->survey->info) {
                 $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
@@ -2353,6 +2361,11 @@ class questionnaire {
         if (empty($thankhead)) {
             $thankhead = get_string('thank_head', 'questionnaire');
         }
+        if ($this->progressbar && isset($this->questionsbysec) && count($this->questionsbysec) > 1) {
+            // Show 100% full progress bar on completion.
+            $this->page->add_to_page('progressbar',
+                    $this->renderer->render_progress_bar(count($this->questionsbysec) + 1, $this->questionsbysec));
+        }
         $this->page->add_to_page('title', $thankhead);
         $this->page->add_to_page('addinfo',
             format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
@@ -2699,9 +2712,9 @@ class questionnaire {
             $this->survey_results_navbar($rid);
         }
 
-        $this->page->add_to_page('title', clean_text($this->survey->title));
+        $this->page->add_to_page('title', format_string($this->survey->title));
         if ($this->survey->subtitle) {
-            $this->page->add_to_page('subtitle', clean_text($this->survey->subtitle));
+            $this->page->add_to_page('subtitle', format_string($this->survey->subtitle));
         }
         if ($this->survey->info) {
             $infotext = file_rewrite_pluginfile_urls($this->survey->info, 'pluginfile.php',
@@ -3853,5 +3866,41 @@ class questionnaire {
             $this->commit_submission_response($rid, $userid);
         }
         return $ret;
+    }
+
+    public function get_all_file_areas() {
+        global $DB;
+
+        $areas = [];
+        $areas['info'] = $this->sid;
+        $areas['thankbody'] = $this->sid;
+
+        // Add question areas.
+        if (empty($this->questions)) {
+            $this->add_questions();
+        }
+        $areas['question'] = [];
+        foreach ($this->questions as $question) {
+            $areas['question'][] = $question->id;
+        }
+
+        // Add feedback areas.
+        $areas['feedbacknotes'] = $this->sid;
+        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->sid]);
+        if (!empty($fbsections)) {
+            $areas['sectionheading'] = [];
+            foreach ($fbsections as $section) {
+                $areas['sectionheading'][] = $section->id;
+                $feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $section->id]);
+                if (!empty($feedbacks)) {
+                    $areas['feedback'] = [];
+                    foreach ($feedbacks as $feedback) {
+                        $areas['feedback'][] = $feedback->id;
+                    }
+                }
+            }
+        }
+
+        return $areas;
     }
 }

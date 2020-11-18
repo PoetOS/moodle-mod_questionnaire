@@ -21,6 +21,8 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
     And the following "activities" exist:
       | activity | name | description | course | idnumber | resume | navigate |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 | 1 | 1 |
+    And the "multilang" filter is "on"
+    And the "multilang" filter applies to "content and headings"
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
@@ -30,7 +32,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
       | Question Name | Q1 |
       | Yes | y |
       | Question Text | Select one dropdown |
-      | Possible answers | 1=One,2=Two,3=Three,4=Four |
+      | Possible answers | 1=One,2=Two,3=<span lang="en" class="multilang">Three</span>,4=Four |
     Then I should see "[Dropdown Box] (Q1)"
     And I add a "Radio Buttons" question and I fill the form with:
       | Question Name | Q2 |
@@ -116,6 +118,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
     And I navigate to "Answer the questions..." in current page administration
     Then I should see "Select one dropdown"
     And I set the field "dropQ1" to "Three"
+    Then I should not see "<span lang=\"en\" class=\"multilang\">Three</span>" in the "//select[@id='dropQ1']//option[4]" "xpath_element"
     And I click on "Three" "radio"
     And I click on "Choice Three for row Cheese" "radio"
     And I click on "Choice Three for row Bread" "radio"

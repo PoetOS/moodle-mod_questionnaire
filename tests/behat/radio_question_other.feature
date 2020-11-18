@@ -41,7 +41,7 @@ Feature: Radio questions allow optional "other" responses with optional labels
     And I should see "Select another"
     And I log out
 
-@javascript
+  @javascript
   Scenario: Student selects other options and enters their own text.
     And I log in as "student1"
     And I am on "Course 1" course homepage

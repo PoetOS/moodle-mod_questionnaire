@@ -96,7 +96,7 @@ class drop extends question {
             }
             $option = new \stdClass();
             $option->value = $key;
-            $option->label = $choice->content;
+            $option->label = format_string($choice->content);
             if (isset($response->answers[$this->id][$key])) {
                 $option->selected = true;
             }

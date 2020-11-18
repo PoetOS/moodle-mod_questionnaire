@@ -724,11 +724,10 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         }
 
         // Get all of the attempts records, and add the questionnaire id to the corresponding response record.
-        $rs = $DB->get_recordset('questionnaire_attempts');
-        foreach ($rs as $attempt) {
-            $DB->set_field('questionnaire_response', 'questionnaireid', $attempt->qid, ['id' => $attempt->rid]);
-        }
-        $rs->close();
+        $sql = 'UPDATE {questionnaire_response} qr ' .
+               'INNER JOIN {questionnaire_attempts} qa ON qr.id = qa.rid ' .
+               'SET qr.questionnaireid = qa.qid';
+        $DB->execute($sql, []);
 
         // Get all of the response records with a '0' questionnaireid, and extract the questionnaireid from the survey_id field.
         $rs = $DB->get_recordset('questionnaire_response', ['questionnaireid' => 0]);
@@ -964,6 +963,20 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2020011507, 'questionnaire');
+    }
+
+    if ($oldversion < 2020062301) {
+        // Add show progress bar setting.
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('progressbar', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 0, 'autonum');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2020062301, 'questionnaire');
     }
 
     return $result;

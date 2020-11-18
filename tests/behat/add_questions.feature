@@ -4,7 +4,7 @@ Feature: Add questions to a questionnaire activity
   As a teacher
   I need to add a questionnaire activity with questions to a moodle course
 
-@javascript
+  @javascript
   Scenario: Add a questionnaire to a course with one of each question type
     Given the following "users" exist:
       | username | firstname | lastname | email |

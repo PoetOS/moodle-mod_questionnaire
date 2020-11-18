@@ -4,7 +4,7 @@ Feature: Rate scale questions have options for displaing "N/A"
   As a teacher
   I need to enter a rate question with correct options
 
-@javascript
+  @javascript
   Scenario: Add a "N/A" option to an existing rate scale question
     Given the following "users" exist:
       | username | firstname | lastname | email |

@@ -46,7 +46,7 @@ Feature: Checkbox questions can have forced minimum and maximum numbers of boxes
       | Possible answers | Car,Bike,Plane,Boat |
     And I log out
 
-@javascript
+  @javascript
   Scenario: Student must select exactly one or two boxes to submit the question.
     And I log in as "student1"
     And I am on "Course 1" course homepage

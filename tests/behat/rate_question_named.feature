@@ -4,7 +4,7 @@ Feature: Rate scale questions can use names for degrees
   As a teacher
   I need to enter a rate and specify specific named degrees
 
-@javascript
+  @javascript
   Scenario: Specify names for the degrees
     Given the following "users" exist:
       | username | firstname | lastname | email |

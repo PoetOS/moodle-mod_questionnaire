@@ -47,7 +47,7 @@ Feature: Questions can be defined to be dependent on answers to multiple previou
     And I should see "Will you buy a car this year?"
     And I log out
 
-@javascript
+  @javascript
   Scenario: Student should only be asked for the car colour if they have answered yes to question 1.
     And I log in as "student1"
     And I am on "Course 1" course homepage

@@ -34,7 +34,7 @@ Feature: Numeric questions can specify a maximum number of digits, and minimum n
     And I should see "Enter no more than six digits including the decimal point"
     And I log out
 
-@javascript
+  @javascript
   Scenario: Student must enter no more than six digits and decimal points.
     And I log in as "student1"
     And I am on "Course 1" course homepage

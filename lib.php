@@ -75,8 +75,9 @@ function questionnaire_add_instance($questionnaire) {
     require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
     require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
-    // Check the realm and set it to the survey if it's set.
+    $copyfiles = false;
 
+    // Check the realm and set it to the survey if it's set.
     if (empty($questionnaire->sid)) {
         // Create a new survey.
         $course = get_course($questionnaire->course);
@@ -116,6 +117,9 @@ function questionnaire_add_instance($questionnaire) {
                 // All new questionnaires should be created as "private".
                 // Even if they are *copies* of public or template questionnaires.
                 $DB->set_field('questionnaire_survey', 'realm', 'private', array('id' => $sid));
+
+                // Need to copy any files from the old questionnaire instance to the new one.
+                $questionnaire->copyid = $copyid;
             }
             // If the survey has dependency data, need to set the questionnaire to allow dependencies.
             if ($DB->count_records('questionnaire_dependency', ['surveyid' => $sid]) > 0) {
@@ -126,14 +130,6 @@ function questionnaire_add_instance($questionnaire) {
     }
 
     $questionnaire->timemodified = time();
-
-    // May have to add extra stuff in here.
-    if (empty($questionnaire->useopendate)) {
-        $questionnaire->opendate = 0;
-    }
-    if (empty($questionnaire->useclosedate)) {
-        $questionnaire->closedate = 0;
-    }
 
     if ($questionnaire->resume == '1') {
         $questionnaire->resume = 1;
@@ -168,14 +164,6 @@ function questionnaire_update_instance($questionnaire) {
 
     $questionnaire->timemodified = time();
     $questionnaire->id = $questionnaire->instance;
-
-    // May have to add extra stuff in here.
-    if (empty($questionnaire->useopendate)) {
-        $questionnaire->opendate = 0;
-    }
-    if (empty($questionnaire->useclosedate)) {
-        $questionnaire->closedate = 0;
-    }
 
     if ($questionnaire->resume == '1') {
         $questionnaire->resume = 1;
@@ -1225,3 +1213,41 @@ function mod_questionnaire_core_calendar_provide_event_action(calendar_event $ev
     );
 }
 
+/**
+ * Called after the activity and module have been created. Use this to copy any images if the questionnaire was created from another
+ * questionnaire survey.
+ *
+ * @param $data
+ * @param $course
+ * @throws coding_exception
+ */
+function mod_questionnaire_coursemodule_edit_post_actions($data, $course) {
+    global $DB;
+
+    if (!empty($data->copyid)) {
+        $cm = (object)['id' => $data->coursemodule];
+        $questionnaire = new questionnaire(0, $data, $course, $cm);
+        $oldquestionnaireid = $DB->get_field('questionnaire', 'id', ['sid' => $data->copyid]);
+        $oldcm = get_coursemodule_from_instance('questionnaire', $oldquestionnaireid);
+        $oldquestionnaire = new questionnaire($oldquestionnaireid, null, $course, $oldcm);
+        $oldcontext = context_module::instance($oldcm->id);
+        $newcontext = context_module::instance($data->coursemodule);
+        $areas = $questionnaire->get_all_file_areas();
+        $oldareas = $oldquestionnaire->get_all_file_areas();
+        $fs = new \mod_questionnaire\file_storage();
+        foreach ($areas as $area => $ids) {
+            if (is_array($ids)) {
+                $oldid = current($oldareas[$area]);
+                foreach ($ids as $id) {
+                    $fs->copy_area_files_to_new_context($oldcontext->id, $newcontext->id, 'mod_questionnaire', $area, $oldid, $id);
+                    $oldid = next($oldareas[$area]);
+                }
+            } else {
+                $fs->copy_area_files_to_new_context($oldcontext->id, $newcontext->id, 'mod_questionnaire', $area,
+                    $oldareas[$area], $ids);
+            }
+        }
+    }
+
+    return $data;
+}

@@ -18,11 +18,12 @@
     @template mod_questionnaire/extrafields
 
     Templates which inserts a couple of extra inputs in the dataformat_selector.
-    
+
     Example context (json):
     {
     }
     }}
-<input type="checkbox" name="choicecodes" checked="checked" value="1" /> <label for="choicecodes">{{#str}}includechoicecodes, questionnaire{{/str}}</label><br />
-<input type="checkbox" name="choicetext" checked="checked" value="1" /> <label for="choicetext">{{#str}}includechoicetext, questionnaire{{/str}}</label><br />
-<input type="checkbox" name="rankaverages" value="1" /> <label for="rankaverages">{{#str}}includerankaverages, questionnaire{{/str}}</label><br />
+<input type="checkbox" name="choicecodes" id="choicecodes" checked="checked" value="1" /> <label for="choicecodes">{{#str}}includechoicecodes, questionnaire{{/str}}</label><br />
+<input type="checkbox" name="choicetext" id="choicetext" checked="checked" value="1" /> <label for="choicetext">{{#str}}includechoicetext, questionnaire{{/str}}</label><br />
+<input type="checkbox" name="complete" id="complete" value="1" /> <label for="complete">{{#str}}includeincomplete, questionnaire{{/str}}</label><br />
+<input type="checkbox" name="rankaverages" id="rankaverages" value="1" /> <label for="rankaverages">{{#str}}includerankaverages, questionnaire{{/str}}</label><br />

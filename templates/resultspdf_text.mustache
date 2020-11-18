@@ -62,17 +62,17 @@
 {{/responses.0}}
 {{#responses}}
     {{#response}}
-    <tr class=""{{^response.evencolor}} bgcolor="#E5E5E6"{{/response.evencolor}}>
+    <tr class=""{{^response.evencolor}} style="background-color: #E5E5E6"{{/response.evencolor}}>
         <td class="cell c0" style="text-align:left;">{{{response.respondent}}}</td>
         <td class="cell c1 lastcol" style="text-align:right;">{{{response.text}}}</td>
     </tr>
     {{/response}}
 {{/responses}}
 {{#total}}
-    <tr{{#total.evencolor}} bgcolor="#E5E5E6"{{/total.evencolor}}>
+    <tr{{#total.evencolor}} style="background-color: #E5E5E6"{{/total.evencolor}}>
         <td colspan="2"><div class="tabledivider"> </div></td>
     </tr>
-    <tr class="lastrow"{{^total.evencolor}} bgcolor="#E5E5E6"{{/total.evencolor}}>
+    <tr class="lastrow"{{^total.evencolor}} style="background-color: #E5E5E6"{{/total.evencolor}}>
         <td class="cell c0" style="text-align:left;">{{#str}} totalresponses, mod_questionnaire{{/str}}</td>
         <td class="cell c1 lastcol" style="text-align:right;">{{total}}</td>
     </tr>

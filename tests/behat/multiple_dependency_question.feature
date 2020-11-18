@@ -19,6 +19,8 @@ Feature: Questions can be defined to be dependent on answers to previous questio
     And the following "activities" exist:
       | activity | name | description | course | idnumber | resume | navigate |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 | 1 | 1 |
+    And the "multilang" filter is "on"
+    And the "multilang" filter applies to "content and headings"
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
@@ -34,7 +36,7 @@ Feature: Questions can be defined to be dependent on answers to previous questio
       | Min. forced responses | 0 |
       | Max. forced responses | 0 |
       | Question Text | Are you taking: |
-      | Possible answers | Math,Physics,Art,Music |
+      | Possible answers | <span lang="fr" class="multilang">Calc</span><span lang="en" class="multilang">Math</span>,Physics,Art,Music |
       | id_dependquestions_and_0  | Q1->Yes |
     Then I should see "[Check Boxes] (Y.1)"
     And I add a "Yes/No" question and I fill the form with:
@@ -91,7 +93,7 @@ Feature: Questions can be defined to be dependent on answers to previous questio
     And I should see "Previewing Questionnaire"
     And I log out
 
-@javascript
+  @javascript
   Scenario: Student should only be asked questions on school if they have answered yes to question 1.
     And I log in as "student1"
     And I am on "Course 1" course homepage

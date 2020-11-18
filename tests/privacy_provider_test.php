@@ -40,7 +40,7 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
     /**
      * Tests set up.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
     }
@@ -123,7 +123,7 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
         provider::export_user_data($approvedlist);
         $data = $writer->get_data([]);
 
-        $this->assertContains($questionnaire->name, strip_tags($data->name));
+        $this->assertStringContainsString($questionnaire->name, strip_tags($data->name));
         $this->assertEquals($questionnaire->intro, strip_tags($data->intro));
         $this->assertNotEmpty($data->responses[0]['questions']);
         $this->assertEquals('1. Text Box 1000', $data->responses[0]['questions'][1]->questionname);

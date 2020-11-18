@@ -51,12 +51,8 @@ class text extends responsetype {
      */
     static public function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+        if (isset($responsedata->{'q'.$question->id}) && (strlen($responsedata->{'q'.$question->id}) > 0)) {
             $val = $responsedata->{'q' . $question->id};
-            if ($question->type_id == QUESNUMERIC) {
-                $val = str_replace(",", ".", $val); // Allow commas as well as points in decimal numbers.
-                $val = preg_replace("/[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
-            }
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id;
@@ -160,20 +156,7 @@ class text extends responsetype {
         if ($rows = $this->get_results($rids, $anonymous)) {
             $numrespondents = count($rids);
             $numresponses = count($rows);
-            $isnumeric = $this->question->type_id == QUESNUMERIC;
-            // Count identical answers (numeric questions only).
-            if ($isnumeric) {
-                $counts = [];
-                foreach ($rows as $row) {
-                    if (!empty($row->response) || $row->response === "0") {
-                        $textidx = clean_text($row->response);
-                        $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
-                    }
-                }
-                $pagetags = $this->get_results_tags($counts, $numrespondents, $numresponses, $prtotal);
-            } else {
-                $pagetags = $this->get_results_tags($rows, $numrespondents, $numresponses, $prtotal);
-            }
+            $pagetags = $this->get_results_tags($rows, $numrespondents, $numresponses, $prtotal);
         } else {
             $pagetags = new \stdClass();
         }

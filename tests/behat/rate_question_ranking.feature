@@ -4,7 +4,7 @@ Feature: Rate scale questions can be used to uniquely rank options
   As a teacher
   I need to enter a rate question with with "no duplicate choices" selected
 
-@javascript
+  @javascript
   Scenario: Add a rank the top three choices question
     Given the following "users" exist:
       | username | firstname | lastname | email |
