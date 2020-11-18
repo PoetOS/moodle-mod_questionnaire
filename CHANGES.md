@@ -1,10 +1,14 @@
 Release Notes
 
-_NOTE - The 3.9 releases will only work on Moodle 3.7, Moodle 3.8, and Moodle 3.9.
+_NOTE - The 3.9 releases will work on Moodle 3.7, Moodle 3.8, Moodle 3.9, and 3.10.
 The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4 and 3.3._
 
 Contributers to this release include The Open University, Joost van der Borg, Tien Nguyen, Luca Bösch, Simon Oulevay
 and Adrian Perez.
+
+##### Version 3.9.1 (Build - 2020111801)
+Improvements:
+* Updates to deprecated unit test functions for 3.10.
 
 ##### Version 3.9.0 (Build - 2020062300)
 Improvements:
