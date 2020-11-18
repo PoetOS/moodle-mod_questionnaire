@@ -51,7 +51,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
 
     public function test_questionnaire_get_extra_capabilities() {
         $caps = questionnaire_get_extra_capabilities();
-        $this->assertInternalType('array', $caps);
+        $this->assertIsArray($caps);
         $this->assertEquals(1, count($caps));
         $this->assertEquals('moodle/site:accessallgroups', reset($caps));
     }
@@ -231,11 +231,11 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
 
         // Test for an array when user specified.
         $grades = questionnaire_get_user_grades($questionnaire, $user->id);
-        $this->assertInternalType('array', $grades);
+        $this->assertIsArray($grades);
 
         // Test for an array when no user specified.
         $grades = questionnaire_get_user_grades($questionnaire);
-        $this->assertInternalType('array', $grades);
+        $this->assertIsArray($grades);
     }
 
     public function test_questionnaire_update_grades() {
