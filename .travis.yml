@@ -1,19 +1,12 @@
 language: php
 
-# We use trusty as currently there is an issue with java and moodle-plugin-ci mustache linting which
-# causes causes tests to fail on xenial and bionic. (See https://github.com/blackboard-open-source/moodle-plugin-ci/issues/91).
-dist: trusty
-
-sudo: true
-
 addons:
-  firefox: "47.0.1"
   postgresql: "9.5"
-  apt:
-    packages:
-      - openjdk-8-jre-headless
 
-services: mysql
+services:
+  - mysql
+  - postgresql
+  - docker
 
 cache:
   directories:
@@ -21,54 +14,52 @@ cache:
     - $HOME/.npm
 
 php:
- - 7.1
  - 7.2
  - 7.3
+ - 7.4
 
 matrix:
   exclude:
+    - php: 7.3
+      env: MOODLE_BRANCH=MOODLE_311_STABLE DB=mysqli
+    - php: 7.3
+      env: MOODLE_BRANCH=MOODLE_311_STABLE DB=pgsql
     - php: 7.2
-      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
+      env: MOODLE_BRANCH=MOODLE_311_STABLE DB=mysqli
     - php: 7.2
-      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
-    - php: 7.1
+      env: MOODLE_BRANCH=MOODLE_311_STABLE DB=pgsql
+    - php: 7.4
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=mysqli
+    - php: 7.4
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=pgsql
+    - php: 7.2
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=mysqli
+    - php: 7.2
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=pgsql
+    - php: 7.4
       env: MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
-    - php: 7.1
+    - php: 7.4
       env: MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
     - php: 7.3
-      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
+      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
     - php: 7.3
-      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
-    - php: 7.1
-      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
-    - php: 7.1
-      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
-    - php: 7.2
-      env: MOODLE_BRANCH=master DB=mysqli
-    - php: 7.2
-      env: MOODLE_BRANCH=master DB=pgsql
-    - php: 7.1
-      env: MOODLE_BRANCH=master DB=mysqli
-    - php: 7.1
-      env: MOODLE_BRANCH=master DB=pgsql
+      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
 
 env:
   global:
     - IGNORE_NAMES=mobile_*.mustache
   matrix:
-    - MOODLE_BRANCH=master DB=pgsql
-    - MOODLE_BRANCH=master DB=mysqli
+    - MOODLE_BRANCH=MOODLE_311_STABLE DB=pgsql
+    - MOODLE_BRANCH=MOODLE_311_STABLE DB=mysqli
+    - MOODLE_BRANCH=MOODLE_310_STABLE DB=pgsql
+    - MOODLE_BRANCH=MOODLE_310_STABLE DB=mysqli
     - MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
     - MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
-    - MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
-    - MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
 
 before_install:
   - phpenv config-rm xdebug.ini
-  - nvm install 14.0
-  - nvm use 14.0
   - cd ../..
-  - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
+  - composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
