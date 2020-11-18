@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class mod_questionnaire_csvexport_test extends advanced_testcase {
 
-    public function setUp() {
+    public function setUp(): void {
         global $CFG;
 
         require_once($CFG->dirroot.'/lib/testing/generator/data_generator.php');
