@@ -17,9 +17,26 @@ php:
  - 7.1
  - 7.2
  - 7.3
+ - 7.4
 
 matrix:
   exclude:
+    - php: 7.3
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=mysqli
+    - php: 7.3
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=pgsql
+    - php: 7.2
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=mysqli
+    - php: 7.2
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=pgsql
+    - php: 7.1
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=mysqli
+    - php: 7.1
+      env: MOODLE_BRANCH=MOODLE_310_STABLE DB=pgsql
+    - php: 7.4
+      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
+    - php: 7.4
+      env: MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
     - php: 7.2
       env: MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
     - php: 7.2
@@ -28,6 +45,10 @@ matrix:
       env: MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
     - php: 7.1
       env: MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
+    - php: 7.4
+      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
+    - php: 7.4
+      env: MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
     - php: 7.3
       env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
     - php: 7.3
@@ -36,6 +57,10 @@ matrix:
       env: MOODLE_BRANCH=MOODLE_38_STABLE DB=mysqli
     - php: 7.1
       env: MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
+    - php: 7.4
+      env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
+    - php: 7.4
+      env: MOODLE_BRANCH=MOODLE_37_STABLE DB=pgsql
     - php: 7.3
       env: MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli
     - php: 7.3
@@ -49,6 +74,8 @@ env:
   global:
     - IGNORE_NAMES=mobile_*.mustache
   matrix:
+    - MOODLE_BRANCH=MOODLE_310_STABLE DB=pgsql
+    - MOODLE_BRANCH=MOODLE_310_STABLE DB=mysqli
     - MOODLE_BRANCH=MOODLE_39_STABLE DB=pgsql
     - MOODLE_BRANCH=MOODLE_39_STABLE DB=mysqli
     - MOODLE_BRANCH=MOODLE_38_STABLE DB=pgsql
