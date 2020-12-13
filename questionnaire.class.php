@@ -1473,6 +1473,8 @@ class questionnaire {
         $errors = 1;
         if (data_submitted()) {
             $formdata = data_submitted();
+            $formdata->rid = $formdata->rid ?? 0;
+            $this->add_response_from_formdata($formdata);
             $pageerror = '';
             $s = 1;
             $errors = 0;
@@ -1519,7 +1521,8 @@ class questionnaire {
                 } else {
                     $dependants = [];
                 }
-                $output .= $this->renderer->question_output($this->questions[$questionid], $formdata, $dependants, $i++, null);
+                $output .= $this->renderer->question_output($this->questions[$questionid], $this->responses[0] ?? [], $dependants,
+                    $i++, null);
                 $this->page->add_to_page('questions', $output);
                 $output = '';
             }
