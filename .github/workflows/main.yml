@@ -28,8 +28,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        moodle-branch: ['master', 'MOODLE_310_STABLE']
-        php: ['7.4']
+        moodle-branch: ['master', 'MOODLE_310_STABLE', 'MOODLE_39_STABLE']
+        php: ['7.4', '7.3']
         database: ['mariadb', 'pgsql']
 
     steps:
