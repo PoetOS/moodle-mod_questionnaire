@@ -70,36 +70,36 @@ jobs:
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
       
       - name: phplint
-        run: moodle-plugin-ci phplint || true
+        run: moodle-plugin-ci phplint
 
       - name: phpcpd
-        run: moodle-plugin-ci phpcpd || true
+        run: moodle-plugin-ci phpcpd
 
       - name: phpmd
-        run: moodle-plugin-ci phpmd || true
+        run: moodle-plugin-ci phpmd
 
       - name: codechecker
-        run: moodle-plugin-ci codechecker || true
+        run: moodle-plugin-ci codechecker
 
       - name: validate
-        run: moodle-plugin-ci validate || true
+        run: moodle-plugin-ci validate
 
       - name: savepoints
-        run: moodle-plugin-ci savepoints || true
+        run: moodle-plugin-ci savepoints
 
       - name: mustache
         run: moodle-plugin-ci mustache || true
 
       - name: grunt
-        run: moodle-plugin-ci grunt || true
+        run: moodle-plugin-ci grunt
         if: matrix.moodle-branch == 'master'
 
       - name: phpunit 
-        run: moodle-plugin-ci phpunit --coverage-text || true
+        run: moodle-plugin-ci phpunit --coverage-text
 
       - name: firefox
-        run: moodle-plugin-ci behat || true
+        run: moodle-plugin-ci behat
       
       - name: chrome
-        run: moodle-plugin-ci behat --profile chrome || true
+        run: moodle-plugin-ci behat --profile chrome
 
