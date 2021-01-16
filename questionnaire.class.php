@@ -3351,6 +3351,8 @@ class questionnaire {
                     }
 
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
+                    // JR JAN 2021
+                    $content = explode('::', $content)[0];
                     if (\mod_questionnaire\question\choice\choice::content_is_other_choice($content)) {
                         // If this has an "other" text, use it.
                         $responsetxt = \mod_questionnaire\question\choice\choice::content_other_choice_display($content);
