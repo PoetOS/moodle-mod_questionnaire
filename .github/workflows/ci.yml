@@ -68,7 +68,7 @@ jobs:
           sudo locale-gen en_AU.UTF-8
       - name: Install Moodle
         run: |
-          moodle-plugin-ci add-plugin --branch TESTINGGHACTIONS PoetOS/moodle-mod_questionnaire
+#          moodle-plugin-ci add-plugin --branch TESTINGGHACTIONS PoetOS/moodle-mod_questionnaire
           moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
         env:
           DB: ${{ matrix.database }}
