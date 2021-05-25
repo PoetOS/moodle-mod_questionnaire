@@ -23,7 +23,7 @@
  * @copyright 2019, onwards Poet
  */
 
-namespace mod_questionnaire\question\choice;
+namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 
 class choice {
@@ -132,7 +132,7 @@ class choice {
      * @param string $content
      * @return bool
      */
-    static public function content_is_other_choice($content) {
+    public static function content_is_other_choice($content) {
         return (strpos($content, '!other') === 0);
     }
 
@@ -152,7 +152,7 @@ class choice {
      * @return string | bool
      * @throws \coding_exception
      */
-    static public function content_other_choice_display($content) {
+    public static function content_other_choice_display($content) {
         if (!self::content_is_other_choice($content)) {
             return false;
         }
@@ -197,7 +197,7 @@ class choice {
      * @param int $choiceid
      * @return string
      */
-    static public function id_other_choice_name($choiceid) {
+    public static function id_other_choice_name($choiceid) {
         return 'o' . $choiceid;
     }
 

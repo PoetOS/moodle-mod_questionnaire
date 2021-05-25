@@ -269,7 +269,7 @@ class check extends question {
      */
     protected function form_preprocess_choicedata($formdata) {
         if (empty($formdata->allchoices)) {
-            print_error(get_string('enterpossibleanswers', 'questionnaire'));
+            throw new \moodle_exception('enterpossibleanswers', 'mod_questionnaire');
         } else {
             // Sanity checks for min and max checked boxes.
             $allchoices = $formdata->allchoices;

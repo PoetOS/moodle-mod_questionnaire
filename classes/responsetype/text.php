@@ -38,7 +38,7 @@ class text extends responsetype {
     /**
      * @return string
      */
-    static public function response_table() {
+    public static function response_table() {
         return 'questionnaire_response_text';
     }
 
@@ -49,7 +49,7 @@ class text extends responsetype {
      * @param \mod_questionnaire\question\question $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
-    static public function answers_from_webform($responsedata, $question) {
+    public static function answers_from_webform($responsedata, $question) {
         $answers = [];
         if (isset($responsedata->{'q'.$question->id}) && (strlen($responsedata->{'q'.$question->id}) > 0)) {
             $val = $responsedata->{'q' . $question->id};
@@ -271,7 +271,7 @@ class text extends responsetype {
      * @param int $rid The response id.
      * @return array
      */
-    static public function response_select($rid) {
+    public static function response_select($rid) {
         global $DB;
 
         $values = [];
@@ -304,7 +304,7 @@ class text extends responsetype {
      * @return array array answer
      * @throws \dml_exception
      */
-    static public function response_answers_by_question($rid) {
+    public static function response_answers_by_question($rid) {
         global $DB;
 
         $answers = [];

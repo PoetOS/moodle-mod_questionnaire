@@ -42,7 +42,7 @@ class numericaltext extends text {
      * @param \mod_questionnaire\question\question $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
-    static public function answers_from_webform($responsedata, $question) {
+    public static function answers_from_webform($responsedata, $question) {
         $answers = [];
         if (isset($responsedata->{'q'.$question->id}) && is_numeric($responsedata->{'q'.$question->id})) {
             $val = $responsedata->{'q' . $question->id};

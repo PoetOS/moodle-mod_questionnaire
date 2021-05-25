@@ -188,7 +188,7 @@ abstract class question {
      * @var object $context The context for the question.
      * @return A question object.
      */
-    static public function question_builder($qtype, $qdata = null, $context = null) {
+    public static function question_builder($qtype, $qdata = null, $context = null) {
         $qclassname = '\\mod_questionnaire\\question\\'.self::qtypename($qtype);
         $qid = 0;
         if (!empty($qdata) && is_array($qdata)) {
@@ -204,7 +204,7 @@ abstract class question {
      * @param $qtype
      * @return string
      */
-    static public function qtypename($qtype) {
+    public static function qtypename($qtype) {
         if (array_key_exists($qtype, self::$qtypenames)) {
             return self::$qtypenames[$qtype];
         } else {
@@ -216,7 +216,7 @@ abstract class question {
      * Return all of the different question type names.
      * @return array
      */
-    static public function qtypenames() {
+    public static function qtypenames() {
         return self::$qtypenames;
     }
 
@@ -235,7 +235,7 @@ abstract class question {
 
         if ($choices = $DB->get_records('questionnaire_quest_choice', ['question_id' => $this->id], 'id ASC')) {
             foreach ($choices as $choice) {
-                $this->choices[$choice->id] = choice\choice::create_from_data($choice);
+                $this->choices[$choice->id] = \mod_questionnaire\question\choice::create_from_data($choice);
             }
         } else {
             $this->choices = [];
@@ -704,7 +704,7 @@ abstract class question {
         } else {
             $cid = $choice->id;
         }
-        if (\mod_questionnaire\question\choice\choice::delete_from_db_by_id($cid)) {
+        if (\mod_questionnaire\question\choice::delete_from_db_by_id($cid)) {
             unset($this->choices[$cid]);
         } else {
             $retvalue = false;
@@ -894,7 +894,7 @@ abstract class question {
         if ($response instanceof \mod_questionnaire\responsetype\response\response) {
             $skippedquestion = !isset($response->answers[$this->id]);
         } else {
-            $skippedquestion = !empty($response) && !array_key_exists('q'.$this->id, $response);
+            $skippedquestion = !empty($response) && !isset($response->{'q'.$this->id});
         }
 
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
@@ -972,7 +972,7 @@ abstract class question {
         $this->form_required($mform);
         $this->form_length($mform);
         $this->form_precise($mform);
-        $this->form_question_text($mform, $form->_customdata['modcontext']);
+        $this->form_question_text($mform, ($form->_customdata['modcontext'] ?? ''));
 
         if ($this->has_choices()) {
             // This is used only by the question editing form.
@@ -1228,7 +1228,7 @@ abstract class question {
      * @param int $value
      * @return \MoodleQuickForm
      */
-    static public function form_length_hidden(\MoodleQuickForm $mform, $value = 0) {
+    public static function form_length_hidden(\MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'length', $value);
         $mform->setType('length', PARAM_INT);
         return $mform;
@@ -1241,7 +1241,7 @@ abstract class question {
      * @return \MoodleQuickForm
      * @throws \coding_exception
      */
-    static public function form_length_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
+    public static function form_length_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'length', get_string($helpname, 'questionnaire'), ['size' => '1'], $value);
         $mform->setType('length', PARAM_INT);
         if (!empty($helpname)) {
@@ -1255,7 +1255,7 @@ abstract class question {
      * @param int $value
      * @return \MoodleQuickForm
      */
-    static public function form_precise_hidden(\MoodleQuickForm $mform, $value = 0) {
+    public static function form_precise_hidden(\MoodleQuickForm $mform, $value = 0) {
         $mform->addElement('hidden', 'precise', $value);
         $mform->setType('precise', PARAM_INT);
         return $mform;
@@ -1268,7 +1268,7 @@ abstract class question {
      * @return \MoodleQuickForm
      * @throws \coding_exception
      */
-    static public function form_precise_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
+    public static function form_precise_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'precise', get_string($helpname, 'questionnaire'), ['size' => '1']);
         $mform->setType('precise', PARAM_INT);
         if (!empty($helpname)) {
@@ -1370,7 +1370,7 @@ abstract class question {
             }
 
             while ($nidx < $newcount) {
-                // New choices...
+                // New choices.
                 $choicerecord = new \stdClass();
                 $choicerecord->question_id = $this->qid;
                 $choicerecord->content = trim($newchoices[$nidx]);

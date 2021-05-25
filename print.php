@@ -25,13 +25,13 @@ $null = null;
 $referer = $CFG->wwwroot.'/mod/questionnaire/report.php';
 
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $qid))) {
-    print_error('invalidcoursemodule');
+    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
-    print_error('coursemisconf');
+    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-    print_error('invalidcoursemodule');
+    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
 // Check login and get context.
@@ -50,7 +50,7 @@ if (!empty($rid)) {
 // If you can't view the questionnaire, or can't view a specified response, error out.
 if (!($questionnaire->capabilities->view && (($rid == 0) || $questionnaire->can_view_response($rid)))) {
     // Should never happen, unless called directly by a snoop...
-    print_error('nopermissions', 'moodle', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
+    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 $blankquestionnaire = true;
 if ($rid != 0) {

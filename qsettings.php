@@ -25,15 +25,15 @@ $cancel = optional_param('cancel', '', PARAM_ALPHA);
 $submitbutton2 = optional_param('submitbutton2', '', PARAM_ALPHA);
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-    print_error('invalidcoursemodule');
+    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
 if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-    print_error('coursemisconf');
+    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
 // Needed here for forced language courses.
@@ -55,7 +55,7 @@ $questionnaire->add_page(new \mod_questionnaire\output\qsettingspage());
 $SESSION->questionnaire->current_tab = 'settings';
 
 if (!$questionnaire->capabilities->manage) {
-    print_error('nopermissions', 'error', '', 'mod:questionnaire:manage');
+    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
 $settingsform = new \mod_questionnaire\settings_form('qsettings.php');
@@ -106,7 +106,7 @@ if ($settings = $settingsform->get_data()) {
 
     $sdata->courseid = $settings->courseid;
     if (!($sid = $questionnaire->survey_update($sdata))) {
-        print_error('couldnotcreatenewsurvey', 'questionnaire');
+        throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
     } else {
         if ($submitbutton2) {
             $redirecturl = course_get_url($cm->course);

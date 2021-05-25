@@ -164,7 +164,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
             }
         }
         $vals = ['q'.$question->id => $val,
-                 'q'.$question->id.\mod_questionnaire\question\choice\choice::id_other_choice_name($val) => 'Forty-four'];
+                 'q'.$question->id. \mod_questionnaire\question\choice::id_other_choice_name($val) => 'Forty-four'];
         $userid = 2;
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
@@ -213,7 +213,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
                 $val[$cid] = $cid;
             } else if ($choice->content == '!other=Another number') {
                 $val[$cid] = $cid;
-                $val[\mod_questionnaire\question\choice\choice::id_other_choice_name($cid)] = 'Forty-four';
+                $val[\mod_questionnaire\question\choice::id_other_choice_name($cid)] = 'Forty-four';
                 $ocid = $cid;
             }
         }

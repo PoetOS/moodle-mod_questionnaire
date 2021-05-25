@@ -37,7 +37,7 @@ class single extends responsetype {
     /**
      * @return string
      */
-    static public function response_table() {
+    public static function response_table() {
         return 'questionnaire_resp_single';
     }
 
@@ -49,7 +49,7 @@ class single extends responsetype {
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      * @throws \coding_exception
      */
-    static public function answers_from_webform($responsedata, $question) {
+    public static function answers_from_webform($responsedata, $question) {
         $answers = [];
         if (isset($responsedata->{'q'.$question->id}) && isset($question->choices[$responsedata->{'q'.$question->id}])) {
             $record = new \stdClass();
@@ -59,7 +59,7 @@ class single extends responsetype {
             // If this choice is an "other" choice, look for the added input.
             if ($question->choices[$responsedata->{'q'.$question->id}]->is_other_choice()) {
                 $cname = 'q' . $question->id .
-                    \mod_questionnaire\question\choice\choice::id_other_choice_name($responsedata->{'q'.$question->id});
+                    \mod_questionnaire\question\choice::id_other_choice_name($responsedata->{'q'.$question->id});
                 $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
             }
             $answers[$responsedata->{'q'.$question->id}] = answer\answer::create_from_data($record);
@@ -74,7 +74,7 @@ class single extends responsetype {
      * @param \mod_questionnaire\question\question $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
-    static public function answers_from_appdata($responsedata, $question) {
+    public static function answers_from_appdata($responsedata, $question) {
         $answers = [];
         $qname = 'q'.$question->id;
         if (isset($responsedata->{$qname}[0]) && !empty($responsedata->{$qname}[0])) {
@@ -84,7 +84,7 @@ class single extends responsetype {
             $record->choiceid = $responsedata->{$qname}[0];
             // If this choice is an "other" choice, look for the added input.
             if ($question->choices[$record->choiceid]->is_other_choice()) {
-                $cname = \mod_questionnaire\question\choice\choice::id_other_choice_name($record->choiceid);
+                $cname = \mod_questionnaire\question\choice::id_other_choice_name($record->choiceid);
                 $record->value =
                     isset($responsedata->{$qname}[$cname]) ? $responsedata->{$qname}[$cname] : '';
             } else {
@@ -254,7 +254,7 @@ class single extends responsetype {
                 if (strpos($idx, 'other') === 0) {
                     $answer = $row->response;
                     $ccontent = $row->content;
-                    $content = \mod_questionnaire\question\choice\choice::content_other_choice_display($ccontent);
+                    $content = \mod_questionnaire\question\choice::content_other_choice_display($ccontent);
                     $content .= ' ' . clean_text($answer);
                     $textidx = $content;
                     $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
@@ -278,7 +278,7 @@ class single extends responsetype {
      * @param int $rid The response id.
      * @return array
      */
-    static public function response_select($rid) {
+    public static function response_select($rid) {
         global $DB;
 
         $values = [];
@@ -294,8 +294,8 @@ class single extends responsetype {
             $newrow['ccontent'] = $row->ccontent;
             $newrow['responses'] = [];
             $newrow['responses'][$row->cid] = $row->cid;
-            if (\mod_questionnaire\question\choice\choice::content_is_other_choice($row->ccontent)) {
-                $newrow['responses'][\mod_questionnaire\question\choice\choice::id_other_choice_name($row->cid)] = $row->response;
+            if (\mod_questionnaire\question\choice::content_is_other_choice($row->ccontent)) {
+                $newrow['responses'][\mod_questionnaire\question\choice::id_other_choice_name($row->cid)] = $row->response;
             }
             $values[$row->qid] = $newrow;
         }
@@ -311,7 +311,7 @@ class single extends responsetype {
      * @return array array answer
      * @throws \dml_exception
      */
-    static public function response_answers_by_question($rid) {
+    public static function response_answers_by_question($rid) {
         global $DB;
 
         $answers = [];

@@ -46,12 +46,12 @@ class edit_question_form extends \moodleform {
             $question->required = $SESSION->questionnaire->required;
         }
         if (!isset($question->type_id)) {
-            print_error('undefinedquestiontype', 'questionnaire');
+            throw new \moodle_exception('undefinedquestiontype', 'mod_questionnaire');
         }
 
         // Each question can provide its own form elements to the provided form, or use the default ones.
         if (!$question->edit_form($this, $questionnaire)) {
-            print_error("Question type had an unknown error in the edit_form method.");
+            throw new \moodle_exception('Question type had an unknown error in the edit_form method.', 'mod_questionnaire');
         }
     }
 
