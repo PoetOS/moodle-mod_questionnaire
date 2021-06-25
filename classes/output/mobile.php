@@ -72,12 +72,12 @@ class mobile {
         $result = '';
 
         $data['emptypage'] = 1;
-        $template = 'mod_questionnaire/mobile_main_index_page';
+        $template = 'mod_questionnaire/local/mobile/ionic3/main_index_page';
 
         switch ($action) {
             case 'index':
                 self::add_index_data($questionnaire, $data, $userid);
-                $template = 'mod_questionnaire/mobile_main_index_page';
+                $template = 'mod_questionnaire/local/mobile/ionic3/main_index_page';
                 break;
 
             case 'submit':
@@ -125,7 +125,7 @@ class mobile {
                     } else if ($action == 'submit') {
                         self::add_index_data($questionnaire, $data, $userid);
                         $data['action'] = 'index';
-                        $template = 'mod_questionnaire/mobile_main_index_page';
+                        $template = 'mod_questionnaire/local/mobile/ionic3/main_index_page';
                         break;
                     }
                     $pagequestiondata = self::add_pagequestion_data($questionnaire, $pagenum, $response);
@@ -144,7 +144,7 @@ class mobile {
                     $data['pagenum'] = $pagenum;
                     $data['completed'] = 0;
                     $data['emptypage'] = 0;
-                    $template = 'mod_questionnaire/mobile_view_activity_page';
+                    $template = 'mod_questionnaire/local/mobile/ionic3/view_activity_page';
                 }
                 break;
 
@@ -167,7 +167,7 @@ class mobile {
                     $data['pagequestions'] = $pagequestions;
                     $data['completed'] = 1;
                     $data['emptypage'] = 0;
-                    $template = 'mod_questionnaire/mobile_view_activity_page';
+                    $template = 'mod_questionnaire/local/mobile/ionic3/view_activity_page';
                 }
                 break;
         }
