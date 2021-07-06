@@ -397,6 +397,9 @@ td.selected {
     margin-left: 20px;
 }
 
+#page-mod-questionnaire-view .mod_questionnaire_viewpage .yourresponse {
+    padding: 15px 0 15px 0;
+}
 #page-mod-questionnaire-questions #fitem_id_allchoices #id_allchoices,
 #page-mod-questionnaire-questions #fitem_id_allnameddegrees #id_allnameddegrees {
     resize: both;
