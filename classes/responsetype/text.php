@@ -81,7 +81,7 @@ class text extends responsetype {
             $record = new \stdClass();
             $record->response_id = $response->id;
             $record->question_id = $this->question->id;
-            $record->response = $response->answers[$this->question->id][0]->value;
+            $record->response = clean_text($response->answers[$this->question->id][0]->value);
             return $DB->insert_record(static::response_table(), $record);
         } else {
             return false;
