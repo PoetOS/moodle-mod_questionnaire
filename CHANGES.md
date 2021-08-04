@@ -1,7 +1,13 @@
 Release Notes
 
-_NOTE - The 3.10 releases will only work on Moodle 3.7, Moodle 3.8, Moodle 3.9, and Moodle 3.10.
-The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4 and 3.3._
+_NOTE - The 3.10 releases will work on Moodle 3.9, Moodle 3.10, and Moodle 3.11.
+
+##### Version 3.10.1 (Build - 2021080400)
+Bug fixes:
+* GHI353 Ensuring clean text on new and existing essay questions.
+* GHI319 Fixing question preview display.
+* GHP321 Added CSS rule to styles.css to enable horizontal and vertical resize.
+* GHI351 Ignore deleted questions but continue loop over remaining responses.
 
 ##### Version 3.10.0 (Build - 2020111100)
 Improvements:
