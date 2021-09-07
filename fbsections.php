@@ -58,11 +58,11 @@ if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
 
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 if ($sectionid) {
     // Get the specified section by its id.
-    $feedbacksection = new mod_questionnaire\feedback\section(['id' => $sectionid], $questionnaire->questions);
+    $feedbacksection = new mod_questionnaire\feedback\section($questionnaire->questions, ['id' => $sectionid]);
 
 } else if (!$DB->count_records('questionnaire_fb_sections', ['surveyid' => $questionnaire->sid])) {
     // There are no sections currently, so create one.

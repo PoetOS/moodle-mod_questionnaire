@@ -79,7 +79,7 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_cm($cm);   // CONTRIB-5872 - I don't know why this is needed.
 
-$questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, $qid, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
@@ -141,7 +141,7 @@ if ($questionnaire->capabilities->printblank) {
         $questionnaire->renderer->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
             new pix_icon('t/print', $title)));
 }
-$questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup);
+$questionnaire->survey_print_render($course->id, '', 'preview', $rid = 0, $popup);
 if ($popup) {
     $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
 }
