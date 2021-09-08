@@ -501,12 +501,12 @@ class mod_questionnaire_generator extends testing_module_generator {
     /**
      * Create response to questionnaire.
      *
-     * @param array|stdClass $record
      * @param array $questionresponses
+     * @param array|stdClass $record
      * @param boolean $complete Whether the response is complete or not.
      * @return stdClass the discussion object
      */
-    public function create_response($record = null, $questionresponses, $complete = true) {
+    public function create_response($questionresponses, $record = null, $complete = true) {
         global $DB;
 
         // Increment the response count.
@@ -634,7 +634,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
 
         }
-        return $this->create_response(['questionnaireid' => $questionnaire->id, 'userid' => $userid], $responses, $complete);
+        return $this->create_response($responses, ['questionnaireid' => $questionnaire->id, 'userid' => $userid], $complete);
     }
 
     public function create_and_fully_populate($coursecount = 4, $studentcount = 20, $questionnairecount = 2,
