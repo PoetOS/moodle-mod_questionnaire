@@ -2202,7 +2202,7 @@ class questionnaire {
     private function response_send_email($rid, $email) {
         global $CFG;
 
-        $submission = $this->generate_csv($rid, '', null, 1, 0);
+        $submission = $this->generate_csv(0, $rid, '', null, 1);
         if (!empty($submission)) {
             $answers = $this->get_formatted_answers_for_emails($submission);
         } else {
@@ -3029,7 +3029,7 @@ class questionnaire {
     /* {{{ proto array survey_generate_csv(int surveyid)
     Exports the results of a survey to an array.
     */
-    public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid, $showincompletes=0,
+    public function generate_csv($currentgroupid, $rid='', $userid='', $choicecodes=1, $choicetext=0, $showincompletes=0,
                                  $rankaverages=0) {
         global $DB;
 
