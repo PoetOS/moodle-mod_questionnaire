@@ -58,13 +58,13 @@ class section {
      *  'surveyid' - the surveyid field of the fb_sections table (required if no 'id' field),
      *  'sectionnum' - the section field of the fb_sections table (ignored if 'id' is present; defaults to 1).
      *
-     * @param array $params As above
      * @param array $questions Array of mod_questionnaire\question objects.
+     * @param array $params As above
      * @throws \dml_exception
      * @throws coding_exception
      * @throws invalid_parameter_exception
      */
-    public function __construct($params = [], $questions) {
+    public function __construct($questions, $params = []) {
 
         if (!is_array($params) || !is_array($questions)) {
             throw new coding_exception('Invalid data provided.');
