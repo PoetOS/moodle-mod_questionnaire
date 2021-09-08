@@ -270,7 +270,7 @@ class questionnaire {
             // Handle the main questionnaire completion page.
             $quser = $USER->id;
 
-            $msg = $this->print_survey($USER->id, $quser);
+            $msg = $this->print_survey($quser, $USER->id);
 
             // If Questionnaire was submitted with all required fields completed ($msg is empty),
             // then record the submittal.
@@ -1070,7 +1070,7 @@ class questionnaire {
 
     // Display Methods.
 
-    public function print_survey($userid=false, $quser) {
+    public function print_survey($quser, $userid=false) {
         global $SESSION, $CFG;
 
         if (!($formdata = data_submitted()) || !confirm_sesskey()) {
