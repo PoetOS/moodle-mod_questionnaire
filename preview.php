@@ -141,7 +141,7 @@ if ($questionnaire->capabilities->printblank) {
         $questionnaire->renderer->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
             new pix_icon('t/print', $title)));
 }
-$questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup);
+$questionnaire->survey_print_render($course->id, '', 'preview', $rid = 0, $popup);
 if ($popup) {
     $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
 }

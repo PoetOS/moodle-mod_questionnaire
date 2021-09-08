@@ -1421,7 +1421,7 @@ class questionnaire {
     }
 
     // Blankquestionnaire : if we are printing a blank questionnaire.
-    public function survey_print_render($message = '', $referer='', $courseid, $rid=0, $blankquestionnaire=false) {
+    public function survey_print_render($courseid, $message = '', $referer='', $rid=0, $blankquestionnaire=false) {
         global $DB, $CFG;
 
         if (! $course = $DB->get_record("course", array("id" => $courseid))) {
