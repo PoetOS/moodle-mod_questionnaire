@@ -1169,7 +1169,7 @@ class questionnaire {
         $this->page->add_to_page('formstart', $this->renderer->complete_formstart($action, ['referer' => $formdatareferer,
             'a' => $this->id, 'sid' => $this->survey->id, 'rid' => $formdatarid, 'sec' => $formdata->sec, 'sesskey' => sesskey()]));
         if (isset($this->questions) && $numsections) { // Sanity check.
-            $this->survey_render($formdata->sec, $msg, $formdata);
+            $this->survey_render($formdata, $formdata->sec, $msg);
             $controlbuttons = [];
             if ($formdata->sec > 1) {
                 $controlbuttons['prev'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
@@ -1201,13 +1201,13 @@ class questionnaire {
     }
 
     /**
+     * @param $formdata
      * @param int $section
      * @param string $message
-     * @param $formdata
      * @return bool|void
      * @throws coding_exception
      */
-    private function survey_render($section = 1, $message = '', &$formdata) {
+    private function survey_render(&$formdata, $section = 1, $message = '') {
 
         $this->usehtmleditor = null;
 
