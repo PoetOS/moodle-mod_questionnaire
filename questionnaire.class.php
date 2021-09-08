@@ -3637,8 +3637,8 @@ class questionnaire {
             $usergraph = get_config('questionnaire', 'usergraph');
             if ($usergraph && $this->survey->chart_type) {
                 $this->page->add_to_page('feedbackcharts',
-                    draw_chart ($feedbacktype = 'global', $this->survey->chart_type, $labels,
-                        $score, $allscore, $sectionlabel, $groupname, $allresponses));
+                    draw_chart ($feedbacktype = 'global', $labels, $groupname,
+                        $allresponses, $this->survey->chart_type, $score, $allscore, $sectionlabel));
             }
             // Display class or group score. Pending chart library decision to display?
             // Find out if this feedback sectionlabel has a pipe separator.
@@ -3811,8 +3811,8 @@ class questionnaire {
 
         if ($usergraph && $this->survey->chart_type) {
             $this->page->add_to_page('feedbackcharts',
-                draw_chart($feedbacktype = 'sections', $this->survey->chart_type, array_values($chartlabels),
-                    array_values($scorepercent), array_values($allscorepercent), $sectionlabel, $groupname, $allresponses));
+                draw_chart($feedbacktype = 'sections', array_values($chartlabels), $groupname,
+                    $allresponses, $this->survey->chart_type, array_values($scorepercent), array_values($allscorepercent), $sectionlabel));
         }
         if ($this->survey->feedbackscores) {
             $this->page->add_to_page('feedbackscores', html_writer::table($table));
