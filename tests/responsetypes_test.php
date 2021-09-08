@@ -299,7 +299,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $generator->create_question($questionnaire, $questiondata, $choicedata);
 
-        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
+        $questionnaire = new questionnaire( $course, $cm, $questionnaire->id, null, true);
 
         return $questionnaire;
     }

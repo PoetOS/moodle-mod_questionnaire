@@ -62,7 +62,7 @@ if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, 
 
 require_course_login($course, true, $cm);
 
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));

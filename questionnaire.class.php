@@ -56,7 +56,7 @@ class questionnaire {
      * The class constructor
      *
      */
-    public function __construct($id = 0, $questionnaire = null, &$course, &$cm, $addquestions = true) {
+    public function __construct(&$course, &$cm, $id = 0, $questionnaire = null, $addquestions = true) {
         global $DB;
 
         if ($id) {

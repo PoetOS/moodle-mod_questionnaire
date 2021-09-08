@@ -70,7 +70,7 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
             list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-            $questionnaireinst = new questionnaire(0, $questionnaire, $course, $cm);
+            $questionnaireinst = new questionnaire($course, $cm, 0, $questionnaire);
 
             // Test for only complete responses.
             $newoutput = $this->get_csv_text($questionnaireinst->generate_csv('', '', 0, 0, 0, 0));

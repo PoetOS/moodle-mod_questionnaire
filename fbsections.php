@@ -58,7 +58,7 @@ if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
 
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 if ($sectionid) {
     // Get the specified section by its id.

@@ -47,7 +47,7 @@ class mobile {
         $completed = isset($args->completed) ? $args->completed : false;
 
         list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
-        $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
+        $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
 
         $data = [];
         $data['cmid'] = $cmid;

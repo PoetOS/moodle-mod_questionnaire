@@ -109,7 +109,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $instance = parent::create_instance($record, (array)$options);
         $cm = get_coursemodule_from_instance('questionnaire', $instance->id);
         $course = get_course($cm->course);
-        $questionnaire = new questionnaire(0, $instance, $course, $cm, false);
+        $questionnaire = new questionnaire($course, $cm, 0, $instance, false);
 
         $this->questionnaires[$instance->id] = $questionnaire;
 
@@ -216,7 +216,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
             $this->create_question($questionnaire, $questiondata, $choicedata);
         }
-        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
+        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, true);
         return $questionnaire;
     }
 

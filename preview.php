@@ -79,7 +79,7 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_cm($cm);   // CONTRIB-5872 - I don't know why this is needed.
 
-$questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, $qid, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));

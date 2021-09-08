@@ -82,7 +82,7 @@ function questionnaire_add_instance($questionnaire) {
         // Create a new survey.
         $course = get_course($questionnaire->course);
         $cm = new stdClass();
-        $qobject = new questionnaire(0, $questionnaire, $course, $cm);
+        $qobject = new questionnaire($course, $cm, 0, $questionnaire);
 
         if ($questionnaire->create == 'new-0') {
             $sdata = new stdClass();
@@ -547,7 +547,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     }
 
     $courseid = $course->id;
-    $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+    $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
     if ($owner = $DB->get_field('questionnaire_survey', 'courseid', ['id' => $questionnaire->sid])) {
         $owner = (trim($owner) == trim($courseid));
@@ -763,7 +763,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
 
     $cm = $modinfo->cms[$cmid];
     $questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance]);
-    $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+    $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
     $context = context_module::instance($cm->id);
     $grader = has_capability('mod/questionnaire:viewsingleresponse', $context);
@@ -1226,10 +1226,10 @@ function mod_questionnaire_coursemodule_edit_post_actions($data, $course) {
 
     if (!empty($data->copyid)) {
         $cm = (object)['id' => $data->coursemodule];
-        $questionnaire = new questionnaire(0, $data, $course, $cm);
+        $questionnaire = new questionnaire($course, $cm, 0, $data);
         $oldquestionnaireid = $DB->get_field('questionnaire', 'id', ['sid' => $data->copyid]);
         $oldcm = get_coursemodule_from_instance('questionnaire', $oldquestionnaireid);
-        $oldquestionnaire = new questionnaire($oldquestionnaireid, null, $course, $oldcm);
+        $oldquestionnaire = new questionnaire($course, $oldcm, $oldquestionnaireid, null);
         $oldcontext = context_module::instance($oldcm->id);
         $newcontext = context_module::instance($data->coursemodule);
         $areas = $questionnaire->get_all_file_areas();

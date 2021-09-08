@@ -34,7 +34,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         global $COURSE;
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
-        $questionnaire = new questionnaire($this->_instance, null, $COURSE, $this->_cm);
+        $questionnaire = new questionnaire($COURSE, $this->_cm, $this->_instance, null);
 
         $mform    =& $this->_form;
 
