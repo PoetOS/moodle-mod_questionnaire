@@ -214,7 +214,7 @@ class renderer extends \plugin_renderer_base {
      */
     public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants=[]) {
 
-        $pagetags = $question->question_output($response, $dependants, $qnum, $blankquestionnaire);
+        $pagetags = $question->question_output($response, $blankquestionnaire, $dependants, $qnum);
 
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
