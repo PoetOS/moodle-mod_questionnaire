@@ -1257,7 +1257,7 @@ class questionnaire {
             $this->page->add_to_page('questions',
                 $this->renderer->question_output($this->questions[$questionid],
                     (isset($this->responses[$formdata->rid]) ? $this->responses[$formdata->rid] : []),
-                    [], $i, $this->usehtmleditor));
+                    $i, $this->usehtmleditor, []));
         }
 
         $this->print_survey_end($section, $numsections);
@@ -1512,7 +1512,7 @@ class questionnaire {
                 } else {
                     $dependants = [];
                 }
-                $output .= $this->renderer->question_output($this->questions[$questionid], $formdata, $dependants, $i++, null);
+                $output .= $this->renderer->question_output($this->questions[$questionid], $formdata, $i++, null, $dependants);
                 $this->page->add_to_page('questions', $output);
                 $output = '';
             }

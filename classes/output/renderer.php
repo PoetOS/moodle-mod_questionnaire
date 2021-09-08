@@ -207,12 +207,12 @@ class renderer extends \plugin_renderer_base {
      * Render a question for a survey.
      * @param \mod_questionnaire\question\question $question The question object.
      * @param \mod_questionnaire\responsetype\response\response $response Any current response data.
-     * @param array $dependants Array of all questions/choices depending on $question.
      * @param int $qnum The question number.
      * @param boolean $blankquestionnaire Used for printing a blank one.
+     * @param array $dependants Array of all questions/choices depending on $question.
      * @return string The output for the page.
      */
-    public function question_output($question, $response, $dependants=[], $qnum, $blankquestionnaire) {
+    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants=[]) {
 
         $pagetags = $question->question_output($response, $dependants, $qnum, $blankquestionnaire);
 
