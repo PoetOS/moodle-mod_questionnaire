@@ -99,3 +99,39 @@ Feature: Review responses with different capabilities
     And I follow "Test questionnaire 2"
     Then I should see "View All Responses"
     And I log out
+
+  @javascript
+  Scenario: A student can see their own responses after submit the response.
+    Given the following "users" exist:
+      | username | firstname | lastname | email                |
+      | teacher1 | Teacher   | 1        | teacher1@example.com |
+      | student1 | Student   | 1        | student1@example.com |
+    And the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 1 | C1        | 0        |
+    And the following "course enrolments" exist:
+      | user     | course | role           |
+      | student1 | C1     | student        |
+    And I log in as "admin"
+    And the following "activities" exist:
+      | activity      | name               | description                    | course | idnumber       | resp_view |
+      | questionnaire | Test questionnaire | Test questionnaire description | C1     | questionnaire0 | 0         |
+    And I am on "Course 1" course homepage
+    And I follow "Test questionnaire"
+    And I navigate to "Questions" in current page administration
+    And I add a "Yes/No" question and I fill the form with:
+      | Question Name | Q9 |
+      | Yes | y |
+      | Question Text | Choose yes or no |
+    And I log out
+    And I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Test questionnaire"
+    Then I should not see "View All Responses"
+    And I navigate to "Answer the questions..." in current page administration
+    And I set the field "Yes" to "checked"
+    And I press "Submit questionnaire"
+    And I press "Continue"
+    And I follow "Print this Response"
+    And I should see "Test questionnaire"
+    
