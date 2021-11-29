@@ -66,7 +66,7 @@ class rank extends responsetype {
                 $rank = intval($other);
             }
             $record = new \stdClass();
-            $record->responseid = $responsedata->rid;
+            $record->responseid = $responsedata->rid ?? null;
             $record->questionid = $question->id;
             $record->choiceid = $cid;
             $record->value = $rank;
