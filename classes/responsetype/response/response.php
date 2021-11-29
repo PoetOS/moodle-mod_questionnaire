@@ -113,7 +113,7 @@ class response {
 
         $questionnaireid = isset($responsedata->questionnaire_id) ? $responsedata->questionnaire_id :
             (isset($responsedata->a) ? $responsedata->a : 0);
-        $response = new response($responsedata->rid, $questionnaireid, $USER->id, null, null, null, false);
+        $response = new response(($responsedata->rid ?? null), $questionnaireid, $USER->id, null, null, null, false);
         foreach ($questions as $question) {
             if ($question->supports_responses()) {
                 $response->answers[$question->id] = $question->responsetype::answers_from_webform($responsedata, $question);
