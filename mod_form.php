@@ -31,7 +31,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 class mod_questionnaire_mod_form extends moodleform_mod {
 
     protected function definition() {
-        global $COURSE;
+        global $COURSE, $CFG;
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
         $questionnaire = new questionnaire($this->_instance, null, $COURSE, $this->_cm);
@@ -139,6 +139,17 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             $mform->setDefault('create', 'new-0');
         }
 
+        // Remove old responses.
+        $options = questionnaire_create_remove_options();
+        $mform->addElement('header', 'responsehdr', get_string('removeoldresponses', 'questionnaire'));
+        $mform->addElement('select', 'removeafter',
+                get_string('removeoldresponsesafter', 'questionnaire'), $options);
+        $mform->addHelpButton('removeafter', 'removeoldresponses', 'questionnaire');
+        // Just set default value when creating a new questionare.
+        if (empty($questionnaire->sid)) {
+            $defaultconfig = get_config('questionnaire', 'removeoldresponses');
+            $mform->setDefault('removeafter', $defaultconfig);
+        }
         $this->standard_coursemodule_elements();
 
         // Buttons.
@@ -196,6 +207,20 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
     public function completion_rule_enabled($data) {
         return !empty($data['completionsubmit']);
+    }
+
+    /**
+     * Create options for remove old responses in the questionare.
+     *
+     * @return array
+     */
+    public function create_remove_options() {
+        $options = [];
+        $options[0] = get_string('removeoldresponsesdefault', 'questionnaire');
+        for ($i = 1; $i <= 36; $i++) {
+            $options[$i * 2592000] = $i > 1 ? get_string('nummonths', 'moodle', $i) : get_string('onemonth', 'questionnaire');
+        }
+        return $options;
     }
 
 }

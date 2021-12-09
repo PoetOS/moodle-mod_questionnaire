@@ -41,5 +41,6 @@ class cleanup extends \core\task\scheduled_task {
         require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
         questionnaire_cleanup();
+        questionnaire_delete_old_responses();
     }
 }
