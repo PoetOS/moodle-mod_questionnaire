@@ -31,7 +31,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 $id = required_param('id', PARAM_INT);
 $cm = get_coursemodule_from_id('questionnaire', $id, 0, false, MUST_EXIST);
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 require_login($course, false, $cm);

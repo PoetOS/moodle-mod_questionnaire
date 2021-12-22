@@ -39,7 +39,7 @@ class rank extends responsetype {
     /**
      * @return string
      */
-    static public function response_table() {
+    public static function response_table() {
         return 'questionnaire_response_rank';
     }
 
@@ -51,7 +51,7 @@ class rank extends responsetype {
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      * @throws \coding_exception
      */
-    static public function answers_from_webform($responsedata, $question) {
+    public static function answers_from_webform($responsedata, $question) {
         $answers = [];
         foreach ($question->choices as $cid => $choice) {
             $other = isset($responsedata->{'q' . $question->id . '_' . $cid}) ?
@@ -82,7 +82,7 @@ class rank extends responsetype {
      * @param \mod_questionnaire\question\question $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
-    static public function answers_from_appdata($responsedata, $question) {
+    public static function answers_from_appdata($responsedata, $question) {
         $answers = [];
         if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
             foreach ($responsedata->{'q' . $question->id} as $choiceid => $choicevalue) {
@@ -344,7 +344,7 @@ class rank extends responsetype {
      * @param int $rid The response id.
      * @return array
      */
-    static public function response_select($rid) {
+    public static function response_select($rid) {
         global $DB;
 
         $values = [];
@@ -411,7 +411,7 @@ class rank extends responsetype {
      * @return array array answer
      * @throws \dml_exception
      */
-    static public function response_answers_by_question($rid) {
+    public static function response_answers_by_question($rid) {
         global $DB;
 
         $answers = [];
@@ -952,7 +952,7 @@ class rank extends responsetype {
      * @param $b
      * @return int
      */
-    static private function sortavgasc($a, $b) {
+    private static function sortavgasc($a, $b) {
         if (isset($a->avg) && isset($b->avg)) {
             if ( $a->avg < $b->avg ) {
                 return -1;
@@ -969,7 +969,7 @@ class rank extends responsetype {
      * @param $b
      * @return int
      */
-    static private function sortavgdesc($a, $b) {
+    private static function sortavgdesc($a, $b) {
         if (isset($a->avg) && isset($b->avg)) {
             if ( $a->avg > $b->avg ) {
                 return -1;

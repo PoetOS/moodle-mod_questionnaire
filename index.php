@@ -30,7 +30,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 $id = required_param('id', PARAM_INT);
 $PAGE->set_url('/mod/questionnaire/index.php', array('id' => $id));
 if (! $course = $DB->get_record('course', array('id' => $id))) {
-    print_error('incorrectcourseid', 'questionnaire');
+    throw new \moodle_exception('Filter has not been set.', 'mod_questionnaire');
 }
 $coursecontext = context_course::instance($id);
 require_login($course->id);

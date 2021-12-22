@@ -108,7 +108,7 @@ class response {
      * @return bool|response A response object.
      * @throws \coding_exception
      */
-    static public function response_from_webform($responsedata, $questions) {
+    public static function response_from_webform($responsedata, $questions) {
         global $USER;
 
         $questionnaireid = isset($responsedata->questionnaire_id) ? $responsedata->questionnaire_id :
@@ -131,7 +131,7 @@ class response {
      * @param $questions Array of question objects.
      * @return bool|response A response object.
      */
-    static public function response_from_appdata($questionnaireid, $responseid, $responsedata, $questions) {
+    public static function response_from_appdata($questionnaireid, $responseid, $responsedata, $questions) {
         global $USER;
 
         $response = new response($responseid, $questionnaireid, $USER->id, null, null, null, false);

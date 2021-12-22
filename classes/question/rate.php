@@ -696,12 +696,12 @@ class rate extends question {
      */
     protected function form_preprocess_data($formdata) {
         $nameddegrees = [];
-        // Named degrees are put one per line in the form "[value]=[label]."
+        // Named degrees are put one per line in the form "[value]=[label]".
         if (!empty($formdata->allnameddegrees)) {
             $nameddegreelines = explode("\n", $formdata->allnameddegrees);
             foreach ($nameddegreelines as $nameddegreeline) {
                 $nameddegreeline = trim($nameddegreeline);
-                if (($nameddegree = \mod_questionnaire\question\choice\choice::content_is_named_degree_choice($nameddegreeline)) !==
+                if (($nameddegree = \mod_questionnaire\question\choice::content_is_named_degree_choice($nameddegreeline)) !==
                     false) {
                     $nameddegrees += $nameddegree;
                 }
@@ -762,7 +762,7 @@ class rate extends question {
      * @throws \dml_exception
      */
     public function update_choice($choicerecord) {
-        if ($nameddegree = choice\choice::content_is_named_degree_choice($choicerecord->content)) {
+        if ($nameddegree = \mod_questionnaire\question\choice::content_is_named_degree_choice($choicerecord->content)) {
             // Preserve any existing value from the new array.
             $this->nameddegrees = $nameddegree + $this->nameddegrees;
             $this->insert_nameddegrees($this->nameddegrees);
@@ -776,7 +776,7 @@ class rate extends question {
      * @throws \dml_exception
      */
     public function add_choice($choicerecord) {
-        if ($nameddegree = choice\choice::content_is_named_degree_choice($choicerecord->content)) {
+        if ($nameddegree = \mod_questionnaire\question\choice::content_is_named_degree_choice($choicerecord->content)) {
             // Preserve any existing value from the new array.
             $this->nameddegrees = $nameddegree + $this->nameddegrees;
             $this->insert_nameddegrees($this->nameddegrees);
@@ -1001,7 +1001,7 @@ class rate extends question {
             if ($question->insert_nameddegrees($nameddegrees)) {
                 // Remove the old named desgree from the choices table.
                 foreach ($oldchoiceids as $choiceid) {
-                    \mod_questionnaire\question\choice\choice::delete_from_db_by_id($choiceid);
+                    \mod_questionnaire\question\choice::delete_from_db_by_id($choiceid);
                 }
 
                 // First get all existing rank responses for this question.

@@ -190,10 +190,10 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             // Define id annotations.
             $response->annotate_ids('user', 'userid');
         }
-        // Define file annotations
+        // Define file annotations.
         $questionnaire->annotate_files('mod_questionnaire', 'intro', null); // This file area hasn't itemid.
 
-        $survey->annotate_files('mod_questionnaire', 'info', 'id'); // By survey->id
+        $survey->annotate_files('mod_questionnaire', 'info', 'id'); // By survey->id.
         $survey->annotate_files('mod_questionnaire', 'thankbody', 'id'); // By survey->id.
 
         $question->annotate_files('mod_questionnaire', 'question', 'id'); // By question->id.

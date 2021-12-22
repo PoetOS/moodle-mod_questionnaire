@@ -66,7 +66,7 @@ abstract class responsetype {
      *
      * @return string response table name.
      */
-    static public function response_table() {
+    public static function response_table() {
         return 'Must be implemented!';
     }
 
@@ -74,7 +74,7 @@ abstract class responsetype {
      * Return the known response tables. Should be replaced by a better management system eventually.
      * @return array
      */
-    static public function all_response_tables() {
+    public static function all_response_tables() {
         return ['questionnaire_response_bool', 'questionnaire_response_date', 'questionnaire_response_other',
             'questionnaire_response_rank', 'questionnaire_response_text', 'questionnaire_resp_multiple',
             'questionnaire_resp_single'];
@@ -87,7 +87,7 @@ abstract class responsetype {
      * @param \mod_questionnaire\question\question $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
-    abstract static public function answers_from_webform($responsedata, $question);
+    abstract public static function answers_from_webform($responsedata, $question);
 
     /**
      * Insert a provided response to the question.
@@ -251,7 +251,7 @@ abstract class responsetype {
      * @param int $rid The response id.
      * @return array
      */
-    static public function response_select($rid) {
+    public static function response_select($rid) {
         return [];
     }
 
@@ -262,7 +262,7 @@ abstract class responsetype {
      * @param int $rid The response id.
      * @return array array answer
      */
-    static public function response_answers_by_question($rid) {
+    public static function response_answers_by_question($rid) {
         return [];
     }
 
@@ -273,7 +273,7 @@ abstract class responsetype {
      * @param \mod_questionnaire\question\question $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
-    static public function answers_from_appdata($responsedata, $question) {
+    public static function answers_from_appdata($responsedata, $question) {
         // In most cases this can be a direct call to answers_from_webform with the one modification below. Override when this will
         // not work.
         if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
@@ -289,7 +289,11 @@ abstract class responsetype {
      * @return string
      */
     protected function user_fields_sql() {
-        $userfieldsarr = get_all_user_name_fields();
+        if (class_exists('\core_user\fields')) {
+            $userfieldsarr = \core_user\fields::get_name_fields();
+        } else {
+            $userfieldsarr = get_all_user_name_fields();
+        }
         $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution']);
         $userfields = '';
         foreach ($userfieldsarr as $field) {
