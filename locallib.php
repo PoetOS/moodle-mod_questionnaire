@@ -553,12 +553,11 @@ function questionnaire_get_incomplete_users($cm, $sid,
            "WHERE questionnaireid = :questionnaireid AND complete = :complete " .
            "GROUP BY userid ";
 
-    if (!$completedusers = $DB->get_records_sql($sql, $params)) {
-        return $allusers;
+    if ($completedusers = $DB->get_records_sql($sql, $params)) {
+        $completedusers = array_keys($completedusers);
+        // Now strike all completedusers from allusers.
+        $allusers = array_diff($allusers, $completedusers);
     }
-    $completedusers = array_keys($completedusers);
-    // Now strike all completedusers from allusers.
-    $allusers = array_diff($allusers, $completedusers);
     // For paging I use array_slice().
     if (($startpage !== false) && ($pagecount !== false)) {
         $allusers = array_slice($allusers, $startpage, $pagecount);
