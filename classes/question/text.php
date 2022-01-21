@@ -86,7 +86,7 @@ class text extends question {
             $choice->maxlength = $this->precise;
         }
         $choice->value = (isset($response->answers[$this->id][0]) ?
-            format_text(stripslashes($response->answers[$this->id][0]->value)) : '');
+            format_string(stripslashes($response->answers[$this->id][0]->value)) : '');
         $choice->id = self::qtypename($this->type_id) . $this->id;
         $questiontags->qelements->choice = $choice;
         return $questiontags;
