@@ -23,6 +23,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die;
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 if ($ADMIN->fulltree) {
     $options = array(0 => get_string('no'), 1 => get_string('yes'));
@@ -50,4 +51,10 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('questionnaire/allowemailreporting',
         get_string('configemailreporting', 'questionnaire'), get_string('configemailreportinglong', 'questionnaire'), 0));
+
+    // Manage old responses after. The default value is 24 months.
+    $options = questionnaire_create_remove_options();
+    $settings->add(new admin_setting_configselect('questionnaire/removeoldresponses',
+            get_string('removeoldresponsesafter', 'questionnaire'),
+            get_string('configremoveoldresponses', 'questionnaire'), 0, $options));
 }
