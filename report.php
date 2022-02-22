@@ -646,7 +646,7 @@ switch ($action) {
             // not an array.
             $errorreporting = error_reporting(0);
             $pdf->writeHTML($html);
-            @$pdf->Output('dump.pdf', 'D');
+            @$pdf->Output(clean_param($questionnaire->name, PARAM_FILE), 'D');
             error_reporting($errorreporting);
 
         } else { // Default to HTML.
@@ -779,7 +779,7 @@ switch ($action) {
             // not an array.
             $errorreporting = error_reporting(0);
             $pdf->writeHTML($html);
-            @$pdf->Output('dump.pdf', 'D');
+            @$pdf->Output(clean_param($questionnaire->name, PARAM_FILE), 'D');
             error_reporting($errorreporting);
 
         } else { // Default to HTML.
