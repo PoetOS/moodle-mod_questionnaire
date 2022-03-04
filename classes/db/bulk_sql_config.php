@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 Guy Thomas <gthomas@moodlerooms.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class bulk_sql_config  {
+class bulk_sql_config {
 
     /**
      * @var string $table
