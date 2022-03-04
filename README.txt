@@ -20,5 +20,5 @@ Please read the CHANGES.md file for more info about successive changes
 --------------------------------------------------------------------------------
 Developers Note:
 
-Do not use the master branch. Questionnaire is maintained in MOODLE_XX_STABLE
+Do not use the main branch. Questionnaire is maintained in MOODLE_XX_STABLE
 branches. Use the latest STABLE branch for development or installation.
