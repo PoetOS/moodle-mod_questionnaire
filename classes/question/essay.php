@@ -14,28 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\question;
+use \html_writer;
+use mod_questionnaire\responsetype\response\response;
+
 /**
  * This file contains the parent class for essay question types.
  *
  * @author Mike Churchward
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\question;
-defined('MOODLE_INTERNAL') || die();
-use \html_writer;
-
 class essay extends text {
 
     /**
-     * @return object|string
+     * Each question type must define its response class.
+     * @return object The response object based off of questionnaire_response_base.
      */
     protected function responseclass() {
         return '\\mod_questionnaire\\responsetype\\text';
     }
 
     /**
+     * Short name for this question type - no spaces, etc..
      * @return string
      */
     public function helpname() {
@@ -59,10 +61,11 @@ class essay extends text {
     }
 
     /**
-     * @param \mod_questionnaire\responsetype\response\response $response
-     * @param $descendantsdata
+     * Question specific display method.
+     * @param response $response
+     * @param array $descendantsdata
      * @param bool $blankquestionnaire
-     * @return object|string
+     *
      */
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         $output = '';
@@ -102,8 +105,9 @@ class essay extends text {
     }
 
     /**
-     * @param \mod_questionnaire\responsetype\response\response $response
-     * @return object|string
+     * Question specific response display method.
+     * @param \stdClass $response
+     *
      */
     protected function response_survey_display($response) {
         if (isset($response->answers[$this->id])) {
@@ -120,11 +124,11 @@ class essay extends text {
     }
 
     // Note - intentianally returning 'precise' for length and 'length' for precise.
+
     /**
+     * Return the length form element.
      * @param \MoodleQuickForm $mform
      * @param string $helptext
-     * @return \MoodleQuickForm|void
-     * @throws \coding_exception
      */
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         $responseformats = array(
@@ -137,7 +141,6 @@ class essay extends text {
 
     /**
      * True if question provides mobile support.
-     *
      * @return bool
      */
     public function supports_mobile() {
@@ -145,10 +148,9 @@ class essay extends text {
     }
 
     /**
+     * Return the precision form element.
      * @param \MoodleQuickForm $mform
      * @param string $helptext
-     * @return \MoodleQuickForm|void
-     * @throws \coding_exception
      */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         $choices = array();

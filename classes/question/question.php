@@ -16,6 +16,7 @@
 
 namespace mod_questionnaire\question;
 use mod_questionnaire\edit_question_form;
+use mod_questionnaire\responsetype\response\response;
 use \questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
@@ -25,17 +26,10 @@ use \html_writer;
  * This file contains the parent class for questionnaire question types.
  *
  * @author Mike Churchward
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package mod_questionnaire
  */
-
-/**
- * Class for describing a question
- *
- * @author Mike Churchward
- * @package questiontypes
- */
-
  // Constants.
 define('QUESCHOOSE', 0);
 define('QUESYESNO', 1);
@@ -55,6 +49,14 @@ $idcounter = 0;
 
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
+
+/**
+ * Class for describing a question
+ *
+ * @author Mike Churchward
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @package mod_questionnaire
+ */
 abstract class question {
 
     // Class Properties.
@@ -125,7 +127,10 @@ abstract class question {
 
     /**
      * The class constructor
-     *
+     * @param int $id
+     * @param \stdClass $question
+     * @param \context $context
+     * @param array $params
      */
     public function __construct($id = 0, $question = null, $context = null, $params = []) {
         global $DB;
@@ -183,10 +188,10 @@ abstract class question {
 
     /**
      * Build a question from data.
-     * @var int $qtype The question type code.
-     * @var int|array|object $qdata Either the id of the record, or a structure containing the question data, or null.
-     * @var object $context The context for the question.
-     * @return A question object.
+     * @param int $qtype
+     * @param int|array $qdata
+     * @param \stdClass $context
+     * @return mixed
      */
     public static function question_builder($qtype, $qdata = null, $context = null) {
         $qclassname = '\\mod_questionnaire\\question\\'.self::qtypename($qtype);
@@ -201,7 +206,7 @@ abstract class question {
 
     /**
      * Return the different question type names.
-     * @param $qtype
+     * @param int $qtype
      * @return string
      */
     public static function qtypename($qtype) {
@@ -222,12 +227,14 @@ abstract class question {
 
     /**
      * Override and return true if the question has choices.
+     * @return bool
      */
     public function has_choices() {
         return false;
     }
 
     /**
+     * Load any choices into the object.
      * @throws \dml_exception
      */
     private function get_choices() {
@@ -244,7 +251,7 @@ abstract class question {
 
     /**
      * Return true if this question has been marked as required.
-     * @return boolean
+     * @return bool
      */
     public function required() {
         return ($this->required == 'y');
@@ -252,7 +259,7 @@ abstract class question {
 
     /**
      * Return true if the question has defined dependencies.
-     * @return boolean
+     * @return bool
      */
     public function has_dependencies() {
         return !empty($this->dependencies);
@@ -260,14 +267,14 @@ abstract class question {
 
     /**
      * Override this and return true if the question type allows dependent questions.
-     * @return boolean
+     * @return bool
      */
     public function allows_dependents() {
         return false;
     }
 
     /**
-     * @throws \dml_exception
+     * Load any dependencies.
      */
     private function get_dependencies() {
         global $DB;
@@ -370,7 +377,8 @@ abstract class question {
     }
 
     /**
-     * @return mixed
+     * Return the responsetype table for this question.
+     * @return string
      */
     public function response_table() {
         return $this->responsetype->response_table();
@@ -378,8 +386,8 @@ abstract class question {
 
     /**
      * Return true if the specified response for this question contains the specified choice.
-     * @param $rid
-     * @param $choiceid
+     * @param int $rid
+     * @param int $choiceid
      * @return bool
      */
     public function response_has_choice($rid, $choiceid) {
@@ -391,7 +399,7 @@ abstract class question {
 
     /**
      * Insert response data method.
-     * @param object $responsedata All of the responsedata.
+     * @param \stdClass $responsedata All of the responsedata.
      * @return bool
      */
     public function insert_response($responsedata) {
@@ -405,6 +413,8 @@ abstract class question {
 
     /**
      * Get results data method.
+     * @param array|bool $rids
+     * @return array|false
      */
     public function get_results($rids = false) {
         if (isset ($this->responsetype) && is_object($this->responsetype) &&
@@ -417,6 +427,10 @@ abstract class question {
 
     /**
      * Display results method.
+     * @param bool $rids
+     * @param string $sort
+     * @param bool $anonymous
+     * @return false|string
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
         if (isset ($this->responsetype) && is_object($this->responsetype) &&
@@ -449,14 +463,13 @@ abstract class question {
 
     /**
      * Each question type must define its response class.
-     *
      * @return object The response object based off of questionnaire_response_base.
-     *
      */
     abstract protected function responseclass();
 
     /**
      * True if question type allows responses.
+     * @return bool
      */
     public function supports_responses() {
         return !empty($this->responseclass());
@@ -464,6 +477,7 @@ abstract class question {
 
     /**
      * True if question type supports feedback options. False by default.
+     * @return bool
      */
     public function supports_feedback() {
         return false;
@@ -471,6 +485,7 @@ abstract class question {
 
     /**
      * True if question type supports feedback scores and weights. Same as supports_feedback() by default.
+     * @return bool
      */
     public function supports_feedback_scores() {
         return $this->supports_feedback();
@@ -478,6 +493,7 @@ abstract class question {
 
     /**
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
+     * @return bool
      */
     public function valid_feedback() {
         if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
@@ -486,15 +502,14 @@ abstract class question {
                     return true;
                 }
             }
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * Provide the feedback scores for all requested response id's. This should be provided only by questions that provide feedback.
      * @param array $rids
-     * @return array | boolean
+     * @return array|bool
      */
     public function get_feedback_scores(array $rids) {
         if ($this->valid_feedback() && isset($this->responsetype) && is_object($this->responsetype) &&
@@ -507,7 +522,7 @@ abstract class question {
 
     /**
      * Get the maximum score possible for feedback if appropriate. Override if default behaviour is not correct.
-     * @return int | boolean
+     * @return int|bool
      */
     public function get_feedback_maxscore() {
         if ($this->valid_feedback()) {
@@ -527,9 +542,8 @@ abstract class question {
 
     /**
      * Check question's form data for complete response.
-     *
-     * @param object $responsedata The data entered into the response.
-     * @return boolean
+     * @param \stdClass $responsedata The data entered into the response.
+     * @return bool
      */
     public function response_complete($responsedata) {
         if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
@@ -554,9 +568,8 @@ abstract class question {
 
     /**
      * Check question's form data for valid response. Override this if type has specific format requirements.
-     *
-     * @param object $responsedata The data entered into the response.
-     * @return boolean
+     * @param \stdClass $responsedata The data entered into the response.
+     * @return bool
      */
     public function response_valid($responsedata) {
         return true;
@@ -564,9 +577,8 @@ abstract class question {
 
     /**
      * Update data record from object or optional question data.
-     *
-     * @param object $questionrecord An object with all updated question record data.
-     * @param boolean $updatechoices True if choices should also be updated.
+     * @param \stdClass $questionrecord An object with all updated question record data.
+     * @param bool $updatechoices True if choices should also be updated.
      */
     public function update($questionrecord = null, $updatechoices = true) {
         global $DB;
@@ -604,7 +616,7 @@ abstract class question {
 
     /**
      * Add the question to the database from supplied arguments.
-     * @param object $questionrecord The required data for adding the question.
+     * @param \stdClass $questionrecord The required data for adding the question.
      * @param array $choicerecords An array of choice records with 'content' and 'value' properties.
      * @param boolean $calcposition Whether or not to calculate the next available position in the survey.
      */
@@ -641,6 +653,7 @@ abstract class question {
     }
 
     /**
+     * Update all choices.
      * @return bool
      */
     public function update_choices() {
@@ -665,9 +678,9 @@ abstract class question {
     }
 
     /**
-     * @param $choicerecord
+     * Update the choice with the choicerecord.
+     * @param \stdClass $choicerecord
      * @return bool
-     * @throws \dml_exception
      */
     public function update_choice($choicerecord) {
         global $DB;
@@ -675,9 +688,9 @@ abstract class question {
     }
 
     /**
-     * @param $choicerecord
+     * Add a new choice to the database.
+     * @param \stdClass $choicerecord
      * @return bool
-     * @throws \dml_exception
      */
     public function add_choice($choicerecord) {
         global $DB;
@@ -694,8 +707,7 @@ abstract class question {
 
     /**
      * Delete the choice from the question object and the database.
-     *
-     * @param integer|object $choice Either the integer id of the choice, or the choice record.
+     * @param int|\stdClass $choice Either the integer id of the choice, or the choice record.
      */
     public function delete_choice($choice) {
         $retvalue = true;
@@ -714,9 +726,8 @@ abstract class question {
 
     /**
      * Insert extradata field into db. This will be stored as a string. If a question needs a different format, override this.
-     * @param $extradata
+     * @param string $extradata
      * @return bool
-     * @throws \dml_exception
      */
     public function insert_extradata($extradata) {
         global $DB;
@@ -724,9 +735,9 @@ abstract class question {
     }
 
     /**
-     * @param $dependencyrecord
+     * Update the dependency record.
+     * @param \stdClass $dependencyrecord
      * @return bool
-     * @throws \dml_exception
      */
     public function update_dependency($dependencyrecord) {
         global $DB;
@@ -734,9 +745,9 @@ abstract class question {
     }
 
     /**
-     * @param $dependencyrecord
+     * Add a dependency record.
+     * @param \stdClass $dependencyrecord
      * @return bool
-     * @throws \dml_exception
      */
     public function add_dependency($dependencyrecord) {
         global $DB;
@@ -756,8 +767,7 @@ abstract class question {
 
     /**
      * Delete the dependency from the question object and the database.
-     *
-     * @param integer|object $dependency Either the integer id of the dependency, or the dependency record.
+     * @param int|\stdClass $dependency Either the integer id of the dependency, or the dependency record.
      */
     public function delete_dependency($dependency) {
         global $DB;
@@ -778,8 +788,7 @@ abstract class question {
 
     /**
      * Set the question required field in the object and database.
-     *
-     * @param boolean $required Whether question should be required or not.
+     * @param bool $required Whether question should be required or not.
      */
     public function set_required($required) {
         global $DB;
@@ -796,26 +805,23 @@ abstract class question {
 
     /**
      * Question specific display method.
-     *
-     * @param object $formdata
-     * @param array $descendantdata
-     * @param boolean $blankquestionnaire
+     * @param \stdClass $formdata
+     * @param array $descendantsdata
+     * @param bool $blankquestionnaire
      *
      */
     abstract protected function question_survey_display($formdata, $descendantsdata, $blankquestionnaire);
 
     /**
      * Question specific response display method.
-     *
-     * @param object $data
-     * @param integer $qnum
+     * @param \stdClass $data
      *
      */
     abstract protected function response_survey_display($data);
 
     /**
      * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
-     * @return boolean | string
+     * @return bool|string
      */
     public function question_template() {
         return false;
@@ -823,7 +829,7 @@ abstract class question {
 
     /**
      * Override and return a form template if provided. Output of response_survey_display is iterpreted based on this.
-     * @return boolean | string
+     * @return bool|string
      */
     public function response_template() {
         return false;
@@ -832,7 +838,7 @@ abstract class question {
     /**
      * Override and return a form template if provided. Output of results_output is iterpreted based on this.
      * @param bool $pdf
-     * @return boolean | string
+     * @return bool|string
      */
     public function results_template($pdf = false) {
         if (isset ($this->responsetype) && is_object($this->responsetype) &&
@@ -848,7 +854,7 @@ abstract class question {
      * @param \mod_questionnaire\responsetype\response\response $response
      * @param boolean $blankquestionnaire
      * @param array $dependants Array of all questions/choices depending on this question.
-     * @param integer $qnum
+     * @param int $qnum
      * @return \stdClass
      */
     public function question_output($response, $blankquestionnaire, $dependants=[], $qnum='') {
@@ -871,10 +877,9 @@ abstract class question {
 
     /**
      * Get the output for the start of the questions in a survey.
-     * @param integer $qnum
+     * @param int $qnum
      * @param \mod_questionnaire\responsetype\response\response $response
      * @return \stdClass
-     * @throws \coding_exception
      */
     public function questionstart_survey_display($qnum, $response=null) {
         global $OUTPUT, $SESSION, $questionnaire, $PAGE;
@@ -1013,9 +1018,9 @@ abstract class question {
     }
 
     /**
+     * Add the form header.
      * @param \MoodleQuickForm $mform
      * @param string $helpname
-     * @throws \coding_exception
      */
     protected function form_header(\MoodleQuickForm $mform, $helpname = '') {
         // Display different messages for new question creation and existing question modification.
@@ -1033,9 +1038,9 @@ abstract class question {
     }
 
     /**
+     * Add the form name field.
      * @param \MoodleQuickForm $mform
      * @return \MoodleQuickForm
-     * @throws \coding_exception
      */
     protected function form_name(\MoodleQuickForm $mform) {
         $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'),
@@ -1046,9 +1051,9 @@ abstract class question {
     }
 
     /**
+     * Add the form required field.
      * @param \MoodleQuickForm $mform
      * @return \MoodleQuickForm
-     * @throws \coding_exception
      */
     protected function form_required(\MoodleQuickForm $mform) {
         $reqgroup = [];
@@ -1060,6 +1065,7 @@ abstract class question {
     }
 
     /**
+     * Return the length form element.
      * @param \MoodleQuickForm $mform
      * @param string $helpname
      */
@@ -1068,6 +1074,7 @@ abstract class question {
     }
 
     /**
+     * Return the precision form element.
      * @param \MoodleQuickForm $mform
      * @param string $helpname
      */
@@ -1076,9 +1083,9 @@ abstract class question {
     }
 
     /**
-     * @param \MoodleQuickForm $mform The moodle form to add elements to.
-     * @param $questionnaire
-     * @param $editquestionformobject
+     * Determine form dependencies.
+     * @param \MoodleQuickForm $form The moodle form to add elements to.
+     * @param array $questions
      * @return bool
      */
     protected function form_dependencies($form, $questions) {
@@ -1165,10 +1172,10 @@ abstract class question {
     }
 
     /**
+     * Return the question text element.
      * @param \MoodleQuickForm $mform
-     * @param $context
+     * @param string $context
      * @return \MoodleQuickForm
-     * @throws \coding_exception
      */
     protected function form_question_text(\MoodleQuickForm $mform, $context) {
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true, 'context' => $context];
@@ -1179,9 +1186,9 @@ abstract class question {
     }
 
     /**
+     * Add the choices to the form.
      * @param \MoodleQuickForm $mform
      * @return string
-     * @throws \coding_exception
      */
     protected function form_choices(\MoodleQuickForm $mform) {
         if ($this->has_choices()) {
@@ -1224,6 +1231,7 @@ abstract class question {
     // Helper functions for commonly used editing functions.
 
     /**
+     * Add the length element as hidden.
      * @param \MoodleQuickForm $mform
      * @param int $value
      * @return \MoodleQuickForm
@@ -1235,11 +1243,11 @@ abstract class question {
     }
 
     /**
+     * Add the length element as text.
      * @param \MoodleQuickForm $mform
      * @param string $helpname
      * @param int $value
      * @return \MoodleQuickForm
-     * @throws \coding_exception
      */
     public static function form_length_text(\MoodleQuickForm $mform, $helpname = '', $value = 0) {
         $mform->addElement('text', 'length', get_string($helpname, 'questionnaire'), ['size' => '1'], $value);
@@ -1251,6 +1259,7 @@ abstract class question {
     }
 
     /**
+     * Add the precise element as hidden.
      * @param \MoodleQuickForm $mform
      * @param int $value
      * @return \MoodleQuickForm
@@ -1262,6 +1271,7 @@ abstract class question {
     }
 
     /**
+     * Add the precise element as text.
      * @param \MoodleQuickForm $mform
      * @param string $helpname
      * @param int $value
@@ -1279,6 +1289,8 @@ abstract class question {
 
     /**
      * Create and update question data from the forms.
+     * @param \stdClass $formdata
+     * @param questionnaire $questionnaire
      */
     public function form_update($formdata, $questionnaire) {
         global $DB;
@@ -1460,6 +1472,8 @@ abstract class question {
 
     /**
      * Any preprocessing of general data.
+     * @param \stdClass $formdata
+     * @return bool
      */
     protected function form_preprocess_data($formdata) {
         if ($this->has_choices()) {
@@ -1504,6 +1518,8 @@ abstract class question {
 
     /**
      * Override this function for question specific choice preprocessing.
+     * @param \stdClass $formdata
+     * @return false
      */
     protected function form_preprocess_choicedata($formdata) {
         if (empty($formdata->allchoices)) {
@@ -1514,7 +1530,6 @@ abstract class question {
 
     /**
      * True if question provides mobile support.
-     *
      * @return bool
      */
     public function supports_mobile() {
@@ -1523,12 +1538,9 @@ abstract class question {
 
     /**
      * Override and return false if not supporting mobile app.
-     *
-     * @param $qnum
-     * @param $fieldkey
+     * @param int $qnum
      * @param bool $autonum
      * @return \stdClass
-     * @throws \coding_exception
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $options = ['noclean' => true, 'para' => false, 'filter' => true,
@@ -1560,6 +1572,7 @@ abstract class question {
     }
 
     /**
+     * Override and return false if not supporting mobile app.
      * @return array
      */
     public function mobile_question_choices_display() {
@@ -1578,7 +1591,7 @@ abstract class question {
 
     /**
      * Return a field key to be used by the mobile app.
-     * @param $choiceid
+     * @param int $choiceid
      * @return string
      */
     public function mobile_fieldkey($choiceid = 0) {
@@ -1590,7 +1603,8 @@ abstract class question {
     }
 
     /**
-     * @param $response
+     * Return the mobile response data.
+     * @param response $response
      * @return array
      */
     public function get_mobile_response_data($response) {

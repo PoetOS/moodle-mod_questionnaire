@@ -14,21 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package mod_questionnaire
- * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
+/**
+ * The questionnaire settings form.
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class settings_form extends \moodleform {
 
+    /**
+     * Defines the form.
+     */
     public function definition() {
         global $questionnaire, $questionnairerealms;
 
@@ -127,6 +130,13 @@ class settings_form extends \moodleform {
 
     }
 
+    /**
+     * Validation rules for form.
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         return $errors;

@@ -14,26 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package mod_questionnaire
- * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
- * @author Mike Churchward & Joseph Rézeau
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
+/**
+ * The form definition class for questions.
+ *
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author Mike Churchward & Joseph Rézeau
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class questions_form extends \moodleform {
 
+    /**
+     * The constructor.
+     * @param mixed $action
+     * @param bool $moveq
+     */
     public function __construct($action, $moveq=false) {
         $this->moveq = $moveq;
         return parent::__construct($action);
     }
 
+    /**
+     * Form definition.
+     */
     public function definition() {
         global $CFG, $questionnaire, $SESSION;
         global $DB;
@@ -367,9 +376,14 @@ class questions_form extends \moodleform {
         $mform->addElement('html', '</div>');
     }
 
+    /**
+     * Form validation.
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         return $errors;
     }
-
 }

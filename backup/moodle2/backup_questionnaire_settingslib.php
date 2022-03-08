@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * The required settingslib file.
  * @package mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward

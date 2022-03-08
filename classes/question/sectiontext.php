@@ -14,27 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\question;
+
 /**
  * This file contains the parent class for sectiontext question types.
  *
  * @author Mike Churchward
+ * @copyright  2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\question;
-defined('MOODLE_INTERNAL') || die();
-
 class sectiontext extends question {
 
     /**
-     * @return object|string
+     * Each question type must define its response class.
+     * @return object The response object based off of questionnaire_response_base.
      */
     protected function responseclass() {
         return '';
     }
 
     /**
+     * Short name for this question type - no spaces, etc..
      * @return string
      */
     public function helpname() {
@@ -81,7 +82,7 @@ class sectiontext extends question {
     /**
      * Return the context tags for the check question template.
      * @param \mod_questionnaire\responsetype\response\response $response
-     * @param array $dependants Array of all questions/choices depending on this question.
+     * @param array $descendantsdata Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
@@ -138,8 +139,9 @@ class sectiontext extends question {
     }
 
     /**
-     * @param object $data
-     * @return string
+     * Question specific response display method.
+     * @param \stdClass $data
+     *
      */
     protected function response_survey_display($data) {
         return '';
@@ -156,6 +158,7 @@ class sectiontext extends question {
     }
 
     /**
+     * Add the form required field.
      * @param \MoodleQuickForm $mform
      * @return \MoodleQuickForm
      */
@@ -164,18 +167,18 @@ class sectiontext extends question {
     }
 
     /**
+     * Return the length form element.
      * @param \MoodleQuickForm $mform
      * @param string $helpname
-     * @return \MoodleQuickForm|void
      */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
         return question::form_length_hidden($mform);
     }
 
     /**
+     * Return the precision form element.
      * @param \MoodleQuickForm $mform
      * @param string $helpname
-     * @return \MoodleQuickForm|void
      */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         return question::form_precise_hidden($mform);

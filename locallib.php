@@ -15,27 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Updates the contents of the survey with the provided data. If no data is provided, it checks for posted data.
+ *
  * This library replaces the phpESP application with Moodle specific code. It will eventually
  * replace all of the phpESP application, removing the dependency on that.
- */
-
-/**
- * Updates the contents of the survey with the provided data. If no data is provided,
- * it checks for posted data.
  *
- * @param int $surveyid The id of the survey to update.
- * @param string $old_tab The function that was being executed.
- * @param object $sdata The data to update the survey with.
- *
- * @return string|boolean The function to go to, or false on error.
- *
- */
-
-/**
  * @package mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -87,6 +76,11 @@ $autonumbering = array (0 => get_string('autonumberno', 'questionnaire'),
         2 => get_string('autonumberpages', 'questionnaire'),
         3 => get_string('autonumberpagesandquestions', 'questionnaire'));
 
+/**
+ * Return the choice values for the content.
+ * @param string $content
+ * @return stdClass
+ */
 function questionnaire_choice_values($content) {
 
     // If we run the content through format_text first, any filters we want to use (e.g. multilanguage) should work.
@@ -157,7 +151,11 @@ function questionnaire_get_js_module() {
 }
 
 /**
- * Get all the questionnaire responses for a user
+ * Get all the questionnaire responses for a user.
+ * @param int $questionnaireid
+ * @param int $userid
+ * @param bool $complete
+ * @return array
  */
 function questionnaire_get_user_responses($questionnaireid, $userid, $complete=true) {
     global $DB;
@@ -227,8 +225,12 @@ function questionnaire_get_context($cmid) {
     return $context;
 }
 
-// This function *really* shouldn't be needed, but since sometimes we can end up with
-// orphaned surveys, this will clean them up.
+/**
+ * This function *really* shouldn't be needed, but since sometimes we can end up with
+ * orphaned surveys, this will clean them up.
+ * @return bool
+ * @throws dml_exception
+ */
 function questionnaire_cleanup() {
     global $DB;
 
@@ -246,6 +248,12 @@ function questionnaire_cleanup() {
     return true;
 }
 
+/**
+ * Delete the survey.
+ * @param int $sid
+ * @param int $questionnaireid
+ * @return bool
+ */
 function questionnaire_delete_survey($sid, $questionnaireid) {
     global $DB;
     $status = true;
@@ -283,6 +291,12 @@ function questionnaire_delete_survey($sid, $questionnaireid) {
     return $status;
 }
 
+/**
+ * Delete the response.
+ * @param stdClass $response
+ * @param string $questionnaire
+ * @return bool
+ */
 function questionnaire_delete_response($response, $questionnaire='') {
     global $DB;
     $status = true;
@@ -315,6 +329,11 @@ function questionnaire_delete_response($response, $questionnaire='') {
     return $status;
 }
 
+/**
+ * Delete all responses for the questionnaire.
+ * @param int $qid
+ * @return bool
+ */
 function questionnaire_delete_responses($qid) {
     global $DB;
 
@@ -330,6 +349,11 @@ function questionnaire_delete_responses($qid) {
     return true;
 }
 
+/**
+ * Delete all dependencies for the questionnaire.
+ * @param int $qid
+ * @return bool
+ */
 function questionnaire_delete_dependencies($qid) {
     global $DB;
 
@@ -340,6 +364,12 @@ function questionnaire_delete_dependencies($qid) {
     return true;
 }
 
+/**
+ * Get a survey selection records.
+ * @param int $courseid
+ * @param string $type
+ * @return array|false
+ */
 function questionnaire_get_survey_list($courseid=0, $type='') {
     global $DB;
 
@@ -389,6 +419,12 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
     return $DB->get_records_sql($sql, $params);
 }
 
+/**
+ * Get survey selection list.
+ * @param int $courseid
+ * @param string $type
+ * @return array
+ */
 function questionnaire_get_survey_select($courseid=0, $type='') {
     global $OUTPUT, $DB;
 
@@ -425,6 +461,12 @@ function questionnaire_get_survey_select($courseid=0, $type='') {
     return $surveylist;
 }
 
+/**
+ * Return the language string for the specified question type.
+ * @param int $id
+ * @return lang_string|mixed|string
+ * @throws coding_exception
+ */
 function questionnaire_get_type ($id) {
     switch ($id) {
         case 1:
@@ -459,8 +501,6 @@ function questionnaire_get_type ($id) {
  * @param object $questionnaire
  * @return void
  */
- /* added by JR 16 march 2009 based on lesson_process_post_save script */
-
 function questionnaire_set_events($questionnaire) {
     // Adding the questionnaire to the eventtable.
     global $DB;
@@ -512,14 +552,15 @@ function questionnaire_set_events($questionnaire) {
 /**
  * Get users who have not completed the questionnaire
  *
- * @global object
- * @uses CONTEXT_MODULE
  * @param object $cm
- * @param int $group single groupid
+ * @param int $sid
+ * @param bool $group single groupid
  * @param string $sort
- * @param int $startpage
- * @param int $pagecount
+ * @param bool $startpage
+ * @param bool $pagecount
  * @return object the userrecords
+ * @throws coding_exception
+ * @throws dml_exception
  */
 function questionnaire_get_incomplete_users($cm, $sid,
                 $group = false,
@@ -569,6 +610,8 @@ function questionnaire_get_incomplete_users($cm, $sid,
 /**
  * Called by HTML editor in showrespondents and Essay question. Based on question/essay/renderer.
  * Pending general solution to using the HTML editor outside of moodleforms in Moodle pages.
+ * @param int $context
+ * @return array
  */
 function questionnaire_get_editor_options($context) {
     return array(
@@ -581,8 +624,11 @@ function questionnaire_get_editor_options($context) {
     );
 }
 
-// Get the parent of a child question.
-// TODO - This needs to be refactored or removed.
+/**
+ * Get the parent of a child question.
+ * @param stdClass $question
+ * @return array
+ */
 function questionnaire_get_parent ($question) {
     global $DB;
     $qid = $question->id;
@@ -688,7 +734,11 @@ function questionnaire_get_child_positions ($questions) {
     return $childpositions;
 }
 
-// Check that the needed page breaks are present to separate child questions.
+/**
+ * Check that the needed page breaks are present to separate child questions.
+ * @param stdClass $questionnaire
+ * @return false|lang_string|string
+ */
 function questionnaire_check_page_breaks($questionnaire) {
     global $DB;
     $msg = '';
@@ -805,6 +855,10 @@ function questionnaire_check_page_breaks($questionnaire) {
 
 /**
  * Code snippet used to set up the questionform.
+ * @param stdClass $questionnaire
+ * @param int $qid
+ * @param int $qtype
+ * @return mixed|\mod_questionnaire\question\question
  */
 function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
     $context = context_module::instance($questionnaire->cm->id);

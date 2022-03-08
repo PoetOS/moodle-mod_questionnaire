@@ -53,6 +53,7 @@ class bulk_sql_config {
     protected $userank = false;
 
     /**
+     * The class constructor.
      * @param string $table
      * @param string $tablealias
      * @param bool $usechoiceid

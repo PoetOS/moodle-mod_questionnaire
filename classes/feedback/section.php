@@ -14,17 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Manage feedback sections.
- *
- * @package    mod_questionnaire
- * @copyright  2018 onward Mike Churchward (mike.churchward@poetopensource.org)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire\feedback;
-defined('MOODLE_INTERNAL') || die();
 
 use invalid_parameter_exception;
 use coding_exception;
@@ -32,23 +22,35 @@ use coding_exception;
 /**
  * Class for describing a feedback section.
  *
- * @author Mike Churchward
- * @package feedback
+ * @package    mod_questionnaire
+ * @copyright  2018 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class section {
 
+    /** @var int */
     public $id = 0;
+    /** @var int */
     public $surveyid = 0;
+    /** @var int */
     public $section = 1;
+    /** @var array */
     public $scorecalculation = [];
+    /** @var string */
     public $sectionlabel = '';
+    /** @var string */
     public $sectionheading = '';
+    /** @var string */
     public $sectionheadingformat = FORMAT_HTML;
+    /** @var array */
     public $sectionfeedback = [];
+    /** @var array */
     public $questions = [];
 
+    /** The table name. */
     const TABLE = 'questionnaire_fb_sections';
+    /** Represents the "no score" setting. */
     const NOSCORE = -1;
 
     /**
@@ -80,7 +82,9 @@ class section {
 
     /**
      * Factory method to create a new, empty section and return an instance.
-     *
+     * @param int $surveyid
+     * @param string $sectionlabel
+     * @return section
      */
     public static function new_section($surveyid, $sectionlabel = '') {
         global $DB;
@@ -154,11 +158,8 @@ class section {
     /**
      * Loads the section feedback record into the proper array location.
      *
-     * @param $feedbackrec
+     * @param \stdClass $feedbackrec
      * @return int The id of the section feedback record.
-     * @throws \dml_exception
-     * @throws coding_exception
-     * @throws invalid_parameter_exception
      */
     public function load_sectionfeedback($feedbackrec) {
         if (!isset($feedbackrec->id) || empty($feedbackrec->id)) {
@@ -174,8 +175,7 @@ class section {
     /**
      * Updates the object and data record with a new scorecalculation. If no new score provided, uses what's in the object.
      *
-     * @param $scorecalculation
-     * @throws \dml_exception
+     * @param array $scorecalculation
      * @throws coding_exception
      */
     public function set_new_scorecalculation($scorecalculation = null) {
@@ -261,6 +261,7 @@ class section {
     }
 
     /**
+     * Return the decoded calculation array/
      * @param string $codedstring
      * @return mixed
      * @throws coding_exception
@@ -292,6 +293,7 @@ class section {
     }
 
     /**
+     * Return the encoded score array as a serialized string.
      * @param string $scorearray
      * @return mixed
      * @throws coding_exception

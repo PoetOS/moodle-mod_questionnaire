@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/tests/generator_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/questiontypes_test.php');
 
 /**
- * Unit tests for {@link questionnaire_responsetypes_testcase}.
+ * Unit tests for questionnaire_responsetypes_testcase.
  * @group mod_questionnaire
  */
 class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
@@ -285,6 +285,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
     // General tests to call from specific tests above.
 
+    /**
+     * Create a test questionnaire.
+     *
+     * @param int $qtype
+     * @param array $questiondata
+     * @param null $choicedata
+     * @return questionnaire
+     */
     public function create_test_questionnaire($qtype, $questiondata = [], $choicedata = null) {
         $this->resetAfterTest();
 
@@ -304,6 +312,15 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         return $questionnaire;
     }
 
+    /**
+     * General assertions for responses.
+     *
+     * @param int $questionnaireid
+     * @param int $responseid
+     * @param int $userid
+     * @param int $attemptcount
+     * @param int $responsecount
+     */
     private function response_tests($questionnaireid, $responseid, $userid,
                                     $attemptcount = 1, $responsecount = 1) {
         global $DB;

@@ -19,6 +19,7 @@
  *
  * @package mod_questionnaire
  * @author  Mike Churchward
+ * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -14,28 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * This file contains the parent class for questionnaire response types.
- *
- * @author Mike Churchward
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package response
- */
-
 namespace mod_questionnaire\responsetype;
-defined('MOODLE_INTERNAL') || die();
+
 use \html_writer;
 use \html_table;
 
 use mod_questionnaire\db\bulk_sql_config;
 
 /**
- * Class for describing a response.
+ * This file contains the parent class for questionnaire response types.
  *
  * @author Mike Churchward
- * @package response
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package mod_questionnaire
  */
-
 abstract class responsetype {
 
     // Class properties.
@@ -118,7 +111,7 @@ abstract class responsetype {
 
     /**
      * If the choice id needs to be transformed into a different value, override this in the child class.
-     * @param $choiceid
+     * @param mixed $choiceid
      * @return mixed
      */
     public function transform_choiceid($choiceid) {
@@ -137,13 +130,12 @@ abstract class responsetype {
     /**
      * Gets the results tags for templates for questions with defined choices (single, multiple, boolean).
      *
-     * @param $weights
-     * @param $participants Number of questionnaire participants.
-     * @param $respondents Number of question respondents.
-     * @param $showtotals
+     * @param array $weights
+     * @param int $participants Number of questionnaire participants.
+     * @param int $respondents Number of question respondents.
+     * @param int $showtotals
      * @param string $sort
      * @return \stdClass
-     * @throws \coding_exception
      */
     public function get_results_tags($weights, $participants, $respondents, $showtotals = 1, $sort = '') {
         global $CFG;
@@ -285,8 +277,8 @@ abstract class responsetype {
     /**
      * Return all the fields to be used for users in bulk questionnaire sql.
      *
-     * @author: Guy Thomas
      * @return string
+     * author: Guy Thomas
      */
     protected function user_fields_sql() {
         if (class_exists('\core_user\fields')) {
@@ -306,12 +298,13 @@ abstract class responsetype {
 
     /**
      * Return sql and params for getting responses in bulk.
-     * @author Guy Thomas
      * @param int|array $questionnaireids One id, or an array of ids.
      * @param bool|int $responseid
      * @param bool|int $userid
      * @param bool|int $groupid
+     * @param int $showincompletes
      * @return array
+     * author Guy Thomas
      */
     public function get_bulk_sql($questionnaireids, $responseid = false, $userid = false, $groupid = false, $showincompletes = 0) {
         global $DB;

@@ -17,8 +17,7 @@
 /**
  * Provides support for the conversion of moodle1 backup to the moodle2 format
  *
- * @package    mod
- * @subpackage questionnaire
+ * @package    mod_questionnaire
  * @copyright  2011 Robin de Vries <robin@celp.nl>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -33,7 +32,7 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
     /**
      * Declare the paths in moodle.xml we are able to convert
      *
-     * The method returns list of {@link convert_path} instances. For each path returned,
+     * The method returns list of convert_path instances. For each path returned,
      * at least one of on_xxx_start(), process_xxx() and on_xxx_end() methods must be
      * defined. The method process_xxx() is not executed if the associated path element is
      * empty (i.e. it contains none elements or sub-paths only).
@@ -42,7 +41,7 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
      * actually exist in the file. The last element with the module name was
      * appended by the moodle1_converter class.
      *
-     * @return array of {@link convert_path} instances
+     * @return array of convert_path instances
      */
     public function get_paths() {
         return array(
@@ -62,9 +61,11 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
             new convert_path('question_choice', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION/QUESTION_CHOICE'),
         );
     }
+
     /**
      * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE
-     * data available
+     * data available.
+     * @param array $data
      */
     public function process_questionnaire($data) {
         // Get the course module id and context id.
@@ -88,7 +89,6 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
     /**
      * This is executed when we reach the closing </MOD> tag of our 'questionnaire' path
      */
-
     public function on_questionnaire_end() {
         // Close questionnaire.xml.
         $this->xmlwriter->end_tag('surveys');
@@ -96,9 +96,11 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
         $this->xmlwriter->end_tag('activity');
         $this->close_xml_writer();
     }
+
     /**
      * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY
      * data available
+     * @param array $data
      */
     public function process_survey($data) {
         $this->xmlwriter->begin_tag('survey', array('id' => $data['id']));
@@ -120,6 +122,7 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
     /**
      * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION
      * data available
+     * @param array $data
      */
     public function process_question($data) {
 
@@ -144,9 +147,9 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
     /**
      * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION/QUESTION_CHOICE
      * data available
+     * @param array $data
      */
     public function process_question_choice($data) {
         $this->write_xml('quest_choice', $data, array('/question_choice/id'));
     }
-
 }

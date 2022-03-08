@@ -14,17 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Manage feedback sections.
- *
- * @package    mod_questionnaire
- * @copyright  2018 onward Mike Churchward (mike.churchward@poetopensource.org)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire\feedback;
-defined('MOODLE_INTERNAL') || die();
 
 use invalid_parameter_exception;
 use coding_exception;
@@ -32,28 +22,34 @@ use coding_exception;
 /**
  * Class for describing a feedback section's feedback definition.
  *
- * @author Mike Churchward
- * @package feedback
+ * @package    mod_questionnaire
+ * @copyright  2018 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class sectionfeedback {
-
+    /** @var int */
     public $id = 0;
+    /** @var int */
     public $sectionid = 0;
+    /** @var string */
     public $feedbacklabel = ''; // I don't think this is actually used?
+    /** @var string */
     public $feedbacktext = '';
+    /** @var string */
     public $feedbacktextformat = FORMAT_HTML;
+    /** @var float */
     public $minscore = 0.0;
+    /** @var float */
     public $maxscore = 0.0;
 
+    /** The table name. */
     const TABLE = 'questionnaire_feedback';
 
     /**
+     * Class constructor.
      * @param int $id
      * @param null|object $record
-     * @throws \dml_exception
-     * @throws coding_exception
-     * @throws invalid_parameter_exception
      */
     public function __construct($id = 0, $record = null) {
         // Return a new section based on the data id.
@@ -70,7 +66,8 @@ class sectionfeedback {
 
     /**
      * Factory method to create a new sectionfeedback from the provided data and return an instance.
-     *
+     * @param \stdClass $data
+     * @return sectionfeedback
      */
     public static function new_sectionfeedback($data) {
         global $DB;
@@ -99,9 +96,9 @@ class sectionfeedback {
     }
 
     /**
-     * @param $id
+     * Return the record specified by the id.
+     * @param int $id
      * @return mixed
-     * @throws \dml_exception
      */
     protected function get_sectionfeedback($id) {
         global $DB;

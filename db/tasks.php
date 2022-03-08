@@ -16,6 +16,7 @@
 
 /**
  * Definition of Questionnaire scheduled tasks.
+ *
  * Default is to run once every 12 hours.
  *
  * @package mod_questionnaire
@@ -23,9 +24,9 @@
  * @copyright 2015 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
+/** @var array $tasks */
 $tasks = array(
     array(
         'classname' => 'mod_questionnaire\task\cleanup',

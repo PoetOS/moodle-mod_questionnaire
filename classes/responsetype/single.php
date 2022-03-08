@@ -14,28 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * This file contains the parent class for questionnaire question types.
- *
- * @author Mike Churchward
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
- */
-
 namespace mod_questionnaire\responsetype;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class for single response types.
  *
  * @author Mike Churchward
- * @package responsetypes
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package mod_questionnaire
  */
-
 class single extends responsetype {
     /**
-     * @return string
+     * Provide the necessary response data table name. Should probably always be used with late static binding 'static::' form
+     * rather than 'self::' form to allow for class extending.
+     *
+     * @return string response table name.
      */
     public static function response_table() {
         return 'questionnaire_resp_single';
@@ -96,10 +90,10 @@ class single extends responsetype {
     }
 
     /**
-     * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
-     * @return bool|int
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * Insert a provided response to the question.
+     *
+     * @param object $responsedata All of the responsedata as an object.
+     * @return int|bool - on error the subtype should call set_error and return false.
      */
     public function insert_response($responsedata) {
         global $DB;
@@ -139,11 +133,11 @@ class single extends responsetype {
     }
 
     /**
-     * @param bool $rids
-     * @param bool $anonymous
-     * @return array
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * Provide the result information for the specified result records.
+     *
+     * @param int|array $rids - A single response id, or array.
+     * @param boolean $anonymous - Whether or not responses are anonymous.
+     * @return array - Array of data records.
      */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
@@ -331,11 +325,13 @@ class single extends responsetype {
 
     /**
      * Return sql and params for getting responses in bulk.
-     * @author Guy Thomas
      * @param int|array $questionnaireids One id, or an array of ids.
      * @param bool|int $responseid
      * @param bool|int $userid
+     * @param bool|int $groupid
+     * @param int $showincompletes
      * @return array
+     * author Guy Thomas
      */
     public function get_bulk_sql($questionnaireids, $responseid = false, $userid = false, $groupid = false, $showincompletes = 0) {
         global $DB;

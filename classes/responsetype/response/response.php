@@ -14,20 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\responsetype\response;
+
 /**
  * This defines a structured class to hold responses.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package response
+ * @package mod_questionnaire
  * @copyright 2019, onwards Poet
  */
-
-namespace mod_questionnaire\responsetype\response;
-use mod_questionnaire\responsetype\answer\answer;
-
-defined('MOODLE_INTERNAL') || die();
-
 class response {
 
     // Class properties.
@@ -81,7 +77,7 @@ class response {
     /**
      * Create and return a response object from data.
      *
-     * @param object | array $responsedata The data to load.
+     * @param \stdClass|array $responsedata The data to load.
      * @return response
      */
     public static function create_from_data($responsedata) {
@@ -104,9 +100,8 @@ class response {
      * Provide a response object from web form data to the question.
      *
      * @param \stdClass $responsedata All of the responsedata as an object.
-     * @param array \mod_questionnaire\question\question $questions
+     * @param array $questions
      * @return bool|response A response object.
-     * @throws \coding_exception
      */
     public static function response_from_webform($responsedata, $questions) {
         global $USER;
@@ -125,10 +120,10 @@ class response {
     /**
      * Provide a response object from mobile app data to the question.
      *
-     * @param $questionnaireid
-     * @param $responseid
+     * @param id $questionnaireid
+     * @param id $responseid
      * @param \stdClass $responsedata All of the responsedata as an object.
-     * @param $questions Array of question objects.
+     * @param array $questions Array of question objects.
      * @return bool|response A response object.
      */
     public static function response_from_appdata($questionnaireid, $responseid, $responsedata, $questions) {

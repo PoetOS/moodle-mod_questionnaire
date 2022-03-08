@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\output;
+
 /**
  * Contains class mod_questionnaire\output\viewpage
  *
@@ -22,11 +24,6 @@
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace mod_questionnaire\output;
-
-defined('MOODLE_INTERNAL') || die();
-
 class viewpage implements \renderable, \templatable {
 
     /**
@@ -49,8 +46,8 @@ class viewpage implements \renderable, \templatable {
 
     /**
      * Add data for export.
-     * @param string The index for the data.
-     * @param string The content for the index.
+     * @param string $element The index for the data.
+     * @param string $content The content for the index.
      */
     public function add_to_page($element, $content) {
         $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);

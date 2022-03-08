@@ -14,20 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// Library of functions and constants for module questionnaire.
-
 /**
+ * Library of functions and constants for module questionnaire.
  * @package mod_questionnaire
- * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/** This may no longer be needed. */
 define('QUESTIONNAIRE_RESETFORM_RESET', 'questionnaire_reset_data_');
+
+/** This may no longer be needed. */
 define('QUESTIONNAIRE_RESETFORM_DROP', 'questionnaire_drop_questionnaire_');
 
+/**
+ * Library supports implementation.
+ * @param string $feature
+ * @return bool|null
+ */
 function questionnaire_supports($feature) {
     switch($feature) {
         case FEATURE_BACKUP_MOODLE2:
@@ -55,17 +60,28 @@ function questionnaire_supports($feature) {
 }
 
 /**
+ * Return any extra capabilities.
  * @return array all other caps used in module
  */
 function questionnaire_get_extra_capabilities() {
     return array('moodle/site:accessallgroups');
 }
 
+/**
+ * Implementation of get_instance.
+ * @param int $questionnaireid
+ * @return false|mixed|stdClass
+ */
 function questionnaire_get_instance($questionnaireid) {
     global $DB;
     return $DB->get_record('questionnaire', array('id' => $questionnaireid));
 }
 
+/**
+ * Implementation of add_instance.
+ * @param stdClass $questionnaire
+ * @return bool|int
+ */
 function questionnaire_add_instance($questionnaire) {
     // Given an object containing all the necessary data,
     // (defined by the form in mod.html) this function
@@ -150,9 +166,12 @@ function questionnaire_add_instance($questionnaire) {
     return $questionnaire->id;
 }
 
-// Given an object containing all the necessary data,
-// (defined by the form in mod.html) this function
-// will update an existing instance with new data.
+/**
+ * Given an object containing all the necessary data, (defined by the form in mod.html) this function will update an existing
+ * instance with new data.
+ * @param stdClass $questionnaire
+ * @return bool
+ */
 function questionnaire_update_instance($questionnaire) {
     global $DB, $CFG;
     require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
@@ -183,9 +202,11 @@ function questionnaire_update_instance($questionnaire) {
     return $DB->update_record("questionnaire", $questionnaire);
 }
 
-// Given an ID of an instance of this module,
-// this function will permanently delete the instance
-// and any data that depends on it.
+/**
+ * Given an ID of an instance of this module, this function will permanently delete the instance and any data that depends on it.
+ * @param int $id
+ * @return bool
+ */
 function questionnaire_delete_instance($id) {
     global $DB, $CFG;
     require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
@@ -217,15 +238,17 @@ function questionnaire_delete_instance($id) {
     return $result;
 }
 
-// Return a small object with summary information about what a
-// user has done with a given particular instance of this module
-// Used for user activity reports.
-// $return->time = the time they did it
-// $return->info = a short text description.
 /**
+ * Return a small object with summary information about what a user has done with a given particular instance of this module.
+ * Used for user activity reports.
+ * $return->time = the time they did it
+ * $return->info = a short text description.
  * $course and $mod are unused, but API requires them. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ * @param stdClass $course
+ * @param stdClass $user
+ * @param stdClass $mod
+ * @param stdClass $questionnaire
+ * @return stdClass
  */
 function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     global $CFG;
@@ -247,12 +270,15 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     return $result;
 }
 
-// Print a detailed representation of what a  user has done with
-// a given particular instance of this module, for user activity reports.
 /**
+ * Print a detailed representation of what a  user has done with a given particular instance of this module, for user
+ * activity reports.
  * $course and $mod are unused, but API requires them. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ * @param stdClass $course
+ * @param stdClass $user
+ * @param stdClass $mod
+ * @param stdClass $questionnaire
+ * @return bool
  */
 function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     global $CFG;
@@ -273,24 +299,25 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     return true;
 }
 
-// Given a course and a time, this module should find recent activity
-// that has occurred in questionnaire activities and print it out.
-// Return true if there was output, or false is there was none.
 /**
+ * Given a course and a time, this module should find recent activity that has occurred in questionnaire activities and print it
+ * out.
+ * Return true if there was output, or false is there was none.
  * $course, $isteacher and $timestart are unused, but API requires them. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ * @param stdClass $course
+ * @param bool $isteacher
+ * @param int $timestart
+ * @return false
  */
 function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
     return false;  // True if anything was printed, otherwise false.
 }
 
-// Must return an array of grades for a given instance of this module,
-// indexed by user.  It also returns a maximum allowed grade.
 /**
+ * Must return an array of grades for a given instance of this module, indexed by user.  It also returns a maximum allowed grade.
  * $questionnaireid is unused, but API requires it. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ * @param int $questionnaireid
+ * @return null
  */
 function questionnaire_grades($questionnaireid) {
     return null;
@@ -299,7 +326,7 @@ function questionnaire_grades($questionnaireid) {
 /**
  * Return grade for given user or all users.
  *
- * @param int $questionnaireid id of assignment
+ * @param stdClass $questionnaire
  * @param int $userid optional user id, 0 means all users
  * @return array array of grades, false if none
  */
@@ -319,14 +346,11 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
 }
 
 /**
- * Update grades by firing grade_updated event
- *
- * @param object $assignment null means all assignments
- * @param int $userid specific user only, 0 mean all
- *
+ * Update grades by firing grade_updated event.
  * $nullifnone is unused, but API requires it. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ * @param stdClass $questionnaire
+ * @param int $userid
+ * @param bool $nullifnone
  */
 function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone=true) {
     global $CFG, $DB;
@@ -376,8 +400,8 @@ function questionnaire_update_grades($questionnaire=null, $userid=0, $nullifnone
 /**
  * Create grade item for given questionnaire
  *
- * @param object $questionnaire object with extra cmidnumber
- * @param mixed optional array/object of grade(s); 'reset' means reset grades in gradebook
+ * @param stdClass $questionnaire object with extra cmidnumber
+ * @param mixed $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
  * @return int 0 if ok, error code otherwise
  */
 function questionnaire_grade_item_update($questionnaire, $grades = null) {
@@ -427,13 +451,11 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
  * it it has support for grading and scales. Commented code should be
  * modified if necessary. See forum, glossary or journal modules
  * as reference.
- * @param $questionnaireid int
- * @param $scaleid int
+ * @param int $questionnaireid
+ * @param int $scaleid
  * @return boolean True if the scale is used by any questionnaire
  *
  * Function parameters are unused, but API requires them. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_scale_used ($questionnaireid, $scaleid) {
     return false;
@@ -443,12 +465,10 @@ function questionnaire_scale_used ($questionnaireid, $scaleid) {
  * Checks if scale is being used by any instance of questionnaire
  *
  * This is used to find out if scale used anywhere
- * @param $scaleid int
+ * @param int $scaleid
  * @return boolean True if the scale is used by any questionnaire
  *
  * Function parameters are unused, but API requires them. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_scale_used_anywhere($scaleid) {
     return false;
@@ -457,17 +477,15 @@ function questionnaire_scale_used_anywhere($scaleid) {
 /**
  * Serves the questionnaire attachments. Implements needed access control ;-)
  *
- * @param object $course
- * @param object $cm
- * @param object $context
+ * @param stdClass $course
+ * @param stdClass $cm
+ * @param stdClass $context
  * @param string $filearea
  * @param array $args
  * @param bool $forcedownload
  * @return bool false if file not found, does not return if found - justsend the file
  *
  * $forcedownload is unused, but API requires it. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
     global $DB;
@@ -524,8 +542,6 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
  * @param navigation_node $questionnairenode The node to add module settings to
  *
  * $settings is unused, but API requires it. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_extend_settings_navigation(settings_navigation $settings,
         navigation_node $questionnairenode) {
@@ -738,16 +754,35 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 // Any other questionnaire functions go here.  Each of them must have a name that
 // starts with questionnaire_.
 
+/**
+ * Return the view actions.
+ * @return string[]
+ */
 function questionnaire_get_view_actions() {
     return array('view', 'view all');
 }
 
+/**
+ * Return the post actions.
+ * @return string[]
+ */
 function questionnaire_get_post_actions() {
     return array('submit', 'update');
 }
 
+/**
+ * Return the recent activity.
+ * @param array $activities
+ * @param int $index
+ * @param int $timestart
+ * @param int $courseid
+ * @param int $cmid
+ * @param int $userid
+ * @param int $groupid
+ * @return mixed|void
+ */
 function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart,
-                $courseid, $cmid, $userid = 0, $groupid = 0) {
+                                               $courseid, $cmid, $userid = 0, $groupid = 0) {
 
     global $CFG, $COURSE, $USER, $DB;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -911,16 +946,13 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
 /**
  * Prints all users who have completed a specified questionnaire since a given time
  *
- * @global object
- * @param object $activity
+ * @param stdClass $activity
  * @param int $courseid
  * @param string $detail not used but needed for compability
  * @param array $modnames
  * @return void Output is echo'd
  *
  * $details and $modenames are unused, but API requires them. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, $modnames) {
     global $OUTPUT;
@@ -989,10 +1021,6 @@ function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, 
  * questionnaires that have a deadline that has not already passed
  * and it is available for taking.
  *
- * @global object
- * @global stdClass
- * @global object
- * @uses CONTEXT_MODULE
  * @param array $courses An array of course objects to get questionnaire instances from
  * @param array $htmlarray Store overview output array( course ID => 'questionnaire' => HTML output )
  * @return void
@@ -1077,7 +1105,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
  * Implementation of the function for printing the form elements that control
  * whether the course reset functionality affects the questionnaire.
  *
- * @param $mform the course reset form that is being built.
+ * @param stdClass $mform the course reset form that is being built.
  */
 function questionnaire_reset_course_form_definition($mform) {
     $mform->addElement('header', 'questionnaireheader', get_string('modulenameplural', 'questionnaire'));
@@ -1087,11 +1115,10 @@ function questionnaire_reset_course_form_definition($mform) {
 
 /**
  * Course reset form defaults.
+ * @param stdClass $course
  * @return array the defaults.
  *
  * Function parameters are unused, but API requires them. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_reset_course_form_defaults($course) {
     return array('reset_questionnaire' => 1);
@@ -1101,7 +1128,7 @@ function questionnaire_reset_course_form_defaults($course) {
  * Actual implementation of the reset course functionality, delete all the
  * questionnaire responses for course $data->courseid.
  *
- * @param object $data the data submitted from the reset course.
+ * @param stdClass $data the data submitted from the reset course.
  * @return array status array
  */
 function questionnaire_reset_userdata($data) {
@@ -1157,15 +1184,13 @@ function questionnaire_reset_userdata($data) {
  * Obtains the automatic completion state for this questionnaire based on the condition
  * in questionnaire settings.
  *
- * @param object $course Course
- * @param object $cm Course-module
+ * @param stdClass $course Course
+ * @param stdClass $cm Course-module
  * @param int $userid User ID
  * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
  * @return bool True if completed, false if not, $type if conditions not set.
  *
  * $course is unused, but API requires it. Suppress PHPMD warning.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 function questionnaire_get_completion_state($course, $cm, $userid, $type) {
     global $DB;
@@ -1217,8 +1242,8 @@ function mod_questionnaire_core_calendar_provide_event_action(calendar_event $ev
  * Called after the activity and module have been created. Use this to copy any images if the questionnaire was created from another
  * questionnaire survey.
  *
- * @param $data
- * @param $course
+ * @param stdClass $data
+ * @param stdClass $course
  * @throws coding_exception
  */
 function mod_questionnaire_coursemodule_edit_post_actions($data, $course) {
