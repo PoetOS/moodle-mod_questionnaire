@@ -129,7 +129,7 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         }
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
+        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));

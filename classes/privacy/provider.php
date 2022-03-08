@@ -211,7 +211,7 @@ class provider implements
                 $lastcmid = $response->cmid;
                 $course = $DB->get_record("course", ["id" => $response->qcourse]);
                 $cm = get_coursemodule_from_instance("questionnaire", $response->qid, $course->id);
-                $questionnaire = new \questionnaire($response->qid, null, $course, $cm);
+                $questionnaire = new \questionnaire($course, $cm, $response->qid, null);
             }
             $responsedata['responses'][] = [
                 'complete' => (($response->complete == 'y') ? get_string('yes') : get_string('no')),

@@ -50,7 +50,7 @@ if ($qid) {
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
@@ -305,7 +305,7 @@ if ($action == 'main') {
 // Reload the form data if called for...
 if ($reload) {
     unset($questionsform);
-    $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm);
+    $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null);
     // Add renderer and page objects to the questionnaire object for display use.
     $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
     $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
