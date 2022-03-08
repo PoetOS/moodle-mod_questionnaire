@@ -31,8 +31,9 @@
  * @param string $dataformat A dataformat name
  * @param array $columns An ordered map of column keys and labels
  * @param Iterator $iterator An iterator over the records, usually a RecordSet
- * @param function $callback An option function applied to each record before writing
- * @param mixed $extra An optional value which is passed into the callback function
+ * @param array $users
+ * @param array $emails
+ * @param string $redirect
  */
 function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users = [], $emails = [], $redirect = '') {
     global $CFG, $OUTPUT;

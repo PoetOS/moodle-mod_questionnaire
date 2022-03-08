@@ -14,17 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\task;
+
 /**
  * A scheduled task for Questionnaire.
  *
  * @package mod_questionnaire
  * @copyright 2015 The Open University
+ * @author     Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_questionnaire\task;
-
-defined('MOODLE_INTERNAL') || die();
-
 class cleanup extends \core\task\scheduled_task {
 
     /**
@@ -36,6 +35,9 @@ class cleanup extends \core\task\scheduled_task {
         return get_string('crontask', 'mod_questionnaire');
     }
 
+    /**
+     * Execute method.
+     */
     public function execute() {
         global $CFG;
         require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');

@@ -17,12 +17,10 @@
 /**
  * This script lists all the instances of questionnaire in a particular course
  *
- * @package    mod
- * @subpackage questionnaire
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @package    mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');

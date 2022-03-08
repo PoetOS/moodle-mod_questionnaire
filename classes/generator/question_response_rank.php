@@ -14,20 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\generator;
+
+use mod_questionnaire\question\choice;
+
 /**
  * Question response rank class
  * @author    gthomas2
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\generator;
-
-defined('MOODLE_INTERNAL') || die();
-
 class question_response_rank {
+    /** @var choice $choice */
     public $choice;
+    /** @var int $rankvalue */
     public $rankvalue;
 
+    /**
+     * Class constructor.
+     * @param choice $choice
+     * @param int $rank
+     */
     public function __construct($choice, $rank) {
         $this->choice = $choice;
         $this->rankvalue = $rank;

@@ -14,20 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\generator;
+
+use mod_questionnaire\responsetype\response\response;
+
 /**
  * Question response class
  * @author    gthomas2
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\generator;
-
-defined('MOODLE_INTERNAL') || die();
-
 class question_response {
+    /** @var int $questionid */
     public $questionid;
+    /** @var response $response */
     public $response;
 
+    /**
+     * Class constructor.
+     * @param int $questionid
+     * @param response $response
+     */
     public function __construct($questionid, $response) {
         $this->questionid = $questionid;
         $this->response = $response;

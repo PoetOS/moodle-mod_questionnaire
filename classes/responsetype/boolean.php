@@ -14,16 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * This file contains the parent class for questionnaire question types.
- *
- * @author Mike Churchward
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
- */
-
 namespace mod_questionnaire\responsetype;
-defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use dml_exception;
@@ -34,13 +25,17 @@ use stdClass;
  * Class for boolean response types.
  *
  * @author Mike Churchward
- * @package response
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package mod_questionnaire
  */
-
 class boolean extends responsetype {
 
     /**
-     * @return string
+     * Provide the necessary response data table name. Should probably always be used with late static binding 'static::' form
+     * rather than 'self::' form to allow for class extending.
+     *
+     * @return string response table name.
      */
     public static function response_table() {
         return 'questionnaire_response_bool';
@@ -81,10 +76,10 @@ class boolean extends responsetype {
     }
 
     /**
-     * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
-     * @return bool|int
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * Insert a provided response to the question.
+     *
+     * @param object $responsedata All of the responsedata as an object.
+     * @return int|bool - on error the subtype should call set_error and return false.
      */
     public function insert_response($responsedata) {
         global $DB;
@@ -107,11 +102,11 @@ class boolean extends responsetype {
     }
 
     /**
-     * @param bool $rids
-     * @param bool $anonymous
-     * @return array
-     * @throws coding_exception
-     * @throws dml_exception
+     * Provide the result information for the specified result records.
+     *
+     * @param int|array $rids - A single response id, or array.
+     * @param boolean $anonymous - Whether or not responses are anonymous.
+     * @return array - Array of data records.
      */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
@@ -134,8 +129,8 @@ class boolean extends responsetype {
 
     /**
      * If the choice id needs to be transformed into a different value, override this in the child class.
-     * @param $choiceid
-     * @return mixed
+     * @param int $choiceid
+     * @return string
      */
     public function transform_choiceid($choiceid) {
         if ($choiceid == 0) {

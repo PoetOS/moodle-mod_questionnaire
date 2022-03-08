@@ -14,6 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+
 /**
  * Print the form to manage feedback settings.
  *
@@ -22,16 +29,11 @@
  * @author Joseph Rezeau
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-
-namespace mod_questionnaire;
-
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
-
 class feedback_form extends \moodleform {
 
+    /**
+     * Defition of the form.
+     */
     public function definition() {
         global $questionnaire;
 
@@ -130,6 +132,12 @@ class feedback_form extends \moodleform {
         }
     }
 
+    /**
+     * Validate the data submitted.
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         return $errors;

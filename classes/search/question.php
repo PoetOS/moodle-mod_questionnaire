@@ -13,21 +13,17 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/**
- * Contains class mod_questionnaire\search\question
- *
- * @package    mod_questionnaire
- * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+
 namespace mod_questionnaire\search;
-defined('MOODLE_INTERNAL') || die();
+
 /**
+ * Contains the question class definition for search.
+ *
  * Search area for mod_questionnaire questions. Separated from the activity search so that admins can choose whether or not they
  * want this part enabled.
  *
  * @package    mod_questionnaire
+ * @author     Mike Churchward
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

@@ -14,25 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\question;
+
 /**
  * This file contains the parent class for rate question types.
  *
  * @author Mike Churchward
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\question;
-defined('MOODLE_INTERNAL') || die();
-use \html_writer;
-
 class rate extends question {
 
+    /** @var array $nameddegrees */
     public $nameddegrees = [];
 
     /**
-     * Constructor. Use to set any default properties.
-     *
+     * The class constructor
+     * @param int $id
+     * @param \stdClass $question
+     * @param \context $context
+     * @param array $params
      */
     public function __construct($id = 0, $question = null, $context = null, $params = array()) {
         $this->length = 5;
@@ -40,10 +42,18 @@ class rate extends question {
         $this->add_nameddegrees_from_extradata();
     }
 
+    /**
+     * Each question type must define its response class.
+     * @return object The response object based off of questionnaire_response_base.
+     */
     protected function responseclass() {
         return '\\mod_questionnaire\\responsetype\\rank';
     }
 
+    /**
+     * Short name for this question type - no spaces, etc..
+     * @return string
+     */
     public function helpname() {
         return 'ratescale';
     }
@@ -73,7 +83,7 @@ class rate extends question {
 
     /**
      * Return true if rate scale type is set to "Normal".
-     * @param $scaletype
+     * @param int $scaletype
      * @return bool
      */
     public static function type_is_normal_rate_scale($scaletype) {
@@ -82,7 +92,7 @@ class rate extends question {
 
     /**
      * Return true if rate scale type is set to "N/A column".
-     * @param $scaletype
+     * @param int $scaletype
      * @return bool
      */
     public static function type_is_na_column($scaletype) {
@@ -91,7 +101,7 @@ class rate extends question {
 
     /**
      * Return true if rate scale type is set to "No duplicate choices".
-     * @param $scaletype
+     * @param int $scaletype
      * @return bool
      */
     public static function type_is_no_duplicate_choices($scaletype) {
@@ -100,7 +110,7 @@ class rate extends question {
 
     /**
      * Return true if rate scale type is set to "Osgood".
-     * @param $scaletype
+     * @param int $scaletype
      * @return bool
      */
     public static function type_is_osgood_rate_scale($scaletype) {
@@ -177,8 +187,8 @@ class rate extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param \mod_questionnaire\responsetype\response\response $data
-     * @param string $descendantdata
+     * @param \mod_questionnaire\responsetype\response\response $response
+     * @param string $descendantsdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      *
@@ -399,7 +409,7 @@ class rate extends question {
     /**
      * Return the context tags for the rate response template.
      * @param \mod_questionnaire\responsetype\response\response $response
-     * @return object The rate question response context tags.
+     * @return \stdClass The rate question response context tags.
      * @throws \coding_exception
      */
     protected function response_survey_display($response) {
@@ -540,7 +550,7 @@ class rate extends question {
     /**
      * Check question's form data for complete response.
      *
-     * @param object $responsedata The data entered into the response.
+     * @param \stdClass $responsedata The data entered into the response.
      * @return boolean
      *
      */
@@ -592,7 +602,7 @@ class rate extends question {
     /**
      * Check question's form data for valid response. Override this is type has specific format requirements.
      *
-     * @param object $responsedata The data entered into the response.
+     * @param \stdClass $responsedata The data entered into the response.
      * @return boolean
      */
     public function response_valid($responsedata) {
@@ -653,10 +663,20 @@ class rate extends question {
         }
     }
 
+    /**
+     * Return the length form element.
+     * @param \MoodleQuickForm $mform
+     * @param string $helptext
+     */
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         return parent::form_length($mform, 'numberscaleitems');
     }
 
+    /**
+     * Return the precision form element.
+     * @param \MoodleQuickForm $mform
+     * @param string $helptext
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
         $precoptions = array("0" => get_string('normal', 'questionnaire'),
                              "1" => get_string('notapplicablecolumn', 'questionnaire'),
@@ -691,7 +711,8 @@ class rate extends question {
     }
 
     /**
-     * @param $formdata
+     * Any preprocessing of general data.
+     * @param \stdClass $formdata
      * @return bool
      */
     protected function form_preprocess_data($formdata) {
@@ -714,7 +735,9 @@ class rate extends question {
     }
 
     /**
-     * Preprocess choice data.
+     * Override this function for question specific choice preprocessing.
+     * @param \stdClass $formdata
+     * @return false
      */
     protected function form_preprocess_choicedata($formdata) {
         if (empty($formdata->allchoices)) {
@@ -757,9 +780,9 @@ class rate extends question {
     }
 
     /**
-     * @param $choicerecord
+     * Update the choice with the choicerecord.
+     * @param \stdClass $choicerecord
      * @return bool
-     * @throws \dml_exception
      */
     public function update_choice($choicerecord) {
         if ($nameddegree = \mod_questionnaire\question\choice::content_is_named_degree_choice($choicerecord->content)) {
@@ -771,9 +794,9 @@ class rate extends question {
     }
 
     /**
-     * @param $choicerecord
+     * Add a new choice to the database.
+     * @param \stdClass $choicerecord
      * @return bool
-     * @throws \dml_exception
      */
     public function add_choice($choicerecord) {
         if ($nameddegree = \mod_questionnaire\question\choice::content_is_named_degree_choice($choicerecord->content)) {
@@ -794,11 +817,10 @@ class rate extends question {
     }
 
     /**
-     * @param $qnum
-     * @param $fieldkey
+     * Override and return false if not supporting mobile app.
+     * @param int $qnum
      * @param bool $autonum
      * @return \stdClass
-     * @throws \coding_exception
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
@@ -812,8 +834,8 @@ class rate extends question {
     }
 
     /**
-     * @return mixed
-     * @throws \coding_exception
+     * Override and return false if not supporting mobile app.
+     * @return array
      */
     public function mobile_question_choices_display() {
         $choices = [];
@@ -908,8 +930,8 @@ class rate extends question {
     }
 
     /**
-     * @return mixed
-     * @throws \coding_exception
+     * Display the rates question for mobile.
+     * @return array
      */
     public function mobile_question_rates_display() {
         $rates = [];
@@ -926,7 +948,8 @@ class rate extends question {
     }
 
     /**
-     * @param $response
+     * Return the mobile response data.
+     * @param response $response
      * @return array
      */
     public function get_mobile_response_data($response) {
@@ -971,8 +994,7 @@ class rate extends question {
      * Helper function used to move existing named degree choices for the specified question from the "quest_choice" table to the
      * "question" table.
      * @param int $qid
-     * @param \stdClass | null $questionrec
-     * @throws \dml_exception
+     * @param null|\stdClass $questionrec
      */
     public static function move_nameddegree_choices(int $qid = 0, \stdClass $questionrec = null) {
         global $DB;
@@ -1023,6 +1045,7 @@ class rate extends question {
      * Helper function to move named degree choices for all questions, optionally for a specific surveyid.
      * This should only be called for an upgrade from before '2018110103', or from a restore operation for a version of a
      * questionnaire before '2018110103'.
+     * @param int|null $surveyid
      */
     public static function move_all_nameddegree_choices(int $surveyid = null) {
         global $DB;

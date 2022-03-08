@@ -14,16 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * This file contains the parent class for questionnaire question types.
- *
- * @author Mike Churchward
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
- */
-
 namespace mod_questionnaire\responsetype;
-defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\db\bulk_sql_config;
 
@@ -31,12 +22,16 @@ use mod_questionnaire\db\bulk_sql_config;
  * Class for date response types.
  *
  * @author Mike Churchward
- * @package responsetypes
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package mod_questionnaire
  */
-
 class date extends responsetype {
     /**
-     * @return string
+     * Provide the necessary response data table name. Should probably always be used with late static binding 'static::' form
+     * rather than 'self::' form to allow for class extending.
+     *
+     * @return string response table name.
      */
     public static function response_table() {
         return 'questionnaire_response_date';
@@ -77,10 +72,10 @@ class date extends responsetype {
     }
 
     /**
-     * @param \mod_questionnaire\responsetype\response\response\ $responsedata
-     * @return bool|int
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * Insert a provided response to the question.
+     *
+     * @param object $responsedata All of the responsedata as an object.
+     * @return int|bool - on error the subtype should call set_error and return false.
      */
     public function insert_response($responsedata) {
         global $DB;
@@ -108,11 +103,11 @@ class date extends responsetype {
     }
 
     /**
-     * @param bool $rids
-     * @param bool $anonymous
-     * @return array
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * Provide the result information for the specified result records.
+     *
+     * @param int|array $rids - A single response id, or array.
+     * @param boolean $anonymous - Whether or not responses are anonymous.
+     * @return array - Array of data records.
      */
     public function get_results($rids=false, $anonymous=false) {
         global $DB;
@@ -146,11 +141,12 @@ class date extends responsetype {
     }
 
     /**
-     * @param bool $rids
-     * @param string $sort
-     * @param bool $anonymous
-     * @return string
-     * @throws \coding_exception
+     * Provide the result information for the specified result records.
+     *
+     * @param int|array $rids - A single response id, or array.
+     * @param string $sort - Optional display sort.
+     * @param boolean $anonymous - Whether or not responses are anonymous.
+     * @return string - Display output.
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
         $numresps = count($rids);
@@ -174,15 +170,14 @@ class date extends responsetype {
     }
 
     /**
-     * Override the results tags function for templates for questions with dates.
+     * Gets the results tags for templates for questions with defined choices (single, multiple, boolean).
      *
-     * @param $weights
-     * @param $participants Number of questionnaire participants.
-     * @param $respondents Number of question respondents.
-     * @param $showtotals
+     * @param arrays $weights
+     * @param int $participants Number of questionnaire participants.
+     * @param int $respondents Number of question respondents.
+     * @param int $showtotals
      * @param string $sort
      * @return \stdClass
-     * @throws \coding_exception
      */
     public function get_results_tags($weights, $participants, $respondents, $showtotals = 1, $sort = '') {
         $dateformat = get_string('strfdate', 'questionnaire');

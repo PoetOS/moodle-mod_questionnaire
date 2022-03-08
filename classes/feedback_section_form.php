@@ -14,6 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+
 /**
  * Print the form to add or edit a questionnaire-instance
  *
@@ -22,18 +29,14 @@
  * @author Joseph Rezeau (based on Quiz by Tim Hunt)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-
-namespace mod_questionnaire;
-
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
-
 class feedback_section_form extends \moodleform {
 
+    /** @var mixed $_feedbacks */
     protected $_feedbacks;
 
+    /**
+     * Form definition.
+     */
     public function definition() {
         global $questionnaire;
 
@@ -175,6 +178,10 @@ class feedback_section_form extends \moodleform {
         $mform->closeHeaderBefore('buttonar');
     }
 
+    /**
+     * Form preprocessing.
+     * @param array $toform
+     */
     public function data_preprocessing(&$toform) {
         if (count($this->_feedbacks)) {
             $key = 0;
@@ -200,6 +207,13 @@ class feedback_section_form extends \moodleform {
             }
         }
     }
+
+    /**
+     * Form validation.
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -250,7 +264,7 @@ class feedback_section_form extends \moodleform {
      * form definition (new entry form); this function is used to load in data where values
      * already exist and data is being edited (edit entry form).
      *
-     * @param mixed $default_values object or array of default values
+     * @param array $defaultvalues
      */
     public function set_data($defaultvalues) {
         if (is_object($defaultvalues)) {

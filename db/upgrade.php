@@ -15,14 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * The file containing the upgrade functions.
  * @package mod_questionnaire
- * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * The module upgrade function.
+ * @param int $oldversion
+ * @return bool
+ */
 function xmldb_questionnaire_upgrade($oldversion=0) {
     global $CFG, $DB;
 
@@ -982,7 +988,10 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     return $result;
 }
 
-// Supporting functions used once.
+/**
+ * Supporting functions used once.
+ * @return bool
+ */
 function questionnaire_upgrade_2007120101() {
     global $DB;
 

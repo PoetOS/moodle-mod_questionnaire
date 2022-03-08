@@ -17,9 +17,10 @@
 /**
  * Setting page for questionaire module
  *
- * @package    mod
- * @subpackage questionnaire
+ * @package    mod_questionnaire
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2016 onward Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
  */
 
 defined('MOODLE_INTERNAL') || die;

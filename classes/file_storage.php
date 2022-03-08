@@ -14,17 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire;
+
 /**
+ * Defines the file stoeage class for questionnaire.
  * @package mod_questionnaire
  * @copyright  2020 onwards Mike Churchward (mike.churchward@poetopensource.org)
  * @author Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace mod_questionnaire;
-
-defined('MOODLE_INTERNAL') || die();
-
 class file_storage extends \file_storage {
 
     /**

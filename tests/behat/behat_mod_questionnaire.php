@@ -115,7 +115,7 @@ class behat_mod_questionnaire extends behat_base {
      *
      * @Given /^I click the "([^"]*)" radio button$/
      *
-     * @param string $radiogroupname The "id" attribute of the radio button.
+     * @param int $radioid
      */
     public function i_click_the_radio_button($radioid) {
         $session = $this->getSession();
@@ -357,7 +357,7 @@ class behat_mod_questionnaire extends behat_base {
      * @param array $data Array of data record row arrays. The first row contains the field names.
      * @param string $datatable The name of the data table to insert records into.
      * @param string $mapvar The name of the object variable to store oldid / newid mappings (optional).
-     * @param string $replvars Array of key/value pairs where key is the mapvar and value is the record field
+     * @param array|null $replvars Array of key/value pairs where key is the mapvar and value is the record field
      *                         to replace with mapped values.
      * @return null
      */

@@ -14,16 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\output;
+
+use mod_questionnaire\responsetype\response\response;
+
 /**
  * Mobile output class for mod_questionnaire.
  *
- * @copyright 2018 Igor Sazonov <sovletig@gmail.com>
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_questionnaire\output;
-
-defined('MOODLE_INTERNAL') || die();
-
 class mobile {
 
     /**
@@ -202,8 +204,10 @@ class mobile {
     }
 
     /**
-     * @param $questionnaire
-     * @param $data
+     * Add the submissions.
+     * @param \questionnaire $questionnaire
+     * @param array $data
+     * @param int $userid
      */
     protected static function add_index_data($questionnaire, &$data, $userid) {
         // List any existing submissions, if user is allowed to review them.
@@ -226,9 +230,10 @@ class mobile {
     }
 
     /**
-     * @param $questionnaire
-     * @param $pagenum
-     * @param null $response
+     * Ass the questions for the page.
+     * @param \questionnaire $questionnaire
+     * @param int $pagenum
+     * @param response $response
      * @return array
      */
     protected static function add_pagequestion_data($questionnaire, $pagenum, $response=null) {

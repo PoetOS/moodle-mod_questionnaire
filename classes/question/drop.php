@@ -14,25 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\question;
+use \html_writer;
+use mod_questionnaire\question\choice;
+use mod_questionnaire\responsetype\response\response;
+
 /**
  * This file contains the parent class for drop question types.
  *
  * @author Mike Churchward
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\question;
-defined('MOODLE_INTERNAL') || die();
-use \html_writer;
-use mod_questionnaire\question\choice;
-
 class drop extends question {
 
+    /**
+     * Each question type must define its response class.
+     * @return string The response object based off of questionnaire_response_base.
+     */
     protected function responseclass() {
         return '\\mod_questionnaire\\responsetype\\single';
     }
 
+    /**
+     * Short name for this question type - no spaces, etc..
+     * @return string
+     */
     public function helpname() {
         return 'dropdown';
     }
@@ -46,7 +54,7 @@ class drop extends question {
 
     /**
      * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
-     * @return boolean | string
+     * @return string
      */
     public function question_template() {
         return 'mod_questionnaire/question_drop';
@@ -54,7 +62,7 @@ class drop extends question {
 
     /**
      * Override and return a form template if provided. Output of response_survey_display is iterpreted based on this.
-     * @return boolean | string
+     * @return string
      */
     public function response_template() {
         return 'mod_questionnaire/response_drop';
@@ -62,7 +70,7 @@ class drop extends question {
 
     /**
      * Override this and return true if the question type allows dependent questions.
-     * @return boolean
+     * @return bool
      */
     public function allows_dependents() {
         return true;
@@ -70,6 +78,7 @@ class drop extends question {
 
     /**
      * True if question type supports feedback options. False by default.
+     * @return bool
      */
     public function supports_feedback() {
         return true;
@@ -115,8 +124,7 @@ class drop extends question {
     /**
      * Return the context tags for the drop response template.
      * @param \mod_questionnaire\responsetype\response\response $response
-     * @return object The check question response context tags.
-     * @throws \coding_exception
+     * @return \stdClass The check question response context tags.
      */
     protected function response_survey_display($response) {
         static $uniquetag = 0;  // To make sure all radios have unique names.
@@ -147,17 +155,26 @@ class drop extends question {
         return $resptags;
     }
 
+    /**
+     * Return the length form element.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
         return question::form_length_hidden($mform);
     }
 
+    /**
+     * Return the precision form element.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         return question::form_precise_hidden($mform);
     }
 
     /**
      * True if question provides mobile support.
-     *
      * @return bool
      */
     public function supports_mobile() {
@@ -165,11 +182,10 @@ class drop extends question {
     }
 
     /**
-     * @param $qnum
-     * @param $fieldkey
+     * Return the mobile question display.
+     * @param int $qnum
      * @param bool $autonum
      * @return \stdClass
-     * @throws \coding_exception
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
@@ -178,7 +194,8 @@ class drop extends question {
     }
 
     /**
-     * @param $response
+     * Return the mobile response data.
+     * @param response $response
      * @return array
      */
     public function get_mobile_response_data($response) {

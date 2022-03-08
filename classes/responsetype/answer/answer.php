@@ -14,18 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\responsetype\answer;
+
 /**
  * This defines a structured class to hold question answers.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package response
+ * @package mod_questionnaire
  * @copyright 2019, onwards Poet
  */
-
-namespace mod_questionnaire\responsetype\answer;
-defined('MOODLE_INTERNAL') || die();
-
 class answer {
 
     // Class properties.
@@ -64,7 +62,7 @@ class answer {
     /**
      * Create and return an answer object from data.
      *
-     * @param \stdClass | array $answerdata The data to load.
+     * @param \stdClass|array $answerdata The data to load.
      * @return answer
      */
     public static function create_from_data($answerdata) {
