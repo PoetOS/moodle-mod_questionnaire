@@ -56,7 +56,7 @@ class questionnaire {
      * The class constructor
      *
      */
-    public function __construct($id = 0, $questionnaire = null, &$course, &$cm, $addquestions = true) {
+    public function __construct(&$course, &$cm, $id = 0, $questionnaire = null, $addquestions = true) {
         global $DB;
 
         if ($id) {
@@ -270,7 +270,7 @@ class questionnaire {
             // Handle the main questionnaire completion page.
             $quser = $USER->id;
 
-            $msg = $this->print_survey($USER->id, $quser);
+            $msg = $this->print_survey($quser, $USER->id);
 
             // If Questionnaire was submitted with all required fields completed ($msg is empty),
             // then record the submittal.
@@ -1070,7 +1070,7 @@ class questionnaire {
 
     // Display Methods.
 
-    public function print_survey($userid=false, $quser) {
+    public function print_survey($quser, $userid=false) {
         global $SESSION, $CFG;
 
         if (!($formdata = data_submitted()) || !confirm_sesskey()) {
@@ -1169,7 +1169,7 @@ class questionnaire {
         $this->page->add_to_page('formstart', $this->renderer->complete_formstart($action, ['referer' => $formdatareferer,
             'a' => $this->id, 'sid' => $this->survey->id, 'rid' => $formdatarid, 'sec' => $formdata->sec, 'sesskey' => sesskey()]));
         if (isset($this->questions) && $numsections) { // Sanity check.
-            $this->survey_render($formdata->sec, $msg, $formdata);
+            $this->survey_render($formdata, $formdata->sec, $msg);
             $controlbuttons = [];
             if ($formdata->sec > 1) {
                 $controlbuttons['prev'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
@@ -1201,13 +1201,13 @@ class questionnaire {
     }
 
     /**
+     * @param $formdata
      * @param int $section
      * @param string $message
-     * @param $formdata
      * @return bool|void
      * @throws coding_exception
      */
-    private function survey_render($section = 1, $message = '', &$formdata) {
+    private function survey_render(&$formdata, $section = 1, $message = '') {
 
         $this->usehtmleditor = null;
 
@@ -1257,7 +1257,7 @@ class questionnaire {
             $this->page->add_to_page('questions',
                 $this->renderer->question_output($this->questions[$questionid],
                     (isset($this->responses[$formdata->rid]) ? $this->responses[$formdata->rid] : []),
-                    [], $i, $this->usehtmleditor));
+                    $i, $this->usehtmleditor, []));
         }
 
         $this->print_survey_end($section, $numsections);
@@ -1428,7 +1428,7 @@ class questionnaire {
     }
 
     // Blankquestionnaire : if we are printing a blank questionnaire.
-    public function survey_print_render($message = '', $referer='', $courseid, $rid=0, $blankquestionnaire=false) {
+    public function survey_print_render($courseid, $message = '', $referer='', $rid=0, $blankquestionnaire=false) {
         global $DB, $CFG;
 
         if (! $course = $DB->get_record("course", array("id" => $courseid))) {
@@ -1521,8 +1521,8 @@ class questionnaire {
                 } else {
                     $dependants = [];
                 }
-                $output .= $this->renderer->question_output($this->questions[$questionid], $this->responses[0] ?? [], $dependants,
-                    $i++, null);
+                $output .= $this->renderer->question_output($this->questions[$questionid], $this->responses[0] ?? [],
+                    $i++, null, $dependants);
                 $this->page->add_to_page('questions', $output);
                 $output = '';
             }
@@ -2212,7 +2212,7 @@ class questionnaire {
     private function response_send_email($rid, $email) {
         global $CFG;
 
-        $submission = $this->generate_csv($rid, '', null, 1, 0);
+        $submission = $this->generate_csv(0, $rid, '', null, 1);
         if (!empty($submission)) {
             $answers = $this->get_formatted_answers_for_emails($submission);
         } else {
@@ -3044,7 +3044,7 @@ class questionnaire {
     /* {{{ proto array survey_generate_csv(int surveyid)
     Exports the results of a survey to an array.
     */
-    public function generate_csv($rid='', $userid='', $choicecodes=1, $choicetext=0, $currentgroupid, $showincompletes=0,
+    public function generate_csv($currentgroupid, $rid='', $userid='', $choicecodes=1, $choicetext=0, $showincompletes=0,
                                  $rankaverages=0) {
         global $DB;
 
@@ -3652,8 +3652,8 @@ class questionnaire {
             $usergraph = get_config('questionnaire', 'usergraph');
             if ($usergraph && $this->survey->chart_type) {
                 $this->page->add_to_page('feedbackcharts',
-                    draw_chart ($feedbacktype = 'global', $this->survey->chart_type, $labels,
-                        $score, $allscore, $sectionlabel, $groupname, $allresponses));
+                    draw_chart ($feedbacktype = 'global', $labels, $groupname,
+                        $allresponses, $this->survey->chart_type, $score, $allscore, $sectionlabel));
             }
             // Display class or group score. Pending chart library decision to display?
             // Find out if this feedback sectionlabel has a pipe separator.
@@ -3826,8 +3826,8 @@ class questionnaire {
 
         if ($usergraph && $this->survey->chart_type) {
             $this->page->add_to_page('feedbackcharts',
-                draw_chart($feedbacktype = 'sections', $this->survey->chart_type, array_values($chartlabels),
-                    array_values($scorepercent), array_values($allscorepercent), $sectionlabel, $groupname, $allresponses));
+                draw_chart($feedbacktype = 'sections', array_values($chartlabels), $groupname,
+                    $allresponses, $this->survey->chart_type, array_values($scorepercent), array_values($allscorepercent), $sectionlabel));
         }
         if ($this->survey->feedbackscores) {
             $this->page->add_to_page('feedbackscores', html_writer::table($table));

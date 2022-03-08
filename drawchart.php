@@ -23,8 +23,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function draw_chart($feedbacktype, $charttype=null, $labels,
-                    $score=null, $allscore=null, $globallabel=null, $groupname, $allresponses) {
+function draw_chart($feedbacktype, $labels, $groupname,
+                    $allresponses, $charttype=null, $score=null, $allscore=null, $globallabel=null) {
     global $PAGE;
 
     $pageoutput = '';

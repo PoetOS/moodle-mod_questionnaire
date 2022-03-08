@@ -70,17 +70,17 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
             list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-            $questionnaireinst = new questionnaire(0, $questionnaire, $course, $cm);
+            $questionnaireinst = new questionnaire($course, $cm, 0, $questionnaire);
 
             // Test for only complete responses.
-            $newoutput = $this->get_csv_text($questionnaireinst->generate_csv('', '', 0, 0, 0, 0));
+            $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 0));
             $this->assertEquals(count($newoutput), count($this->expected_complete_output()));
             foreach ($newoutput as $key => $output) {
                 $this->assertEquals($this->expected_complete_output()[$key], $output);
             }
 
             // Test for all responses.
-            $newoutput = $this->get_csv_text($questionnaireinst->generate_csv('', '', 0, 0, 0, 1));
+            $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 1));
             $this->assertEquals(count($newoutput), count($this->expected_incomplete_output()));
             foreach ($newoutput as $key => $output) {
                 $this->assertEquals($this->expected_incomplete_output()[$key], $output);

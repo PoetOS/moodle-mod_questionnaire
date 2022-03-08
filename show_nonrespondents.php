@@ -78,7 +78,7 @@ require_course_login($course, true, $cm);
 $url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id' => $cm->id));
 $PAGE->set_url($url);
 
-$questionnaire = new questionnaire($sid, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, $sid, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
