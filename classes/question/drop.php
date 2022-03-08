@@ -25,7 +25,7 @@
 namespace mod_questionnaire\question;
 defined('MOODLE_INTERNAL') || die();
 use \html_writer;
-use mod_questionnaire\question\choice\choice;
+use mod_questionnaire\question\choice;
 
 class drop extends question {
 

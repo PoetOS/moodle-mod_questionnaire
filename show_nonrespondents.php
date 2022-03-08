@@ -52,25 +52,25 @@ $SESSION->questionnaire->current_tab = 'nonrespondents';
 
 if ($id) {
     if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-        print_error('invalidcoursemodule');
+        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 
     if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-        print_error('coursemisconf');
+        throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
     }
 
     if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 }
 
 if (!$context = context_module::instance($cm->id)) {
-        print_error('badcontext');
+    throw new \moodle_exception('badcontext', 'mod_questionnaire');
 }
 
 // We need the coursecontext to allow sending of mass mails.
 if (!$coursecontext = context_course::instance($course->id)) {
-        print_error('badcontext');
+    throw new \moodle_exception('badcontext', 'mod_questionnaire');
 }
 
 require_course_login($course, true, $cm);
@@ -89,7 +89,7 @@ $fullname = $questionnaire->respondenttype == 'fullname';
 $sid = $questionnaire->sid;
 
 if (($formdata = data_submitted()) && !confirm_sesskey()) {
-    print_error('invalidsesskey');
+    throw new \moodle_exception('invalidsesskey', 'mod_questionnaire');
 }
 
 require_capability('mod/questionnaire:viewsingleresponse', $context);
@@ -203,7 +203,11 @@ if ($fullname) {
     $tablecolumns = array('userpic', 'fullname');
 
     // Extra columns copied from participants view.
-    $extrafields = get_extra_user_fields($context);
+    if (class_exists('\core_user\fields')) {
+        $extrafields = \core_user\fields::get_identity_fields(null, false);
+    } else {
+        $extrafields = get_extra_user_fields($context);
+    }
     $tableheaders = array(get_string('userpic'), get_string('fullnameuser'));
 
     if (in_array('email', $extrafields) || has_capability('moodle/course:viewhiddenuserfields', $context)) {

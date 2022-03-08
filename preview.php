@@ -27,22 +27,22 @@ $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if ($id) {
     if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-        print_error('invalidcoursemodule');
+        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 
     if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-        print_error('coursemisconf');
+        throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
     }
 
     if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 } else {
     if (! $survey = $DB->get_record("questionnaire_survey", array("id" => $sid))) {
-        print_error('surveynotexists', 'questionnaire');
+        throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
     }
     if (! $course = $DB->get_record("course", ["id" => $survey->courseid])) {
-        print_error('coursemisconf');
+        throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
     }
     // Dummy questionnaire object.
     $questionnaire = new stdClass();
@@ -90,7 +90,7 @@ $canpreview = (!isset($questionnaire->capabilities) &&
               (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
 if (!$canpreview && !$popup) {
     // Should never happen, unless called directly by a snoop...
-    print_error('nopermissions', 'questionnaire', $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id);
+    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
 if (!isset($SESSION->questionnaire)) {

@@ -108,7 +108,7 @@ class essay extends text {
     protected function response_survey_display($response) {
         if (isset($response->answers[$this->id])) {
             $answer = reset($response->answers[$this->id]);
-            $answer = $answer->value;
+            $answer = format_text($answer->value, FORMAT_HTML);
         } else {
             $answer = '&nbsp;';
         }

@@ -23,7 +23,6 @@
  */
 
 namespace mod_questionnaire\question;
-use mod_questionnaire\question\choice\choice;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -84,7 +83,7 @@ class radio extends question {
      *
      */
     protected function question_survey_display($response, $dependants=[], $blankquestionnaire=false) {
-        // Radio buttons
+        // Radio buttons.
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $otherempty = false;
@@ -135,7 +134,7 @@ class radio extends question {
                 $radio->oname = 'q'.$this->id.choice::id_other_choice_name($id);
                 $radio->oid = $htmlid.'-other';
                 if (isset($odata)) {
-                    $radio->ovalue = stripslashes($odata);
+                    $radio->ovalue = format_string(stripslashes($odata));
                 }
                 $radio->olabel = 'Text for '.format_text($othertext, FORMAT_HTML, ['noclean' => true]);
             }

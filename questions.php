@@ -18,24 +18,24 @@ require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->dirroot.'/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
 
-$id     = required_param('id', PARAM_INT);                 // Course module ID
+$id     = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
 $qid    = optional_param('qid', 0, PARAM_INT);             // Question id.
 $moveq  = optional_param('moveq', 0, PARAM_INT);           // Question id to move.
-$delq   = optional_param('delq', 0, PARAM_INT);             // Question id to delete
+$delq   = optional_param('delq', 0, PARAM_INT);             // Question id to delete.
 $qtype  = optional_param('type_id', 0, PARAM_INT);         // Question type.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-    print_error('invalidcoursemodule');
+    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
 if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-    print_error('coursemisconf');
+    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
 require_course_login($course, true, $cm);
@@ -57,7 +57,7 @@ $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
 
 if (!$questionnaire->capabilities->editquestions) {
-    print_error('nopermissions', 'error', '', 'mod:questionnaire:edit');
+    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
 $questionnairehasdependencies = $questionnaire->has_dependencies();

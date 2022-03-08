@@ -27,13 +27,13 @@ $action = optional_param('action', 'summary', PARAM_ALPHA);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
-    print_error('incorrectquestionnaire', 'questionnaire');
+    throw new \moodle_exception('incorrectquestionnaire', 'mod_questionnaire');
 }
 if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
-    print_error('coursemisconf');
+    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-    print_error('invalidcoursemodule');
+    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
 require_course_login($course, true, $cm);
@@ -42,7 +42,7 @@ $questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups',
 // Should never happen, unless called directly by a snoop...
 if ( !has_capability('mod/questionnaire:readownresponses', $context)
     || $userid != $USER->id) {
-    print_error('Permission denied');
+    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance' => $instance));
 if (isset($userid)) {
@@ -82,7 +82,7 @@ $SESSION->questionnaire->current_tab = 'myreport';
 switch ($action) {
     case 'summary':
         if (empty($questionnaire->survey)) {
-            print_error('surveynotexists', 'questionnaire');
+            throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'mysummary';
         $resps = $questionnaire->get_responses($userid);
@@ -110,7 +110,7 @@ switch ($action) {
 
     case 'vall':
         if (empty($questionnaire->survey)) {
-            print_error('surveynotexists', 'questionnaire');
+            throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'myvall';
         $questionnaire->add_user_responses($userid);
@@ -131,7 +131,7 @@ switch ($action) {
 
     case 'vresp':
         if (empty($questionnaire->survey)) {
-            print_error('surveynotexists', 'questionnaire');
+            throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'mybyresponse';
         $usergraph = get_config('questionnaire', 'usergraph');

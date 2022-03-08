@@ -99,7 +99,7 @@ function questionnaire_add_instance($questionnaire) {
             $sdata->feedbacknotes = '';
             $sdata->courseid = $course->id;
             if (!($sid = $qobject->survey_update($sdata))) {
-                print_error('couldnotcreatenewsurvey', 'questionnaire');
+                throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
             }
         } else {
             $copyid = explode('-', $questionnaire->create);
@@ -543,7 +543,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     $course = $PAGE->course;
 
     if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 
     $courseid = $course->id;

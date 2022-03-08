@@ -33,7 +33,7 @@
                 "max": 5,
                 "minstr": "zero",
                 "maxstr": "five",
-                "na": 1,
+                "na": 1
             },
             {
                 "fieldkey": 986,
@@ -60,7 +60,7 @@
 {{=<% %>=}}
 <ion-list>
     <ion-grid>
-        <ion-row justify-content-center align-items-center text-center>
+        <ion-row class="ion-align-items-center ion-justify-content-center ion-text-center">
             <%#choices.0%>
             <%#leftlabel%>
             <ion-col></ion-col>
@@ -84,33 +84,37 @@
         </ion-row>
         <%#choices%>
         <ion-row><ion-col>
-            <ion-list-header style="margin-bottom: 0; border-top-style: none;">
-                <core-format-text text="<%content%>"></core-format-text>
-                <ion-badge item-end>{{ CONTENT_OTHERDATA.<%fieldkey%> }}</ion-badge>
-            </ion-list-header>
+            <ion-item style="margin-bottom: 0; border-top-style: none;" class="ion-text-wrap" lines="none">
+                <ion-label>
+                    <core-format-text text="<%content%>"></core-format-text>
+                </ion-label>
+                <ion-badge slot="end">{{ CONTENT_OTHERDATA.<%fieldkey%> }}</ion-badge>
+            </ion-item>
         </ion-col></ion-row>
-        <ion-row radio-group [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>" justify-content-center align-items-center text-center>
-            <%#leftlabel%>
-            <ion-col>
-                <%leftlabel%>
-            </ion-col>
-            <%/leftlabel%>
-            <%#rates%>
-            <ion-col>
-                <ion-radio value="<%label%>" <%#completed%> disabled="true"<%/completed%>></ion-radio>
-            </ion-col>
-            <%/rates%>
-            <%#hasnacolumn%>
-            <ion-col>
-                <ion-radio value="<%value%>" <%#completed%> disabled="true"<%/completed%>></ion-radio>
-            </ion-col>
-            <%/hasnacolumn%>
-            <%#rightlabel%>
-            <ion-col>
-                <%rightlabel%>
-            </ion-col>
-            <%/rightlabel%>
-        </ion-row>
+        <ion-radio-group [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>">
+            <ion-row class="ion-align-items-center ion-justify-content-center ion-text-center">
+                <%#leftlabel%>
+                <ion-col>
+                    <%leftlabel%>
+                </ion-col>
+                <%/leftlabel%>
+                <%#rates%>
+                <ion-col>
+                    <ion-radio value="<%label%>" <%#completed%> disabled="true"<%/completed%>></ion-radio>
+                </ion-col>
+                <%/rates%>
+                <%#hasnacolumn%>
+                <ion-col>
+                    <ion-radio value="<%value%>" <%#completed%> disabled="true"<%/completed%>></ion-radio>
+                </ion-col>
+                <%/hasnacolumn%>
+                <%#rightlabel%>
+                <ion-col>
+                    <%rightlabel%>
+                </ion-col>
+                <%/rightlabel%>
+            </ion-row>
+        </ion-radio-group>
         <%/choices%>
     </ion-grid>
 </ion-list>
