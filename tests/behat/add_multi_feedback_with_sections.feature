@@ -23,10 +23,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 | 1 | 1 |
     And the "multilang" filter is "on"
     And the "multilang" filter applies to "content and headings"
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Test questionnaire"
-    And I navigate to "Questions" in current page administration
+    And I am on the "Test questionnaire" "mod_questionnaire > questions" page logged in as "teacher1"
     Then I should see "Add questions"
     And I add a "Dropdown Box" question and I fill the form with:
       | Question Name | Q1 |

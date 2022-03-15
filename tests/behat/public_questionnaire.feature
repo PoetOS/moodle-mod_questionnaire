@@ -7,8 +7,6 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
-      | teacher2 | Teacher | 2 | teacher2@example.com |
-      | teacher3 | Teacher | 3 | teacher3@example.com |
       | student1 | Student | 1 | student1@example.com |
     And the following "courses" exist:
       | fullname | shortname | category |
@@ -18,14 +16,16 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     And the following "course enrolments" exist:
       | user | course | role |
       | teacher1 | C1 | manager |
-      | teacher2 | C2 | editingteacher |
+      | teacher1 | C2 | manager |
       | student1 | C2 | student |
-      | teacher3 | C3 | editingteacher |
+      | teacher1 | C3 | manager |
       | student1 | C3 | student |
     And the following "activities" exist:
       | activity | name | description | course | idnumber |
       | questionnaire | Public questionnaire | Anonymous questionnaire description | C1 | questionnaire0 |
 
+  @javascript
+  Scenario: Public questionnaire instances have responses visible in their respective courses
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Public questionnaire"
@@ -37,18 +37,14 @@ Feature: Questionnaires can use an existing public survey to gather responses in
       | Question Name | Q1 |
       | Yes | y |
       | Question Text | Enter a number |
-    And I log out
 
-    And I log in as "teacher2"
     And I am on "Course 2" course homepage with editing mode on
     And I add a "Questionnaire" to section "1" and I fill the form with:
       | Name | Questionnaire instance 1 |
       | Description | Description |
       | Use public | Public questionnaire [Course 1] |
     Then I should see "Questionnaire instance 1"
-    And I log out
 
-    And I log in as "teacher3"
     And I am on "Course 3" course homepage with editing mode on
     And I add a "Questionnaire" to section "1" and I fill the form with:
       | Name | Questionnaire instance 2 |
@@ -57,8 +53,6 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     Then I should see "Questionnaire instance 2"
     And I log out
 
-  @javascript
-  Scenario: Student completes public questionnaire instances in two different courses and sees each response in the proper course
     And I log in as "student1"
     And I am on "Course 2" course homepage
     And I follow "Questionnaire instance 1"

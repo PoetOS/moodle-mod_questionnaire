@@ -23,12 +23,11 @@ Feature: Review responses
     And "Test questionnaire" has questions and responses
     And I log in as "admin"
     And I navigate to "Location > Location settings" in site administration
-    And I set the field "id_s__timezone" to "Europe/London"
-    And I set the field "id_s__forcetimezone" to "Europe/London"
+    And I set the field "Default timezone" to "Europe/London"
+    And I set the field "Force timezone" to "Europe/London"
     And I press "Save changes"
     And I navigate to "Language > Language settings" in site administration
-    And I set the field "id_s__autolang" to "0"
-#    And I set the field "id_s__lang" to "en‎"
+    And I set the field "Language autodetect" to "0"
     And I log out
     And I log in as "teacher1"
     And I am on "Course 1" course homepage

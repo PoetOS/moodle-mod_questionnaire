@@ -44,6 +44,61 @@ use Behat\Behat\Context\Step\Given as Given,
 class behat_mod_questionnaire extends behat_base {
 
     /**
+     * Convert page names to URLs for steps like 'When I am on the "[page name]" page'.
+     *
+     * Recognised page names are:
+     * | None so far!      |                                                              |
+     *
+     * @param string $page name of the page, with the component name removed e.g. 'Admin notification'.
+     * @return moodle_url the corresponding URL.
+     * @throws Exception with a meaningful error message if the specified page cannot be found.
+     */
+    protected function resolve_page_url(string $page): moodle_url {
+        switch (strtolower($page)) {
+            default:
+                throw new Exception('Unrecognised quiz page type "' . $page . '."');
+        }
+    }
+
+    /**
+     * Convert page names to URLs for steps like 'When I am on the "[identifier]" "[page type]" page'.
+     *
+     * Recognised page names are:
+     * | pagetype          | name meaning                                | description                                           |
+     * | view              | Questionnaire name                          | The questionnaire info page (view.php)                |
+     * | preview           | Questionnaire name                          | The questionnaire preview page (preview.php)          |
+     * | questions         | Questionnaire name                          | The questionnaire questions page (questions.php)      |
+     * | advsettings       | Questionnaire name                          | The advanced settings page (questions.php)            |
+     *
+     * @param string $type identifies which type of page this is, e.g. 'preview'.
+     * @param string $identifier identifies the particular page, e.g. 'Test questionnaire > preview > Attempt 1'.
+     * @return moodle_url the corresponding URL.
+     * @throws Exception with a meaningful error message if the specified page cannot be found.
+     */
+    protected function resolve_page_instance_url(string $type, string $identifier): moodle_url {
+        switch (strtolower($type)) {
+            case 'view':
+                return new moodle_url('/mod/questionnaire/view.php',
+                    ['id' => $this->get_cm_by_questionnaire_name($identifier)->id]);
+
+            case 'preview':
+                return new moodle_url('/mod/questionnaire/preview.php',
+                    ['id' => $this->get_cm_by_questionnaire_name($identifier)->id]);
+
+            case 'questions':
+                return new moodle_url('/mod/questionnaire/questions.php',
+                    ['id' => $this->get_cm_by_questionnaire_name($identifier)->id]);
+
+            case 'advsettings':
+                return new moodle_url('/mod/questionnaire/qsettings.php',
+                    ['id' => $this->get_cm_by_questionnaire_name($identifier)->id]);
+
+            default:
+                throw new Exception('Unrecognised questionnaire page type "' . $type . '."');
+        }
+    }
+
+    /**
      * Adds a question to the questionnaire with the provided data.
      *
      * @Given /^I add a "([^"]*)" question and I fill the form with:$/
@@ -386,6 +441,26 @@ class behat_mod_questionnaire extends behat_base {
                 $this->{$mapvar}[$oldid] = $newid;
             }
         }
+    }
+    /**
+     * Get a questionnaire by name.
+     *
+     * @param string $name questionnaire name.
+     * @return stdClass the corresponding DB row.
+     */
+    protected function get_questionnaire_by_name(string $name): stdClass {
+        global $DB;
+        return $DB->get_record('questionnaire', ['name' => $name], '*', MUST_EXIST);
+    }
 
+    /**
+     * Get a questionnaire cmid from the quiz name.
+     *
+     * @param string $name questionnaire name.
+     * @return stdClass cm from get_coursemodule_from_instance.
+     */
+    protected function get_cm_by_questionnaire_name(string $name): stdClass {
+        $questionnaire = $this->get_questionnaire_by_name($name);
+        return get_coursemodule_from_instance('questionnaire', $questionnaire->id, $questionnaire->course);
     }
 }
