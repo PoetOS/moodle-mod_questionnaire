@@ -20,8 +20,7 @@ Feature: Questionnaires can be anonymous
       | questionnaire | Anonymous questionnaire | Anonymous questionnaire description | C1 | questionnaire0 |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Anonymous questionnaire"
-    And I navigate to "Edit settings" in current page administration
+    And I am on the "Anonymous questionnaire" "questionnaire activity editing" page
     And I expand all fieldsets
     And I should see "Response options"
     And I set the field "id_respondenttype" to "anonymous"
