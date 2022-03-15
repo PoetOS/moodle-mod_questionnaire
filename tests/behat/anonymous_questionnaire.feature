@@ -18,7 +18,9 @@ Feature: Questionnaires can be anonymous
     And the following "activities" exist:
       | activity | name | description | course | idnumber |
       | questionnaire | Anonymous questionnaire | Anonymous questionnaire description | C1 | questionnaire0 |
-    And I am on the "Anonymous questionnaire" "questionnaire activity editing" page logged in as teacher1
+    And I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I am on the "Anonymous questionnaire" "questionnaire activity editing" page
     And I expand all fieldsets
     And I set the field "id_respondenttype" to "anonymous"
     And I press "Save and display"
