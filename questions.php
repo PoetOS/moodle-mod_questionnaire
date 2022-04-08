@@ -69,7 +69,7 @@ if (!$questionnaire->capabilities->editquestions) {
 }
 
 $questionnairehasdependencies = $questionnaire->has_dependencies();
-$haschildren = [];
+$haschildren = null;
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
@@ -187,7 +187,7 @@ if ($action == 'main') {
                 // just remove the dependency and inform the user about it.
                 $haschildren = $questionnaire->get_all_dependants($qid);
             }
-            if (count($haschildren) != 0) {
+            if ($haschildren !== null and (count($haschildren->directs) + count($haschildren->indirects)) > 0) {
                 $action = "confirmdelquestionparent";
             } else {
                 $action = "confirmdelquestion";
