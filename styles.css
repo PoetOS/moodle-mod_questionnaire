@@ -175,6 +175,10 @@ td.selected {
     display: inline;
 }
 
+#page-mod-questionnaire-complete .notice .buttons input {
+    margin-bottom: 10px;
+}
+
 .floatprinticon {
     margin-top: -30px;
     float: right;
@@ -215,6 +219,10 @@ td.selected {
     margin-left: 10px;
     height: auto;
     overflow: hidden;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_completepage.generalbox .homelink ~ .homelink {
+    padding-top: 10px;
 }
 
 .qn-legend {

@@ -1177,7 +1177,7 @@ class questionnaire {
             }
             if ($this->resume) {
                 $controlbuttons['resume'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
-                    'value' => get_string('save', 'questionnaire')];
+                    'value' => get_string('save_and_exit', 'questionnaire')];
             }
 
             // Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
@@ -2396,7 +2396,7 @@ class questionnaire {
     }
 
     private function response_goto_saved($url) {
-        global $CFG;
+        global $CFG, $USER;
         $resumesurvey = get_string('resumesurvey', 'questionnaire');
         $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>'.$resumesurvey.'</strong>');
 
@@ -2405,6 +2405,21 @@ class questionnaire {
         $this->page->add_to_page('respondentinfo',
             $this->renderer->homelink($CFG->wwwroot.'/course/view.php?id='.$this->course->id,
                 get_string("backto", "moodle", $this->course->fullname)));
+
+        if ($this->resume) {
+            $message = $this->user_access_messages($USER->id, true);
+            if ($message === false) {
+                if ($this->user_can_take($USER->id)) {
+                    if ($this->questions) { // Sanity check.
+                        if ($this->user_has_saved_response($USER->id)) {
+                            $this->page->add_to_page('respondentinfo',
+                                $this->renderer->homelink($CFG->wwwroot . '/mod/questionnaire/complete.php?' .
+                                    'id=' . $this->cm->id . '&resume=1', $resumesurvey));
+                        }
+                    }
+                }
+            }
+        }
         return;
     }
 
