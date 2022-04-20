@@ -3867,7 +3867,7 @@ class questionnaire {
                     }
                     $sectionheading = $fbsection->sectionheading;
                     $imageid = $fbsection->id;
-                    $chartlabels [$section] = $fbsection->sectionlabel;
+                    $chartlabels[$section] = $fbsection->sectionlabel;
                 }
             }
             foreach ($scorecalculation as $qid => $key) {
