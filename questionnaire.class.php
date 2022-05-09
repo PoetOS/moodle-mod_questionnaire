@@ -35,6 +35,11 @@ class questionnaire {
     public $questions = [];
 
     /**
+     * @var \mod_questionnaire\question\question[] $deletequestions
+     */
+    public $deletequestions = [];
+
+    /**
      * The survey record.
      * @var object $survey
      */
@@ -97,6 +102,27 @@ class questionnaire {
     }
 
     /**
+     * Get all delete questions by survey id.
+     *
+     * @return void
+     * @throws dml_exception
+     */
+    public function get_delete_questions() {
+        global $DB;
+        $sql = "SELECT *
+                  FROM {questionnaire_question}
+                 WHERE deleted IS NOT NULL
+                   AND surveyid = ? AND type_id != ?
+              ORDER BY deleted DESC";
+        if ($records = $DB->get_records_sql($sql, [$this->sid, QUESPAGEBREAK])) {
+            foreach ($records as $record) {
+                $this->deletequestions[$record->id] = \mod_questionnaire\question\question::question_builder($record->type_id,
+                $record, $this->context);
+            }
+        }
+    }
+
+    /**
      * Adding a survey record to the object.
      *
      */
@@ -125,9 +151,8 @@ class questionnaire {
             $this->questionsbysec = [];
         }
 
-        $select = 'surveyid = ? AND deleted = ?';
-        $params = [$sid, 'n'];
-        if ($records = $DB->get_records_select('questionnaire_question', $select, $params, 'position')) {
+        $select = 'surveyid = ? AND deleted IS NULL';
+        if ($records = $DB->get_records_select('questionnaire_question', $select, [$sid], 'position')) {
             $sec = 1;
             $isbreak = false;
             foreach ($records as $record) {
@@ -1473,6 +1498,8 @@ class questionnaire {
         $errors = 1;
         if (data_submitted()) {
             $formdata = data_submitted();
+            $formdata->rid = $formdata->rid ?? 0;
+            $this->add_response_from_formdata($formdata);
             $pageerror = '';
             $s = 1;
             $errors = 0;
@@ -1519,7 +1546,8 @@ class questionnaire {
                 } else {
                     $dependants = [];
                 }
-                $output .= $this->renderer->question_output($this->questions[$questionid], $formdata, $dependants, $i++, null);
+                $output .= $this->renderer->question_output($this->questions[$questionid], $this->responses[0] ?? [], $dependants,
+                    $i++, null);
                 $this->page->add_to_page('questions', $output);
                 $output = '';
             }
@@ -1863,8 +1891,8 @@ class questionnaire {
         global $DB;
 
         $pos = $this->response_select_max_pos($rid);
-        $select = 'surveyid = ? AND type_id = ? AND position < ? AND deleted = ?';
-        $params = [$this->sid, QUESPAGEBREAK, $pos, 'n'];
+        $select = 'surveyid = ? AND type_id = ? AND position < ? AND deleted IS NULL';
+        $params = [$this->sid, QUESPAGEBREAK, $pos];
         $max = $DB->count_records_select('questionnaire_question', $select, $params) + 1;
 
         return $max;
@@ -1882,7 +1910,7 @@ class questionnaire {
                 'WHERE a.response_id = ? AND '.
                 'q.id = a.question_id AND '.
                 'q.surveyid = ? AND '.
-                'q.deleted = \'n\'';
+                'q.deleted IS NULL';
             if ($record = $DB->get_record_sql($sql, array($rid, $this->sid))) {
                 $newmax = (int)$record->num;
                 if ($newmax > $max) {
@@ -2923,6 +2951,7 @@ class questionnaire {
         if ($showincompletes == 1) {
             $options[] = 'complete';
         }
+        $extrafields = \core_user\fields::get_identity_fields($this->context);
 
         $positioned = [];
         $user = new stdClass();
@@ -3019,6 +3048,9 @@ class questionnaire {
         if (in_array('complete', $options)) {
             array_push($positioned, $resprow->complete);
         }
+        foreach ($extrafields as $field) {
+            array_push($positioned, $resprow->$field);
+        }
 
         for ($c = $nbinfocols; $c < $numrespcols; $c++) {
             if (isset($row[$c])) {
@@ -3055,6 +3087,7 @@ class questionnaire {
         if ($showincompletes == 1) {
             $options[] = 'complete';
         }
+        $extrafields = \core_user\fields::get_identity_fields($this->context);
         $columns = array();
         $types = array();
         foreach ($options as $option) {
@@ -3065,6 +3098,9 @@ class questionnaire {
                 $columns[] = get_string($option);
                 $types[] = 1;
             }
+        }
+        foreach ($extrafields as $field) {
+            $columns[] = \core_user\fields::get_display_name($field);
         }
         $nbinfocols = count($columns);
 
@@ -3301,7 +3337,12 @@ class questionnaire {
 
             // It's possible for a response to exist for a deleted question. Ignore these.
             if (!isset($this->questions[$qid])) {
-                break;
+                continue;
+            }
+
+            $customfield = $this->get_custom_profile_fields($responserow->userid);
+            foreach ($extrafields as $field) {
+                $responserow->{$field} = $customfield->{$field} ?? '';
             }
 
             $question = $this->questions[$qid];
@@ -3914,5 +3955,28 @@ class questionnaire {
         }
 
         return $areas;
+    }
+
+    /**
+     *  Support custom profile fields.
+     *
+     * @param $userid
+     * @return array
+     */
+    public function get_custom_profile_fields($userid) {
+        global $DB;
+
+        $userfieldsapi = \core_user\fields::for_identity($this->context);
+        [
+                'selects' => $userfieldsselects,
+                'joins' => $userfieldsjoin,
+                'params' => $userfieldsparams
+        ] = (array) $userfieldsapi->get_sql('u', false, '', '', false);
+        $sql = "SELECT $userfieldsselects
+                  FROM {user} u $userfieldsjoin
+                WHERE u.id = ?";
+        $param = array_merge($userfieldsparams, [$userid]);
+        $customfield = $DB->get_record_sql($sql, $param);
+        return $customfield;
     }
 }
