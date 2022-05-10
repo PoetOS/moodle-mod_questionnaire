@@ -123,7 +123,7 @@ class single extends responsetype {
                         $record->response_id = $response->id;
                         $record->question_id = $this->question->id;
                         $record->choice_id = $answer->choiceid;
-                        $record->response = $answer->value;
+                        $record->response = clean_text($answer->value);
                         $DB->insert_record('questionnaire_response_other', $record);
                     }
                     // Record the choice selection.

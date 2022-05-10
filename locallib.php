@@ -982,7 +982,6 @@ function questionnaire_get_standard_page_items($id = null, $a = null) {
     return (array($cm, $course, $questionnaire));
 }
 
-
 /**
  * Count responses already saved for that question.
  *

@@ -134,7 +134,7 @@ class radio extends question {
                 $radio->oname = 'q'.$this->id.choice::id_other_choice_name($id);
                 $radio->oid = $htmlid.'-other';
                 if (isset($odata)) {
-                    $radio->ovalue = stripslashes($odata);
+                    $radio->ovalue = format_string(stripslashes($odata));
                 }
                 $radio->olabel = 'Text for '.format_text($othertext, FORMAT_HTML, ['noclean' => true]);
             }

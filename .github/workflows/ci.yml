@@ -20,8 +20,8 @@ jobs:
             moodle-branch: 'MOODLE_311_STABLE'
             database: 'pgsql'
             node: '14.15.0'
-          - php: '7.3'
-            moodle-branch: 'MOODLE_310_STABLE'
+          - php: '7.2'
+            moodle-branch: 'MOODLE_39_STABLE'
             database: 'pgsql'
             node: '14.15.0'
 
@@ -40,7 +40,7 @@ jobs:
           - 5432:5432
 
       mariadb:
-        image: mariadb
+        image: mariadb:10.5
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
@@ -80,6 +80,7 @@ jobs:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
           IGNORE_NAMES: 'mobile_*.mustache'
+          IGNORE_PATHS: 'templates/local/mobile'
 
       - name: phplint
         if: ${{ always() }}

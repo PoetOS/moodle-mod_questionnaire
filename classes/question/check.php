@@ -139,7 +139,7 @@ class check extends question {
             if ($choice->is_other_choice()) {
                 $checkbox->oname = 'q'.$this->id.'['.$choice->other_choice_name().']';
                 $checkbox->ovalue = (isset($response->answers[$this->id][$id]) && !empty($response->answers[$this->id][$id]) ?
-                    stripslashes($response->answers[$this->id][$id]->value) : '');
+                    format_string(stripslashes($response->answers[$this->id][$id]->value)) : '');
                 $checkbox->label = format_text($choice->other_choice_display().'', FORMAT_HTML, ['noclean' => true]);
             }
             $choicetags->qelements[] = (object)['choice' => $checkbox];

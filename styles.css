@@ -406,3 +406,8 @@ td.selected {
 #page-mod-questionnaire-questions #id_deletionq .qn-question {
     margin-left: 50px;
 }
+
+#page-mod-questionnaire-questions #fitem_id_allchoices #id_allchoices,
+#page-mod-questionnaire-questions #fitem_id_allnameddegrees #id_allnameddegrees {
+    resize: both;
+}
