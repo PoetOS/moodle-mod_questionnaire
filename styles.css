@@ -389,6 +389,24 @@ td.selected {
     margin-left: 20px;
 }
 
+#page-mod-questionnaire-questions .qcontainer .restored-question {
+    border: 1px solid #008196;
+    background: #fff2d8;
+    color: #343a40; 
+}
+
+#page-mod-questionnaire-questions .qcontainer .timedeletednext7days {
+    color: #ff0000;
+}
+
+#page-mod-questionnaire-questions .generalbox .modal-content {
+    border: 1px solid #b0dfeb;
+}
+
+#page-mod-questionnaire-questions #id_deletionq .qn-question {
+    margin-left: 50px;
+}
+
 #page-mod-questionnaire-questions #fitem_id_allchoices #id_allchoices,
 #page-mod-questionnaire-questions #fitem_id_allnameddegrees #id_allnameddegrees {
     resize: both;
