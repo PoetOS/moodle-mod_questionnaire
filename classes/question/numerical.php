@@ -118,6 +118,8 @@ class numerical extends question {
         $choice = new \stdClass();
         $choice->onkeypress = 'return event.keyCode != 13;';
         $choice->size = $this->length;
+        // Add a 'thousands separator' instruction if there is a size setting greater than three.
+        $choice->instruction = (empty($choice->size) || ($choice->size > 3)) ? get_string('thousands', 'mod_questionnaire') : '';
         $choice->name = 'q'.$this->id;
         $choice->maxlength = $this->length;
         $choice->value = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
