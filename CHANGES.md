@@ -1,5 +1,10 @@
 Release Notes
 
+Version 3.11.1 (Build - 2022062300)
+
+Improvements:
+* Only show the "do not use thousands separator" on numeric question when relevant.
+
 Version 3.11.0 (Build - 2022030400)
 
 Improvements:
