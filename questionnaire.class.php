@@ -406,7 +406,7 @@ class questionnaire {
         $i = 0;
         $this->add_response($rid);
         if ($referer != 'print') {
-            $feedbackmessages = $this->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
+            $feedbackmessages = $this->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid, 0, $outputtarget);
 
             if ($feedbackmessages) {
                 $msgout = '';
@@ -3647,7 +3647,7 @@ class questionnaire {
      * @return array|string
      */
     public function response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid,
-                                      $filteredsections = null) {
+                                      $filteredsections = null, $outputtarget) {
         global $DB, $CFG;
         require_once($CFG->libdir.'/tablelib.php');
         require_once($CFG->dirroot.'/mod/questionnaire/drawchart.php');
@@ -3978,7 +3978,7 @@ class questionnaire {
             unset($allscorepercent[$val]);
         }
 
-        if ($usergraph && $this->survey->chart_type) {
+        if ($usergraph && $this->survey->chart_type && $outputtarget !=='pdf') {
             $this->page->add_to_page('feedbackcharts',
                 draw_chart($feedbacktype = 'sections', array_values($chartlabels), $groupname,
                     $allresponses, $this->survey->chart_type, array_values($scorepercent), array_values($allscorepercent), $sectionlabel));

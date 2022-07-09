@@ -125,7 +125,7 @@ class sectiontext extends question {
         $resps = [$rid => null];
         // For $filteredsections -> get the feedback messages only for this sections!
         $feedbackmessages = $questionnaire->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses,
-            $currentgroupid, $filteredsections);
+            $currentgroupid, $filteredsections, $outputtarget);
 
         // Output.
         $questiontags = new \stdClass();
