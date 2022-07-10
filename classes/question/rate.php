@@ -326,6 +326,10 @@ class rate extends question {
                 $row++;
                 $str = 'q'."{$this->id}_$cid";
                 $content = $choice->content;
+                // If short label is used.
+                if (strpos($content, '::') !== FALSE) {
+                  $content = explode('::', $content)[1];
+                }
                 if ($this->osgood_rate_scale()) {
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }

@@ -3183,12 +3183,13 @@ class questionnaire {
      * @param string $rid
      * @param string $userid
      * @param int $choicecodes
+     * @param int $choicevalues
      * @param int $choicetext
      * @param int $showincompletes
      * @param int $rankaverages
      * @return array
      */
-    public function generate_csv($currentgroupid, $rid='', $userid='', $choicecodes=1, $choicetext=0, $showincompletes=0,
+    public function generate_csv($currentgroupid, $rid='', $userid='', $choicecodes=0, $choicevalues=0, $choicetext=0, $showincompletes=0,
                                  $rankaverages=0) {
         global $DB;
 
@@ -3510,6 +3511,15 @@ class questionnaire {
                     }
 
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
+                    $value = '';
+                  if ($pos = strpos($content, '=')) {
+                    $value = substr($content, 0, $pos);
+                    $content = substr($content, $pos + 1);
+                  }
+                  if ($pos = strpos($content, '::')) {
+                    $content = substr($content, 0, $pos);
+                  }
+                  
                     if (\mod_questionnaire\question\choice::content_is_other_choice($content)) {
                         // If this has an "other" text, use it.
                         $responsetxt = \mod_questionnaire\question\choice::content_other_choice_display($content);
@@ -3518,6 +3528,8 @@ class questionnaire {
                         $responsetxt = $c.' : '.$content;
                     } else if ($choicecodes == 1) {
                         $responsetxt = $c;
+                    } else if ($choicevalues == 1) {
+                        $responsetxt = $value;
                     } else {
                         $responsetxt = $content;
                     }

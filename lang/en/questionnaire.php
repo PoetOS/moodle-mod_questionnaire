@@ -254,6 +254,7 @@ $string['horizontal'] = 'Horizontal';
 $string['id'] = 'ID';
 $string['includerankaverages'] = 'Include rank question averages';
 $string['includechoicecodes'] = 'Include choice codes';
+$string['includechoicevalues'] = 'Include choice values';
 $string['includechoicetext'] = 'Include choice text';
 $string['includeincomplete'] = "Include incomplete responses";
 $string['incorrectcourseid'] = 'Course ID is incorrect';
