@@ -3182,14 +3182,13 @@ class questionnaire {
      * @param int $currentgroupid
      * @param string $rid
      * @param string $userid
-     * @param int $choicecodes
-     * @param int $choicevalues
+     * @param int $choicecodesorvalues
      * @param int $choicetext
      * @param int $showincompletes
      * @param int $rankaverages
      * @return array
      */
-    public function generate_csv($currentgroupid, $rid='', $userid='', $choicecodes=0, $choicevalues=0, $choicetext=0, $showincompletes=0,
+    public function generate_csv($currentgroupid, $rid='', $userid='', $choicecodesorvalues=0, $choicetext=0, $showincompletes=0,
                                  $rankaverages=0) {
         global $DB;
 
@@ -3512,23 +3511,28 @@ class questionnaire {
 
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
                     $value = '';
-                  if ($pos = strpos($content, '=')) {
-                    $value = substr($content, 0, $pos);
-                    $content = substr($content, $pos + 1);
-                  }
-                  if ($pos = strpos($content, '::')) {
-                    $content = substr($content, 0, $pos);
-                  }
-                  
+                    if ($pos = strpos($content, '=')) {
+                        $value = substr($content, 0, $pos);
+                        $content = substr($content, $pos + 1);
+                    }
+                    if ($pos = strpos($content, '::')) {
+                        $content = substr($content, 0, $pos);
+                    }
                     if (\mod_questionnaire\question\choice::content_is_other_choice($content)) {
                         // If this has an "other" text, use it.
                         $responsetxt = \mod_questionnaire\question\choice::content_other_choice_display($content);
                         $responsetxt1 = $responserow->response;
-                    } else if (($choicecodes == 1) && ($choicetext == 1)) {
+                    } else if (($choicecodesorvalues == 1) && ($choicetext == 1)) {
                         $responsetxt = $c.' : '.$content;
-                    } else if ($choicecodes == 1) {
+                    } else if (($choicecodesorvalues == 2) && ($choicetext == 1)) {
+                        if ($value !== '') {
+                            $responsetxt = $value.' : '.$content;
+                        } else {
+                            $responsetxt = $content;
+                        }
+                    } else if ($choicecodesorvalues == 1) {
                         $responsetxt = $c;
-                    } else if ($choicevalues == 1) {
+                    } else if ($choicecodesorvalues == 2) {
                         $responsetxt = $value;
                     } else {
                         $responsetxt = $content;
@@ -3879,7 +3883,7 @@ class questionnaire {
                     }
                     $sectionheading = $fbsection->sectionheading;
                     $imageid = $fbsection->id;
-                    $chartlabels [$section] = $fbsection->sectionlabel;
+                    $chartlabels[$section] = $fbsection->sectionlabel;
                 }
             }
             foreach ($scorecalculation as $qid => $key) {
@@ -3993,7 +3997,8 @@ class questionnaire {
         if ($usergraph && $this->survey->chart_type) {
             $this->page->add_to_page('feedbackcharts',
                 draw_chart($feedbacktype = 'sections', array_values($chartlabels), $groupname,
-                    $allresponses, $this->survey->chart_type, array_values($scorepercent), array_values($allscorepercent), $sectionlabel));
+                $allresponses, $this->survey->chart_type, array_values($scorepercent),
+                array_values($allscorepercent), $sectionlabel));
         }
         if ($this->survey->feedbackscores) {
             $this->page->add_to_page('feedbackscores', html_writer::table($table));
