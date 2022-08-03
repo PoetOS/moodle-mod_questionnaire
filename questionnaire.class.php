@@ -3335,45 +3335,44 @@ class questionnaire {
                         break;
 
                     case QUESRATE: // Rate.
+                        // Get nameddegrees if any.
+                        $sql = "SELECT DISTINCT q.extradata as extradata FROM {questionnaire_question} q WHERE q.surveyid = "
+                            . $this->survey->id ." AND q.id = ". $qid;
+                        $nameddegrees[$qid] = $DB->get_record_sql($sql)->extradata;
                         foreach ($choices as $choice) {
-                            $nameddegrees = 0;
                             $modality = '';
                             $content = $choice->content;
                             $osgood = false;
                             if (\mod_questionnaire\question\rate::type_is_osgood_rate_scale($choice->precise)) {
                                 $osgood = true;
                             }
-                            if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
-                                $nameddegrees++;
-                            } else {
-                                if ($osgood) {
-                                    list($contentleft, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
-                                    $contents = questionnaire_choice_values($contentleft);
-                                    if ($contents->title) {
-                                        $contentleft = $contents->title;
-                                    }
-                                    $contents = questionnaire_choice_values($contentright);
-                                    if ($contents->title) {
-                                        $contentright = $contents->title;
-                                    }
-                                    $modality = strip_tags($contentleft.'|'.$contentright);
-                                    $modality = preg_replace("/[\r\n\t]/", ' ', $modality);
-                                } else {
-                                    $contents = questionnaire_choice_values($content);
-                                    if ($contents->modname) {
-                                        $modality = $contents->modname;
-                                    } else if ($contents->title) {
-                                        $modality = $contents->title;
-                                    } else {
-                                        $modality = strip_tags($contents->text);
-                                        $modality = preg_replace("/[\r\n\t]/", ' ', $modality);
-                                    }
+                            if ($osgood) {
+                                list($contentleft, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                                $contents = questionnaire_choice_values($contentleft);
+                                if ($contents->title) {
+                                    $contentleft = $contents->title;
                                 }
-                                $col = $choice->name.'->'.$modality;
-                                $columns[][$qpos] = $col;
-                                $questionidcols[][$qpos] = $qid.'_'.$choice->cid;
-                                array_push($types, $idtocsvmap[$type]);
+                                $contents = questionnaire_choice_values($contentright);
+                                if ($contents->title) {
+                                    $contentright = $contents->title;
+                                }
+                                $modality = strip_tags($contentleft.'|'.$contentright);
+                                $modality = preg_replace("/[\r\n\t]/", ' ', $modality);
+                            } else {
+                                $contents = questionnaire_choice_values($content);
+                                if ($contents->modname) {
+                                    $modality = $contents->modname;
+                                } else if ($contents->title) {
+                                    $modality = $contents->title;
+                                } else {
+                                    $modality = strip_tags($contents->text);
+                                    $modality = preg_replace("/[\r\n\t]/", ' ', $modality);
+                                }
                             }
+                            $col = $choice->name.'->'.$modality;
+                            $columns[][$qpos] = $col;
+                            $questionidcols[][$qpos] = $qid.'_'.$choice->cid;
+                            array_push($types, $idtocsvmap[$type]);
                         }
                         break;
                 }
@@ -3476,6 +3475,21 @@ class questionnaire {
                 $position = $questionpositions[$key];
                 if ($qtype === QUESRATE) {
                     $choicetxt = $responserow->rankvalue;
+                    // If included choice values.
+                    if ($nameddegrees[$qid] !== '' && $choicecodesorvalues === 2) {
+                        $rv = (int)$responserow->rankvalue;
+                        $nameddegreesarray = json_decode($nameddegrees[$qid], true);
+                        foreach ($nameddegreesarray as $key => $degree) {
+                            if ($key === $rv) {
+                                // Detect potential short label and use it.
+                                if ($pos = strpos($degree, '::')) {
+                                    $degree = substr($degree, 0, $pos);
+                                }
+                                $choicetxt = $degree;
+                                break;
+                            }
+                        }
+                    }
                     if ($rankaverages) {
                         $averagerow[$position] = $averages[$qid][$responserow->choice_id];
                     }
