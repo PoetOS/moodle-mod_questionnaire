@@ -3477,17 +3477,10 @@ class questionnaire {
                     $choicetxt = $responserow->rankvalue;
                     // If included choice values.
                     if ($nameddegrees[$qid] !== '' && $choicecodesorvalues === 2) {
-                        $rv = (int)$responserow->rankvalue;
-                        $nameddegreesarray = json_decode($nameddegrees[$qid], true);
-                        foreach ($nameddegreesarray as $key => $degree) {
-                            if ($key === $rv) {
-                                // Detect potential short label and use it.
-                                if ($pos = strpos($degree, '::')) {
-                                    $degree = substr($degree, 0, $pos);
-                                }
-                                $choicetxt = $degree;
-                                break;
-                            }
+                        $choicetxt = json_decode($question->extradata, true)[$responserow->rankvalue];
+                        // Detect potential short label and use it.
+                        if ($pos = strpos($choicetxt, '::')) {
+                            $choicetxt = substr($choicetxt, 0, $pos);
                         }
                     }
                     if ($rankaverages) {
