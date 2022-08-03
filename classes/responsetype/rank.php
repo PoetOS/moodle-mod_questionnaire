@@ -541,6 +541,10 @@ class rank extends responsetype {
         foreach ($this->question->nameddegrees as $degree) {
             // To take into account languages filter.
             $content = (format_text($degree, FORMAT_HTML, ['noclean' => true]));
+            // If short label is used for nameddegrees.
+            if (strpos($degree, '::') !== false) {
+                $degree = explode('::', $degree)[1];
+            }
             $n[$nameddegrees] = $degree;
             $nameddegrees++;
         }
@@ -626,6 +630,10 @@ class rank extends responsetype {
                     if ($osgood) {
                         // Ensure there are two bits of content.
                         list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                        // If short label is used eliminate it from display.
+                        if (strpos($content, '::') !== false) {
+                            $content = explode('::', $content)[1];
+                        }
                     } else {
                         $contents = questionnaire_choice_values($content);
                         if ($contents->modname) {
@@ -859,6 +867,10 @@ class rank extends responsetype {
             } else {
                 $str = $j + 1;
             }
+            // If short label is used for nameddegrees.
+            if (strpos($str, '::') !== false) {
+                $str = explode('::', $str)[1];
+            }
             $pagetags->totals->headers[] = (object)['align' => 'center', 'text' => '<span class="smalltext">'.$str.'</span>'];
         }
         if ($osgood) {
@@ -887,6 +899,10 @@ class rank extends responsetype {
                 if ($osgood) {
                     // Ensure there are two bits of content.
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                    // If short label is used eliminate it from display.
+                    if (strpos($content, '::') !== false) {
+                        $content = explode('::', $content)[1];
+                    }
                     $header = reset($pagetags->totals->headers);
                     $totalcols[] = (object)['align' => $header->align,
                         'text' => format_text($content, FORMAT_HTML, ['noclean' => true])];

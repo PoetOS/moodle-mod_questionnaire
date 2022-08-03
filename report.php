@@ -490,7 +490,7 @@ switch ($action) {
         $name = clean_param($questionnaire->name, PARAM_FILE);
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
 
-        $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
+        $choicecodesorvalues = optional_param('choicecodesorvalues', '0', PARAM_INT);
         $choicetext  = optional_param('choicetext', '0', PARAM_INT);
         $showincompletes  = optional_param('complete', '0', PARAM_INT);
         $rankaverages = optional_param('rankaverages', '0', PARAM_INT);
@@ -498,7 +498,7 @@ switch ($action) {
         $emailroles = optional_param('emailroles', 0, PARAM_INT);
         $emailextra = optional_param('emailextra', '', PARAM_RAW);
 
-        $output = $questionnaire->generate_csv($currentgroupid, '', $user, $choicecodes, $choicetext, $showincompletes,
+        $output = $questionnaire->generate_csv($currentgroupid, '', $user, $choicecodesorvalues, $choicetext, $showincompletes,
             $rankaverages);
 
         $columns = $output[0];

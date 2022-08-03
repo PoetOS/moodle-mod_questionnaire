@@ -291,6 +291,10 @@ class rate extends question {
             } else {
                 $str = $j;
             }
+            // If short label is used for nameddegrees.
+            if (strpos($str, '::') !== false) {
+                $str = explode('::', $str)[1];
+            }
             $val = $j;
             if ($blankquestionnaire) {
                 $val = '<br />('.$val.')';
@@ -326,6 +330,10 @@ class rate extends question {
                 $row++;
                 $str = 'q'."{$this->id}_$cid";
                 $content = $choice->content;
+                // If short label is used.
+                if (strpos($content, '::') !== false) {
+                    $content = explode('::', $content)[1];
+                }
                 if ($this->osgood_rate_scale()) {
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }
@@ -467,6 +475,10 @@ class rate extends question {
             $cellobj->bg = $bg;
             if (!empty($this->nameddegrees)) {
                 $cellobj->str = current($this->nameddegrees);
+                // If short label is used for nameddegrees.
+                if (strpos($cellobj->str, '::') !== false) {
+                    $cellobj->str = explode('::', $cellobj->str)[1];
+                }
                 next($this->nameddegrees);
             } else {
                 $cellobj->str = $j;
