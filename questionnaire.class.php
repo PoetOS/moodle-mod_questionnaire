@@ -3620,9 +3620,8 @@ class questionnaire {
                 $oldkey = $thiskey;
                 $numquestion++;
             }
-            // Abbreviated modality name in multiple or rate questions (COLORS->blue=the color of the sky...).
-            $pos = strpos($thisoutput, '=');
-            if ($pos) {
+            // Detect potential short label and use it.
+            if ($pos = strpos($thisoutput, '::')) {
                 $thisoutput = substr($thisoutput, 0, $pos);
             }
             $out = 'Q'.sprintf("%02d", $numquestion).$sep.$thisoutput;
