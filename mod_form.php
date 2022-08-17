@@ -60,11 +60,15 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->setType('cannotchangerespondenttype', PARAM_INT);
-        $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $questionnairerespondents);
+        $selectrespondenttype = $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'),
+                $questionnairerespondents, array('tabindex' => 0));
+        $selectrespondenttype->setSelected(get_config('questionnaire', 'respondenttype'));
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
 
-        $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
+        $selectrespview = $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'),
+                $questionnaireresponseviewers, array('tabindex' => 0));
+        $selectrespview->setSelected(get_config('questionnaire', 'resp_view'));
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
         $notificationoptions = array(0 => get_string('no'), 1 => get_string('notificationsimple', 'questionnaire'),
@@ -143,6 +147,9 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         }
 
         $this->standard_coursemodule_elements();
+
+        // Apply locked admin settings.
+        $this->apply_admin_defaults();
 
         // Buttons.
         $this->add_action_buttons();

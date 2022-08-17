@@ -51,4 +51,26 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('questionnaire/allowemailreporting',
         get_string('configemailreporting', 'questionnaire'), get_string('configemailreportinglong', 'questionnaire'), 0));
+
+    $questionnairerespondents = array (
+            'fullname' => get_string('respondenttypefullname', 'questionnaire'),
+            'anonymous' => get_string('respondenttypeanonymous', 'questionnaire'));
+
+    $respondenttypesetting = new admin_setting_configselect('questionnaire/respondenttype',
+            get_string('default').': '.get_string('respondenttype', 'questionnaire'),
+            get_string('respondenttype_help', 'questionnaire'), 'anonymous', $questionnairerespondents);
+    $respondenttypesetting->set_locked_flag_options(admin_setting_flag::ENABLED, false);
+    $settings->add($respondenttypesetting);
+
+    $questionnaireresponseviewers = array (
+            1 => get_string('responseviewstudentswhenanswered', 'questionnaire'),
+            2 => get_string('responseviewstudentswhenclosed', 'questionnaire'),
+            3 => get_string('responseviewstudentsalways', 'questionnaire'),
+            0 => get_string('responseviewstudentsnever', 'questionnaire'));
+
+    $respviewsetting = new admin_setting_configselect('questionnaire/resp_view',
+            get_string('default').': '.get_string('responseview', 'questionnaire'),
+            get_string('responseview_help', 'questionnaire'), 0, $questionnaireresponseviewers);
+    $respviewsetting->set_locked_flag_options(admin_setting_flag::ENABLED, false);
+    $settings->add($respviewsetting);
 }
