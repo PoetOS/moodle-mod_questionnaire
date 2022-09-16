@@ -949,6 +949,8 @@ abstract class question {
             $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->name];
         } else if ($this->type_id == QUESESSAY) {
             $pagetags->label = (object)['for' => 'edit-q' . $this->id];
+        } else if ($this->type_id == QUESDATE) {
+            $pagetags->label = (object) ['for' => 'q' . $this->id];
         }
         $options = ['noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
         $content = format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',

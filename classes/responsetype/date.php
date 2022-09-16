@@ -283,4 +283,28 @@ class date extends responsetype {
     protected function bulk_sql_config() {
         return new bulk_sql_config(static::response_table(), 'qrd', false, true, false);
     }
+
+    /**
+     * Return sql for getting responses in bulk.
+     * @return string
+     */
+    protected function bulk_sql() {
+        global $DB;
+
+        $userfields = $this->user_fields_sql();
+        $alias = 'qrd';
+        if ($DB->get_dbfamily() === 'postgres') {
+            $extraselect = "0 AS choice_id, TO_CHAR(qrd.response::date, 'mm-dd-yyyy') AS response, 0 AS rankvalue";
+        } else {
+            $extraselect = "0 AS choice_id, qrd.response AS response, 0 AS rankvalue";
+        }
+
+        return "
+            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
+                   qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
+                   $extraselect
+              FROM {questionnaire_response} qr
+              JOIN {".static::response_table()."} $alias ON $alias.response_id = qr.id
+        ";
+    }
 }
