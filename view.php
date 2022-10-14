@@ -67,8 +67,8 @@ $PAGE->set_heading(format_string($course->fullname));
 echo $questionnaire->renderer->header();
 $questionnaire->page->add_to_page('questionnairename', format_string($questionnaire->name));
 
-// Print the main part of the page.
-if ($questionnaire->intro) {
+// Print the main part of the page in case a moodle version < 4.0 is used.
+if ($questionnaire->intro && $CFG->version < 2022041900) {
     $questionnaire->page->add_to_page('intro', format_module_intro('questionnaire', $questionnaire, $cm->id));
 }
 
