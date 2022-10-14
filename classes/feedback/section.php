@@ -97,7 +97,7 @@ class section {
         $newsection->surveyid = $surveyid;
         $newsection->section = $maxsection + 1;
         $newsection->sectionlabel = $sectionlabel;
-        $newsection->scorecalculation = '';
+        $newsection->scorecalculation = $newsection->encode_scorecalculation([]);
         $newsecid = $DB->insert_record(self::TABLE, $newsection);
         $newsection->id = $newsecid;
         $newsection->scorecalculation = [];
