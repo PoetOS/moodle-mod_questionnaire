@@ -4078,4 +4078,62 @@ class questionnaire {
 
         return $areas;
     }
+
+    /**
+     * Output the questionnair information
+     *
+     * @param array $messages any access messages that should be described.
+     */
+    public function view_information() {
+        $messages = [];
+
+        if (isset($this->qtype)) {
+            switch ($this->qtype) {
+                case QUESTIONNAIREUNLIMITED:
+                    $typestring = get_string('unlimited', 'questionnaire');
+                    break;
+                case QUESTIONNAIREONCE:
+                    $typestring = get_string('once', 'questionnaire');
+                    break;
+                case QUESTIONNAIREDAILY:
+                    $typestring = get_string('daily', 'questionnaire');
+                    break;
+                case QUESTIONNAIREWEEKLY:
+                    $typestring = get_string('weekly', 'questionnaire');
+                    break;
+                case QUESTIONNAIREMONTHLY:
+                    $typestring = get_string('monthly', 'questionnaire');
+                    break;
+                default:
+                    $typestring = '';
+                    break;
+            }
+            array_push($messages, get_string('attemptsallowed', 'questionnaire', $typestring));
+        }
+
+        if ($this->is_open() && !$this->is_closed()) {
+            if ($this->opendate > 0) {
+                array_push($messages, get_string('openedat', 'questionnaire', userdate($this->opendate)));
+            }
+            if ($this->closedate > 0) {
+                array_push($messages, get_string('closesat', 'questionnaire', userdate($this->closedate)));
+            }
+        }
+
+        return $messages;
+    }
+
+    /**
+     * Print each message in an array, surrounded by &lt;p>, &lt;/p> tags.
+     *
+     * @param array $messages the array of message strings.
+     * @return string HTML to output.
+     */
+    public function access_messages($messages) {
+        $output = '';
+        foreach ($messages as $message) {
+            $output .= html_writer::tag('p', $message) . "\n";
+        }
+        return $output;
+    }
 }
