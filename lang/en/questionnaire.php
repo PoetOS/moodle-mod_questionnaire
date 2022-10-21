@@ -549,6 +549,7 @@ $string['resume_link'] = 'mod/questionnaire/mod#Save/Resume_answers';
 $string['resumesurvey'] = 'Resume questionnaire';
 $string['return'] = 'Return';
 $string['save'] = 'Save';
+$string['save_and_exit'] = 'Save and exit';
 $string['saveasnew'] = 'Save as New Question';
 $string['savedbutnotsubmitted'] = 'This questionnaire has been saved but not yet submitted.';
 $string['savedprogress'] = 'Your progress has been saved.  You may return at any time to complete this questionnaire.';
