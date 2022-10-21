@@ -93,7 +93,7 @@ class essay extends text {
             $editor = editors_get_preferred_editor();
             $editor->use_editor($name, questionnaire_get_editor_options($this->context));
             $texteditor = html_writer::tag('textarea', $value,
-                            array('id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols));
+                            array('id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols, 'class'=>'form-control'));
         } else {
             $editor = FORMAT_PLAIN;
             $texteditor = html_writer::tag('textarea', $value,
