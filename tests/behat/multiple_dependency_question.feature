@@ -89,7 +89,7 @@ Feature: Questions can be defined to be dependent on answers to previous questio
       | Yes | y |
       | Question Text | Are you happy? |
     Then I should see "[Yes/No] (Q3)"
-    And I follow "Preview"
+    And I am on the "Test questionnaire" "mod_questionnaire > Preview" page
     And I should see "Previewing Questionnaire"
     And I log out
 

@@ -664,15 +664,15 @@ function questionnaire_get_parent ($question) {
                 break;
         }
         // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
-        $parent [$qid]['qdependquestion'] = 'q'.$dependquestion->id;
-        $parent [$qid]['qdependchoice'] = $qdependchoice;
-        $parent [$qid]['parenttype'] = $dependquestion->type_id;
+        $parent[$qid]['qdependquestion'] = 'q'.$dependquestion->id;
+        $parent[$qid]['qdependchoice'] = $qdependchoice;
+        $parent[$qid]['parenttype'] = $dependquestion->type_id;
         // Other fields to be used in Questions edit mode.
-        $parent [$qid]['position'] = $question->position;
-        $parent [$qid]['name'] = $question->name;
-        $parent [$qid]['content'] = $question->content;
-        $parent [$qid]['parentposition'] = $dependquestion->position;
-        $parent [$qid]['parent'] = format_string($dependquestion->name) . '->' . format_string ($dependchoice);
+        $parent[$qid]['position'] = $question->position;
+        $parent[$qid]['name'] = $question->name;
+        $parent[$qid]['content'] = $question->content;
+        $parent[$qid]['parentposition'] = $dependquestion->position;
+        $parent[$qid]['parent'] = format_string($dependquestion->name) . '->' . format_string ($dependchoice);
     }
     return $parent;
 }
