@@ -25,8 +25,6 @@
 
 namespace mod_questionnaire\search;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Search area for mod_questionnaire activities.
  *

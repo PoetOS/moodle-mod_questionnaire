@@ -24,8 +24,6 @@
 
 namespace mod_questionnaire\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_questionnaire attempt_resumed event.
  *

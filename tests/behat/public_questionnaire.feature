@@ -62,35 +62,35 @@ Feature: Questionnaires can use an existing public survey to gather responses in
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
-    Then I should see "Your response"
+    Then I should see "View your response(s)"
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='1']" "xpath_element" should exist
 
     And I am on "Course 3" course homepage
     And I follow "Questionnaire instance 2"
     And I should see "Answer the questions..."
-    And I should not see "Your response"
+    And I should not see "View your response(s)"
     And I navigate to "Answer the questions..." in current page administration
     Then I should see "Questionnaire instance 2"
     And I set the field "Enter a number" to "2"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
-    Then I should see "Your response"
+    Then I should see "View your response(s)"
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='2']" "xpath_element" should exist
 
     And I am on "Course 2" course homepage
     And I follow "Questionnaire instance 1"
-    Then I should see "Your response"
-    And I navigate to "Your response" in current page administration
+    Then I should see "View your response(s)"
+    And I navigate to "View your response(s)" in current page administration
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='1']" "xpath_element" should exist
 
     And I am on "Course 3" course homepage
     And I follow "Questionnaire instance 2"
-    Then I should see "Your response"
-    And I navigate to "Your response" in current page administration
+    Then I should see "View your response(s)"
+    And I navigate to "View your response(s)" in current page administration
     And I should see "Enter a number"
     And "//div[contains(@class,'questionnaire_numeric') and contains(@class,'questionnaire_response')]//span[@class='selected' and text()='2']" "xpath_element" should exist
     And I log out

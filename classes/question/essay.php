@@ -93,11 +93,11 @@ class essay extends text {
             $editor = editors_get_preferred_editor();
             $editor->use_editor($name, questionnaire_get_editor_options($this->context));
             $texteditor = html_writer::tag('textarea', $value,
-                            array('id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols, 'class'=>'form-control'));
+                            ['id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols, 'class' => 'form-control']);
         } else {
             $editor = FORMAT_PLAIN;
             $texteditor = html_writer::tag('textarea', $value,
-                            array('id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols));
+                            ['id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols]);
         }
         $output .= $texteditor;
 
@@ -131,9 +131,9 @@ class essay extends text {
      * @param string $helptext
      */
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
-        $responseformats = array(
+        $responseformats = [
                         "0" => get_string('formateditor', 'questionnaire'),
-                        "1" => get_string('formatplain', 'questionnaire'));
+                        "1" => get_string('formatplain', 'questionnaire')];
         $mform->addElement('select', 'precise', get_string('responseformat', 'questionnaire'), $responseformats);
         $mform->setType('precise', PARAM_INT);
         return $mform;
@@ -153,7 +153,7 @@ class essay extends text {
      * @param string $helptext
      */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
-        $choices = array();
+        $choices = [];
         for ($lines = 5; $lines <= 40; $lines += 5) {
             $choices[$lines] = get_string('nlines', 'questionnaire', $lines);
         }

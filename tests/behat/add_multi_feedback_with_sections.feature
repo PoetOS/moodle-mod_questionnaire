@@ -129,7 +129,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
-    Then I should see "Your response"
+    Then I should see "View your response(s)"
     And I should see "These are the main Feedback notes"
     And I should see "Section 1 label"
     And I should see "39%"
