@@ -16,8 +16,6 @@
 
 namespace mod_questionnaire\db;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * For bulk sql operations on useresponses.
  *

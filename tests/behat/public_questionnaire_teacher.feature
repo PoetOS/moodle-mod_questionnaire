@@ -79,12 +79,12 @@ Feature: Public questionnaires gather all instance responses in one master cours
   @javascript
   Scenario: Teacher should not see responses for a questionnaire using a public instance
     And I am on the "Questionnaire instance 1" "mod_questionnaire > view" page logged in as "teacher2"
-    And I should not see "Your response"
-    And I should not see "View All Responses"
+    And I should not see "View your response(s)"
+    And I should not see "View all responses"
     And I log out
 
   # Scenario: Teacher in course with main public questionnaire should see all responses
     And I am on the "Public questionnaire" "mod_questionnaire > view" page logged in as "teacher1"
-    Then I should see "View All Responses"
-    And I navigate to "View All Responses" in current page administration
+    Then I should see "View all responses"
+    And I navigate to "View all responses" in current page administration
     Then I should see "Responses: 2"

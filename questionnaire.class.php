@@ -3994,9 +3994,19 @@ class questionnaire {
         }
 
         if ($usergraph && $this->survey->chart_type) {
-            $this->page->add_to_page('feedbackcharts',
-                draw_chart($feedbacktype = 'sections', array_values($chartlabels), $groupname,
-                    $allresponses, $this->survey->chart_type, array_values($scorepercent), array_values($allscorepercent), $sectionlabel));
+            $this->page->add_to_page(
+                'feedbackcharts',
+                draw_chart(
+                    'sections',
+                    array_values($chartlabels),
+                    $groupname,
+                    $allresponses,
+                    $this->survey->chart_type,
+                    array_values($scorepercent),
+                    array_values($allscorepercent),
+                    $sectionlabel
+                )
+            );
         }
         if ($this->survey->feedbackscores) {
             $this->page->add_to_page('feedbackscores', html_writer::table($table));

@@ -55,7 +55,7 @@ Feature: Radio questions allow optional "other" responses with optional labels
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
-    Then I should see "Your response"
+    Then I should see "View your response(s)"
     And I should see "Test questionnaire"
     And I should see "Other: Yellow"
     And I should see "Another colour: Indigo"

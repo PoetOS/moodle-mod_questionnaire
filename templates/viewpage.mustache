@@ -49,8 +49,10 @@
     <h2>{{questionnairename}}</h2>
     {{#intro}}<div class="intro">{{{intro}}}</div>{{/intro}}
     {{#message}}<div class="message">{{{message}}}</div>{{/message}}
-    {{#complete}}<div class="complete">{{{complete}}}</div>{{/complete}}
-    {{#guestuser}}<div class="guestuser">{{{guestuser}}}</div>{{/guestuser}}
-    {{#yourresponse}}<div class="yourresponse">{{{yourresponse}}}</div>{{/yourresponse}}
-    {{#allresponses}}<div class="allresponses">{{{allresponses}}}</div>{{/allresponses}}
+    <div class="mod_questionnaire_flex-container">
+        {{#complete}}<div class="complete">{{{complete}}}</div>{{/complete}}
+        {{#guestuser}}<div class="guestuser">{{{guestuser}}}</div>{{/guestuser}}
+        {{#yourresponse}}<div class="yourresponse">{{{yourresponse}}}</div>{{/yourresponse}}
+        {{#allresponses}}<div class="allresponses">{{{allresponses}}}</div>{{/allresponses}}
+    </div>
 </div>

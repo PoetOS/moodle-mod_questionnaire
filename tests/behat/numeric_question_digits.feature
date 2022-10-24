@@ -45,7 +45,7 @@ Feature: Numeric questions can specify a maximum number of digits, and minimum n
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
-    Then I should see "Your response"
+    Then I should see "View your response(s)"
     And I should see "Test questionnaire"
     And I should see "Enter no more than six digits including the decimal point"
     And I should see "1.2345"
