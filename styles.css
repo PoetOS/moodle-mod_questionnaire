@@ -397,9 +397,17 @@ td.selected {
     margin-left: 20px;
 }
 
-#page-mod-questionnaire-view .mod_questionnaire_viewpage .yourresponse {
-    padding: 15px 0 15px 0;
+.mod_questionnaire_flex-container {
+    display: inline-flex;
 }
+
+#page-mod-questionnaire-view .mod_questionnaire_viewpage div.complete,
+#page-mod-questionnaire-view .mod_questionnaire_viewpage div.yourresponse,
+#page-mod-questionnaire-view .mod_questionnaire_viewpage div.allresponses {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
 #page-mod-questionnaire-questions #fitem_id_allchoices #id_allchoices,
 #page-mod-questionnaire-questions #fitem_id_allnameddegrees #id_allnameddegrees {
     resize: both;
