@@ -65,7 +65,9 @@ $PAGE->set_title(format_string($questionnaire->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 echo $questionnaire->renderer->header();
-$questionnaire->page->add_to_page('questionnairename', format_string($questionnaire->name));
+// Keep Moodle standard for heading title
+echo $OUTPUT->heading(format_string($questionnaire->name), 2);
+//$questionnaire->page->add_to_page('questionnairename', format_string($questionnaire->name));
 
 // Print the main part of the page.
 if ($questionnaire->intro) {
