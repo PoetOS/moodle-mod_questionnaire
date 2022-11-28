@@ -11,10 +11,10 @@ jobs:
           - php: '8.0'
             moodle-branch: 'master'
             database: 'pgsql'
-          - php: '7.4'
+          - php: '8.0'
             moodle-branch: 'MOODLE_400_STABLE'
             database: 'pgsql'
-          - php: '7.3'
+          - php: '7.4'
             moodle-branch: 'MOODLE_400_STABLE'
             database: 'mariadb'
 
