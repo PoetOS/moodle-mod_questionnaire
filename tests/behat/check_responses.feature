@@ -80,3 +80,44 @@ Feature: Review responses
     And I press "Delete"
     Then I should see "You are not eligible to take this questionnaire."
     And I should not see "View all responses"
+
+  @javascript
+  Scenario: Choices with HTML should display filtered HTML in the responses on the response page
+    Given the following "users" exist:
+      | username | firstname | lastname | email |
+      | teacher1 | Teacher | 1 | teacher1@example.com |
+      | student1 | Student | 1 | student1@example.com |
+    And the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 1 | C1 | 0 |
+    And the following "course enrolments" exist:
+      | user | course | role |
+      | teacher1 | C1 | editingteacher |
+      | student1 | C1 | student |
+    And the following "activities" exist:
+      | activity | name | description | course | idnumber |
+      | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
+    And I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test questionnaire"
+    And I navigate to "Questions" in current page administration
+    And I add a "Check Boxes" question and I fill the form with:
+      | Question Name | Q1 |
+      | Yes | y |
+      | Min. forced responses | 1 |
+      | Max. forced responses | 2 |
+      | Question Text | Select one or two choices only |
+      | Possible answers | <b>One</b>,Two,Three,Four |
+    And I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Test questionnaire"
+    And I navigate to "Answer the questions..." in current page administration
+    Then I should see "Select one or two choices only"
+    # And I set the field "Do you own a car?" to "y"
+    And I set the field "One" to "checked"
+    And I press "Submit questionnaire"
+    And I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test questionnaire"
+    And I navigate to "View all responses" in current page administration
+    Then "//b[text()='One']" "xpath_element" should exist
