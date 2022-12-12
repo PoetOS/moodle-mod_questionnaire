@@ -756,7 +756,7 @@ function questionnaire_check_page_breaks($questionnaire) {
 
         $dependencies = $DB->get_records('questionnaire_dependency', ['questionid' => $key , 'surveyid' => $sid],
                 'id ASC', 'id, dependquestionid, dependchoiceid, dependlogic');
-        $positions[$qu->position]['dependencies'] = $dependencies;
+        $positions[$qu->position]['dependencies'] = $dependencies ?? [];
     }
     $count = count($positions);
 
