@@ -69,7 +69,7 @@ if (!$questionnaire->capabilities->editquestions) {
 }
 
 $questionnairehasdependencies = $questionnaire->has_dependencies();
-$haschildren = [];
+$dependants = null;
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
@@ -182,17 +182,16 @@ if ($action == 'main') {
             if ($qtype == QUESPAGEBREAK) {
                 redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.'&amp;delq='.$qid);
             }
+
+            $action = "confirmdelquestion";
             if ($questionnairehasdependencies) {
                 // Important: due to possibly multiple parents per question
                 // just remove the dependency and inform the user about it.
-                $haschildren = $questionnaire->get_all_dependants($qid);
+                $dependants = $questionnaire->get_all_dependants($qid);
+                if (!(empty($dependants->directs) && empty($dependants->indirects))) {
+                    $action = "confirmdelquestionparent";
+                }
             }
-            if (count($haschildren) != 0) {
-                $action = "confirmdelquestionparent";
-            } else {
-                $action = "confirmdelquestion";
-            }
-
         } else if (isset($qformdata->editbutton)) {
             // Switch to edit question screen.
             $action = 'question';
@@ -400,12 +399,14 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     if ($action == "confirmdelquestionparent") {
         $strnum = get_string('position', 'questionnaire');
         $qid = key($qformdata->removebutton);
-        // Show the dependencies and inform about the dependencies to be removed.
-        // Split dependencies in direct and indirect ones to separate for the confirm-dialogue. Only direct ones will be deleted.
-        // List direct dependencies.
-        $msg .= $questionnaire->renderer->dependency_warnings($haschildren->directs, 'directwarnings', $strnum);
-        // List indirect dependencies.
-        $msg .= $questionnaire->renderer->dependency_warnings($haschildren->indirects, 'indirectwarnings', $strnum);
+        if ($dependants) {
+            // Show the dependencies and inform about the dependencies to be removed.
+            // Split dependencies in direct and indirect ones to separate for the confirm-dialogue. Only direct ones will be deleted.
+            // List direct dependencies.
+            $msg .= $questionnaire->renderer->dependency_warnings($dependants->directs, 'directwarnings', $strnum);
+            // List indirect dependencies.
+            $msg .= $questionnaire->renderer->dependency_warnings($dependants->indirects, 'indirectwarnings', $strnum);
+        }
     }
     $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
 
