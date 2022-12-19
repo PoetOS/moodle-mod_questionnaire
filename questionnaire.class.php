@@ -3169,7 +3169,7 @@ class questionnaire {
         if (in_array('id', $options)) {
             array_push($positioned, $uid);
         }
-        if (in_array('idnumber', $options)) {
+        if (in_array('useridnumber', $options)) {
             array_push($positioned, $user->idnumber);
         }
         if (in_array('fullname', $options)) {
@@ -3228,7 +3228,7 @@ class questionnaire {
         $columns = array();
         $types = array();
         foreach ($options as $option) {
-            if (in_array($option, array('response', 'submitted', 'id'))) {
+            if (in_array($option, array('response', 'submitted', 'id', 'useridnumber'))) {
                 $columns[] = get_string($option, 'questionnaire');
                 $types[] = 0;
             } else {
