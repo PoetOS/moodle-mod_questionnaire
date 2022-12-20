@@ -3012,6 +3012,7 @@ class questionnaire {
             $userfieldsarr = get_all_user_name_fields();
         }
         $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution']);
+        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution', 'idnumber']);
         return $userfieldsarr;
     }
 
@@ -3182,6 +3183,9 @@ class questionnaire {
         if (in_array('id', $options)) {
             array_push($positioned, $uid);
         }
+        if (in_array('useridnumber', $options)) {
+            array_push($positioned, $user->idnumber);
+        }
         if (in_array('fullname', $options)) {
             array_push($positioned, $fullname);
         }
@@ -3241,7 +3245,7 @@ class questionnaire {
         $columns = array();
         $types = array();
         foreach ($options as $option) {
-            if (in_array($option, array('response', 'submitted', 'id'))) {
+            if (in_array($option, array('response', 'submitted', 'id', 'useridnumber'))) {
                 $columns[] = get_string($option, 'questionnaire');
                 $types[] = 0;
             } else if ($option == 'useridentityfields') {
