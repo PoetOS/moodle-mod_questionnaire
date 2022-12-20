@@ -67,10 +67,7 @@ $PAGE->set_heading(format_string($course->fullname));
 echo $questionnaire->renderer->header();
 $questionnaire->page->add_to_page('questionnairename', format_string($questionnaire->name));
 
-// Print the main part of the page in case a moodle version < 4.0 is used.
-if ($questionnaire->intro && $CFG->version < 2022041900) {
-    $questionnaire->page->add_to_page('intro', format_module_intro('questionnaire', $questionnaire, $cm->id));
-}
+// No need to print out intro in Moodle 4 and above.
 
 $cm = $questionnaire->cm;
 $currentgroupid = groups_get_activity_group($cm);
