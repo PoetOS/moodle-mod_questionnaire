@@ -9,14 +9,11 @@ jobs:
       matrix:
         include:
           - php: '8.0'
-            moodle-branch: 'MOODLE_401_STABLE'
-            database: 'pgsql'
-          - php: '8.0'
-            moodle-branch: 'MOODLE_400_STABLE'
-            database: 'pgsql'
-          - php: '7.4'
-            moodle-branch: 'MOODLE_400_STABLE'
+            moodle-branch: 'master'
             database: 'mariadb'
+          - php: '8.0'
+            moodle-branch: 'master'
+            database: 'pgsql'
 
     services:
       postgres:
