@@ -23,7 +23,7 @@ Feature: Download the results of a questionnaire, if it contains text and date q
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I follow "Questions"
+    And I navigate to "Questions" in current page administration
     Then I should see "Add questions"
     And I add a "Text Box" question and I fill the form with:
       | Question Name | Q1                 |
