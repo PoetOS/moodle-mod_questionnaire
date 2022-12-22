@@ -41,6 +41,7 @@ define('QUESDROP', 6);
 define('QUESRATE', 8);
 define('QUESDATE', 9);
 define('QUESNUMERIC', 10);
+define('QUESSLIDER', 11);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
 
@@ -117,7 +118,8 @@ abstract class question {
         QUESDATE => 'date',
         QUESNUMERIC => 'numerical',
         QUESPAGEBREAK => 'pagebreak',
-        QUESSECTIONTEXT => 'sectiontext'
+        QUESSECTIONTEXT => 'sectiontext',
+        QUESSLIDER => 'slider',
     ];
 
     /** @var array $notifications Array of extra messages for display purposes. */
@@ -1563,6 +1565,9 @@ abstract class question {
         ];
         $mobiledata->choices = $this->mobile_question_choices_display();
 
+        if ($this->mobile_question_extradata_display()) {
+            $mobiledata->extradata = json_decode($this->extradata);
+        }
         if ($autonum) {
             $mobiledata->content = $qnum . '. ' . $mobiledata->content;
             $mobiledata->content_stripped = $qnum . '. ' . $mobiledata->content_stripped;
@@ -1616,5 +1621,23 @@ abstract class question {
         }
 
         return $resultdata;
+    }
+
+    /**
+     * True if question need extradata for mobile app.
+     *
+     * @return bool
+     */
+    public function mobile_question_extradata_display() {
+        return false;
+    }
+
+    /**
+     * Return the otherdata to be used by the mobile app.
+     *
+     * @return array
+     */
+    public function mobile_otherdata() {
+        return [];
     }
 }

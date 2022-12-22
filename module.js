@@ -242,3 +242,34 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
     }, '#checkstarted');
 
 };
+M.mod_questionnaire.init_slider = function(Y) {
+    const allRanges = document.querySelectorAll(".slider");
+    allRanges.forEach(wrap => {
+        const range = wrap.querySelector("input.questionnaire-slider");
+        const bubble = wrap.querySelector(".bubble");
+
+        range.addEventListener("input", () => {
+            setBubble(range, bubble);
+        });
+        setBubble(range, bubble);
+    });
+
+    function setBubble(range, bubble) {
+        const val = range.value;
+        const min = range.min ? range.min : 0;
+        const max = range.max ? range.max : 100;
+        var newVal = Number(((val - min) * 100) / (max - min));
+        var positiveVal = '';
+        if (range.min && range.min < 0) {
+            if (range.max && range.max > 0) {
+                if (val > 0) {
+                    positiveVal = '+';
+                }
+            }
+        }
+        bubble.innerHTML = positiveVal + val;
+
+        // Sorta magic numbers based on size of the native UI thumb
+        bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
+    }
+};

@@ -86,6 +86,12 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         $this->create_test_question(QUESTEXT, '\\mod_questionnaire\\question\\text', $questiondata);
     }
 
+    public function test_create_question_slider() {
+        $questiondata = array(
+                'content' => 'Enter a number');
+        $this->create_test_question(QUESSLIDER, '\\mod_questionnaire\\question\\slider', $questiondata);
+    }
+
     public function test_create_question_yesno() {
         $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', array('content' => 'Enter yes or no'));
     }

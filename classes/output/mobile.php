@@ -258,6 +258,10 @@ class mobile {
             $question = $questionnaire->questions[$questionid];
             if ($question->supports_mobile()) {
                 $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
+                $mobileotherdata = $question->mobile_otherdata();
+                if (!empty($mobileotherdata)) {
+                    $responses = array_merge($responses, $mobileotherdata);
+                }
                 if (($response !== null) && isset($response->answers[$questionid])) {
                     $responses = array_merge($responses, $question->get_mobile_response_data($response));
                 }

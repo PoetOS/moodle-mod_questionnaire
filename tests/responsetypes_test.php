@@ -90,6 +90,33 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('This is my essay.', $textresponse->response);
     }
 
+    public function test_create_response_slider() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Some common variables used below.
+        $userid = 1;
+
+        // Set up a questionnaire with one text response question.
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questiondata = ['content' => 'Enter some text'];
+        $questionnaire = $generator->create_test_questionnaire($course, QUESSLIDER, $questiondata);
+        $question = reset($questionnaire->questions);
+        $response = $generator->create_question_response($questionnaire, $question, 5, $userid);
+
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $response->id, $userid);
+
+        // Retrieve the specific text response.
+        $textresponses = $DB->get_records('questionnaire_response_text', ['response_id' => $response->id]);
+        $this->assertEquals(1, count($textresponses));
+        $textresponse = reset($textresponses);
+        $this->assertEquals($question->id, $textresponse->question_id);
+        $this->assertEquals(5, $textresponse->response);
+    }
+
     public function test_create_response_date() {
         global $DB;
 

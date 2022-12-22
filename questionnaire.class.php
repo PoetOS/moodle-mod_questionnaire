@@ -3245,7 +3245,8 @@ class questionnaire {
             '0',    // 7: rating -> number
             '0',    // 8: rate -> number
             '1',    // 9: date -> string
-            '0'     // 10: numeric -> number.
+            '0',    // 10: numeric -> number.
+            '0',    // 11: slider -> number.
         );
 
         if (!$survey = $DB->get_record('questionnaire_survey', array('id' => $this->survey->id))) {
@@ -4036,7 +4037,7 @@ class questionnaire {
         global $DB, $CFG; // Do not delete "$CFG".
 
         $ret = [];
-        $response = $this->build_response_from_appdata($responses, $sec);
+        $response = $this->build_response_from_appdata((object)$responses, $sec);
         $response->sec = $sec;
         $response->rid = $rid;
         $response->id = $rid;

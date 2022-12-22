@@ -36,7 +36,7 @@ $addons = [
                 'method' => 'mobile_view_activity',
                 'styles' => [
                     'url' => $CFG->wwwroot . '/mod/questionnaire/styles_app.css',
-                    'version' => '1.4'
+                    'version' => '1.5'
                 ]
             ]
         ],
