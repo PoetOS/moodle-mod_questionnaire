@@ -90,6 +90,36 @@ class edit_question_form extends \moodleform {
             }
         }
 
+        // If this is a slider question.
+        if ($data['type_id'] == QUESSLIDER) {
+            if (isset($data['minrange']) && isset($data['maxrange']) && isset($data['startingvalue']) &&
+                    isset($data['stepvalue'])) {
+                if ($data['minrange'] >= $data['maxrange']) {
+                    $errors['maxrange'] = get_string('invalidrange', 'questionnaire');
+                }
+
+                if (($data['startingvalue'] > $data['maxrange']) || ($data['startingvalue'] < $data['minrange'])) {
+                    $errors['startingvalue'] = get_string('invalidstartingvalue', 'questionnaire');
+                }
+
+                if ($data['startingvalue'] > 100 || $data['startingvalue'] < -100) {
+                    $errors['startingvalue'] = get_string('invalidstartingvalue', 'questionnaire');
+                }
+
+                if (($data['stepvalue'] > $data['maxrange']) || $data['stepvalue'] < 1) {
+                    $errors['stepvalue'] = get_string('invalidincrement', 'questionnaire');
+                }
+
+                if ($data['minrange'] < -100) {
+                    $errors['minrange'] = get_string('invalidminmaxrange', 'questionnaire');
+                }
+
+                if ($data['maxrange'] > 100) {
+                    $errors['maxrange'] = get_string('invalidminmaxrange', 'questionnaire');
+                }
+            }
+        }
+
         return $errors;
     }
 

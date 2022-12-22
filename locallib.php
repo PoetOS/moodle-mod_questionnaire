@@ -487,6 +487,8 @@ function questionnaire_get_type ($id) {
             return get_string('date', 'questionnaire');
         case 10:
             return get_string('numeric', 'questionnaire');
+        case 11:
+            return get_string('slider', 'questionnaire');
         case 100:
             return get_string('sectiontext', 'questionnaire');
         case 99:

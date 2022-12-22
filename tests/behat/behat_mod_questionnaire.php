@@ -118,7 +118,8 @@ class behat_mod_questionnaire extends behat_base {
             'Radio Buttons',
             'Rate (scale 1..5)',
             'Text Box',
-            'Yes/No');
+            'Yes/No',
+            'Slider');
 
         if (!in_array($questiontype, $validtypes)) {
             throw new ExpectationException('Invalid question type specified.', $this->getSession());

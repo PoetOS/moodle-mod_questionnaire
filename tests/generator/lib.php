@@ -386,6 +386,10 @@ class mod_questionnaire_generator extends testing_module_generator {
                 break;
             case QUESPAGEBREAK:
                 $qtype = 'sectionbreak';
+                break;
+            case QUESSLIDER:
+                $qtype = 'Slider';
+                break;
         }
         return $qtype;
     }
@@ -429,6 +433,10 @@ class mod_questionnaire_generator extends testing_module_generator {
                 break;
             case QUESPAGEBREAK:
                 $qtype = 'Section Break';
+                break;
+            case QUESSLIDER:
+                $qtype = 'Slider';
+                break;
         }
         return $qtype;
     }
@@ -651,6 +659,9 @@ class mod_questionnaire_generator extends testing_module_generator {
                     }
                     $responses[] = new question_response($question->id, $answers);
                     break;
+                case QUESSLIDER :
+                    $responses[] = new question_response($question->id, 5);
+                    break;
             }
 
         }
@@ -671,7 +682,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $dg = $this->datagenerator;
         $qdg = $this;
 
-        $questiontypes = [QUESTEXT, QUESESSAY, QUESNUMERIC, QUESDATE, QUESRADIO, QUESDROP, QUESCHECK, QUESRATE];
+        $questiontypes = [QUESTEXT, QUESESSAY, QUESNUMERIC, QUESDATE, QUESRADIO, QUESDROP, QUESCHECK, QUESRATE, QUESSLIDER];
         $students = [];
         $courses = [];
         $questionnaires = [];
