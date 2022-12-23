@@ -85,6 +85,14 @@ class drop extends question {
     }
 
     /**
+     * Return any necessary tag information for labels.
+     * @return string[]
+     */
+    protected function get_label() {
+        return ['for' => self::qtypename($this->type_id) . $this->name];
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param \mod_questionnaire\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.

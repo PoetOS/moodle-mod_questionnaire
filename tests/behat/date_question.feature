@@ -5,9 +5,9 @@ Feature: Date question
 
   Scenario: Add a questionnaire to a course with a date question
     Given the following "users" exist:
-      | username | firstname | lastname | email |
-      | teacher1 | Teacher | 1 | teacher1@example.com |
-      | student1 | Student | 1 | student1@example.com |
+      | username | firstname | lastname | email                |
+      | teacher1 | Teacher   | 1        | teacher1@example.com |
+      | student1 | Student   | 1        | student1@example.com |
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1 | 0 |
@@ -36,9 +36,11 @@ Feature: Date question
     And I follow "Test questionnaire"
     And I navigate to "Answer the questions..." in current page administration
     And I should see "What is your birth date?"
-    And I set the field "What is your birth date?" to "02/05/1975"
+    And I set the field "What is your birth date?" to "2012-03-21T12:00:00"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
+    Then I should see "What is your birth date?"
+    And I should see "2012-03-21"
     And I log out
 

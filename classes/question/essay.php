@@ -61,6 +61,14 @@ class essay extends text {
     }
 
     /**
+     * Return any necessary tag information for labels.
+     * @return string[]
+     */
+    protected function get_label() {
+        return ['for' => 'edit-q' . $this->id];
+    }
+
+    /**
      * Question specific display method.
      * @param response $response
      * @param array $descendantsdata

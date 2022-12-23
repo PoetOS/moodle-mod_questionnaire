@@ -943,21 +943,21 @@ abstract class question {
             $this->content = '';
         }
         $pagetags->skippedclass = $skippedclass;
-        if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT) {
-            $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->id];
-        } else if ($this->type_id == QUESDROP) {
-            $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->name];
-        } else if ($this->type_id == QUESESSAY) {
-            $pagetags->label = (object)['for' => 'edit-q' . $this->id];
-        } else {
-            $pagetags->label = (object)['for' => 'q' . $this->id];
-        }
+        $pagetags->label = (object)$this->get_label();
         $options = ['noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
         $content = format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
             $this->context->id, 'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options);
         $pagetags->qcontent = $content;
 
         return $pagetags;
+    }
+
+    /**
+     * Return any necessary tag information for labels.
+     * @return string[]
+     */
+    protected function get_label() {
+        return ['for' => 'q' . $this->id];
     }
 
     // This section contains functions for editing the specific question types.

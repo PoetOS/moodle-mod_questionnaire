@@ -72,6 +72,14 @@ class text extends question {
     }
 
     /**
+     * Return any necessary tag information for labels.
+     * @return string[]
+     */
+    protected function get_label() {
+        return ['for' => self::qtypename($this->type_id) . $this->id];
+    }
+
+    /**
      * Question specific display method.
      * @param \stdClass $response
      * @param array $descendantsdata
