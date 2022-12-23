@@ -43,4 +43,3 @@ Feature: Date question
     Then I should see "What is your birth date?"
     And I should see "2012-03-21"
     And I log out
-
