@@ -1,8 +1,7 @@
 @mod @mod_questionnaire @javascript
 Feature: Date question
   A date type question can be added and completed.
-
-
+  
   Scenario: Add a questionnaire to a course with a date question
     Given the following "users" exist:
       | username | firstname | lastname | email                |
