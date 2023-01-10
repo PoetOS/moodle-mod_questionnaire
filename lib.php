@@ -342,7 +342,7 @@ function questionnaire_get_user_grades($questionnaire, $userid=0) {
     $sql = "SELECT r.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
             FROM {user} u, {questionnaire_response} r
             WHERE u.id = r.userid AND r.questionnaireid = $questionnaire->id AND r.complete = 'y' $usersql";
-    return $DB->get_records_sql($sql, $params);
+    return $DB->get_records_sql($sql, $params) ?? [];
 }
 
 /**
@@ -1061,7 +1061,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
             // Deadline.
             $str .= $OUTPUT->box(get_string('closeson', 'questionnaire', userdate($questionnaire->closedate)), 'info');
             $attempts = $DB->get_records('questionnaire_response',
-                ['questionnaireid' => $questionnaire->id, 'userid' => $USER->id, 'complete' => 'y']);
+                ['questionnaireid' => $questionnaire->id, 'userid' => $USER->id, 'complete' => 'y']) ?? [];
             $nbattempts = count($attempts);
 
             // Do not display a questionnaire as due if it can only be sumbitted once and it has already been submitted!

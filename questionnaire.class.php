@@ -864,7 +864,7 @@ class questionnaire {
         }
 
         $sql .= ' ORDER BY r.id';
-        return $DB->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, $params) ?? [];
     }
 
     /**
@@ -1774,42 +1774,45 @@ class questionnaire {
         }
 
         // Replicate all dependency data.
-        $dependquestions = $DB->get_records('questionnaire_dependency', ['surveyid' => $this->survey->id], 'questionid');
-        foreach ($dependquestions as $dquestion) {
-            $record = new stdClass();
-            $record->questionid = $qidarray[$dquestion->questionid];
-            $record->surveyid = $newsid;
-            $record->dependquestionid = $qidarray[$dquestion->dependquestionid];
-            // The response may not use choice id's (example boolean). If not, just copy the value.
-            $responsetype = $this->questions[$dquestion->dependquestionid]->responsetype;
-            if ($responsetype->transform_choiceid($dquestion->dependchoiceid) == $dquestion->dependchoiceid) {
-                $record->dependchoiceid = $cidarray[$dquestion->dependchoiceid];
-            } else {
-                $record->dependchoiceid = $dquestion->dependchoiceid;
+        if ($dependquestions = $DB->get_records('questionnaire_dependency', ['surveyid' => $this->survey->id], 'questionid')) {
+            foreach ($dependquestions as $dquestion) {
+                $record = new stdClass();
+                $record->questionid = $qidarray[$dquestion->questionid];
+                $record->surveyid = $newsid;
+                $record->dependquestionid = $qidarray[$dquestion->dependquestionid];
+                // The response may not use choice id's (example boolean). If not, just copy the value.
+                $responsetype = $this->questions[$dquestion->dependquestionid]->responsetype;
+                if ($responsetype->transform_choiceid($dquestion->dependchoiceid) == $dquestion->dependchoiceid) {
+                    $record->dependchoiceid = $cidarray[$dquestion->dependchoiceid];
+                } else {
+                    $record->dependchoiceid = $dquestion->dependchoiceid;
+                }
+                $record->dependlogic = $dquestion->dependlogic;
+                $record->dependandor = $dquestion->dependandor;
+                $DB->insert_record('questionnaire_dependency', $record);
             }
-            $record->dependlogic = $dquestion->dependlogic;
-            $record->dependandor = $dquestion->dependandor;
-            $DB->insert_record('questionnaire_dependency', $record);
         }
 
         // Replicate any feedback data.
         // TODO: Need to handle image attachments (same for other copies above).
-        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->survey->id], 'id');
-        foreach ($fbsections as $fbsid => $fbsection) {
-            $fbsection->surveyid = $newsid;
-            $scorecalculation = section::decode_scorecalculation($fbsection->scorecalculation);
-            $newscorecalculation = [];
-            foreach ($scorecalculation as $qid => $val) {
-                $newscorecalculation[$qidarray[$qid]] = $val;
-            }
-            $fbsection->scorecalculation = serialize($newscorecalculation);
-            unset($fbsection->id);
-            $newfbsid = $DB->insert_record('questionnaire_fb_sections', $fbsection);
-            $feedbackrecs = $DB->get_records('questionnaire_feedback', ['sectionid' => $fbsid], 'id');
-            foreach ($feedbackrecs as $feedbackrec) {
-                $feedbackrec->sectionid = $newfbsid;
-                unset($feedbackrec->id);
-                $DB->insert_record('questionnaire_feedback', $feedbackrec);
+        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->survey->id], 'id')) {
+            foreach ($fbsections as $fbsid => $fbsection) {
+                $fbsection->surveyid = $newsid;
+                $scorecalculation = section::decode_scorecalculation($fbsection->scorecalculation);
+                $newscorecalculation = [];
+                foreach ($scorecalculation as $qid => $val) {
+                    $newscorecalculation[$qidarray[$qid]] = $val;
+                }
+                $fbsection->scorecalculation = serialize($newscorecalculation);
+                unset($fbsection->id);
+                $newfbsid = $DB->insert_record('questionnaire_fb_sections', $fbsection);
+                if ($feedbackrecs = $DB->get_records('questionnaire_feedback', ['sectionid' => $fbsid], 'id')) {
+                    foreach ($feedbackrecs as $feedbackrec) {
+                        $feedbackrec->sectionid = $newfbsid;
+                        unset($feedbackrec->id);
+                        $DB->insert_record('questionnaire_feedback', $feedbackrec);
+                    }
+                }
             }
         }
 
@@ -1843,22 +1846,24 @@ class questionnaire {
         }
         $qnum = $i - 1;
 
-        foreach ($this->questionsbysec[$section] as $questionid) {
-            $tid = $this->questions[$questionid]->type_id;
-            if ($tid != QUESSECTIONTEXT) {
-                $qnum++;
-            }
-            if (!$this->questions[$questionid]->response_complete($formdata)) {
-                $missing++;
-                $strnum = get_string('num', 'questionnaire').$qnum.'. ';
-                $strmissing .= $strnum;
-                // Pop-up   notification at the point of the error.
-                $strnoti = get_string('missingquestion', 'questionnaire').$strnum;
-                $this->questions[$questionid]->add_notification($strnoti);
-            }
-            if (!$this->questions[$questionid]->response_valid($formdata)) {
-                $wrongformat++;
-                $strwrongformat .= get_string('num', 'questionnaire').$qnum.'. ';
+        if (key_exists($section, $this->questionsbysec)) {
+            foreach ($this->questionsbysec[$section] as $questionid) {
+                $tid = $this->questions[$questionid]->type_id;
+                if ($tid != QUESSECTIONTEXT) {
+                    $qnum++;
+                }
+                if (!$this->questions[$questionid]->response_complete($formdata)) {
+                    $missing++;
+                    $strnum = get_string('num', 'questionnaire') . $qnum . '. ';
+                    $strmissing .= $strnum;
+                    // Pop-up   notification at the point of the error.
+                    $strnoti = get_string('missingquestion', 'questionnaire') . $strnum;
+                    $this->questions[$questionid]->add_notification($strnoti);
+                }
+                if (!$this->questions[$questionid]->response_valid($formdata)) {
+                    $wrongformat++;
+                    $strwrongformat .= get_string('num', 'questionnaire') . $qnum . '. ';
+                }
             }
         }
         $message = '';
@@ -3014,7 +3019,7 @@ class questionnaire {
 
         // If a questionnaire is "public", and this is the master course, need to get responses from all instances.
         if ($this->survey_is_public_master()) {
-            $qids = array_keys($DB->get_records('questionnaire', ['sid' => $this->sid], 'id'));
+            $qids = array_keys($DB->get_records('questionnaire', ['sid' => $this->sid], 'id') ?? []);
         } else {
             $qids = $this->id;
         }
@@ -3032,7 +3037,7 @@ class questionnaire {
 
         $allresponsessql .= " ORDER BY usrid, id";
         $allresponses = $DB->get_recordset_sql($allresponsessql, $allresponsesparams);
-        return $allresponses;
+        return $allresponses ?? [];
     }
 
     /**
@@ -3785,11 +3790,12 @@ class questionnaire {
             $sectionlabel = $fbsections[$sectionid]->sectionlabel;
 
             $sectionheading = $fbsections[$sectionid]->sectionheading;
-            $feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $sectionid]);
             $labels = array();
-            foreach ($feedbacks as $feedback) {
-                if ($feedback->feedbacklabel != '') {
-                    $labels[] = $feedback->feedbacklabel;
+            if ($feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $sectionid])) {
+                foreach ($feedbacks as $feedback) {
+                    if ($feedback->feedbacklabel != '') {
+                        $labels[] = $feedback->feedbacklabel;
+                    }
                 }
             }
             $feedback = $DB->get_record_select('questionnaire_feedback',
