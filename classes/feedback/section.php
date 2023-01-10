@@ -219,13 +219,14 @@ class section {
         $DB->delete_records(self::TABLE, ['id' => $this->id]);
 
         // Resequence the section numbers as necessary.
-        $allsections = $DB->get_records(self::TABLE, ['surveyid' => $this->surveyid], 'section ASC');
-        $count = 1;
-        foreach ($allsections as $id => $section) {
-            if ($section->section != $count) {
-                $DB->set_field(self::TABLE, 'section', $count, ['id' => $id]);
+        if ($allsections = $DB->get_records(self::TABLE, ['surveyid' => $this->surveyid], 'section ASC')) {
+            $count = 1;
+            foreach ($allsections as $id => $section) {
+                if ($section->section != $count) {
+                    $DB->set_field(self::TABLE, 'section', $count, ['id' => $id]);
+                }
+                $count++;
             }
-            $count++;
         }
     }
 

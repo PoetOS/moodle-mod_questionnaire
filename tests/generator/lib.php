@@ -22,6 +22,7 @@ use mod_questionnaire\generator\question_response,
 
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
  * The mod_questionnaire data generator.
@@ -32,6 +33,11 @@ require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_questionnaire_generator extends testing_module_generator {
+
+    /**
+     * @var int Current position of assigned options.
+     */
+    protected $curpos = 0;
 
     /**
      * @var int keep track of how many questions have been created.
@@ -578,8 +584,6 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param int $number
      */
     public function assign_opts($number = 5) {
-        static $curpos = 0;
-
         $opts = 'blue, red, yellow, orange, green, purple, white, black, earth, wind, fire, space, car, truck, train' .
             ', van, tram, one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve, thirteen' .
             ', fourteen, fifteen, sixteen, seventeen, eighteen, nineteen, twenty, happy, sad, jealous, angry';
@@ -592,10 +596,10 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $retopts = [];
         while (count($retopts) < $number) {
-            $retopts[] = $opts[$curpos];
+            $retopts[] = $opts[$this->curpos];
             $retopts = array_unique($retopts);
-            if (++$curpos == $numopts) {
-                $curpos = 0;
+            if (++$this->curpos == $numopts) {
+                $this->curpos = 0;
             }
         }
         // Return re-indexed version of array (otherwise you can get a weird index of 1,2,5,9, etc).
@@ -682,6 +686,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $dg = $this->datagenerator;
         $qdg = $this;
 
+        $this->curpos = 0;
         $questiontypes = [QUESTEXT, QUESESSAY, QUESNUMERIC, QUESDATE, QUESRADIO, QUESDROP, QUESCHECK, QUESRATE, QUESSLIDER];
         $students = [];
         $courses = [];

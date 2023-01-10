@@ -140,7 +140,7 @@ abstract class question {
 
         if ($qtypes === null) {
             $qtypes = $DB->get_records('questionnaire_question_type', [], 'typeid',
-                                       'typeid, type, has_choices, response_table');
+                                       'typeid, type, has_choices, response_table') ?? [];
         }
 
         if ($id) {
@@ -282,14 +282,15 @@ abstract class question {
         global $DB;
 
         $this->dependencies = [];
-        $dependencies = $DB->get_records('questionnaire_dependency',
-            ['questionid' => $this->id , 'surveyid' => $this->surveyid], 'id ASC');
-        foreach ($dependencies as $dependency) {
-            $this->dependencies[$dependency->id] = new \stdClass();
-            $this->dependencies[$dependency->id]->dependquestionid = $dependency->dependquestionid;
-            $this->dependencies[$dependency->id]->dependchoiceid = $dependency->dependchoiceid;
-            $this->dependencies[$dependency->id]->dependlogic = $dependency->dependlogic;
-            $this->dependencies[$dependency->id]->dependandor = $dependency->dependandor;
+        if ($dependencies = $DB->get_records('questionnaire_dependency',
+            ['questionid' => $this->id , 'surveyid' => $this->surveyid], 'id ASC')) {
+            foreach ($dependencies as $dependency) {
+                $this->dependencies[$dependency->id] = new \stdClass();
+                $this->dependencies[$dependency->id]->dependquestionid = $dependency->dependquestionid;
+                $this->dependencies[$dependency->id]->dependchoiceid = $dependency->dependchoiceid;
+                $this->dependencies[$dependency->id]->dependlogic = $dependency->dependlogic;
+                $this->dependencies[$dependency->id]->dependandor = $dependency->dependandor;
+            }
         }
     }
 
