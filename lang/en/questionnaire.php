@@ -149,6 +149,7 @@ $string['downloadtextformat_help'] = 'This feature enables you to save all the r
 $string['downloadtextformat_link'] = 'mod/questionnaire/report#Download_in_text_format';
 $string['downloadtypes'] = 'Report type';
 $string['dropdown'] = 'Dropdown Box';
+$string['dropdownbox'] = 'Dropdown Box';
 $string['dropdown_help'] = 'There is no real advantage to using the Dropdown Box over using the Radio Buttons
  except perhaps for longish lists of options, to save screen space.';
 $string['dropdown_link'] = 'mod/questionnaire/questions#Dropdown_Box';
@@ -386,6 +387,8 @@ $string['overviewnumrespvw'] = 'responses';
 $string['overviewnumrespvw1'] = 'response';
 $string['owner'] = 'Owner';
 $string['page'] = 'Page';
+$string['pagebreak'] = '----- Page Break -----';
+$string['pagebreak_help'] = '----- Page Break -----';
 $string['pageof'] = 'Page {$a->page} of {$a->totpages}';
 $string['parent'] = 'Parent';
 $string['participant'] = 'Participant';

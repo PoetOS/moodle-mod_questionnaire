@@ -105,6 +105,7 @@
         <FIELD NAME="type" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="has_choices" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false"/>
         <FIELD NAME="response_table" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="fqcn" TYPE="char" LENGTH="256" NOTNULL="true" SEQUENCE="false" DEFAULT="fqcn"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
