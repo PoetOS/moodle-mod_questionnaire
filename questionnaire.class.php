@@ -4036,7 +4036,7 @@ class questionnaire {
         global $DB, $CFG; // Do not delete "$CFG".
 
         $ret = [];
-        $response = $this->build_response_from_appdata($responses, $sec);
+        $response = $this->build_response_from_appdata((object) $responses, $sec);
         $response->sec = $sec;
         $response->rid = $rid;
         $response->id = $rid;
