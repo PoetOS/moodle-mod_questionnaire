@@ -544,20 +544,19 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
  *
  * $settings is unused, but API requires it. Suppress PHPMD warning.
  */
-function questionnaire_extend_settings_navigation(settings_navigation $settings,
-        navigation_node $questionnairenode) {
+function questionnaire_extend_settings_navigation(settings_navigation $settings, navigation_node $questionnairenode) {
+    global $DB, $USER, $CFG;
 
-    global $PAGE, $DB, $USER, $CFG;
     $individualresponse = optional_param('individualresponse', false, PARAM_INT);
     $rid = optional_param('rid', false, PARAM_INT); // Response id.
     $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 
     require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
-    $context = $PAGE->cm->context;
-    $cmid = $PAGE->cm->id;
-    $cm = $PAGE->cm;
-    $course = $PAGE->course;
+    $cm = $settings->get_page()->cm;
+    $context = $cm->context;
+    $cmid = $cm->id;
+    $course = $settings->get_page()->course;
 
     if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
         throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
