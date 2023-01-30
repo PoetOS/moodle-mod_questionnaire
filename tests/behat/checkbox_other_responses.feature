@@ -44,5 +44,5 @@ Feature: Checkbox questions can have other options that can be typed in.
     And I set the field "Other" to "checked"
     And I set the field "Other colour" to "checked"
     And I press "Submit questionnaire"
-    Then I should see "There is something wrong with your answer to question: #1."
-    And I should see "There is something wrong with your answer to question: #2."
+    Then I should see "There is something wrong with your answer to questions:"
+    And I should see "#1. #2."
