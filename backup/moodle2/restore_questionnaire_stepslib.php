@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+use mod_questionnaire\feedback\section;
 
 /**
  * Define all the restore steps that will be used by the restore_questionnaire_activity_task.
@@ -189,7 +190,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         // If this questionnaire has separate sections feedbacks.
         if (isset($data->scorecalculation)) {
-            $scorecalculation = unserialize($data->scorecalculation);
+            $scorecalculation = section::decode_scorecalculation($data->scorecalculation);
             $newscorecalculation = array();
             foreach ($scorecalculation as $qid => $val) {
                 $newqid = $this->get_mappingid('questionnaire_question', $qid);
