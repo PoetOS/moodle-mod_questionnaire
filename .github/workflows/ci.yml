@@ -4,6 +4,28 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: 'ubuntu-latest'
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: 'postgres'
+          POSTGRES_HOST_AUTH_METHOD: 'trust'
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+      mariadb:
+        image: mariadb:10
+        env:
+          MYSQL_USER: 'root'
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
+          MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
+
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
+
     strategy:
       fail-fast: false
       matrix:
@@ -18,32 +40,9 @@ jobs:
             moodle-branch: 'MOODLE_400_STABLE'
             database: 'mariadb'
 
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: 'postgres'
-          POSTGRES_HOST_AUTH_METHOD: 'trust'
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 3
-        ports:
-          - 5432:5432
-
-      mariadb:
-        image: mariadb:10
-        env:
-          MYSQL_USER: 'root'
-          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
-
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: plugin
 
@@ -53,6 +52,8 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: ${{ matrix.extensions }}
           ini-values: max_input_vars=5000
+          # none to use phpdbg fallback. Specify pcov (Moodle 3.10 and up) or xdebug to use them instead.
+          coverage: none
 
       - name: Deploy moodle-plugin-ci
         run: |
