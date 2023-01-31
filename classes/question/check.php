@@ -215,7 +215,7 @@ class check extends question {
                 }
             }
         }
-       return parent::response_complete($responsedata);
+        return parent::response_complete($responsedata);
     }
 
     /**
