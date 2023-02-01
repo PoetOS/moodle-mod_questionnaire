@@ -275,7 +275,7 @@ class section {
             throw new coding_exception('Invalid scorecalculation format.');
         }
         if (!empty($codedstring)) {
-            $scorecalculation = unserialize($codedstring);
+            $scorecalculation = unserialize_array($codedstring) ?: [];
         } else {
             $scorecalculation = [];
         }
