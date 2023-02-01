@@ -3969,24 +3969,26 @@ class questionnaire {
             default:
         }
 
-        foreach ($allscore as $key => $sc) {
-            if (isset($chartlabels[$key])) {
-                $lb = explode("|", $chartlabels[$key]);
-                $oppositescore = '';
-                $oppositeallscore = '';
-                if (count($lb) > 1) {
-                    $sectionlabel = $lb[0] . ' | ' . $lb[1];
-                    $oppositescore = ' | ' . $oppositescorepercent[$key] . '%';
-                    $oppositeallscore = ' | ' . $alloppositescorepercent[$key] . '%';
-                } else {
-                    $sectionlabel = $chartlabels[$key];
-                }
-                // If all questions of $section are unseen then don't show feedbackscores for this section.
-                if ($compare && !is_nan($scorepercent[$key])) {
-                    $table->data[] = array($sectionlabel, $scorepercent[$key] . '%' . $oppositescore,
-                        $allscorepercent[$key] . '%' . $oppositeallscore);
-                } else if (isset($allscorepercent[$key]) && !is_nan($allscorepercent[$key])) {
-                    $table->data[] = array($sectionlabel, $allscorepercent[$key] . '%' . $oppositeallscore);
+        if ($this->survey->feedbackscores) {
+            foreach ($allscore as $key => $sc) {
+                if (isset($chartlabels[$key])) {
+                    $lb = explode("|", $chartlabels[$key]);
+                    $oppositescore = '';
+                    $oppositeallscore = '';
+                    if (count($lb) > 1) {
+                        $sectionlabel = $lb[0] . ' | ' . $lb[1];
+                        $oppositescore = ' | ' . $oppositescorepercent[$key] . '%';
+                        $oppositeallscore = ' | ' . $alloppositescorepercent[$key] . '%';
+                    } else {
+                        $sectionlabel = $chartlabels[$key];
+                    }
+                    // If all questions of $section are unseen then don't show feedbackscores for this section.
+                    if ($compare && !is_nan($scorepercent[$key])) {
+                        $table->data[] = array($sectionlabel, $scorepercent[$key] . '%' . $oppositescore,
+                            $allscorepercent[$key] . '%' . $oppositeallscore);
+                    } else if (isset($allscorepercent[$key]) && !is_nan($allscorepercent[$key])) {
+                        $table->data[] = array($sectionlabel, $allscorepercent[$key] . '%' . $oppositeallscore);
+                    }
                 }
             }
         }
