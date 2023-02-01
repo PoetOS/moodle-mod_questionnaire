@@ -227,7 +227,6 @@ class single extends responsetype {
      * @return string
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
-        global $DB;
 
         $rows = $this->get_results($rids, $anonymous);
         if (is_array($rids)) {
@@ -237,11 +236,7 @@ class single extends responsetype {
         }
         $numresps = count($rids);
 
-        $responsecountsql = 'SELECT COUNT(DISTINCT r.response_id) ' .
-            'FROM {' . $this->response_table() . '} r ' .
-            'WHERE r.question_id = ? ';
-        $numrespondents = $DB->count_records_sql($responsecountsql, [$this->question->id]);
-
+        $numrespondents = 0;
         if ($rows) {
             $counts = [];
             foreach ($rows as $idx => $row) {
@@ -257,6 +252,7 @@ class single extends responsetype {
                     $textidx = $contents->text.$contents->image;
                     $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 }
+                $numrespondents++;
             }
             $pagetags = $this->get_results_tags($counts, $numresps, $numrespondents, $prtotal, $sort);
         } else {
