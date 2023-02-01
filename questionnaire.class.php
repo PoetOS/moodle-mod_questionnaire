@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\feedback\section;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
@@ -1795,7 +1797,7 @@ class questionnaire {
         $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->survey->id], 'id');
         foreach ($fbsections as $fbsid => $fbsection) {
             $fbsection->surveyid = $newsid;
-            $scorecalculation = unserialize($fbsection->scorecalculation);
+            $scorecalculation = section::decode_scorecalculation($fbsection->scorecalculation);
             $newscorecalculation = [];
             foreach ($scorecalculation as $qid => $val) {
                 $newscorecalculation[$qidarray[$qid]] = $val;
@@ -3880,7 +3882,7 @@ class questionnaire {
             foreach ($fbsections as $key => $fbsection) {
                 if ($fbsection->section == $section) {
                     $feedbacksectionid = $key;
-                    $scorecalculation = unserialize($fbsection->scorecalculation);
+                    $scorecalculation = section::decode_scorecalculation($fbsection->scorecalculation);
                     if (empty($scorecalculation) && !is_array($scorecalculation)) {
                         $scorecalculation = [];
                     }
