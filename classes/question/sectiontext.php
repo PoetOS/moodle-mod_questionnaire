@@ -16,6 +16,8 @@
 
 namespace mod_questionnaire\question;
 
+use mod_questionnaire\feedback\section;
+
 /**
  * This file contains the parent class for sectiontext question types.
  *
@@ -101,7 +103,7 @@ class sectiontext extends question {
         // In which section(s) is this question?
         if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->surveyid])) {
             foreach ($fbsections as $key => $fbsection) {
-                if ($scorecalculation = unserialize($fbsection->scorecalculation)) {
+                if ($scorecalculation = section::decode_scorecalculation($fbsection->scorecalculation)) {
                     if (array_key_exists($this->id, $scorecalculation)) {
                         array_push($filteredsections, $fbsection->section);
                     }

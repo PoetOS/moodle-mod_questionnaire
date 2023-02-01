@@ -143,7 +143,7 @@ class section {
                 $this->id = $feedbackrec->id;
                 $this->surveyid = $feedbackrec->surveyid;
                 $this->section = $feedbackrec->section;
-                $this->scorecalculation = $this->decode_scorecalculation($feedbackrec->scorecalculation);
+                $this->scorecalculation = $this->get_valid_scorecalculation($feedbackrec->scorecalculation);
                 $this->sectionlabel = $feedbackrec->sectionlabel;
                 $this->sectionheading = $feedbackrec->sectionheading;
                 $this->sectionheadingformat = $feedbackrec->sectionheadingformat;
@@ -254,7 +254,7 @@ class section {
 
         $this->scorecalculation = $this->encode_scorecalculation($this->scorecalculation);
         $DB->update_record(self::TABLE, $this);
-        $this->scorecalculation = $this->decode_scorecalculation($this->scorecalculation);
+        $this->scorecalculation = $this->get_valid_scorecalculation($this->scorecalculation);
 
         foreach ($this->sectionfeedback as $sectionfeedback) {
             $sectionfeedback->update();
@@ -262,12 +262,12 @@ class section {
     }
 
     /**
-     * Return the decoded calculation array/
-     * @param string $codedstring
-     * @return mixed
+     * Decode and ensure scorecalculation is what we expect.
+     * @param string|null $codedstring
+     * @return array
      * @throws coding_exception
      */
-    protected function decode_scorecalculation($codedstring) {
+    public static function decode_scorecalculation(?string $codedstring): array {
         // Expect a serialized data string.
         if (($codedstring == null)) {
             $codedstring = '';
@@ -276,10 +276,32 @@ class section {
             throw new coding_exception('Invalid scorecalculation format.');
         }
         if (!empty($codedstring)) {
-            $scorecalculation = unserialize($codedstring);
+            $scorecalculation = unserialize_array($codedstring) ?: [];
         } else {
             $scorecalculation = [];
         }
+
+        if (!is_array($scorecalculation)) {
+            throw new coding_exception('Invalid scorecalculation format.');
+        }
+
+        foreach ($scorecalculation as $score) {
+            if (!empty($score) && !is_numeric($score)) {
+                throw new coding_exception('Invalid scorecalculation format.');
+            }
+        }
+
+        return $scorecalculation;
+    }
+
+    /**
+     * Return the decoded and validated calculation array.
+     * @param string $codedstring
+     * @return mixed
+     * @throws coding_exception
+     */
+    protected function get_valid_scorecalculation($codedstring) {
+        $scorecalculation = static::decode_scorecalculation($codedstring);
 
         // Check for deleted questions and questions that don't support scores.
         foreach ($scorecalculation as $qid => $score) {
