@@ -3841,6 +3841,7 @@ class questionnaire {
                 $oppositeallscore = ' | '.$allscore[1].'%';
             }
             if ($this->survey->feedbackscores) {
+                $table = $table ?? new html_table();
                 if ($compare) {
                     $table->data[] = array($sectionlabel, $score[0].'%'.$oppositescore, $allscore[0].'%'.$oppositeallscore);
                 } else {
@@ -3984,9 +3985,11 @@ class questionnaire {
                     }
                     // If all questions of $section are unseen then don't show feedbackscores for this section.
                     if ($compare && !is_nan($scorepercent[$key])) {
+                        $table = $table ?? new html_table();
                         $table->data[] = array($sectionlabel, $scorepercent[$key] . '%' . $oppositescore,
                             $allscorepercent[$key] . '%' . $oppositeallscore);
                     } else if (isset($allscorepercent[$key]) && !is_nan($allscorepercent[$key])) {
+                        $table = $table ?? new html_table();
                         $table->data[] = array($sectionlabel, $allscorepercent[$key] . '%' . $oppositeallscore);
                     }
                 }
