@@ -99,4 +99,8 @@ Feature: Add questions to a questionnaire activity
     And I should see "Choose yes or no"
     And I set the field "id_type_id" to "----- Page Break -----"
     And I press "Add selected question type"
+    And I add a "File" question and I fill the form with:
+      | Question Name | Q10 |
+      | Yes | Yes |
+      | Question Text | Add a file as an answer |
     Then I should see "[----- Page Break -----]"

@@ -445,6 +445,8 @@ function questionnaire_get_type ($id) {
             return get_string('date', 'questionnaire');
         case 10:
             return get_string('numeric', 'questionnaire');
+        case 12:
+            return get_string('file', 'questionnaire');
         case 100:
             return get_string('sectiontext', 'questionnaire');
         case 99:

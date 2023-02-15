@@ -174,5 +174,6 @@ class response {
         $this->answers += \mod_questionnaire\responsetype\boolean::response_answers_by_question($this->id);
         $this->answers += \mod_questionnaire\responsetype\date::response_answers_by_question($this->id);
         $this->answers += \mod_questionnaire\responsetype\text::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\file::response_answers_by_question($this->id);
     }
 }
