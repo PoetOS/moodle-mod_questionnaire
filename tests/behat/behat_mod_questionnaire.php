@@ -471,45 +471,57 @@ class behat_mod_questionnaire extends behat_base {
      *
      * The paths should be relative to moodle codebase.
      *
-     * @When /^I upload "(?P<filepath_string>(?:[^"]|\\")*)" to questionnaire filemanager$/
+     * @When /^I upload "(?P<filepath_string>(?:[^"]|\\")*)" to questionnaire "(?P<question_string>(?:[^"]|\\")*)" filemanager$/
      * @param string $filepath
+     * @param string $question
      */
-    public function i_upload_file_to_questionnaire_filemanager($filepath) {
-        $this->upload_file_to_filemanager_questionnaire($filepath, new TableNode(array()));
+    public function i_upload_file_to_questionnaire_question_filemanager($filepath, $question) {
+        $this->upload_file_to_question_filemanager_questionnaire($filepath, $question, new TableNode([]), false);
     }
 
     /**
-     * Try to get the filemanager node.
+     * Try to get the filemanager node of a given question.
      *
-     * @return NodeElement
+     * @param $question
+     * @return \Behat\Mink\Element\NodeElement|null
      */
-    protected function get_filemanager() {
+    protected function get_filepicker_node($question) {
+        // More info about the problem (in case there is a problem).
+        $exception = new ExpectationException('The filepicker for the question with text "' . $question .
+            '" can not be found', $this->getSession());
 
-        // If no file picker label is mentioned take the first file picker from the page.
-        return $this->find(
+        $filepickercontainer =  $this->find(
             'xpath',
-            '//div[contains(concat(" ", normalize-space(@class), " "), " filemanager ")]'
+            "//p[contains(.,'" . $question . "')]" .
+            "//parent::div[contains(concat(' ', normalize-space(@class), ' '), ' no-overflow ')]" .
+            "//parent::div[contains(concat(' ', normalize-space(@class), ' '), ' qn-question ')]" .
+            "//following::div[contains(concat(' ', normalize-space(@class), ' '), ' qn-answer ')]" .
+            "//descendant::*[@data-fieldtype = 'filemanager' or @data-fieldtype = 'filepicker']",
+            $exception
         );
+
+        return $filepickercontainer;
     }
 
     /**
      * Uploads a file to filemanager
      *
      * @param string $filepath Normally a path relative to $CFG->dirroot, but can be an absolute path too.
+     * @param string $question A question text.
      * @param TableNode $data Data to fill in upload form
      * @param false|string $overwriteaction false if we don't expect that file with the same name already exists,
      *     or button text in overwrite dialogue ("Overwrite", "Rename to ...", "Cancel")
      * @throws DriverException
      * @throws ExpectationException Thrown by behat_base::find
      */
-    protected function upload_file_to_filemanager_questionnaire($filepath, TableNode $data, $overwriteaction = false) {
+    protected function upload_file_to_question_filemanager_questionnaire($filepath, $question, TableNode $data, $overwriteaction = false) {
         global $CFG;
 
         if (!$this->has_tag('_file_upload')) {
             throw new DriverException('File upload tests must have the @_file_upload tag on either the scenario or feature.');
         }
 
-        $filemanagernode = $this->get_filemanager();
+        $filemanagernode = $this->get_filepicker_node($question);
 
         // Opening the select repository window and selecting the upload repository.
         $this->open_add_file_window($filemanagernode, get_string('pluginname', 'repository_upload'));
@@ -574,40 +586,6 @@ class behat_mod_questionnaire extends behat_base {
             $this->getSession()->wait(self::get_timeout(), self::PAGE_READY_JS);
         }
 
-    }
-
-    /**
-     * Try to get the filemanager node specified by the element
-     *
-     * @param string $filepickerelement
-     * @return NodeElement
-     * @throws ExpectationException
-     */
-    protected function get_filepicker_node($filepickerelement) {
-
-        // More info about the problem (in case there is a problem).
-        $exception = new ExpectationException('"' . $filepickerelement . '" filepicker can not be found', $this->getSession());
-
-        // If no file picker label is mentioned take the first file picker from the page.
-        if (empty($filepickerelement)) {
-            $filepickercontainer = $this->find(
-                'xpath',
-                "//*[@class=\"form-filemanager\"]",
-                $exception
-            );
-        } else {
-            // Gets the filemanager node specified by the locator which contains the filepicker container
-            // either for filepickers created by mform or by admin config.
-            $filepickerelement = behat_context_helper::escape($filepickerelement);
-            $filepickercontainer = $this->find(
-                'xpath',
-                "//input[./@id = substring-before(//p[normalize-space(.)=$filepickerelement]/@id, '_label')]" .
-                "//ancestor::*[@data-fieldtype = 'filemanager' or @data-fieldtype = 'filepicker']",
-                $exception
-            );
-        }
-
-        return $filepickercontainer;
     }
 
     /**
