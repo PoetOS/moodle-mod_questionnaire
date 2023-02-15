@@ -246,6 +246,8 @@ $string['fieldlength_help'] = 'For the **Text Box** question type, enter the **I
 respondent.
 
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
+$string['file'] = 'File';
+$string['file_help'] = 'Allow user to submit a file (only simple, virus safe formats are allowed)';
 $string['finished'] = 'You have answered all the questions in this questionnaire!';
 $string['firstrespondent'] = 'First Respondent';
 $string['formateditor'] = 'HTML editor';

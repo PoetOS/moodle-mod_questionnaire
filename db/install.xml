@@ -225,6 +225,21 @@
         <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="questionnaire_response_file" COMMENT="questionnaire_response_file table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="fileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="file_fk" TYPE="foreign" FIELDS="fileid" REFTABLE="files" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="questionnaire_fb_sections" COMMENT="questionnaire_fb_sections table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
