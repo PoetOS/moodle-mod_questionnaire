@@ -90,21 +90,19 @@ class file extends question {
         // Filemanager form element implementation is far from optimal, we need to rework this if we ever fix it...
         require_once("$CFG->dirroot/lib/form/filemanager.php");
 
-        $fmoptions = array_merge(
-            $options,
-            [
-                'client_id' => uniqid(),
-                'itemid' => $draftitemid,
-                'target' => $this->id,
-                'name' => $elname
-            ]
-        );
-        $fm = new form_filemanager((object) $fmoptions);
+        $options->client_id = uniqid();
+        $options->itemid = $draftitemid;
+        $options->target = $this->id;
+        $options->name = $elname;
+        $fm = new form_filemanager($options);
         $output = $PAGE->get_renderer('core', 'files');
-        $html = $output->render($fm);
+        $html = '<div class="form-filemanager" data-fieldtype="filemanager">' .
+            $output->render($fm) .
+            '</div>';
 
-        $html .= '<input value="' . $draftitemid . '" name="' . $elname . '" type="hidden" />';
+/*      $html .= '<input value="' . $draftitemid . '" name="' . $elname . '" type="hidden" />';
         $html .= '<input value="" id="' . $this->id . '" type="hidden" />';
+*/
 
         return $html;
     }
@@ -115,12 +113,12 @@ class file extends question {
      * @return array
      */
     public static function get_file_manager_option() {
-        return [
-            'mainfile' => '',
-            'subdirs' => false,
-            'accepted_types' => array('image', '.pdf'),
-            'maxfiles' => 1,
-        ];
+        $options = new \stdClass();
+        $options->mainfile = '';
+        $options->subdirs = false;
+        $options->accepted_types = ['image', '.pdf'];
+        $options->maxfiles = 1;
+        return $options;
     }
 
     /**
