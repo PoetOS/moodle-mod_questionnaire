@@ -198,6 +198,27 @@ class check extends question {
     }
 
     /**
+     * Check question's form data for complete response.
+     *
+     * @param object $responsedata The data entered into the response.
+     * @return boolean
+     */
+    public function response_complete($responsedata) {
+        if (isset($responsedata->{'q'.$this->id}) && $this->required() &&
+            is_array($responsedata->{'q'.$this->id})) {
+            foreach ($responsedata->{'q' . $this->id} as $key => $choice) {
+                // If only an 'other' choice is selected and empty, question is not completed.
+                if ((strpos($key, 'o') === 0) && empty($choice)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }
+        return parent::response_complete($responsedata);
+    }
+
+    /**
      * Check question's form data for valid response. Override this is type has specific format requirements.
      *
      * @param \stdClass $responsedata The data entered into the response.
@@ -218,16 +239,15 @@ class check extends question {
                 }
             }
         } else if (isset($responsedata->{'q'.$this->id})) {
-            foreach ($responsedata->{'q'.$this->id} as $answer) {
-                if (strpos($answer, 'other_') !== false) {
+            foreach ($responsedata->{'q'.$this->id} as $key => $answer) {
+                if (strpos($key, 'o') === 0) {
                     // ..."other" choice is checked but text box is empty.
-                    $othercontent = "q".$this->id.substr($answer, 5);
-                    if (trim($responsedata->$othercontent) == false) {
+                    $okey = substr($key, 1);
+                    if (isset($responsedata->{'q'.$this->id}[$okey]) && empty(trim($answer))) {
                         $valid = false;
                         break;
                     }
-                    $nbrespchoices++;
-                } else if (is_numeric($answer)) {
+                } else if (is_numeric($key)) {
                     $nbrespchoices++;
                 }
             }
