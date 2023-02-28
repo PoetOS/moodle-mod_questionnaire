@@ -91,7 +91,7 @@ foreach ($questionnaire->questions as $question) {
 }
 
 if ($settings = $feedbackform->get_data()) {
-    if (isset($settings->feedbacksettingsbutton1) || isset($settings->buttongroup)) {
+    if (isset($settings->feedbacksettingsbutton1) || isset($settings->feedbacksettingsbutton2) || isset($settings->buttongroup)) {
         if (isset ($settings->feedbackscores)) {
             $sdata->feedbackscores = $settings->feedbackscores;
         } else {
