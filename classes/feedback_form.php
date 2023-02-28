@@ -40,9 +40,9 @@ class feedback_form extends \moodleform {
         $mform =& $this->_form;
 
         // Questionnaire Feedback Sections and Messages.
+        $mform->addElement('header', 'submithdr', get_string('feedbackoptions', 'questionnaire'));
         $feedbackoptions = [];
         $feedbackoptions[0] = get_string('feedbacknone', 'questionnaire');
-        $mform->addElement('header', 'submithdr', get_string('feedbackoptions', 'questionnaire'));
         $feedbackoptions[1] = get_string('feedbackglobal', 'questionnaire');
         $feedbackoptions[2] = get_string('feedbacksections', 'questionnaire');
 
