@@ -10,8 +10,8 @@ Feature: View questionnaire availability information in the course view
       | student1 | Student   | 1        | student1@example.com |
       | teacher1 | Teacher   | 1        | teacher1@example.com |
     And the following "courses" exist:
-      | fullname | shortname | enablecompletion |
-      | Course 1 | C1        | 1                |
+      | fullname | shortname | showactivitydates |
+      | Course 1 | C1        | 1                 |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | student1 | C1     | student        |
@@ -34,4 +34,6 @@ Feature: View questionnaire availability information in the course view
     When I log in as "student1"
     And I am on "Course 1" course homepage
     Then I should see "Opened: "
+    And I should see "##3 days ago##%A, %d %B %Y, %I:%M##"
     And I should see "Closes: "
+    And I should see "##tomorrow noon##%A, %d %B %Y, %I:%M##"
