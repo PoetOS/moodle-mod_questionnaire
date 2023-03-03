@@ -254,7 +254,7 @@ function questionnaire_get_coursemodule_info($coursemodule) {
     global $DB;
 
     $questionnaire = $DB->get_record('questionnaire',
-        array('id' => $coursemodule->instance), 'id, name, intro, introformat,
+        array('id' => $coursemodule->instance), 'id, name, intro, introformat, opendate, closedate,
              completionsubmit');
     if (!$questionnaire) {
         return null;
@@ -265,6 +265,12 @@ function questionnaire_get_coursemodule_info($coursemodule) {
     // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
         $info->customdata->customcompletionrules['completionsubmit'] = $questionnaire->completionsubmit;
+    }
+    if ($questionnaire->opendate) {
+        $info->customdata->opendate = $questionnaire->opendate;
+    }
+    if ($questionnaire->closedate) {
+        $info->customdata->closedate = $questionnaire->closedate;
     }
     return $info;
 }
