@@ -38,8 +38,8 @@ $action = optional_param('action', '', PARAM_ALPHA);
 $selectedanonymous = optional_param('selectedanonymous', '', PARAM_ALPHA);
 $perpage = optional_param('perpage', QUESTIONNAIRE_DEFAULT_PAGE_COUNT, PARAM_INT);  // How many per page.
 $showall = optional_param('showall', false, PARAM_INT);  // Should we show all users?
-$sid    = optional_param('sid', 0, PARAM_INT);
-$qid    = optional_param('qid', 0, PARAM_INT);
+$sid = optional_param('sid', 0, PARAM_INT);
+$qid = optional_param('qid', 0, PARAM_INT);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if (!isset($SESSION->questionnaire)) {
@@ -149,16 +149,16 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
         foreach ($messageuser as $userid) {
             $senduser = $DB->get_record('user', array('id' => $userid));
             $eventdata = new \core\message\message();
-            $eventdata->courseid         = $course->id;
-            $eventdata->name             = 'message';
-            $eventdata->component        = 'mod_questionnaire';
-            $eventdata->userfrom         = $USER;
-            $eventdata->userto           = $senduser;
-            $eventdata->subject          = $subject;
-            $eventdata->fullmessage      = html_to_text($htmlmessage);
+            $eventdata->courseid = $course->id;
+            $eventdata->name = 'message';
+            $eventdata->component = 'mod_questionnaire';
+            $eventdata->userfrom = $USER;
+            $eventdata->userto = $senduser;
+            $eventdata->subject = $subject;
+            $eventdata->fullmessage = html_to_text($htmlmessage);
             $eventdata->fullmessageformat = FORMAT_PLAIN;
-            $eventdata->fullmessagehtml  = $htmlmessage;
-            $eventdata->smallmessage     = '';
+            $eventdata->fullmessagehtml = $htmlmessage;
+            $eventdata->smallmessage = '';
             $good = $good && message_send($eventdata);
         }
         if (!empty($good)) {
@@ -247,10 +247,10 @@ if ($fullname) {
     $table->set_attribute('id', 'showentrytable');
     $table->set_attribute('class', 'flexible generaltable generalbox');
     $table->set_control_variables(array(
-                TABLE_VAR_SORT    => 'ssort',
-                TABLE_VAR_IFIRST  => 'sifirst',
-                TABLE_VAR_ILAST   => 'silast',
-                TABLE_VAR_PAGE    => 'spage'
+                TABLE_VAR_SORT => 'ssort',
+                TABLE_VAR_IFIRST => 'sifirst',
+                TABLE_VAR_ILAST => 'silast',
+                TABLE_VAR_PAGE => 'spage'
                 ));
 
     $table->no_sorting('status');
@@ -307,16 +307,16 @@ $countries = get_string_manager()->get_list_of_countries();
 $strnever = get_string('never');
 
 $datestring = new stdClass();
-$datestring->year  = get_string('year');
+$datestring->year = get_string('year');
 $datestring->years = get_string('years');
-$datestring->day   = get_string('day');
-$datestring->days  = get_string('days');
-$datestring->hour  = get_string('hour');
+$datestring->day = get_string('day');
+$datestring->days = get_string('days');
+$datestring->hour = get_string('hour');
 $datestring->hours = get_string('hours');
-$datestring->min   = get_string('min');
-$datestring->mins  = get_string('mins');
-$datestring->sec   = get_string('sec');
-$datestring->secs  = get_string('secs');
+$datestring->min = get_string('min');
+$datestring->mins = get_string('mins');
+$datestring->sec = get_string('sec');
+$datestring->secs = get_string('secs');
 
 if (!$nonrespondents) {
     $questionnaire->page->add_to_page('formarea',
