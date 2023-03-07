@@ -95,9 +95,9 @@ if ($settings = $settingsform->get_data()) {
 
     $sdata->infoitemid = $settings->info['itemid'];
     $sdata->infoformat = $settings->info['format'];
-    $sdata->info       = $settings->info['text'];
-    $sdata->info       = file_save_draft_area_files($sdata->infoitemid, $context->id, 'mod_questionnaire', 'info',
-                                                    $sdata->id, array('subdirs' => true), $sdata->info);
+    $sdata->info = $settings->info['text'];
+    $sdata->info = file_save_draft_area_files($sdata->infoitemid, $context->id, 'mod_questionnaire', 'info',
+                                              $sdata->id, array('subdirs' => true), $sdata->info);
 
     $sdata->theme = ''; // Deprecated theme field.
     $sdata->thanks_page = $settings->thanks_page;
@@ -105,9 +105,9 @@ if ($settings = $settingsform->get_data()) {
 
     $sdata->thankitemid = $settings->thank_body['itemid'];
     $sdata->thankformat = $settings->thank_body['format'];
-    $sdata->thank_body  = $settings->thank_body['text'];
-    $sdata->thank_body  = file_save_draft_area_files($sdata->thankitemid, $context->id, 'mod_questionnaire', 'thankbody',
-                                                     $sdata->id, array('subdirs' => true), $sdata->thank_body);
+    $sdata->thank_body = $settings->thank_body['text'];
+    $sdata->thank_body = file_save_draft_area_files($sdata->thankitemid, $context->id, 'mod_questionnaire', 'thankbody',
+                                                    $sdata->id, array('subdirs' => true), $sdata->thank_body);
     $sdata->email = $settings->email;
 
     $sdata->courseid = $settings->courseid;

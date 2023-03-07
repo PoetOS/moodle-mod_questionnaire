@@ -61,19 +61,19 @@ abstract class question {
 
     // Class Properties.
     /** @var int $id The database id of this question. */
-    public $id          = 0;
+    public $id = 0;
 
     /** @var int $surveyid The database id of the survey this question belongs to. */
-    public $surveyid   = 0;
+    public $surveyid = 0;
 
     /** @var string $name The name of this question. */
-    public $name        = '';
+    public $name = '';
 
     /** @var string $type The name of the question type. */
-    public $type        = '';
+    public $type = '';
 
     /** @var array $choices Array holding any choices for this question. */
-    public $choices     = [];
+    public $choices = [];
 
     /** @var array $dependencies Array holding any dependencies for this question. */
     public $dependencies = [];
@@ -82,25 +82,25 @@ abstract class question {
     public $responsetable = '';
 
     /** @var int $length The length field. */
-    public $length      = 0;
+    public $length = 0;
 
     /** @var int $precise The precision field. */
-    public $precise     = 0;
+    public $precise = 0;
 
     /** @var int $position Position in the questionnaire */
-    public $position    = 0;
+    public $position = 0;
 
     /** @var string $content The question's content. */
-    public $content     = '';
+    public $content = '';
 
     /** @var string $allchoices The list of all question's choices. */
-    public $allchoices  = '';
+    public $allchoices = '';
 
     /** @var boolean $required The required flag. */
-    public $required    = 'n';
+    public $required = 'n';
 
     /** @var boolean $deleted The deleted flag. */
-    public $deleted     = 'n';
+    public $deleted = 'n';
 
     /** @var mixed $extradata Any custom data for the question type. */
     public $extradata = '';
@@ -1300,8 +1300,8 @@ abstract class question {
 
             // Update existing question.
             // Handle any attachments in the content.
-            $formdata->itemid  = $formdata->content['itemid'];
-            $formdata->format  = $formdata->content['format'];
+            $formdata->itemid = $formdata->content['itemid'];
+            $formdata->format = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
             $formdata->content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
                 'question', $formdata->qid, ['subdirs' => true], $formdata->content);
@@ -1336,10 +1336,10 @@ abstract class question {
             $this->add($questionrecord);
 
             // Handle any attachments in the content.
-            $formdata->itemid  = $formdata->content['itemid'];
-            $formdata->format  = $formdata->content['format'];
+            $formdata->itemid = $formdata->content['itemid'];
+            $formdata->format = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
-            $content           = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
+            $content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
                 'question', $this->qid, ['subdirs' => true], $formdata->content);
             $DB->set_field('questionnaire_question', 'content', $content, ['id' => $this->qid]);
         }

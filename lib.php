@@ -422,12 +422,12 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
 
     if ($questionnaire->grade > 0) {
         $params['gradetype'] = GRADE_TYPE_VALUE;
-        $params['grademax']  = $questionnaire->grade;
-        $params['grademin']  = 0;
+        $params['grademax'] = $questionnaire->grade;
+        $params['grademin'] = 0;
 
     } else if ($questionnaire->grade < 0) {
         $params['gradetype'] = GRADE_TYPE_SCALE;
-        $params['scaleid']   = -$questionnaire->grade;
+        $params['scaleid'] = -$questionnaire->grade;
 
     } else if ($questionnaire->grade == 0) { // No Grade..be sure to delete the grade item if it exists.
         $grades = null;
@@ -835,11 +835,11 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
 
     if ($groupid) {
         $groupselect = 'AND gm.groupid = :groupid';
-        $groupjoin   = 'JOIN {groups_members} gm ON  gm.userid=u.id';
+        $groupjoin = 'JOIN {groups_members} gm ON  gm.userid=u.id';
         $params['groupid'] = $groupid;
     } else {
         $groupselect = '';
-        $groupjoin   = '';
+        $groupjoin = '';
     }
 
     $params['timestart'] = $timestart;
@@ -861,8 +861,8 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
     }
 
     $accessallgroups = has_capability('moodle/site:accessallgroups', $context);
-    $viewfullnames   = has_capability('moodle/site:viewfullnames', $context);
-    $groupmode       = groups_get_activity_groupmode($cm, $course);
+    $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
+    $groupmode = groups_get_activity_groupmode($cm, $course);
 
     $usersgroups = null;
     $aname = format_string($cm->name, true);
@@ -899,19 +899,19 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
 
         $tmpactivity = new stdClass();
 
-        $tmpactivity->type       = 'questionnaire';
-        $tmpactivity->cmid       = $cm->id;
+        $tmpactivity->type = 'questionnaire';
+        $tmpactivity->cmid = $cm->id;
         $tmpactivity->cminstance = $cm->instance;
         // Current user is admin - or teacher enrolled in original public course.
         if (isset($cmoriginal)) {
             $tmpactivity->cminstance = $cmoriginal->instance;
         }
         $tmpactivity->cannotview = false;
-        $tmpactivity->anonymous  = false;
-        $tmpactivity->name       = $aname;
+        $tmpactivity->anonymous = false;
+        $tmpactivity->name = $aname;
         $tmpactivity->sectionnum = $cm->sectionnum;
-        $tmpactivity->timestamp  = $attempt->submitted;
-        $tmpactivity->groupid    = $groupid;
+        $tmpactivity->timestamp = $attempt->submitted;
+        $tmpactivity->groupid = $groupid;
         if (isset($userattempts[$attempt->lastname])) {
             $tmpactivity->nbattempts = $userattempts[$attempt->lastname];
         }
@@ -933,7 +933,7 @@ function questionnaire_get_recent_mod_activity(&$activities, &$index, $timestart
             }
         }
         if ($questionnaire->respondenttype != 'anonymous') {
-            $tmpactivity->user->fullname  = fullname($attempt, $viewfullnames);
+            $tmpactivity->user->fullname = fullname($attempt, $viewfullnames);
         } else {
             $tmpactivity->user = '';
             unset ($tmpactivity->user);
@@ -1035,9 +1035,9 @@ function questionnaire_print_overview($courses, &$htmlarray) {
     }
 
     // Get Necessary Strings.
-    $strquestionnaire       = get_string('modulename', 'questionnaire');
+    $strquestionnaire = get_string('modulename', 'questionnaire');
     $strnotattempted = get_string('noattempts', 'questionnaire');
-    $strattempted    = get_string('attempted', 'questionnaire');
+    $strattempted = get_string('attempted', 'questionnaire');
     $strsavedbutnotsubmitted = get_string('savedbutnotsubmitted', 'questionnaire');
 
     $now = time();

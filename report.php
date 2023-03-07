@@ -491,8 +491,8 @@ switch ($action) {
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
 
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
-        $choicetext  = optional_param('choicetext', '0', PARAM_INT);
-        $showincompletes  = optional_param('complete', '0', PARAM_INT);
+        $choicetext = optional_param('choicetext', '0', PARAM_INT);
+        $showincompletes = optional_param('complete', '0', PARAM_INT);
         $rankaverages = optional_param('rankaverages', '0', PARAM_INT);
         $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
         $emailroles = optional_param('emailroles', 0, PARAM_INT);
