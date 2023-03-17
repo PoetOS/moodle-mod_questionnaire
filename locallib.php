@@ -186,23 +186,23 @@ function questionnaire_load_capabilities($cmid) {
     $context = questionnaire_get_context($cmid);
 
     $cb = new stdClass();
-    $cb->view                   = has_capability('mod/questionnaire:view', $context);
-    $cb->submit                 = has_capability('mod/questionnaire:submit', $context);
-    $cb->viewsingleresponse     = has_capability('mod/questionnaire:viewsingleresponse', $context);
+    $cb->view = has_capability('mod/questionnaire:view', $context);
+    $cb->submit = has_capability('mod/questionnaire:submit', $context);
+    $cb->viewsingleresponse = has_capability('mod/questionnaire:viewsingleresponse', $context);
     $cb->submissionnotification = has_capability('mod/questionnaire:submissionnotification', $context);
-    $cb->downloadresponses      = has_capability('mod/questionnaire:downloadresponses', $context);
-    $cb->deleteresponses        = has_capability('mod/questionnaire:deleteresponses', $context);
-    $cb->manage                 = has_capability('mod/questionnaire:manage', $context);
-    $cb->editquestions          = has_capability('mod/questionnaire:editquestions', $context);
-    $cb->createtemplates        = has_capability('mod/questionnaire:createtemplates', $context);
-    $cb->createpublic           = has_capability('mod/questionnaire:createpublic', $context);
-    $cb->readownresponses       = has_capability('mod/questionnaire:readownresponses', $context);
-    $cb->readallresponses       = has_capability('mod/questionnaire:readallresponses', $context);
+    $cb->downloadresponses = has_capability('mod/questionnaire:downloadresponses', $context);
+    $cb->deleteresponses = has_capability('mod/questionnaire:deleteresponses', $context);
+    $cb->manage = has_capability('mod/questionnaire:manage', $context);
+    $cb->editquestions = has_capability('mod/questionnaire:editquestions', $context);
+    $cb->createtemplates = has_capability('mod/questionnaire:createtemplates', $context);
+    $cb->createpublic = has_capability('mod/questionnaire:createpublic', $context);
+    $cb->readownresponses = has_capability('mod/questionnaire:readownresponses', $context);
+    $cb->readallresponses = has_capability('mod/questionnaire:readallresponses', $context);
     $cb->readallresponseanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
-    $cb->printblank             = has_capability('mod/questionnaire:printblank', $context);
-    $cb->preview                = has_capability('mod/questionnaire:preview', $context);
+    $cb->printblank = has_capability('mod/questionnaire:printblank', $context);
+    $cb->preview = has_capability('mod/questionnaire:preview', $context);
 
-    $cb->viewhiddenactivities   = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
+    $cb->viewhiddenactivities = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
 
     return $cb;
 }
@@ -534,7 +534,7 @@ function questionnaire_set_events($questionnaire) {
         calendar_event::create($event);
     } else {
         // Separate start and end events.
-        $event->timeduration  = 0;
+        $event->timeduration = 0;
         if ($questionnaire->opendate) {
             $event->name = $questionnaire->name.' ('.get_string('questionnaireopens', 'questionnaire').')';
             $event->timesort = $questionnaire->opendate;

@@ -74,13 +74,13 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, false);
 
         $newcontent = array(
-            'title'         => 'New title',
-            'email'         => 'test@email.com',
-            'subtitle'      => 'New subtitle',
-            'info'          => 'New info',
-            'thanks_page'   => 'http://thankurl.com',
-            'thank_head'    => 'New thank header',
-            'thank_body'    => 'New thank body',
+            'title' => 'New title',
+            'email' => 'test@email.com',
+            'subtitle' => 'New subtitle',
+            'info' => 'New info',
+            'thanks_page' => 'http://thankurl.com',
+            'thank_head' => 'New thank header',
+            'thank_body' => 'New thank body',
         );
         $sid = $generator->create_content($questionnaire, $newcontent);
         $this->assertEquals($sid, $questionnaire->sid);

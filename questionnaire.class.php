@@ -2125,21 +2125,21 @@ class questionnaire {
      */
     private function send_message($info, $eventtype) {
         $eventdata = new \core\message\message();
-        $eventdata->courseid         = $this->course->id;
-        $eventdata->modulename       = 'questionnaire';
-        $eventdata->userfrom         = $info->userfrom;
-        $eventdata->userto           = $info->userto;
-        $eventdata->subject          = $info->postsubject;
-        $eventdata->fullmessage      = $info->posttext;
+        $eventdata->courseid = $this->course->id;
+        $eventdata->modulename = 'questionnaire';
+        $eventdata->userfrom = $info->userfrom;
+        $eventdata->userto = $info->userto;
+        $eventdata->subject = $info->postsubject;
+        $eventdata->fullmessage = $info->posttext;
         $eventdata->fullmessageformat = FORMAT_PLAIN;
-        $eventdata->fullmessagehtml  = $info->posthtml;
-        $eventdata->smallmessage     = $info->postsubject;
+        $eventdata->fullmessagehtml = $info->posthtml;
+        $eventdata->smallmessage = $info->postsubject;
 
-        $eventdata->name            = $eventtype;
-        $eventdata->component       = 'mod_questionnaire';
-        $eventdata->notification    = 1;
-        $eventdata->contexturl      = $info->submissionurl;
-        $eventdata->contexturlname  = $info->name;
+        $eventdata->name = $eventtype;
+        $eventdata->component = 'mod_questionnaire';
+        $eventdata->notification = 1;
+        $eventdata->contexturl = $info->submissionurl;
+        $eventdata->contexturlname = $info->name;
 
         message_send($eventdata);
     }
@@ -2362,10 +2362,10 @@ class questionnaire {
             '&amp;rid='.$rid.'&amp;instance='.$this->id;
 
         // Html and plaintext body.
-        $bodyhtml        = '<a href="'.$url.'">'.$url.'</a>'.$endhtml;
-        $bodyplaintext   = $url.$endplaintext;
-        $bodyhtml       .= get_string('surveyresponse', 'questionnaire') .' "'.$name.'"'.$endhtml;
-        $bodyplaintext  .= get_string('surveyresponse', 'questionnaire') .' "'.$name.'"'.$endplaintext;
+        $bodyhtml = '<a href="'.$url.'">'.$url.'</a>'.$endhtml;
+        $bodyplaintext = $url.$endplaintext;
+        $bodyhtml .= get_string('surveyresponse', 'questionnaire') .' "'.$name.'"'.$endhtml;
+        $bodyplaintext .= get_string('surveyresponse', 'questionnaire') .' "'.$name.'"'.$endplaintext;
 
         $bodyhtml .= $answers['html'];
         $bodyplaintext .= $answers['plaintext'];
