@@ -293,15 +293,17 @@ class renderer extends \plugin_renderer_base {
                 if (empty($pagetags = $question->questionstart_survey_display($qnum))) {
                     continue;
                 }
-                foreach ($responses as $response) {
-                    $resptags = $question->response_output($response);
-                    // If the response has a template, then render it from the 'qformelement' context.
-                    // If no template, then 'qformelement' already contains HTML.
-                    if (($template = $question->response_template())) {
-                        $resptags->qformelement = $this->render_from_template($template, $resptags->qformelement);
+                foreach ($responses as $index => $response) {
+                    if (isset($responses[$index]->answers[$question->id])) {
+                        $resptags = $question->response_output($response);
+                        // If the response has a template, then render it from the 'qformelement' context.
+                        // If no template, then 'qformelement' already contains HTML.
+                        if (($template = $question->response_template())) {
+                            $resptags->qformelement = $this->render_from_template($template, $resptags->qformelement);
+                        }
+                        $resptags->respdate = userdate($response->submitted);
+                        $pagetags->responses[] = $resptags;
                     }
-                    $resptags->respdate = userdate($response->submitted);
-                    $pagetags->responses[] = $resptags;
                 }
                 $qnum++;
                 $output .= $this->render_from_template('mod_questionnaire/response_container', $pagetags);

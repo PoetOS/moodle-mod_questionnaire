@@ -119,12 +119,10 @@ if (!$popup) {
 }
 
 // Include the needed js.
-
-
 $PAGE->requires->js('/mod/questionnaire/module.js');
+$PAGE->requires->js_call_amd('mod_questionnaire/sorting_reorder', 'init');
+
 // Print the tabs.
-
-
 echo $questionnaire->renderer->header();
 if (!$popup) {
     require('tabs.php');

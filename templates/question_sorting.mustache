@@ -1,0 +1,58 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_questionnaire/question_sorting
+
+    Template which defines a text type question survey display.
+
+    Classes required for JS:
+    * /mod/questionnaire/module.js
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+
+    Example context (json):
+    {
+        "qelements": {
+            "sortinglist": {
+                "index": "1",
+                "text": "30",
+                "qid": "455"
+            },
+            "sortingdirection": "vertical"
+        }
+    }
+    }}
+<!-- Begin HTML generated from question_sorting template. -->
+<div class="qn-sorting-container">
+    {{#qelements}}
+        {{^isresponse}}<div class="qn-sortingmsg">{{#str}}sortingstrictformatting, mod_questionnaire{{/str}}</div>{{/isresponse}}
+        <ol class="qn-sorting-list {{{sortingdirection}}}" data-qid="{{qid}}" id="sorting-list-{{qid}}">
+            {{#sortinglist}}
+                <li class="draggable qn-sorting-list__items" data-qid="{{qid}}" {{^isresponse}}draggable="true" tabindex="0"{{/isresponse}}>
+                    <div class="qn-sorting-list__content" title="{{title}}">
+                        <div>{{{text}}}</div>
+                        <input name="{{qid}}-{{index}}" type="hidden" value="{{{index}}}" />
+                    </div>
+                </li>
+            {{/sortinglist}}
+        </ol>
+    {{/qelements}}
+</div>
+<!-- End HTML generated from question_sorting template. -->

@@ -84,7 +84,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
                     '/activity/questionnaire/attempts/attempt/responses/response/response_singles/response_single');
                 $paths[] = new restore_path_element('questionnaire_response_text',
                     '/activity/questionnaire/attempts/attempt/responses/response/response_texts/response_text');
-
+                $paths[] = new restore_path_element('questionnaire_response_sort',
+                    '/activity/questionnaire/attempts/attempt/responses/response/response_sorts/response_sort');
             } else {
                 // New system.
                 $paths[] = new restore_path_element('questionnaire_response', '/activity/questionnaire/responses/response');
@@ -102,6 +103,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
                     '/activity/questionnaire/responses/response/response_singles/response_single');
                 $paths[] = new restore_path_element('questionnaire_response_text',
                     '/activity/questionnaire/responses/response/response_texts/response_text');
+                $paths[] = new restore_path_element('questionnaire_response_sort',
+                    '/activity/questionnaire/responses/response/response_sorts/response_sort');
             }
         }
 
@@ -420,6 +423,24 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         // Insert the questionnaire_response_text record.
         $DB->insert_record('questionnaire_response_text', $data);
+    }
+
+    /**
+     * Processing questionnaire response sort.
+     *
+     * @param array $data
+     * @return void
+     * @throws dml_exception
+     */
+    protected function process_questionnaire_response_sort($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $data->response_id = $this->get_new_parentid('questionnaire_response');
+        $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
+
+        // Insert the questionnaire_response_sort record.
+        $DB->insert_record('questionnaire_response_sort', $data);
     }
 
     /**
