@@ -42,6 +42,7 @@ define('QUESRATE', 8);
 define('QUESDATE', 9);
 define('QUESNUMERIC', 10);
 define('QUESSLIDER', 11);
+define('QUESSORT', 12);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
 
@@ -117,6 +118,7 @@ abstract class question {
         QUESRATE => 'rate',
         QUESDATE => 'date',
         QUESNUMERIC => 'numerical',
+        QUESSORT => 'sorting',
         QUESPAGEBREAK => 'pagebreak',
         QUESSECTIONTEXT => 'sectiontext',
         QUESSLIDER => 'slider',
@@ -957,6 +959,7 @@ abstract class question {
         $content = format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
             $this->context->id, 'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options);
         $pagetags->qcontent = $content;
+        $pagetags->qlegend = $this->content;
 
         return $pagetags;
     }

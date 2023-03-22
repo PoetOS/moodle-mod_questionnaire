@@ -120,6 +120,20 @@ class edit_question_form extends \moodleform {
             }
         }
 
+        if ($data['type_id'] == QUESSORT) {
+            $validanswer = 0;
+            foreach ($data['answer'] as $key => $answer) {
+                $text = clean_param($answer['text'], PARAM_RAW_TRIMMED);
+                if (!empty($text)) {
+                    $validanswer++;
+                } else {
+                    if ($key <= 1) {
+                        $errors["answer[$key]"] = get_string('sortingerrorsformitems', 'questionnaire');
+                    }
+                }
+            }
+        }
+
         return $errors;
     }
 

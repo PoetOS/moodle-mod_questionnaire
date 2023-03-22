@@ -117,6 +117,7 @@ class behat_mod_questionnaire extends behat_base {
             'Numeric',
             'Radio Buttons',
             'Rate (scale 1..5)',
+            'Sorting',
             'Text Box',
             'Yes/No',
             'Slider');
@@ -463,5 +464,49 @@ class behat_mod_questionnaire extends behat_base {
     protected function get_cm_by_questionnaire_name(string $name): stdClass {
         $questionnaire = $this->get_questionnaire_by_name($name);
         return get_coursemodule_from_instance('questionnaire', $questionnaire->id, $questionnaire->course);
+    }
+
+    /**
+     * Get the xpath for a given item by label.
+     *
+     * @param string $label the text of the item to drag.
+     * @return string the xpath expression.
+     */
+    protected function item_xpath_by_label(string $label): string {
+        return '//li[contains(@class, "qn-sorting-list__items") and contains(., "'
+            . $this->escape($label) . '")]';
+    }
+
+    /**
+     * Get the xpath for a given drop box.
+     *
+     * @param string $position the number of place to drop it.
+     * @return string the xpath expression.
+     */
+    protected function item_xpath_by_position(string $position): string {
+        return '//li[contains(@class, "qn-sorting-list__items")][' . $position . ']';
+    }
+
+    /**
+     * Drag the drag item with the given text to the given space.
+     *
+     * Also, do not use this to drag an item to the last place. Just drag all
+     * the other non-last items to their place.
+     *
+     * @param string $label the text of the item to drag.
+     * @param int $position the number of the position to drop it at.
+     *
+     * @Given /^I drag "(?P<label>[^"]*)" to space "(?P<position>\d+)" in the sorting question$/
+     * @throws coding_exception
+     */
+    public function i_drag_to_space_in_the_drag_and_drop_into_text_question_sorting(string $label, int $position): void {
+        $generalcontext = behat_context_helper::get('behat_general');
+        // There was a weird issue where drag-drop was not reliable if an item was being
+        // dragged to the same place it already was. So, first drag below the bottom to reliably
+        // move it to the last place.
+        $generalcontext->i_drag_and_i_drop_it_in($this->item_xpath_by_label($label),
+            'xpath_element', get_string('submitsurvey', 'questionnaire'), 'button');
+        $generalcontext->i_drag_and_i_drop_it_in($this->item_xpath_by_label($label),
+            'xpath_element', $this->item_xpath_by_position($position), 'xpath_element');
     }
 }

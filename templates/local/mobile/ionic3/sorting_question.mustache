@@ -1,0 +1,40 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_questionnaire/mobile_sorting_question
+
+    Template which defines a sorting question display in the mobile app.
+
+    Context variables required for this template:
+    * id - number: question id.
+    * fieldkey - string: key for storing data from mobile to web server.
+    * choices - [sorting_question]: List of sorting answer.
+    * completed - boolean: question has completed.
+    * content - string|HTML|MoodleFormat|Markdown: content of answer.
+
+    Example context (json):
+    {
+        "id" : 1,
+        "fieldkey" : response_16_60
+        "choices": [{
+            "content" : "The answer 1",
+            "completed" : true
+        }]
+    }
+}}
+{{=<% %>=}}
+<ion-label margin-left ion-text class="unsupported_version">{{ 'plugin.mod_questionnaire.unsupported_version' | translate }}</ion-label>

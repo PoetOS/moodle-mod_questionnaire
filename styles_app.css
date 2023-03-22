@@ -15,3 +15,8 @@ span.mobileratequestion {
 ion-label.disabled {
     opacity: 0.8 !important;
 }
+
+ion-label.unsupported_version {
+    font-weight: bold;
+    font-size: 1em;
+}

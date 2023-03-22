@@ -36,8 +36,9 @@ $addons = [
                 'method' => 'mobile_view_activity',
                 'styles' => [
                     'url' => $CFG->wwwroot . '/mod/questionnaire/styles_app.css',
-                    'version' => '1.5'
-                ]
+                    'version' => '1.6'
+                ],
+                'init' => 'mobile_questionnaire_init',
             ]
         ],
         'lang' => [
@@ -50,6 +51,7 @@ $addons = [
             ['savechanges', 'moodle'],
             ['nextpage', 'questionnaire'],
             ['previouspage', 'questionnaire'],
+            ['unsupported_version', 'questionnaire'],
             ['fullname', 'moodle'],
             ['required', 'moodle']
         ],

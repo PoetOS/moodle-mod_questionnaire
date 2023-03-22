@@ -89,6 +89,12 @@ class provider implements
             'response' => 'privacy:metadata:questionnaire_response_text:response',
         ], 'privacy:metadata:questionnaire_response_text');
 
+        $collection->add_database_table('questionnaire_response_sort', [
+            'response_id' => 'privacy:metadata:questionnaire_response_sort:response_id',
+            'question_id' => 'privacy:metadata:questionnaire_response_sort:question_id',
+            'response' => 'privacy:metadata:questionnaire_response_sort:response',
+        ], 'privacy:metadata:questionnaire_response_sort');
+
         $collection->add_database_table('questionnaire_resp_multiple', [
             'response_id' => 'privacy:metadata:questionnaire_resp_multiple:response_id',
             'question_id' => 'privacy:metadata:questionnaire_resp_multiple:question_id',
@@ -333,6 +339,7 @@ class provider implements
             $DB->delete_records('questionnaire_response_rank', ['response_id' => $response->id]);
             $DB->delete_records('questionnaire_resp_single', ['response_id' => $response->id]);
             $DB->delete_records('questionnaire_response_text', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_response_sort', ['response_id' => $response->id]);
         }
     }
 }

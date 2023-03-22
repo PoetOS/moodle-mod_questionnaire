@@ -27,6 +27,33 @@ use mod_questionnaire\responsetype\response\response;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mobile {
+    /** @var string  Folder of ionic5 (latest) app version */
+    const IONIC5_FOLDER = 'latest';
+
+    /** @var string  Folder of ionic3 app version */
+    const IONIC3_FOLDER = 'ionic3';
+
+    /**
+     * Returns shared (global) templates and information for the mobile app feature.
+     *
+     * @param array $args Arguments (empty)
+     * @return array Array with information required by app
+     */
+    public static function mobile_questionnaire_init(array $args) : array {
+        global $CFG;
+        $args = (object) $args;
+        $versionname = self::mobile_get_folder_name($args);
+        $js = preg_replace_callback('~(?:^|\n)\s*// IMPORT:(.*?\.js)\.?\s*(?=(?:\n|$))~', function($matches) {
+            global $CFG;
+            return file_get_contents($CFG->dirroot . '/mod/questionnaire/appjs/' . $matches[1]);
+        }, file_get_contents($CFG->dirroot . '/mod/questionnaire/appjs/' . $versionname . '/mobile_view_activity.js'));
+        return [
+                'templates' => [],
+                'javascript' => $js,
+                'otherdata' => '',
+                'files' => [],
+        ];
+    }
 
     /**
      * Returns the initial page when viewing the activity for the mobile app.
@@ -35,12 +62,12 @@ class mobile {
      * @return array HTML, javascript and other data
      */
     public static function mobile_view_activity($args) {
-        global $OUTPUT, $USER, $CFG, $DB;
+        global $OUTPUT, $USER, $CFG;
         require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
         $args = (object) $args;
 
-        $versionname = $args->appversioncode >= 3950 ? 'latest' : 'ionic3';
+        $versionname = self::mobile_get_folder_name($args);
         $cmid = $args->cmid;
         $rid = isset($args->rid) ? $args->rid : 0;
         $action = isset($args->action) ? $args->action : 'index';
@@ -176,19 +203,17 @@ class mobile {
         }
 
         $data['hasmorepages'] = $data['prevpage'] || $data['nextpage'];
-
-        $return = [
+        return [
             'templates' => [
                 [
                     'id' => 'main',
                     'html' => $OUTPUT->render_from_template($template, $data)
                 ],
             ],
-            'javascript' => file_get_contents($CFG->dirroot . '/mod/questionnaire/appjs/uncheckother.js'),
+            'javascript' => 'window.questionnaireInit(this)',
             'otherdata' => $responses,
             'files' => null
         ];
-        return $return;
     }
 
     /**
@@ -270,5 +295,15 @@ class mobile {
         }
 
         return ['pagequestions' => $pagequestions, 'responses' => $responses];
+    }
+
+    /**
+     * Get the latest folder name has the new files used for the newest app version.
+     *
+     * @param object $args Standard mobile web service arguments
+     * @return string Folder name
+     */
+    protected static function mobile_get_folder_name($args): string {
+        return isset($args->appversioncode) && $args->appversioncode >= 3950 ? self::IONIC5_FOLDER : self::IONIC3_FOLDER;
     }
 }

@@ -348,6 +348,89 @@ td.selected {
     height: auto;
 }
 
+.qn-sorting-list {
+    float: left;
+    list-style-type: none;
+    margin: 0 0 0 8px;
+}
+
+ol.qn-sorting-list {
+    padding-left: 0;
+    margin-inline-start: 0;
+}
+
+.qn-sorting-list.active {
+    border: 1px dotted #333;
+    border-radius: 4px;
+}
+
+.qn-sorting-list li {
+    background-color: #fff;
+    border: 1px solid #000;
+    list-style-type: none;
+    border-radius: 0;
+    margin: 10px 10px 10px 0;
+    padding: 5px 8px;
+}
+
+.qn-sorting-list li.qn-sorting-list__items {
+    position: relative;
+    cursor: move;
+}
+
+.qn-sorting-list li.qn-sorting-list__items:focus {
+    border-color: #0a0;
+    box-shadow: 0 0 5px 5px rgba(255, 255, 150, 1);
+}
+
+.qn-sorting-list.numberingnone li {
+    list-style-type: none;
+    margin-left: 0;
+}
+
+.qn-sorting-list.horizontal {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Better define 'row' of item for horizontal list. */
+.qn-sorting-list.horizontal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.qn-sorting-list.vertical li {
+    min-height: 18px;
+}
+
+/* Styles for when things are being dragged. */
+.qn-sorting-list-dragproxy {
+    margin: 0;
+    padding: 0;
+    border: 0 none;
+}
+.qn-sorting-list-dragproxy .qn-sorting-list {
+    margin: 0;
+    padding: 0;
+    float: none;
+}
+.qn-sorting-list-dragproxy .qn-sorting-list li.qn-sorting-list__items {
+    margin: 0;
+    padding: 6px 0 6px 12px;
+    width: 100%;
+    word-wrap: break-word;
+}
+.qn-sorting-list-dragproxy .qn-sorting-list li.horizontal {
+    float: none;
+}
+.item-moving {
+    box-shadow: 3px 3px 4px #000;
+}
+.current-drop {
+    visibility: hidden;
+}
+
 #notice .qn-question {
     margin: 0;
 }
