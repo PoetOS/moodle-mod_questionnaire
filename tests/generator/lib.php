@@ -218,6 +218,9 @@ class mod_questionnaire_generator extends testing_module_generator {
             $questiondata['surveyid'] = $questionnaire->sid;
             $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
             $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
+            if (isset($questiondata['extradata']) && is_array($questiondata['extradata'])) {
+                $questiondata['extradata'] = json_encode($questiondata['extradata']);
+            }
             $this->create_question($questionnaire, $questiondata, $choicedata);
         }
         $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, true);
@@ -396,6 +399,9 @@ class mod_questionnaire_generator extends testing_module_generator {
             case QUESSLIDER:
                 $qtype = 'Slider';
                 break;
+            case QUESSORT:
+                $qtype = 'Sorting';
+                break;
         }
         return $qtype;
     }
@@ -442,6 +448,9 @@ class mod_questionnaire_generator extends testing_module_generator {
                 break;
             case QUESSLIDER:
                 $qtype = 'Slider';
+                break;
+            case QUESSORT:
+                $qtype = 'Sorting';
                 break;
         }
         return $qtype;
@@ -666,6 +675,12 @@ class mod_questionnaire_generator extends testing_module_generator {
                 case QUESSLIDER :
                     $responses[] = new question_response($question->id, 5);
                     break;
+                case QUESSORT :
+                    $extradata = !empty($question->extradata) ? $question->extradata : '';
+                    $extradata = json_decode($extradata, true);
+                    $answers = $extradata['answers'];
+                    $responses[] = new question_response($question->id, $answers);
+                    break;
             }
 
         }
@@ -687,7 +702,9 @@ class mod_questionnaire_generator extends testing_module_generator {
         $qdg = $this;
 
         $this->curpos = 0;
-        $questiontypes = [QUESTEXT, QUESESSAY, QUESNUMERIC, QUESDATE, QUESRADIO, QUESDROP, QUESCHECK, QUESRATE, QUESSLIDER];
+        $questiontypes = [
+                QUESTEXT, QUESESSAY, QUESNUMERIC, QUESDATE, QUESRADIO, QUESDROP, QUESCHECK, QUESRATE, QUESSLIDER, QUESSORT
+        ];
         $students = [];
         $courses = [];
         $questionnaires = [];
@@ -734,12 +751,17 @@ class mod_questionnaire_generator extends testing_module_generator {
                         if ($qdg->question_has_choices($questiontype)) {
                             $opts = $qdg->assign_opts(10);
                         }
+                        $extradata = [];
+                        if ($questiontype == QUESSORT) {
+                            $extradata = $this->sorting_mock_data();
+                        }
                         $questions[] = $qdg->create_question(
                             $questionnaire,
                             [
                                 'surveyid' => $questionnaire->sid,
                                 'name' => $qdg->type_name($questiontype).' '.$qname++,
-                                'type_id' => $questiontype
+                                'type_id' => $questiontype,
+                                'extradata' => json_encode($extradata),
                             ],
                             $opts
                         );
@@ -768,5 +790,33 @@ class mod_questionnaire_generator extends testing_module_generator {
                 }
             }
         }
+    }
+
+    /**
+     * Return an example extra for sorting question.
+     *
+     * @return array
+     */
+    public function sorting_mock_data(): array {
+        return [
+                'answers' => [
+                        [
+                                'index' => 0,
+                                'text' => '1',
+                                'format' => '0',
+                        ],
+                        [
+                                'index' => 1,
+                                'text' => '2',
+                                'format' => '0',
+                        ],
+                        [
+                                'index' => 2,
+                                'text' => '3',
+                                'format' => '0',
+                        ],
+                ],
+                'sortingdirection' => QUESTIONNAIRE_LAYOUT_VERTICAL,
+        ];
     }
 }

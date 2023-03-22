@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\question\question;
+use mod_questionnaire\question\sorting;
 
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
@@ -93,6 +94,16 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         $this->create_test_question(QUESSLIDER, '\\mod_questionnaire\\question\\slider', $questiondata);
     }
 
+    public function test_create_question_sorting() {
+        $dg = $this->getDataGenerator();
+        $qdg = $dg->get_plugin_generator('mod_questionnaire');
+        $questiondata = [
+                'content' => 'Enter a sorting text',
+                'extradata' => json_encode($qdg->sorting_mock_data()),
+        ];
+        $this->create_test_question(QUESSORT, '\\mod_questionnaire\\question\\sorting', $questiondata);
+    }
+
     public function test_create_question_yesno() {
         $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', array('content' => 'Enter yes or no'));
     }
@@ -140,6 +151,10 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
                 $this->assertEquals($choice->value, $choicedatum->value);
                 $choicedatum = next($choicedata);
             }
+        }
+
+        if ($questionclass instanceof sorting) {
+            $this->assertEquals($question->sortingdata, (object) $questiondata['extradata']);
         }
 
         // Questionnaire object should now have question record(s).

@@ -311,6 +311,63 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         }
     }
 
+    public function test_create_response_sorting() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Some common variables used below.
+        $userid = 1;
+
+        // Set up a questionnaire with one text response question.
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questiondata = [
+            'extradata' => [
+                'answers' => [
+                    [
+                        'index' => 0,
+                        'text' => '1',
+                        'format' => '0',
+                    ],
+                    [
+                        'index' => 1,
+                        'text' => '2',
+                        'format' => '0',
+                    ],
+                    [
+                        'index' => 2,
+                        'text' => '3',
+                        'format' => '0',
+                    ],
+                ],
+                'sortingdirection' => QUESTIONNAIRE_LAYOUT_VERTICAL,
+            ],
+        ];
+
+        $questionnaire = $generator->create_test_questionnaire($course, QUESSORT, $questiondata);
+        $question = reset($questionnaire->questions);
+
+        $id = 'q'. $question->id;
+        $respval = [
+            $id. '-0' => 0,
+            $id. '-1' => 1,
+            $id. '-2' => 2,
+        ];
+
+        $response = $generator->create_question_response($questionnaire, $question, $respval, $userid);
+
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $response->id, $userid);
+
+        // Retrieve the specific text response.
+        $textresponses = $DB->get_records('questionnaire_response_sort', ['response_id' => $response->id]);
+        $this->assertEquals(1, count($textresponses));
+        $textresponse = reset($textresponses);
+        $this->assertEquals($question->id, $textresponse->question_id);
+        $this->assertEquals('0,1,2', $textresponse->response);
+    }
+
     // General tests to call from specific tests above.
 
     /**
@@ -333,6 +390,9 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questiondata['surveyid'] = $questionnaire->sid;
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
+        if (array_key_exists('extradata', $questiondata)) {
+            $questiondata['extradata'] = json_encode($questiondata['extradata']);
+        }
         $generator->create_question($questionnaire, $questiondata, $choicedata);
 
         $questionnaire = new questionnaire( $course, $cm, $questionnaire->id, null, true);

@@ -29,23 +29,25 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/calendar/lib.php');
+require_once($CFG->dirroot . '/calendar/lib.php');
 // Constants.
 
-define ('QUESTIONNAIREUNLIMITED', 0);
-define ('QUESTIONNAIREONCE', 1);
-define ('QUESTIONNAIREDAILY', 2);
-define ('QUESTIONNAIREWEEKLY', 3);
-define ('QUESTIONNAIREMONTHLY', 4);
-
-define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER', 0);
-define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED', 1);
-define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED', 2);
-define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS', 3);
-
+define('QUESTIONNAIREUNLIMITED', 0);
+define('QUESTIONNAIREONCE', 1);
+define('QUESTIONNAIREDAILY', 2);
+define('QUESTIONNAIREWEEKLY', 3);
+define('QUESTIONNAIREMONTHLY', 4);
+define('QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER', 0);
+define('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED', 1);
+define('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED', 2);
+define('QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS', 3);
 define('QUESTIONNAIRE_MAX_EVENT_LENGTH', 5 * 24 * 60 * 60);   // 5 days maximum.
-
 define('QUESTIONNAIRE_DEFAULT_PAGE_COUNT', 20);
+define('QUESTIONNAIRE_LAYOUT_VERTICAL_VALUE', 'vertical');
+define('QUESTIONNAIRE_LAYOUT_HORIZONTAL_VALUE', 'horizontal');
+define('QUESTIONNAIRE_LAYOUT_VERTICAL', 0);
+define('QUESTIONNAIRE_LAYOUT_HORIZONTAL', 1);
+
 
 global $questionnairetypes;
 $questionnairetypes = array (QUESTIONNAIREUNLIMITED => get_string('qtypeunlimited', 'questionnaire'),
@@ -324,6 +326,7 @@ function questionnaire_delete_response($response, $questionnaire='') {
     $DB->delete_records('questionnaire_response_rank', array('response_id' => $rid));
     $DB->delete_records('questionnaire_resp_single', array('response_id' => $rid));
     $DB->delete_records('questionnaire_response_text', array('response_id' => $rid));
+    $DB->delete_records('questionnaire_response_sort', ['response_id' => $rid]);
 
     $status = $status && $DB->delete_records('questionnaire_response', array('id' => $rid));
 
@@ -354,6 +357,7 @@ function questionnaire_delete_responses($qid) {
     $DB->delete_records('questionnaire_response_rank', ['question_id' => $qid]);
     $DB->delete_records('questionnaire_resp_single', ['question_id' => $qid]);
     $DB->delete_records('questionnaire_response_text', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_response_sort', ['question_id' => $qid]);
 
     return true;
 }
@@ -498,6 +502,8 @@ function questionnaire_get_type ($id) {
             return get_string('numeric', 'questionnaire');
         case 11:
             return get_string('slider', 'questionnaire');
+        case 12:
+            return get_string('sorting', 'questionnaire');
         case 100:
             return get_string('sectiontext', 'questionnaire');
         case 99:

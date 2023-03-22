@@ -997,6 +997,37 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2022092200, 'questionnaire');
     }
 
+    if ($oldversion < 2022121600.01) {
+        $exist = $DB->record_exists('questionnaire_question_type', ['typeid' => 12]);
+        if (!$exist) {
+            $questiontype = new stdClass();
+            $questiontype->typeid = 12;
+            $questiontype->type = 'Sorting';
+            $questiontype->has_choices = 'n';
+            $questiontype->response_table = 'response_sort';
+            $DB->insert_record('questionnaire_question_type', $questiontype);
+        }
+
+        // Define table questionnaire_response_sort to be created.
+        $table = new xmldb_table('questionnaire_response_sort');
+
+        // Adding fields to table questionnaire_response_sort.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('response', XMLDB_TYPE_TEXT, null, null, null, null, null);
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('question_id', XMLDB_KEY_FOREIGN, ['question_id'], 'questionnaire_question', ['id']);
+
+        // Conditionally launch create table for questionnaire_response_sort.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_mod_savepoint(true, 2022121600.01, 'questionnaire');
+    }
+
     return true;
 }
 

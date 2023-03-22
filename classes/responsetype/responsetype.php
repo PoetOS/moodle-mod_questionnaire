@@ -69,8 +69,8 @@ abstract class responsetype {
      */
     public static function all_response_tables() {
         return ['questionnaire_response_bool', 'questionnaire_response_date', 'questionnaire_response_other',
-            'questionnaire_response_rank', 'questionnaire_response_text', 'questionnaire_resp_multiple',
-            'questionnaire_resp_single'];
+            'questionnaire_response_rank', 'questionnaire_response_text', 'questionnaire_response_sort',
+            'questionnaire_resp_multiple', 'questionnaire_resp_single'];
     }
 
     /**

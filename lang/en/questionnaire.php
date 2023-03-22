@@ -456,6 +456,11 @@ $string['privacy:metadata:questionnaire_response_text:response_id'] = 'The ID of
 $string['privacy:metadata:questionnaire_response_text:question_id'] = 'The ID of the question record for this response.';
 $string['privacy:metadata:questionnaire_response_text:response'] = 'The specific text answer.';
 
+$string['privacy:metadata:questionnaire_response_sort'] = 'A sorting question response.';
+$string['privacy:metadata:questionnaire_response_sort:response_id'] = 'The ID of the response record for this response.';
+$string['privacy:metadata:questionnaire_response_sort:question_id'] = 'The ID of the question record for this response.';
+$string['privacy:metadata:questionnaire_response_sort:response'] = 'The specific sorting answer.';
+
 $string['privacy:metadata:questionnaire_resp_multiple'] = 'A multiple choice question response.';
 $string['privacy:metadata:questionnaire_resp_multiple:response_id'] = 'The ID of the response record for this response.';
 $string['privacy:metadata:questionnaire_resp_multiple:question_id'] = 'The ID of the question record for this response.';
@@ -598,6 +603,21 @@ $string['show_nonrespondents'] = 'Non-respondents';
 $string['started'] = 'started';
 $string['strfdate'] = '%d/%m/%Y';
 $string['strfdateformatcsv'] = 'd/m/Y H:i:s';
+// Sorting question strings.
+$string['sorting'] = 'Sorting';
+$string['sorting_help'] = 'Several items are displayed in a jumbled sorting. The items can be dragged into a meaningful sorting.';
+$string['sortingerrorsformitems'] = 'Sorting questions must have more than 2 answers.';
+$string['sortingaddsingleanswer'] = 'Add one more item';
+$string['sortingaddmultipleanswers'] = 'Add {$a} more items';
+$string['sortingdraggableitem'] = 'Draggable item {no}';
+$string['sortingdirection'] = 'Direction';
+$string['sortingdirection_help'] = 'Choose whether to display the items vertically or horizontally.';
+$string['sortingremoveeditor'] = 'Remove HTML editor';
+$string['sortingremoveitem'] = 'Remove draggable item';
+$string['sortinglabelanswers_help'] = 'In this question type, the respondent must select and sort the choices offered into their personal preference.';
+$string['sortingstrictformatting'] = 'Please rank the following items. It is OK if you don\'t need to change anything.';
+$string['possibleanswerssorting'] = 'Possible answers';
+$string['possibleanswerssorting_help'] = 'In this question type, the respondent must select and sort the choices offered into their personal preference.';
 $string['submissionnotificationhtmlanon'] = 'There is a new <a href="{$a->submissionurl}">submission</a> to the "{$a->name}" questionnaire.';
 $string['submissionnotificationhtmluser'] = '<a href="{$a->profileurl}">{$a->username}</a> has a new <a href="{$a->submissionurl}">submission</a> to the "{$a->name}" questionnaire in the course "{$a->coursename}".';
 $string['submissionnotificationsubject'] = 'New questionnaire submission';
@@ -651,6 +671,7 @@ $string['type'] = 'Question Type';
 $string['undefinedquestiontype'] = 'Undefined question type!';
 $string['unknown'] = 'Unknown';
 $string['unknownaction'] = 'Unknown questionnaire action specified...';
+$string['unsupported_version'] = 'Unsupported in this version of the app.';
 $string['url'] = 'Confirmation URL';
 $string['url_help'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['useprivate'] = 'Copy existing';

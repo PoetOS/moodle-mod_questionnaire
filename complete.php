@@ -78,6 +78,9 @@ if ($resume) {
     $event->trigger();
 }
 
+// Initialize javascript.
+$PAGE->requires->js_call_amd('mod_questionnaire/sorting_reorder', 'init');
+
 // Generate the view HTML in the page.
 $questionnaire->view();
 

@@ -1941,7 +1941,7 @@ class questionnaire {
         /* delete values */
         $select = 'response_id = \'' . $rid . '\' ' . $qsql;
         foreach (array('response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
-                     'response_other', 'response_date') as $tbl) {
+                     'response_other', 'response_date', 'response_sort') as $tbl) {
             $DB->delete_records_select('questionnaire_'.$tbl, $select, $params);
         }
     }
@@ -2012,7 +2012,7 @@ class questionnaire {
         $max = 0;
 
         foreach (array('response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
-                     'response_other', 'response_date') as $tbl) {
+                     'response_other', 'response_date', 'response_sort') as $tbl) {
             $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_'.$tbl.'} a, {questionnaire_question} q '.
                 'WHERE a.response_id = ? AND '.
                 'q.id = a.question_id AND '.
@@ -3254,6 +3254,7 @@ class questionnaire {
             '1',    // 9: date -> string
             '0',    // 10: numeric -> number.
             '0',    // 11: slider -> number.
+            '1',    // 12: sort -> string
         );
 
         if (!$survey = $DB->get_record('questionnaire_survey', array('id' => $this->survey->id))) {
@@ -3407,7 +3408,9 @@ class questionnaire {
             } else {
                 $columns[][$qpos] = $col;
                 $questionidcols[][$qpos] = $qid;
-                array_push($types, $idtocsvmap[$type]);
+                if (isset($idtocsvmap[$type])) {
+                    array_push($types, $idtocsvmap[$type]);
+                }
             }
             $num++;
         }
@@ -3520,6 +3523,9 @@ class questionnaire {
                 }
                 $responsetxt = $choicetxt;
                 $row[$position] = $responsetxt;
+            } else if ($qtype === QUESSORT) {
+                $row[$questionpositions[$qid]] = $questionobj->prepare_answers(
+                    $responserow->response, true);
             } else {
                 $position = $questionpositions[$qid];
                 if ($questionobj->has_choices()) {

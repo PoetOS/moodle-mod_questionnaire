@@ -225,6 +225,20 @@
         <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="questionnaire_response_sort" COMMENT="questionnaire_response_sort table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="primary key of table" />
+        <FIELD NAME="response_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="response id of question" />
+        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="question id of questionnaire"/>
+        <FIELD NAME="response" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="string is a split from array of string to join with ','"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="response_question" UNIQUE="false" FIELDS="response_id, question_id"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="questionnaire_fb_sections" COMMENT="questionnaire_fb_sections table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
