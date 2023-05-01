@@ -47,6 +47,7 @@ define('QUESDROP', 6);
 define('QUESRATE', 8);
 define('QUESDATE', 9);
 define('QUESNUMERIC', 10);
+define('QUESFILE', 12);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
 
@@ -113,6 +114,7 @@ abstract class question {
         QUESDROP => 'drop',
         QUESRATE => 'rate',
         QUESDATE => 'date',
+        QUESFILE => 'file',
         QUESNUMERIC => 'numerical',
         QUESPAGEBREAK => 'pagebreak',
         QUESSECTIONTEXT => 'sectiontext'
