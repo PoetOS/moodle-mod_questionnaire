@@ -60,7 +60,7 @@ $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\completepage());
 
 $questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
-$questionnaire->strquestionnaire  = get_string("modulename", "questionnaire");
+$questionnaire->strquestionnaire = get_string("modulename", "questionnaire");
 
 // Mark as viewed.
 $completion = new completion_info($course);

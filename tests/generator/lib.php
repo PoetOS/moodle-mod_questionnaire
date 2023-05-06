@@ -77,20 +77,20 @@ class mod_questionnaire_generator extends testing_module_generator {
         $record = (object)(array)$record;
 
         $defaultquestionnairesettings = array(
-            'qtype'                 => 0,
-            'respondenttype'        => 'fullname',
-            'resp_eligible'         => 'all',
-            'resp_view'             => 0,
-            'opendate'              => 0,
-            'closedate'             => 0,
-            'resume'                => 0,
-            'navigate'              => 0,
-            'grade'                 => 0,
-            'sid'                   => 0,
-            'timemodified'          => time(),
-            'completionsubmit'      => 0,
-            'autonum'               => 3,
-            'create'                => 'new-0', // Used in form only to indicate a new, empty instance.
+            'qtype' => 0,
+            'respondenttype' => 'fullname',
+            'resp_eligible' => 'all',
+            'resp_view' => 0,
+            'opendate' => 0,
+            'closedate' => 0,
+            'resume' => 0,
+            'navigate' => 0,
+            'grade' => 0,
+            'sid' => 0,
+            'timemodified' => time(),
+            'completionsubmit' => 0,
+            'autonum' => 3,
+            'create' => 'new-0', // Used in form only to indicate a new, empty instance.
         );
 
         foreach ($defaultquestionnairesettings as $name => $value) {
@@ -708,8 +708,8 @@ class mod_questionnaire_generator extends testing_module_generator {
                         $questionnaire,
                         [
                             'surveyid' => $questionnaire->sid,
-                            'name'      => $qdg->type_name($questiontype),
-                            'type_id'   => QUESSECTIONTEXT
+                            'name' => $qdg->type_name($questiontype),
+                            'type_id' => QUESSECTIONTEXT
                         ]
                     );
                     // Create questions.
@@ -722,8 +722,8 @@ class mod_questionnaire_generator extends testing_module_generator {
                             $questionnaire,
                             [
                                 'surveyid' => $questionnaire->sid,
-                                'name'      => $qdg->type_name($questiontype).' '.$qname++,
-                                'type_id'   => $questiontype
+                                'name' => $qdg->type_name($questiontype).' '.$qname++,
+                                'type_id' => $questiontype
                             ],
                             $opts
                         );

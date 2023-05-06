@@ -26,12 +26,12 @@ require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->dirroot.'/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
 
-$id     = required_param('id', PARAM_INT);                 // Course module ID.
+$id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
-$qid    = optional_param('qid', 0, PARAM_INT);             // Question id.
-$moveq  = optional_param('moveq', 0, PARAM_INT);           // Question id to move.
-$delq   = optional_param('delq', 0, PARAM_INT);             // Question id to delete.
-$qtype  = optional_param('type_id', 0, PARAM_INT);         // Question type.
+$qid = optional_param('qid', 0, PARAM_INT);             // Question id.
+$moveq = optional_param('moveq', 0, PARAM_INT);           // Question id to move.
+$delq = optional_param('delq', 0, PARAM_INT);             // Question id to delete.
+$qtype = optional_param('type_id', 0, PARAM_INT);         // Question type.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
@@ -402,8 +402,8 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
         $qid = key($qformdata->removebutton);
         if ($dependants) {
             // Show the dependencies and inform about the dependencies to be removed.
-            // Split dependencies in direct and indirect ones to separate for the confirm-dialogue. Only direct ones will be deleted.
-            // List direct dependencies.
+            // Split dependencies in direct and indirect ones to separate for the confirm-dialogue.
+            // Only direct ones will be deleted. List direct dependencies.
             $msg .= $questionnaire->renderer->dependency_warnings($dependants->directs, 'directwarnings', $strnum);
             // List indirect dependencies.
             $msg .= $questionnaire->renderer->dependency_warnings($dependants->indirects, 'indirectwarnings', $strnum);
