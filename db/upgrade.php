@@ -983,6 +983,67 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2020062301, 'questionnaire');
     }
 
+    if ($oldversion < 2022121501) {
+        // Add new FQCN configuration for question types.
+        $table = new xmldb_table('questionnaire_question_type');
+        $field = new xmldb_field('fqcn', XMLDB_TYPE_CHAR, '256', null, XMLDB_NOTNULL, null, 'fqcn', null);
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $qtypes = $DB->get_recordset('questionnaire_question_type', null);
+
+        foreach ($qtypes as $questiontype) {
+            $questiontype->fqcn = '\\mod_questionnaire\\question\\';
+            switch ($questiontype->typeid) {
+                case 1:
+                    $questiontype->fqcn .= 'yesno';
+                    break;
+                case 2:
+                    $questiontype->fqcn .= 'text';
+                    break;
+                case 3:
+                    $questiontype->fqcn .= 'essay';
+                    break;
+                case 4:
+                    $questiontype->fqcn .= 'radio';
+                    break;
+                case 5:
+                    $questiontype->fqcn .= 'check';
+                    break;
+                case 6:
+                    $questiontype->fqcn .= 'drop';
+                    break;
+                case 8:
+                    $questiontype->fqcn .= 'rate';
+                    break;
+                case 9:
+                    $questiontype->fqcn .= 'date';
+                    break;
+                case 10:
+                    $questiontype->fqcn .= 'numerical';
+                    break;
+                case 99:
+                    $questiontype->fqcn .= 'pagebreak';
+                    break;
+                case 100:
+                    $questiontype->fqcn .= 'sectiontext';
+                    break;
+                default:
+                    $unknowntype = true;
+            }
+
+            if (!$unknowntype) {
+                $DB->update_record('questionnaire_question_type', $questiontype);
+            }
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2022121501, 'questionnaire');
+    }
+
     return $result;
 }
 

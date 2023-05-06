@@ -35,6 +35,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Yes/No';
     $questiontype->has_choices = 'n';
     $questiontype->response_table = 'response_bool';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\yesno';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -42,6 +43,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Text Box';
     $questiontype->has_choices = 'n';
     $questiontype->response_table = 'response_text';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\text';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -49,6 +51,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Essay Box';
     $questiontype->has_choices = 'n';
     $questiontype->response_table = 'response_text';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\essay';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -56,6 +59,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Radio Buttons';
     $questiontype->has_choices = 'y';
     $questiontype->response_table = 'resp_single';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\radio';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -63,6 +67,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Check Boxes';
     $questiontype->has_choices = 'y';
     $questiontype->response_table = 'resp_multiple';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\check';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -70,6 +75,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Dropdown Box';
     $questiontype->has_choices = 'y';
     $questiontype->response_table = 'resp_single';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\drop';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -77,6 +83,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Rate (scale 1..5)';
     $questiontype->has_choices = 'y';
     $questiontype->response_table = 'response_rank';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\rate';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -84,6 +91,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Date';
     $questiontype->has_choices = 'n';
     $questiontype->response_table = 'response_date';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\date';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -91,6 +99,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Numeric';
     $questiontype->has_choices = 'n';
     $questiontype->response_table = 'response_text';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\numerical';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -98,6 +107,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Page Break';
     $questiontype->has_choices = 'n';
     $questiontype->response_table = '';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\pagebreak';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
@@ -105,6 +115,7 @@ function xmldb_questionnaire_install() {
     $questiontype->type = 'Section Text';
     $questiontype->has_choices = 'n';
     $questiontype->response_table = '';
+    $questiontype->fqcn = '\\mod_questionnaire\\question\\sectiontext';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
 }

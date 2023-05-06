@@ -466,34 +466,62 @@ function questionnaire_get_survey_select($courseid=0, $type='') {
  * @param int $id
  * @return lang_string|mixed|string
  * @throws coding_exception
+ * @deprecated Please use questionnaire_get_type_name() instead.
  */
-function questionnaire_get_type ($id) {
-    switch ($id) {
-        case 1:
-            return get_string('yesno', 'questionnaire');
-        case 2:
-            return get_string('textbox', 'questionnaire');
-        case 3:
-            return get_string('essaybox', 'questionnaire');
-        case 4:
-            return get_string('radiobuttons', 'questionnaire');
-        case 5:
-            return get_string('checkboxes', 'questionnaire');
-        case 6:
-            return get_string('dropdown', 'questionnaire');
-        case 8:
-            return get_string('ratescale', 'questionnaire');
-        case 9:
-            return get_string('date', 'questionnaire');
-        case 10:
-            return get_string('numeric', 'questionnaire');
-        case 100:
-            return get_string('sectiontext', 'questionnaire');
-        case 99:
-            return get_string('sectionbreak', 'questionnaire');
-        default:
-        return $id;
+function questionnaire_get_type($id) {
+    return questionnaire_get_type_name($id);
+}
+
+/**
+ * Return the language string for the specified question type.
+ * @param int $id
+ * @return lang_string|mixed|string
+ * @throws coding_exception
+ */
+function questionnaire_get_type_name($id) {
+    global $DB;
+
+    if ($qtypeobject = $DB->get_record('questionnaire_question_type', ['typeid' => $id], '*', MUST_EXIST)) {
+        $qtype = preg_replace("/[^a-zA-Z]+/", "", strtolower($qtypeobject->type));
+
+        $qtypeobjectnamespace = explode('\\', questionnaire_get_question_type_object($id)->fqcn)[1];
+
+        return get_string($qtype, $qtypeobjectnamespace);
+    } else {
+        return '';
     }
+}
+
+/**
+ * Return the language string for all question types.
+ * @return array
+ * @throws coding_exception
+ */
+function questionnaire_get_all_question_types() {
+    global $DB;
+
+    $qtypes = $DB->get_records('questionnaire_question_type', [], 'typeid',
+            'typeid, type, has_choices, response_table');
+
+    foreach ($qtypes as $qtype) {
+        $qtypenames[$qtype->typeid] = $qtype->type;
+    }
+
+    return $qtypenames;
+}
+
+/**
+ * Return an object of the specified question type.
+ * @param int $id
+ * @return stdClass
+ * @throws coding_exception
+ */
+function questionnaire_get_question_type_object($id) {
+    global $DB;
+
+    $qtypeobject = $DB->get_record('questionnaire_question_type', ['typeid' => $id], '*', MUST_EXIST);
+
+    return $qtypeobject;
 }
 
 /**
@@ -876,7 +904,8 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             }
         }
     } else {
-        $question = \mod_questionnaire\question\question::question_builder($qtype);
+        $question = questionnaire_get_question_type_object($qtype);
+        $question = \mod_questionnaire\question\question::question_builder_fqcn($question->fqcn, $qtype);
         $question->sid = $questionnaire->survey->id;
         $question->id = $questionnaire->cm->id;
         $question->type_id = $qtype;
@@ -890,7 +919,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
 }
 
 /**
- * Get the standard page contructs and check for validity.
+ * Get the standard page constructs and check for validity.
  * @param int $id The coursemodule id.
  * @param int $a  The module instance id.
  * @return array An array with the $cm, $course, and $questionnaire records in that order.

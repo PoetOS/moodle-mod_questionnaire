@@ -141,9 +141,9 @@ class questionnaire {
             $sec = 1;
             $isbreak = false;
             foreach ($records as $record) {
-
-                $this->questions[$record->id] = \mod_questionnaire\question\question::question_builder($record->type_id,
-                    $record, $this->context);
+                $qtypeobject = questionnaire_get_question_type_object($record->type_id);
+                $this->questions[$record->id] = \mod_questionnaire\question\question::question_builder_fqcn($qtypeobject->fqcn,
+                    $record->type_id, $record, $this->context);
 
                 if ($record->type_id != QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][] = $record->id;
@@ -3020,7 +3020,8 @@ class questionnaire {
         }
 
         foreach ($uniquetypes as $type) {
-            $question = \mod_questionnaire\question\question::question_builder($type);
+            $qtypeobject = questionnaire_get_question_type_object($type);
+            $question = \mod_questionnaire\question\question::question_builder_fqcn($qtypeobject->fqcn, $type);
             if (!isset($question->responsetype)) {
                 continue;
             }

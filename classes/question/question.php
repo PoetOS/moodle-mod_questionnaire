@@ -181,20 +181,39 @@ abstract class question {
     }
 
     /**
-     * Short name for this question type - no spaces, etc..
+     * Short name for this question type - no spaces, etc.
      * @return string
      */
     abstract public function helpname();
 
     /**
-     * Build a question from data.
+     * Build a question from id.
      * @param int $qtype
      * @param int|array $qdata
      * @param \stdClass $context
      * @return mixed
      */
     public static function question_builder($qtype, $qdata = null, $context = null) {
-        $qclassname = '\\mod_questionnaire\\question\\'.self::qtypename($qtype);
+        $qclassname = '\\mod_questionnaire\\question\\' . self::qtypename($qtype);
+        $qid = 0;
+        if (!empty($qdata) && is_array($qdata)) {
+            $qdata = (object)$qdata;
+        } else if (!empty($qdata) && is_int($qdata)) {
+            $qid = $qdata;
+        }
+        return new $qclassname($qid, $qdata, $context, ['type_id' => $qtype]);
+    }
+
+    /**
+     * Build a question from FQCN.
+     * @param string $qtypefqcn
+     * @param int $qtype
+     * @param int|array $qdata
+     * @param \stdClass $context
+     * @return mixed
+     */
+    public static function question_builder_fqcn($qtypefqcn, $qtype, $qdata = null, $context = null) {
+        $qclassname = (string) $qtypefqcn;
         $qid = 0;
         if (!empty($qdata) && is_array($qdata)) {
             $qdata = (object)$qdata;

@@ -120,7 +120,7 @@ if ($delq) {
 
     // Log question deleted event.
     $context = context_module::instance($questionnaire->cm->id);
-    $questiontype = \mod_questionnaire\question\question::qtypename($questionnaire->questions[$qid]->type_id);
+    $questiontype = questionnaire_get_all_question_types()[$questionnaire->questions[$qid]->type_id];
     $params = array(
                     'context' => $context,
                     'courseid' => $questionnaire->course->id,
@@ -220,7 +220,8 @@ if ($action == 'main') {
                 $questionrec->surveyid = $qformdata->sid;
                 $questionrec->type_id = QUESPAGEBREAK;
                 $questionrec->content = 'break';
-                $question = \mod_questionnaire\question\question::question_builder(QUESPAGEBREAK);
+                $qtypeobject = questionnaire_get_question_type_object(QUESPAGEBREAK);
+                $question = \mod_questionnaire\question\question::question_builder_fqcn($qtypeobject->fqcn, QUESPAGEBREAK);
                 $question->add($questionrec);
                 $reload = true;
             } else {
@@ -296,7 +297,7 @@ if ($action == 'main') {
     // Log question created event.
     if (isset($qformdata)) {
         $context = context_module::instance($questionnaire->cm->id);
-        $questiontype = \mod_questionnaire\question\question::qtypename($qformdata->type_id);
+        $questiontype = questionnaire_get_all_question_types()[$qformdata->type_id];
         $params = array(
                         'context' => $context,
                         'courseid' => $questionnaire->course->id,
@@ -413,5 +414,6 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
 } else {
     $questionnaire->page->add_to_page('formarea', $questionsform->render());
 }
+
 echo $questionnaire->renderer->render($questionnaire->page);
 echo $questionnaire->renderer->footer();
