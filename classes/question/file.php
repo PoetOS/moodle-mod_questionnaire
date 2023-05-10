@@ -13,29 +13,27 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+namespace mod_questionnaire\question;
+use core_media_manager;
+use form_filemanager;
+use mod_questionnaire\responsetype\response\response;
+use moodle_url;
+use MoodleQuickForm;
 
 /**
  * This file contains the parent class for text question types.
  *
  * @author Laurent David
+ * @author Martin Cornu-Mansuy
+ * @copyright 2023 onward CALL Learning <martin@call-learning.fr>
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\question;
-
-use context_module;
-use core_media_manager;
-use form_filemanager;
-use mod_questionnaire\file_storage;
-use moodle_url;
-use stdClass;
-
-defined('MOODLE_INTERNAL') || die();
-
 class file extends question {
 
     /**
+     * Get name.
+     *
      * @return string
      */
     public function helpname() {
@@ -61,6 +59,8 @@ class file extends question {
     }
 
     /**
+     * Get response class.
+     *
      * @return object|string
      */
     protected function responseclass() {
@@ -68,8 +68,10 @@ class file extends question {
     }
 
     /**
-     * @param \mod_questionnaire\responsetype\response\response $response
-     * @param $descendantsdata
+     * Survey display output.
+     *
+     * @param response $response
+     * @param object $descendantsdata
      * @param bool $blankquestionnaire
      * @return object|string
      */
@@ -103,6 +105,11 @@ class file extends question {
         return $html;
     }
 
+    /**
+     * Get file manager options
+     *
+     * @return array
+     */
     private function get_file_manager_option() {
         return [
             'mainfile' => '',
@@ -112,7 +119,9 @@ class file extends question {
     }
 
     /**
-     * @param \mod_questionnaire\responsetype\response\response $response
+     * Response display output.
+     *
+     * @param response $response
      * @return object|string
      */
     protected function response_survey_display($response) {
@@ -146,11 +155,11 @@ class file extends question {
             core_media_manager::OPTION_BLOCK => true,
         );
 
-        if (file_mimetype_in_typegroup($mimetype, 'web_image')) {  // It's an image
+        if (file_mimetype_in_typegroup($mimetype, 'web_image')) {  // It's an image.
             $code = resourcelib_embed_image($moodleurl->out(), $title);
 
         } else if ($mimetype === 'application/pdf') {
-            // PDF document
+            // PDF document.
             $code = resourcelib_embed_pdf($moodleurl->out(), $title, get_string('view'));
 
         } else if ($mediamanager->can_embed_url($moodleurl, $embedoptions)) {
@@ -161,7 +170,7 @@ class file extends question {
             // We need a way to discover if we are loading remote docs inside an iframe.
             $moodleurl->param('embed', 1);
 
-            // anything else - just try object tag enlarged as much as possible
+            // Anything else - just try object tag enlarged as much as possible.
             $code = resourcelib_embed_general($moodleurl, $title, get_string('view'), $mimetype);
         }
 
@@ -172,11 +181,25 @@ class file extends question {
         return $output;
     }
 
-    protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
+    /**
+     * Add the length element as hidden.
+     *
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm
+     */
+    protected function form_length(MoodleQuickForm $mform, $helpname = '') {
         return question::form_length_hidden($mform);
     }
 
-    protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
+    /**
+     * Add the precise element as hidden.
+     *
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm
+     */
+    protected function form_precise(MoodleQuickForm $mform, $helpname = '') {
         return question::form_precise_hidden($mform);
     }
 
