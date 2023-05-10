@@ -30,10 +30,8 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 use Behat\Behat\Context\Step\Given as Given,
     Behat\Behat\Context\Step\When as When,
     Behat\Gherkin\Node\TableNode as TableNode,
-    Behat\Gherkin\Node\PyStringNode as PyStringNode,
     Behat\Mink\Exception\ExpectationException as ExpectationException;
 
-#[\AllowDynamicProperties]
 /**
  * Questionnaire-related steps definitions.
  *
@@ -468,11 +466,11 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
-     * Uploads a file to the specified filemanager leaving other fields in upload form default. The paths should be relative to moodle codebase.
+     * Uploads a file to the specified filemanager leaving other fields in upload form default.
+     *
+     * The paths should be relative to moodle codebase.
      *
      * @When /^I upload "(?P<filepath_string>(?:[^"]|\\")*)" to questionnaire filemanager$/
-     * @throws DriverException
-     * @throws ExpectationException Thrown by behat_base::find
      * @param string $filepath
      */
     public function i_upload_file_to_questionnaire_filemanager($filepath) {
@@ -480,11 +478,9 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
-     * Try to get the filemanager node specified by the element
+     * Try to get the filemanager node.
      *
-     * @param string $filepickerelement
-     * @return \Behat\Mink\Element\NodeElement
-     * @throws ExpectationException
+     * @return NodeElement
      */
     protected function get_filemanager() {
 
@@ -498,13 +494,12 @@ class behat_mod_questionnaire extends behat_base {
     /**
      * Uploads a file to filemanager
      *
-     * @throws DriverException
-     * @throws ExpectationException Thrown by behat_base::find
      * @param string $filepath Normally a path relative to $CFG->dirroot, but can be an absolute path too.
-     * @param string $filemanagerelement
      * @param TableNode $data Data to fill in upload form
      * @param false|string $overwriteaction false if we don't expect that file with the same name already exists,
      *     or button text in overwrite dialogue ("Overwrite", "Rename to ...", "Cancel")
+     * @throws DriverException
+     * @throws ExpectationException Thrown by behat_base::find
      */
     protected function upload_file_to_filemanager_questionnaire($filepath, TableNode $data, $overwriteaction = false) {
         global $CFG;
@@ -584,7 +579,7 @@ class behat_mod_questionnaire extends behat_base {
      * Try to get the filemanager node specified by the element
      *
      * @param string $filepickerelement
-     * @return \Behat\Mink\Element\NodeElement
+     * @return NodeElement
      * @throws ExpectationException
      */
     protected function get_filepicker_node($filepickerelement) {
@@ -613,13 +608,14 @@ class behat_mod_questionnaire extends behat_base {
 
         return $filepickercontainer;
     }
+
     /**
      * Opens the filepicker modal window and selects the repository.
      *
-     * @throws ExpectationException Thrown by behat_base::find
      * @param NodeElement $filemanagernode The filemanager or filepicker form element DOM node.
      * @param mixed $repositoryname The repo name.
      * @return void
+     * @throws ExpectationException Thrown by behat_base::find
      */
     protected function open_add_file_window($filemanagernode, $repositoryname) {
         $exception = new ExpectationException('No files can be added to the specified filemanager', $this->getSession());
@@ -640,7 +636,8 @@ class behat_mod_questionnaire extends behat_base {
             'xpath_element');
 
         // Getting the repository link and opening it.
-        $repoexception = new ExpectationException('The "' . $repositoryname . '" repository has not been found', $this->getSession());
+        $repoexception =
+            new ExpectationException('The "' . $repositoryname . '" repository has not been found', $this->getSession());
 
         // Avoid problems with both double and single quotes in the same string.
         $repositoryname = behat_context_helper::escape($repositoryname);
