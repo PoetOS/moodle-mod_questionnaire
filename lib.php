@@ -514,6 +514,7 @@ function questionnaire_scale_used_anywhere($scaleid) {
  * @param string $filearea
  * @param array $args
  * @param bool $forcedownload
+ * @param mixed $options
  * @return bool false if file not found, does not return if found - justsend the file
  *
  * $forcedownload is unused, but API requires it. Suppress PHPMD warning.
