@@ -84,14 +84,4 @@ class all_responses_viewed extends \core\event\base {
         }
         return new \moodle_url("/mod/questionnaire/report.php", $params);
     }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, "questionnaire", "view report", "report.php?id=" . $this->contextinstanceid, $this->objectid,
-                     $this->contextinstanceid);
-    }
 }
