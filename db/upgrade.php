@@ -997,7 +997,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2022092200, 'questionnaire');
     }
 
-    return $result;
+    return true;
 }
 
 /**
