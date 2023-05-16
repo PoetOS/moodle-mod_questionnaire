@@ -85,7 +85,7 @@ if ($delq) {
     $questionnaireid = $questionnaire->id;
 
     // Need to reload questions before setting deleted question to 'y'.
-    $questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'], 'id');
+    $questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'], 'id') ?? [];
     $DB->set_field('questionnaire_question', 'deleted', 'y', ['id' => $qid, 'surveyid' => $sid]);
 
     // Delete all dependency records for this question.
