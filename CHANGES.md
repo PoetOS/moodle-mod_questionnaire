@@ -1,6 +1,14 @@
 Release Notes
 
-Version 4.0.0 (Build - 2023030700)
+Release 4.0.1 (Build - 2023051600)
+
+Improvements:
+
+* Moodle 4.2 compatibility:
+** removed event functions fully deprecated in 4.2.
+** added Moodle 4.2 and PHP 8.1 to CI checks.
+
+Release 4.0.0 (Build - 2023030700)
 
 Bug fixes:
 
