@@ -74,7 +74,10 @@
         {{#cols}}
         {{#checked}}
         <td style="text-align:center;" class="selected">
-            <span class="selected"><input type="radio" name="{{str}}" checked="checked" disabled="disabled"/></span>
+            <span class="selected">
+                {{^pdf}}<input type="radio" name="{{str}}" checked="checked" disabled="disabled"/>{{/pdf}}
+                {{#pdf}}&#10003;{{/pdf}}
+            </span>
         </td>
         {{/checked}}
         {{^checked}}
