@@ -52,6 +52,11 @@ class slider extends numericaltext {
         return $answers;
     }
 
+    /**
+     * Provide the feedback scores for all requested response id's. This should be provided only by questions that provide feedback.
+     * @param array $rids
+     * @return array | boolean
+     */
     public function get_feedback_scores(array $rids) {
         global $DB;
         $rsql = '';
@@ -62,7 +67,7 @@ class slider extends numericaltext {
             $rsql = ' AND response_id ' . $rsql;
         }
         $sql = 'SELECT response_id as rid, response AS score ' .
-            'FROM {'.$this->response_table().'} r ' .            
+            'FROM {'.$this->response_table().'} r ' .
             'WHERE r.question_id= ? ' . $rsql . ' ' .
             'ORDER BY response_id ASC';
         return $DB->get_records_sql($sql, $params);
