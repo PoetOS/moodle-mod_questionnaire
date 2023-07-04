@@ -14,38 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * The mod_questionnaire question_created event.
- *
- * @package    mod_questionnaire
- * @copyright  2014 Joseph Rézeau <moodle@rezeau.org>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire\event;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_questionnaire question_created event class.
  *
  * @package    mod_questionnaire
- * @since      Moodle 2.7
  * @copyright  2014 Joseph Rézeau <moodle@rezeau.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class question_created extends \core\event\base {
-    /*
+    /**
      * Set basic properties for the event.
      */
-
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
 
-    /*
+    /**
      * Return localised event name.
      *
      * @return string
@@ -54,7 +41,7 @@ class question_created extends \core\event\base {
         return get_string('event_question_created', 'mod_questionnaire');
     }
 
-    /*
+    /**
      * Returns description of what happened.
      *
      * @return string

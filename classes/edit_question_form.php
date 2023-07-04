@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * The form class for editing questions.
  * @package mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author Mike Churchward & Joseph Rézeau
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questionnaire
  */
 
 namespace mod_questionnaire;
@@ -36,6 +36,9 @@ require_once($CFG->libdir . '/formslib.php');
  */
 class edit_question_form extends \moodleform {
 
+    /**
+     * Form definition.
+     */
     public function definition() {
         // TODO - Find a way to not use globals. Maybe the base class allows more parameters to be passed?
         global $questionnaire, $question, $SESSION;
@@ -55,6 +58,14 @@ class edit_question_form extends \moodleform {
         }
     }
 
+    /**
+     * Form validation.
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -79,6 +90,36 @@ class edit_question_form extends \moodleform {
             }
         }
 
+        // If this is a slider question.
+        if ($data['type_id'] == QUESSLIDER) {
+            if (isset($data['minrange']) && isset($data['maxrange']) && isset($data['startingvalue']) &&
+                    isset($data['stepvalue'])) {
+                if ($data['minrange'] >= $data['maxrange']) {
+                    $errors['maxrange'] = get_string('invalidrange', 'questionnaire');
+                }
+
+                if (($data['startingvalue'] > $data['maxrange']) || ($data['startingvalue'] < $data['minrange'])) {
+                    $errors['startingvalue'] = get_string('invalidstartingvalue', 'questionnaire');
+                }
+
+                if ($data['startingvalue'] > 100 || $data['startingvalue'] < -100) {
+                    $errors['startingvalue'] = get_string('invalidstartingvalue', 'questionnaire');
+                }
+
+                if (($data['stepvalue'] > $data['maxrange']) || $data['stepvalue'] < 1) {
+                    $errors['stepvalue'] = get_string('invalidincrement', 'questionnaire');
+                }
+
+                if ($data['minrange'] < -100) {
+                    $errors['minrange'] = get_string('invalidminmaxrange', 'questionnaire');
+                }
+
+                if ($data['maxrange'] > 100) {
+                    $errors['maxrange'] = get_string('invalidminmaxrange', 'questionnaire');
+                }
+            }
+        }
+
         return $errors;
     }
 
@@ -86,7 +127,6 @@ class edit_question_form extends \moodleform {
      * Magic method for getting the protected $_form MoodleQuickForm and $_customdata array properties.
      * @param string $name
      * @return mixed
-     * @throws \coding_exception
      */
     public function __get($name) {
         if ($name == '_form') {

@@ -14,24 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\question;
+
 /**
  * This file contains the parent class for date question types.
  *
  * @author Mike Churchward
+ * @copyright  2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\question;
-defined('MOODLE_INTERNAL') || die();
-use \html_writer;
-
 class date extends question {
 
+    /**
+     * Return the responseclass used.
+     * @return string
+     */
     protected function responseclass() {
         return '\\mod_questionnaire\\responsetype\\date';
     }
 
+    /**
+     * Return the help name.
+     * @return string
+     */
     public function helpname() {
         return 'date';
     }
@@ -55,10 +61,9 @@ class date extends question {
     /**
      * Return the context tags for the check question template.
      * @param \mod_questionnaire\responsetype\response\response $response
-     * @param $descendantsdata
+     * @param array $descendantsdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
-     * @throws \coding_exception
      */
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         // Date.
@@ -100,7 +105,7 @@ class date extends question {
     /**
      * Check question's form data for valid response. Override this is type has specific format requirements.
      *
-     * @param object $responsedata The data entered into the response.
+     * @param \stdClass $responsedata The data entered into the response.
      * @return boolean
      */
     public function response_valid($responsedata) {
@@ -125,17 +130,29 @@ class date extends question {
         }
     }
 
+    /**
+     * Return the form length.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm|void
+     */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
         return question::form_length_hidden($mform);
     }
 
+    /**
+     * Return the form precision.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     * @return \MoodleQuickForm|void
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         return question::form_precise_hidden($mform);
     }
 
     /**
      * Verify that the date provided is in the proper YYYY-MM-DD format.
-     * @param $date
+     * @param string $date
      * @return bool
      */
     public function check_date_format($date) {
@@ -187,11 +204,10 @@ class date extends question {
     }
 
     /**
-     * @param $qnum
-     * @param $fieldkey
+     * Does the question support mobile display.
+     * @param int $qnum
      * @param bool $autonum
      * @return \stdClass
-     * @throws \coding_exception
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
@@ -200,7 +216,7 @@ class date extends question {
     }
 
     /**
-     * @param $mobiledata
+     * Does the question have mobile choices.
      * @return mixed
      */
     public function mobile_question_choices_display() {

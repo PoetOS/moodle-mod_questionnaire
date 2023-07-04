@@ -175,9 +175,44 @@ td.selected {
     display: inline;
 }
 
+#page-mod-questionnaire-complete .notice .buttons input {
+    margin-bottom: 10px;
+}
+
 .floatprinticon {
     margin-top: -30px;
     float: right;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons {
+    text-align: center;
+    width: 100%;
+    position: relative;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-prev {
+    float: left;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-save {
+    margin-left: 20%;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-prev + .control-button-save {
+    margin-left: 0;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-next,
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-submit {
+    float: right;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons input {
+    margin-right: 0;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_completepage .generalbox .notice {
+    padding: 0.5em 0 0.5em 0;
 }
 
 /* progress bar styling */
@@ -215,6 +250,10 @@ td.selected {
     margin-left: 10px;
     height: auto;
     overflow: hidden;
+}
+
+#page-mod-questionnaire-complete .mod_questionnaire_completepage.generalbox .homelink ~ .homelink {
+    padding-top: 10px;
 }
 
 .qn-legend {
@@ -296,6 +335,17 @@ td.selected {
 
 .qn-answer > label + input[type=radio] {
     margin-left: 0;
+}
+
+.qn-answer > textarea,
+.qn-content .editor_atto_wrap .editor_atto_content {
+    resize: vertical;
+}
+
+.qn-answer textarea,
+.qn-answer input[type="text"] {
+    box-sizing: border-box;
+    height: auto;
 }
 
 #notice .qn-question {
@@ -389,7 +439,107 @@ td.selected {
     margin-left: 20px;
 }
 
+.mod_questionnaire_flex-container {
+    display: inline-flex;
+}
+
+#page-mod-questionnaire-view .mod_questionnaire_viewpage div.complete,
+#page-mod-questionnaire-view .mod_questionnaire_viewpage div.yourresponse,
+#page-mod-questionnaire-view .mod_questionnaire_viewpage div.allresponses {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
 #page-mod-questionnaire-questions #fitem_id_allchoices #id_allchoices,
 #page-mod-questionnaire-questions #fitem_id_allnameddegrees #id_allnameddegrees {
     resize: both;
+}
+
+.path-mod-questionnaire .slidecontainer {
+    width: 100%;
+}
+
+.path-mod-questionnaire .slider {
+    -webkit-appearance: none;
+    width: 100%;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    float: left;
+    margin-top: 40px;
+}
+.path-mod-questionnaire .slider input {
+    width: 100%;
+}
+
+.path-mod-questionnaire .slider:hover {
+    opacity: 1;
+}
+
+.path-mod-questionnaire .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 25px;
+    background: #04aa6d;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.path-mod-questionnaire .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #04aa6d;
+    cursor: pointer;
+}
+
+.path-mod-questionnaire .question-slider {
+    display: flex;
+    align-items: baseline;
+}
+
+.path-mod-questionnaire .left-side-label {
+    text-align: right;
+    padding-right: 20px;
+    margin-top: 40px;
+    flex-grow: 1;
+}
+
+.path-mod-questionnaire .right-side-label {
+    text-align: left;
+    padding-left: 20px;
+    margin-top: 40px;
+    flex-grow: 1;
+}
+
+.path-mod-questionnaire .middle-side-content {
+    flex-grow: 8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.path-mod-questionnaire .middle-side-label {
+    text-align: center;
+}
+
+.path-mod-questionnaire .bubble {
+    background: #000;
+    color: white;
+    padding: 3px;
+    border-radius: 10px;
+    left: 50%;
+    transform: translate(-52%, -50px);
+    position: relative;
+    text-align: center;
+    width: 40px;
+}
+.path-mod-questionnaire .bubble::after {
+    content: "";
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    left: 50%;
 }

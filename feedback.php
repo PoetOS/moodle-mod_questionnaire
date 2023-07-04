@@ -53,7 +53,7 @@ $PAGE->set_context($context);
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
@@ -91,7 +91,7 @@ foreach ($questionnaire->questions as $question) {
 }
 
 if ($settings = $feedbackform->get_data()) {
-    if (isset($settings->feedbacksettingsbutton1) || isset($settings->buttongroup)) {
+    if (isset($settings->feedbacksettingsbutton1) || isset($settings->feedbacksettingsbutton2) || isset($settings->buttongroup)) {
         if (isset ($settings->feedbackscores)) {
             $sdata->feedbackscores = $settings->feedbackscores;
         } else {

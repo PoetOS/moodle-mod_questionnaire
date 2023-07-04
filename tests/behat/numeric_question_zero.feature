@@ -37,7 +37,7 @@ Feature: Numeric questions can have zero as a valid response
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
-    Then I should see "Your response"
+    Then I should see "View your response(s)"
     And I should see "Test questionnaire"
     And I should see "Enter a number"
     And I should see "0"

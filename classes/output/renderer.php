@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\output;
+
+use mod_questionnaire\question\question;
+
 /**
  * Contains class mod_questionnaire\output\renderer
  *
@@ -22,11 +26,6 @@
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace mod_questionnaire\output;
-
-defined('MOODLE_INTERNAL') || die();
-
 class renderer extends \plugin_renderer_base {
     /**
      * Main view page.
@@ -167,7 +166,7 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render the completion form control buttons.
-     * @param array | string $inputs Name/(Type/attribute) array of input types and values used by the form.
+     * @param array|string $inputs Name/(Type/attribute) array of input types and values used by the form.
      * @return string The output for the page.
      */
     public function complete_controlbuttons($inputs=null) {
@@ -182,6 +181,12 @@ class renderer extends \plugin_renderer_base {
         return $output;
     }
 
+    /**
+     * Calculate the progress and return it.
+     * @param int $section
+     * @param array $questionsbysec
+     * @return float
+     */
     private function calculate_progress($section, $questionsbysec) {
         $done = 0;
         $todo = 0;
@@ -196,6 +201,12 @@ class renderer extends \plugin_renderer_base {
         return round($done / ($done + $todo) * 100);
     }
 
+    /**
+     * Render the progress bar and return it.
+     * @param int $section
+     * @param array $questionsbysec
+     * @return bool|string
+     */
     public function render_progress_bar($section, $questionsbysec) {
         $templatecontext['percent'] = $this->calculate_progress($section, $questionsbysec);
         $helpicon = new \help_icon('progresshelp', 'mod_questionnaire');
@@ -207,14 +218,14 @@ class renderer extends \plugin_renderer_base {
      * Render a question for a survey.
      * @param \mod_questionnaire\question\question $question The question object.
      * @param \mod_questionnaire\responsetype\response\response $response Any current response data.
-     * @param array $dependants Array of all questions/choices depending on $question.
      * @param int $qnum The question number.
      * @param boolean $blankquestionnaire Used for printing a blank one.
+     * @param array $dependants Array of all questions/choices depending on $question.
      * @return string The output for the page.
      */
-    public function question_output($question, $response, $dependants=[], $qnum, $blankquestionnaire) {
+    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants=[]) {
 
-        $pagetags = $question->question_output($response, $dependants, $qnum, $blankquestionnaire);
+        $pagetags = $question->question_output($response, $blankquestionnaire, $dependants, $qnum);
 
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -268,10 +279,9 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render all responses for a question.
-     * @param array \mod_questionnaire\responstype\response\response | string $responses
-     * @param array \mod_questionnaire\question\question $questions
+     * @param array|string $responses
+     * @param array $questions
      * @return string The output for the page.
-     * @throws \moodle_exception
      */
     public function all_response_output($responses, $questions = null) {
         $output = '';
@@ -302,13 +312,12 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question results summary.
-     * @param mod_questionnaire\question\question $question The question object.
+     * @param question $question The question object.
      * @param array $rids The response ids.
      * @param string $sort The sort order being used.
      * @param string $anonymous The value of the anonymous setting.
      * @param bool $pdf
      * @return string The output for the page.
-     * @throws \moodle_exception
      */
     public function results_output($question, $rids, $sort, $anonymous, $pdf = false) {
         $pagetags = $question->display_results($rids, $sort, $anonymous);
@@ -392,9 +401,10 @@ class renderer extends \plugin_renderer_base {
 
 
     /**
-     * @param $children
-     * @param $langstring
-     * @param $strnum
+     * Generate and return any dependency warnings.
+     * @param array $children
+     * @param string $langstring
+     * @param int $strnum
      * @return string
      */
     public function dependency_warnings($children, $langstring, $strnum) {
@@ -454,8 +464,8 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Get displayable list of parents for the question in questions_form.
-     * @param $qid The question id.
-     * @param $dependencies Array of dependency records for a question.
+     * @param int $qid The question id.
+     * @param array $dependencies Array of dependency records for a question.
      * @return string
      */
     public function get_dependency_html($qid, $dependencies) {

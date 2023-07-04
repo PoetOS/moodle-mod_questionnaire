@@ -24,8 +24,6 @@
 
 namespace mod_questionnaire\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_questionnaire attempt_submitted event class.
  *
@@ -70,16 +68,6 @@ class attempt_submitted extends \core\event\base {
      */
     public function get_url() {
         return new \moodle_url("/mod/questionnaire/view.php", array('id' => $this->contextinstanceid));
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, "questionnaire", "submit", "view.php?id=" .
-                        $this->contextinstanceid, $this->other['questionnaireid'], $this->contextinstanceid);
     }
 
     /**

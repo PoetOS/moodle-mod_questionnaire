@@ -50,8 +50,9 @@ Feature: Questionnaire responses can be saved and resumed without submitting.
     And I set the field "One" to "checked"
     And I set the field "Two" to "checked"
     And I set the field "Select one choice" to "Four"
-    And I press "Save"
+    And I press "Save and exit"
     Then I should see "Your progress has been saved."
+    And I should see "Resume questionnaire"
 
     And I am on "Course 1" course homepage
     And I follow "Questionnaire 1"
@@ -66,8 +67,9 @@ Feature: Questionnaire responses can be saved and resumed without submitting.
     And the field "Select one choice" matches value "Four"
     And I set the field "Two" to "0"
     And I set the field "Three" to "checked"
-    And I press "Save"
+    And I press "Save and exit"
     Then I should see "Your progress has been saved."
+    And I should see "Resume questionnaire"
 
     And I am on "Course 1" course homepage
     And I follow "Questionnaire 1"
@@ -81,6 +83,7 @@ Feature: Questionnaire responses can be saved and resumed without submitting.
     And the field "Select one choice" matches value "Four"
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
+    And I should not see "Resume questionnaire"
 
     And I am on "Course 1" course homepage
     And I follow "Questionnaire 1"

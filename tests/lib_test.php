@@ -32,7 +32,7 @@ require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/classes/question/question.php');
 
 /**
- * Unit tests for {@link questionnaire_lib_testcase}.
+ * Unit tests for questionnaire_lib_testcase.
  * @group mod_questionnaire
  */
 class mod_questionnaire_lib_testcase extends advanced_testcase {

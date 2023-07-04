@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $DB, $SESSION;
 $tabs = array();
-$row  = array();
+$row = array();
 $inactive = array();
 $activated = array();
 if (!isset($SESSION->questionnaire)) {
@@ -89,7 +89,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
                                 get_string('myresponses', 'questionnaire'));
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg';
-            $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
+            $link = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
             $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
     } else if (in_array($currenttab, array('mybyresponse', 'mysummary'))) {
@@ -166,7 +166,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
 
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg&group='.$currentgroupid;
-            $link  = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
+            $link = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
             $row3[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
     }
@@ -214,7 +214,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
 
         if ($questionnaire->capabilities->downloadresponses) {
             $argstr2 = $argstr.'&action=dwnpg';
-            $link  = htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
+            $link = htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
             $row2[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
         if (count($row2) <= 1) {

@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\privacy;
+
+use \core_privacy\local\metadata\collection;
+use \core_privacy\local\request\contextlist;
+use \core_privacy\local\request\userlist;
+use \core_privacy\local\request\approved_contextlist;
+use \core_privacy\local\request\approved_userlist;
+
 /**
  * Contains class mod_questionnaire\privacy\provider
  *
@@ -22,17 +30,6 @@
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace mod_questionnaire\privacy;
-
-defined('MOODLE_INTERNAL') || die();
-
-use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\contextlist;
-use \core_privacy\local\request\userlist;
-use \core_privacy\local\request\approved_contextlist;
-use \core_privacy\local\request\approved_userlist;
-
 class provider implements
     // This plugin has data.
     \core_privacy\local\metadata\provider,
@@ -46,7 +43,7 @@ class provider implements
     /**
      * Returns meta data about this system.
      *
-     * @param   collection $items The collection to add metadata to.
+     * @param   collection $collection The collection to add metadata to.
      * @return  collection  The array of metadata
      */
     public static function get_metadata(collection $collection): collection {
@@ -211,7 +208,7 @@ class provider implements
                 $lastcmid = $response->cmid;
                 $course = $DB->get_record("course", ["id" => $response->qcourse]);
                 $cm = get_coursemodule_from_instance("questionnaire", $response->qid, $course->id);
-                $questionnaire = new \questionnaire($response->qid, null, $course, $cm);
+                $questionnaire = new \questionnaire($course, $cm, $response->qid, null);
             }
             $responsedata['responses'][] = [
                 'complete' => (($response->complete == 'y') ? get_string('yes') : get_string('no')),
@@ -323,7 +320,7 @@ class provider implements
     /**
      * Helper function to delete all the response records for a recordset array of responses.
      *
-     * @param   recordset $responses The list of response records to delete for.
+     * @param \moodle_recordset $responses The list of response records to delete for.
      */
     private static function delete_responses(\moodle_recordset $responses) {
         global $DB;

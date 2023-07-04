@@ -22,11 +22,7 @@ Feature: Questionnaires can be public, private or template
     And the following "activities" exist:
       | activity | name | description | course | idnumber |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
-    And I log in as "manager1"
-    And I am on site homepage
-    And I am on "Course 1" course homepage
-    And I follow "Test questionnaire"
-    And I navigate to "Advanced settings" in current page administration
+    And I am on the "Test questionnaire" "mod_questionnaire > advsettings" page logged in as "manager1"
     And I should see "Content options"
     And I set the field "id_realm" to "template"
     And I press "Save and display"
@@ -69,12 +65,12 @@ Feature: Questionnaires can be public, private or template
       | Question Text | Select one or two choices only |
       | Possible answers | One,Two,Three,Four |
 # Neither of the following steps work in 3.2, since the admin options are not available on any page but "view".
-    And I follow "Advanced settings"
+    And I am on the "Test questionnaire" "mod_questionnaire > advsettings" page
     And I should see "Content options"
     And I set the field "id_realm" to "public"
     And I press "Save and return to course"
 # Verify that a public questionnaire cannot be used in the same course.
-    And I turn editing mode on
+    And I am on "Course 1" course homepage with editing mode on
     And I add a "Questionnaire" to section "1"
     And I expand all fieldsets
     Then I should see "(No public questionnaires.)"
@@ -100,12 +96,9 @@ Feature: Questionnaires can be public, private or template
     And I turn editing mode on
     And I delete "Test questionnaire" activity
     And I am on site homepage
-    And I am on "Course 2" course homepage
-    And I follow "Questionnaire from public"
+    And I am on the "Questionnaire from public" "mod_questionnaire > view" page
     Then I should see "This questionnaire used to depend on a Public questionnaire which has been deleted."
     And I should see "It can no longer be used and should be deleted."
     And I log out
-    And I log in as "student1"
-    And I am on "Course 2" course homepage
-    And I follow "Questionnaire from public"
+    And I am on the "Questionnaire from public" "mod_questionnaire > view" page logged in as "student1"
     Then I should see "This questionnaire is no longer available. Ask your teacher to delete it."

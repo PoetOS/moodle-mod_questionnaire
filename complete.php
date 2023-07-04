@@ -14,8 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// This page prints a particular instance of questionnaire.
-
+/**
+ * This page prints a particular instance of questionnaire.
+ *
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ */
 require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
@@ -47,13 +54,13 @@ if (isset($id)) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire( $course, $cm, 0, $questionnaire);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\completepage());
 
 $questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
-$questionnaire->strquestionnaire  = get_string("modulename", "questionnaire");
+$questionnaire->strquestionnaire = get_string("modulename", "questionnaire");
 
 // Mark as viewed.
 $completion = new completion_info($course);

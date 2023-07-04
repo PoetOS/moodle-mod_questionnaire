@@ -23,10 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
- * Unit tests for {@link questionnaire_generator_testcase}.
+ * Unit tests for questionnaire_generator_testcase.
  * @group mod_questionnaire
  */
 class mod_questionnaire_generator_testcase extends advanced_testcase {
@@ -73,16 +71,16 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, false);
+        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, false);
 
         $newcontent = array(
-            'title'         => 'New title',
-            'email'         => 'test@email.com',
-            'subtitle'      => 'New subtitle',
-            'info'          => 'New info',
-            'thanks_page'   => 'http://thankurl.com',
-            'thank_head'    => 'New thank header',
-            'thank_body'    => 'New thank body',
+            'title' => 'New title',
+            'email' => 'test@email.com',
+            'subtitle' => 'New subtitle',
+            'info' => 'New info',
+            'thanks_page' => 'http://thankurl.com',
+            'thank_head' => 'New thank header',
+            'thank_body' => 'New thank body',
         );
         $sid = $generator->create_content($questionnaire, $newcontent);
         $this->assertEquals($sid, $questionnaire->sid);

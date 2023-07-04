@@ -14,6 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * The main page to print a questionnaire.
+ *
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ */
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
@@ -37,7 +46,7 @@ if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, 
 // Check login and get context.
 require_login($courseid);
 
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
@@ -66,6 +75,6 @@ $PAGE->set_title($questionnaire->survey->title);
 $PAGE->set_pagelayout('popup');
 echo $questionnaire->renderer->header();
 $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
-$questionnaire->survey_print_render('', 'print', $courseid, $rid, $blankquestionnaire);
+$questionnaire->survey_print_render($courseid, '', 'print', $rid, $blankquestionnaire);
 echo $questionnaire->renderer->render($questionnaire->page);
 echo $questionnaire->renderer->footer();

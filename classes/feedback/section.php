@@ -14,17 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Manage feedback sections.
- *
- * @package    mod_questionnaire
- * @copyright  2018 onward Mike Churchward (mike.churchward@poetopensource.org)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire\feedback;
-defined('MOODLE_INTERNAL') || die();
 
 use invalid_parameter_exception;
 use coding_exception;
@@ -32,23 +22,35 @@ use coding_exception;
 /**
  * Class for describing a feedback section.
  *
- * @author Mike Churchward
- * @package feedback
+ * @package    mod_questionnaire
+ * @copyright  2018 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class section {
 
+    /** @var int */
     public $id = 0;
+    /** @var int */
     public $surveyid = 0;
+    /** @var int */
     public $section = 1;
+    /** @var array */
     public $scorecalculation = [];
+    /** @var string */
     public $sectionlabel = '';
+    /** @var string */
     public $sectionheading = '';
+    /** @var string */
     public $sectionheadingformat = FORMAT_HTML;
+    /** @var array */
     public $sectionfeedback = [];
+    /** @var array */
     public $questions = [];
 
+    /** The table name. */
     const TABLE = 'questionnaire_fb_sections';
+    /** Represents the "no score" setting. */
     const NOSCORE = -1;
 
     /**
@@ -58,13 +60,13 @@ class section {
      *  'surveyid' - the surveyid field of the fb_sections table (required if no 'id' field),
      *  'sectionnum' - the section field of the fb_sections table (ignored if 'id' is present; defaults to 1).
      *
-     * @param array $params As above
      * @param array $questions Array of mod_questionnaire\question objects.
+     * @param array $params As above
      * @throws \dml_exception
      * @throws coding_exception
      * @throws invalid_parameter_exception
      */
-    public function __construct($params = [], $questions) {
+    public function __construct($questions, $params = []) {
 
         if (!is_array($params) || !is_array($questions)) {
             throw new coding_exception('Invalid data provided.');
@@ -80,7 +82,9 @@ class section {
 
     /**
      * Factory method to create a new, empty section and return an instance.
-     *
+     * @param int $surveyid
+     * @param string $sectionlabel
+     * @return section
      */
     public static function new_section($surveyid, $sectionlabel = '') {
         global $DB;
@@ -93,7 +97,7 @@ class section {
         $newsection->surveyid = $surveyid;
         $newsection->section = $maxsection + 1;
         $newsection->sectionlabel = $sectionlabel;
-        $newsection->scorecalculation = '';
+        $newsection->scorecalculation = $newsection->encode_scorecalculation([]);
         $newsecid = $DB->insert_record(self::TABLE, $newsection);
         $newsection->id = $newsecid;
         $newsection->scorecalculation = [];
@@ -139,7 +143,7 @@ class section {
                 $this->id = $feedbackrec->id;
                 $this->surveyid = $feedbackrec->surveyid;
                 $this->section = $feedbackrec->section;
-                $this->scorecalculation = $this->decode_scorecalculation($feedbackrec->scorecalculation);
+                $this->scorecalculation = $this->get_valid_scorecalculation($feedbackrec->scorecalculation);
                 $this->sectionlabel = $feedbackrec->sectionlabel;
                 $this->sectionheading = $feedbackrec->sectionheading;
                 $this->sectionheadingformat = $feedbackrec->sectionheadingformat;
@@ -154,11 +158,8 @@ class section {
     /**
      * Loads the section feedback record into the proper array location.
      *
-     * @param $feedbackrec
+     * @param \stdClass $feedbackrec
      * @return int The id of the section feedback record.
-     * @throws \dml_exception
-     * @throws coding_exception
-     * @throws invalid_parameter_exception
      */
     public function load_sectionfeedback($feedbackrec) {
         if (!isset($feedbackrec->id) || empty($feedbackrec->id)) {
@@ -174,8 +175,7 @@ class section {
     /**
      * Updates the object and data record with a new scorecalculation. If no new score provided, uses what's in the object.
      *
-     * @param $scorecalculation
-     * @throws \dml_exception
+     * @param array $scorecalculation
      * @throws coding_exception
      */
     public function set_new_scorecalculation($scorecalculation = null) {
@@ -219,13 +219,14 @@ class section {
         $DB->delete_records(self::TABLE, ['id' => $this->id]);
 
         // Resequence the section numbers as necessary.
-        $allsections = $DB->get_records(self::TABLE, ['surveyid' => $this->surveyid], 'section ASC');
-        $count = 1;
-        foreach ($allsections as $id => $section) {
-            if ($section->section != $count) {
-                $DB->set_field(self::TABLE, 'section', $count, ['id' => $id]);
+        if ($allsections = $DB->get_records(self::TABLE, ['surveyid' => $this->surveyid], 'section ASC')) {
+            $count = 1;
+            foreach ($allsections as $id => $section) {
+                if ($section->section != $count) {
+                    $DB->set_field(self::TABLE, 'section', $count, ['id' => $id]);
+                }
+                $count++;
             }
-            $count++;
         }
     }
 
@@ -253,7 +254,7 @@ class section {
 
         $this->scorecalculation = $this->encode_scorecalculation($this->scorecalculation);
         $DB->update_record(self::TABLE, $this);
-        $this->scorecalculation = $this->decode_scorecalculation($this->scorecalculation);
+        $this->scorecalculation = $this->get_valid_scorecalculation($this->scorecalculation);
 
         foreach ($this->sectionfeedback as $sectionfeedback) {
             $sectionfeedback->update();
@@ -261,11 +262,12 @@ class section {
     }
 
     /**
-     * @param string $codedstring
-     * @return mixed
+     * Decode and ensure scorecalculation is what we expect.
+     * @param string|null $codedstring
+     * @return array
      * @throws coding_exception
      */
-    protected function decode_scorecalculation($codedstring) {
+    public static function decode_scorecalculation(?string $codedstring): array {
         // Expect a serialized data string.
         if (($codedstring == null)) {
             $codedstring = '';
@@ -274,10 +276,32 @@ class section {
             throw new coding_exception('Invalid scorecalculation format.');
         }
         if (!empty($codedstring)) {
-            $scorecalculation = unserialize($codedstring);
+            $scorecalculation = unserialize_array($codedstring) ?: [];
         } else {
             $scorecalculation = [];
         }
+
+        if (!is_array($scorecalculation)) {
+            throw new coding_exception('Invalid scorecalculation format.');
+        }
+
+        foreach ($scorecalculation as $score) {
+            if (!empty($score) && !is_numeric($score)) {
+                throw new coding_exception('Invalid scorecalculation format.');
+            }
+        }
+
+        return $scorecalculation;
+    }
+
+    /**
+     * Return the decoded and validated calculation array.
+     * @param string $codedstring
+     * @return mixed
+     * @throws coding_exception
+     */
+    protected function get_valid_scorecalculation($codedstring) {
+        $scorecalculation = static::decode_scorecalculation($codedstring);
 
         // Check for deleted questions and questions that don't support scores.
         foreach ($scorecalculation as $qid => $score) {
@@ -292,6 +316,7 @@ class section {
     }
 
     /**
+     * Return the encoded score array as a serialized string.
      * @param string $scorearray
      * @return mixed
      * @throws coding_exception

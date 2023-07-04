@@ -14,6 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * The main report page for a questionnaire.
+ *
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ */
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
@@ -62,7 +71,7 @@ if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, 
 
 require_course_login($course, true, $cm);
 
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
@@ -482,14 +491,14 @@ switch ($action) {
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
 
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
-        $choicetext  = optional_param('choicetext', '0', PARAM_INT);
-        $showincompletes  = optional_param('complete', '0', PARAM_INT);
+        $choicetext = optional_param('choicetext', '0', PARAM_INT);
+        $showincompletes = optional_param('complete', '0', PARAM_INT);
         $rankaverages = optional_param('rankaverages', '0', PARAM_INT);
         $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
         $emailroles = optional_param('emailroles', 0, PARAM_INT);
         $emailextra = optional_param('emailextra', '', PARAM_RAW);
 
-        $output = $questionnaire->generate_csv('', $user, $choicecodes, $choicetext, $currentgroupid, $showincompletes,
+        $output = $questionnaire->generate_csv($currentgroupid, '', $user, $choicecodes, $choicetext, $showincompletes,
             $rankaverages);
 
         $columns = $output[0];
@@ -637,7 +646,7 @@ switch ($action) {
             // not an array.
             $errorreporting = error_reporting(0);
             $pdf->writeHTML($html);
-            @$pdf->Output('dump.pdf', 'D');
+            @$pdf->Output(clean_param($questionnaire->name, PARAM_FILE), 'D');
             error_reporting($errorreporting);
 
         } else { // Default to HTML.
@@ -770,7 +779,7 @@ switch ($action) {
             // not an array.
             $errorreporting = error_reporting(0);
             $pdf->writeHTML($html);
-            @$pdf->Output('dump.pdf', 'D');
+            @$pdf->Output(clean_param($questionnaire->name, PARAM_FILE), 'D');
             error_reporting($errorreporting);
 
         } else { // Default to HTML.
@@ -818,6 +827,7 @@ switch ($action) {
 }
 
 /**
+ * Return a pdf object.
  * @return pdf
  */
 function questionnaire_report_start_pdf() {

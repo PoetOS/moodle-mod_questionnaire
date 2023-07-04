@@ -15,16 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Library draw chart function.
  * @package mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-function draw_chart($feedbacktype, $charttype=null, $labels,
-                    $score=null, $allscore=null, $globallabel=null, $groupname, $allresponses) {
+/**
+ * This is the function.
+ * @param string $feedbacktype
+ * @param array $labels
+ * @param string $groupname
+ * @param bool $allresponses
+ * @param null|string $charttype
+ * @param null|array $score
+ * @param null|array $allscore
+ * @param null|string $globallabel
+ * @return string
+ */
+function draw_chart($feedbacktype, $labels, $groupname,
+                    $allresponses, $charttype=null, $score=null, $allscore=null, $globallabel=null) {
     global $PAGE;
 
     $pageoutput = '';

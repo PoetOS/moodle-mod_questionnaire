@@ -1,32 +1,37 @@
 Release Notes
 
-_NOTE - The 3.10 releases will work on Moodle 3.9, Moodle 3.10, and Moodle 3.11.
-
-##### Release 3.10.2 (Build - 2022030300)
-Note - this will be the last 3.10 branch release. The next releases will be in the 3.11 or 4.0 branch, depending on 4.0 compatibility.
+Release 4.0.1 (Build - 2023051600)
 
 Improvements:
 
-* Support for Iconic5 mobile app is now present. Thanks to Dani Palou!
+* Moodle 4.2 compatibility:
+** removed event functions fully deprecated in 4.2.
+** added Moodle 4.2 and PHP 8.1 to CI checks.
+
+Release 4.0.0 (Build - 2023030700)
 
 Bug fixes:
 
-* GHPR331 Fixed printing of individual reponse for students.
-* GHI370 Fixed problem where HTML was slipping into question text when paging.
-
-##### Version 3.10.1 (Build - 2021080400)
-
-Bug fixes:
-
-* GHI353 Ensuring clean text on new and existing essay questions.
-* GHI319 Fixing question preview display.
-* GHP321 Added CSS rule to styles.css to enable horizontal and vertical resize.
-* GHI351 Ignore deleted questions but continue loop over remaining responses.
-
-##### Version 3.10.0 (Build - 2020111100)
+* HTML allowed in choice display.
+* Fixed delete question error.
+* Feedback links restore correctly.
+* Required questions work with rating scales.
+* Moodle 4 descriptions only displayed once.
+* Feedback section works with empty score calculation.
+* Single activity settings work in Moodle 4.
+* Required checkbox questions with "other" option now work.
 
 Improvements:
 
-* Setup for 3.11 compliance as well.
+* Border added to atto editor for essay questions.
+* Better messaging on "save".
+* Better messaging on date picker question.
+* Buttons substituted for links in many places.
+* PHP8 compatibility.
+* Moodle 4 icons.
+* Improved PDF file name.
+* Non-respondents now only include enrolled users.
+* New slider type question.
+* Better completion tracking options.
 
-(see CHANGES.TXT in release 3.9 for earlier changes.)
+(see CHANGES.md in release 3.11 for earlier changes.)

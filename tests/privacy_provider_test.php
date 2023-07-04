@@ -23,8 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 use \mod_questionnaire\privacy\provider;
 
 /**
@@ -131,8 +129,8 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
         $this->assertEquals('7. Numeric 1004', $data->responses[0]['questions'][7]->questionname);
         $this->assertEquals(83, $data->responses[0]['questions'][7]->answers[0]);
         $this->assertEquals('22. Rate Scale 1014', $data->responses[0]['questions'][22]->questionname);
-        $this->assertEquals('eleven = 1', $data->responses[0]['questions'][22]->answers[0]);
-        $this->assertEquals('eighteen = 3', $data->responses[0]['questions'][22]->answers[7]);
+        $this->assertEquals('fourteen = 1', $data->responses[0]['questions'][22]->answers[0]);
+        $this->assertEquals('happy = 3', $data->responses[0]['questions'][22]->answers[7]);
     }
 
     /**

@@ -15,27 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Updates the contents of the survey with the provided data. If no data is provided, it checks for posted data.
+ *
  * This library replaces the phpESP application with Moodle specific code. It will eventually
  * replace all of the phpESP application, removing the dependency on that.
- */
-
-/**
- * Updates the contents of the survey with the provided data. If no data is provided,
- * it checks for posted data.
  *
- * @param int $surveyid The id of the survey to update.
- * @param string $old_tab The function that was being executed.
- * @param object $sdata The data to update the survey with.
- *
- * @return string|boolean The function to go to, or false on error.
- *
- */
-
-/**
  * @package mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -87,6 +76,11 @@ $autonumbering = array (0 => get_string('autonumberno', 'questionnaire'),
         2 => get_string('autonumberpages', 'questionnaire'),
         3 => get_string('autonumberpagesandquestions', 'questionnaire'));
 
+/**
+ * Return the choice values for the content.
+ * @param string $content
+ * @return stdClass
+ */
 function questionnaire_choice_values($content) {
 
     // If we run the content through format_text first, any filters we want to use (e.g. multilanguage) should work.
@@ -157,7 +151,11 @@ function questionnaire_get_js_module() {
 }
 
 /**
- * Get all the questionnaire responses for a user
+ * Get all the questionnaire responses for a user.
+ * @param int $questionnaireid
+ * @param int $userid
+ * @param bool $complete
+ * @return array
  */
 function questionnaire_get_user_responses($questionnaireid, $userid, $complete=true) {
     global $DB;
@@ -170,7 +168,7 @@ function questionnaire_get_user_responses($questionnaireid, $userid, $complete=t
         WHERE questionnaireid = ?
         AND userid = ?
         ".$andcomplete."
-        ORDER BY submitted ASC ", array($questionnaireid, $userid));
+        ORDER BY submitted ASC ", array($questionnaireid, $userid)) ?? [];
 }
 
 /**
@@ -188,23 +186,23 @@ function questionnaire_load_capabilities($cmid) {
     $context = questionnaire_get_context($cmid);
 
     $cb = new stdClass();
-    $cb->view                   = has_capability('mod/questionnaire:view', $context);
-    $cb->submit                 = has_capability('mod/questionnaire:submit', $context);
-    $cb->viewsingleresponse     = has_capability('mod/questionnaire:viewsingleresponse', $context);
+    $cb->view = has_capability('mod/questionnaire:view', $context);
+    $cb->submit = has_capability('mod/questionnaire:submit', $context);
+    $cb->viewsingleresponse = has_capability('mod/questionnaire:viewsingleresponse', $context);
     $cb->submissionnotification = has_capability('mod/questionnaire:submissionnotification', $context);
-    $cb->downloadresponses      = has_capability('mod/questionnaire:downloadresponses', $context);
-    $cb->deleteresponses        = has_capability('mod/questionnaire:deleteresponses', $context);
-    $cb->manage                 = has_capability('mod/questionnaire:manage', $context);
-    $cb->editquestions          = has_capability('mod/questionnaire:editquestions', $context);
-    $cb->createtemplates        = has_capability('mod/questionnaire:createtemplates', $context);
-    $cb->createpublic           = has_capability('mod/questionnaire:createpublic', $context);
-    $cb->readownresponses       = has_capability('mod/questionnaire:readownresponses', $context);
-    $cb->readallresponses       = has_capability('mod/questionnaire:readallresponses', $context);
+    $cb->downloadresponses = has_capability('mod/questionnaire:downloadresponses', $context);
+    $cb->deleteresponses = has_capability('mod/questionnaire:deleteresponses', $context);
+    $cb->manage = has_capability('mod/questionnaire:manage', $context);
+    $cb->editquestions = has_capability('mod/questionnaire:editquestions', $context);
+    $cb->createtemplates = has_capability('mod/questionnaire:createtemplates', $context);
+    $cb->createpublic = has_capability('mod/questionnaire:createpublic', $context);
+    $cb->readownresponses = has_capability('mod/questionnaire:readownresponses', $context);
+    $cb->readallresponses = has_capability('mod/questionnaire:readallresponses', $context);
     $cb->readallresponseanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
-    $cb->printblank             = has_capability('mod/questionnaire:printblank', $context);
-    $cb->preview                = has_capability('mod/questionnaire:preview', $context);
+    $cb->printblank = has_capability('mod/questionnaire:printblank', $context);
+    $cb->preview = has_capability('mod/questionnaire:preview', $context);
 
-    $cb->viewhiddenactivities   = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
+    $cb->viewhiddenactivities = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
 
     return $cb;
 }
@@ -227,8 +225,12 @@ function questionnaire_get_context($cmid) {
     return $context;
 }
 
-// This function *really* shouldn't be needed, but since sometimes we can end up with
-// orphaned surveys, this will clean them up.
+/**
+ * This function *really* shouldn't be needed, but since sometimes we can end up with
+ * orphaned surveys, this will clean them up.
+ * @return bool
+ * @throws dml_exception
+ */
 function questionnaire_cleanup() {
     global $DB;
 
@@ -246,6 +248,12 @@ function questionnaire_cleanup() {
     return true;
 }
 
+/**
+ * Delete the survey.
+ * @param int $sid
+ * @param int $questionnaireid
+ * @return bool
+ */
 function questionnaire_delete_survey($sid, $questionnaireid) {
     global $DB;
     $status = true;
@@ -283,6 +291,12 @@ function questionnaire_delete_survey($sid, $questionnaireid) {
     return $status;
 }
 
+/**
+ * Delete the response.
+ * @param stdClass $response
+ * @param string $questionnaire
+ * @return bool
+ */
 function questionnaire_delete_response($response, $questionnaire='') {
     global $DB;
     $status = true;
@@ -315,6 +329,11 @@ function questionnaire_delete_response($response, $questionnaire='') {
     return $status;
 }
 
+/**
+ * Delete all responses for the questionnaire.
+ * @param int $qid
+ * @return bool
+ */
 function questionnaire_delete_responses($qid) {
     global $DB;
 
@@ -330,6 +349,11 @@ function questionnaire_delete_responses($qid) {
     return true;
 }
 
+/**
+ * Delete all dependencies for the questionnaire.
+ * @param int $qid
+ * @return bool
+ */
 function questionnaire_delete_dependencies($qid) {
     global $DB;
 
@@ -340,6 +364,12 @@ function questionnaire_delete_dependencies($qid) {
     return true;
 }
 
+/**
+ * Get a survey selection records.
+ * @param int $courseid
+ * @param string $type
+ * @return array|false
+ */
 function questionnaire_get_survey_list($courseid=0, $type='') {
     global $DB;
 
@@ -386,9 +416,15 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
             $params = [$courseid];
         }
     }
-    return $DB->get_records_sql($sql, $params);
+    return $DB->get_records_sql($sql, $params) ?? [];
 }
 
+/**
+ * Get survey selection list.
+ * @param int $courseid
+ * @param string $type
+ * @return array
+ */
 function questionnaire_get_survey_select($courseid=0, $type='') {
     global $OUTPUT, $DB;
 
@@ -425,6 +461,12 @@ function questionnaire_get_survey_select($courseid=0, $type='') {
     return $surveylist;
 }
 
+/**
+ * Return the language string for the specified question type.
+ * @param int $id
+ * @return lang_string|mixed|string
+ * @throws coding_exception
+ */
 function questionnaire_get_type ($id) {
     switch ($id) {
         case 1:
@@ -445,6 +487,8 @@ function questionnaire_get_type ($id) {
             return get_string('date', 'questionnaire');
         case 10:
             return get_string('numeric', 'questionnaire');
+        case 11:
+            return get_string('slider', 'questionnaire');
         case 100:
             return get_string('sectiontext', 'questionnaire');
         case 99:
@@ -459,8 +503,6 @@ function questionnaire_get_type ($id) {
  * @param object $questionnaire
  * @return void
  */
- /* added by JR 16 march 2009 based on lesson_process_post_save script */
-
 function questionnaire_set_events($questionnaire) {
     // Adding the questionnaire to the eventtable.
     global $DB;
@@ -492,7 +534,7 @@ function questionnaire_set_events($questionnaire) {
         calendar_event::create($event);
     } else {
         // Separate start and end events.
-        $event->timeduration  = 0;
+        $event->timeduration = 0;
         if ($questionnaire->opendate) {
             $event->name = $questionnaire->name.' ('.get_string('questionnaireopens', 'questionnaire').')';
             $event->timesort = $questionnaire->opendate;
@@ -512,14 +554,15 @@ function questionnaire_set_events($questionnaire) {
 /**
  * Get users who have not completed the questionnaire
  *
- * @global object
- * @uses CONTEXT_MODULE
  * @param object $cm
- * @param int $group single groupid
+ * @param int $sid
+ * @param bool $group single groupid
  * @param string $sort
- * @param int $startpage
- * @param int $pagecount
+ * @param bool $startpage
+ * @param bool $pagecount
  * @return object the userrecords
+ * @throws coding_exception
+ * @throws dml_exception
  */
 function questionnaire_get_incomplete_users($cm, $sid,
                 $group = false,
@@ -534,15 +577,7 @@ function questionnaire_get_incomplete_users($cm, $sid,
     // First get all users who can complete this questionnaire.
     $cap = 'mod/questionnaire:submit';
     $fields = 'u.id, u.username';
-    if (!$allusers = get_users_by_capability($context,
-                    $cap,
-                    $fields,
-                    $sort,
-                    '',
-                    '',
-                    $group,
-                    '',
-                    true)) {
+    if (!$allusers = get_enrolled_users($context, $cap, $group, $fields, $sort)) {
         return false;
     }
     $allusers = array_keys($allusers);
@@ -569,6 +604,8 @@ function questionnaire_get_incomplete_users($cm, $sid,
 /**
  * Called by HTML editor in showrespondents and Essay question. Based on question/essay/renderer.
  * Pending general solution to using the HTML editor outside of moodleforms in Moodle pages.
+ * @param int $context
+ * @return array
  */
 function questionnaire_get_editor_options($context) {
     return array(
@@ -581,8 +618,11 @@ function questionnaire_get_editor_options($context) {
     );
 }
 
-// Get the parent of a child question.
-// TODO - This needs to be refactored or removed.
+/**
+ * Get the parent of a child question.
+ * @param stdClass $question
+ * @return array
+ */
 function questionnaire_get_parent ($question) {
     global $DB;
     $qid = $question->id;
@@ -618,15 +658,15 @@ function questionnaire_get_parent ($question) {
                 break;
         }
         // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
-        $parent [$qid]['qdependquestion'] = 'q'.$dependquestion->id;
-        $parent [$qid]['qdependchoice'] = $qdependchoice;
-        $parent [$qid]['parenttype'] = $dependquestion->type_id;
+        $parent[$qid]['qdependquestion'] = 'q'.$dependquestion->id;
+        $parent[$qid]['qdependchoice'] = $qdependchoice;
+        $parent[$qid]['parenttype'] = $dependquestion->type_id;
         // Other fields to be used in Questions edit mode.
-        $parent [$qid]['position'] = $question->position;
-        $parent [$qid]['name'] = $question->name;
-        $parent [$qid]['content'] = $question->content;
-        $parent [$qid]['parentposition'] = $dependquestion->position;
-        $parent [$qid]['parent'] = format_string($dependquestion->name) . '->' . format_string ($dependchoice);
+        $parent[$qid]['position'] = $question->position;
+        $parent[$qid]['name'] = $question->name;
+        $parent[$qid]['content'] = $question->content;
+        $parent[$qid]['parentposition'] = $dependquestion->position;
+        $parent[$qid]['parent'] = format_string($dependquestion->name) . '->' . format_string ($dependchoice);
     }
     return $parent;
 }
@@ -688,7 +728,11 @@ function questionnaire_get_child_positions ($questions) {
     return $childpositions;
 }
 
-// Check that the needed page breaks are present to separate child questions.
+/**
+ * Check that the needed page breaks are present to separate child questions.
+ * @param stdClass $questionnaire
+ * @return false|lang_string|string
+ */
 function questionnaire_check_page_breaks($questionnaire) {
     global $DB;
     $msg = '';
@@ -696,69 +740,83 @@ function questionnaire_check_page_breaks($questionnaire) {
     $newpbids = array();
     $delpb = 0;
     $sid = $questionnaire->survey->id;
-    $questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'], 'id');
     $positions = array();
-    foreach ($questions as $key => $qu) {
-        $positions[$qu->position]['question_id'] = $key;
-        $positions[$qu->position]['type_id'] = $qu->type_id;
-        $positions[$qu->position]['qname'] = $qu->name;
-        $positions[$qu->position]['qpos'] = $qu->position;
+    if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'], 'position')) {
+        foreach ($questions as $key => $qu) {
+            $newqu = new stdClass();
+            $newqu->question_id = $key;
+            $newqu->type_id = $qu->type_id;
+            $newqu->qname = $qu->name;
+            $newqu->qpos = $qu->position;
 
-        $dependencies = $DB->get_records('questionnaire_dependency', ['questionid' => $key , 'surveyid' => $sid],
-                'id ASC', 'id, dependquestionid, dependchoiceid, dependlogic');
-        $positions[$qu->position]['dependencies'] = $dependencies;
+            $dependencies = $DB->get_records('questionnaire_dependency', ['questionid' => $key, 'surveyid' => $sid],
+                    'id ASC', 'id, dependquestionid, dependchoiceid, dependlogic');
+            $newqu->dependencies = $dependencies ?? [];
+            $positions[] = (array)$newqu;
+        }
     }
     $count = count($positions);
 
-    for ($i = $count; $i > 0; $i--) {
+    for ($i = $count - 1; $i >= 0; $i--) {
         $qu = $positions[$i];
         $questionnb = $i;
+        $prevqu = null;
+        $prevtypeid = null;
+        if ($i > 0) {
+            $prevqu = $positions[$i - 1];
+            $prevtypeid = $prevqu['type_id'];
+        }
         if ($qu['type_id'] == QUESPAGEBREAK) {
             $questionnb--;
             // If more than one consecutive page breaks, remove extra one(s).
-            $prevqu = null;
-            $prevtypeid = null;
-            if ($i > 1) {
-                $prevqu = $positions[$i - 1];
-                $prevtypeid = $prevqu['type_id'];
-            }
-            // If $i == $count then remove that extra page break in last position.
-            if ($prevtypeid == QUESPAGEBREAK || $i == $count || $qu['qpos'] == 1) {
+            // Remove that extra page break in 1st position.
+            if ($prevtypeid == QUESPAGEBREAK || $i == $count - 1 || $qu['qpos'] == 1) {
                 $qid = $qu['question_id'];
                 $delpb ++;
                 $msg .= get_string("checkbreaksremoved", "questionnaire", $delpb).'<br />';
                 // Need to reload questions.
-                $questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'], 'id');
-                $DB->set_field('questionnaire_question', 'deleted', 'y', ['id' => $qid, 'surveyid' => $sid]);
-                $select = 'surveyid = '.$sid.' AND deleted = \'n\' AND position > '.
-                                $questions[$qid]->position;
-                if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
-                    foreach ($records as $record) {
-                        $DB->set_field('questionnaire_question', 'position', $record->position - 1, ['id' => $record->id]);
+                if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'],  'id')) {
+                    $DB->set_field('questionnaire_question', 'deleted', 'y', ['id' => $qid, 'surveyid' => $sid]);
+                    $select = 'surveyid = ' . $sid . ' AND deleted = \'n\' AND position > ' .
+                            $questions[$qid]->position;
+                    if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
+                        foreach ($records as $record) {
+                            $DB->set_field('questionnaire_question', 'position', $record->position - 1, ['id' => $record->id]);
+                        }
                     }
                 }
             }
         }
         // Add pagebreak between question child and not dependent question that follows.
         if ($qu['type_id'] != QUESPAGEBREAK) {
-            $j = $i - 1;
-            if ($j != 0) {
-                $prevtypeid = $positions[$j]['type_id'];
-                $prevdependencies = $positions[$j]['dependencies'];
-
+            if ($prevqu) {
+                $prevdependencies = $prevqu['dependencies'];
                 $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ?
                     $qu['dependencies'] : $prevdependencies;
                 $innerdependencies = count($qu['dependencies']) < count($prevdependencies) ?
                     $qu['dependencies'] : $prevdependencies;
 
+                $okeys = [];
+                $ikeys = [];
                 foreach ($outerdependencies as $okey => $outerdependency) {
                     foreach ($innerdependencies as $ikey => $innerdependency) {
                         if ($outerdependency->dependquestionid === $innerdependency->dependquestionid &&
-                            $outerdependency->dependchoiceid === $innerdependency->dependchoiceid &&
-                            $outerdependency->dependlogic === $innerdependency->dependlogic) {
-                            unset($outerdependencies[$okey]);
-                            unset($innerdependencies[$ikey]);
+                                $outerdependency->dependchoiceid === $innerdependency->dependchoiceid &&
+                                $outerdependency->dependlogic === $innerdependency->dependlogic) {
+                            $okeys[] = $okey;
+                            $ikeys[] = $ikey;
                         }
+                    }
+                }
+
+                foreach ($okeys as $key) {
+                    if (key_exists($key, $outerdependencies)) {
+                        unset($outerdependencies[$key]);
+                    }
+                }
+                foreach ($ikeys as $key) {
+                    if (key_exists($key, $innerdependencies)) {
+                        unset($innerdependencies[$key]);
                     }
                 }
 
@@ -783,9 +841,8 @@ function questionnaire_check_page_breaks($questionnaire) {
                         return (false);
                     }
                     $newpbids[] = $newqid;
-                    $movetopos = $i;
-                    $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm);
-                    $questionnaire->move_question($newqid, $movetopos);
+                    $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null);
+                    $questionnaire->move_question($newqid, $qu['qpos']);
                 }
             }
         }
@@ -795,7 +852,7 @@ function questionnaire_check_page_breaks($questionnaire) {
     } else if ($newpbids) {
         $msg .= get_string('checkbreaksadded', 'questionnaire').'&nbsp;';
         $newpbids = array_reverse ($newpbids);
-        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm);
+        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null);
         foreach ($newpbids as $newpbid) {
             $msg .= $questionnaire->questions[$newpbid]->position.'&nbsp;';
         }
@@ -805,6 +862,10 @@ function questionnaire_check_page_breaks($questionnaire) {
 
 /**
  * Code snippet used to set up the questionform.
+ * @param stdClass $questionnaire
+ * @param int $qid
+ * @param int $qtype
+ * @return mixed|\mod_questionnaire\question\question
  */
 function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
     $context = context_module::instance($questionnaire->cm->id);

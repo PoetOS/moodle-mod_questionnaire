@@ -17,9 +17,8 @@
 /**
  * Capability definitions for the quiz module.
  *
- * @package    mod
- * @subpackage questionnaire
- * @copyright  2010 Remote-Learner.net (http://www.remote-learner.net)
+ * @package    mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

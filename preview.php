@@ -14,15 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// This page displays a non-completable instance of questionnaire.
+/**
+ * This page displays a non-completable instance of questionnaire.
+ *
+ * @package    mod_questionnaire
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2016 onward Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ */
 
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
-$id     = optional_param('id', 0, PARAM_INT);
-$sid    = optional_param('sid', 0, PARAM_INT);
-$popup  = optional_param('popup', 0, PARAM_INT);
-$qid    = optional_param('qid', 0, PARAM_INT);
+$id = optional_param('id', 0, PARAM_INT);
+$sid = optional_param('sid', 0, PARAM_INT);
+$popup = optional_param('popup', 0, PARAM_INT);
+$qid = optional_param('qid', 0, PARAM_INT);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if ($id) {
@@ -79,7 +86,7 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_cm($cm);   // CONTRIB-5872 - I don't know why this is needed.
 
-$questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, $qid, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
@@ -141,7 +148,7 @@ if ($questionnaire->capabilities->printblank) {
         $questionnaire->renderer->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
             new pix_icon('t/print', $title)));
 }
-$questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup);
+$questionnaire->survey_print_render($course->id, '', 'preview', $rid = 0, $popup);
 if ($popup) {
     $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
 }

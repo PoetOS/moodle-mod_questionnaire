@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/*
- *
- * @package    mod
- * @subpackage questionnaire
+/**
+ * The file containing the install functions.
+ * @package    mod_questionnaire
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * This file is executed right after the install.xml
- * @copyright  2010 Remote Learner (http://www.remote-learner.net)
+ * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * The install function.
+ */
 function xmldb_questionnaire_install() {
     global $DB;
 
@@ -89,6 +89,13 @@ function xmldb_questionnaire_install() {
     $questiontype = new stdClass();
     $questiontype->typeid = 10;
     $questiontype->type = 'Numeric';
+    $questiontype->has_choices = 'n';
+    $questiontype->response_table = 'response_text';
+    $id = $DB->insert_record('questionnaire_question_type', $questiontype);
+
+    $questiontype = new stdClass();
+    $questiontype->typeid = 11;
+    $questiontype->type = 'Slider';
     $questiontype->has_choices = 'n';
     $questiontype->response_table = 'response_text';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);

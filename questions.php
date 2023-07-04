@@ -14,16 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * This page handles the main question editing screen.
+ *
+ * @package    mod_questionnaire
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
+ */
+
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->dirroot.'/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
 
-$id     = required_param('id', PARAM_INT);                 // Course module ID.
+$id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
-$qid    = optional_param('qid', 0, PARAM_INT);             // Question id.
-$moveq  = optional_param('moveq', 0, PARAM_INT);           // Question id to move.
-$delq   = optional_param('delq', 0, PARAM_INT);             // Question id to delete.
-$qtype  = optional_param('type_id', 0, PARAM_INT);         // Question type.
+$qid = optional_param('qid', 0, PARAM_INT);             // Question id.
+$moveq = optional_param('moveq', 0, PARAM_INT);           // Question id to move.
+$delq = optional_param('delq', 0, PARAM_INT);             // Question id to delete.
+$qtype = optional_param('type_id', 0, PARAM_INT);         // Question type.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
@@ -50,7 +58,7 @@ if ($qid) {
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 
-$questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
@@ -61,7 +69,7 @@ if (!$questionnaire->capabilities->editquestions) {
 }
 
 $questionnairehasdependencies = $questionnaire->has_dependencies();
-$haschildren = [];
+$dependants = null;
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
@@ -77,7 +85,7 @@ if ($delq) {
     $questionnaireid = $questionnaire->id;
 
     // Need to reload questions before setting deleted question to 'y'.
-    $questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'], 'id');
+    $questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid, 'deleted' => 'n'], 'id') ?? [];
     $DB->set_field('questionnaire_question', 'deleted', 'y', ['id' => $qid, 'surveyid' => $sid]);
 
     // Delete all dependency records for this question.
@@ -174,17 +182,16 @@ if ($action == 'main') {
             if ($qtype == QUESPAGEBREAK) {
                 redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.'&amp;delq='.$qid);
             }
+
+            $action = "confirmdelquestion";
             if ($questionnairehasdependencies) {
                 // Important: due to possibly multiple parents per question
                 // just remove the dependency and inform the user about it.
-                $haschildren = $questionnaire->get_all_dependants($qid);
+                $dependants = $questionnaire->get_all_dependants($qid);
+                if (!(empty($dependants->directs) && empty($dependants->indirects))) {
+                    $action = "confirmdelquestionparent";
+                }
             }
-            if (count($haschildren) != 0) {
-                $action = "confirmdelquestionparent";
-            } else {
-                $action = "confirmdelquestion";
-            }
-
         } else if (isset($qformdata->editbutton)) {
             // Switch to edit question screen.
             $action = 'question';
@@ -305,7 +312,7 @@ if ($action == 'main') {
 // Reload the form data if called for...
 if ($reload) {
     unset($questionsform);
-    $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm);
+    $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null);
     // Add renderer and page objects to the questionnaire object for display use.
     $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
     $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
@@ -392,12 +399,14 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     if ($action == "confirmdelquestionparent") {
         $strnum = get_string('position', 'questionnaire');
         $qid = key($qformdata->removebutton);
-        // Show the dependencies and inform about the dependencies to be removed.
-        // Split dependencies in direct and indirect ones to separate for the confirm-dialogue. Only direct ones will be deleted.
-        // List direct dependencies.
-        $msg .= $questionnaire->renderer->dependency_warnings($haschildren->directs, 'directwarnings', $strnum);
-        // List indirect dependencies.
-        $msg .= $questionnaire->renderer->dependency_warnings($haschildren->indirects, 'indirectwarnings', $strnum);
+        if ($dependants) {
+            // Show the dependencies and inform about the dependencies to be removed.
+            // Split dependencies in direct and indirect ones to separate for the confirm-dialogue.
+            // Only direct ones will be deleted. List direct dependencies.
+            $msg .= $questionnaire->renderer->dependency_warnings($dependants->directs, 'directwarnings', $strnum);
+            // List indirect dependencies.
+            $msg .= $questionnaire->renderer->dependency_warnings($dependants->indirects, 'indirectwarnings', $strnum);
+        }
     }
     $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
 

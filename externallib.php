@@ -82,9 +82,9 @@ class mod_questionnaire_external extends \external_api {
      * @param int $completed Completed survey 1/0
      * @param int $rid Already in progress response id.
      * @param int $submit Submit survey?
+     * @param string $action
      * @param array $responses the response ids
      * @return array answers information and warnings
-     * @since Moodle 3.0
      */
     public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $rid,
                                                          $submit, $action, $responses) {
@@ -104,7 +104,7 @@ class mod_questionnaire_external extends \external_api {
         );
 
         list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
-        $questionnaire = new \questionnaire(0, $questionnaire, $course, $cm);
+        $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
 
         $context = \context_module::instance($cm->id);
         self::validate_context($context);

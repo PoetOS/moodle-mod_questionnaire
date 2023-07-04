@@ -14,21 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package mod_questionnaire
- * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 defined('MOODLE_INTERNAL') || die();
 
 // Because it exists (must).
 require_once($CFG->dirroot . '/mod/questionnaire/backup/moodle2/restore_questionnaire_stepslib.php');
 
 /**
- * questionnaire restore task that provides all the settings and steps to perform one
- * complete restore of the activity
+ * Questionnaire restore task that provides all the settings and steps to perform one complete restore of the activity.
+ * @package mod_questionnaire
+ * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_questionnaire_activity_task extends restore_activity_task {
 
@@ -56,8 +52,10 @@ class restore_questionnaire_activity_task extends restore_activity_task {
 
         $contents[] = new restore_decode_content('questionnaire', array('intro'), 'questionnaire');
         $contents[] = new restore_decode_content('questionnaire_survey',
-                        array('info', 'thank_head', 'thank_body', 'thanks_page'), 'questionnaire_survey');
+                        array('info', 'thank_head', 'thank_body', 'thanks_page', 'feedbacknotes'), 'questionnaire_survey');
         $contents[] = new restore_decode_content('questionnaire_question', array('content'), 'questionnaire_question');
+        $contents[] = new restore_decode_content('questionnaire_fb_sections', array('sectionheading'), 'questionnaire_fb_sections');
+        $contents[] = new restore_decode_content('questionnaire_feedback', array('feedbacktext'), 'questionnaire_feedback');
 
         return $contents;
     }
@@ -78,9 +76,9 @@ class restore_questionnaire_activity_task extends restore_activity_task {
 
     /**
      * Define the restore log rules that will be applied
-     * by the {@link restore_logs_processor} when restoring
+     * by the restore_logs_processor when restoring
      * questionnaire logs. It must return one array
-     * of {@link restore_log_rule} objects
+     * of restore_log_rule objects
      */
     public static function define_restore_log_rules() {
         $rules = array();
@@ -97,9 +95,9 @@ class restore_questionnaire_activity_task extends restore_activity_task {
 
     /**
      * Define the restore log rules that will be applied
-     * by the {@link restore_logs_processor} when restoring
+     * by the restore_logs_processor when restoring
      * course logs. It must return one array
-     * of {@link restore_log_rule} objects
+     * of restore_log_rule objects
      *
      * Note this rules are applied when restoring course logs
      * by the restore final task, but are defined here at

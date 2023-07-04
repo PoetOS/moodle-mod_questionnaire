@@ -14,30 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\question;
+
 /**
  * This file contains the parent class for yesno question types.
  *
  * @author Mike Churchward
+ * @copyright  2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questiontypes
+ * @package mod_questionnaire
  */
-
-namespace mod_questionnaire\question;
-defined('MOODLE_INTERNAL') || die();
-
 class yesno extends question {
 
+    /**
+     * Each question type must define its response class.
+     * @return object The response object based off of questionnaire_response_base.
+     */
     protected function responseclass() {
         return '\\mod_questionnaire\\responsetype\\boolean';
     }
 
+    /**
+     * Short name for this question type - no spaces, etc..
+     * @return string
+     */
     public function helpname() {
         return 'yesno';
     }
 
     /**
      * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
-     * @return boolean | string
+     * @return string
      */
     public function question_template() {
         return 'mod_questionnaire/question_yesno';
@@ -45,7 +52,7 @@ class yesno extends question {
 
     /**
      * Override and return a response template if provided. Output of question_survey_display is iterpreted based on this.
-     * @return boolean | string
+     * @return string
      */
     public function response_template() {
         return 'mod_questionnaire/response_yesno';
@@ -53,7 +60,7 @@ class yesno extends question {
 
     /**
      * Override this and return true if the question type allows dependent questions.
-     * @return boolean
+     * @return bool
      */
     public function allows_dependents() {
         return true;
@@ -61,6 +68,7 @@ class yesno extends question {
 
     /**
      * True if question type supports feedback options. False by default.
+     * @return bool
      */
     public function supports_feedback() {
         return true;
@@ -68,6 +76,7 @@ class yesno extends question {
 
     /**
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
+     * @return bool
      */
     public function valid_feedback() {
         return $this->required();
@@ -196,10 +205,20 @@ class yesno extends question {
         return $resptags;
     }
 
+    /**
+     * Return the length form element.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
         return question::form_length_hidden($mform);
     }
 
+    /**
+     * Return the precision form element.
+     * @param \MoodleQuickForm $mform
+     * @param string $helpname
+     */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
         return question::form_precise_hidden($mform);
     }
@@ -214,11 +233,10 @@ class yesno extends question {
     }
 
     /**
-     * @param $qnum
-     * @param $fieldkey
+     * Override and return false if not supporting mobile app.
+     * @param int $qnum
      * @param bool $autonum
      * @return \stdClass
-     * @throws \coding_exception
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
@@ -227,8 +245,8 @@ class yesno extends question {
     }
 
     /**
-     * @return mixed
-     * @throws \coding_exception
+     * Override and return false if not supporting mobile app.
+     * @return array
      */
     public function mobile_question_choices_display() {
         $choices = [];
@@ -255,7 +273,8 @@ class yesno extends question {
     }
 
     /**
-     * @param $response
+     * Return the mobile response data.
+     * @param response $response
      * @return array
      */
     public function get_mobile_response_data($response) {

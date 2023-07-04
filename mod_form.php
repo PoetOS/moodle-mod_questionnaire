@@ -14,27 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * print the form to add or edit a questionnaire-instance
- *
- * @author Mike Churchward
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package questionnaire
- */
-
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
+/**
+ * print the form to add or edit a questionnaire-instance
+ *
+ * @package mod_questionnaire
+ * @author Mike Churchward
+ * @copyright  2016 onward Mike Churchward (mike.churchward@poetgroup.org)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ */
 class mod_questionnaire_mod_form extends moodleform_mod {
 
+    /**
+     * Form definition.
+     */
     protected function definition() {
         global $COURSE;
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
-        $questionnaire = new questionnaire($this->_instance, null, $COURSE, $this->_cm);
+        $questionnaire = new questionnaire($COURSE, $this->_cm, $this->_instance, null);
 
         $mform    =& $this->_form;
 
@@ -145,6 +148,10 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $this->add_action_buttons();
     }
 
+    /**
+     * Pre-process form data.
+     * @param array $defaultvalues
+     */
     public function data_preprocessing(&$defaultvalues) {
         global $DB;
         if (empty($defaultvalues['opendate'])) {
@@ -171,7 +178,6 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
     /**
      * Enforce validation rules here
-     *
      * @param array $data array of ("fieldname"=>value) of submitted data
      * @param array $files array of uploaded files "element_name"=>tmp_file_path
      * @return array
@@ -188,12 +194,21 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         return $errors;
     }
 
+    /**
+     * Add any completion rules for the form.
+     * @return string[]
+     */
     public function add_completion_rules() {
         $mform =& $this->_form;
         $mform->addElement('checkbox', 'completionsubmit', '', get_string('completionsubmit', 'questionnaire'));
         return array('completionsubmit');
     }
 
+    /**
+     * True if the completion rule is enabled.
+     * @param array $data
+     * @return bool
+     */
     public function completion_rule_enabled($data) {
         return !empty($data['completionsubmit']);
     }

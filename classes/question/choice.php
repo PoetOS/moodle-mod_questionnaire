@@ -14,18 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire\question;
+
 /**
  * This defines a structured class to hold question choices.
  *
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package response
+ * @package mod_questionnaire
  * @copyright 2019, onwards Poet
  */
-
-namespace mod_questionnaire\question;
-defined('MOODLE_INTERNAL') || die();
-
 class choice {
 
     // Class properties.
@@ -47,10 +45,10 @@ class choice {
 
     /**
      * Choice constructor.
-     * @param null $id
-     * @param null $questionid
-     * @param null $content
-     * @param null $value
+     * @param int $id
+     * @param int $questionid
+     * @param string $content
+     * @param mixed $value
      */
     public function __construct($id = null, $questionid = null, $content = null, $value = null) {
         $this->id = $id;
@@ -80,7 +78,7 @@ class choice {
     /**
      * Create and return a choice object from data.
      *
-     * @param object | array $choicedata The data to load.
+     * @param \stdclass|array $choicedata The data to load.
      * @return choice
      */
     public static function create_from_data($choicedata) {
@@ -111,7 +109,9 @@ class choice {
     }
 
     /**
-     *
+     * Delete the choice record.
+     * @param int $id
+     * @return bool
      */
     public static function delete_from_db_by_id($id) {
         global $DB;
@@ -119,8 +119,8 @@ class choice {
     }
 
     /**
+     * Delete this record from the DB.
      * @return bool
-     * @throws \dml_exception
      */
     public function delete_from_db() {
         return self::delete_from_db_by_id($this->id);
@@ -148,9 +148,8 @@ class choice {
     /**
      * Return the string to display for an "other" option content string. If the option is not an "other", return false.
      *
-     * @param $content
-     * @return string | bool
-     * @throws \coding_exception
+     * @param string $content
+     * @return string|bool
      */
     public static function content_other_choice_display($content) {
         if (!self::content_is_other_choice($content)) {
@@ -164,7 +163,7 @@ class choice {
     /**
      * Return the string to display for an "other" option for this object. If the option is not an "other", return false.
      *
-     * @return string | bool
+     * @return string|bool
      */
     public function other_choice_display() {
         return self::content_other_choice_display($this->content);
@@ -172,7 +171,7 @@ class choice {
 
     /**
      * Is the content a named degree rate choice.
-     * @param $content
+     * @param string $content
      * @return array|bool
      */
     public static function content_is_named_degree_choice($content) {
@@ -203,8 +202,6 @@ class choice {
 
     /**
      * Return the string to use as an input name for an other choice.
-     *
-     * @param int $choiceid
      * @return string
      */
     public function other_choice_name() {

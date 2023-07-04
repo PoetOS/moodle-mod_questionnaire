@@ -14,26 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * This file contains the numerical text response type class.
- *
- * @author Mike Churchward
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package responstype
- */
-
 namespace mod_questionnaire\responsetype;
-defined('MOODLE_INTERNAL') || die();
-
-use mod_questionnaire\db\bulk_sql_config;
 
 /**
  * Class for numerical text response types.
  *
  * @author Mike Churchward
- * @package responsetypes
+ * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package mod_questionnaire
  */
-
 class numericaltext extends text {
     /**
      * Provide an array of answer objects from web form data for the question.
@@ -59,11 +49,12 @@ class numericaltext extends text {
     }
 
     /**
-     * @param bool $rids
-     * @param string $sort
-     * @param bool $anonymous
-     * @return string
-     * @throws \coding_exception
+     * Provide the result information for the specified result records.
+     *
+     * @param int|array $rids - A single response id, or array.
+     * @param string $sort - Optional display sort.
+     * @param boolean $anonymous - Whether or not responses are anonymous.
+     * @return string - Display output.
      */
     public function display_results($rids=false, $sort='', $anonymous=false) {
         if (is_array($rids)) {

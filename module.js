@@ -27,13 +27,21 @@
  * http://stackoverflow.com/questions/6787383/what-is-the-solution-to-remove-add-a-class-in-pure-javascript.
  * */
 
-function addClass(el, aclass){
+/**
+ * @param {HTMLElement} el
+ * @param {string} aclass
+ */
+function addClass(el, aclass) {
     el.className += ' ' + aclass;
 }
 
-function removeClass(el, aclass){
+/**
+ * @param {HTMLElement} el
+ * @param {string} aclass
+ */
+function removeClass(el, aclass) {
     var elClass = ' ' + el.className + ' ';
-    while(elClass.indexOf(' ' + aclass + ' ') != - 1) {
+    while (elClass.indexOf(' ' + aclass + ' ') != -1) {
          elClass = elClass.replace(' ' + aclass + ' ', '');
     }
     el.className = elClass;
@@ -44,7 +52,6 @@ function removeClass(el, aclass){
  * Javascript for hiding/displaying children questions on preview page of
  * questionnaire with conditional branching.
  */
-
 function depend(children, choices) {
     children = children.split(',');
     choices = choices.split(',');
@@ -82,7 +89,7 @@ function depend(children, choices) {
                         droplist.disabled = false;
                     }
                     delete children[i];
-                } else if (children[i]){
+                } else if (children[i]) {
                     if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
                         q.classList.remove('qn-container');
                         q.classList.add('hidedependquestion');
@@ -114,6 +121,10 @@ function depend(children, choices) {
 
 /* exported dependdrop */
 
+/**
+ * @param {string} qId
+ * @param {*} children
+ */
 function dependdrop(qId, children) {
     var e = document.getElementById(qId);
     var choice = e.options[e.selectedIndex].value;
@@ -124,9 +135,12 @@ function dependdrop(qId, children) {
 // When respondent enters text in !other field, corresponding
 // radio button OR check box is automatically checked.
 /* exported other_check */
+/**
+ * @param {string | void} name
+ */
 function other_check(name) {
     var other = name.split("_");
-    var other = name.slice(name.indexOf("o")+1);
+    var other = name.slice(name.indexOf("o") + 1);
     if (other.indexOf("]") != -1) {
         other = other.slice(0, other.indexOf("]"));
     }
@@ -141,6 +155,9 @@ function other_check(name) {
 
 // Automatically empty an !other text input field if another Radio button is clicked.
 /* exported other_check_empty */
+/**
+ * @param {string} name
+ */
 function other_check_empty(name, value) {
     var f = document.getElementById("phpesp_response");
     var i;
@@ -149,7 +166,7 @@ function other_check_empty(name, value) {
             f.elements[i].checked = true;
             var otherid = f.elements[i].name + "_" + f.elements[i].value.substring(6);
             var other = document.getElementsByName(otherid);
-            if (value.substr(0,6) != "other_") {
+            if (value.substr(0, 6) != "other_") {
                 other[0].value = "";
             } else {
                 other[0].focus();
@@ -169,6 +186,10 @@ function other_check_empty(name, value) {
 // In a Rate question type of sub-type Order : automatically uncheck a Radio button
 // when another radio button in the same column is clicked.
 /* exported other_rate_uncheck */
+/**
+ * @param {string} name
+ * @param {string} value
+ */
 function other_rate_uncheck(name, value) {
     var col_name = name.substr(0, name.indexOf("_"));
     var inputbuttons = document.getElementsByTagName("input");
@@ -183,6 +204,9 @@ function other_rate_uncheck(name, value) {
 
 // Empty an !other text input when corresponding Check Box is clicked (supposedly to empty it).
 /* exported checkbox_empty */
+/**
+ * @param {string} name
+ */
 function checkbox_empty(name) {
     var actualbuttons = document.getElementsByName(name);
     for (var i = 0; i <= actualbuttons.length; i++) {
@@ -204,24 +228,24 @@ M.mod_questionnaire = M.mod_questionnaire || {};
 
 /* exported Y */
 /* exported e */
-M.mod_questionnaire.init_attempt_form = function(Y) {
+M.mod_questionnaire.init_attempt_form = function() {
     M.core_formchangechecker.init({formid: 'phpesp_response'});
 };
 
 M.mod_questionnaire.init_sendmessage = function(Y) {
-    Y.on('click', function(e) {
+    Y.on('click', function() {
         Y.all('input.usercheckbox').each(function() {
             this.set('checked', 'checked');
         });
     }, '#checkall');
 
-    Y.on('click', function(e) {
+    Y.on('click', function() {
         Y.all('input.usercheckbox').each(function() {
             this.set('checked', '');
         });
     }, '#checknone');
 
-    Y.on('click', function(e) {
+    Y.on('click', function() {
         Y.all('input.usercheckbox').each(function() {
             if (this.get('alt') == 0) {
                 this.set('checked', 'checked');
@@ -231,7 +255,7 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
         });
     }, '#checknotstarted');
 
-    Y.on('click', function(e) {
+    Y.on('click', function() {
         Y.all('input.usercheckbox').each(function() {
             if (this.get('alt') == 1) {
                 this.set('checked', 'checked');
@@ -241,4 +265,35 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
         });
     }, '#checkstarted');
 
+};
+M.mod_questionnaire.init_slider = function() {
+    const allRanges = document.querySelectorAll(".slider");
+    allRanges.forEach(wrap => {
+        const range = wrap.querySelector("input.questionnaire-slider");
+        const bubble = wrap.querySelector(".bubble");
+
+        range.addEventListener("input", () => {
+            setBubble(range, bubble);
+        });
+        setBubble(range, bubble);
+    });
+
+    function setBubble(range, bubble) {
+        const val = range.value;
+        const min = range.min ? range.min : 0;
+        const max = range.max ? range.max : 100;
+        var newVal = Number(((val - min) * 100) / (max - min));
+        var positiveVal = '';
+        if (range.min && range.min < 0) {
+            if (range.max && range.max > 0) {
+                if (val > 0) {
+                    positiveVal = '+';
+                }
+            }
+        }
+        bubble.innerHTML = positiveVal + val;
+
+        // Sorta magic numbers based on size of the native UI thumb
+        bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
+    }
 };

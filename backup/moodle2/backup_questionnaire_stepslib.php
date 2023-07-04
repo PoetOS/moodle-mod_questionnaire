@@ -15,23 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Define all the backup steps that will be used by the backup_questionnaire_activity_task.
+ *
+ * Define the complete choice structure for backup, with file and id annotations.
+ *
  * @package mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-/**
- * Define all the backup steps that will be used by the backup_questionnaire_activity_task
- */
-
-/**
- * Define the complete choice structure for backup, with file and id annotations
- */
 class backup_questionnaire_activity_structure_step extends backup_activity_structure_step {
 
+    /**
+     * Defines the backup structure.
+     * @return backup_nested_element
+     */
     protected function define_structure() {
         global $DB;
         // To know if we are including userinfo.

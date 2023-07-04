@@ -31,9 +31,10 @@ global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/generator_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/questiontypes_test.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
- * Unit tests for {@link questionnaire_responsetypes_testcase}.
+ * Unit tests for questionnaire_responsetypes_testcase.
  * @group mod_questionnaire
  */
 class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
@@ -88,6 +89,33 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $textresponse = reset($textresponses);
         $this->assertEquals($question->id, $textresponse->question_id);
         $this->assertEquals('This is my essay.', $textresponse->response);
+    }
+
+    public function test_create_response_slider() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Some common variables used below.
+        $userid = 1;
+
+        // Set up a questionnaire with one text response question.
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questiondata = ['content' => 'Enter some text'];
+        $questionnaire = $generator->create_test_questionnaire($course, QUESSLIDER, $questiondata);
+        $question = reset($questionnaire->questions);
+        $response = $generator->create_question_response($questionnaire, $question, 5, $userid);
+
+        // Test the responses for this questionnaire.
+        $this->response_tests($questionnaire->id, $response->id, $userid);
+
+        // Retrieve the specific text response.
+        $textresponses = $DB->get_records('questionnaire_response_text', ['response_id' => $response->id]);
+        $this->assertEquals(1, count($textresponses));
+        $textresponse = reset($textresponses);
+        $this->assertEquals($question->id, $textresponse->question_id);
+        $this->assertEquals(5, $textresponse->response);
     }
 
     public function test_create_response_date() {
@@ -285,6 +313,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
 
     // General tests to call from specific tests above.
 
+    /**
+     * Create a test questionnaire.
+     *
+     * @param int $qtype
+     * @param array $questiondata
+     * @param null $choicedata
+     * @return questionnaire
+     */
     public function create_test_questionnaire($qtype, $questiondata = [], $choicedata = null) {
         $this->resetAfterTest();
 
@@ -299,11 +335,20 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $generator->create_question($questionnaire, $questiondata, $choicedata);
 
-        $questionnaire = new questionnaire($questionnaire->id, null, $course, $cm, true);
+        $questionnaire = new questionnaire( $course, $cm, $questionnaire->id, null, true);
 
         return $questionnaire;
     }
 
+    /**
+     * General assertions for responses.
+     *
+     * @param int $questionnaireid
+     * @param int $responseid
+     * @param int $userid
+     * @param int $attemptcount
+     * @param int $responsecount
+     */
     private function response_tests($questionnaireid, $responseid, $userid,
                                     $attemptcount = 1, $responsecount = 1) {
         global $DB;

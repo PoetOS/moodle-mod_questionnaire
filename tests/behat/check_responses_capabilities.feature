@@ -29,9 +29,9 @@ Feature: Review responses with different capabilities
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    Then I should see "View All Responses"
-    And I navigate to "View All Responses" in current page administration
-    Then I should see "View All Responses."
+    Then I should see "View all responses"
+    And I navigate to "View all responses" in current page administration
+    Then I should see "View all responses."
     And I should see "All participants."
     And I should see "View Default order"
     And I should see "Responses: 6"
@@ -63,7 +63,7 @@ Feature: Review responses with different capabilities
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    Then I should not see "View All Responses"
+    Then I should not see "View all responses"
     And I log out
 
   @javascript
@@ -94,8 +94,8 @@ Feature: Review responses with different capabilities
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    Then I should not see "View All Responses"
+    Then I should not see "View all responses"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire 2"
-    Then I should see "View All Responses"
+    Then I should see "View all responses"
     And I log out

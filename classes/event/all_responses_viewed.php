@@ -24,8 +24,6 @@
 
 namespace mod_questionnaire\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_questionnaire all_responses_viewed event class.
  *
@@ -85,15 +83,5 @@ class all_responses_viewed extends \core\event\base {
             $params['group'] = $this->other['groupid'];
         }
         return new \moodle_url("/mod/questionnaire/report.php", $params);
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, "questionnaire", "view report", "report.php?id=" . $this->contextinstanceid, $this->objectid,
-                     $this->contextinstanceid);
     }
 }
