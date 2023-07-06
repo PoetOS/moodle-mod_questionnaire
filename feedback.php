@@ -142,6 +142,8 @@ if ($settings = $feedbackform->get_data()) {
             $feedbacksection = mod_questionnaire\feedback\section::new_section($questionnaire->sid, $sectionlabel);
         }
         redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'section' => $firstsection]));
+    } else {
+        redirect('view.php?id='.$cm->id);
     }
 }
 
