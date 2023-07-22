@@ -3287,6 +3287,7 @@ class questionnaire {
                         $choicesbyqid[$choicerecord->qid] = [];
                     }
                     $choicesbyqid[$choicerecord->qid][$choicerecord->cid] = $choicerecord;
+                    
                 }
             }
         }
@@ -3736,19 +3737,67 @@ class questionnaire {
         // Calculate max score per question in questionnaire.
         $qmax = [];
         $maxtotalscore = 0;
+        // Calculate max score per questionnaire by adding nb of questions with keywords.
+        $thisquestionnairehaskeywords = false;
         foreach ($this->questions as $question) {
-            $qid = $question->id;
-            if ($question->valid_feedback()) {
+            if ($question->has_keywords()) {
+                $thisquestionnairehaskeywords = true;
+                $maxtotalscore++;
+            }
+        }
+        if (!$thisquestionnairehaskeywords) {
+            foreach ($this->questions as $question) {
+                $qid = $question->id;
                 $qmax[$qid] = $question->get_feedback_maxscore();
                 $maxtotalscore += $qmax[$qid];
                 // Get all the feedback scores for this question.
                 $responsescores[$qid] = $question->get_feedback_scores($rids);
             }
+        } else {
+            foreach ($this->questions as $question) {
+                $qid = $question->id;
+                $qmax[$qid] = $question->get_feedback_maxscore();
+                // Get all the feedback scores for this question.
+                $responsescores[$qid] = $question->get_feedback_scores($rids);
+            }
         }
         // Just in case no values have been entered in the various questions possible answers field.
-        if ($maxtotalscore === 0) {
-            return '';
+        // Function to count occurrences of 'C' in the array
+        
+        function countScore($responsescores, $keyword, $rid) {
+            $count = 0;
+            foreach ($responsescores as $subArray) {
+                /*
+                foreach ($subArray as $obj) {
+                    if ($obj->score === $keyword) {
+                        $count++;
+                    }
+                }
+                */
+                 if (isset($subArray[$rid]) && $subArray[$rid]->score === $keyword) {
+                    $count++;
+                }
+            }
+            return $count;
         }
+
+        // Call the function and get the result
+        
+        // TODO extract and calculate scores from this array.
+        if ($maxtotalscore === 0) {
+            //return '';
+        }
+        
+        // Deal with DISC keywords totals.
+        // Get all response ids for all respondents.
+        $rids = array();
+        foreach ($resps as $key => $resp) {
+            //$rids[] = $key;
+        }
+
+// TODO TODO TODO ---------------------
+        //return '';
+
         $feedbackmessages = [];
 
         // Get individual scores for each question in this responses set.
@@ -3761,6 +3810,7 @@ class questionnaire {
         foreach ($responsescores as $qid => $responsescore) {
             if (!empty($responsescore)) {
                 foreach ($responsescore as $rrid => $response) {
+                    
                     // If this is current user's response OR if current user is viewing another group's results.
                     if ($rrid == $rid || $allresponses) {
                         if (!isset($qscore[$qid])) {
@@ -3774,11 +3824,14 @@ class questionnaire {
                     }
                     // Only add current score if conditions below are met.
                     if ($groupmode == 0 || $isgroupmember || (!$isgroupmember && $rrid != $rid) || $allresponses) {
-                        $allqscore[$qid] += $response->score;
+                      // todo  $allqscore[$qid] += $response->score;
                     }
                 }
             }
         }
+//        return;
+        // ************************ TODO
+        
         $totalscore = array_sum($qscore);
         $scorepercent = round($totalscore / $maxtotalscore * 100);
         $oppositescorepercent = 100 - $scorepercent;
@@ -3887,31 +3940,44 @@ class questionnaire {
             if (($filteredsections != null) && !in_array($section, $filteredsections)) {
                 continue;
             }
-            foreach ($fbsections as $key => $fbsection) {
-                if ($fbsection->section == $section) {
-                    $feedbacksectionid = $key;
-                    $scorecalculation = section::decode_scorecalculation($fbsection->scorecalculation);
-                    if (empty($scorecalculation) && !is_array($scorecalculation)) {
-                        $scorecalculation = [];
-                    }
-                    $sectionheading = $fbsection->sectionheading;
-                    $imageid = $fbsection->id;
-                    $chartlabels[$section] = $fbsection->sectionlabel;
-                }
-            }
-            foreach ($scorecalculation as $qid => $key) {
-                // Just in case a question pertaining to a section has been deleted or made not required
-                // after being included in scorecalculation.
-                if (isset($qscore[$qid])) {
-                    $key = ($key == 0) ? 1 : $key;
-                    $score[$section] += round($qscore[$qid] * $key);
-                    $maxscore[$section] += round($qmax[$qid] * $key);
-                    if ($compare  || $allresponses) {
-                        $allscore[$section] += round($allqscore[$qid] * $key);
+            if (!$thisquestionnairehaskeywords) {
+                foreach ($fbsections as $key => $fbsection) {
+                    if ($fbsection->section == $section) {
+                        $feedbacksectionid = $key;
+                        $scorecalculation = section::decode_scorecalculation($fbsection->scorecalculation);
+                        if (empty($scorecalculation) && !is_array($scorecalculation)) {
+                            $scorecalculation = [];
+                        }
+                        $sectionheading = $fbsection->sectionheading;
+                        $imageid = $fbsection->id;
+                        $chartlabels[$section] = $fbsection->sectionlabel;
                     }
                 }
+                foreach ($scorecalculation as $qid => $key) {
+                    // Just in case a question pertaining to a section has been deleted or made not required
+                    // after being included in scorecalculation.
+                    if (isset($qscore[$qid])) {
+                        $key = ($key == 0) ? 1 : $key;
+                        $score[$section] += round($qscore[$qid] * $key);
+                        $maxscore[$section] += round($qmax[$qid] * $key);
+                        if ($compare  || $allresponses) {
+                            $allscore[$section] += round($allqscore[$qid] * $key);
+                        }
+                    }
+                }
+            } else {
+                foreach ($fbsections as $key => $fbsection) {
+                    if ($fbsection->section == $section) {
+                        $feedbacksectionid = $key;
+                        $sectionheading = $fbsection->sectionheading;
+                        $imageid = $fbsection->id;
+                        $chartlabels[$section] = $fbsection->sectionlabel;
+                        $score[$section] = countScore($responsescores, $fbsection->sectionlabel, $rid);
+                    }
+                }
+                // Set maxscore for all sections to nb of keywords / (= nb of sections)
+                $maxscore[$section] = count($fbsections);
             }
-
             if ($maxscore[$section] == 0) {
                 array_push($nanscores, $section);
             }
@@ -3924,7 +3990,6 @@ class questionnaire {
                     $maxscore[$section] * 100)) : 0;
                 $alloppositescorepercent[$section] = 100 - $allscorepercent[$section];
             }
-
             if (!$allresponses) {
                 if (is_nan($scorepercent[$section])) {
                     // Info: all questions of $section are unseen
