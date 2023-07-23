@@ -88,14 +88,6 @@ foreach ($questionnaire->questions as $question) {
 }
 
 
-$validquestionstoselect = [];
-foreach ($questionnaire->questions as $question) {
-    if ($question->has_keywords()) {
-        break;
-    }
-}
-
-
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\feedbackpage());
@@ -120,10 +112,19 @@ if ($action == 'removequestion') {
     }
 }
 
+// Do not display Feedback questions option if this is a DISC questionnaire.
+$canselectquestions = true;
+foreach ($questionnaire->questions as $question) {
+    if ($question->has_keywords()) {
+        $canselectquestions = false;
+        break;
+    }
+}
+
 $customdata = new stdClass();
 $customdata->feedbacksection = $feedbacksection;
 $customdata->validquestions = $validquestions;
-$customdata->validquestionstoselect = $validquestions;
+$customdata->canselectquestions = $canselectquestions;
 $customdata->survey = $questionnaire->survey;
 $customdata->sectionselect = $DB->get_records_menu('questionnaire_fb_sections', ['surveyid' => $questionnaire->survey->id],
     'section', 'id,sectionlabel');
