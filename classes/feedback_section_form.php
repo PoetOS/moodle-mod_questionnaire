@@ -89,7 +89,7 @@ class feedback_section_form extends \moodleform {
         $mform->setDefault('feedbacknotes', $questionnaire->survey->feedbacknotes);
         $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
 
-        if ($questionnaire->survey->feedbacksections > 0) {
+        if ($questionnaire->survey->feedbacksections > 0 && (!empty($validquestionstoselect))) {
             // Sections.
             if ($survey->feedbacksections > 1) {
                 $mform->addElement('header', 'fbsection_' . $feedbacksection->id,

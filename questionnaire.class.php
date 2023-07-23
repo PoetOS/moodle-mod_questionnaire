@@ -3737,12 +3737,14 @@ class questionnaire {
         // Calculate max score per question in questionnaire.
         $qmax = [];
         $maxtotalscore = 0;
+        $nbquestionswithkeywords = 0;
         // Calculate max score per questionnaire by adding nb of questions with keywords.
         $thisquestionnairehaskeywords = false;
         foreach ($this->questions as $question) {
             if ($question->has_keywords()) {
                 $thisquestionnairehaskeywords = true;
                 $maxtotalscore++;
+                $nbquestionswithkeywords++;
             }
         }
         if (!$thisquestionnairehaskeywords) {
@@ -3756,7 +3758,7 @@ class questionnaire {
         } else {
             foreach ($this->questions as $question) {
                 $qid = $question->id;
-                $qmax[$qid] = $question->get_feedback_maxscore();
+            //    $qmax[$qid] = $question->get_feedback_maxscore();
                 // Get all the feedback scores for this question.
                 $responsescores[$qid] = $question->get_feedback_scores($rids);
             }
@@ -3975,13 +3977,12 @@ class questionnaire {
                         $score[$section] = countScore($responsescores, $fbsection->sectionlabel, $rid);
                     }
                 }
-                // Set maxscore for all sections to nb of keywords / (= nb of sections)
-                $maxscore[$section] = count($fbsections);
+                // Set maxscore for all sections to nb of questions with keywords.
+                $maxscore[$section] = $nbquestionswithkeywords;
             }
             if ($maxscore[$section] == 0) {
                 array_push($nanscores, $section);
             }
-
             $scorepercent[$section] = ($maxscore[$section] > 0) ? (round($score[$section] / $maxscore[$section] * 100)) : 0;
             $oppositescorepercent[$section] = 100 - $scorepercent[$section];
 
