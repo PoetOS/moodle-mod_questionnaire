@@ -3758,8 +3758,10 @@ class questionnaire {
         } else {
             foreach ($this->questions as $question) {
                 $qid = $question->id;
-                // Get all the feedback scores for this question.
-                $responsescores[$qid] = $question->get_feedback_scores($rids);
+                if ($question->has_keywords() ) {
+                    // Get all the feedback scores for this question.
+                    $responsescores[$qid] = $question->get_feedback_scores($rids);
+                }
             }
         }
         // Just in case no values have been entered in the various questions possible answers field.

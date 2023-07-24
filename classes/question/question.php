@@ -514,7 +514,7 @@ abstract class question {
      * @return bool
      */
     public function has_keywords() {
-        if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name) && $this->type_id === '4') {
+        if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
             foreach ($this->choices as $choice) {
                 if ($choice->value !== null) {
                     $r = preg_match_all("/(\S+)::(\S+.*)/", $choice->content, $matches);
