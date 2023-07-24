@@ -3287,7 +3287,6 @@ class questionnaire {
                         $choicesbyqid[$choicerecord->qid] = [];
                     }
                     $choicesbyqid[$choicerecord->qid][$choicerecord->cid] = $choicerecord;
-                    
                 }
             }
         }
@@ -3759,36 +3758,31 @@ class questionnaire {
             foreach ($this->questions as $question) {
                 $qid = $question->id;
                 if ($question->has_keywords() ) {
-                    // Get all the feedback scores for this question.
+                    // Get all the feedback scores (actually keywords) for this question.
                     $responsescores[$qid] = $question->get_feedback_scores($rids);
                 }
             }
         }
-        // Just in case no values have been entered in the various questions possible answers field.
-        
-        
-        function countScore($responsescores, $keyword, $rid) {
+
+        /**
+         * Returns the number of responses containing the keyword in specified response.
+         * @param array $responsescores The array of response scores.
+         * @param string $keyword
+         * @param int $rid
+         * @return number
+         */
+        function countscore($responsescores, $keyword, $rid) {
             $count = 0;
-            foreach ($responsescores as $subArray) {
-                 if (isset($subArray[$rid]) && $subArray[$rid]->score === $keyword) {
+            foreach ($responsescores as $subarray) {
+                if (isset($subarray[$rid]) && $subarray[$rid]->score === $keyword) {
                     $count++;
                 }
             }
             return $count;
         }
-        
-        // Call the function and get the result
 
-        // TODO extract and calculate scores from this array.
         if ($maxtotalscore === 0) {
             return '';
-        }
-
-        // Deal with DISC keywords totals.
-        // Get all response ids for all respondents.
-        $rids = array();
-        foreach ($resps as $key => $resp) {
-            $rids[] = $key;
         }
 
         $feedbackmessages = [];
@@ -3817,7 +3811,7 @@ class questionnaire {
                 if (!isset($allqscore[$qid])) {
                     $allqscore[$qid] = 0;
                 }
-                
+
                 // Only add current score if conditions below are met.
                 if ($groupmode == 0 || $isgroupmember || (!$isgroupmember && $rrid != $rid) || $allresponses) {
                     if (!empty($responsescore)) {
@@ -3930,7 +3924,7 @@ class questionnaire {
             $maxscore[$i] = 0;
             $scorepercent[$i] = 0;
         }
-        
+
         for ($section = 1; $section <= $numsections; $section++) {
             // Get feedback messages only for this sections.
             if (($filteredsections != null) && !in_array($section, $filteredsections)) {
@@ -3968,32 +3962,24 @@ class questionnaire {
                         $sectionheading = $fbsection->sectionheading;
                         $imageid = $fbsection->id;
                         $chartlabels[$section] = $fbsection->sectionlabel;
-                        $score[$section] = countScore($responsescores, $fbsection->sectionlabel, $rid);
+                        $score[$section] = countscore($responsescores, $fbsection->sectionlabel, $rid);
                     }
                 }
                 // Set maxscore for all sections to nb of questions with keywords.
                 $maxscore[$section] = $nbquestionswithkeywords;
-                if ($compare  || $allresponses) {
-                }
-                
             }
 
             if ($thisquestionnairehaskeywords && ($compare  || $allresponses)) {
-                // Get all response ids for all respondents.
-                $rids = array();
-                foreach ($resps as $key => $resp) {
-                    $rids[] = $key;
-                }
                 foreach ($rids as $key => $rid) {
                     foreach ($fbsections as $key => $fbsection) {
                         if ($fbsection->section == $section) {
                             $keyword = $fbsection->sectionlabel;
-                            $allscore[$section] += countScore($responsescores, $keyword, $rid);
+                            $allscore[$section] += countscore($responsescores, $keyword, $rid);
                         }
                     }
                 }
             }
-            
+
             if ($maxscore[$section] == 0) {
                 array_push($nanscores, $section);
             }

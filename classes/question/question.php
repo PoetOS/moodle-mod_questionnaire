@@ -510,7 +510,8 @@ abstract class question {
     }
 
     /**
-     * True if the question supports feedback and has keywords instead of score value (for DISC personality test). Override if the default logic is not enough.
+     * True if the question supports feedback and has keywords instead of score value (for DISC personality test).
+     * Override if the default logic is not enough.
      * @return bool
      */
     public function has_keywords() {
@@ -1391,14 +1392,14 @@ abstract class question {
                     if ($r) {
                         $newscore = $matches[1][0];
                         $choicerecord->value = $newscore;
-                    } else {     // No score value for this choice.
-                    /* check for DISC keywords */
+                    } else {// No score value for this choice.
+                        /* check for DISC keywords */
                         $r = preg_match_all("/(\S+)::(\S+.*)/", $choicerecord->content, $matches);
                         // This choice has been attributed a "DISC keyword" OR this is a rate question type.
                         if ($r) {
                             $choicerecord->value = $matches[1][0];
                         } else {
-                        $choicerecord->value = null;
+                            $choicerecord->value = null;
                         }
                     }
                     $this->update_choice($choicerecord);
