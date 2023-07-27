@@ -518,7 +518,8 @@ abstract class question {
         if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
             foreach ($this->choices as $choice) {
                 if ($choice->value !== null) {
-                    $r = preg_match_all("/(\S+)::(\S+.*)/", $choice->content, $matches);
+                    // D param means no digits.
+                    $r = preg_match_all("/(\D+)/", $choice->value, $matches);
                     if ($r) {
                         return true;
                     }
@@ -1387,20 +1388,13 @@ abstract class question {
                     $choicerecord->id = $ekey;
                     $choicerecord->question_id = $this->qid;
                     $choicerecord->content = trim($newchoices[$nidx]);
-                    $r = preg_match_all("/^(\d{1,2})(=.*)$/", $newchoices[$nidx], $matches);
-                    // This choice has been attributed a "score value" OR this is a rate question type.
+                    $r = preg_match_all("/^(\d{1,2}|\D.*)=(.*)$/", $newchoices[$nidx], $matches);
+                    // This choice has been attributed a "score value" or a DISC keyword OR this is a rate question type.
                     if ($r) {
                         $newscore = $matches[1][0];
                         $choicerecord->value = $newscore;
-                    } else {// No score value for this choice.
-                        /* check for DISC keywords */
-                        $r = preg_match_all("/(\S+)::(\S+.*)/", $choicerecord->content, $matches);
-                        // This choice has been attributed a "DISC keyword" OR this is a rate question type.
-                        if ($r) {
-                            $choicerecord->value = $matches[1][0];
-                        } else {
-                            $choicerecord->value = null;
-                        }
+                    } else { // No score value for this choice.
+                        $choicerecord->value = null;
                     }
                     $this->update_choice($choicerecord);
                 }
@@ -1415,16 +1409,13 @@ abstract class question {
                 $choicerecord = new \stdClass();
                 $choicerecord->question_id = $this->qid;
                 $choicerecord->content = trim($newchoices[$nidx]);
-                $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choicerecord->content, $matches);
-                // This choice has been attributed a "score value" OR this is a rate question type.
+                $r = preg_match_all("/^(\d{1,2}|\D.*)=(.*)$/", $choicerecord->content, $matches);
+                // This choice has been attributed a "score value" or a DISC keyword OR this is a rate question type.
                 if ($r) {
-                    $choicerecord->value = $matches[1][0];
-                }
-                /* check for DISC keywords */
-                $r = preg_match_all("/(\S+)::(\S+.*)/", $choicerecord->content, $matches);
-                // This choice has been attributed a "DISC keyword" OR this is a rate question type.
-                if ($r) {
-                    $choicerecord->value = $matches[1][0];
+                    $newscore = $matches[1][0];
+                    $choicerecord->value = $newscore;
+                } else { // No score value for this choice.
+                    $choicerecord->value = null;
                 }
                 $this->add_choice($choicerecord);
                 $nidx++;

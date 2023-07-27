@@ -114,7 +114,8 @@ function questionnaire_choice_values($content) {
     }
 
     // Check for score value first (used e.g. by personality test feature).
-    $r = preg_match_all("/^(\d{1,2}=)(.*)$/", $content, $matches);
+    // JR added accept string in case of DISC personality test with keywords.
+    $r = preg_match_all("/^(\d{1,2}|\D.*)=(.*)$/", $content, $matches);
     if ($r) {
         $content = $matches[2][0];
     }
