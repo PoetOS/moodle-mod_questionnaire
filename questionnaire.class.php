@@ -4021,8 +4021,7 @@ class questionnaire {
                     $allresponses,
                     $this->survey->chart_type,
                     array_values($scorepercent),
-                    array_values($allscorepercent),
-                    $sectionlabel
+                    array_values($allscorepercent)
                 )
             );
         }
