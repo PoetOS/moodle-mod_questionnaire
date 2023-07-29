@@ -51,4 +51,14 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('questionnaire/allowemailreporting',
         get_string('configemailreporting', 'questionnaire'), get_string('configemailreportinglong', 'questionnaire'), 0));
+
+    $questionnairetypes = array (1 => get_string('qtypeonce', 'questionnaire'),
+            0 => get_string('qtypeunlimited', 'questionnaire'),
+            2 => get_string('qtypedaily', 'questionnaire'),
+            3 => get_string('qtypeweekly', 'questionnaire'),
+            4 => get_string('qtypemonthly', 'questionnaire'));
+
+    $settings->add(new admin_setting_configselect('questionnaire/qtype',
+            get_string('default').': '.get_string('qtype', 'questionnaire'),
+            get_string('qtype_help', 'questionnaire'), 1, $questionnairetypes));
 }
