@@ -25,7 +25,7 @@ Feature: In questionnaire, slider questions can be defined with scores attribute
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
     And I follow "Feedback"    
-    And I should not see "Feedback options"
+    Then I should not see "Display Scores"
     And I navigate to "Questions" in current page administration
     Then I should see "Add questions"
     And I add a "Slider" question and I fill the form with:
@@ -38,11 +38,10 @@ Feature: In questionnaire, slider questions can be defined with scores attribute
       | Maximum slider range (right) | 5                  |
       | Slider starting value        | 0                    |
       | Slider increment value       | 1                    |
-    Then I should see "position 1"
-    And I should see " [Slider] (Q1)"
+    Then I should see " [Slider] (Q1)"
     And I should see "Slider question test"
     And I follow "Feedback"
-    Then I should see "Feedback options are available if your questionnaire contains the following question types and question settings"
+    Then I should not see "Display Scores"
     And I navigate to "Questions" in current page administration
     Then I should see "Add questions"
     And I add a "Slider" question and I fill the form with:
@@ -55,9 +54,9 @@ Feature: In questionnaire, slider questions can be defined with scores attribute
       | Maximum slider range (right) | 5                  |
       | Slider starting value        | 0                    |
       | Slider increment value       | 1                    |
-    Then I should see "position 2"
-    And I should see " [Slider] (Q2)"
+    Then I should see " [Slider] (Q2)"
     And I should see "Slider question test"
     And I follow "Feedback"
     And I should see "Feedback options"
+    And I should see "Display Scores"
     And I log out
