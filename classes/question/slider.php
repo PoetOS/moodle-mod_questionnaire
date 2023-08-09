@@ -80,7 +80,10 @@ class slider extends question {
      * @return bool
      */
     public function valid_feedback() {
-        return true;
+        $extradata = json_decode($this->extradata);
+        $minrange = $extradata->minrange;
+        // Negative scores are not accepted in Feedback.
+        return $this->supports_feedback() && !empty($this->name) && $minrange >= 0;
     }
 
     /**
