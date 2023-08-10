@@ -56,7 +56,7 @@ class sectiontext extends question {
      * True if question type supports feedback options. False by default.
      */
     public function supports_feedback() {
-        return true;
+        return false;
     }
 
     /**
@@ -70,7 +70,7 @@ class sectiontext extends question {
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
      */
     public function valid_feedback() {
-        return true;
+        return false;
     }
 
     /**
