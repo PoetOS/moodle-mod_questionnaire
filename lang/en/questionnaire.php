@@ -672,3 +672,4 @@ $string['yesno_help'] = 'Simple Yes/No question.';
 $string['yourresponse'] = 'View your response(s)';
 $string['yourresponses'] = 'View your response(s)';
 $string['crontask'] = 'Questionnaire cleanup job';
+$string['nopermissions'] = 'Sorry, but you do not currently have permissions to view this page or perform this action.';
