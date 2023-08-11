@@ -41,11 +41,20 @@ class feedback_form extends \moodleform {
 
         // Questionnaire Feedback Sections and Messages.
         $mform->addElement('header', 'submithdr', get_string('feedbackoptions', 'questionnaire'));
+        // Do not display feedbacknone and feedbackglobal options if this is a questionnaire with keywords.
+        $questionnairehaskeywords = false;
+        foreach ($questionnaire->questions as $question) {
+            if ($question->has_keywords()) {
+                $questionnairehaskeywords = true;
+                break;
+            }
+        }
         $feedbackoptions = [];
-        $feedbackoptions[0] = get_string('feedbacknone', 'questionnaire');
-        $feedbackoptions[1] = get_string('feedbackglobal', 'questionnaire');
+        if (!$questionnairehaskeywords) {
+            $feedbackoptions[0] = get_string('feedbacknone', 'questionnaire');
+            $feedbackoptions[1] = get_string('feedbackglobal', 'questionnaire');
+        }
         $feedbackoptions[2] = get_string('feedbacksections', 'questionnaire');
-
         $mform->addElement('select', 'feedbacksections', get_string('feedbackoptions', 'questionnaire'), $feedbackoptions);
         $mform->setDefault('feedbacksections', $questionnaire->survey->feedbacksections);
         $mform->addHelpButton('feedbacksections', 'feedbackoptions', 'questionnaire');
