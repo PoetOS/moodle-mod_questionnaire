@@ -1,9 +1,8 @@
 @mod @mod_questionnaire
-Feature: In questionnaire, personality tests can be constructed using feedback on specific question responses. 
-  This test will check the particular case of radio buttons questions with keywords instead of values.
+Feature: In questionnaire, personality tests of the DISC assessment type can be constructed using feedback on specific question responses.
   In order to define a feedback questionnaire of the DISC assessment Test type
   As a teacher
-  I must add questions of the required question type i.e. radio buttons with a keyword instead of a value for each possible answer
+  I must add questions of the required question type i.e. radio buttons with a string keyword instead of a value for each possible answer
   and complete the feedback options by creating sections with labels corresponding exactly to the keywords used in the radio buttons possible answers.
 
   @javascript
@@ -77,17 +76,17 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
     And I press "Save changes"
     And I set the field "id_newsectionlabel" to "Influential"
     And I press "Add new section"
-    And I set the field "id_sectionheading" to "Influential heading"    
+    And I set the field "id_sectionheading" to "Influential heading"
     And I follow "Influential section messages"
     And I set the field "id_feedbacktext_0" to "You seem to have an influential style"
     And I set the field "id_feedbackboundaries_0" to "50"
     And I set the field "id_feedbacktext_1" to "You seem to have an average influential style"
     And I set the field "id_feedbackboundaries_1" to "20"
     And I set the field "id_feedbacktext_2" to "You seem to have a less influential style"
-    And I press "Save changes"    
+    And I press "Save changes"
     And I set the field "id_newsectionlabel" to "Steady"
     And I press "Add new section"
-    And I set the field "id_sectionheading" to "Steady heading"    
+    And I set the field "id_sectionheading" to "Steady heading"
     And I follow "Steady section messages"
     And I set the field "id_feedbacktext_0" to "You seem to have a steady style"
     And I set the field "id_feedbackboundaries_0" to "50"
