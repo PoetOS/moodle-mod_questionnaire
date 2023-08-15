@@ -501,7 +501,7 @@ abstract class question {
     public function valid_feedback() {
         if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
             foreach ($this->choices as $choice) {
-                if ($choice->value != null) {
+                if ($choice->value != null && $choice->value !== '!other') {
                     return true;
                 }
             }
@@ -520,7 +520,7 @@ abstract class question {
                 if ($choice->value !== null) {
                     // D param means no digits.
                     $r = preg_match_all("/(\D+)/", $choice->value, $matches);
-                    if ($r) {
+                    if ($r && $matches[0][0] !== '!other') {
                         return true;
                     }
                 }
