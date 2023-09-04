@@ -3088,6 +3088,7 @@ class questionnaire {
         if ($showincompletes == 1) {
             $options[] = 'complete';
         }
+        $extrafields = \core_user\fields::get_identity_fields($this->context);
 
         $positioned = [];
         $user = new stdClass();
@@ -3184,6 +3185,9 @@ class questionnaire {
         if (in_array('complete', $options)) {
             array_push($positioned, $resprow->complete);
         }
+        foreach ($extrafields as $field) {
+            array_push($positioned, $resprow->$field);
+        }
 
         for ($c = $nbinfocols; $c < $numrespcols; $c++) {
             if (isset($row[$c])) {
@@ -3228,6 +3232,7 @@ class questionnaire {
         if ($showincompletes == 1) {
             $options[] = 'complete';
         }
+        $extrafields = \core_user\fields::get_identity_fields($this->context);
         $columns = array();
         $types = array();
         foreach ($options as $option) {
@@ -3238,6 +3243,9 @@ class questionnaire {
                 $columns[] = get_string($option);
                 $types[] = 1;
             }
+        }
+        foreach ($extrafields as $field) {
+            $columns[] = \core_user\fields::get_display_name($field);
         }
         $nbinfocols = count($columns);
 
@@ -3476,6 +3484,11 @@ class questionnaire {
             // It's possible for a response to exist for a deleted question. Ignore these.
             if (!isset($this->questions[$qid])) {
                 continue;
+            }
+
+            $customfield = $this->get_custom_profile_fields($responserow->userid);
+            foreach ($extrafields as $field) {
+                $responserow->{$field} = $customfield->{$field} ?? '';
             }
 
             $question = $this->questions[$qid];
@@ -4120,5 +4133,28 @@ class questionnaire {
         }
 
         return $areas;
+    }
+
+    /**
+     *  Support custom profile fields.
+     *
+     * @param $userid
+     * @return array
+     */
+    public function get_custom_profile_fields($userid) {
+        global $DB;
+
+        $userfieldsapi = \core_user\fields::for_identity($this->context);
+        [
+                'selects' => $userfieldsselects,
+                'joins' => $userfieldsjoin,
+                'params' => $userfieldsparams
+        ] = (array) $userfieldsapi->get_sql('u', false, '', '', false);
+        $sql = "SELECT $userfieldsselects
+                  FROM {user} u $userfieldsjoin
+                WHERE u.id = ?";
+        $param = array_merge($userfieldsparams, [$userid]);
+        $customfield = $DB->get_record_sql($sql, $param);
+        return $customfield;
     }
 }
