@@ -137,7 +137,7 @@ class mod_questionnaire_external extends external_api {
     public static function submit_questionnaire_response_returns() {
         return new external_single_structure(
             [
-                'submitted' => new external_value(PARAM_BOOL, 'submitted', true, false, false),
+                'submitted' => new external_value(PARAM_BOOL, 'submitted', VALUE_REQUIRED, false, false),
                 'warnings' => new external_warnings()
             ]
         );
