@@ -741,9 +741,8 @@ class questionnaire {
         }
 
         $grouplogic = $canviewgroups || $canviewallgroups;
-        $respslogic = ($numresp > 0) && ($numselectedresps > 0);
-        return $this->can_view_all_responses_anytime($grouplogic, $respslogic) ||
-            $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic);
+        return $this->can_view_all_responses_anytime($grouplogic) ||
+            $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic);
     }
 
     /**
