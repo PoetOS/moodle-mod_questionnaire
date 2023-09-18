@@ -23,8 +23,11 @@ this.questionsFormErrors = {};
 for (const fieldkey in this.CONTENT_OTHERDATA.fields) {
     questionsFormFields[fieldkey] = [];
     questionsFormFields[fieldkey][0] = '';
-    for (const itemid in this.CONTENT_OTHERDATA.questions[this.CONTENT_OTHERDATA.pagenum][this.CONTENT_OTHERDATA.fields[fieldkey].id]) {
-        questionsFormFields[fieldkey][0] = this.CONTENT_OTHERDATA.questions[this.CONTENT_OTHERDATA.pagenum][this.CONTENT_OTHERDATA.fields[fieldkey].id][itemid].value;
+    for (const itemid in
+        this.CONTENT_OTHERDATA.questions[this.CONTENT_OTHERDATA.pagenum][this.CONTENT_OTHERDATA.fields[fieldkey].id]) {
+        questionsFormFields[fieldkey][0] =
+            this.CONTENT_OTHERDATA.questions[this.CONTENT_OTHERDATA.pagenum][this.CONTENT_OTHERDATA.fields[fieldkey].id]
+                [itemid].value;
     }
     if (this.CONTENT_OTHERDATA.fields[fieldkey].required === 'y') {
         questionsFormFields[fieldkey][1] = this.Validators.required;
