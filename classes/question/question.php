@@ -946,7 +946,7 @@ abstract class question {
             $this->content = '';
         }
         $pagetags->skippedclass = $skippedclass;
-        if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT) {
+        if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT || $this->type_id == QUESSLIDER) {
             $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->id];
         } else if ($this->type_id == QUESDROP) {
             $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->name];

@@ -85,3 +85,44 @@ Feature: Slider questions can add slider with range for users to choose
       | Slider starting value        | 10                   |
       | Slider increment value       | 15                   |
     And I should see "This question type supports an absolute maximum range of -100 to +100. We expect the vast majority of questionnaire designs to use a range of 1-10 or -10 to +10."
+
+  @javascript
+  Scenario: Test accessibility for slider question type.
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I am on the "Test questionnaire" "questionnaire activity" page
+    And I navigate to "Questions" in current page administration
+    And I add a "Slider" question and I fill the form with:
+      | Question Name                | Q2                               |
+      | Question Text                | Slider question test normal case |
+      | Left label                   | Left                             |
+      | Right label                  | Right                            |
+      | Centre label                 | Center                           |
+      | Minimum slider range (left)  | 1                                |
+      | Maximum slider range (right) | 9                                |
+      | Slider starting value        | 5                                |
+      | Slider increment value       | 1                                |
+    And I add a "Slider" question and I fill the form with:
+      | Question Name                | Q3                                   |
+      | Question Text                | Slider question test Left label only |
+      | Left label                   | Left                                 |
+      | Minimum slider range (left)  | -5                                   |
+      | Maximum slider range (right) | 5                                    |
+      | Slider starting value        | 1                                    |
+      | Slider increment value       | 1                                    |
+    And I add a "Slider" question and I fill the form with:
+      | Question Name                | Q4                            |
+      | Question Text                | Slider question test no label |
+      | Minimum slider range (left)  | 1                             |
+      | Maximum slider range (right) | 9                             |
+      | Slider starting value        | 1                             |
+      | Slider increment value       | 1                             |
+    And I navigate to "Preview" in current page administration
+    Then "//legend[@class='accesshide' and contains(text(), 'Question #1')]" "xpath_element" should exist
+    Then "//output[@class='bubble' and contains(text(), '5')]/h2[contains(text(), 'where 5 is Left, 50 and 55 are Center and 100 is Right')]" "xpath_element" should exist
+    Then "//legend[@class='accesshide' and contains(text(), 'Question #2')]" "xpath_element" should exist
+    Then "//output[@class='bubble' and contains(text(), '5')]/h2[contains(text(), 'where 1 is Left, 5 is Center and 9 is Right')]" "xpath_element" should exist
+    Then "//legend[@class='accesshide' and contains(text(), 'Question #3')]" "xpath_element" should exist
+    Then "//output[@class='bubble' and contains(text(), '1')]/h2[contains(text(), 'where -5 is Left, 0 is average and 5 is maximum slider range')]" "xpath_element" should exist
+    Then "//legend[@class='accesshide' and contains(text(), 'Question #4')]" "xpath_element" should exist
+    Then "//output[@class='bubble' and contains(text(), '1')]/h2[contains(text(), 'where 1 is minimum slider range, 5 is average and 9 is maximum slider range')]" "xpath_element" should exist
