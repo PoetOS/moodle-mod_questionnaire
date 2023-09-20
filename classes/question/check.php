@@ -81,7 +81,7 @@ class check extends question {
      * @return \stdClass The check question context tags.
      *
      */
-    protected function question_survey_display($response, $dependants, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants, $blankquestionnaire = false) {
         // Check boxes.
         $otherempty = false;
         if (!empty($response)) {
@@ -148,6 +148,9 @@ class check extends question {
                     format_string(stripslashes($response->answers[$this->id][$id]->value)) : '');
                 $checkbox->label = format_text($choice->other_choice_display().'', FORMAT_HTML, ['noclean' => true]);
             }
+            if (!empty($this->qlegend)) {
+                $checkbox->alabel = strip_tags("{$this->qlegend} {$checkbox->label}");
+            }
             $choicetags->qelements[] = (object)['choice' => $checkbox];
         }
         if ($otherempty) {
@@ -191,6 +194,9 @@ class check extends question {
                 }
                 $chobj->name = $id.$uniquetag++;
                 $chobj->content = (($othertext === '') ? $id : $othertext);
+            }
+            if (!empty($this->qlegend)) {
+                $chobj->alabel = strip_tags("{$this->qlegend} {$chobj->content}");
             }
             $resptags->choices[] = $chobj;
         }

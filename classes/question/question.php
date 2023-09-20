@@ -94,6 +94,9 @@ abstract class question {
     /** @var string $content The question's content. */
     public $content = '';
 
+    /** @var string $qlegend The question's legend. */
+    public $qlegend = '';
+
     /** @var string $allchoices The list of all question's choices. */
     public $allchoices = '';
 
@@ -953,10 +956,12 @@ abstract class question {
         } else if ($this->type_id == QUESESSAY) {
             $pagetags->label = (object)['for' => 'q' . $this->id];
         }
+        $content = file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
+                $this->context->id, 'mod_questionnaire', 'question', $this->id);
         $options = ['noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
-        $content = format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
-            $this->context->id, 'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options);
-        $pagetags->qcontent = $content;
+        $pagetags->qcontent = format_text($content, FORMAT_HTML, $options);
+        $this->qlegend = strip_tags($content);
+        $pagetags->qlegend = $this->qlegend;
 
         return $pagetags;
     }
