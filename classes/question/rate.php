@@ -198,6 +198,7 @@ class rate extends question {
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
+        $choicetags->qelements['caption'] = strip_tags($this->content);
 
         $disabled = '';
         if ($blankquestionnaire) {
