@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/question_yesno
+    @template mod_questionnaire/question_slider
 
-    Template which defines a yes/no type question survey display.
+    Template which defines a slider type question survey display.
 
     Classes required for JS:
     * /mod/questionnaire/module.js
@@ -30,44 +30,37 @@
     Example context (json):
     {
         "qelements": {
-            "choice": [
+            "extradata":
                 {
-                    "id": "choice1",
-                    "value": "y",
-                    "name": "q23",
-                    "checked": 1,
-                    "disabled": "",
-                    "onclick": "dosomething()",
-                    "label": "Yes"
-                },
-                {
-                    "id": "choice2",
-                    "value": "n",
-                    "name": "q23",
-                    "checked": 0,
-                    "disabled": "",
-                    "onclick": "dosomething()",
-                    "label": "No"
+                    "id": "slider1",
+                    "name": "q1",
+                    "minrange": "1",
+                    "maxrange": "10",
+                    "startingvalue": 5,
+                    "stepvalue": "1",
+                    "leftlabel": "Left label",
+                    "rightlabel": "Right label",
+                    "centerlabel": "Center label"
                 }
-            ]
         }
     }
     }}
-<!-- Begin HTML generated from question_yesno template. -->
-<div class="question-slider">
-    {{#qelements}}
-        {{#extradata}}
+<!-- Begin HTML generated from question_slider template. -->
+{{#qelements}}
+    {{#extradata}}
+        <div class="question-slider">
             <div class="left-side-label">{{extradata.leftlabel}}</div>
             <div class="middle-side-content">
                 <div class="slider">
-                    <input name="{{extradata.name}}" type="range" min="{{extradata.minrange}}" max="{{extradata.maxrange}}" step="{{extradata.stepvalue}}"
-                           value="{{extradata.startingvalue}}" class="questionnaire-slider" id="slider-{{extradata.id}}">
+                    <input name="{{extradata.name}}" type="range" min="{{extradata.minrange}}"
+                           max="{{extradata.maxrange}}" step="{{extradata.stepvalue}}"
+                           value="{{extradata.startingvalue}}" class="questionnaire-slider" id="{{extradata.id}}">
                     <output class="bubble"></output>
                 </div>
                 <div class="middle-side-label">{{extradata.centerlabel}}</div>
             </div>
             <div class="right-side-label">{{extradata.rightlabel}}</div>
-        {{/extradata}}
-    {{/qelements}}
-</div>
-<!-- End HTML generated from question_yesno template. -->
+        </div>
+    {{/extradata}}
+{{/qelements}}
+<!-- End HTML generated from question_slider template. -->

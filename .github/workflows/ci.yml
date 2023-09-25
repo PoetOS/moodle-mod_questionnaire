@@ -34,10 +34,10 @@ jobs:
             moodle-branch: 'MOODLE_402_STABLE'
             database: 'pgsql'
           - php: '8.0'
-            moodle-branch: 'MOODLE_401_STABLE'
+            moodle-branch: 'MOODLE_402_STABLE'
             database: 'mariadb'
           - php: '7.4'
-            moodle-branch: 'MOODLE_400_STABLE'
+            moodle-branch: 'MOODLE_401_STABLE'
             database: 'pgsql'
 
     steps:

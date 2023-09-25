@@ -29,23 +29,37 @@
 
     Example context (json):
     {
-        "qelements": {
-            "choice": {
-                "onkeypress": "dosomething()",
-                "size": 30,
-                "name": "choiceid1",
-                "maxlength": 50,
-                "value": "473",
-                "id": "choiceid1"
-            }
-        }
+        "qelements": [
+                {
+                    "choice": {
+                    "onkeypress": "dosomething()",
+                    "size": 30,
+                    "name": "choiceid1",
+                    "instruction": "Do not use thousands separators.",
+                    "maxlength": 50,
+                    "value": "473",
+                    "id": "choiceid1"
+                    }
+                },
+                {
+                    "choice": {
+                    "onkeypress": "dosomething()",
+                    "size": 20,
+                    "name": "choiceid2",
+                    "instruction": "Do not use thousands separators.",
+                    "maxlength": 50,
+                    "value": "473",
+                    "id": "choiceid2"
+                    }
+                }
+        ]
     }
     }}
 <!-- Begin HTML generated from question_numeric template. -->
 {{#qelements}}
-{{#choice}}
-    {{#instruction}}<span style="font-style: italic; font-size: 90%">{{.}}<br /></span>{{/instruction}}
-<input {{#choice.onkeypress}}onkeypress="{{.}}"{{/choice.onkeypress}} type="text" size="{{choice.size}}" name="{{choice.name}}" {{#choice.maxlength}}maxlength="{{choice.maxlength}}"{{/choice.maxlength}} value="{{choice.value}}" id="{{choice.id}}" />
-{{/choice}}
+    {{#choice}}
+        {{#instruction}}<span id="{{choice.id}}-instruction" style="font-style: italic; font-size: 90%">{{.}}<br /></span>{{/instruction}}
+        <input {{#choice.onkeypress}}onkeypress="{{.}}"{{/choice.onkeypress}} aria-describedby="{{choice.id}}-instruction" type="text" size="{{choice.size}}" name="{{choice.name}}" {{#choice.maxlength}}maxlength="{{choice.maxlength}}"{{/choice.maxlength}} value="{{choice.value}}" id="{{choice.id}}" />
+    {{/choice}}
 {{/qelements}}
 <!-- End HTML generated from question_numeric template. -->
