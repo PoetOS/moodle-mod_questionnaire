@@ -267,15 +267,22 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
 
 };
 M.mod_questionnaire.init_slider = function() {
-    const allRanges = document.querySelectorAll(".slider");
+    const allRanges = document.querySelectorAll(".question-slider");
     allRanges.forEach(wrap => {
         const range = wrap.querySelector("input.questionnaire-slider");
         const bubble = wrap.querySelector(".bubble");
+        const labels = {
+            leftlabel: wrap.querySelector(".left-side-label"),
+            middlelabel: wrap.querySelector(".middle-side-label"),
+            rightlabel: wrap.querySelector(".right-side-label")
+        };
 
         range.addEventListener("input", () => {
             setBubble(range, bubble);
+            createAccessibilityHeading(range, bubble, labels);
         });
         setBubble(range, bubble);
+        createAccessibilityHeading(range, bubble, labels);
     });
 
     function setBubble(range, bubble) {
@@ -295,5 +302,86 @@ M.mod_questionnaire.init_slider = function() {
 
         // Sorta magic numbers based on size of the native UI thumb
         bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
+    }
+
+    /**
+     * Adds accessibility support by generating an h2 element with relevant text.
+     * @param {HTMLElement} range - The range input element.
+     * @param {HTMLElement} bubble - The bubble element.
+     * @param {Object} labels - The object containing label elements.
+     */
+    function createAccessibilityHeading(range, bubble, labels) {
+        const min = range.min ? range.min : 0;
+        const max = range.max ? range.max : 100;
+        const step = range.step ? range.step : 1;
+        const centerValues = calculateCenterValues(range);
+
+        const accesshideElement = document.createElement('h2');
+        accesshideElement.classList.add('accesshide');
+
+        const a = {
+            min,
+            max,
+            leftlabel: labels.leftlabel.innerHTML,
+            rightlabel: labels.rightlabel.innerHTML,
+            middlelabel: labels.middlelabel.innerHTML,
+            centreval: centerValues[0],
+            centreval1: centerValues[0],
+            centreval2: centerValues[1],
+        };
+
+        const rangeNum = max - min;
+        const numSteps = rangeNum / step;
+
+        const middleLabel = (numSteps % 2 !== 0)
+            ? (labels.middlelabel.innerHTML
+                ? M.util.get_string('middlepartwithtwovalues', 'questionnaire', a)
+                : M.util.get_string('middlepartwithtwovaluesdefault', 'questionnaire', a))
+            : (labels.middlelabel.innerHTML
+                ? M.util.get_string('middlepart', 'questionnaire', a)
+                : M.util.get_string('middlepartdefault', 'questionnaire', a));
+
+        const leftPart = labels.leftlabel.innerHTML ? M.util.get_string('leftpart', 'questionnaire', a)
+            : M.util.get_string('leftpartdefault', 'questionnaire', a);
+
+        const middlePart = middleLabel ? middleLabel : '';
+
+        const rightPart = labels.rightlabel.innerHTML
+            ? M.util.get_string('rightpart', 'questionnaire', a) : M.util.get_string('rightpartdefault', 'questionnaire', a);
+
+        // Include a whitespace to accommodate a setting of the NVDA screen reader.
+        const whitespace = '\xa0';
+        accesshideElement.textContent = whitespace + M.util.get_string('where', 'questionnaire', a) + leftPart + middlePart + rightPart;
+        bubble.appendChild(accesshideElement);
+    }
+
+    /**
+     * Calculates the center value(s) based on the given range.
+     * @param {Object} range - The range object containing properties: min, max, step.
+     * @returns {Array} - An array containing the center value(s).
+     */
+    function calculateCenterValues(range) {
+        const min = parseInt(range.min);
+        const max = parseInt(range.max);
+        const step = parseInt(range.step);
+        const rangeNum = max - min;
+
+        // Calculate the number of steps.
+        const numSteps = rangeNum / step;
+
+        // Calculate the center value(s).
+        const centerValues = [];
+        if (numSteps % 2 === 0) {
+            // Even number of steps, return single center value.
+            const center = (min + max) / 2;
+            centerValues.push(center);
+        } else {
+            // Odd number of steps, calculate lower and upper center values.
+            const lowerCenter = min + Math.floor(numSteps / 2) * step;
+            const upperCenter = lowerCenter + step;
+            centerValues.push(lowerCenter, upperCenter);
+        }
+
+        return centerValues;
     }
 };
