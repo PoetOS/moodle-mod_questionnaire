@@ -23,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['accessibility:rate:choice'] = 'Row {$a->rowposition}, {$a->choicetitle}: Column {$a->colposition}, {$a->choiceanswer}.';
 $string['action'] = 'Action';
 $string['activityoverview'] = 'You have questionnaires that are due';
 $string['additionalinfo'] = 'Additional Info';
@@ -682,3 +683,4 @@ $string['yourresponse'] = 'View your response(s)';
 $string['yourresponses'] = 'View your response(s)';
 $string['crontask'] = 'Questionnaire cleanup job';
 $string['nopermissions'] = 'Sorry, but you do not currently have permissions to view this page or perform this action.';
+$string['unanswered'] = 'Unanswered';
