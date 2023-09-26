@@ -170,10 +170,13 @@ class feedback_section_form extends \moodleform {
         $mform->setType('sectionid', PARAM_INT);
 
         // Buttons.
+        $submitlabelsaveanddisplay = get_string('savechangesanddisplay');
+        $submitlabelreturntofeedbackoptions = get_string('feedbackoptions', 'questionnaire');
         $buttonarray = [];
-        $buttonarray[] = $mform->createElement('submit', 'submitbutton', get_string('savechanges'));
         $buttonarray[] = $mform->createElement('submit', 'confirmdeletesection', get_string('deletesection', 'questionnaire'));
-        $buttonarray[] = $mform->createElement('cancel');
+        $buttonarray[] = $mform->createElement('submit', 'submitbutton', get_string('savechanges'));
+        $buttonarray[] = $mform->createElement('submit', 'submitbutton1', $submitlabelreturntofeedbackoptions);
+        $buttonarray[] = $mform->createElement('submit', 'submitbutton2', $submitlabelsaveanddisplay);
         $mform->addGroup($buttonarray, 'buttonar', '', ' ', false);
         $mform->closeHeaderBefore('buttonar');
     }
