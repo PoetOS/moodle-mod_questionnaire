@@ -43,6 +43,7 @@ class feedback_section_form extends \moodleform {
         $feedbacksection = $this->_customdata->feedbacksection;
         $validquestions = $this->_customdata->validquestions;
         $survey = $this->_customdata->survey;
+        $canselectquestions = $this->_customdata->canselectquestions;
         $feedbacksections = $questionnaire->survey->feedbacksections;
         $this->_feedbacks = $feedbacksection->sectionfeedback;
         $this->context = $questionnaire->context;
@@ -89,7 +90,7 @@ class feedback_section_form extends \moodleform {
         $mform->setDefault('feedbacknotes', $questionnaire->survey->feedbacknotes);
         $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
 
-        if ($questionnaire->survey->feedbacksections > 0) {
+        if ($questionnaire->survey->feedbacksections > 0 && $canselectquestions) {
             // Sections.
             if ($survey->feedbacksections > 1) {
                 $mform->addElement('header', 'fbsection_' . $feedbacksection->id,

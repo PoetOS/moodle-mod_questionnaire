@@ -513,6 +513,26 @@ abstract class question {
     }
 
     /**
+     * True if the question supports feedback and has keywords instead of score value (for DISC personality test).
+     * Override if the default logic is not enough.
+     * @return bool
+     */
+    public function has_keywords() {
+        if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
+            foreach ($this->choices as $choice) {
+                if ($choice->value !== null) {
+                    // D param means no digits.
+                    $r = preg_match_all("/(\D+)/", $choice->value, $matches);
+                    if ($r) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Provide the feedback scores for all requested response id's. This should be provided only by questions that provide feedback.
      * @param array $rids
      * @return array|bool
@@ -534,7 +554,7 @@ abstract class question {
         if ($this->valid_feedback()) {
             $maxscore = 0;
             foreach ($this->choices as $choice) {
-                if (isset($choice->value) && ($choice->value != null)) {
+                if (isset($choice->value) && ($choice->value != null) && is_numeric($choice->value)) {
                     if ($choice->value > $maxscore) {
                         $maxscore = $choice->value;
                     }
@@ -1373,8 +1393,8 @@ abstract class question {
                     $choicerecord->id = $ekey;
                     $choicerecord->question_id = $this->qid;
                     $choicerecord->content = trim($newchoices[$nidx]);
-                    $r = preg_match_all("/^(\d{1,2})(=.*)$/", $newchoices[$nidx], $matches);
-                    // This choice has been attributed a "score value" OR this is a rate question type.
+                    $r = preg_match_all("/^(\d{1,2}|\D.*)=(.*)$/", $newchoices[$nidx], $matches);
+                    // This choice has been attributed a "score value" or a DISC keyword OR this is a rate question type.
                     if ($r) {
                         $newscore = $matches[1][0];
                         $choicerecord->value = $newscore;
@@ -1394,10 +1414,13 @@ abstract class question {
                 $choicerecord = new \stdClass();
                 $choicerecord->question_id = $this->qid;
                 $choicerecord->content = trim($newchoices[$nidx]);
-                $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choicerecord->content, $matches);
-                // This choice has been attributed a "score value" OR this is a rate question type.
+                $r = preg_match_all("/^(\d{1,2}|\D.*)=(.*)$/", $choicerecord->content, $matches);
+                // This choice has been attributed a "score value" or a DISC keyword OR this is a rate question type.
                 if ($r) {
-                    $choicerecord->value = $matches[1][0];
+                    $newscore = $matches[1][0];
+                    $choicerecord->value = $newscore;
+                } else { // No score value for this choice.
+                    $choicerecord->value = null;
                 }
                 $this->add_choice($choicerecord);
                 $nidx++;
