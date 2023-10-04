@@ -54,9 +54,9 @@
     }}
 <!-- Begin fieldset generated from response_container template. -->
 <div class="box individualresp">
-<fieldset id="{{fieldset.id}}" class="{{fieldset.class}}">
+<fieldset id="qn-{{fieldset.id}}" class="{{fieldset.class}}">
     {{#qnum}}
-    <legend class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}}</legend>
+    <legend class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}} {{qlegend}}</legend>
     <div class="qn-legend">
         <div class="qn-info">
             <h2 class="qn-number">{{{.}}}</h2>
@@ -74,10 +74,10 @@
             {{#responses}}
             {{#respdate}}<div class="respdate">{{respdate}}</div>{{/respdate}}
             <fieldset id="{{fieldset.id}}" class="{{fieldset.class}}">
-                <legend class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</legend>
+                <legend class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}} {{qlegend}}</legend>
                 <div class="qn-legend">
                     <div class="qn-info">
-                        <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}</div>
+                        <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}} {{qlegend}}</div>
                     </div>
                     {{{required}}}
                 </div>

@@ -71,16 +71,6 @@ class attempt_saved extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, "questionnaire", "save", "view.php?id=" .
-                        $this->contextinstanceid, $this->other['questionnaireid'], $this->contextinstanceid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception

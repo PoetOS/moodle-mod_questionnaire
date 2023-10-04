@@ -1039,7 +1039,7 @@ class questionnaire {
             $question->dependencies[$did]->name = $question->name;
             $question->dependencies[$did]->content = $question->content;
             $question->dependencies[$did]->parentposition = $dependquestion->position;
-            $question->dependencies[$did]->parent = $dependquestion->name.'->'.$dependchoice;
+            $question->dependencies[$did]->parent = format_string($dependquestion->name) . '->' . format_string($dependchoice);
         }
         return true;
     }
