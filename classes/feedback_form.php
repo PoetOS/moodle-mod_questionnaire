@@ -39,10 +39,7 @@ class feedback_form extends \moodleform {
         // We need to get the number of current feedbacksections to allow the rose and radar chart types or not.
         global $DB;
         $sid = $questionnaire->survey->id;
-        $sql = 'SELECT COUNT(*) ' .
-           'FROM {questionnaire_fb_sections} ' .
-           'WHERE surveyid = '.$sid;
-        $numfeedbacksections = $DB->count_records_sql($sql, [$sid]);
+        $numfeedbacksections = $DB->count_records('questionnaire_fb_sections', ['surveyid' => $sid]);
 
         // Get all questions that are valid feedback questions.
         $nbvalidquestions = 0;
