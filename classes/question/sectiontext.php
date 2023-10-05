@@ -70,7 +70,7 @@ class sectiontext extends question {
     /**
      * Display on mobile.
      *
-     * @param $qnum
+     * @param int $qnum
      * @param bool $autonum
      */
     public function mobile_question_display($qnum, $autonum = false) {
