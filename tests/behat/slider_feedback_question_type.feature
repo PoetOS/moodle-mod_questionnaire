@@ -24,7 +24,7 @@ Feature: In questionnaire, slider questions can be defined with scores attribute
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I follow "Feedback"    
+    And I follow "Feedback"
     Then I should not see "Display Scores"
     And I navigate to "Questions" in current page administration
     Then I should see "Add questions"
