@@ -19,32 +19,33 @@ Feature: View activity completion information in the questionnaire activity
     And the following "activities" exist:
       | activity      | name                          | introduction                   | course | idnumber       | completion | completionview | completionpostsenabled | completionposts |
       | questionnaire | Test questionnaire completion | Test questionnaire description | C1     | questionnaire2 | 2          | 1              | 1                      | 1               |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Test questionnaire completion"
-    And I click on "Add questions" "link"
-    And I add a "Yes/No" question and I fill the form with:
-      | Question Name | Q1                       |
-      | Yes           | y                        |
-      | Question Text | Are you still in School? |
-    And I add a "Radio Buttons" question and I fill the form with:
-      | Question Name    | Q2                         |
-      | Yes              | y                          |
-      | Horizontal       | Checked                    |
-      | Question Text    | Select one choice          |
-      | Possible answers | 1=One,2=Two,3=Three,4=Four |
-    And I add a "Text Box" question and I fill the form with:
-      | Question Name    | Q8              |
-      | No               | n               |
-      | Input box length | 10              |
-      | Max. text length | 15              |
-      | Question Text    | Enter some text |
 
   @javascript
   Scenario: Check questionnaire completion feature in web for Moodle ≤ 4.2.
     Given the site is running Moodle version 4.2 or lower
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I follow "Test questionnaire completion"
+    Then I click on "Add questions" "link"
+    And I add a "Yes/No" question and I fill the form with:
+      | Question Name | Q1                       |
+      | Yes           | y                        |
+      | Question Text | Are you still in School? |
+    Then I should see "[Yes/No] (Q1)"
+    And I add a "Radio Buttons" question and I fill the form with:
+      | Question Name    | Q2                         |
+      | Yes              | y                          |
+      | Horizontal       | Checked                    |
+      | Question Text    | Select one choice          |
+      | Possible answers | 1=One,2=Two,3=Three,4=Four |
+    Then I should see "[Radio Buttons] (Q2)"
+    And I add a "Text Box" question and I fill the form with:
+      | Question Name    | Q8              |
+      | No               | n               |
+      | Input box length | 10              |
+      | Max. text length | 15              |
+      | Question Text    | Enter some text |
+    Then I should see "[Text Box] (Q8)"
     And I am on the "Test questionnaire completion" "questionnaire activity editing" page
     And I set the following fields to these values:
       | Completion tracking | Show activity as complete when conditions are met |
@@ -70,8 +71,30 @@ Feature: View activity completion information in the questionnaire activity
     Given the site is running Moodle version 4.3 or higher
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I follow "Test questionnaire completion"
+    Then I click on "Add questions" "link"
+    And I add a "Yes/No" question and I fill the form with:
+      | Question Name | Q1                       |
+      | Yes           | y                        |
+      | Question Text | Are you still in School? |
+    Then I should see "[Yes/No] (Q1)"
+    And I add a "Radio Buttons" question and I fill the form with:
+      | Question Name    | Q2                         |
+      | Yes              | y                          |
+      | Horizontal       | Checked                    |
+      | Question Text    | Select one choice          |
+      | Possible answers | 1=One,2=Two,3=Three,4=Four |
+    Then I should see "[Radio Buttons] (Q2)"
+    And I add a "Text Box" question and I fill the form with:
+      | Question Name    | Q8              |
+      | No               | n               |
+      | Input box length | 10              |
+      | Max. text length | 15              |
+      | Question Text    | Enter some text |
+    Then I should see "[Text Box] (Q8)"
     And I am on the "Test questionnaire completion" "questionnaire activity editing" page
     And I click on "Expand all" "link" in the "region-main" "region"
+    And I set the field "Add requirements" to "1"
     And I set the following fields to these values:
       | Add requirements                                      | 1 |
       | Student must submit this questionnaire to complete it | 1 |

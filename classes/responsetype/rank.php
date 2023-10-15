@@ -29,6 +29,11 @@ use mod_questionnaire\db\bulk_sql_config;
  */
 class rank extends responsetype {
     /**
+     * @var \stdClass $counts Range counts.
+     */
+    public $counts;
+
+    /**
      * Provide the necessary response data table name. Should probably always be used with late static binding 'static::' form
      * rather than 'self::' form to allow for class extending.
      *
@@ -580,10 +585,10 @@ class rank extends responsetype {
 
         switch ($sort) {
             case 'ascending':
-                uasort($this->counts, 'self::sortavgasc');
+                uasort($this->counts, self::class . '::sortavgasc');
                 break;
             case 'descending':
-                uasort($this->counts, 'self::sortavgdesc');
+                uasort($this->counts, self::class . '::sortavgdesc');
                 break;
         }
         reset ($this->counts);
