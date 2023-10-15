@@ -56,7 +56,7 @@
 <!-- Begin HTML generated from question_yesno template. -->
 {{#qelements}}
 {{#choice}}
-<input id="{{id}}" value="{{value}}" name="{{name}}" type="radio" {{#checked}}checked="checked"{{/checked}} {{#disabled}}disabled="disabled"{{/disabled}} {{#onclick}}onclick="{{onclick}}"{{/onclick}}/>
+<input type="radio" name="{{name}}" id="{{id}}" value="{{value}}" {{#checked}}checked="checked"{{/checked}} {{#disabled}}disabled="disabled"{{/disabled}} {{#onclick}}onclick="{{onclick}}"{{/onclick}}>
 <label for="{{id}}">{{{label}}}</label>
 {{/choice}}
 {{/qelements}}
