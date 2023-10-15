@@ -259,23 +259,26 @@ class file extends responsetype {
                 $fs = get_file_storage();
                 $file = $fs->get_file_by_id($row->fileid);
 
-                $imageurl = moodle_url::make_pluginfile_url(
-                    $file->get_contextid(),
-                    $file->get_component(),
-                    $file->get_filearea(),
-                    $file->get_itemid(),
-                    $file->get_filepath(),
-                    $file->get_filename());
+                if ($file) {
+                // There is a file.
+                    $imageurl = moodle_url::make_pluginfile_url(
+                        $file->get_contextid(),
+                        $file->get_component(),
+                        $file->get_filearea(),
+                        $file->get_itemid(),
+                        $file->get_filepath(),
+                        $file->get_filename());
 
-                $response->text = \html_writer::link($imageurl, $file->get_filename());
-                if ($viewsingleresponse && $nonanonymous) {
-                    $rurl = $url . '&amp;rid=' . $row->rid . '&amp;individualresponse=1';
-                    $title = userdate($row->submitted);
-                    if (!isset($users[$row->userid])) {
-                        $users[$row->userid] = $DB->get_record('user', ['id' => $row->userid]);
+                    $response->text = \html_writer::link($imageurl, $file->get_filename());
+                    if ($viewsingleresponse && $nonanonymous) {
+                        $rurl = $url . '&amp;rid=' . $row->rid . '&amp;individualresponse=1';
+                        $title = userdate($row->submitted);
+                        if (!isset($users[$row->userid])) {
+                            $users[$row->userid] = $DB->get_record('user', ['id' => $row->userid]);
+                        }
+                        $response->respondent =
+                            '<a href="' . $rurl . '" title="' . $title . '">' . fullname($users[$row->userid]) . '</a>';
                     }
-                    $response->respondent =
-                        '<a href="' . $rurl . '" title="' . $title . '">' . fullname($users[$row->userid]) . '</a>';
                 } else {
                     $response->respondent = '';
                 }
