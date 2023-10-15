@@ -136,44 +136,47 @@ class file extends question {
         $fs = get_file_storage();
         $file = $fs->get_file_by_id($answer->value);
 
-        $moodleurl = moodle_url::make_pluginfile_url(
-            $file->get_contextid(),
-            $file->get_component(),
-            $file->get_filearea(),
-            $file->get_itemid(),
-            $file->get_filepath(),
-            $file->get_filename());
+        if ($file) {
+            // There is a file.
+            $moodleurl = moodle_url::make_pluginfile_url(
+                $file->get_contextid(),
+                $file->get_component(),
+                $file->get_filearea(),
+                $file->get_itemid(),
+                $file->get_filepath(),
+                $file->get_filename()
+            );
 
-        $mimetype = $file->get_mimetype();
-        $title = '';
+            $mimetype = $file->get_mimetype();
+            $title = '';
 
-        $extension = resourcelib_get_extension($file->get_filename());
+            $extension = resourcelib_get_extension($file->get_filename());
 
-        $mediamanager = core_media_manager::instance($PAGE);
-        $embedoptions = array(
-            core_media_manager::OPTION_TRUSTED => true,
-            core_media_manager::OPTION_BLOCK => true,
-        );
+            $mediamanager = core_media_manager::instance($PAGE);
+            $embedoptions = array(
+                core_media_manager::OPTION_TRUSTED => true,
+                core_media_manager::OPTION_BLOCK => true,
+            );
 
-        if (file_mimetype_in_typegroup($mimetype, 'web_image')) {  // It's an image.
-            $code = resourcelib_embed_image($moodleurl->out(), $title);
+            if (file_mimetype_in_typegroup($mimetype, 'web_image')) {  // It's an image.
+                $code = resourcelib_embed_image($moodleurl->out(), $title);
 
-        } else if ($mimetype === 'application/pdf') {
-            // PDF document.
-            $code = resourcelib_embed_pdf($moodleurl->out(), $title, get_string('view'));
+            } else if ($mimetype === 'application/pdf') {
+                // PDF document.
+                $code = resourcelib_embed_pdf($moodleurl->out(), $title, get_string('view'));
 
-        } else if ($mediamanager->can_embed_url($moodleurl, $embedoptions)) {
-            // Media (audio/video) file.
-            $code = $mediamanager->embed_url($moodleurl, $title, 0, 0, $embedoptions);
+            } else if ($mediamanager->can_embed_url($moodleurl, $embedoptions)) {
+                // Media (audio/video) file.
+                $code = $mediamanager->embed_url($moodleurl, $title, 0, 0, $embedoptions);
 
-        } else {
-            // We need a way to discover if we are loading remote docs inside an iframe.
-            $moodleurl->param('embed', 1);
+            } else {
+                // We need a way to discover if we are loading remote docs inside an iframe.
+                $moodleurl->param('embed', 1);
 
-            // Anything else - just try object tag enlarged as much as possible.
-            $code = resourcelib_embed_general($moodleurl, $title, get_string('view'), $mimetype);
+                // Anything else - just try object tag enlarged as much as possible.
+                $code = resourcelib_embed_general($moodleurl, $title, get_string('view'), $mimetype);
+            }
         }
-
         $output = '';
         $output .= '<div class="response text">';
         $output .= $code;

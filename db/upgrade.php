@@ -997,7 +997,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2022092200, 'questionnaire');
     }
 
-    if ($oldversion < 2022092202) {
+    if ($oldversion < 2023101500) {
         $questiontype = new stdClass();
         $questiontype->typeid = 12;
         $questiontype->type = 'File';
@@ -1027,7 +1027,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         }
 
         // Questionnaire savepoint reached.
-        upgrade_mod_savepoint(true, 2022092202, 'questionnaire');
+        upgrade_mod_savepoint(true, 2023101500, 'questionnaire');
     }
 
     return $result;
