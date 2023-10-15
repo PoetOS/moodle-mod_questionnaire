@@ -116,7 +116,7 @@ final class custom_completion_test extends \advanced_testcase {
     /**
      * Test for get_defined_custom_rules().
      *
-     * @covers \mod_questionnaire\completion\custom_completion
+     * @covers \mod_questionnaire\completion\custom_completion::get_defined_custom_rules
      */
     public function test_get_defined_custom_rules(): void {
         $rules = custom_completion::get_defined_custom_rules();
@@ -127,7 +127,7 @@ final class custom_completion_test extends \advanced_testcase {
     /**
      * Test for get_defined_custom_rule_descriptions().
      *
-     * @covers \mod_questionnaire\completion\custom_completion
+     * @covers \mod_questionnaire\completion\custom_completion::get_custom_rule_descriptions
      */
     public function test_get_custom_rule_descriptions(): void {
         // Get defined custom rules.
@@ -155,7 +155,7 @@ final class custom_completion_test extends \advanced_testcase {
     /**
      * Test for is_defined().
      *
-     * @covers \mod_questionnaire\completion\custom_completion
+     * @covers \mod_questionnaire\completion\custom_completion::is_defined
      */
     public function test_is_defined(): void {
         // Build a mock cm_info instance.
