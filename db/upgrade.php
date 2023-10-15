@@ -1015,7 +1015,21 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2022121600.02, 'questionnaire');
     }
 
-    if ($oldversion < 2022121600.03) {
+    if ($oldversion < 2022121601.01) {
+        // Add removeafter fields.
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('removeafter', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, 'progressbar');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2022121601.01, 'questionnaire');
+    }
+
+    if ($oldversion < 2023101500) {
         $questiontype = new stdClass();
         $questiontype->typeid = 12;
         $questiontype->type = 'File';
@@ -1045,21 +1059,21 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         }
 
         // Questionnaire savepoint reached.
-        upgrade_mod_savepoint(true, 2022121600.03, 'questionnaire');
+        upgrade_mod_savepoint(true, 2023101500, 'questionnaire');
     }
 
-    if ($oldversion < 2022121601.01) {
-        // Add removeafter fields.
-        $table = new xmldb_table('questionnaire');
-        $field = new xmldb_field('removeafter', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, 'progressbar');
-
-        // Conditionally launch add field.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+    if ($oldversion < 2023101501) {
+        // Upgrade files.itemid with questionnaire_response_file.id
+        $filesresponses = $DB->get_records('questionnaire_response_file', [], '', 'id,fileid');
+        $idmap = [];
+        foreach ($filesresponses as $fileresponse) {
+            $idmap[(int)$fileresponse->fileid] = (int)$fileresponse->id;
         }
-
-        // Questionnaire savepoint reached.
-        upgrade_mod_savepoint(true, 2022121601.01, 'questionnaire');
+        $filerecords = $DB->get_records_list('files', 'id', array_keys($idmap), 'id desc');
+        foreach ($filerecords as $filerecord) {
+            \mod_questionnaire\responsetype\file::fix_file_itemid($idmap[(int)$filerecord->id], $filerecord);
+        }
+        upgrade_mod_savepoint(true, 2023101501, 'questionnaire');
     }
 
     if ($oldversion < 2025041400.01) {

@@ -43,14 +43,19 @@ class file extends responsetype {
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id;
 
-            file_save_draft_area_files($val, $question->context->id, 'mod_questionnaire', 'file', $responsedata->rid);
+            file_save_draft_area_files($val, $question->context->id,
+                'mod_questionnaire', 'file', $val,
+                \mod_questionnaire\question\file::get_file_manager_option());
             $fs = get_file_storage();
-            $files = $fs->get_area_files($question->context->id, 'mod_questionnaire', 'file', $responsedata->rid,
+            $files = $fs->get_area_files($question->context->id, 'mod_questionnaire',
+                'file', $val,
                 "itemid, filepath, filename",
                 false);
-            $file = reset($files);
-            $record->value = $file->get_id();
-            $answers[] = answer\answer::create_from_data($record);
+            if (!empty($files)) {
+                $file = reset($files);
+                $record->value = $file->get_id();
+                $answers[] = answer\answer::create_from_data($record);
+            }
         }
         return $answers;
     }
@@ -130,10 +135,47 @@ class file extends responsetype {
             $record->question_id = $this->question->id;
             $record->fileid = intval(clean_text($response->answers[$this->question->id][0]->value));
 
-            return $DB->insert_record(static::response_table(), $record);
-        } else {
-            return false;
+            // When saving the draft file, the itemid was the same as the draftitemid. This must now be
+            // corrected to the primary key that is questionaire_response_file.id to have a correct reference.
+            $recordid = $DB->insert_record(static::response_table(), $record);
+            if ($recordid) {
+                $olditem = $DB->get_record('files', ['id' => $record->fileid], 'itemid');
+                if (!$olditem) {
+                    return false;
+                }
+                $siblings = $DB->get_records('files',
+                    ['component' => 'mod_questionnaire', 'itemid' => $olditem->itemid]);
+                foreach ($siblings as $sibling) {
+                    if (!self::fix_file_itemid($recordid, $sibling)) {
+                        return false;
+                    }
+                }
+                return $recordid;
+            }
         }
+        return false;
+    }
+
+    /**
+     * Update records in the table file with the new given itemid. To do this, the pathnamehash
+     * needs to be recalculated as well.
+     * @param int $recordid
+     * @param \stdClass $filerecord
+     * @return bool
+     * @throws \dml_exception
+     */
+    public static function fix_file_itemid(int $recordid, \stdClass $filerecord): bool {
+        global $DB;
+        if ((int)$filerecord->itemid === $recordid) {
+            return true; // Reference is already good, nothing to do.
+        }
+        $fs = get_file_storage();
+        $file = $fs->get_file_instance($filerecord);
+        $newhash = $fs->get_pathname_hash($filerecord->contextid, $filerecord->component,
+            $filerecord->filearea, $recordid, $file->get_filepath(), $file->get_filename());
+        $filerecord->itemid = $recordid;
+        $filerecord->pathnamehash = $newhash;
+        return $DB->update_record('files', $filerecord);
     }
 
     /**
@@ -259,23 +301,26 @@ class file extends responsetype {
                 $fs = get_file_storage();
                 $file = $fs->get_file_by_id($row->fileid);
 
-                $imageurl = moodle_url::make_pluginfile_url(
-                    $file->get_contextid(),
-                    $file->get_component(),
-                    $file->get_filearea(),
-                    $file->get_itemid(),
-                    $file->get_filepath(),
-                    $file->get_filename());
+                if ($file) {
+                // There is a file.
+                    $imageurl = moodle_url::make_pluginfile_url(
+                        $file->get_contextid(),
+                        $file->get_component(),
+                        $file->get_filearea(),
+                        $file->get_itemid(),
+                        $file->get_filepath(),
+                        $file->get_filename());
 
-                $response->text = \html_writer::link($imageurl, $file->get_filename());
-                if ($viewsingleresponse && $nonanonymous) {
-                    $rurl = $url . '&amp;rid=' . $row->rid . '&amp;individualresponse=1';
-                    $title = userdate($row->submitted);
-                    if (!isset($users[$row->userid])) {
-                        $users[$row->userid] = $DB->get_record('user', ['id' => $row->userid]);
+                    $response->text = \html_writer::link($imageurl, $file->get_filename());
+                    if ($viewsingleresponse && $nonanonymous) {
+                        $rurl = $url . '&amp;rid=' . $row->rid . '&amp;individualresponse=1';
+                        $title = userdate($row->submitted);
+                        if (!isset($users[$row->userid])) {
+                            $users[$row->userid] = $DB->get_record('user', ['id' => $row->userid]);
+                        }
+                        $response->respondent =
+                            '<a href="' . $rurl . '" title="' . $title . '">' . fullname($users[$row->userid]) . '</a>';
                     }
-                    $response->respondent =
-                        '<a href="' . $rurl . '" title="' . $title . '">' . fullname($users[$row->userid]) . '</a>';
                 } else {
                     $response->respondent = '';
                 }

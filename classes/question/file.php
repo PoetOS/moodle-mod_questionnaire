@@ -70,19 +70,23 @@ class file extends question {
     /**
      * Survey display output.
      *
-     * @param response $response
+     * @param \stdClass $formdata
      * @param object $descendantsdata
      * @param bool $blankquestionnaire
-     * @return object|string
+     * @return string
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
+    protected function question_survey_display($formdata, $descendantsdata, $blankquestionnaire = false) {
         global $CFG, $PAGE;
         require_once($CFG->libdir . '/filelib.php');
         $elname = 'q' . $this->id;
         $draftitemid = file_get_submitted_draft_itemid($elname);
         $component = 'mod_questionnaire';
-        $options = $this->get_file_manager_option();
-        file_prepare_draft_area($draftitemid, $this->context->id, $component, 'file', $this->id, $options);
+        $options = self::get_file_manager_option();
+        if ($draftitemid > 0) {
+            file_prepare_draft_area($draftitemid, $this->context->id, $component, 'file', $this->id, $options);
+        } else {
+            $draftitemid = file_get_unused_draft_itemid();
+        }
         // Filemanager form element implementation is far from optimal, we need to rework this if we ever fix it...
         require_once("$CFG->dirroot/lib/form/filemanager.php");
 
@@ -110,75 +114,74 @@ class file extends question {
      *
      * @return array
      */
-    private function get_file_manager_option() {
+    public static function get_file_manager_option() {
         return [
             'mainfile' => '',
             'subdirs' => false,
-            'accepted_types' => array('image', '.pdf')
+            'accepted_types' => array('image', '.pdf'),
+            'maxfiles' => 1,
         ];
     }
 
     /**
      * Response display output.
      *
-     * @param response $response
-     * @return object|string
+     * @param \stdClass $data
+     * @return string
      */
-    protected function response_survey_display($response) {
+    protected function response_survey_display($data) {
         global $PAGE, $CFG;
         require_once($CFG->libdir . '/filelib.php');
         require_once($CFG->libdir . '/resourcelib.php');
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
+        if (isset($data->answers[$this->id])) {
+            $answer = reset($data->answers[$this->id]);
         } else {
             return '';
         }
         $fs = get_file_storage();
         $file = $fs->get_file_by_id($answer->value);
+        $code = '';
 
-        $moodleurl = moodle_url::make_pluginfile_url(
-            $file->get_contextid(),
-            $file->get_component(),
-            $file->get_filearea(),
-            $file->get_itemid(),
-            $file->get_filepath(),
-            $file->get_filename());
+        if ($file) {
+            // There is a file.
+            $moodleurl = moodle_url::make_pluginfile_url(
+                $file->get_contextid(),
+                $file->get_component(),
+                $file->get_filearea(),
+                $file->get_itemid(),
+                $file->get_filepath(),
+                $file->get_filename()
+            );
 
-        $mimetype = $file->get_mimetype();
-        $title = '';
+            $mimetype = $file->get_mimetype();
+            $title = '';
 
-        $extension = resourcelib_get_extension($file->get_filename());
+            $mediamanager = core_media_manager::instance($PAGE);
+            $embedoptions = array(
+                core_media_manager::OPTION_TRUSTED => true,
+                core_media_manager::OPTION_BLOCK => true,
+            );
 
-        $mediamanager = core_media_manager::instance($PAGE);
-        $embedoptions = array(
-            core_media_manager::OPTION_TRUSTED => true,
-            core_media_manager::OPTION_BLOCK => true,
-        );
+            if (file_mimetype_in_typegroup($mimetype, 'web_image')) {  // It's an image.
+                $code = resourcelib_embed_image($moodleurl->out(), $title);
 
-        if (file_mimetype_in_typegroup($mimetype, 'web_image')) {  // It's an image.
-            $code = resourcelib_embed_image($moodleurl->out(), $title);
+            } else if ($mimetype === 'application/pdf') {
+                // PDF document.
+                $code = resourcelib_embed_pdf($moodleurl->out(), $title, get_string('view'));
 
-        } else if ($mimetype === 'application/pdf') {
-            // PDF document.
-            $code = resourcelib_embed_pdf($moodleurl->out(), $title, get_string('view'));
+            } else if ($mediamanager->can_embed_url($moodleurl, $embedoptions)) {
+                // Media (audio/video) file.
+                $code = $mediamanager->embed_url($moodleurl, $title, 0, 0, $embedoptions);
 
-        } else if ($mediamanager->can_embed_url($moodleurl, $embedoptions)) {
-            // Media (audio/video) file.
-            $code = $mediamanager->embed_url($moodleurl, $title, 0, 0, $embedoptions);
+            } else {
+                // We need a way to discover if we are loading remote docs inside an iframe.
+                $moodleurl->param('embed', 1);
 
-        } else {
-            // We need a way to discover if we are loading remote docs inside an iframe.
-            $moodleurl->param('embed', 1);
-
-            // Anything else - just try object tag enlarged as much as possible.
-            $code = resourcelib_embed_general($moodleurl, $title, get_string('view'), $mimetype);
+                // Anything else - just try object tag enlarged as much as possible.
+                $code = resourcelib_embed_general($moodleurl, $title, get_string('view'), $mimetype);
+            }
         }
-
-        $output = '';
-        $output .= '<div class="response text">';
-        $output .= $code;
-        $output .= '</div>';
-        return $output;
+        return '<div class="response text">' . $code . '</div>';
     }
 
     /**

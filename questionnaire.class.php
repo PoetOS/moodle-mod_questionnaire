@@ -29,7 +29,6 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[AllowDynamicProperties]
 class questionnaire {
     // Class Properties.
 
@@ -151,12 +150,12 @@ class questionnaire {
 
     /**
      * Adding questions to the object.
-     * @param bool $sid
+     * @param int $sid
      */
-    public function add_questions($sid = false) {
+    public function add_questions($sid = 0) {
         global $DB;
 
-        if ($sid === false) {
+        if ($sid === 0) {
             $sid = $this->sid;
         }
 
