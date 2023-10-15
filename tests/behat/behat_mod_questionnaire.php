@@ -32,7 +32,8 @@ use Behat\Behat\Context\Step\Given as Given,
     Behat\Gherkin\Node\TableNode as TableNode,
     Behat\Gherkin\Node\PyStringNode as PyStringNode,
     Behat\Mink\Exception\ExpectationException as ExpectationException;
-;
+
+#[\AllowDynamicProperties]
 /**
  * Questionnaire-related steps definitions.
  *

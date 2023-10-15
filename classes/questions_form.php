@@ -20,6 +20,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
+#[\AllowDynamicProperties]
 /**
  * The form definition class for questions.
  *

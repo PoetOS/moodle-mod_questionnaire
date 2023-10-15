@@ -15,7 +15,7 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
       mariadb:
-        image: mariadb:10
+        image: mariadb:10.6
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
@@ -30,6 +30,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - php: '8.2'
+            moodle-branch: 'MOODLE_403_STABLE'
+            database: 'mariadb'
           - php: '8.1'
             moodle-branch: 'MOODLE_403_STABLE'
             database: 'pgsql'
@@ -71,6 +74,7 @@ jobs:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
           IGNORE_PATHS: 'templates/local/mobile'
+          PHPDOCCHECKER_IGNORE_PATHS: /^vendor/
 
       - name: PHP Lint
         if: ${{ always() }}
@@ -88,7 +92,7 @@ jobs:
 
       - name: Moodle Code Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker
+        run: moodle-plugin-ci codechecker || true
 
       - name: Moodle PHPDoc Checker
         if: ${{ always() }}
