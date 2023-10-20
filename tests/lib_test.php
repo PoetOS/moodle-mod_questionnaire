@@ -40,7 +40,7 @@ class mod_questionnaire_lib_testcase extends advanced_testcase {
         $this->assertTrue(questionnaire_supports(FEATURE_BACKUP_MOODLE2));
         $this->assertFalse(questionnaire_supports(FEATURE_COMPLETION_TRACKS_VIEWS));
         $this->assertTrue(questionnaire_supports(FEATURE_COMPLETION_HAS_RULES));
-        $this->assertFalse(questionnaire_supports(FEATURE_GRADE_HAS_GRADE));
+        $this->assertTrue(questionnaire_supports(FEATURE_GRADE_HAS_GRADE));
         $this->assertFalse(questionnaire_supports(FEATURE_GRADE_OUTCOMES));
         $this->assertTrue(questionnaire_supports(FEATURE_GROUPINGS));
         $this->assertTrue(questionnaire_supports(FEATURE_GROUPS));
