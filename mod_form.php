@@ -199,9 +199,19 @@ class mod_questionnaire_mod_form extends moodleform_mod {
      * @return string[]
      */
     public function add_completion_rules() {
+        global $CFG;
+
+        // Changes for Moodle 4.3 - MDL-78516.
+        if ($CFG->branch < 403) {
+            $suffix = '';
+        } else {
+            $suffix = $this->get_suffix();
+        }
+
         $mform =& $this->_form;
-        $mform->addElement('checkbox', 'completionsubmit', '', get_string('completionsubmit', 'questionnaire'));
-        return array('completionsubmit');
+        $mform->addElement('checkbox', 'completionsubmit' . $suffix, '',
+            get_string('completionsubmit', 'questionnaire'));
+        return ['completionsubmit' . $suffix];
     }
 
     /**
