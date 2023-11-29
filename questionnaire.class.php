@@ -3066,7 +3066,8 @@ class questionnaire {
      * @param array $questionsbyposition
      * @param int $nbinfocols
      * @param int $numrespcols
-     * @param int $showincompletes
+     * @param array $options
+     * @param array $identityfields
      * @return array
      */
     protected function process_csv_row(array &$row,
@@ -3074,20 +3075,13 @@ class questionnaire {
                                        $currentgroupid,
                                        array &$questionsbyposition,
                                        $nbinfocols,
-                                       $numrespcols, $showincompletes = 0) {
+                                       $numrespcols,
+                                       $options,
+                                       $identityfields) {
         global $DB;
 
-        static $config = null;
         // If using an anonymous response, map users to unique user numbers so that number of unique anonymous users can be seen.
         static $anonumap = [];
-
-        if ($config === null) {
-            $config = get_config('questionnaire', 'downloadoptions');
-        }
-        $options = empty($config) ? array() : explode(',', $config);
-        if ($showincompletes == 1) {
-            $options[] = 'complete';
-        }
 
         $positioned = [];
         $user = new stdClass();
@@ -3184,6 +3178,9 @@ class questionnaire {
         if (in_array('complete', $options)) {
             array_push($positioned, $resprow->complete);
         }
+        foreach ($identityfields as $field) {
+            array_push($positioned, $resprow->$field);
+        }
 
         for ($c = $nbinfocols; $c < $numrespcols; $c++) {
             if (isset($row[$c])) {
@@ -3234,10 +3231,17 @@ class questionnaire {
             if (in_array($option, array('response', 'submitted', 'id'))) {
                 $columns[] = get_string($option, 'questionnaire');
                 $types[] = 0;
+            } else if ($option == 'useridentityfields') {
+                    // Ignore option.
+                    continue;
             } else {
                 $columns[] = get_string($option);
                 $types[] = 1;
             }
+        }
+        $identityfields = $this->get_identity_fields($options);
+        foreach ($identityfields as $field) {
+            $columns[] = \core_user\fields::get_display_name($field);
         }
         $nbinfocols = count($columns);
 
@@ -3469,6 +3473,7 @@ class questionnaire {
         if ($rankaverages) {
             $averagerow = [];
         }
+        $useridentityfields = [];
         foreach ($allresponsesrs as $responserow) {
             $rid = $responserow->rid;
             $qid = $responserow->question_id;
@@ -3476,6 +3481,21 @@ class questionnaire {
             // It's possible for a response to exist for a deleted question. Ignore these.
             if (!isset($this->questions[$qid])) {
                 continue;
+            }
+
+            if (!empty($identityfields)) {
+                // Get identity fields for user.
+                if (isset($useridentityfields[$responserow->userid])) {
+                    $customfields = $useridentityfields[$responserow->userid];
+                } else {
+                    $customfields = self::get_user_identity_fields($this->context, $responserow->userid);
+                    $useridentityfields[$responserow->userid] = $customfields;
+                }
+
+                // Set profile fields for user in response row.
+                foreach ($identityfields as $field) {
+                    $responserow->{$field} = $customfields->{$field};
+                }
             }
 
             $question = $this->questions[$qid];
@@ -3494,7 +3514,7 @@ class questionnaire {
 
             if ($prevresprow !== false && $prevresprow->rid !== $rid) {
                 $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition,
-                    $nbinfocols, $numrespcols, $showincompletes);
+                    $nbinfocols, $numrespcols, $options, $identityfields);
                 $row = [];
             }
 
@@ -3576,7 +3596,7 @@ class questionnaire {
         if ($prevresprow !== false) {
             // Add final row to output. May not exist if no response data was ever present.
             $output[] = $this->process_csv_row($row, $prevresprow, $currentgroupid, $questionsbyposition,
-                $nbinfocols, $numrespcols, $showincompletes);
+                $nbinfocols, $numrespcols, $options, $identityfields);
         }
 
         // Add averages row if appropriate.
@@ -4120,5 +4140,40 @@ class questionnaire {
         }
 
         return $areas;
+    }
+
+    /**
+     *  Gets the identity fields.
+     *
+     * @param array $options
+     * @return array
+     */
+    protected function get_identity_fields($options) {
+        $fields = !in_array('useridentityfields', $options) || $this->respondenttype == 'anonymous' ? [] :
+            \core_user\fields::get_identity_fields($this->context);
+        return $fields;
+    }
+
+    /**
+     *  Gets the identity fields values for a user.
+     *
+     * @param object $context
+     * @param int $userid
+     * @return array
+     */
+    public static function get_user_identity_fields($context, $userid) {
+        global $DB;
+
+        $fields = \core_user\fields::for_identity($context);
+        [
+            'selects' => $selects,
+            'joins' => $joins,
+            'params' => $params
+        ] = (array)$fields->get_sql('u', false, '', '', false);
+        $sql = "SELECT $selects
+                FROM {user} u $joins
+                WHERE u.id = ?";
+        $row = $DB->get_record_sql($sql, array_merge($params, [$userid]));
+        return $row;
     }
 }
