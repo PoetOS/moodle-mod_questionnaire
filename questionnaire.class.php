@@ -122,12 +122,12 @@ class questionnaire {
 
     /**
      * Adding questions to the object.
-     * @param bool $sid
+     * @param int $sid
      */
-    public function add_questions($sid = false) {
+    public function add_questions($sid = 0) {
         global $DB;
 
-        if ($sid === false) {
+        if ($sid === 0) {
             $sid = $this->sid;
         }
 

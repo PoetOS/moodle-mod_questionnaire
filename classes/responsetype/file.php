@@ -43,9 +43,9 @@ class file extends responsetype {
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id;
 
-            file_save_draft_area_files($val, $question->context->id, 'mod_questionnaire', 'file', $responsedata->rid);
+            file_save_draft_area_files($val, $question->context->id, 'mod_questionnaire', 'file', $question->id);
             $fs = get_file_storage();
-            $files = $fs->get_area_files($question->context->id, 'mod_questionnaire', 'file', $responsedata->rid,
+            $files = $fs->get_area_files($question->context->id, 'mod_questionnaire', 'file', $question->id,
                 "itemid, filepath, filename",
                 false);
             $file = reset($files);
