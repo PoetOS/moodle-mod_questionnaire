@@ -70,12 +70,12 @@ class file extends question {
     /**
      * Survey display output.
      *
-     * @param response $response
+     * @param \stdClass $formdata
      * @param object $descendantsdata
      * @param bool $blankquestionnaire
-     * @return object|string
+     * @return string
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
+    protected function question_survey_display($formdata, $descendantsdata, $blankquestionnaire = false) {
         global $CFG, $PAGE;
         require_once($CFG->libdir . '/filelib.php');
         $elname = 'q' . $this->id;
@@ -114,27 +114,29 @@ class file extends question {
         return [
             'mainfile' => '',
             'subdirs' => false,
-            'accepted_types' => array('image', '.pdf')
+            'accepted_types' => array('image', '.pdf'),
+            'maxfiles' => 1,
         ];
     }
 
     /**
      * Response display output.
      *
-     * @param response $response
-     * @return object|string
+     * @param \stdClass $data
+     * @return string
      */
-    protected function response_survey_display($response) {
+    protected function response_survey_display($data) {
         global $PAGE, $CFG;
         require_once($CFG->libdir . '/filelib.php');
         require_once($CFG->libdir . '/resourcelib.php');
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
+        if (isset($data->answers[$this->id])) {
+            $answer = reset($data->answers[$this->id]);
         } else {
             return '';
         }
         $fs = get_file_storage();
         $file = $fs->get_file_by_id($answer->value);
+        $code = '';
 
         if ($file) {
             // There is a file.
@@ -149,8 +151,6 @@ class file extends question {
 
             $mimetype = $file->get_mimetype();
             $title = '';
-
-            $extension = resourcelib_get_extension($file->get_filename());
 
             $mediamanager = core_media_manager::instance($PAGE);
             $embedoptions = array(
@@ -177,11 +177,7 @@ class file extends question {
                 $code = resourcelib_embed_general($moodleurl, $title, get_string('view'), $mimetype);
             }
         }
-        $output = '';
-        $output .= '<div class="response text">';
-        $output .= $code;
-        $output .= '</div>';
-        return $output;
+        return '<div class="response text">' . $code . '</div>';
     }
 
     /**

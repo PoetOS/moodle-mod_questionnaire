@@ -17,7 +17,7 @@
 namespace mod_questionnaire;
 
 /**
- * Defines the file stoeage class for questionnaire.
+ * Defines the file storage class for questionnaire.
  * @package mod_questionnaire
  * @copyright  2020 onwards Mike Churchward (mike.churchward@poetopensource.org)
  * @author Mike Churchward
