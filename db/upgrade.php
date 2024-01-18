@@ -1046,6 +1046,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         foreach ($filerecords as $filerecord) {
             \mod_questionnaire\responsetype\file::fix_file_itemid($idmap[(int)$filerecord->id], $filerecord);
         }
+        // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2023101501, 'questionnaire');
     }
 
