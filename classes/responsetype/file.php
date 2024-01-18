@@ -48,9 +48,11 @@ class file extends responsetype {
             $files = $fs->get_area_files($question->context->id, 'mod_questionnaire', 'file', $question->id,
                 "itemid, filepath, filename",
                 false);
-            $file = reset($files);
-            $record->value = $file->get_id();
-            $answers[] = answer\answer::create_from_data($record);
+            if (!empty($files)) {
+                $file = reset($files);
+                $record->value = $file->get_id();
+                $answers[] = answer\answer::create_from_data($record);
+            }
         }
         return $answers;
     }
