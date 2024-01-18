@@ -1063,7 +1063,7 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
     }
 
     if ($oldversion < 2023101501) {
-        // Upgrade files.itemid with questionnaire_response_file.id
+        // Upgrade files.itemid with questionnaire_response_file.id.
         $filesresponses = $DB->get_records('questionnaire_response_file', [], '', 'id,fileid');
         $idmap = [];
         foreach ($filesresponses as $fileresponse) {
@@ -1073,6 +1073,7 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         foreach ($filerecords as $filerecord) {
             \mod_questionnaire\responsetype\file::fix_file_itemid($idmap[(int)$filerecord->id], $filerecord);
         }
+        // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2023101501, 'questionnaire');
     }
 
