@@ -81,7 +81,7 @@ class file extends question {
         $elname = 'q' . $this->id;
         $draftitemid = file_get_submitted_draft_itemid($elname);
         $component = 'mod_questionnaire';
-        $options = $this->get_file_manager_option();
+        $options = self::get_file_manager_option();
         if ($draftitemid > 0) {
             file_prepare_draft_area($draftitemid, $this->context->id, $component, 'file', $this->id, $options);
         } else {
@@ -114,7 +114,7 @@ class file extends question {
      *
      * @return array
      */
-    private function get_file_manager_option() {
+    public static function get_file_manager_option() {
         return [
             'mainfile' => '',
             'subdirs' => false,

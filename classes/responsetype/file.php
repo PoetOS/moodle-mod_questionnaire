@@ -43,9 +43,12 @@ class file extends responsetype {
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id;
 
-            file_save_draft_area_files($val, $question->context->id, 'mod_questionnaire', 'file', $question->id);
+            file_save_draft_area_files($val, $question->context->id,
+                'mod_questionnaire', 'file', $val,
+                \mod_questionnaire\question\file::get_file_manager_option());
             $fs = get_file_storage();
-            $files = $fs->get_area_files($question->context->id, 'mod_questionnaire', 'file', $question->id,
+            $files = $fs->get_area_files($question->context->id, 'mod_questionnaire',
+                'file', $val,
                 "itemid, filepath, filename",
                 false);
             if (!empty($files)) {
@@ -132,10 +135,44 @@ class file extends responsetype {
             $record->question_id = $this->question->id;
             $record->fileid = intval(clean_text($response->answers[$this->question->id][0]->value));
 
-            return $DB->insert_record(static::response_table(), $record);
-        } else {
-            return false;
+            // When saving the draft file, the itemid was the same as the draftfileid. This must now be
+            // corrected to the primary key that is questionaire_response_file.id to have a correct reference.
+            $recordid = $DB->insert_record(static::response_table(), $record);
+            if ($recordid) {
+                $olditem = $DB->get_record('files', ['id' => $record->fileid], 'itemid');
+                if (!$olditem) {
+                    return false;
+                }
+                $siblings = $DB->get_records('files',
+                    ['component' => 'mod_questionnaire', 'itemid' => $olditem->itemid]);
+                foreach ($siblings as $sibling) {
+                    if (!$this->fix_file_itemid($recordid, $sibling)) {
+                        return false;
+                    }
+                }
+                return $recordid;
+            }
         }
+        return false;
+    }
+
+    /**
+     * Update records in the table file with the new given itemid. To do this, the pathnamehash
+     * needs to be recalculated as well.
+     * @param int $recordid
+     * @param \stdClass $filerecord
+     * @return bool
+     * @throws \dml_exception
+     */
+    protected function fix_file_itemid(int $recordid, \stdClass $filerecord): bool {
+        global $DB;
+        $fs = get_file_storage();
+        $file = $fs->get_file_instance($filerecord);
+        $newhash = $fs->get_pathname_hash($filerecord->contextid, $filerecord->component,
+            $filerecord->filearea, $recordid, $file->get_filepath(), $file->get_filename());
+        $filerecord->itemid = $recordid;
+        $filerecord->pathnamehash = $newhash;
+        return $DB->update_record('files', $filerecord);
     }
 
     /**

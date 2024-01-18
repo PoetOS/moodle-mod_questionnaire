@@ -548,7 +548,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
             return false;
         }
     } else if ($filearea == 'file') {
-        if (!$DB->record_exists('questionnaire_response_file', ['response_id' => $componentid])) {
+        if (!$DB->record_exists('questionnaire_response_file', ['id' => $componentid])) {
             return false;
         }
     } else {
