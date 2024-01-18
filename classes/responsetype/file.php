@@ -135,7 +135,7 @@ class file extends responsetype {
             $record->question_id = $this->question->id;
             $record->fileid = intval(clean_text($response->answers[$this->question->id][0]->value));
 
-            // When saving the draft file, the itemid was the same as the draftfileid. This must now be
+            // When saving the draft file, the itemid was the same as the draftitemid. This must now be
             // corrected to the primary key that is questionaire_response_file.id to have a correct reference.
             $recordid = $DB->insert_record(static::response_table(), $record);
             if ($recordid) {
@@ -146,7 +146,7 @@ class file extends responsetype {
                 $siblings = $DB->get_records('files',
                     ['component' => 'mod_questionnaire', 'itemid' => $olditem->itemid]);
                 foreach ($siblings as $sibling) {
-                    if (!$this->fix_file_itemid($recordid, $sibling)) {
+                    if (!self::fix_file_itemid($recordid, $sibling)) {
                         return false;
                     }
                 }
@@ -164,8 +164,11 @@ class file extends responsetype {
      * @return bool
      * @throws \dml_exception
      */
-    protected function fix_file_itemid(int $recordid, \stdClass $filerecord): bool {
+    public static function fix_file_itemid(int $recordid, \stdClass $filerecord): bool {
         global $DB;
+        if ((int)$filerecord->itemid === $recordid) {
+            return true; // Reference is already good, nothing to do.
+        }
         $fs = get_file_storage();
         $file = $fs->get_file_instance($filerecord);
         $newhash = $fs->get_pathname_hash($filerecord->contextid, $filerecord->component,
