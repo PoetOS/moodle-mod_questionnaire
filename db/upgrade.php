@@ -1031,7 +1031,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
     }
 
     if ($oldversion < 2023101501) {
-        // Upgrade files.itemid with questionnaire_response_file.id
+        // Upgrade files.itemid with questionnaire_response_file.id.
         $filesresponses = $DB->get_records('questionnaire_response_file', [], '', 'id,fileid');
         $idmap = [];
         foreach ($filesresponses as $fileresponse) {

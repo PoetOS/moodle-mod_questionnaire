@@ -302,7 +302,7 @@ class file extends responsetype {
                 $file = $fs->get_file_by_id($row->fileid);
 
                 if ($file) {
-                // There is a file.
+                    // There is a file.
                     $imageurl = moodle_url::make_pluginfile_url(
                         $file->get_contextid(),
                         $file->get_component(),
