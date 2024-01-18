@@ -82,7 +82,11 @@ class file extends question {
         $draftitemid = file_get_submitted_draft_itemid($elname);
         $component = 'mod_questionnaire';
         $options = $this->get_file_manager_option();
-        file_prepare_draft_area($draftitemid, $this->context->id, $component, 'file', $this->id, $options);
+        if ($draftitemid > 0) {
+            file_prepare_draft_area($draftitemid, $this->context->id, $component, 'file', $this->id, $options);
+        } else {
+            $draftitemid = file_get_unused_draft_itemid();
+        }
         // Filemanager form element implementation is far from optimal, we need to rework this if we ever fix it...
         require_once("$CFG->dirroot/lib/form/filemanager.php");
 
