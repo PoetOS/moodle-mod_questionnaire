@@ -14,18 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * PHPUnit questionnaire generator tests
- *
- * @package    mod_questionnaire
- * @copyright  2015 Mike Churchward (mike@churchward.ca)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace mod_questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
-
-use mod_questionnaire\question\question;
 
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
@@ -34,10 +25,19 @@ require_once($CFG->dirroot . '/mod/questionnaire/tests/questiontypes_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
- * Unit tests for questionnaire_responsetypes_testcase.
- * @group mod_questionnaire
+ * PHPUnit questionnaire generator tests
+ *
+ * @package    mod_questionnaire
+ * @copyright  2015 Mike Churchward (mike@churchward.ca)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
+class responsetypes_test extends \advanced_testcase {
+    /**
+     * Test case for the create_response_boolean function.
+     *
+     * @covers \mod_questionnaire_generator::create_question_response
+     */
     public function test_create_response_boolean() {
         global $DB;
 
@@ -64,6 +64,11 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('y', $booleanresponse->choice_id);
     }
 
+    /**
+     * Test case for the create_response_text function.
+     *
+     * @covers \mod_questionnaire_generator::create_question_response
+     */
     public function test_create_response_text() {
         global $DB;
 
@@ -91,6 +96,11 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('This is my essay.', $textresponse->response);
     }
 
+    /**
+     * Test case for the create_response_slider function.
+     *
+     * @covers \mod_questionnaire_generator::create_question_response
+     */
     public function test_create_response_slider() {
         global $DB;
 
@@ -118,6 +128,11 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals(5, $textresponse->response);
     }
 
+    /**
+     * Test case for the create_response_date function.
+     *
+     * @covers \mod_questionnaire_generator::create_question_response
+     */
     public function test_create_response_date() {
         global $DB;
 
@@ -146,6 +161,11 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('2015-01-27', $dateresponse->response);
     }
 
+    /**
+     * Test case for the create_response_single function.
+     *
+     * @covers \mod_questionnaire_generator::create_question_response
+     */
     public function test_create_response_single() {
         global $DB;
 
@@ -215,6 +235,11 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('Forty-four', $otherresponse->response);
     }
 
+    /**
+     * Test case for the create_response_multiple function.
+     *
+     * @covers \mod_questionnaire_generator::create_question_response
+     */
     public function test_create_response_multiple() {
         global $DB;
 
@@ -270,6 +295,11 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('Forty-four', $otherresponse->response);
     }
 
+    /**
+     * Test case for the create_response_rank function.
+     *
+     * @covers \mod_questionnaire_generator::create_question_response
+     */
     public function test_create_response_rank() {
         global $DB;
 

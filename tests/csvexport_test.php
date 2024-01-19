@@ -14,15 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire;
+
 /**
  * Performance test for questionnaire module.
+ *
  * @package mod_questionnaire
  * @group mod_questionnaire
  * @author     Guy Thomas
  * @copyright Copyright (c) 2015 Moodlerooms Inc. (http://www.moodlerooms.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_questionnaire_csvexport_test extends advanced_testcase {
+class csvexport_test extends \advanced_testcase {
 
     public function setUp(): void {
         global $CFG;
@@ -51,6 +54,11 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
         return $lines;
     }
 
+    /**
+     * Test case for the csvexport method.
+     *
+     * @covers ::csvexport
+     */
     public function test_csvexport() {
         $this->resetAfterTest();
         $dg = $this->getDataGenerator();
@@ -61,7 +69,7 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
             list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-            $questionnaireinst = new questionnaire($course, $cm, 0, $questionnaire);
+            $questionnaireinst = new \questionnaire($course, $cm, 0, $questionnaire);
 
             // Test for only complete responses.
             $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 0));

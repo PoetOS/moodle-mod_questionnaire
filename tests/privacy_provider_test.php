@@ -14,14 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy test for the mod questionnaire.
- *
- * @package    mod_questionnaire
- * @copyright  2019, onwards Poet
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace mod_questionnaire;
 
 use \mod_questionnaire\privacy\provider;
 
@@ -34,7 +27,7 @@ use \mod_questionnaire\privacy\provider;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @group      mod_questionnaire
  */
-class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_testcase {
+class privacy_provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Tests set up.
      */
@@ -45,6 +38,8 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
 
     /**
      * Check that the expected context is returned if there is any user data for this module.
+     *
+     * @covers \mod_questionnaire\privacy\provider::get_contexts_for_userid
      */
     public function test_get_contexts_for_userid() {
         global $DB;
@@ -69,6 +64,8 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
 
     /**
      * Test that only users with a questionnaire context are fetched.
+     *
+     * @covers \mod_questionnaire\privacy\provider::get_users_in_context
      */
     public function test_get_users_in_context() {
         global $DB;
@@ -81,7 +78,7 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
         list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-        $cmcontext = context_module::instance($cm->id);
+        $cmcontext = \context_module::instance($cm->id);
 
         $userlist = new \core_privacy\local\request\userlist($cmcontext, 'mod_questionnaire');
 
@@ -93,13 +90,15 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
         $this->assertEquals($expected, $actual);
 
         // The list of users for other contexts should not return any users.
-        $userlist = new \core_privacy\local\request\userlist(context_system::instance(), 'mod_questionnaire');
+        $userlist = new \core_privacy\local\request\userlist(\context_system::instance(), 'mod_questionnaire');
         provider::get_users_in_context($userlist);
         $this->assertCount(0, $userlist);
     }
 
     /**
      * Test that user data is exported correctly.
+     *
+     * @covers \mod_questionnaire\privacy\provider::export_user_data
      */
     public function test_export_user_data() {
         global $DB;
@@ -112,12 +111,12 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
         list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-        $cmcontext = context_module::instance($cm->id);
+        $cmcontext = \context_module::instance($cm->id);
 
         $writer = \core_privacy\local\request\writer::with_context($cmcontext);
         $this->assertFalse($writer->has_any_data());
 
-        $approvedlist = new core_privacy\local\request\approved_contextlist($user, 'mod_questionnaire', [$cmcontext->id]);
+        $approvedlist = new \core_privacy\local\request\approved_contextlist($user, 'mod_questionnaire', [$cmcontext->id]);
         provider::export_user_data($approvedlist);
         $data = $writer->get_data([]);
 
@@ -135,6 +134,8 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
 
     /**
      * Test deleting all user data for a specific context.
+     *
+     * @covers \mod_questionnaire\privacy\provider::delete_data_for_all_users_in_context
      */
     public function test_delete_data_for_all_users_in_context() {
         global $DB;
@@ -147,7 +148,7 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
         list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-        $cmcontext = context_module::instance($cm->id);
+        $cmcontext = \context_module::instance($cm->id);
 
         // Get all accounts. There should be two.
         $this->assertCount(2, $DB->get_records('questionnaire_response', []));
@@ -159,6 +160,8 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
 
     /**
      * This should work identical to the above test.
+     *
+     * @covers \mod_questionnaire\privacy\provider::delete_data_for_user
      */
     public function test_delete_data_for_user() {
         global $DB;
@@ -171,7 +174,7 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
         list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-        $cmcontext = context_module::instance($cm->id);
+        $cmcontext = \context_module::instance($cm->id);
 
         // Get all accounts. There should be two.
         $this->assertCount(2, $DB->get_records('questionnaire_response', []));
@@ -188,6 +191,8 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
 
     /**
      * Test that data for users in approved userlist is deleted.
+     *
+     * @covers \mod_questionnaire\privacy\provider::delete_data_for_users
      */
     public function test_delete_data_for_users() {
         global $DB;
@@ -201,7 +206,7 @@ class mod_questionnaire_privacy_testcase extends \core_privacy\tests\provider_te
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
         list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-        $cmcontext = context_module::instance($cm->id);
+        $cmcontext = \context_module::instance($cm->id);
 
         $approveduserlist = new \core_privacy\local\request\approved_userlist($cmcontext, 'questionnaire', [$user->id, $user3->id]);
 

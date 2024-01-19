@@ -14,14 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * PHPUnit questionnaire generator tests
- *
- * @package    mod_questionnaire
- * @copyright  2015 Mike Churchward (mike@churchward.ca)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace mod_questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -32,23 +25,47 @@ require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
- * Unit tests for questionnaire_questiontypes_testcase.
- * @group mod_questionnaire
+ * PHPUnit questionnaire questiontypes tests
+ *
+ * @package    mod_questionnaire
+ * @copyright  2015 Mike Churchward (mike@churchward.ca)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
+class questiontypes_test extends \advanced_testcase {
+    /**
+     * Test case for the create_test_question_with_choices function for checkbox questions.
+     *
+     * @covers ::create_test_question_with_choices
+     */
     public function test_create_question_checkbox() {
         $this->create_test_question_with_choices(QUESCHECK,
             '\\mod_questionnaire\\question\\check', array('content' => 'Check one'));
     }
 
+    /**
+     * Test case for the create_test_question function for date questions.
+     *
+     * @covers ::create_test_question
+     */
     public function test_create_question_date() {
         $this->create_test_question(QUESDATE, '\\mod_questionnaire\\question\\date', array('content' => 'Enter a date'));
     }
 
+    /**
+     * Test case for the create_test_question_with_choices function for dropdown questions.
+     *
+     * @covers ::create_test_question_with_choices
+     */
     public function test_create_question_dropdown() {
         $this->create_test_question_with_choices(QUESDROP, '\\mod_questionnaire\\question\\drop', array('content' => 'Select one'));
     }
 
+    /**
+     * Test case for the create_test_question function for essay questions.
+     *
+     * @covers ::create_test_question
+     */
     public function test_create_question_essay() {
         $questiondata = array(
             'content' => 'Enter an essay',
@@ -57,11 +74,21 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         $this->create_test_question(QUESESSAY, '\\mod_questionnaire\\question\\essay', $questiondata);
     }
 
+    /**
+     * Test case for the create_test_question function for sectiontext questions.
+     *
+     * @covers ::create_test_question
+     */
     public function test_create_question_sectiontext() {
         $this->create_test_question(QUESSECTIONTEXT, '\\mod_questionnaire\\question\\sectiontext',
             array('name' => null, 'content' => 'This a section label.'));
     }
 
+    /**
+     * Test case for the create_test_question function for numeric questions.
+     *
+     * @covers ::create_test_question
+     */
     public function test_create_question_numeric() {
         $questiondata = array(
             'content' => 'Enter a number',
@@ -70,15 +97,30 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         $this->create_test_question(QUESNUMERIC, '\\mod_questionnaire\\question\\numerical', $questiondata);
     }
 
+    /**
+     * Test case for the create_test_question_with_choices function for radiobuttons questions.
+     *
+     * @covers ::create_test_question_with_choices
+     */
     public function test_create_question_radiobuttons() {
         $this->create_test_question_with_choices(QUESRADIO,
             '\\mod_questionnaire\\question\\radio', array('content' => 'Choose one'));
     }
 
+    /**
+     * Test case for the create_test_question_with_choices function for ratescale questions.
+     *
+     * @covers ::create_test_question_with_choices
+     */
     public function test_create_question_ratescale() {
         $this->create_test_question_with_choices(QUESRATE, '\\mod_questionnaire\\question\\rate', array('content' => 'Rate these'));
     }
 
+    /**
+     * Test case for the create_test_question function for textbox questions.
+     *
+     * @covers ::create_test_question
+     */
     public function test_create_question_textbox() {
         $questiondata = array(
             'content' => 'Enter some text',
@@ -87,16 +129,25 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         $this->create_test_question(QUESTEXT, '\\mod_questionnaire\\question\\text', $questiondata);
     }
 
+    /**
+     * Test case for the create_test_question function for slider questions.
+     *
+     * @covers ::create_test_question
+     */
     public function test_create_question_slider() {
         $questiondata = array(
                 'content' => 'Enter a number');
         $this->create_test_question(QUESSLIDER, '\\mod_questionnaire\\question\\slider', $questiondata);
     }
 
+    /**
+     * Test case for the create_test_question function for yesno questions.
+     *
+     * @covers ::create_test_question
+     */
     public function test_create_question_yesno() {
         $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', array('content' => 'Enter yes or no'));
     }
-
 
     // General tests to call from specific tests above.
 
@@ -143,7 +194,7 @@ class mod_questionnaire_questiontypes_testcase extends advanced_testcase {
         }
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, true);
+        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, true);
         $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));

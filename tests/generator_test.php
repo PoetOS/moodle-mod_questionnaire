@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire;
+
 /**
  * PHPUnit questionnaire generator tests
  *
@@ -22,12 +24,12 @@
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-/**
- * Unit tests for questionnaire_generator_testcase.
- * @group mod_questionnaire
- */
-class mod_questionnaire_generator_testcase extends advanced_testcase {
+class generator_test extends \advanced_testcase {
+    /**
+     * Test case for the create_instance function.
+     *
+     * @covers \mod_questionnaire_generator::create_instance
+     */
     public function test_create_instance() {
         global $DB;
 
@@ -49,7 +51,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $this->assertEquals('questionnaire', $cm->modname);
         $this->assertEquals($course->id, $cm->course);
 
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
         $this->assertEquals($questionnaire->cmid, $context->instanceid);
 
         $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid));
@@ -62,6 +64,11 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         // Should test event creation if open dates and close dates are specified?
     }
 
+    /**
+     * Test case for the create_content function.
+     *
+     * @covers \mod_questionnaire_generator::create_content
+     */
     public function test_create_content() {
         global $DB;
 
@@ -71,7 +78,7 @@ class mod_questionnaire_generator_testcase extends advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(array('course' => $course->id));
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, false);
+        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, false);
 
         $newcontent = array(
             'title' => 'New title',
