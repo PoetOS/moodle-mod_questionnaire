@@ -92,7 +92,7 @@ jobs:
 
       - name: Moodle Code Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker || true
+        run: moodle-plugin-ci codechecker
 
       - name: Moodle PHPDoc Checker
         if: ${{ always() }}

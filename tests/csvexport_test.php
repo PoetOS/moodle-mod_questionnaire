@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Performance test for questionnaire module.
- * @package mod_questionnaire
- * @group mod_questionnaire
- * @author     Guy Thomas
- * @copyright Copyright (c) 2015 Moodlerooms Inc. (http://www.moodlerooms.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire;
 
 /**
@@ -59,9 +50,9 @@ class csvexport_test extends \advanced_testcase {
     }
 
     /**
-     * Tests the CSV export.
+     * Test case for the csvexport method.
      *
-     * @covers \questionnaire::generate_csv
+     * @covers ::csvexport
      */
     public function test_csvexport() {
         $this->resetAfterTest();

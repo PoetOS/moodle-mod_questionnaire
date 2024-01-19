@@ -14,20 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * PHPUnit questionnaire generator tests
- *
- * @package    mod_questionnaire
- * @copyright  2015 Mike Churchward (mike@churchward.ca)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire;
-
-use mod_questionnaire\question\question;
-
-defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
@@ -36,17 +23,18 @@ require_once($CFG->dirroot . '/mod/questionnaire/tests/questiontypes_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
- * Unit tests for questionnaire_responsetypes_testcase.
- * @group mod_questionnaire
+ * PHPUnit questionnaire generator tests
+ *
+ * @package    mod_questionnaire
+ * @copyright  2015 Mike Churchward (mike@churchward.ca)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class responsetypes_test extends \advanced_testcase {
     /**
-     * Test responses in a yes/no question.
+     * Test case for the create_response_boolean function.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \mod_questionnaire\question\yesno
+     * @covers \mod_questionnaire_generator::create_question_response
      */
     public function test_create_response_boolean() {
         global $DB;
@@ -75,12 +63,9 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test responses in a essay question.
+     * Test case for the create_response_text function.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \mod_questionnaire\question\essay
+     * @covers \mod_questionnaire_generator::create_question_response
      */
     public function test_create_response_text() {
         global $DB;
@@ -110,12 +95,9 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test responses in a slider question.
+     * Test case for the create_response_slider function.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \mod_questionnaire\question\slider
+     * @covers \mod_questionnaire_generator::create_question_response
      */
     public function test_create_response_slider() {
         global $DB;
@@ -145,12 +127,9 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test responses in a date question.
+     * Test case for the create_response_date function.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \mod_questionnaire\question\date
+     * @covers \mod_questionnaire_generator::create_question_response
      */
     public function test_create_response_date() {
         global $DB;
@@ -181,12 +160,9 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test responses in a single choice radio question.
+     * Test case for the create_response_single function.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \mod_questionnaire\question\radio
+     * @covers \mod_questionnaire_generator::create_question_response
      */
     public function test_create_response_single() {
         global $DB;
@@ -258,12 +234,9 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test responses in a multiple choices question.
+     * Test case for the create_response_multiple function.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \mod_questionnaire\question\rate
+     * @covers \mod_questionnaire_generator::create_question_response
      */
     public function test_create_response_multiple() {
         global $DB;
@@ -321,12 +294,9 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test response's ranks in a rate question.
+     * Test case for the create_response_rank function.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \mod_questionnaire\question\rate
+     * @covers \mod_questionnaire_generator::create_question_response
      */
     public function test_create_response_rank() {
         global $DB;

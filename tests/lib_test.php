@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * PHPUnit questionnaire generator tests
- *
- * @package    mod_questionnaire
- * @copyright  2015 Mike Churchward (mike@churchward.ca)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_questionnaire;
 
 use mod_questionnaire\question\question;
@@ -34,17 +25,19 @@ require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/classes/question/question.php');
 
 /**
- * Unit tests for questionnaire_lib_testcase.
- * @group mod_questionnaire
+ * PHPUnit questionnaire lib tests
+ *
+ * @package    mod_questionnaire
+ * @copyright  2015 Mike Churchward (mike@churchward.ca)
+ * @author     Mike Churchward
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class lib_test extends \advanced_testcase {
 
     /**
-     * Test for questionnaire_supports.
+     * Test case for the questionnaire_supports function.
      *
-     * @return void
-     *
-     * @covers \questionnaire_supports
+     * @covers ::questionnaire_supports
      */
     public function test_questionnaire_supports() {
         $this->assertTrue(questionnaire_supports(FEATURE_BACKUP_MOODLE2));
@@ -60,11 +53,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_get_extra_capabilities.
+     * Test case for the questionnaire_get_extra_capabilities function.
      *
-     * @return void
-     *
-     * @covers \questionnaire_get_extra_capabilities
+     * @covers ::questionnaire_get_extra_capabilities
      */
     public function test_questionnaire_get_extra_capabilities() {
         $caps = questionnaire_get_extra_capabilities();
@@ -74,12 +65,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_add_instance.
+     * Test case for the questionnaire_add_instance function.
      *
-     * @return void
-     * @throws moodle_exception
-     *
-     * @covers \questionnaire_add_instance
+     * @covers ::questionnaire_add_instance
      */
     public function test_add_instance() {
         $this->resetAfterTest();
@@ -112,12 +100,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_update_instance().
+     * Test case for the questionnaire_update_instance function.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \questionnaire_update_instance
+     * @covers ::questionnaire_update_instance
      */
     public function test_update_instance() {
         global $DB;
@@ -176,13 +161,9 @@ class lib_test extends \advanced_testcase {
 
     /**
      * Test for questionnaire_delete_instance().
-     *
      * Need to verify that delete_instance deletes all data associated with a questionnaire.
      *
-     * @return void
-     * @throws dml_exception
-     *
-     * @covers \questionnaire_delete_instance
+     * @covers ::questionnaire_delete_instance
      */
     public function test_delete_instance() {
         global $DB;
@@ -216,12 +197,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_user_outline().
+     * Test case for the questionnaire_user_outline function.
      *
-     * @return void
-     * @throws coding_exception
-     *
-     * @covers \questionnaire_user_outline
+     * @covers ::questionnaire_user_outline
      */
     public function test_questionnaire_user_outline() {
         $this->resetAfterTest();
@@ -244,12 +222,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_user_complete().
+     * Test case for the questionnaire_user_complete function.
      *
-     * @return void
-     * @throws coding_exception
-     *
-     * @covers \questionnaire_user_complete
+     * @covers ::questionnaire_user_complete
      */
     public function test_questionnaire_user_complete() {
         $this->resetAfterTest();
@@ -264,11 +239,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_print_recent_activity().
+     * Test case for the questionnaire_print_recent_activity function.
      *
-     * @return void
-     *
-     * @covers \questionnaire_print_recent_activity
+     * @covers ::questionnaire_print_recent_activity
      */
     public function test_questionnaire_print_recent_activity() {
         $this->resetAfterTest();
@@ -277,11 +250,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_grades().
+     * Test case for the questionnaire_grades function.
      *
-     * @return void
-     *
-     * @covers \questionnaire_grades
+     * @covers ::questionnaire_grades
      */
     public function test_questionnaire_grades() {
         $this->resetAfterTest();
@@ -290,11 +261,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_get_user_grades().
+     * Test case for the questionnaire_get_user_grades function.
      *
-     * @return void
-     *
-     * @covers \questionnaire_get_user_grades
+     * @covers ::questionnaire_get_user_grades
      */
     public function test_questionnaire_get_user_grades() {
         $this->resetAfterTest();
@@ -315,11 +284,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_update_grades().
+     * Test case for the questionnaire_update_grades function.
      *
-     * @return void
-     *
-     * @covers \questionnaire_update_grades
+     * @covers ::questionnaire_update_grades
      */
     public function test_questionnaire_update_grades() {
         // Don't know how to test this yet! It doesn't return anything.
@@ -327,11 +294,9 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test for questionnaire_grade_item_update().
+     * Test case for the questionnaire_grade_item_update function.
      *
-     * @return void
-     *
-     * @covers \questionnaire_grade_item_update
+     * @covers ::questionnaire_grade_item_update
      */
     public function test_questionnaire_grade_item_update() {
         $this->resetAfterTest();
