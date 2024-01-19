@@ -71,6 +71,7 @@ class custom_completion_test extends \advanced_testcase {
     /**
      * Test for get_state().
      *
+     * @covers \mod_questionnaire\completion\custom_completion::get_state
      * @dataProvider get_state_provider
      * @param string $rule The custom completion rule.
      * @param int $available Whether this rule is available.
@@ -191,6 +192,7 @@ class custom_completion_test extends \advanced_testcase {
     /**
      * Test for get_available_custom_rules().
      *
+     * @covers \mod_questionnaire\completion\custom_completion::get_available_custom_rules
      * @dataProvider get_available_custom_rules_provider
      * @param int $status
      * @param array $expected
