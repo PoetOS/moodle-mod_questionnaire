@@ -100,10 +100,6 @@ class file extends question {
             $output->render($fm) .
             '</div>';
 
-/*      $html .= '<input value="' . $draftitemid . '" name="' . $elname . '" type="hidden" />';
-        $html .= '<input value="" id="' . $this->id . '" type="hidden" />';
-*/
-
         return $html;
     }
 
