@@ -490,7 +490,7 @@ class behat_mod_questionnaire extends behat_base {
         $exception = new ExpectationException('The filepicker for the question with text "' . $question .
             '" can not be found', $this->getSession());
 
-        $filepickercontainer =  $this->find(
+        $filepickercontainer = $this->find(
             'xpath',
             "//p[contains(.,'" . $question . "')]" .
             "//parent::div[contains(concat(' ', normalize-space(@class), ' '), ' no-overflow ')]" .
@@ -514,7 +514,8 @@ class behat_mod_questionnaire extends behat_base {
      * @throws DriverException
      * @throws ExpectationException Thrown by behat_base::find
      */
-    protected function upload_file_to_question_filemanager_questionnaire($filepath, $question, TableNode $data, $overwriteaction = false) {
+    protected function upload_file_to_question_filemanager_questionnaire($filepath, $question, TableNode $data,
+        $overwriteaction = false) {
         global $CFG;
 
         if (!$this->has_tag('_file_upload')) {
@@ -600,7 +601,7 @@ class behat_mod_questionnaire extends behat_base {
         $exception = new ExpectationException('No files can be added to the specified filemanager', $this->getSession());
 
         // We should deal with single-file and multiple-file filemanagers,
-        // catching the exception thrown by behat_base::find() in case is not multiple
+        // catching the exception thrown by behat_base::find() in case is not multiple.
         $this->execute('behat_general::i_click_on_in_the', [
             'div.fp-btn-add a, input.fp-btn-choose', 'css_element',
             $filemanagernode, 'NodeElement'
