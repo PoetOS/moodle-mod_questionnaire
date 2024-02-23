@@ -1764,9 +1764,12 @@ class questionnaire {
             $qidarray[$oldid] = $newqid;
             foreach ($question->choices as $key => $choice) {
                 $oldcid = $key;
-                unset($choice->id);
-                $choice->question_id = $newqid;
-                if (!$newcid = $DB->insert_record('questionnaire_quest_choice', $choice)) {
+                $newchoice = (object) [
+                    'question_id' => $newqid,
+                    'content' => $choice->content,
+                    'value' => $choice->value,
+                ];
+                if (!$newcid = $DB->insert_record('questionnaire_quest_choice', $newchoice)) {
                     return(false);
                 }
                 $cidarray[$oldcid] = $newcid;
