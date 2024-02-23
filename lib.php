@@ -42,7 +42,7 @@ function questionnaire_supports($feature) {
         case FEATURE_COMPLETION_HAS_RULES:
             return true;
         case FEATURE_GRADE_HAS_GRADE:
-            return false;
+            return true;
         case FEATURE_GRADE_OUTCOMES:
             return false;
         case FEATURE_GROUPINGS:
@@ -157,6 +157,9 @@ function questionnaire_add_instance($questionnaire) {
     if (!$questionnaire->id = $DB->insert_record("questionnaire", $questionnaire)) {
         return false;
     }
+
+    // Create grade line item, if initial configuration is for gradable activity
+    questionnaire_grade_item_update($questionnaire);
 
     questionnaire_set_events($questionnaire);
 
