@@ -498,6 +498,14 @@ abstract class question {
     }
 
     /**
+     * Override and return false if a number should not be rendered for this question in any context.
+     * @return bool
+     */
+    public function is_numbered() {
+        return true;
+    }
+
+    /**
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
      * @return bool
      */

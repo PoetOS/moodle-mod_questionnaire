@@ -1324,7 +1324,7 @@ class questionnaire {
                     $this->renderer->render_progress_bar($section, $this->questionsbysec));
         }
         foreach ($this->questionsbysec[$section] as $questionid) {
-            if ($this->questions[$questionid]->type_id != QUESSECTIONTEXT) {
+            if ($this->questions[$questionid]->is_numbered()) {
                 $i++;
             }
             // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
@@ -1616,7 +1616,7 @@ class questionnaire {
                 $page++;
             }
             foreach ($section as $questionid) {
-                if ($this->questions[$questionid]->type_id == QUESSECTIONTEXT) {
+                if (!$this->questions[$questionid]->is_numbered()) {
                     $i--;
                 }
                 if (isset($allqdependants[$questionid])) {
@@ -1849,8 +1849,8 @@ class questionnaire {
 
         if (key_exists($section, $this->questionsbysec)) {
             foreach ($this->questionsbysec[$section] as $questionid) {
-                $tid = $this->questions[$questionid]->type_id;
-                if ($tid != QUESSECTIONTEXT) {
+
+                if ($this->questions[$questionid]->is_numbered()) {
                     $qnum++;
                 }
                 if (!$this->questions[$questionid]->response_complete($formdata)) {
@@ -2911,13 +2911,13 @@ class questionnaire {
             if ($question->type_id == QUESPAGEBREAK) {
                 continue;
             }
-            if ($question->type_id != QUESSECTIONTEXT) {
+            if ($question->is_numbered()) {
                 $qnum++;
             }
             if (!$pdf) {
                 $this->page->add_to_page('responses', $this->renderer->container_start('qn-container'));
                 $this->page->add_to_page('responses', $this->renderer->container_start('qn-info'));
-                if ($question->type_id != QUESSECTIONTEXT) {
+                if ($question->is_numbered()) {
                     $this->page->add_to_page('responses', $this->renderer->heading($qnum, 2, 'qn-number'));
                 }
                 $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-info.
@@ -2929,7 +2929,7 @@ class questionnaire {
             }
             if ($pdf) {
                 $response = new stdClass();
-                if ($question->type_id != QUESSECTIONTEXT) {
+                if ($question->is_numbered()) {
                     $response->qnum = $qnum;
                 }
                 $response->qcontent = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',

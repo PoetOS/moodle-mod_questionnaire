@@ -162,7 +162,9 @@ class mobile {
                         if ($question->supports_mobile()) {
                             $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
                             $responses = array_merge($responses, $question->get_mobile_response_data($response));
-                            $qnum++;
+                            if ($question->is_numbered()) {
+                                $qnum++;
+                            }
                         }
                     }
                     $data['prevpage'] = 0;
@@ -265,8 +267,10 @@ class mobile {
                 if (($response !== null) && isset($response->answers[$questionid])) {
                     $responses = array_merge($responses, $question->get_mobile_response_data($response));
                 }
+                if ($question->is_numbered()) {
+                    $qnum++;
+                }
             }
-            $qnum++;
         }
 
         return ['pagequestions' => $pagequestions, 'responses' => $responses];
