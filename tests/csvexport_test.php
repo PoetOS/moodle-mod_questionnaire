@@ -51,6 +51,9 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
         return $lines;
     }
 
+    /**
+     * Tests the CSV export.
+     */
     public function test_csvexport() {
         $this->resetAfterTest();
         $dg = $this->getDataGenerator();
@@ -75,6 +78,107 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
             $this->assertEquals(count($newoutput), count($this->expected_incomplete_output()));
             foreach ($newoutput as $key => $output) {
                 $this->assertEquals($this->expected_incomplete_output()[$key], $output);
+            }
+        }
+    }
+
+    /**
+     * Tests the CSV export with identity fields and anonymous questionnaires.
+     */
+    public function test_csvexport_identity_fields() {
+        global $DB;
+        $this->resetAfterTest();
+
+        $config = get_config('questionnaire', 'downloadoptions');
+        if (strpos($config, 'useridentityfields') === false) {
+            set_config('downloadoptions', "{$config},useridentityfields", 'questionnaire');
+        }
+
+        $dg = $this->getDataGenerator();
+        $qdg = $dg->get_plugin_generator('mod_questionnaire');
+        $profilefields = ['specialid' => 'Special id', 'staffno' => 'Staff number'];
+        $qdg->create_and_fully_populate(1, 2, 1, 1, $profilefields);
+
+        $user = $dg->create_user();
+        $this->setUser($user);
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'student']);
+
+        $questionnaires = $qdg->questionnaires();
+        foreach ($questionnaires as $item) {
+            list($course, $cm) = get_course_and_cm_from_instance($item->id, 'questionnaire', $item->course);
+
+            $this->do_test_csvexport_identity_fields($course, $cm, $user, $roleid, $profilefields, $item, false);
+            $this->do_test_csvexport_identity_fields($course, $cm, $user, $roleid, $profilefields, $item, true);
+        }
+    }
+
+    /**
+     * Tests the CSV export with identity fields for a questionnaire.
+     *
+     * @param object $course
+     * @param object $cm
+     * @param object $user
+     * @param int $roleid
+     * @param array $profilefields
+     * @param object $item
+     * @param bool $anonymous
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
+    private function do_test_csvexport_identity_fields($course, $cm, $user, $roleid, $profilefields, $item, $anonymous): void {
+        global $DB;
+
+        if ($anonymous) {
+            // Make questionnaire anonymous.
+            $row = new \stdClass();
+            $row->id = $item->id;
+            $row->respondenttype = 'anonymous';
+            $DB->update_record('questionnaire', $row);
+        }
+
+        $context = \context_course::instance($course->id);
+        role_assign($roleid, $user->id, $context);
+        assign_capability('moodle/site:viewuseridentity', CAP_ALLOW, $roleid, $context);
+
+        // Generate CSV output.
+        $questionnaire = new questionnaire($course, $cm, $item->id);
+        $output = $questionnaire->generate_csv(0, '', '', 0, 0, 1);
+
+        $this->assertNotNull($output);
+        $this->assertCount(3, $output);
+
+        // Check profile field columns.
+        $errortext = $anonymous ? 'exists' : 'missing';
+        $columns = $output[0];
+        $columns1 = [];
+        foreach ($profilefields as $field => $name) {
+            $col = array_search($name, $columns);
+            $this->assertEquals(!$anonymous, $col, "Profile field {$field} {$errortext}");
+            if (!$anonymous) {
+                $columns1[] = $col;
+            }
+        }
+
+        // Check profile field values.
+        for ($i = 1; $i < count($output); $i++) {
+            $columns2 = [];
+            foreach ($profilefields as $field => $name) {
+                $values = $output[$i];
+                $id = $field . ($i - 1);
+                $col = array_search($id, $values);
+                $this->assertEquals(!$anonymous, $col, "Profile field {$field} {$errortext}");
+                if (!$anonymous) {
+                    $columns2[] = $col;
+                }
+            }
+
+            if (!$anonymous) {
+                // Check indexes of columns and values.
+                $this->assertEquals(count($columns1), count($columns2), "Indexes of columns and values");
+                for ($j = 0; $j < count($columns1); $j++) {
+                    $this->assertEquals($columns1[$j], $columns2[$j], "Indexes of columns and values");
+                }
             }
         }
     }
