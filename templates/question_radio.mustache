@@ -39,7 +39,8 @@
                     "checked": "",
                     "disabled": 1,
                     "onclick": 1,
-                    "label": "Choice question label"
+                    "label": "Choice label",
+                    "alabel": "Some question Choice label"
                 }
             },
             {
@@ -50,9 +51,11 @@
                     "name": "choiceid2",
                     "checked": "1",
                     "onclick": 1,
-                    "label": "Choice question label",
+                    "label": "Choice label",
+                    "alabel": "Some question Choice label",
                     "oid": "choiceid2_7",
-                    "olabel": "Choice question other label",
+                    "olabel": "Choice other label",
+                    "aolabel": "Some question Choice other label",
                     "oname": "Other",
                     "ovalue": "another choice"
                 }
@@ -62,15 +65,19 @@
     }}
 <!-- Begin HTML generated from question_radio template. -->
 {{#qelements}}
-{{#choice}}
-{{#choice.horizontal}}<span style="white-space:nowrap;">{{/choice.horizontal}}
-<input id="{{choice.id}}" value="{{choice.value}}" name="{{choice.name}}" type="radio" {{#choice.checked}}checked="checked"{{/choice.checked}} {{#choice.disabled}}disabled="disabled"{{/choice.disabled}} {{#choice.onclick}}onclick="{{choice.onclick}}"{{/choice.onclick}}/>
-<label for="{{choice.id}}">{{{choice.label}}}</label>
-{{#choice.oname}}
-<input size="25" name="{{choice.oname}}" id="{{choice.oid}}" onclick="other_check(name)" value="{{choice.ovalue}}" type="text" /><label for="{{choice.oid}}" class="accesshide">{{{choice.olabel}}}</label>&nbsp;
-{{/choice.oname}}
-{{#choice.horizontal}}</span>{{/choice.horizontal}}
-{{^choice.horizontal}}<br />{{/choice.horizontal}}
-{{/choice}}
+    {{#choice}}
+        {{#choice.horizontal}}<span style="white-space:nowrap;">{{/choice.horizontal}}
+            <input id="{{choice.id}}" value="{{choice.value}}" name="{{choice.name}}" type="radio"
+                   {{#choice.checked}}checked="checked"{{/choice.checked}} {{#choice.disabled}}disabled="disabled"{{/choice.disabled}}
+                {{#choice.onclick}}onclick="{{choice.onclick}}"{{/choice.onclick}} aria-label="{{alabel}}"/>
+            <label for="{{choice.id}}">{{{choice.label}}}</label>
+        {{#choice.oname}}
+                <input size="25" name="{{choice.oname}}" id="{{choice.oid}}" onclick="other_check(name)"
+                       value="{{choice.ovalue}}" type="text" aria-label="{{aolabel}}"/>
+                <label for="{{choice.oid}}" class="accesshide">{{{choice.olabel}}}</label>&nbsp;
+        {{/choice.oname}}
+        {{#choice.horizontal}}</span>{{/choice.horizontal}}
+        {{^choice.horizontal}}<br/>{{/choice.horizontal}}
+    {{/choice}}
 {{/qelements}}
 <!-- End HTML generated from question_radio template. -->
