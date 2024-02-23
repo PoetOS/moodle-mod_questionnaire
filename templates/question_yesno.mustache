@@ -38,7 +38,8 @@
                     "checked": 1,
                     "disabled": "",
                     "onclick": "dosomething()",
-                    "label": "Yes"
+                    "label": "Yes",
+                    "alabel": "Some question Yes"
                 },
                 {
                     "id": "choice2",
@@ -47,7 +48,8 @@
                     "checked": 0,
                     "disabled": "",
                     "onclick": "dosomething()",
-                    "label": "No"
+                    "label": "No",
+                    "alabel": "Some question No"
                 }
             ]
         }
@@ -55,9 +57,11 @@
     }}
 <!-- Begin HTML generated from question_yesno template. -->
 {{#qelements}}
-{{#choice}}
-<input id="{{id}}" value="{{value}}" name="{{name}}" type="radio" {{#checked}}checked="checked"{{/checked}} {{#disabled}}disabled="disabled"{{/disabled}} {{#onclick}}onclick="{{onclick}}"{{/onclick}}/>
-<label for="{{id}}">{{{label}}}</label>
-{{/choice}}
+    {{#choice}}
+        <input id="{{id}}" value="{{value}}" name="{{name}}" type="radio"
+               {{#checked}}checked="checked"{{/checked}} {{#disabled}}disabled="disabled"{{/disabled}} {{#onclick}}onclick="{{onclick}}"{{/onclick}}
+               aria-label="{{alabel}}"/>
+        <label for="{{id}}">{{{label}}}</label>
+    {{/choice}}
 {{/qelements}}
 <!-- End HTML generated from question_yesno template. -->
