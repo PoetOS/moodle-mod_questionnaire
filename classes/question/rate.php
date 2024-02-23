@@ -29,6 +29,12 @@ class rate extends question {
     /** @var array $nameddegrees */
     public $nameddegrees = [];
 
+    /** @var int Row start position of the rate table. */
+    public const ROW_START = 2;
+
+    /** @var int Column start position of the rate table. */
+    public const COL_START = 2;
+
     /**
      * The class constructor
      * @param int $id
@@ -198,6 +204,7 @@ class rate extends question {
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
+        $choicetags->qelements['caption'] = strip_tags($this->content);
 
         $disabled = '';
         if ($blankquestionnaire) {
@@ -318,14 +325,14 @@ class rate extends question {
             $notcomplete = true;
         }
 
-        $row = 0;
+        $rowstart = self::ROW_START;
         $choicetags->qelements['rows'] = [];
         foreach ($this->choices as $cid => $choice) {
             $cols = [];
             if (isset($choice->content)) {
-                $row++;
                 $str = 'q'."{$this->id}_$cid";
                 $content = $choice->content;
+                $rendercontent = format_text($choice->content, FORMAT_PLAIN);
                 if ($this->osgood_rate_scale()) {
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                 }
@@ -333,7 +340,9 @@ class rate extends question {
                            'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]).'&nbsp;'];
 
                 $bg = 'c0 raterow';
+                $hasnotansweredchoice = false;
                 if (($nbchoices > 1) && !$this->no_duplicate_choices()  && !$blankquestionnaire) {
+                    $hasnotansweredchoice = true;
                     $checked = ' checked="checked"';
                     $completeclass = 'notanswered';
                     $title = '';
@@ -350,12 +359,15 @@ class rate extends question {
                     if (!empty($order)) {
                         $colinput['onclick'] = $order;
                     }
+                    $colinput['label'] = $this->set_label($rowstart, $rendercontent, self::COL_START,
+                        get_string('unanswered', 'questionnaire'));
                     $cols[] = ['colstyle' => 'width:1%;', 'colclass' => $completeclass, 'coltitle' => $title,
                         'colinput' => $colinput];
                 }
                 if ($nameddegrees > 0) {
                     reset($this->nameddegrees);
                 }
+                $colstart = $hasnotansweredchoice ? self::COL_START + 1 : self::COL_START;
                 for ($j = 1; $j <= $this->length + $this->has_na_column(); $j++) {
                     if (!isset($collabel[$j])) {
                         // If not using this value, continue.
@@ -388,18 +400,20 @@ class rate extends question {
                     if (!empty($order)) {
                         $col['colinput']['onclick'] = $order;
                     }
-                    $col['colinput']['label'] = 'Choice '.$collabel[$j].' for row '.format_text($content, FORMAT_PLAIN);
+                    $col['colinput']['label'] = $this->set_label($rowstart, $rendercontent, $colstart, $collabel[$j]);
                     if ($bg == 'c0 raterow') {
                         $bg = 'c1 raterow';
                     } else {
                         $bg = 'c0 raterow';
                     }
+                    $colstart++;
                     $cols[] = $col;
                 }
                 if ($this->osgood_rate_scale()) {
                     $cols[] = ['coltext' => '&nbsp;'.format_text($contentright, FORMAT_HTML, ['noclean' => true])];
                 }
                 $choicetags->qelements['rows'][] = ['cols' => $cols];
+                $rowstart++;
             }
         }
 
@@ -1087,5 +1101,24 @@ class rate extends question {
             self::move_nameddegree_choices(0, $questionrec);
         }
         $ratequests->close();
+    }
+
+    /**
+     * Set label for per column inside rate table.
+     *
+     * @param int $rowposition
+     * @param string $choicetitle
+     * @param int $colposition
+     * @param string $choiceanswer
+     * @return string
+     */
+    private function set_label(int $rowposition, string $choicetitle, int $colposition, string $choiceanswer): string {
+        $a = (object) [
+            'rowposition' => $rowposition,
+            'choicetitle' => $choicetitle,
+            'colposition' => $colposition,
+            'choiceanswer' => $choiceanswer,
+        ];
+        return get_string('accessibility:rate:choice', 'questionnaire', $a);
     }
 }

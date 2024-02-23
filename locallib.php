@@ -134,20 +134,29 @@ function questionnaire_choice_values($content) {
  * @return array a standard jsmodule structure.
  */
 function questionnaire_get_js_module() {
-    return array(
+    return [
             'name' => 'mod_questionnaire',
             'fullpath' => '/mod/questionnaire/module.js',
-            'requires' => array('base', 'dom', 'event-delegate', 'event-key',
-                    'core_question_engine', 'moodle-core-formchangechecker'),
-            'strings' => array(
-                    array('cancel', 'moodle'),
-                    array('flagged', 'question'),
-                    array('functiondisabledbysecuremode', 'quiz'),
-                    array('startattempt', 'quiz'),
-                    array('timesup', 'quiz'),
-                    array('changesmadereallygoaway', 'moodle'),
-            ),
-    );
+            'requires' => ['base', 'dom', 'event-delegate', 'event-key',
+                    'core_question_engine', 'moodle-core-formchangechecker'],
+            'strings' => [
+                    ['cancel', 'moodle'],
+                    ['flagged', 'question'],
+                    ['functiondisabledbysecuremode', 'quiz'],
+                    ['startattempt', 'quiz'],
+                    ['timesup', 'quiz'],
+                    ['changesmadereallygoaway', 'moodle'],
+                    ['leftpart', 'questionnaire'],
+                    ['leftpartdefault', 'questionnaire'],
+                    ['middlepart', 'questionnaire'],
+                    ['middlepartdefault', 'questionnaire'],
+                    ['middlepartwithtwovalues', 'questionnaire'],
+                    ['middlepartwithtwovaluesdefault', 'questionnaire'],
+                    ['rightpart', 'questionnaire'],
+                    ['rightpartdefault', 'questionnaire'],
+                    ['where', 'questionnaire'],
+            ],
+    ];
 }
 
 /**

@@ -23,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['accessibility:rate:choice'] = 'Row {$a->rowposition}, {$a->choicetitle}: Column {$a->colposition}, {$a->choiceanswer}.';
 $string['action'] = 'Action';
 $string['activityoverview'] = 'You have questionnaires that are due';
 $string['additionalinfo'] = 'Additional Info';
@@ -275,6 +276,8 @@ $string['kindofratescale_link'] = 'mod/questionnaire/questions#Type_of_rate_scal
 $string['lastrespondent'] = 'Last Respondent';
 $string['length'] = 'Length';
 $string['leftlabel'] = 'Left label';
+$string['leftpart'] = '{$a->min} is {$a->leftlabel}';
+$string['leftpartdefault'] = '{$a->min} is minimum slider range';
 $string['managequestions'] = 'Manage questions';
 $string['managequestions_help'] = 'In the Manage questions section of the Edit Questions page, you can conduct a number of operations on a Questionnaire\'s questions.';
 $string['managequestions_link'] = 'mod/questionnaire/questions#Manage_questions';
@@ -294,6 +297,10 @@ $string['maxtextlength_help'] = 'For the Text Box question type, enter the Input
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
 $string['messageprovider:message'] = 'Questionnaire reminder';
 $string['messageprovider:notification'] = 'Questionnaire submission';
+$string['middlepart'] = ', {$a->centreval} is {$a->middlelabel}';
+$string['middlepartdefault'] = ', {$a->centreval} is average';
+$string['middlepartwithtwovalues'] = ', {$a->centreval1} and {$a->centreval2} are {$a->middlelabel}';
+$string['middlepartwithtwovaluesdefault'] = ', {$a->centreval1} and {$a->centreval2} are average';
 $string['minforcedresponses'] = 'Min. forced responses';
 $string['minforcedresponses_help'] = 'Use these parameters to force respondent to tick a minimum of **Min.** boxes and a maximum of **Max.** check boxes. To
 force an exact number of check boxes to be ticked, set **Min.** and **Max.** to the same value. If only a min or a max value is desired, just leave the other
@@ -559,6 +566,8 @@ $string['resume_link'] = 'mod/questionnaire/mod#Save/Resume_answers';
 $string['resumesurvey'] = 'Resume questionnaire';
 $string['return'] = 'Return';
 $string['rightlabel'] = 'Right label';
+$string['rightpart'] = ' and {$a->max} is {$a->rightlabel}';
+$string['rightpartdefault'] = ' and {$a->max} is maximum slider range';
 $string['save'] = 'Save';
 $string['save_and_exit'] = 'Save and exit';
 $string['saveasnew'] = 'Save as New Question';
@@ -662,6 +671,7 @@ $string['viewindividualresponse_help'] = 'Click on the respondents\' names in th
 $string['viewresponses'] = 'All responses ({$a})';
 $string['viewyourresponses'] = 'View your response(s)';
 $string['warning'] = 'Warning, error encountered.';
+$string['where'] = 'where ';
 $string['wronganswers'] = 'There is something wrong with your answers (see below)';
 $string['wrongdateformat'] = 'The date entered: <strong>{$a}</strong> does not correspond to the format shown in the example.';
 $string['wrongdaterange'] = 'ERROR! The year must be set in the 1902 to 2037 range.';
@@ -673,3 +683,4 @@ $string['yourresponse'] = 'View your response(s)';
 $string['yourresponses'] = 'View your response(s)';
 $string['crontask'] = 'Questionnaire cleanup job';
 $string['nopermissions'] = 'Sorry, but you do not currently have permissions to view this page or perform this action.';
+$string['unanswered'] = 'Unanswered';
