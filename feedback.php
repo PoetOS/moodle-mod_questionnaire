@@ -115,8 +115,6 @@ if ($settings = $feedbackform->get_data()) {
                 if ($settings->feedbacksections == 1) {
                     $sdata->chart_type = $settings->chart_type_global;
                 } else if ($settings->feedbacksections == 2) {
-                    $sdata->chart_type = $settings->chart_type_two_sections;
-                } else if ($settings->feedbacksections > 2) {
                     $sdata->chart_type = $settings->chart_type_sections;
                 }
             }
@@ -144,6 +142,8 @@ if ($settings = $feedbackform->get_data()) {
             $feedbacksection = mod_questionnaire\feedback\section::new_section($questionnaire->sid, $sectionlabel);
         }
         redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'section' => $firstsection]));
+    } else {
+        redirect('view.php?id='.$cm->id);
     }
 }
 

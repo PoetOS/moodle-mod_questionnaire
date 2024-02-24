@@ -36,6 +36,18 @@ class feedback_form extends \moodleform {
      */
     public function definition() {
         global $questionnaire;
+        // We need to get the number of current feedbacksections to allow the rose and radar chart types or not.
+        global $DB;
+        $sid = $questionnaire->survey->id;
+        $numfeedbacksections = $DB->count_records('questionnaire_fb_sections', ['surveyid' => $sid]);
+
+        // Get all questions that are valid feedback questions.
+        $nbvalidquestions = 0;
+        foreach ($questionnaire->questions as $question) {
+            if ($question->valid_feedback()) {
+                $nbvalidquestions++;
+            }
+        }
 
         $mform =& $this->_form;
 
@@ -44,7 +56,9 @@ class feedback_form extends \moodleform {
         $feedbackoptions = [];
         $feedbackoptions[0] = get_string('feedbacknone', 'questionnaire');
         $feedbackoptions[1] = get_string('feedbackglobal', 'questionnaire');
-        $feedbackoptions[2] = get_string('feedbacksections', 'questionnaire');
+        if ($nbvalidquestions > 1) {
+            $feedbackoptions[2] = get_string('feedbacksections', 'questionnaire');
+        }
 
         $mform->addElement('select', 'feedbacksections', get_string('feedbackoptions', 'questionnaire'), $feedbackoptions);
         $mform->setDefault('feedbacksections', $questionnaire->survey->feedbacksections);
@@ -56,6 +70,7 @@ class feedback_form extends \moodleform {
 
         // Is the RGraph library enabled at level site?
         if (get_config('questionnaire', 'usergraph')) {
+            /* First set up a Chart type group for the Global Feedback option. */
             $chartgroup = [];
             $charttypes = [null => get_string('none'),
                 'bipolar' => get_string('chart:bipolar', 'questionnaire'),
@@ -63,42 +78,45 @@ class feedback_form extends \moodleform {
             $chartgroup[] = $mform->createElement('select', 'chart_type_global',
                 get_string('chart:type', 'questionnaire') . ' (' .
                 get_string('feedbackglobal', 'questionnaire') . ')', $charttypes);
+
+            // If we are editing an already saved questionnaire, and 'Feedback options'
+            // is set to 'Global Feedback', set default to its charttype.
             if ($questionnaire->survey->feedbacksections == 1) {
                 $mform->setDefault('chart_type_global', $questionnaire->survey->chart_type);
             }
-            $mform->disabledIf('chart_type_global', 'feedbacksections', 'eq', 0);
-            $mform->disabledIf('chart_type_global', 'feedbacksections', 'neq', 1);
 
+            /* If 'Feedback options' is set to 'No Feedback messages' then hide the Global Feedback Chart type group. */
+            $mform->hideIf('chart_type_global', 'feedbacksections', 'eq', 0);
+
+            /* Now set up a Chart type group for the Feedback sections option. */
             $charttypes = [null => get_string('none'),
                 'bipolar' => get_string('chart:bipolar', 'questionnaire'),
-                'hbar' => get_string('chart:hbar', 'questionnaire'),
-                'rose' => get_string('chart:rose', 'questionnaire')];
-            $chartgroup[] = $mform->createElement('select', 'chart_type_two_sections',
-                get_string('chart:type', 'questionnaire') . ' (' .
-                get_string('feedbackbysection', 'questionnaire') . ')', $charttypes);
-            if ($questionnaire->survey->feedbacksections > 1) {
-                $mform->setDefault('chart_type_two_sections', $questionnaire->survey->chart_type);
+                'hbar' => get_string('chart:hbar', 'questionnaire')];
+            /* If there are at least 3 feedback sections, make the rose and radar charttypes available. */
+            if ($numfeedbacksections > 2) {
+                $charttypes['rose'] = get_string('chart:rose', 'questionnaire');
+                $charttypes['radar'] = get_string('chart:radar', 'questionnaire');
             }
-            $mform->disabledIf('chart_type_two_sections', 'feedbacksections', 'neq', 2);
-
-            $charttypes = [null => get_string('none'),
-                'bipolar' => get_string('chart:bipolar', 'questionnaire'),
-                'hbar' => get_string('chart:hbar', 'questionnaire'),
-                'radar' => get_string('chart:radar', 'questionnaire'),
-                'rose' => get_string('chart:rose', 'questionnaire')];
             $chartgroup[] = $mform->createElement('select', 'chart_type_sections',
                 get_string('chart:type', 'questionnaire') . ' (' .
                 get_string('feedbackbysection', 'questionnaire') . ')', $charttypes);
+
+            // If we are editing an already saved questionnaire, and 'Feedback options'
+            // is set to 'Feedback sections', set default to its charttype.
             if ($questionnaire->survey->feedbacksections > 1) {
                 $mform->setDefault('chart_type_sections', $questionnaire->survey->chart_type);
             }
-            $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 0);
-            $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 1);
-            $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 2);
+
+            /* If 'Feedback options' is NOT set to 'Feedback sections' then hide the 'Feedback sections' Chart type group. */
+            $mform->hideIf('chart_type_sections', 'feedbacksections', 'neq', 2);
+            /* If 'Feedback options' is set to 'Feedback sections' then hide the Global Feedback Chart type group. */
+            $mform->hideIf('chart_type_global', 'feedbacksections', 'eq', 2);
 
             $mform->addGroup($chartgroup, 'chartgroup',
                 get_string('chart:type', 'questionnaire'), null, false);
             $mform->addHelpButton('chartgroup', 'chart:type', 'questionnaire');
+            /* If 'Feedback options' is set to 'No Feedback messages' then completely hide the chartgroup group. */
+            $mform->hideIf('chartgroup', 'feedbacksections', 'eq', 0);
         }
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
         $mform->addElement('editor', 'feedbacknotes', get_string('feedbacknotes', 'questionnaire'), null, $editoroptions);
@@ -114,8 +132,9 @@ class feedback_form extends \moodleform {
         $mform->setType('courseid', PARAM_RAW);
 
         // Can't seem to disable or hide one button in the group, so create two different button sets and hide one.
+        $submitlabel = get_string('savechangesanddisplay');
         $buttongroup = [];
-        $buttongroup[] = $mform->createElement('submit', 'feedbacksettingsbutton1', get_string('savesettings', 'questionnaire'));
+        $buttongroup[] = $mform->createElement('submit', 'submitbutton', $submitlabel);
         $buttongroup[] = $mform->createElement('submit', 'feedbackeditbutton', get_string('feedbackeditsections', 'questionnaire'));
         $mform->addGroup($buttongroup, 'buttongroup');
         if (moodle_major_version() == '3.3') {
