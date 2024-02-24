@@ -14,29 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire;
-
-defined('MOODLE_INTERNAL') || die();
-
-use mod_questionnaire\question\question;
-
-global $CFG;
-require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
-
 /**
- * PHPUnit questionnaire questiontypes tests
+ * PHPUnit questionnaire generator tests
  *
  * @package    mod_questionnaire
  * @copyright  2015 Mike Churchward (mike@churchward.ca)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace mod_questionnaire;
+
+use mod_questionnaire\question\question;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
+
+/**
+ * Unit tests for questionnaire_questiontypes_testcase.
+ * @group mod_questionnaire
+ */
 class questiontypes_test extends \advanced_testcase {
+
     /**
-     * Test case for the create_test_question_with_choices function for checkbox questions.
+     * Create a check boxes test question.
      *
-     * @covers ::create_test_question_with_choices
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_checkbox() {
         $this->create_test_question_with_choices(QUESCHECK,
@@ -44,27 +52,33 @@ class questiontypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_test_question function for date questions.
+     * Create a date test question.
      *
-     * @covers ::create_test_question
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_date() {
         $this->create_test_question(QUESDATE, '\\mod_questionnaire\\question\\date', array('content' => 'Enter a date'));
     }
 
     /**
-     * Test case for the create_test_question_with_choices function for dropdown questions.
+     * Create a dropdown box test question.
      *
-     * @covers ::create_test_question_with_choices
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_dropdown() {
         $this->create_test_question_with_choices(QUESDROP, '\\mod_questionnaire\\question\\drop', array('content' => 'Select one'));
     }
 
     /**
-     * Test case for the create_test_question function for essay questions.
+     * Create an essay test question.
      *
-     * @covers ::create_test_question
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_essay() {
         $questiondata = array(
@@ -75,9 +89,11 @@ class questiontypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_test_question function for sectiontext questions.
+     * Create a sectiontext test question.
      *
-     * @covers ::create_test_question
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_sectiontext() {
         $this->create_test_question(QUESSECTIONTEXT, '\\mod_questionnaire\\question\\sectiontext',
@@ -85,9 +101,11 @@ class questiontypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_test_question function for numeric questions.
+     * Create a numerical test question.
      *
-     * @covers ::create_test_question
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_numeric() {
         $questiondata = array(
@@ -98,9 +116,11 @@ class questiontypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_test_question_with_choices function for radiobuttons questions.
+     * Create a radio test question.
      *
-     * @covers ::create_test_question_with_choices
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_radiobuttons() {
         $this->create_test_question_with_choices(QUESRADIO,
@@ -108,18 +128,22 @@ class questiontypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_test_question_with_choices function for ratescale questions.
+     * Create a rate test question.
      *
-     * @covers ::create_test_question_with_choices
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_ratescale() {
         $this->create_test_question_with_choices(QUESRATE, '\\mod_questionnaire\\question\\rate', array('content' => 'Rate these'));
     }
 
     /**
-     * Test case for the create_test_question function for textbox questions.
+     * Create a text test question.
      *
-     * @covers ::create_test_question
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_textbox() {
         $questiondata = array(
@@ -130,9 +154,11 @@ class questiontypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_test_question function for slider questions.
+     * Create a slider test question.
      *
-     * @covers ::create_test_question
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_slider() {
         $questiondata = array(
@@ -141,13 +167,16 @@ class questiontypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_test_question function for yesno questions.
+     * Create a yes/no test question.
      *
-     * @covers ::create_test_question
+     * @return void
+     *
+     * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_yesno() {
         $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', array('content' => 'Enter yes or no'));
     }
+
 
     // General tests to call from specific tests above.
 

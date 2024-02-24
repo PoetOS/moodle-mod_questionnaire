@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire;
-
 /**
  * PHPUnit questionnaire generator tests
  *
@@ -24,11 +22,22 @@ namespace mod_questionnaire;
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace mod_questionnaire;
+
+/**
+ * Unit tests for questionnaire_generator_testcase.
+ * @group mod_questionnaire
+ */
 class generator_test extends \advanced_testcase {
     /**
-     * Test case for the create_instance function.
+     * Test generator create_instance function.
      *
-     * @covers \mod_questionnaire_generator::create_instance
+     * @return void
+     * @throws coding_exception
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\generator\
      */
     public function test_create_instance() {
         global $DB;
@@ -65,9 +74,13 @@ class generator_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_content function.
+     * Test generator create_content function.
      *
-     * @covers \mod_questionnaire_generator::create_content
+     * @return void
+     * @throws coding_exception
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\generator\
      */
     public function test_create_content() {
         global $DB;
