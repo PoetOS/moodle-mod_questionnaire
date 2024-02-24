@@ -23,9 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_questionnaire;
 
 use mod_questionnaire\question\question;
+
+defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
@@ -37,7 +39,15 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php')
  * Unit tests for questionnaire_responsetypes_testcase.
  * @group mod_questionnaire
  */
-class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
+class responsetypes_test extends \advanced_testcase {
+    /**
+     * Test responses in a yes/no question.
+     *
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\yesno
+     */
     public function test_create_response_boolean() {
         global $DB;
 
@@ -64,6 +74,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('y', $booleanresponse->choice_id);
     }
 
+    /**
+     * Test responses in a essay question.
+     *
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\essay
+     */
     public function test_create_response_text() {
         global $DB;
 
@@ -91,6 +109,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('This is my essay.', $textresponse->response);
     }
 
+    /**
+     * Test responses in a slider question.
+     *
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\slider
+     */
     public function test_create_response_slider() {
         global $DB;
 
@@ -118,6 +144,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals(5, $textresponse->response);
     }
 
+    /**
+     * Test responses in a date question.
+     *
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\date
+     */
     public function test_create_response_date() {
         global $DB;
 
@@ -146,6 +180,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('2015-01-27', $dateresponse->response);
     }
 
+    /**
+     * Test responses in a single choice radio question.
+     *
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\radio
+     */
     public function test_create_response_single() {
         global $DB;
 
@@ -215,6 +257,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('Forty-four', $otherresponse->response);
     }
 
+    /**
+     * Test responses in a multiple choices question.
+     *
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\rate
+     */
     public function test_create_response_multiple() {
         global $DB;
 
@@ -270,6 +320,14 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $this->assertEquals('Forty-four', $otherresponse->response);
     }
 
+    /**
+     * Test response's ranks in a rate question.
+     *
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\rate
+     */
     public function test_create_response_rank() {
         global $DB;
 
@@ -335,7 +393,7 @@ class mod_questionnaire_responsetypes_testcase extends advanced_testcase {
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $generator->create_question($questionnaire, $questiondata, $choicedata);
 
-        $questionnaire = new questionnaire( $course, $cm, $questionnaire->id, null, true);
+        $questionnaire = new \questionnaire( $course, $cm, $questionnaire->id, null, true);
 
         return $questionnaire;
     }
