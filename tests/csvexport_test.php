@@ -22,7 +22,14 @@
  * @copyright Copyright (c) 2015 Moodlerooms Inc. (http://www.moodlerooms.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_questionnaire_csvexport_test extends advanced_testcase {
+
+namespace mod_questionnaire;
+
+/**
+ * Unit tests for questionnaire_csvexport_test.
+ * @group mod_questionnaire
+ */
+class csvexport_test extends \advanced_testcase {
 
     public function setUp(): void {
         global $CFG;
@@ -53,6 +60,8 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
 
     /**
      * Tests the CSV export.
+     *
+     * @covers \questionnaire::generate_csv
      */
     public function test_csvexport() {
         $this->resetAfterTest();
@@ -64,7 +73,7 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
             list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-            $questionnaireinst = new questionnaire($course, $cm, 0, $questionnaire);
+            $questionnaireinst = new \questionnaire($course, $cm, 0, $questionnaire);
 
             // Test for only complete responses.
             $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 0));
@@ -84,6 +93,8 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
 
     /**
      * Tests the CSV export with identity fields and anonymous questionnaires.
+     *
+     * @covers \questionnaire::generate_csv
      */
     public function test_csvexport_identity_fields() {
         global $DB;
@@ -142,7 +153,7 @@ class mod_questionnaire_csvexport_test extends advanced_testcase {
         assign_capability('moodle/site:viewuseridentity', CAP_ALLOW, $roleid, $context);
 
         // Generate CSV output.
-        $questionnaire = new questionnaire($course, $cm, $item->id);
+        $questionnaire = new \questionnaire($course, $cm, $item->id);
         $output = $questionnaire->generate_csv(0, '', '', 0, 0, 1);
 
         $this->assertNotNull($output);
