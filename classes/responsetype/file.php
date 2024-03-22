@@ -55,6 +55,8 @@ class file extends responsetype {
                 $file = reset($files);
                 $record->value = $file->get_id();
                 $answers[] = answer\answer::create_from_data($record);
+            } else {
+                self::delete_old_response((int)$question->id, (int)$record->responseid);
             }
         }
         return $answers;
@@ -115,10 +117,33 @@ class file extends responsetype {
     }
 
     /**
+     * Delete old entries from the questionnaire_response_file table and also the corresponding entries
+     * in the files table.
+     * @param int $question_id
+     * @param int $response_id
+     * @return void
+     * @throws \dml_exception
+     */
+    public static function delete_old_response(int $question_id, int $response_id) {
+        global $DB;
+        // Check, if we have an old response file from a former attempt.
+        $record = $DB->get_record(static::response_table(), [
+            'response_id' => $response_id,
+            'question_id' => $question_id,
+        ]);
+        if ($record) {
+            // Old record found, then delete all referenced entries in the files table and then delete this entry.
+            $DB->delete_records('files', ['component' => 'mod_questionnaire', 'itemid' => $record->itemid]);
+            $DB->delete_records(self::response_table(), ['id' => $record->id]);
+        }
+    }
+
+    /**
      * Insert a provided response to the question.
      *
      * @param \mod_questionnaire\responsetype\response\response|\stdClass $responsedata
      * @return bool|int
+     * @throws \dml_exception
      */
     public function insert_response($responsedata) {
         global $DB;
@@ -134,6 +159,9 @@ class file extends responsetype {
             $record->response_id = $response->id;
             $record->question_id = $this->question->id;
             $record->fileid = intval(clean_text($response->answers[$this->question->id][0]->value));
+
+            // Delete any previous attempts.
+            self::delete_old_response((int)$this->question->id, (int)$response->id);
 
             // When saving the draft file, the itemid was the same as the draftitemid. This must now be
             // corrected to the primary key that is questionaire_response_file.id to have a correct reference.

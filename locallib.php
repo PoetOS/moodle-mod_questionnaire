@@ -317,13 +317,14 @@ function questionnaire_delete_response($response, $questionnaire='') {
     }
 
     // Delete all of the response data for a response.
-    $DB->delete_records('questionnaire_response_bool', array('response_id' => $rid));
-    $DB->delete_records('questionnaire_response_date', array('response_id' => $rid));
-    $DB->delete_records('questionnaire_resp_multiple', array('response_id' => $rid));
-    $DB->delete_records('questionnaire_response_other', array('response_id' => $rid));
-    $DB->delete_records('questionnaire_response_rank', array('response_id' => $rid));
-    $DB->delete_records('questionnaire_resp_single', array('response_id' => $rid));
-    $DB->delete_records('questionnaire_response_text', array('response_id' => $rid));
+    $DB->delete_records('questionnaire_response_bool', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_response_date', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_resp_multiple', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_response_other', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_response_rank', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_resp_single', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_response_text', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_response_file', ['response_id' => $rid]);
 
     $status = $status && $DB->delete_records('questionnaire_response', array('id' => $rid));
 
@@ -354,6 +355,7 @@ function questionnaire_delete_responses($qid) {
     $DB->delete_records('questionnaire_response_rank', ['question_id' => $qid]);
     $DB->delete_records('questionnaire_resp_single', ['question_id' => $qid]);
     $DB->delete_records('questionnaire_response_text', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_response_file', ['question_id' => $qid]);
 
     return true;
 }

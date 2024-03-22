@@ -70,20 +70,25 @@ class file extends question {
     /**
      * Survey display output.
      *
-     * @param \stdClass $formdata
+     * @param response $response
      * @param object $descendantsdata
      * @param bool $blankquestionnaire
      * @return string
      */
-    protected function question_survey_display($formdata, $descendantsdata, $blankquestionnaire = false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         global $CFG, $PAGE;
         require_once($CFG->libdir . '/filelib.php');
+
         $elname = 'q' . $this->id;
-        $draftitemid = file_get_submitted_draft_itemid($elname);
-        $component = 'mod_questionnaire';
+        // Make sure there is a response, fetch the draft id from the original request.
+        if (isset($response->answers[$this->id]) && !empty($response->answers[$this->id]) && isset($_REQUEST[$elname . 'draft'])) {
+            $draftitemid = (int)$_REQUEST[$elname . 'draft'];
+        } else {
+            $draftitemid = file_get_submitted_draft_itemid($elname);
+        }
         $options = self::get_file_manager_option();
         if ($draftitemid > 0) {
-            file_prepare_draft_area($draftitemid, $this->context->id, $component, 'file', $this->id, $options);
+            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_questionnaire', 'file', $this->id, $options);
         } else {
             $draftitemid = file_get_unused_draft_itemid();
         }
@@ -101,12 +106,38 @@ class file extends question {
         );
         $fm = new form_filemanager((object) $fmoptions);
         $output = $PAGE->get_renderer('core', 'files');
-        $html = $output->render($fm);
 
-        $html .= '<input value="' . $draftitemid . '" name="' . $elname . '" type="hidden" />';
-        $html .= '<input value="" id="' . $this->id . '" type="hidden" />';
+        $html = '<div class="form-filemanager" data-fieldtype="filemanager">' .
+            $output->render($fm) .
+            '<input type="hidden" name="' . $elname . '" value="' . $draftitemid . '" />' .
+            '<input type="hidden" name="' . $elname . 'draft" value="' . $draftitemid . '" />' .
+            '</div>';
 
         return $html;
+    }
+
+    /**
+     * Check question's form data for complete response.
+     * @param \stdClass $responsedata The data entered into the response.
+     * @return bool
+     */
+    public function response_complete($responsedata) {
+        $answered = false;
+        // If $responsedata is a response object, look through the answers.
+        if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response') &&
+            isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])
+        ) {
+            $answer = reset($responsedata->answers[$this->id]);
+            $answered = ((int)$answer->value > 0);
+        // If $responsedata is webform data, check that it is not empty.
+        } else if (isset($responsedata->{'q'.$this->id})) {
+            $draftitemid = (int)$responsedata->{'q' . $this->id};
+            if ($draftitemid > 0) {
+                $info = file_get_draft_area_info($draftitemid);
+                $answered = $info['filecount'] > 0;
+            }
+        }
+        return !($this->required() && ($this->deleted == 'n') && !$answered);
     }
 
     /**
