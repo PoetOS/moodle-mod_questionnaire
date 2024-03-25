@@ -623,7 +623,9 @@ class behat_mod_questionnaire extends behat_base {
         $repositoryname = behat_context_helper::escape($repositoryname);
 
         // Here we don't need to look inside the selected element because there can only be one modal window.
-        $repositorylink = $this->find(
+        // Apparently there are some of these repo elements. So if the first one is not visible, check out
+        // the next one.
+        $repositorylinks = $this->find_all(
             'xpath',
             "//div[contains(concat(' ', normalize-space(@class), ' '), ' fp-repo-area ')]" .
             "//descendant::span[contains(concat(' ', normalize-space(@class), ' '), ' fp-repo-name ')]" .
@@ -631,8 +633,17 @@ class behat_mod_questionnaire extends behat_base {
             $repoexception
         );
 
+        foreach ($repositorylinks as $repositorylink) {
+            try {
+                $this->ensure_node_is_visible($repositorylink);
+            } catch (Exception $exception) {
+                $repositorylink = $exception;
+            }
+        }
+        if ($repositorylink instanceof \Exception) {
+            throw new $repositorylink;
+        }
         // Selecting the repo.
-        $this->ensure_node_is_visible($repositorylink);
         if (!$repositorylink->getParent()->getParent()->hasClass('active')) {
             // If the repository link is active, then the repository is already loaded.
             // Clicking it while it's active causes issues, so only click it when it isn't (see MDL-51014).
