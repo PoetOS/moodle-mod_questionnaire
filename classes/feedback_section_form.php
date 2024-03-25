@@ -33,6 +33,10 @@ class feedback_section_form extends \moodleform {
 
     /** @var mixed $_feedbacks */
     protected $_feedbacks;
+    /**
+     * @var \context $context The used context.
+     */
+    public $context;
 
     /**
      * Form definition.
