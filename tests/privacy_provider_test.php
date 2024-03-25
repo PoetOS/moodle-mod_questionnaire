@@ -14,14 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy test for the mod questionnaire.
- *
- * @package    mod_questionnaire
- * @copyright  2019, onwards Poet
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace mod_questionnaire;
 
 namespace mod_questionnaire;
 

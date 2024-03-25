@@ -16,6 +16,7 @@
 
 /**
  * Performance test for questionnaire module.
+ *
  * @package mod_questionnaire
  * @group mod_questionnaire
  * @author     Guy Thomas

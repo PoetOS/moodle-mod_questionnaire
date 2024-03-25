@@ -30,9 +30,9 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 use Behat\Behat\Context\Step\Given as Given,
     Behat\Behat\Context\Step\When as When,
     Behat\Gherkin\Node\TableNode as TableNode,
-    Behat\Gherkin\Node\PyStringNode as PyStringNode,
     Behat\Mink\Exception\ExpectationException as ExpectationException;
-;
+
+#[\AllowDynamicProperties]
 /**
  * Questionnaire-related steps definitions.
  *
@@ -119,7 +119,8 @@ class behat_mod_questionnaire extends behat_base {
             'Rate (scale 1..5)',
             'Text Box',
             'Yes/No',
-            'Slider');
+            'Slider',
+            'File');
 
         if (!in_array($questiontype, $validtypes)) {
             throw new ExpectationException('Invalid question type specified.', $this->getSession());
@@ -463,5 +464,190 @@ class behat_mod_questionnaire extends behat_base {
     protected function get_cm_by_questionnaire_name(string $name): stdClass {
         $questionnaire = $this->get_questionnaire_by_name($name);
         return get_coursemodule_from_instance('questionnaire', $questionnaire->id, $questionnaire->course);
+    }
+
+    /**
+     * Uploads a file to the specified filemanager leaving other fields in upload form default.
+     *
+     * The paths should be relative to moodle codebase.
+     *
+     * @When /^I upload "(?P<filepath_string>(?:[^"]|\\")*)" to questionnaire "(?P<question_string>(?:[^"]|\\")*)" filemanager$/
+     * @param string $filepath
+     * @param string $question
+     */
+    public function i_upload_file_to_questionnaire_question_filemanager($filepath, $question) {
+        $this->upload_file_to_question_filemanager_questionnaire($filepath, $question, new TableNode([]), false);
+    }
+
+    /**
+     * Try to get the filemanager node of a given question.
+     *
+     * @param $question
+     * @return \Behat\Mink\Element\NodeElement|null
+     */
+    protected function get_filepicker_node($question) {
+        // More info about the problem (in case there is a problem).
+        $exception = new ExpectationException('The filepicker for the question with text "' . $question .
+            '" can not be found', $this->getSession());
+
+        $filepickercontainer = $this->find(
+            'xpath',
+            "//p[contains(.,'" . $question . "')]" .
+            "//parent::div[contains(concat(' ', normalize-space(@class), ' '), ' no-overflow ')]" .
+            "//parent::div[contains(concat(' ', normalize-space(@class), ' '), ' qn-question ')]" .
+            "//following::div[contains(concat(' ', normalize-space(@class), ' '), ' qn-answer ')]" .
+            "//descendant::*[@data-fieldtype = 'filemanager' or @data-fieldtype = 'filepicker']",
+            $exception
+        );
+
+        return $filepickercontainer;
+    }
+
+    /**
+     * Uploads a file to filemanager
+     *
+     * @param string $filepath Normally a path relative to $CFG->dirroot, but can be an absolute path too.
+     * @param string $question A question text.
+     * @param TableNode $data Data to fill in upload form
+     * @param false|string $overwriteaction false if we don't expect that file with the same name already exists,
+     *     or button text in overwrite dialogue ("Overwrite", "Rename to ...", "Cancel")
+     * @throws DriverException
+     * @throws ExpectationException Thrown by behat_base::find
+     */
+    protected function upload_file_to_question_filemanager_questionnaire($filepath, $question, TableNode $data,
+        $overwriteaction = false) {
+        global $CFG;
+
+        if (!$this->has_tag('_file_upload')) {
+            throw new DriverException('File upload tests must have the @_file_upload tag on either the scenario or feature.');
+        }
+
+        $filemanagernode = $this->get_filepicker_node($question);
+
+        // Opening the select repository window and selecting the upload repository.
+        $this->open_add_file_window($filemanagernode, get_string('pluginname', 'repository_upload'));
+
+        // Ensure all the form is ready.
+        $noformexception = new ExpectationException('The upload file form is not ready', $this->getSession());
+        $this->find(
+            'xpath',
+            "//div[contains(concat(' ', normalize-space(@class), ' '), ' container ')]" .
+            "[contains(concat(' ', normalize-space(@class), ' '), ' repository_upload ')]" .
+            "/descendant::div[contains(concat(' ', normalize-space(@class), ' '), ' file-picker ')]" .
+            "/descendant::div[contains(concat(' ', normalize-space(@class), ' '), ' fp-content ')]" .
+            "/descendant::div[contains(concat(' ', normalize-space(@class), ' '), ' fp-upload-form ')]" .
+            "/descendant::form",
+            $noformexception
+        );
+        // After this we have the elements we want to interact with.
+
+        // Form elements to interact with.
+        $file = $this->find_file('repo_upload_file');
+
+        // Attaching specified file to the node.
+        // Replace 'admin/' if it is in start of path with $CFG->admin .
+        if (substr($filepath, 0, 6) === 'admin/') {
+            $filepath = $CFG->dirroot . DIRECTORY_SEPARATOR . $CFG->admin .
+                DIRECTORY_SEPARATOR . substr($filepath, 6);
+        }
+        $filepath = str_replace('/', DIRECTORY_SEPARATOR, $filepath);
+        if (!is_readable($filepath)) {
+            $filepath = $CFG->dirroot . DIRECTORY_SEPARATOR . $filepath;
+            if (!is_readable($filepath)) {
+                throw new ExpectationException('The file to be uploaded does not exist.', $this->getSession());
+            }
+        }
+        $file->attachFile($filepath);
+
+        // Fill the form in Upload window.
+        $datahash = $data->getRowsHash();
+
+        // The action depends on the field type.
+        foreach ($datahash as $locator => $value) {
+
+            $field = behat_field_manager::get_form_field_from_label($locator, $this);
+
+            // Delegates to the field class.
+            $field->set_value($value);
+        }
+
+        // Submit the file.
+        $submit = $this->find_button(get_string('upload', 'repository'));
+        $submit->press();
+
+        // We wait for all the JS to finish as it is performing an action.
+        $this->getSession()->wait(self::get_timeout(), self::PAGE_READY_JS);
+
+        if ($overwriteaction !== false) {
+            $overwritebutton = $this->find_button($overwriteaction);
+            $this->ensure_node_is_visible($overwritebutton);
+            $overwritebutton->click();
+
+            // We wait for all the JS to finish.
+            $this->getSession()->wait(self::get_timeout(), self::PAGE_READY_JS);
+        }
+
+    }
+
+    /**
+     * Opens the filepicker modal window and selects the repository.
+     *
+     * @param NodeElement $filemanagernode The filemanager or filepicker form element DOM node.
+     * @param mixed $repositoryname The repo name.
+     * @return void
+     * @throws ExpectationException Thrown by behat_base::find
+     */
+    protected function open_add_file_window($filemanagernode, $repositoryname) {
+        $exception = new ExpectationException('No files can be added to the specified filemanager', $this->getSession());
+
+        // We should deal with single-file and multiple-file filemanagers,
+        // catching the exception thrown by behat_base::find() in case is not multiple.
+        $this->execute('behat_general::i_click_on_in_the', [
+            'div.fp-btn-add a, input.fp-btn-choose', 'css_element',
+            $filemanagernode, 'NodeElement'
+        ]);
+
+        // Wait for the default repository (if any) to load. This checks that
+        // the relevant div exists and that it does not include the loading image.
+        $this->ensure_element_exists(
+            "//div[contains(concat(' ', normalize-space(@class), ' '), ' file-picker ')]" .
+            "//div[contains(concat(' ', normalize-space(@class), ' '), ' fp-content ')]" .
+            "[not(descendant::div[contains(concat(' ', normalize-space(@class), ' '), ' fp-content-loading ')])]",
+            'xpath_element');
+
+        // Getting the repository link and opening it.
+        $repoexception =
+            new ExpectationException('The "' . $repositoryname . '" repository has not been found', $this->getSession());
+
+        // Avoid problems with both double and single quotes in the same string.
+        $repositoryname = behat_context_helper::escape($repositoryname);
+
+        // Here we don't need to look inside the selected element because there can only be one modal window.
+        // Apparently there are some of these repo elements. So if the first one is not visible, check out
+        // the next one.
+        $repositorylinks = $this->find_all(
+            'xpath',
+            "//div[contains(concat(' ', normalize-space(@class), ' '), ' fp-repo-area ')]" .
+            "//descendant::span[contains(concat(' ', normalize-space(@class), ' '), ' fp-repo-name ')]" .
+            "[normalize-space(.)=$repositoryname]",
+            $repoexception
+        );
+
+        foreach ($repositorylinks as $repositorylink) {
+            try {
+                $this->ensure_node_is_visible($repositorylink);
+            } catch (Exception $exception) {
+                $repositorylink = $exception;
+            }
+        }
+        if ($repositorylink instanceof \Exception) {
+            throw new $repositorylink;
+        }
+        // Selecting the repo.
+        if (!$repositorylink->getParent()->getParent()->hasClass('active')) {
+            // If the repository link is active, then the repository is already loaded.
+            // Clicking it while it's active causes issues, so only click it when it isn't (see MDL-51014).
+            $this->execute('behat_general::i_click_on', [$repositorylink, 'NodeElement']);
+        }
     }
 }

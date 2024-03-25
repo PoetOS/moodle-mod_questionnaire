@@ -21,6 +21,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
 
+#[\AllowDynamicProperties]
 /**
  * Print the form to add or edit a questionnaire-instance
  *
@@ -33,6 +34,13 @@ class feedback_section_form extends \moodleform {
 
     /** @var mixed $_feedbacks */
     protected $_feedbacks;
+    /**
+     * @var \context $context The used context.
+     */
+    public $context;
+
+    /** @var int $sid The section id. */
+    protected $sid;
 
     /**
      * Form definition.

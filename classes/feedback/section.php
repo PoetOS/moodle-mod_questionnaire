@@ -16,9 +16,12 @@
 
 namespace mod_questionnaire\feedback;
 
+defined('MOODLE_INTERNAL') || die();
+
 use invalid_parameter_exception;
 use coding_exception;
 
+#[\AllowDynamicProperties]
 /**
  * Class for describing a feedback section.
  *

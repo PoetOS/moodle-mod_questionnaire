@@ -42,6 +42,7 @@ define('QUESRATE', 8);
 define('QUESDATE', 9);
 define('QUESNUMERIC', 10);
 define('QUESSLIDER', 11);
+define('QUESFILE', 12);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
 
@@ -50,7 +51,7 @@ $idcounter = 0;
 
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
-
+#[\AllowDynamicProperties]
 /**
  * Class for describing a question
  *
@@ -119,6 +120,7 @@ abstract class question {
         QUESDROP => 'drop',
         QUESRATE => 'rate',
         QUESDATE => 'date',
+        QUESFILE => 'file',
         QUESNUMERIC => 'numerical',
         QUESPAGEBREAK => 'pagebreak',
         QUESSECTIONTEXT => 'sectiontext',

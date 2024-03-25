@@ -521,11 +521,12 @@ function questionnaire_scale_used_anywhere($scaleid) {
  * @param string $filearea
  * @param array $args
  * @param bool $forcedownload
+ * @param mixed $options
  * @return bool false if file not found, does not return if found - justsend the file
  *
  * $forcedownload is unused, but API requires it. Suppress PHPMD warning.
  */
-function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
+function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options) {
     global $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -534,7 +535,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
 
     require_course_login($course, true, $cm);
 
-    $fileareas = ['intro', 'info', 'thankbody', 'question', 'feedbacknotes', 'sectionheading', 'feedback'];
+    $fileareas = ['intro', 'info', 'thankbody', 'question', 'feedbacknotes', 'sectionheading', 'feedback', 'file'];
     if (!in_array($filearea, $fileareas)) {
         return false;
     }
@@ -551,6 +552,10 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
         }
     } else if ($filearea == 'feedback') {
         if (!$DB->record_exists('questionnaire_feedback', ['id' => $componentid])) {
+            return false;
+        }
+    } else if ($filearea == 'file') {
+        if (!$DB->record_exists('questionnaire_response_file', ['id' => $componentid])) {
             return false;
         }
     } else {
@@ -571,7 +576,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
     }
 
     // Finally send the file.
-    send_stored_file($file, 0, 0, true); // Download MUST be forced - security!
+    send_stored_file($file, null, 0, $forcedownload, $options); // Download MUST be forced - security!
 }
 /**
  * Adds module specific settings to the settings block
