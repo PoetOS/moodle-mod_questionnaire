@@ -26,7 +26,6 @@ declare(strict_types=1);
 
 namespace mod_questionnaire;
 
-use advanced_testcase;
 use cm_info;
 use coding_exception;
 use mod_questionnaire\completion\custom_completion;
@@ -45,7 +44,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php')
  * @copyright 2022 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class custom_completion_test extends advanced_testcase {
+class custom_completion_test extends \advanced_testcase {
 
     /**
      * Data provider for get_state().
@@ -80,6 +79,8 @@ class custom_completion_test extends advanced_testcase {
      * @param int|null $status Expected status.
      * @param string|null $exception Expected exception.
      * @throws coding_exception
+     *
+     * @covers \mod_questionnaire\completion\custom_completion
      */
     public function test_get_state(string $rule, int $available, ?bool $submitted, ?int $status, ?string $exception) {
         if (!is_null($exception)) {
@@ -116,7 +117,7 @@ class custom_completion_test extends advanced_testcase {
     /**
      * Test for get_defined_custom_rules().
      *
-     * @covers \mod_questionnaire\completion\custom_completion::get_defined_custom_rules
+     * @covers \mod_questionnaire\completion\custom_completion
      */
     public function test_get_defined_custom_rules() {
         $rules = custom_completion::get_defined_custom_rules();
@@ -127,7 +128,7 @@ class custom_completion_test extends advanced_testcase {
     /**
      * Test for get_defined_custom_rule_descriptions().
      *
-     * @covers \mod_questionnaire\completion\custom_completion::get_custom_rule_descriptions
+     * @covers \mod_questionnaire\completion\custom_completion
      */
     public function test_get_custom_rule_descriptions() {
         // Get defined custom rules.
@@ -155,7 +156,7 @@ class custom_completion_test extends advanced_testcase {
     /**
      * Test for is_defined().
      *
-     * @covers \mod_questionnaire\completion\custom_completion::is_defined
+     * @covers \mod_questionnaire\completion\custom_completion
      */
     public function test_is_defined() {
         // Build a mock cm_info instance.
@@ -195,6 +196,8 @@ class custom_completion_test extends advanced_testcase {
      * @dataProvider get_available_custom_rules_provider
      * @param int $status
      * @param array $expected
+     *
+     * @covers \mod_questionnaire\completion\custom_completion
      */
     public function test_get_available_custom_rules(int $status, array $expected) {
         $customdataval = [

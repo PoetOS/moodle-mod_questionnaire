@@ -16,6 +16,8 @@
 
 namespace mod_questionnaire;
 
+use mod_questionnaire\question\question;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -34,9 +36,12 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php')
  */
 class responsetypes_test extends \advanced_testcase {
     /**
-     * Test case for the create_response_boolean function.
+     * Test responses in a yes/no question.
      *
-     * @covers \mod_questionnaire_generator::create_question_response
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\yesno
      */
     public function test_create_response_boolean() {
         global $DB;
@@ -65,9 +70,12 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_response_text function.
+     * Test responses in a essay question.
      *
-     * @covers \mod_questionnaire_generator::create_question_response
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\essay
      */
     public function test_create_response_text() {
         global $DB;
@@ -97,9 +105,12 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_response_slider function.
+     * Test responses in a slider question.
      *
-     * @covers \mod_questionnaire_generator::create_question_response
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\slider
      */
     public function test_create_response_slider() {
         global $DB;
@@ -129,9 +140,12 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_response_date function.
+     * Test responses in a date question.
      *
-     * @covers \mod_questionnaire_generator::create_question_response
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\date
      */
     public function test_create_response_date() {
         global $DB;
@@ -162,9 +176,12 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_response_single function.
+     * Test responses in a single choice radio question.
      *
-     * @covers \mod_questionnaire_generator::create_question_response
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\radio
      */
     public function test_create_response_single() {
         global $DB;
@@ -236,9 +253,12 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_response_multiple function.
+     * Test responses in a multiple choices question.
      *
-     * @covers \mod_questionnaire_generator::create_question_response
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\rate
      */
     public function test_create_response_multiple() {
         global $DB;
@@ -296,9 +316,12 @@ class responsetypes_test extends \advanced_testcase {
     }
 
     /**
-     * Test case for the create_response_rank function.
+     * Test response's ranks in a rate question.
      *
-     * @covers \mod_questionnaire_generator::create_question_response
+     * @return void
+     * @throws dml_exception
+     *
+     * @covers \mod_questionnaire\question\rate
      */
     public function test_create_response_rank() {
         global $DB;
@@ -365,7 +388,7 @@ class responsetypes_test extends \advanced_testcase {
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $generator->create_question($questionnaire, $questiondata, $choicedata);
 
-        $questionnaire = new questionnaire( $course, $cm, $questionnaire->id, null, true);
+        $questionnaire = new \questionnaire( $course, $cm, $questionnaire->id, null, true);
 
         return $questionnaire;
     }

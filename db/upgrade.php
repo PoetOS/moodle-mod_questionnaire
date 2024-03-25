@@ -997,6 +997,11 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2022092200, 'questionnaire');
     }
 
+    if ($oldversion < 2022121600.02) {
+        // Upgrade for downloadoptions - useridentityfields setting.
+        upgrade_mod_savepoint(true, 2022121600.02, 'questionnaire');
+    }
+
     if ($oldversion < 2023101500) {
         $questiontype = new stdClass();
         $questiontype->typeid = 12;
@@ -1046,7 +1051,7 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2023101501, 'questionnaire');
     }
 
-    return $result;
+    return true;
 }
 
 /**

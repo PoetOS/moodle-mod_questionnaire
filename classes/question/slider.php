@@ -68,6 +68,39 @@ class slider extends question {
     }
 
     /**
+     * True if question type supports feedback options. False by default.
+     * @return bool
+     */
+    public function supports_feedback() {
+        return true;
+    }
+
+    /**
+     * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
+     * @return bool
+     */
+    public function valid_feedback() {
+        $extradata = json_decode($this->extradata);
+        $minrange = $extradata->minrange;
+        // Negative scores are not accepted in Feedback.
+        return $this->supports_feedback() && !empty($this->name) && $minrange >= 0;
+    }
+
+    /**
+     * Get the maximum score possible for feedback if appropriate. Override if default behaviour is not correct.
+     * @return int | boolean
+     */
+    public function get_feedback_maxscore() {
+        if ($this->valid_feedback()) {
+            $extradata = json_decode($this->extradata);
+            $maxscore = $extradata->maxrange;
+        } else {
+            $maxscore = false;
+        }
+        return $maxscore;
+    }
+
+    /**
      * Return the context tags for the check question template.
      *
      * @param \mod_questionnaire\responsetype\response\response $response

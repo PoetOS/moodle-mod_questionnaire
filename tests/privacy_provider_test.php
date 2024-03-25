@@ -16,6 +16,8 @@
 
 namespace mod_questionnaire;
 
+namespace mod_questionnaire;
+
 use \mod_questionnaire\privacy\provider;
 
 /**

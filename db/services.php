@@ -36,7 +36,7 @@ $services = [
 
 $functions = [
     'mod_questionnaire_submit_questionnaire_response' => [
-        'classname' => 'mod_questionnaire_external',
+        'classname' => 'mod_questionnaire\external',
         'methodname' => 'submit_questionnaire_response',
         'classpath' => 'mod/questionnaire/externallib.php',
         'description' => 'Questionnaire submit',

@@ -102,4 +102,12 @@ class pagebreak extends question {
     public function mobile_question_display($qnum, $autonum = false) {
         return false;
     }
+
+    /**
+     * Override and return false if a number should not be rendered for this question in any context.
+     * @return bool
+     */
+    public function is_numbered() {
+        return false;
+    }
 }

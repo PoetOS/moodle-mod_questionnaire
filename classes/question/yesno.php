@@ -154,6 +154,9 @@ class yesno extends question {
             if ($blankquestionnaire) {
                 $option->disabled = true;
             }
+            if (!empty($this->qlegend)) {
+                $option->alabel = strip_tags("{$this->qlegend} {$option->label}");
+            }
             $choicetags->qelements->choice[] = $option;
         }
         // CONTRIB-846.
@@ -168,6 +171,9 @@ class yesno extends question {
             $option->label = format_text($content, FORMAT_HTML, ['noclean' => true]);
             if (!$ischecked && !$blankquestionnaire) {
                 $option->checked = true;
+            }
+            if (!empty($this->qlegend)) {
+                $option->alabel = strip_tags("{$this->qlegend} {$option->label}");
             }
             $choicetags->qelements->choice[] = $option;
         }
@@ -200,6 +206,10 @@ class yesno extends question {
         }
         if ($answer->value == 'n') {
             $resptags->noselected = 1;
+        }
+        if (!empty($this->qlegend)) {
+            $resptags->alabelyes = strip_tags("{$this->qlegend} {$resptags->stryes}");
+            $resptags->alabelno = strip_tags("{$this->qlegend} {$resptags->strno}");
         }
 
         return $resptags;

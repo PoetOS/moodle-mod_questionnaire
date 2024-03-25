@@ -122,6 +122,9 @@ class radio extends question {
                 }
                 $contents = questionnaire_choice_values($choice->content);
                 $radio->label = $value.format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
+                if (!empty($this->qlegend)) {
+                    $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
+                }
             } else {             // Radio button with associated !other text field.
                 $othertext = $choice->other_choice_display();
                 $cname = choice::id_other_choice_name($id);
@@ -143,6 +146,10 @@ class radio extends question {
                     $radio->ovalue = format_string(stripslashes($odata));
                 }
                 $radio->olabel = 'Text for '.format_text($othertext, FORMAT_HTML, ['noclean' => true]);
+                if (!empty($this->qlegend)) {
+                    $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
+                    $radio->aolabel = strip_tags("{$this->qlegend} {$radio->olabel}");
+                }
             }
             $choicetags->qelements[] = (object)['choice' => $radio];
         }
@@ -164,6 +171,9 @@ class radio extends question {
             }
             $content = get_string('noanswer', 'questionnaire');
             $radio->label = format_text($content, FORMAT_HTML, ['noclean' => true]);
+            if (!empty($this->qlegend)) {
+                $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
+            }
 
             $choicetags->qelements[] = (object)['choice' => $radio];
         }
@@ -212,6 +222,9 @@ class radio extends question {
                 $chobj->content = $choice->other_choice_display();
             } else {
                 $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
+            }
+            if (!empty($this->qlegend)) {
+                $chobj->alabel = strip_tags("{$this->qlegend} {$chobj->content}");
             }
             $resptags->choices[] = $chobj;
         }

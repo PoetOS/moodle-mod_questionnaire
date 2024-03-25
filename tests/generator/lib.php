@@ -108,7 +108,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $instance = parent::create_instance($record, (array)$options);
         $cm = get_coursemodule_from_instance('questionnaire', $instance->id);
         $course = get_course($cm->course);
-        $questionnaire = new questionnaire($course, $cm, 0, $instance, false);
+        $questionnaire = new \questionnaire($course, $cm, 0, $instance, false);
 
         $this->questionnaires[$instance->id] = $questionnaire;
 
@@ -220,7 +220,7 @@ class mod_questionnaire_generator extends testing_module_generator {
             $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
             $this->create_question($questionnaire, $questiondata, $choicedata);
         }
-        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, true);
+        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, true);
         return $questionnaire;
     }
 
@@ -678,9 +678,10 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param int $studentcount
      * @param int $questionnairecount
      * @param int $questionspertype
+     * @param array $profilefields in format ['<shortname>' => '<name>']
      */
     public function create_and_fully_populate($coursecount = 4, $studentcount = 20, $questionnairecount = 2,
-                                              $questionspertype = 5) {
+                                              $questionspertype = 5, $profilefields = []) {
         global $DB;
 
         $dg = $this->datagenerator;
@@ -692,8 +693,24 @@ class mod_questionnaire_generator extends testing_module_generator {
         $courses = [];
         $questionnaires = [];
 
+        if (!empty($profilefields)) {
+            // Create profile fields and set them to show for user identity.
+            $fields = [];
+            foreach ($profilefields as $field => $name) {
+                $dg->create_custom_profile_field(['datatype' => 'text',
+                    'shortname' => $field, 'name' => $name]);
+                $fields[] = "profile_field_{$field}";
+            }
+            set_config('showuseridentity', implode(',', $fields));
+        }
+
         for ($u = 0; $u < $studentcount; $u++) {
-            $students[] = $dg->create_user(['firstname' => 'Testy']);
+            $user = ['firstname' => 'Testy'];
+            // Set values for the profile fields.
+            foreach ($profilefields as $field => $name) {
+                $user["profile_field_{$field}"] = "{$field}{$u}";
+            }
+            $students[] = $dg->create_user($user);
         }
 
         $manplugin = enrol_get_plugin('manual');
