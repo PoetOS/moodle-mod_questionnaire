@@ -119,17 +119,17 @@ class file extends responsetype {
     /**
      * Delete old entries from the questionnaire_response_file table and also the corresponding entries
      * in the files table.
-     * @param int $question_id
-     * @param int $response_id
+     * @param int $questionid
+     * @param int $responseid
      * @return void
      * @throws \dml_exception
      */
-    public static function delete_old_response(int $question_id, int $response_id) {
+    public static function delete_old_response(int $questionid, int $responseid) {
         global $DB;
         // Check, if we have an old response file from a former attempt.
         $record = $DB->get_record(static::response_table(), [
-            'response_id' => $response_id,
-            'question_id' => $question_id,
+            'response_id' => $responseid,
+            'question_id' => $questionid,
         ]);
         if ($record) {
             // Old record found, then delete all referenced entries in the files table and then delete this entry.
