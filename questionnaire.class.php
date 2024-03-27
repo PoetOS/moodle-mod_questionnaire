@@ -823,9 +823,10 @@ class questionnaire {
      *
      * @param int|bool $userid
      * @param int $groupid
+     * @param int|bool $includeincomplete
      * @return array
      */
-    public function get_responses($userid=false, $groupid=0) {
+    public function get_responses($userid=false, $groupid=0, $includeincomplete=false) {
         global $DB;
 
         $params = [];
@@ -837,6 +838,12 @@ class questionnaire {
             $params['groupid'] = $groupid;
         }
 
+        $statuscnd = '';
+        if (!$includeincomplete) {
+            $statuscnd = ' AND r.complete = :status ';
+            $params['status'] = 'y';
+        }
+
         // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
         // Public questionnaires can have responses to multiple questionnaire instances.
         if ($this->survey_is_public_master()) {
@@ -845,16 +852,14 @@ class questionnaire {
                 'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
                 'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
                 $groupsql .
-                'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
+                'WHERE s.id = :surveyid' . $statuscnd . $groupcnd;
             $params['surveyid'] = $this->sid;
-            $params['status'] = 'y';
         } else {
             $sql = 'SELECT r.* ' .
                 'FROM {questionnaire_response} r ' .
                 $groupsql .
-                'WHERE r.questionnaireid = :questionnaireid AND r.complete = :status' . $groupcnd;
+                'WHERE r.questionnaireid = :questionnaireid' . $statuscnd . $groupcnd;
             $params['questionnaireid'] = $this->id;
-            $params['status'] = 'y';
         }
         if ($userid) {
             $sql .= ' AND r.userid = :userid';
