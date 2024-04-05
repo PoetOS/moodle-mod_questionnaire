@@ -111,7 +111,7 @@ class response {
     /**
      * Provide a response object from web form data to the question.
      *
-     * @param \stdClass $responsedata All the responsedata as an object.
+     * @param \stdClass $responsedata All of the responsedata as an object.
      * @param array $questions
      * @return response A response object.
      */

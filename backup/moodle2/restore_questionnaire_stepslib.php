@@ -128,6 +128,10 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
                     '/activity/questionnaire/responses/response/response_dates/response_date'
                 );
                 $paths[] = new restore_path_element(
+                    'questionnaire_response_file',
+                    '/activity/questionnaire/responses/response/response_files/response_file'
+                );
+                $paths[] = new restore_path_element(
                     'questionnaire_response_multiple',
                     '/activity/questionnaire/responses/response/response_multiples/response_multiple'
                 );
@@ -379,6 +383,22 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         // Insert the questionnaire_response_date record.
         $DB->insert_record('questionnaire_response_date', $data);
+    }
+
+    /**
+     * Process file responses.
+     * @param array $data
+     * @throws dml_exception
+     */
+    protected function process_questionnaire_response_file($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $data->response_id = $this->get_new_parentid('questionnaire_response');
+        $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
+
+        // Insert the questionnaire_response_file record.
+        $DB->insert_record('questionnaire_response_file', $data);
     }
 
     /**

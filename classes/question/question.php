@@ -14,14 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\question;
-use mod_questionnaire\edit_question_form;
-use mod_questionnaire\responsetype\response\response;
-use questionnaire;
-
-defined('MOODLE_INTERNAL') || die();
-use html_writer;
-
 /**
  * This file contains the parent class for questionnaire question types.
  *
@@ -30,7 +22,16 @@ use html_writer;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
- // Constants.
+
+namespace mod_questionnaire\question;
+use mod_questionnaire\edit_question_form;
+use mod_questionnaire\responsetype\response\response;
+use questionnaire;
+use html_writer;
+
+defined('MOODLE_INTERNAL') || die();
+
+// Constants.
 define('QUESCHOOSE', 0);
 define('QUESYESNO', 1);
 define('QUESTEXT', 2);

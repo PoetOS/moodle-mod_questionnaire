@@ -17,7 +17,7 @@
 /**
  * This main view page for a questionnaire.
  *
- * @package mod_questionnaire
+ * @package    mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
