@@ -78,9 +78,8 @@
 }}
 {{=<% %>=}}
 <div>
-    <core-course-module-description description="<%intro%>"
-                                    component="mod_questionnaire" componentId="<%cmid%>"
-                                    pagenum="<%pagenum%>"></core-course-module-description>
+    <core-course-module-info [module]="module" description="<%intro%>" component="mod_questionnaire" componentId="<%cmid%>"
+        [courseId]="courseId"></core-course-module-info>
     <%#notifications%>
     <ion-card>
         <ion-card-content>

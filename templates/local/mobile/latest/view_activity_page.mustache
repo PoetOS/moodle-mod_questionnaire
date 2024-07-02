@@ -79,9 +79,15 @@
 }}
 {{=<% %>=}}
 <div>
-    <core-course-module-description description="<%intro%>"
-                                    component="mod_questionnaire" componentId="<%cmid%>"
-                                    pagenum="<%pagenum%>"></core-course-module-description>
+    <%#intro%>
+    <ion-card>
+        <ion-item class="ion-text-wrap">
+            <ion-label>
+                <core-format-text text="<%intro%>" component="mod_questionnaire" componentId="<%cmid%>" collapsible-item />
+            </ion-label>
+        </ion-item>
+    </ion-card>
+    <%/intro%>
     <%#notifications%>
     <ion-card>
         <ion-card-content>
