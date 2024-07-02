@@ -40,7 +40,7 @@ class mobile {
 
         $args = (object) $args;
 
-        $versionname = $args->appversioncode >= 3950 ? 'latest' : 'ionic3';
+        $versionname = $args->appversioncode >= 44000 ? 'latest' : 'ionic5';
         $cmid = $args->cmid;
         $rid = isset($args->rid) ? $args->rid : 0;
         $action = isset($args->action) ? $args->action : 'index';
