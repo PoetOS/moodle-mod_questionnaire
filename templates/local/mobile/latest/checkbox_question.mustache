@@ -46,11 +46,12 @@
 {{=<% %>=}}
 <ion-list>
     <%#choices%>
-        <ion-item>
-            <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
+        <ion-item class="ion-text-wrap">
             <ion-checkbox <%#value%> checked="true"<%/value%> value="<%id%>"
             <%#completed%> disabled="true"<%/completed%>
-            [(ngModel)]="CONTENT_OTHERDATA.<%choicefieldkey%>"></ion-checkbox>
+            [(ngModel)]="CONTENT_OTHERDATA.<%choicefieldkey%>">
+                <core-format-text text="<%content%>"></core-format-text>
+            </ion-checkbox>
         </ion-item>
         <%#otherchoicekey%>
             <ion-item>

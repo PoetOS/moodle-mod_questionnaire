@@ -46,8 +46,9 @@
 <ion-radio-group [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>">
     <%#choices%>
     <ion-item class="ion-text-wrap">
-        <ion-label><core-format-text text="<%content%>"></core-format-text></ion-label>
-        <ion-radio slot="end"<%#completed%> disabled="true"<%#value%> checked="true"<%/value%><%/completed%> [value]="<%id%>"></ion-radio>
+        <ion-radio slot="end"<%#completed%> disabled="true"<%#value%> checked="true"<%/value%><%/completed%> [value]="<%id%>">
+            <core-format-text text="<%content%>"></core-format-text>
+        </ion-radio>
     </ion-item>
     <%/choices%>
 </ion-radio-group>

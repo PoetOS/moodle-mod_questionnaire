@@ -37,6 +37,14 @@
         <%/completed%>
     </ion-label>
     <%^completed%>
-    <ion-datetime displayFormat="DD/MM/YYYY" max="2100-12-31" [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>"></ion-datetime>
+    <ion-datetime-button datetime="questionnaire-date-<%fieldkey%>" />
+    <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+            <ion-datetime id="questionnaire-date-<%fieldkey%>" [(ngModel)]="CONTENT_OTHERDATA.<%fieldkey%>" presentation="date-time"
+                max="2100-12-31" [showDefaultButtons]="true">
+                <span slot="title">{{'core.date' | translate}}</span>
+            </ion-datetime>
+        </ng-template>
+    </ion-modal>
     <%/completed%>
 </ion-item>
