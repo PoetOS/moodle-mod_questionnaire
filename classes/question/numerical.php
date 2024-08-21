@@ -82,7 +82,7 @@ class numerical extends question {
         // Numeric.
         $questiontags = new \stdClass();
         $precision = $this->precise;
-        $a = new \StdClass();
+        $a = new \stdClass();
         if (isset($response->answers[$this->id][0])) {
             $mynumber = $response->answers[$this->id][0]->value;
             if ($mynumber != '') {
