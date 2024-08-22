@@ -39,6 +39,11 @@ class questionnaire {
     public $questions = [];
 
     /**
+     * @var \mod_questionnaire\question\question[] $deletequestions
+     */
+    public $deletequestions = [];
+
+    /**
      * The survey record.
      * @var object $survey
      */
@@ -106,6 +111,27 @@ class questionnaire {
     }
 
     /**
+     * Get all delete questions by survey id.
+     *
+     * @return void
+     * @throws dml_exception
+     */
+    public function get_delete_questions() {
+        global $DB;
+        $sql = "SELECT *
+                  FROM {questionnaire_question}
+                 WHERE deleted IS NOT NULL
+                   AND surveyid = ? AND type_id != ?
+              ORDER BY deleted DESC";
+        if ($records = $DB->get_records_sql($sql, [$this->sid, QUESPAGEBREAK])) {
+            foreach ($records as $record) {
+                $this->deletequestions[$record->id] = \mod_questionnaire\question\question::question_builder($record->type_id,
+                $record, $this->context);
+            }
+        }
+    }
+
+    /**
      * Adding a survey record to the object.
      * @param int $sid
      * @param null $survey
@@ -136,9 +162,8 @@ class questionnaire {
             $this->questionsbysec = [];
         }
 
-        $select = 'surveyid = ? AND deleted = ?';
-        $params = [$sid, 'n'];
-        if ($records = $DB->get_records_select('questionnaire_question', $select, $params, 'position')) {
+        $select = 'surveyid = ? AND deleted IS NULL';
+        if ($records = $DB->get_records_select('questionnaire_question', $select, [$sid], 'position')) {
             $sec = 1;
             $isbreak = false;
             foreach ($records as $record) {
@@ -2006,8 +2031,8 @@ class questionnaire {
         global $DB;
 
         $pos = $this->response_select_max_pos($rid);
-        $select = 'surveyid = ? AND type_id = ? AND position < ? AND deleted = ?';
-        $params = [$this->sid, QUESPAGEBREAK, $pos, 'n'];
+        $select = 'surveyid = ? AND type_id = ? AND position < ? AND deleted IS NULL';
+        $params = [$this->sid, QUESPAGEBREAK, $pos];
         $max = $DB->count_records_select('questionnaire_question', $select, $params) + 1;
 
         return $max;
@@ -2029,7 +2054,7 @@ class questionnaire {
                 'WHERE a.response_id = ? AND '.
                 'q.id = a.question_id AND '.
                 'q.surveyid = ? AND '.
-                'q.deleted = \'n\'';
+                'q.deleted IS NULL';
             if ($record = $DB->get_record_sql($sql, array($rid, $this->sid))) {
                 $newmax = (int)$record->num;
                 if ($newmax > $max) {
