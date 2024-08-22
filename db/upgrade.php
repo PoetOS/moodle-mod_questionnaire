@@ -1016,6 +1016,35 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2022121601.01, 'questionnaire');
     }
 
+    if ($oldversion < 2022121601.02) {
+        $table = new xmldb_table('questionnaire_question');
+        $index = new xmldb_index('quest_question_sididx', XMLDB_INDEX_NOTUNIQUE, ['surveyid', 'deleted']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+        $field = new xmldb_field('deleted', XMLDB_TYPE_CHAR, '10', XMLDB_UNSIGNED, null, null, null, 'required');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_type($table, $field);
+        }
+        unset($field);
+
+        $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, 'required');
+        if ($dbman->field_exists($table, $field)) {
+            $sql = "UPDATE {questionnaire_question}
+                       SET deleted = ?
+                     WHERE deleted = 'y'";
+            $DB->execute($sql, [time()]);
+            $sql = "UPDATE {questionnaire_question}
+                       SET deleted = null
+                     WHERE deleted = 'n'";
+            $DB->execute($sql);
+            $dbman->change_field_type($table, $field);
+        }
+        unset($field);
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2022121601.02, 'questionnaire');
+    }
+
     return true;
 }
 
