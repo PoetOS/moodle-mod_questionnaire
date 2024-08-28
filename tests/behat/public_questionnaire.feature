@@ -39,14 +39,14 @@ Feature: Questionnaires can use an existing public survey to gather responses in
       | Question Text | Enter a number |
 
     And I am on "Course 2" course homepage with editing mode on
-    And I add a "Questionnaire" to section "1" and I fill the form with:
+    And I add a questionnaire activity to course "Course 2" section "1" and I fill the form with:
       | Name | Questionnaire instance 1 |
       | Description | Description |
       | Use public | Public questionnaire [Course 1] |
     Then I should see "Questionnaire instance 1"
 
     And I am on "Course 3" course homepage with editing mode on
-    And I add a "Questionnaire" to section "1" and I fill the form with:
+    And I add a questionnaire activity to course "Course 3" section "1" and I fill the form with:
       | Name | Questionnaire instance 2 |
       | Description | Description |
       | Use public | Public questionnaire [Course 1] |

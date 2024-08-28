@@ -71,14 +71,14 @@ Feature: Questionnaires can be public, private or template
     And I press "Save and return to course"
 # Verify that a public questionnaire cannot be used in the same course.
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Questionnaire" to section "1"
+    And I add a questionnaire activity to course "Course 1" section "1"
     And I expand all fieldsets
     Then I should see "(No public questionnaires.)"
     And I press "Cancel"
 # Verify that a public questionnaire can be used in a different course.
     And I am on site homepage
     And I am on "Course 2" course homepage
-    And I add a "Questionnaire" to section "1"
+    And I add a questionnaire activity to course "Course 2" section "1"
     And I expand all fieldsets
     And I set the field "name" to "Questionnaire from public"
     And I click on "Test questionnaire [Course 1]" "radio"
