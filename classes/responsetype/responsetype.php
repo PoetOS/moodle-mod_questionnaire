@@ -220,7 +220,7 @@ abstract class responsetype {
                 $pagetags->total->width2 = $percent * 1.4;
                 $pagetags->total->image2 = $imageurl . 'thbar.gif';
                 $pagetags->total->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
-                $pagetags->total->total = "$respondents/$participants";
+                $pagetags->total->total = "($respondents)";
                 $pagetags->total->evencolor = $evencolor;
             }
         }
