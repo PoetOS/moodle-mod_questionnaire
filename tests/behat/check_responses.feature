@@ -121,3 +121,28 @@ Feature: Review responses
     And I follow "Test questionnaire"
     And I navigate to "View all responses" in current page administration
     Then "//b[text()='One']" "xpath_element" should exist
+
+  Scenario: Check auto numbering setting in responses
+    Given the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 1 | C1 | 0 |
+    And the following "activities" exist:
+      | activity | name | description | course | idnumber |
+      | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
+    And "Test questionnaire" has questions and responses
+    And I am on the "Course 1" "Course" page logged in as "admin"
+    And I follow "Test questionnaire"
+    When I navigate to "View all responses" in current page administration
+    Then ".qn-number" "css_element" should exist
+    Given I follow "List of responses"
+    When I follow "Admin User"
+    Then ".qn-number" "css_element" should exist
+    # Check auto numbering not show in response when turned off.
+    Given I navigate to "Settings" in current page administration
+    And I set the field "Auto numbering" to "Do not number questions or pages"
+    And I press "Save and display"
+    When I navigate to "View all responses" in current page administration
+    Then ".qn-number" "css_element" should not exist
+    Given I follow "List of responses"
+    When I follow "Admin User"
+    Then ".qn-number" "css_element" should not exist

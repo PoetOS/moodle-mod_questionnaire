@@ -2915,11 +2915,11 @@ class questionnaire {
             }
             if (!$pdf) {
                 $this->page->add_to_page('responses', $this->renderer->container_start('qn-container'));
-                $this->page->add_to_page('responses', $this->renderer->container_start('qn-info'));
-                if ($question->is_numbered()) {
+                if ($this->questions_autonumbered() && $question->is_numbered()) {
+                    $this->page->add_to_page('responses', $this->renderer->container_start('qn-info'));
                     $this->page->add_to_page('responses', $this->renderer->heading($qnum, 2, 'qn-number'));
+                    $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-info.
                 }
-                $this->page->add_to_page('responses', $this->renderer->container_end()); // End qn-info.
                 $this->page->add_to_page('responses', $this->renderer->container_start('qn-content'));
             }
             // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
@@ -2928,7 +2928,7 @@ class questionnaire {
             }
             if ($pdf) {
                 $response = new stdClass();
-                if ($question->is_numbered()) {
+                if ($this->questions_autonumbered() && $question->is_numbered()) {
                     $response->qnum = $qnum;
                 }
                 $response->qcontent = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
