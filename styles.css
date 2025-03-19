@@ -175,6 +175,12 @@ td.selected {
     display: inline;
 }
 
+@media print {
+    #page-mod-questionnaire-report #print-button {
+        display: none;
+    }
+}
+
 #page-mod-questionnaire-complete .notice .buttons input {
     margin-bottom: 10px;
 }
