@@ -111,9 +111,19 @@ if ($action == 'removequestion') {
     }
 }
 
+// Do not display Feedback questions option if this is a DISC questionnaire.
+$canselectquestions = true;
+foreach ($questionnaire->questions as $question) {
+    if ($question->has_keywords()) {
+        $canselectquestions = false;
+        break;
+    }
+}
+
 $customdata = new stdClass();
 $customdata->feedbacksection = $feedbacksection;
 $customdata->validquestions = $validquestions;
+$customdata->canselectquestions = $canselectquestions;
 $customdata->survey = $questionnaire->survey;
 $customdata->sectionselect = $DB->get_records_menu('questionnaire_fb_sections', ['surveyid' => $questionnaire->survey->id],
     'section', 'id,sectionlabel');
