@@ -104,25 +104,27 @@ function draw_chart($feedbacktype, $labels, $groupname,
                 }
             }
             foreach ($labels as $key => $label) {
-                $lb = explode("|", $label);
-                // Just in case there is no pipe separator in label.
-                if (count($lb) > 1) {
-                    $left = $lb[0];
-                    $right = $lb[1];
-                    // Lib core_text and diff needed for non-ascii characters.
-                    $lenleft = core_text::strlen($left);
-                    $diffleft = strlen($left) - $lenleft;
-                    $lenright = core_text::strlen($right);
-                    $diffright = strlen($right) - $lenright;
-                    if ($lenleft < $lenright) {
-                        $padlength = $lenright + $diffleft;
-                        $left = str_pad($left, $padlength, ' ', STR_PAD_LEFT);
+                if ($label !== null) {
+                    $lb = explode("|", $label);
+                    // Just in case there is no pipe separator in label.
+                    if (count($lb) > 1) {
+                        $left = $lb[0];
+                        $right = $lb[1];
+                        // Lib core_text and diff needed for non-ascii characters.
+                        $lenleft = core_text::strlen($left);
+                        $diffleft = strlen($left) - $lenleft;
+                        $lenright = core_text::strlen($right);
+                        $diffright = strlen($right) - $lenright;
+                        if ($lenleft < $lenright) {
+                            $padlength = $lenright + $diffleft;
+                            $left = str_pad($left, $padlength, ' ', STR_PAD_LEFT);
+                        }
+                        if ($lenleft > $lenright) {
+                            $padlength = $lenleft + $diffright;
+                            $right = str_pad($right, $padlength, ' ', STR_PAD_RIGHT);
+                        }
+                        $labels[$key] = $left .' '.$right;
                     }
-                    if ($lenleft > $lenright) {
-                        $padlength = $lenleft + $diffright;
-                        $right = str_pad($right, $padlength, ' ', STR_PAD_RIGHT);
-                    }
-                    $labels[$key] = $left .' '.$right;
                 }
             }
             // Find length of longest label.

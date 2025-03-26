@@ -131,10 +131,6 @@ $sdata->sectionheading = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'item
 
 $feedbackform->set_data($sdata);
 
-if ($feedbackform->is_cancelled()) {
-    redirect(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $cm->id]));
-}
-
 if ($settings = $feedbackform->get_data()) {
     // Because formslib doesn't support 'numeric' or 'image' inputs, the results won't show up in the $feedbackform object.
     $fullform = data_submitted();
@@ -177,7 +173,7 @@ if ($settings = $feedbackform->get_data()) {
         // Update the section with question weights.
         $feedbacksection->set_new_scorecalculation($scorecalculation);
 
-    } else if (isset($settings->submitbutton)) {
+    } else if (isset($settings->submitbutton ) || isset($settings->submitbutton1) || isset($settings->submitbutton2)) {
         if (isset($fullform->weight)) {
             $feedbacksection->scorecalculation = $fullform->weight;
         } else {
@@ -238,7 +234,14 @@ if ($settings = $feedbackform->get_data()) {
 
         // Update all feedback data.
         $feedbacksection->update();
+        if (isset($settings->submitbutton1)) {
+            redirect(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $cm->id]));
+        }
+        if (isset($settings->submitbutton2)) {
+            redirect(new moodle_url('/mod/questionnaire/view.php', ['id' => $cm->id]));
+        }
     }
+
     $feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata);
 }
 
