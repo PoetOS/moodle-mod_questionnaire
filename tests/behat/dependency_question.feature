@@ -114,6 +114,23 @@ Feature: Questions can be defined to be dependent on answers to multiple previou
     And I follow "Test questionnaire"
     When I navigate to "Answer the questions..." in current page administration
     And I should see "Do you own a car?"
+    And I click on "No" "radio"
+    And I press "Next Page >>"
+    And I should see "Will you buy a car this year?"
+    And I click on "No" "radio"
+    And I press "Submit questionnaire"
+    And I navigate to "View your response(s)" in current page administration
+    And I should see "Do you own a car?"
+    And I should see "Will you buy a car this year?"
+    Then I should not see "What colour is the car?"
+
+  @javascript
+  Scenario: Students can only view answers to questions asked on the individual responses page.
+    Given I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Test questionnaire"
+    When I navigate to "Answer the questions..." in current page administration
+    And I should see "Do you own a car?"
     And I click on "Yes" "radio"
     And I press "Next Page >>"
     And I should see "What colour is the car?"
