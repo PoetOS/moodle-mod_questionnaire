@@ -195,10 +195,12 @@ class mod_questionnaire_mod_form extends moodleform_mod {
     }
 
     /**
-     * Add any completion rules for the form.
-     * @return string[]
+     * Returns the suffixed name for custom completion elements.
+     *
+     * @param string $fieldname
+     * @return string
      */
-    public function add_completion_rules() {
+    protected function get_suffixed_name(string $fieldname): string {
         global $CFG;
 
         // Changes for Moodle 4.3 - MDL-78516.
@@ -207,11 +209,18 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         } else {
             $suffix = $this->get_suffix();
         }
+        return $fieldname . $suffix;
+    }
 
+    /**
+     * Add any completion rules for the form.
+     * @return string[]
+     */
+    public function add_completion_rules() {
         $mform =& $this->_form;
-        $mform->addElement('checkbox', 'completionsubmit' . $suffix, '',
+        $mform->addElement('checkbox', $this->get_suffixed_name('completionsubmit'), '',
             get_string('completionsubmit', 'questionnaire'));
-        return ['completionsubmit' . $suffix];
+        return [$this->get_suffixed_name('completionsubmit')];
     }
 
     /**
@@ -220,7 +229,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
      * @return bool
      */
     public function completion_rule_enabled($data) {
-        return !empty($data['completionsubmit']);
+        return !empty($data[$this->get_suffixed_name('completionsubmit')]);
     }
 
 }
