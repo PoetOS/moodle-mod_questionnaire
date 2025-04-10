@@ -727,6 +727,13 @@ switch ($action) {
             }
         }
 
+        // Add group filter dropdown.
+        if ($groupmode > 0) {
+            $groupselect = groups_print_activity_menu($cm, $url->out(), true);
+            $questionnaire->page->add_to_page('respondentinfo', $groupselect);
+            $currentgroupid = groups_get_activity_group($cm);
+        }
+    
         if ($byresponse || $rid) {
             // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
             if ($groupmode > 0) {
