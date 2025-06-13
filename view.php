@@ -136,7 +136,8 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         '" class="btn btn-primary">' . $titletext . '</a>');
 }
 
-if ($questionnaire->can_view_all_responses($usernumresp)) {
+$viewallresponses = $questionnaire->can_view_all_responses($usernumresp);
+if ($viewallresponses->allowed) {
     $argstr = 'instance='.$questionnaire->id.'&group='.$currentgroupid;
     $questionnaire->page->add_to_page('allresponses',
         '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr).'" class="btn btn-primary">'.
