@@ -691,3 +691,13 @@ $string['yourresponses'] = 'View your response(s)';
 $string['crontask'] = 'Questionnaire cleanup job';
 $string['nopermissions'] = 'Sorry, but you do not currently have permissions to view this page or perform this action.';
 $string['unanswered'] = 'Unanswered';
+
+// Expanded Exception messages.
+$string['groupaccessdenied'] = 'You do not belong to a group allowed to view these responses.';
+$string['noresponsesavailable'] = 'There are no responses available to view at this time.';
+$string['cannotviewduetorestrictions'] = 'You cannot view responses due to questionnaire restrictions or required completion.';
+$string['questionnaireneotopen'] = 'This questionnaire will open on {$a}.';
+$string['questionnaireclosed'] = 'This questionnaire closed on {$a}.';
+$string['mustcompletebeforeviewing'] = 'You must complete this questionnaire before viewing any responses.';
+$string['missingcapability'] = 'You do not have the required capability (mod/questionnaire:readallresponses) to view these responses.';
+$string['privateorTemplateError'] = 'This questionnaire is private or a template and cannot be accessed for responses.';

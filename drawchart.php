@@ -64,6 +64,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
 
     // We do not have labels other than global in this feedback type.
     if ($feedbacktype == 'global') {
+        $globallabel = (string) $globallabel;
         $labels = array($globallabel);
     }
 

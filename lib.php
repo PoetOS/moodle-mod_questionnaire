@@ -718,8 +718,8 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 
     // If questionnaire is set to separate groups, prevent user who is not member of any group
     // and is not a non-editing teacher to view All responses.
-    if ($questionnaire->can_view_all_responses($usernumresp)) {
-
+    $viewallresponses = $questionnaire->can_view_all_responses($usernumresp);
+    if (!empty($viewallresponses) && $viewallresponses->allowed) {
         $url = '/mod/questionnaire/report.php';
         $node = navigation_node::create(get_string('viewallresponses', 'questionnaire'),
             new moodle_url($url, array('instance' => $questionnaire->id, 'action' => 'vall')),
