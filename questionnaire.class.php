@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use core_reportbuilder\external\columns\sort\get;
 use mod_questionnaire\feedback\section;
 
 defined('MOODLE_INTERNAL') || die();
@@ -712,37 +713,99 @@ class questionnaire {
      *
      * @param null|int $usernumresp
      * @param bool $isviewreport
-     * @return bool
+     * @return object
+     * @throws \coding_exception
+     * @throws \dml_exception
      */
     public function can_view_all_responses($usernumresp = null, $isviewreport = false) {
         global $USER, $SESSION;
 
         $owner = $this->is_survey_owner();
         $numresp = $this->count_submissions();
+
         if ($usernumresp === null) {
             $usernumresp = $this->count_submissions($USER->id);
         }
 
-        // Number of Responses in currently selected group (or all participants etc.).
+        // If the user has not submitted any responses, then they cannot view responses.
         if (isset($SESSION->questionnaire->numselectedresps)) {
             $numselectedresps = $SESSION->questionnaire->numselectedresps;
         } else {
             $numselectedresps = $numresp;
         }
 
-        // If questionnaire is set to separate groups, prevent user who is not member of any group
-        // to view All responses.
-        $canviewgroups = true;
-        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
+        // Verify that the user belongs to a group that can view the questionnaire.
         $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
-        if ($groupmode == 1) {
+        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
+        $canviewgroups = true;
+
+        // If the questionnaire is not owned by the course, then we cannot view responses.
+        if ($groupmode == SEPARATEGROUPS) {
             $canviewgroups = groups_has_membership($this->cm, $USER->id);
+            if (!$canviewgroups && !$canviewallgroups) {
+                return (object)[
+                    'allowed' => false,
+                    'reason' => get_string('groupaccessdenied', 'mod_questionnaire'),
+                ];
+            }
+        }
+
+        // If the questionnaire is not open yet, or has been closed, then we cannot view responses.
+        if (empty($this->is_open())) {
+            return (object)[
+                'allowed' => false,
+                'reason' => get_string('questionnaireneotopen', 'mod_questionnaire', userdate($this->open))
+            ];
+        }
+        if (!empty($this->is_closed())) {
+            return (object)[
+                'allowed' => false,
+                'reason' => get_string('questionnaireclosed', 'mod_questionnaire', userdate($this->close))
+            ];
+        }
+
+        // Verify that the user has the capability to read all responses.
+        if ($this->resume == 1 && $usernumresp == 0) {
+            return (object)[
+                'allowed' => false,
+                'reason' => get_string('mustcompletebeforeviewing', 'mod_questionnaire')
+            ];
+        }
+
+        // Verify that the user has the capability to read all responses.
+        if (!has_capability('mod/questionnaire:readallresponses', $this->context)) {
+            return (object)[
+                'allowed' => false,
+                'reason' => get_string('missingcapability', 'mod_questionnaire')
+            ];
+        }
+
+        // Verify that there are responses to view.
+        if (($numresp <= 0 || $numselectedresps <= 0) && !$isviewreport) {
+            return (object)[
+                'allowed' => false,
+                'reason' => get_string('noresponsesavailable', 'mod_questionnaire')
+            ];
         }
 
         $grouplogic = $canviewgroups || $canviewallgroups;
-        $respslogic = ($numresp > 0) && ($numselectedresps > 0) || $isviewreport;
-        return $this->can_view_all_responses_anytime($grouplogic, $respslogic) ||
-            $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic);
+        $respslogic = ($numresp > 0 && $numselectedresps > 0) || $isviewreport;
+
+        // If the user can view all responses any time, then they can view them.
+        if ($this->can_view_all_responses_anytime($grouplogic, $respslogic)) {
+            return (object)['allowed' => true];
+        }
+
+        // If the user can't view all responses with restrictions.
+        if (!$this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic)) {
+            return (object)[
+                'allowed' => false,
+                'reason' => get_string('cannotviewduetorestrictions', 'mod_questionnaire')
+            ];
+        }
+
+        // If we got here, then the user can view the responses.
+        return (object)['allowed' => true];
     }
 
     /**
