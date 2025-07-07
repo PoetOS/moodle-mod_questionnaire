@@ -139,7 +139,7 @@ class questions_form extends \moodleform {
             // No page break in first position!
             if ($tid == QUESPAGEBREAK && $pos == 1) {
                 $DB->set_field('questionnaire_question', 'deleted', 'y', ['id' => $qid, 'surveyid' => $sid]);
-                if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
+                if ($records = $DB->get_records_select('questionnaire_question', 'surveyid = ' . $sid, null, 'position ASC')) {
                     foreach ($records as $record) {
                         $DB->set_field('questionnaire_question', 'position', $record->position - 1, array('id' => $record->id));
                     }
