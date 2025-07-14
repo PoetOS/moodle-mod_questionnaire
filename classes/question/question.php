@@ -652,7 +652,7 @@ abstract class question {
     /**
      * Add the question to the database from supplied arguments.
      * @param \stdClass $questionrecord The required data for adding the question.
-     * @param array $choicerecords An array of choice records with 'content' and 'value' properties.
+     * @param array|null $choicerecords An array of choice records with 'content' and 'value' properties.
      * @param bool|null $calcposition Whether or not to calculate the next available position in the survey.
      */
     public function add($questionrecord, ?array $choicerecords = null, ?bool $calcposition = true) {

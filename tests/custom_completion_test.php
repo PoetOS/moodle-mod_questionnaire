@@ -75,7 +75,7 @@ class custom_completion_test extends \advanced_testcase {
      * @dataProvider get_state_provider
      * @param string $rule The custom completion rule.
      * @param int $available Whether this rule is available.
-     * @param bool $submitted
+     * @param bool|null $submitted
      * @param int|null $status Expected status.
      * @param string|null $exception Expected exception.
      * @throws coding_exception

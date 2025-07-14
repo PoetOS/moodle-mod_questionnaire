@@ -570,9 +570,9 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * @param $urlroot
-     * @param $options
-     * @param $userview
+     * @param moodle_url $urlroot
+     * @param array $options
+     * @param string $userview
      * @return string
      * @throws \coding_exception
      * @throws \moodle_exception
