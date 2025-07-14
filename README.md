@@ -1,3 +1,7 @@
+[![Moodle plugin CI](https://github.com/PoetOS/moodle-mod_questionnaire/actions/workflows/ci.yml/badge.svg)](https://github.com/PoetOS/moodle-mod_questionnaire/actions/workflows/ci.yml)
+
+# moodle-mod_questionnaire
+
 The questionnaire module allows you to construct questionnaires (surveys) from a
 variety of question type. It was originally based on phpESP, and Open Source
 survey tool.
@@ -5,10 +9,11 @@ survey tool.
 --------------------------------------------------------------------------------
 Developers Note:
 
-There is no main branch. Questionnaire is maintained in MOODLE_XX_STABLE
+There is no main branch. Questionnaire is maintained in MOODLE_XXX_STABLE
 branches. Use the latest STABLE branch for development or installation.
-The current stable branch is MOODLE_400_STABLE, and supports Moodle 4.0 and up.
-Use the MOODLE_311_STABLE branch for Moodle 3.9 through 3.11.
+The current stable branch is MOODLE_500_STABLE, and supports Moodle 5.0 and up.
+Use the MOODLE_401_STABLE branch for Moodle 4.1 through 4.3.
+Use the MOODLE_404_STABLE branch for Moodle 4.4 through 4.5.
 
 --------------------------------------------------------------------------------
 To Install:
