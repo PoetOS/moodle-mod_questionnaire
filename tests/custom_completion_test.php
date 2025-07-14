@@ -82,12 +82,12 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\completion\custom_completion
      */
-    public static function test_get_state(string $rule, int $available, ?bool $submitted, ?int $status, ?string $exception) {
+    public function test_get_state(string $rule, int $available, ?bool $submitted, ?int $status, ?string $exception) {
         if (!is_null($exception)) {
-            \PHPUnit\Framework\TestCase::expectException($exception);
+            self::expectException($exception);
         }
 
-        $this_>resetAfterTest();
+        self::resetAfterTest();
         $generator = self::getDataGenerator()->get_plugin_generator('mod_questionnaire');
 
         $course = self::getDataGenerator()->create_course(['enablecompletion' => 1]);
