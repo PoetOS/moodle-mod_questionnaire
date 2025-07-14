@@ -1026,9 +1026,9 @@ class rate extends question {
      * Helper function used to move existing named degree choices for the specified question from the "quest_choice" table to the
      * "question" table.
      * @param int $qid
-     * @param null|\stdClass $questionrec
+     * @param \stdClass|null $questionrec
      */
-    public static function move_nameddegree_choices(int $qid = 0, \stdClass $questionrec = null) {
+    public static function move_nameddegree_choices(int $qid = 0, ?\stdClass $questionrec = null) {
         global $DB;
 
         if ($qid !== 0) {
@@ -1079,7 +1079,7 @@ class rate extends question {
      * questionnaire before '2018110103'.
      * @param int|null $surveyid
      */
-    public static function move_all_nameddegree_choices(int $surveyid = null) {
+    public static function move_all_nameddegree_choices(?int $surveyid = null) {
         global $DB;
 
         // This operation might take a while. Cancel PHP timeouts for this.
