@@ -42,7 +42,7 @@ class rate extends question {
      * @param \context $context
      * @param array $params
      */
-    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+    public function __construct($id = 0, $question = null, $context = null, $params = []) {
         $this->length = 5;
         parent::__construct($id, $question, $context, $params);
         $this->add_nameddegrees_from_extradata();
@@ -334,7 +334,7 @@ class rate extends question {
                 $content = $choice->content;
                 $rendercontent = format_text($choice->content, FORMAT_PLAIN);
                 if ($this->osgood_rate_scale()) {
-                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), [' ']);
                 }
                 if ($choice->is_other_choice()) {
                     $othertext = $choice->other_choice_display();
@@ -347,10 +347,10 @@ class rate extends question {
                     $content = $othertext;
                     $cols[] = ['oname' => $oname, 'oid' => $oid, 'ovalue' => $ovalue,
                             'colstyle' => 'text-align: ' . $textalign . ';',
-                            'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;'];
+                            'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;', ];
                 } else {
                     $cols[] = ['colstyle' => 'text-align: '.$textalign.';',
-                            'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;'];
+                            'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;', ];
                 }
 
                 $bg = 'c0 raterow';
@@ -376,7 +376,7 @@ class rate extends question {
                     $colinput['label'] = $this->set_label($rowstart, $rendercontent, self::COL_START,
                         get_string('unanswered', 'questionnaire'));
                     $cols[] = ['colstyle' => 'width:1%;', 'colclass' => $completeclass, 'coltitle' => $title,
-                        'colinput' => $colinput];
+                        'colinput' => $colinput, ];
                 }
                 if ($nameddegrees > 0) {
                     reset($this->nameddegrees);
@@ -462,7 +462,7 @@ class rate extends question {
 
         $bg = 'c0';
         $nameddegrees = 0;
-        $cidnamed = array();
+        $cidnamed = [];
         // Max length of potential named degree in column head.
         $maxndlen = 0;
         if ($this->osgood_rate_scale()) {
@@ -524,7 +524,7 @@ class rate extends question {
                     $content = $contents->text;
                 }
                 if ($this->osgood_rate_scale()) {
-                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), [' ']);
                 }
                 if ($choice->is_other_choice()) {
                     $content = $choice->other_choice_display();
@@ -710,10 +710,10 @@ class rate extends question {
      * @param string $helptext
      */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
-        $precoptions = array("0" => get_string('normal', 'questionnaire'),
+        $precoptions = ["0" => get_string('normal', 'questionnaire'),
                              "1" => get_string('notapplicablecolumn', 'questionnaire'),
                              "2" => get_string('noduplicates', 'questionnaire'),
-                             "3" => get_string('osgood', 'questionnaire'));
+                             "3" => get_string('osgood', 'questionnaire'), ];
         $mform->addElement('select', 'precise', get_string('kindofratescale', 'questionnaire'), $precoptions);
         $mform->addHelpButton('precise', 'kindofratescale', 'questionnaire');
         $mform->setType('precise', PARAM_INT);
@@ -944,7 +944,7 @@ class rate extends question {
                 }
                 $extrahtml .= '</ul>';
                 $options = ['noclean' => true, 'para' => false, 'filter' => true,
-                    'context' => $this->context, 'overflowdiv' => true];
+                    'context' => $this->context, 'overflowdiv' => true, ];
                 $choice->content .= format_text($extrahtml, FORMAT_HTML, $options);
             }
 

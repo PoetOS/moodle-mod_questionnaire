@@ -60,7 +60,7 @@ class questions_form extends \moodleform {
         $strposition = get_string('position', 'questionnaire');
 
         if (!isset($questionnaire->questions)) {
-            $questionnaire->questions = array();
+            $questionnaire->questions = [];
         }
         if ($this->moveq) {
             $moveqposition = $questionnaire->questions[$this->moveq]->position;
@@ -69,7 +69,7 @@ class questions_form extends \moodleform {
         $pos = 0;
         $select = '';
         if (!($qtypes = $DB->get_records_select_menu('questionnaire_question_type', $select, null, '', 'typeid,type'))) {
-            $qtypes = array();
+            $qtypes = [];
         }
         // Get the names of each question type in the appropriate language.
         foreach ($qtypes as $key => $qtype) {
@@ -81,7 +81,7 @@ class questions_form extends \moodleform {
             }
         }
         natsort($qtypes);
-        $addqgroup = array();
+        $addqgroup = [];
         $addqgroup[] =& $mform->createElement('select', 'type_id', '', $qtypes);
 
         // The 'sticky' type_id value for further new questions.
@@ -118,7 +118,7 @@ class questions_form extends \moodleform {
 
         foreach ($questionnaire->questions as $question) {
 
-            $manageqgroup = array();
+            $manageqgroup = [];
 
             $qid = $question->id;
             $tid = $question->type_id;
@@ -127,6 +127,7 @@ class questions_form extends \moodleform {
 
             // Get displayable list of parents for the questions in questions_form.
             if ($questionnairehasdependencies) {
+                // phpcs:disable moodle.Commenting.TodoComment
                 // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
                 $questionnaire->load_parents($question);
                 $dependencies = $questionnaire->renderer->get_dependency_html($question->id, $question->dependencies);
@@ -141,7 +142,7 @@ class questions_form extends \moodleform {
                 $DB->set_field('questionnaire_question', 'deleted', 'y', ['id' => $qid, 'surveyid' => $sid]);
                 if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
                     foreach ($records as $record) {
-                        $DB->set_field('questionnaire_question', 'position', $record->position - 1, array('id' => $record->id));
+                        $DB->set_field('questionnaire_question', 'position', $record->position - 1, ['id' => $record->id]);
                     }
                 }
                 redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
@@ -163,7 +164,7 @@ class questions_form extends \moodleform {
                 $content = format_text(file_rewrite_pluginfile_urls($question->content, 'pluginfile.php',
                     $question->context->id, 'mod_questionnaire', 'question', $question->id), FORMAT_HTML, ['noclean' => true]);
             }
-            $moveqgroup = array();
+            $moveqgroup = [];
 
             $spacer = $questionnaire->renderer->image_url('spacer');
 
@@ -175,19 +176,19 @@ class questions_form extends \moodleform {
                     $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
                 }
 
-                $mextra = array('value' => $question->id,
+                $mextra = ['value' => $question->id,
                                 'alt' => $strmove,
-                                'title' => $strmove);
-                $eextra = array('value' => $question->id,
+                                'title' => $strmove, ];
+                $eextra = ['value' => $question->id,
                                 'alt' => get_string('edit', 'questionnaire'),
-                                'title' => get_string('edit', 'questionnaire'));
-                $rextra = array('value' => $question->id,
+                                'title' => get_string('edit', 'questionnaire'), ];
+                $rextra = ['value' => $question->id,
                                 'alt' => $strremove,
-                                'title' => $strremove);
+                                'title' => $strremove, ];
 
                 if ($tid == QUESPAGEBREAK) {
                     $esrc = $spacer;
-                    $eextra = array('disabled' => 'disabled');
+                    $eextra = ['disabled' => 'disabled'];
                 } else {
                     $esrc = $questionnaire->renderer->image_url('t/edit');
                 }
@@ -209,10 +210,10 @@ class questions_form extends \moodleform {
                             if ($maxdown < 4) {
                                 $strdisabled = get_string('movedisabled', 'questionnaire');
                                 $msrc = $questionnaire->renderer->image_url('t/block');
-                                $mextra = array('value' => $question->id,
+                                $mextra = ['value' => $question->id,
                                                 'alt' => $strdisabled,
-                                                'title' => $strdisabled);
-                                $mextra += array('disabled' => 'disabled');
+                                                'title' => $strdisabled, ];
+                                $mextra += ['disabled' => 'disabled'];
                             }
                         }
                     }
@@ -236,17 +237,17 @@ class questions_form extends \moodleform {
                                     (!empty($previousquestiondependencies) && empty($nextquestiondependencies))) {
                                     $strdisabled = get_string('movedisabled', 'questionnaire');
                                     $msrc = $questionnaire->renderer->image_url('t/block');
-                                    $mextra = array('value' => $question->id,
+                                    $mextra = ['value' => $question->id,
                                                     'alt' => $strdisabled,
-                                                    'title' => $strdisabled);
-                                    $mextra += array('disabled' => 'disabled');
+                                                    'title' => $strdisabled, ];
+                                    $mextra += ['disabled' => 'disabled'];
 
                                     $rsrc = $msrc;
                                     $strdisabled = get_string('deletedisabled', 'questionnaire');
-                                    $rextra = array('value' => $question->id,
+                                    $rextra = ['value' => $question->id,
                                                     'alt' => $strdisabled,
-                                                    'title' => $strdisabled);
-                                    $rextra += array('disabled' => 'disabled');
+                                                    'title' => $strdisabled, ];
+                                    $rextra += ['disabled' => 'disabled'];
                                 }
                             }
                         }
@@ -266,9 +267,9 @@ class questions_form extends \moodleform {
                         $strrequired = get_string('notrequired', 'questionnaire');
                     }
                     $strrequired .= ' '.get_string('clicktoswitch', 'questionnaire');
-                    $reqextra = array('value' => $question->id,
+                    $reqextra = ['value' => $question->id,
                                     'alt' => $strrequired,
-                                    'title' => $strrequired);
+                                    'title' => $strrequired, ];
                     $manageqgroup[] =& $mform->createElement('image', 'requiredbutton['.$question->id.']', $reqsrc, $reqextra);
                 }
                 $manageqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
@@ -296,7 +297,7 @@ class questions_form extends \moodleform {
                     }
                 }
 
-                $typeid = $DB->get_field('questionnaire_question', 'type_id', array('id' => $this->moveq));
+                $typeid = $DB->get_field('questionnaire_question', 'type_id', ['id' => $this->moveq]);
 
                 if ($display) {
                     // Do not move a page break to first position.
@@ -306,9 +307,9 @@ class questions_form extends \moodleform {
                         if ($this->moveq == $question->id) {
                             $moveqgroup[] =& $mform->createElement('cancel', 'cancelbutton', get_string('cancel'));
                         } else {
-                            $mextra = array('value' => $question->id,
+                            $mextra = ['value' => $question->id,
                                             'alt' => $strmove,
-                                            'title' => $strmovehere.' (position '.$pos.')');
+                                            'title' => $strmovehere.' (position '.$pos.')', ];
                             $msrc = $questionnaire->renderer->image_url('movehere');
                             $moveqgroup[] =& $mform->createElement('static', 'opentag_'.$question->id, '', '');
                             $moveqgroup[] =& $mform->createElement('image', 'moveherebutton['.$pos.']', $msrc, $mextra);

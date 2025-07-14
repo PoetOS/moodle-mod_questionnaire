@@ -72,6 +72,7 @@ jobs:
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
           IGNORE_PATHS: 'templates/local/mobile'
           PHPDOCCHECKER_IGNORE_PATHS: /^vendor/
+          CODECHECKER_IGNORE_NAMES: 'mobiledump.txt'
 
       - name: PHP Lint
         if: ${{ always() }}
@@ -84,7 +85,7 @@ jobs:
 
       - name: Moodle Code Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker || true
+        run: moodle-plugin-ci codechecker
 
       - name: Moodle PHPDoc Checker
         if: ${{ always() }}

@@ -26,16 +26,16 @@ require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
 $id = required_param('id', PARAM_INT);
-$PAGE->set_url('/mod/questionnaire/index.php', array('id' => $id));
-if (! $course = $DB->get_record('course', array('id' => $id))) {
+$PAGE->set_url('/mod/questionnaire/index.php', ['id' => $id]);
+if (! $course = $DB->get_record('course', ['id' => $id])) {
     throw new \moodle_exception('Filter has not been set.', 'mod_questionnaire');
 }
 $coursecontext = context_course::instance($id);
 require_login($course->id);
 $PAGE->set_pagelayout('incourse');
 
-$event = \mod_questionnaire\event\course_module_instance_list_viewed::create(array(
-                'context' => context_course::instance($course->id)));
+$event = \mod_questionnaire\event\course_module_instance_list_viewed::create([
+                'context' => context_course::instance($course->id), ]);
 $event->trigger();
 
 // Print the header.
@@ -63,8 +63,8 @@ foreach ($questionnaires as $questionnaire) {
 }
 
 // Configure table for displaying the list of instances.
-$headings = array(get_string('name'));
-$align = array('left');
+$headings = [get_string('name')];
+$align = ['left'];
 
 if ($showclosingheader) {
     array_push($headings, get_string('questionnairecloses', 'questionnaire'));
@@ -98,8 +98,8 @@ $table->align = $align;
 $currentsection = '';
 foreach ($questionnaires as $questionnaire) {
     $cmid = $questionnaire->coursemodule;
-    $data = array();
-    $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->sid));
+    $data = [];
+    $realm = $DB->get_field('questionnaire_survey', 'realm', ['id' => $questionnaire->sid]);
     // Template surveys should NOT be displayed as an activity to students.
     if (!($realm == 'template' && !has_capability('mod/questionnaire:manage', context_module::instance($cmid)))) {
         // Section number if necessary.
@@ -173,10 +173,10 @@ foreach ($questionnaires as $questionnaire) {
                         if ($copies = $DB->get_records_select('questionnaire', $select, null,
                                 $sort = 'course ASC', $fields = 'id, course, name')) {
                             foreach ($copies as $copy) {
-                                $copycourse = $DB->get_record('course', array('id' => $copy->course));
+                                $copycourse = $DB->get_record('course', ['id' => $copy->course]);
                                 $select = 'course = '.$copycourse->id.' AND sid = '.$questionnaire->sid;
                                 $copyquestionnaire = $DB->get_record('questionnaire',
-                                    array('id' => $copy->id, 'sid' => $survey->id, 'course' => $copycourse->id));
+                                    ['id' => $copy->id, 'sid' => $survey->id, 'course' => $copycourse->id]);
                                 $cm = get_coursemodule_from_instance("questionnaire", $copyquestionnaire->id, $copycourse->id);
                                 $context = context_course::instance($copycourse->id, MUST_EXIST);
                                 $canviewcopy = has_capability('mod/questionnaire:view', $context, $USER->id, true);

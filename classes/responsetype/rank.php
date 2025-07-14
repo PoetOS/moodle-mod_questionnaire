@@ -146,6 +146,8 @@ class rank extends responsetype {
     }
 
     /**
+     * Get the results for the question.
+     *
      * @param bool $rids
      * @param bool $anonymous
      * @return array
@@ -167,8 +169,8 @@ class rank extends responsetype {
         $select = 'question_id=' . $this->question->id . ' ORDER BY id ASC';
         if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
             foreach ($rows as $row) {
-                $nbna = $DB->count_records(static::response_table(), array('question_id' => $this->question->id,
-                        'choice_id' => $row->id, 'rankvalue' => '-1'));
+                $nbna = $DB->count_records(static::response_table(), ['question_id' => $this->question->id,
+                        'choice_id' => $row->id, 'rankvalue' => '-1', ]);
                 if (\mod_questionnaire\question\choice::content_is_other_choice($row->content) && !empty($otherrecs)) {
                     foreach (array_keys($otherrecs) as $key) {
                         $this->counts[$key] = new \stdClass();
@@ -177,7 +179,7 @@ class rank extends responsetype {
                     }
                 } else {
                     $this->counts[$row->content] = new \stdClass();
-                    $this->counts[$row->content]->nbna = $nbna; 
+                    $this->counts[$row->content]->nbna = $nbna;
                 }
             }
         }
@@ -216,11 +218,11 @@ class rank extends responsetype {
                 INNER JOIN
                          (SELECT c2.id, AVG(a2.rankvalue) AS average, COUNT(a2.response_id) AS num
                             FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
-                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id 
+                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                         GROUP BY c2.id) a ON a.id = c.id
                   ORDER BY c.id";
-            $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
+            $results = $DB->get_records_sql($sql, array_merge([$this->question->id, $this->question->id], $params));
 
             // Handle 'other...'.
             if ($otherrecs) {
@@ -256,11 +258,11 @@ class rank extends responsetype {
                 INNER JOIN
                          (SELECT c2.id, SUM(a2.rankvalue) AS sum, COUNT(a2.response_id) AS num
                             FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
-                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id 
+                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                   GROUP BY c2.id) a ON a.id = c.id";
 
-            $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
+            $results = $DB->get_records_sql($sql, array_merge([$this->question->id, $this->question->id], $params));
 
             if ($otherrecs) {
                 $i = 1;
@@ -496,11 +498,11 @@ class rank extends responsetype {
         global $DB;
 
         $answers = [];
-        $sql = 'SELECT r.id, 
-                       r.response_id AS responseid, 
-                       r.question_id AS questionid, 
-                       r.choice_id AS choiceid, 
-                       r.rankvalue AS value, 
+        $sql = 'SELECT r.id,
+                       r.response_id AS responseid,
+                       r.question_id AS questionid,
+                       r.choice_id AS choiceid,
+                       r.rankvalue AS value,
                        rt.response AS otheresponse
                   FROM {' . static::response_table() . '} r
              LEFT JOIN {questionnaire_response_other} rt ON rt.choice_id = r.choice_id
@@ -628,7 +630,7 @@ class rank extends responsetype {
         // Add an extra column to accomodate lower ranks in this case.
         $llength += $isrestricted;
         $width = 100 / $llength;
-        $n = array();
+        $n = [];
         $nameddegrees = 0;
         foreach ($this->question->nameddegrees as $degree) {
             // To take into account languages filter.
@@ -660,14 +662,14 @@ class rank extends responsetype {
         $pagetags->averages->choicelabelrow = new \stdClass();
         $pagetags->averages->choicelabelrow->innertablewidth = $header2->pdfwidth;
         $pagetags->averages->choicelabelrow->column1 = (object)['width' => $header1->width, 'align' => $header1->align,
-            'text' => '', 'pdfwidth' => $header1->pdfwidth];
+            'text' => '', 'pdfwidth' => $header1->pdfwidth, ];
         $pagetags->averages->choicelabelrow->column2 = (object)['width' => $header2->width, 'align' => $header2->align,
-            'ranks' => $rankcols, 'pdfwidth' => $header2->pdfwidth];
+            'ranks' => $rankcols, 'pdfwidth' => $header2->pdfwidth, ];
         $pagetags->averages->choicelabelrow->column3 = (object)['width' => $header3->width, 'align' => $header3->align,
-            'text' => '', 'pdfwidth' => $header3->pdfwidth];
+            'text' => '', 'pdfwidth' => $header3->pdfwidth, ];
         if ($isna) {
             $pagetags->averages->choicelabelrow->column4 = (object)['width' => $header4->width, 'align' => $header4->align,
-                'text' => '', 'pdfwidth' => $header4->pdfwidth];
+                'text' => '', 'pdfwidth' => $header4->pdfwidth, ];
         }
 
         switch ($sort) {
@@ -717,7 +719,7 @@ class rank extends responsetype {
 
                     if ($osgood) {
                         // Ensure there are two bits of content.
-                        list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                        list($content, $contentright) = array_merge(preg_split('/[|]/', $content), [' ']);
                     } else {
                         $contents = questionnaire_choice_values($content);
                         if ($contents->modname) {
@@ -751,7 +753,7 @@ class rank extends responsetype {
                         $choicecol3->text = '<div class="mdl-left">' .
                             format_text($contentright, FORMAT_HTML, ['noclean' => true]) . '</div>';
                         $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1, 'column2' => $choicecol2,
-                            'column3' => $choicecol3];
+                            'column3' => $choicecol3, ];
                         // JR JUNE 2012 do not display meaningless average rank values for Osgood.
                     } else if ($avg || ($nbna != 0)) {
                         $stravgval = '';
@@ -789,10 +791,10 @@ class rank extends responsetype {
                         if ($avg) {
                             if (isset($choicecol4)) {
                                 $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1,
-                                    'column2' => $choicecol2, 'column3' => $choicecol3, 'column4' => $choicecol4];
+                                    'column2' => $choicecol2, 'column3' => $choicecol3, 'column4' => $choicecol4, ];
                             } else {
                                 $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1,
-                                    'column2' => $choicecol2, 'column3' => $choicecol3];
+                                    'column2' => $choicecol2, 'column3' => $choicecol3, ];
                             }
                         } else {
                             $choicecol4 = new \stdClass();
@@ -801,7 +803,7 @@ class rank extends responsetype {
                             $choicecol4->align = $header4->align;
                             $choicecol4->text = $nbna;
                             $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1, 'column2' => $choicecol2,
-                                'column3' => $choicecol3];
+                                'column3' => $choicecol3, ];
                         }
                     }
                 } // End if named degrees.
@@ -856,8 +858,8 @@ class rank extends responsetype {
         // This is question_id.
         array_push($params, $this->question->id);
         $sql = "SELECT r.id,
-                       CASE 
-                            WHEN c.content = '!other' THEN o.response 
+                       CASE
+                            WHEN c.content = '!other' THEN o.response
                             ELSE c.content
                        END as content, r.rankvalue, c.id AS choiceid
                   FROM {questionnaire_quest_choice} c
@@ -872,11 +874,11 @@ class rank extends responsetype {
 
         // Sort rows (results) by average value.
         if ($sort != 'default') {
-            $sortarray = array();
+            $sortarray = [];
             foreach ($rows as $row) {
                 foreach ($row as $key => $value) {
                     if (!isset($sortarray[$key])) {
-                        $sortarray[$key] = array();
+                        $sortarray[$key] = [];
                     }
                     $sortarray[$key][] = $value;
                 }
@@ -931,7 +933,7 @@ class rank extends responsetype {
             $na = '';
         }
         $nameddegrees = 0;
-        $n = array();
+        $n = [];
         foreach ($this->question->nameddegrees as $degree) {
             $content = $degree;
             $n[$nameddegrees] = format_text($content, FORMAT_HTML, ['noclean' => true]);
@@ -953,7 +955,7 @@ class rank extends responsetype {
             $align = 'left';
         }
         $pagetags->totals->headers[] = (object)['align' => $align,
-            'text' => '<span class="smalltext">'.get_string('responses', 'questionnaire').'</span>'];
+            'text' => '<span class="smalltext">'.get_string('responses', 'questionnaire').'</span>', ];
 
         // Display the column titles.
         for ($j = 0; $j < $this->question->length; $j++) {
@@ -989,13 +991,13 @@ class rank extends responsetype {
                 $nbresp = '<strong>('.$total.')</strong>';
                 if ($osgood) {
                     // Ensure there are two bits of content.
-                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), [' ']);
                     $header = reset($pagetags->totals->headers);
                     if (isset($rows[$content]) && isset($rows[$content]->isother) && $rows[$content]->isother) {
                         $content = get_string('other', 'questionnaire') . ' ' . $content;
                     }
                     $totalcols[] = (object)['align' => $header->align,
-                        'text' => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false])];
+                        'text' => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false]), ];
                 } else {
                     // Eliminate potentially short-named choices.
                     $contents = questionnaire_choice_values($content);
@@ -1007,7 +1009,7 @@ class rank extends responsetype {
                     }
                     $header = reset($pagetags->totals->headers);
                     $totalcols[] = (object)['align' => $header->align,
-                        'text' => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false])];
+                        'text' => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false]), ];
                 }
                 // Display ranks/rates numbers.
                 $maxrank = max($rank);
@@ -1031,7 +1033,7 @@ class rank extends responsetype {
                 if ($osgood) {
                     $header = next($pagetags->totals->headers);
                     $totalcols[] = (object)['align' => $header->align,
-                        'text' => format_text($contentright, FORMAT_HTML, ['noclean' => true])];
+                        'text' => format_text($contentright, FORMAT_HTML, ['noclean' => true]), ];
                 }
                 $header = next($pagetags->totals->headers);
                 $totalcols[] = (object)['align' => $header->align, 'text' => $nbresp];

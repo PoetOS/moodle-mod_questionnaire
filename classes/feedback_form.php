@@ -59,7 +59,7 @@ class feedback_form extends \moodleform {
             $chartgroup = [];
             $charttypes = [null => get_string('none'),
                 'bipolar' => get_string('chart:bipolar', 'questionnaire'),
-                'vprogress' => get_string('chart:vprogress', 'questionnaire')];
+                'vprogress' => get_string('chart:vprogress', 'questionnaire'), ];
             $chartgroup[] = $mform->createElement('select', 'chart_type_global',
                 get_string('chart:type', 'questionnaire') . ' (' .
                 get_string('feedbackglobal', 'questionnaire') . ')', $charttypes);
@@ -72,7 +72,7 @@ class feedback_form extends \moodleform {
             $charttypes = [null => get_string('none'),
                 'bipolar' => get_string('chart:bipolar', 'questionnaire'),
                 'hbar' => get_string('chart:hbar', 'questionnaire'),
-                'rose' => get_string('chart:rose', 'questionnaire')];
+                'rose' => get_string('chart:rose', 'questionnaire'), ];
             $chartgroup[] = $mform->createElement('select', 'chart_type_two_sections',
                 get_string('chart:type', 'questionnaire') . ' (' .
                 get_string('feedbackbysection', 'questionnaire') . ')', $charttypes);
@@ -85,7 +85,7 @@ class feedback_form extends \moodleform {
                 'bipolar' => get_string('chart:bipolar', 'questionnaire'),
                 'hbar' => get_string('chart:hbar', 'questionnaire'),
                 'radar' => get_string('chart:radar', 'questionnaire'),
-                'rose' => get_string('chart:rose', 'questionnaire')];
+                'rose' => get_string('chart:rose', 'questionnaire'), ];
             $chartgroup[] = $mform->createElement('select', 'chart_type_sections',
                 get_string('chart:type', 'questionnaire') . ' (' .
                 get_string('feedbackbysection', 'questionnaire') . ')', $charttypes);

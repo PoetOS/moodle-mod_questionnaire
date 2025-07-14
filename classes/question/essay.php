@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\question;
-use \html_writer;
+use html_writer;
 use mod_questionnaire\responsetype\response\response;
 
 /**
@@ -132,7 +132,7 @@ class essay extends text {
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
         $responseformats = [
                         "0" => get_string('formateditor', 'questionnaire'),
-                        "1" => get_string('formatplain', 'questionnaire')];
+                        "1" => get_string('formatplain', 'questionnaire'), ];
         $mform->addElement('select', 'precise', get_string('responseformat', 'questionnaire'), $responseformats);
         $mform->setType('precise', PARAM_INT);
         return $mform;

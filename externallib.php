@@ -73,11 +73,11 @@ class external extends external_api {
                     new external_single_structure(
                         [
                             'name' => new external_value(PARAM_RAW, 'data key'),
-                            'value' => new external_value(PARAM_RAW, 'data value')
+                            'value' => new external_value(PARAM_RAW, 'data value'),
                         ]
                     ),
                     'The data to be saved', VALUE_DEFAULT, []
-                )
+                ),
             ]
         );
     }
@@ -110,7 +110,7 @@ class external extends external_api {
                 'rid' => $rid,
                 'submit' => $submit,
                 'action' => $action,
-                'responses' => $responses
+                'responses' => $responses,
             ]
         );
 
@@ -142,7 +142,7 @@ class external extends external_api {
         return new external_single_structure(
             [
                 'submitted' => new external_value(PARAM_BOOL, 'submitted', VALUE_REQUIRED, false, false),
-                'warnings' => new external_warnings()
+                'warnings' => new external_warnings(),
             ]
         );
     }

@@ -74,7 +74,7 @@ class bulk_sql_config {
         return [
             'choice_id' => $this->usechoiceid,
             'response' => $this->useresponse,
-            'rankvalue' => $this->userank
+            'rankvalue' => $this->userank,
         ];
     }
 }

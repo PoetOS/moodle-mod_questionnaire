@@ -23,6 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// phpcs:disable moodle.Files.LangFilesOrdering.UnexpectedComment
+// phpcs:disable moodle.Files.LangFilesOrdering.IncorrectOrder
+
 $string['accessibility:rate:choice'] = 'Row {$a->rowposition}, {$a->choicetitle}: Column {$a->colposition}, {$a->choiceanswer}.';
 $string['action'] = 'Action';
 $string['activityoverview'] = 'You have questionnaires that are due';

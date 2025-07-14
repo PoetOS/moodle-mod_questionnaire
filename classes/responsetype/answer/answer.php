@@ -55,7 +55,8 @@ class answer {
      * @param null $otheresponse
      * @param null $value
      */
-    public function __construct($id = null, $responseid = null, $questionid = null, $choiceid = null, $value = null, $otheresponse = null) {
+    public function __construct($id = null, $responseid = null, $questionid = null, $choiceid = null, $value = null,
+        $otheresponse = null) {
         $this->id = $id;
         $this->responseid = $responseid;
         $this->questionid = $questionid;

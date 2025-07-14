@@ -17,10 +17,10 @@
 namespace mod_questionnaire\question;
 use mod_questionnaire\edit_question_form;
 use mod_questionnaire\responsetype\response\response;
-use \questionnaire;
+use questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
-use \html_writer;
+use html_writer;
 
 /**
  * This file contains the parent class for questionnaire question types.
@@ -100,16 +100,16 @@ abstract class question {
     /** @var string $allchoices The list of all question's choices. */
     public $allchoices = '';
 
-    /** @var boolean $required The required flag. */
+    /** @var bool $required The required flag. */
     public $required = 'n';
 
-    /** @var boolean $deleted The deleted flag. */
+    /** @var bool $deleted The deleted flag. */
     public $deleted = 'n';
 
     /** @var mixed $extradata Any custom data for the question type. */
     public $extradata = '';
 
-    /** @var boolean $isprint The isprint flag. */
+    /** @var bool $isprint The isprint flag. */
     public $isprint = false;
 
     /** @var array $qtypenames List of all question names. */
@@ -950,6 +950,7 @@ abstract class question {
         if ($pagetype == 'mod-questionnaire-preview' || ($nonumbering &&
             ($currenttab == 'mybyresponse' || $currenttab == 'individualresp'))) {
             // This needs to be done to ensure all dependency data is loaded.
+            // phpcs:disable moodle.Commenting.TodoComment
             // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
             $questionnaire->load_parents($this);
             // Want this to come from the renderer, meaning we need $questionnaire.
@@ -969,7 +970,7 @@ abstract class question {
                 $required .= get_string('required', 'questionnaire');
                 $required .= html_writer::end_tag('div');
                 $required .= html_writer::empty_tag('img', ['class' => 'req', 'title' => get_string('required', 'questionnaire'),
-                    'alt' => get_string('required', 'questionnaire'), 'src' => $OUTPUT->image_url('req')]);
+                    'alt' => get_string('required', 'questionnaire'), 'src' => $OUTPUT->image_url('req'), ]);
             }
             $pagetags->required = $required; // Need to replace this with better renderer / template?
         }
@@ -1581,7 +1582,7 @@ abstract class question {
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $options = ['noclean' => true, 'para' => false, 'filter' => true,
-            'context' => $this->context, 'overflowdiv' => true];
+            'context' => $this->context, 'overflowdiv' => true, ];
         $mobiledata = (object)[
             'id' => $this->id,
             'name' => $this->name,
@@ -1596,7 +1597,7 @@ abstract class question {
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise,
             'qnum' => $qnum,
-            'errormessage' => get_string('required') . ': ' . $this->name
+            'errormessage' => get_string('required') . ': ' . $this->name,
         ];
         $mobiledata->choices = $this->mobile_question_choices_display();
 

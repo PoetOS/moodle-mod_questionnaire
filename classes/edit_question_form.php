@@ -40,9 +40,11 @@ class edit_question_form extends \moodleform {
      * Form definition.
      */
     public function definition() {
+        // phpcs:disable moodle.Commenting.TodoComment
         // TODO - Find a way to not use globals. Maybe the base class allows more parameters to be passed?
         global $questionnaire, $question, $SESSION;
 
+        // phpcs:disable moodle.Commenting.TodoComment
         // TODO - Is there a better way to do this without session global?
         // The 'sticky' required response value for further new questions.
         if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {

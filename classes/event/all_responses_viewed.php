@@ -75,7 +75,7 @@ class all_responses_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        $params = array();
+        $params = [];
         $params['id'] = $this->contextinstanceid;
         if (isset($this->other['action'])) {
             $params['action'] = $this->other['action'];

@@ -23,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+
 require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
@@ -70,11 +71,11 @@ if ($resume) {
     $context = context_module::instance($questionnaire->cm->id);
     $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-    $event = \mod_questionnaire\event\attempt_resumed::create(array(
+    $event = \mod_questionnaire\event\attempt_resumed::create([
                     'objectid' => $questionnaire->id,
                     'anonymous' => $anonymous,
-                    'context' => $context
-    ));
+                    'context' => $context,
+    ]);
     $event->trigger();
 }
 

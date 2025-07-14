@@ -29,10 +29,11 @@ namespace mod_questionnaire;
  * Unit tests for questionnaire_csvexport_test.
  * @group mod_questionnaire
  */
-class csvexport_test extends \advanced_testcase {
+final class csvexport_test extends \advanced_testcase {
 
     public function setUp(): void {
         global $CFG;
+        parent::setUp();
 
         require_once($CFG->dirroot.'/lib/testing/generator/data_generator.php');
         require_once($CFG->dirroot.'/lib/testing/generator/component_generator_base.php');
@@ -63,7 +64,7 @@ class csvexport_test extends \advanced_testcase {
      *
      * @covers \questionnaire::generate_csv
      */
-    public function test_csvexport() {
+    public function test_csvexport(): void {
         $this->resetAfterTest();
         $dg = $this->getDataGenerator();
         $qdg = $dg->get_plugin_generator('mod_questionnaire');
@@ -96,7 +97,7 @@ class csvexport_test extends \advanced_testcase {
      *
      * @covers \questionnaire::generate_csv
      */
-    public function test_csvexport_identity_fields() {
+    public function test_csvexport_identity_fields(): void {
         global $DB;
         $this->resetAfterTest();
 
@@ -214,7 +215,7 @@ class csvexport_test extends \advanced_testcase {
             "		Test course 1		Testy Lastname3	username3	Test answer	Some header textSome paragraph text	83	" .
             "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1	1	2	3	4	5	1	2	3	4		5",
             "		Test course 1		Testy Lastname4	username4	Test answer	Some header textSome paragraph text	83	" .
-            "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1	1	2	3	4	5	1	2	3	4		5"];
+            "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1	1	2	3	4	5	1	2	3	4		5", ];
     }
 
     /**
@@ -240,6 +241,6 @@ class csvexport_test extends \advanced_testcase {
             "		Test course 1		Testy Lastname4	username4	y	Test answer	Some header textSome paragraph text	83	" .
             "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1	1	2	3	4	5	1	2	3	4		5",
             "		Test course 1		Testy Lastname5	username5	n	Test answer	Some header textSome paragraph text	83	" .
-            "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1	1	2	3	4	5	1	2	3	4		5"];
+            "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1	1	2	3	4	5	1	2	3	4		5", ];
     }
 }

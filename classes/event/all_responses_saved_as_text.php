@@ -68,7 +68,7 @@ class all_responses_saved_as_text extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        $params = array();
+        $params = [];
         $params['action'] = 'vall';
         $params['group'] = $this->other['currentgroupid'];
         return new \moodle_url("/mod/questionnaire/report.php", $params);

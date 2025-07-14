@@ -57,6 +57,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
     $charttitle2 = $groupname;
 
     // Gradient colors if needed.
+    // phpcs:disable moodle.Commenting.TodoComment
     // TODO make gradient colors customizable in the settings.
     $chartcolorsgradient = "['Gradient(white:blue)', 'Gradient(white:red)', 'Gradient(white:green)', 'Gradient(white:pink)',
             'Gradient(white:yellow)', 'Gradient(white:cyan)', 'Gradient(white:navy)',
@@ -64,7 +65,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
 
     // We do not have labels other than global in this feedback type.
     if ($feedbacktype == 'global') {
-        $labels = array($globallabel);
+        $labels = [$globallabel];
     }
 
     switch ($charttype) {
@@ -77,27 +78,27 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         $score = null;
                     } else {
                         $score2 = $score;
-                        $score = array($score2[0]);
-                        $oppositescore = array($score2[1]);
+                        $score = [$score2[0]];
+                        $oppositescore = [$score2[1]];
                     }
                 }
 
                 if ($allscore) {
                     $allscore2 = $allscore;
-                    $allscore = array($allscore2[0]);
-                    $alloppositescore = array($allscore2[1]);
+                    $allscore = [$allscore2[0]];
+                    $alloppositescore = [$allscore2[1]];
                 }
                 $nblabels = 1.5;     // For a single horizontal bar with 1.5 height.
                 $nbvalues = 1;       // Only one hbar.
             } else {
                 if ($score) {
-                    $oppositescore = array();
+                    $oppositescore = [];
                     foreach ($score as $sc) {
                         $oppositescore[] = 100 - $sc;
                     }
                 }
                 if ($allscore) {
-                    $alloppositescore = array();
+                    $alloppositescore = [];
                     foreach ($allscore as $sc) {
                         $alloppositescore[] = 100 - $sc;
                     }
@@ -138,8 +139,8 @@ function draw_chart($feedbacktype, $labels, $groupname,
             // JSON_UNESCAPED_UNICODE available since php 5.4, used to correctly treat French accents etc.
 
             // The bar colors :: use green for "positive" (left column) and pink for "negative" (right column).
-            $chartcolors = array();
-            $chartcolors2 = array();
+            $chartcolors = [];
+            $chartcolors2 = [];
             if ($score) {
 
                 for ($i = 0; $i < $nbvalues; $i++) {
@@ -238,7 +239,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
 
         case 'hbar':
             // The bar colors.
-            $chartcolors = array();
+            $chartcolors = [];
             $chartcolors = json_encode($chartcolors);
             $sequential = 'true';
             // Global feedback with only one score.

@@ -43,7 +43,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('name', 'questionnaire'), array('size' => '64'));
+        $mform->addElement('text', 'name', get_string('name', 'questionnaire'), ['size' => '64']);
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
@@ -67,16 +67,16 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
-        $notificationoptions = array(0 => get_string('no'), 1 => get_string('notificationsimple', 'questionnaire'),
-            2 => get_string('notificationfull', 'questionnaire'));
+        $notificationoptions = [0 => get_string('no'), 1 => get_string('notificationsimple', 'questionnaire'),
+            2 => get_string('notificationfull', 'questionnaire'), ];
         $mform->addElement('select', 'notifications', get_string('notifications', 'questionnaire'), $notificationoptions);
         $mform->addHelpButton('notifications', 'notifications', 'questionnaire');
 
-        $options = array('0' => get_string('no'), '1' => get_string('yes'));
+        $options = ['0' => get_string('no'), '1' => get_string('yes')];
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
 
-        $options = array('0' => get_string('no'), '1' => get_string('yes'));
+        $options = ['0' => get_string('no'), '1' => get_string('yes')];
         $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
         $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
 
@@ -183,7 +183,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         if (!empty($defaultvalues['respondenttype']) && $defaultvalues['respondenttype'] == "anonymous") {
             // If this questionnaire has responses.
             $numresp = $DB->count_records('questionnaire_response',
-                            array('questionnaireid' => $defaultvalues['instance'], 'complete' => 'y'));
+                            ['questionnaireid' => $defaultvalues['instance'], 'complete' => 'y']);
             if ($numresp) {
                 $defaultvalues['cannotchangerespondenttype'] = 1;
             }

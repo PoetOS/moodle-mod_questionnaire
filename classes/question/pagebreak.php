@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\question;
 use mod_questionnaire\edit_question_form;
-use \questionnaire;
+use questionnaire;
 
 /**
  * This file contains the parent class for pagebreak question types.

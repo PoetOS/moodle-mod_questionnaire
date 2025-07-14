@@ -382,7 +382,7 @@ class renderer extends \plugin_renderer_base {
         $output = '';
         $output .= \html_writer::start_tag('div');
         $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr,
-            'class' => 'btn btn-primary']);
+            'class' => 'btn btn-primary', ]);
         $output .= ' ';
         $output .= \html_writer::tag('a', $resetstr, ['href' => $url, 'class' => 'btn btn-secondary mr-1']);
         $output .= \html_writer::end_tag('div') . "\n";
@@ -415,7 +415,7 @@ class renderer extends \plugin_renderer_base {
     public function dependency_warnings($children, $langstring, $strnum) {
         $msg = '<div class="warning">' . get_string($langstring, 'questionnaire') . '</div><br />';
         foreach ($children as $child) {
-            $loopindicator = array();
+            $loopindicator = [];
             foreach ($child as $subchild) {
                 $childname = '';
                 if ($subchild->name) {
@@ -487,6 +487,7 @@ class renderer extends \plugin_renderer_base {
                     $logic = '';
             }
 
+            // phpcs:disable moodle.Commenting.TodoComment
             // TODO - Move the HTML generation to the renderer.
             if ($dependency->dependandor == "and") {
                 $html .= '<div id="qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' .
@@ -533,26 +534,26 @@ class renderer extends \plugin_renderer_base {
      * @param string $extrafields HTML for extra form fields
      * @return string HTML fragment
      */
-    public function download_dataformat_selector($label, $base, $name = 'dataformat', $params = array(), $extrafields = '') {
+    public function download_dataformat_selector($label, $base, $name = 'dataformat', $params = [], $extrafields = '') {
 
         $formats = \core_plugin_manager::instance()->get_plugins_of_type('dataformat');
-        $options = array();
+        $options = [];
         foreach ($formats as $format) {
             if ($format->is_enabled()) {
-                $options[] = array(
+                $options[] = [
                     'value' => $format->name,
                     'label' => get_string('dataformat', $format->component),
-                );
+                ];
             }
         }
-        $hiddenparams = array();
+        $hiddenparams = [];
         foreach ($params as $key => $value) {
-            $hiddenparams[] = array(
+            $hiddenparams[] = [
                 'name' => $key,
                 'value' => $value,
-            );
+            ];
         }
-        $data = array(
+        $data = [
             'label' => $label,
             'base' => $base,
             'name' => $name,
@@ -564,12 +565,14 @@ class renderer extends \plugin_renderer_base {
             'emailroleshelp' => $this->help_icon('emailroles', 'questionnaire'),
             'emailextrahelp' => $this->help_icon('emailextra', 'questionnaire'),
             'allowemailreporting' => get_config('questionnaire', 'allowemailreporting'),
-        );
+        ];
 
         return $this->render_from_template('mod_questionnaire/dataformat_selector', $data);
     }
 
     /**
+     * Prints the view response menu.
+     *
      * @param moodle_url $urlroot
      * @param array $options
      * @param string $userview

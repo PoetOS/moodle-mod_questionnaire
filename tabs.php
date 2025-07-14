@@ -26,10 +26,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $DB, $SESSION;
-$tabs = array();
-$row = array();
-$inactive = array();
-$activated = array();
+$tabs = [];
+$row = [];
+$inactive = [];
+$activated = [];
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
@@ -74,10 +74,10 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
     $row[] = new tabobject('myreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
                            $argstr), $yourrespstring);
 
-    if ($usernumresp > 1 && in_array($currenttab, array('mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'))) {
+    if ($usernumresp > 1 && in_array($currenttab, ['mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'])) {
         $inactive[] = 'myreport';
         $activated[] = 'myreport';
-        $row2 = array();
+        $row2 = [];
         $argstr2 = $argstr.'&action=summary';
         $row2[] = new tabobject('mysummary', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr2),
                                 get_string('summary', 'questionnaire'));
@@ -92,7 +92,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
             $link = $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2);
             $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
         }
-    } else if (in_array($currenttab, array('mybyresponse', 'mysummary'))) {
+    } else if (in_array($currenttab, ['mybyresponse', 'mysummary'])) {
         $inactive[] = 'myreport';
         $activated[] = 'myreport';
     }
@@ -121,14 +121,14 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
     $argstr = 'instance='.$questionnaire->id;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                            $argstr.'&action=vall'), get_string('viewallresponses', 'questionnaire'));
-    if (in_array($currenttab, array('vall', 'vresp', 'valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv',
-                                     'vrespsummary', 'individualresp', 'printresp', 'deleteresp'))) {
+    if (in_array($currenttab, ['vall', 'vresp', 'valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv',
+                                     'vrespsummary', 'individualresp', 'printresp', 'deleteresp', ])) {
         $inactive[] = 'allreport';
         $activated[] = 'allreport';
         if ($currenttab == 'vrespsummary' || $currenttab == 'valldefault') {
             $inactive[] = 'vresp';
         }
-        $row2 = array();
+        $row2 = [];
         $argstr2 = $argstr.'&action=vall&group='.$currentgroupid;
         $row2[] = new tabobject('vall', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('summary', 'questionnaire'));
@@ -143,9 +143,9 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
             }
         }
     }
-    if (in_array($currenttab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
+    if (in_array($currenttab, ['valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'])) {
         $activated[] = 'vall';
-        $row3 = array();
+        $row3 = [];
 
         $argstr2 = $argstr.'&action=vall&group='.$currentgroupid;
         $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
@@ -171,7 +171,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
         }
     }
 
-    if (in_array($currenttab, array('individualresp', 'deleteresp'))) {
+    if (in_array($currenttab, ['individualresp', 'deleteresp'])) {
         $inactive[] = 'vresp';
         if ($currenttab != 'deleteresp') {
             $activated[] = 'vresp';
@@ -187,16 +187,16 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
     $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
                            $argstr.'&action=vall&group='.$currentgroupid), get_string('viewallresponses', 'questionnaire'));
-    if (in_array($currenttab, array('valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'))) {
+    if (in_array($currenttab, ['valldefault',  'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'])) {
         $inactive[] = 'vall';
         $activated[] = 'vall';
-        $row2 = array();
+        $row2 = [];
         $argstr2 = $argstr.'&action=vall&group='.$currentgroupid;
         $row2[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('summary', 'questionnaire'));
         $inactive[] = $currenttab;
         $activated[] = $currenttab;
-        $row3 = array();
+        $row3 = [];
         $argstr2 = $argstr.'&action=vall&group='.$currentgroupid;
         $row3[] = new tabobject('valldefault', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr2),
                                 get_string('order_default', 'questionnaire'));
@@ -224,7 +224,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
 }
 
 if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
-    $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id' => $questionnaire->cm->id));
+    $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', ['id' => $questionnaire->cm->id]);
     $row[] = new tabobject('nonrespondents',
                     $nonrespondenturl->out(),
                     get_string('show_nonrespondents', 'questionnaire'));

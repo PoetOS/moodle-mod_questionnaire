@@ -68,7 +68,7 @@ class response_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        $params = array();
+        $params = [];
         $params['action'] = 'vresp';
         $params['individualresponse'] = 1;
         $params['rid'] = $this->other['rid'];

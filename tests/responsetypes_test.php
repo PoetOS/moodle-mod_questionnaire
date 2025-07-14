@@ -39,7 +39,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php')
  * Unit tests for questionnaire_responsetypes_testcase.
  * @group mod_questionnaire
  */
-class responsetypes_test extends \advanced_testcase {
+final class responsetypes_test extends \advanced_testcase {
     /**
      * Test responses in a yes/no question.
      *
@@ -48,7 +48,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\yesno
      */
-    public function test_create_response_boolean() {
+    public function test_create_response_boolean(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -82,7 +82,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\essay
      */
-    public function test_create_response_text() {
+    public function test_create_response_text(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -117,7 +117,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\slider
      */
-    public function test_create_response_slider() {
+    public function test_create_response_slider(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -152,7 +152,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\date
      */
-    public function test_create_response_date() {
+    public function test_create_response_date(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -188,7 +188,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\radio
      */
-    public function test_create_response_single() {
+    public function test_create_response_single(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -203,7 +203,7 @@ class responsetypes_test extends \advanced_testcase {
             (object)['content' => 'One', 'value' => 1],
             (object)['content' => 'Two', 'value' => 2],
             (object)['content' => 'Three', 'value' => 3],
-            (object)['content' => '!other=Something else', 'value' => 4]
+            (object)['content' => '!other=Something else', 'value' => 4],
         ];
         $questionnaire = $generator->create_test_questionnaire($course, QUESRADIO, ['content' => 'Select one'], $choicedata);
 
@@ -234,7 +234,7 @@ class responsetypes_test extends \advanced_testcase {
             }
         }
         $vals = ['q'.$question->id => $val,
-                 'q'.$question->id. \mod_questionnaire\question\choice::id_other_choice_name($val) => 'Forty-four'];
+                 'q'.$question->id. \mod_questionnaire\question\choice::id_other_choice_name($val) => 'Forty-four', ];
         $userid = 2;
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
@@ -265,7 +265,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\rate
      */
-    public function test_create_response_multiple() {
+    public function test_create_response_multiple(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -280,7 +280,7 @@ class responsetypes_test extends \advanced_testcase {
             (object)['content' => 'One', 'value' => 1],
             (object)['content' => 'Two', 'value' => 2],
             (object)['content' => 'Three', 'value' => 3],
-            (object)['content' => '!other=Another number', 'value' => 4]
+            (object)['content' => '!other=Another number', 'value' => 4],
         ];
         $questionnaire = $generator->create_test_questionnaire($course, QUESCHECK, ['content' => 'Select any'], $choicedata);
 
@@ -328,7 +328,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\rate
      */
-    public function test_create_response_rank() {
+    public function test_create_response_rank(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -342,7 +342,7 @@ class responsetypes_test extends \advanced_testcase {
         $choicedata = [
             (object)['content' => 'One', 'value' => 1],
             (object)['content' => 'Two', 'value' => 2],
-            (object)['content' => 'Three', 'value' => 3]
+            (object)['content' => 'Three', 'value' => 3],
         ];
         $questiondata = ['content' => 'Rank these', 'length' => 5, 'precise' => 0];
         $questionnaire = $generator->create_test_questionnaire($course, QUESRATE, $questiondata, $choicedata);
@@ -420,7 +420,14 @@ class responsetypes_test extends \advanced_testcase {
         $this->assertEquals($responseid, $responses[$responseid]->id);
     }
 
-    public function test_create_old_response_boolean() {
+    /**
+     * Test that old responses are deleted for boolean questions.
+     *
+     * @return void
+     *
+     * @covers \questionnaire_delete_old_responses
+     */
+    public function test_create_old_response_boolean(): void {
         global $DB;
 
         $this->resetAfterTest();

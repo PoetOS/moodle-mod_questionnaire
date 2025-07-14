@@ -75,7 +75,7 @@ class sectiontext extends question {
      */
     public function mobile_question_display($qnum, $autonum = false) {
         $options = ['noclean' => true, 'para' => false, 'filter' => true,
-            'context' => $this->context, 'overflowdiv' => true];
+            'context' => $this->context, 'overflowdiv' => true, ];
         $mobiledata = (object)[
             'id' => $this->id,
             'name' => $this->name,
@@ -90,7 +90,7 @@ class sectiontext extends question {
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise,
             'qnum' => '',
-            'errormessage' => get_string('required') . ': ' . $this->name
+            'errormessage' => get_string('required') . ': ' . $this->name,
         ];
 
         $mobiledata->issectiontext = true;

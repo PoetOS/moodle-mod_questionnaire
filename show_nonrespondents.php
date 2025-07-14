@@ -16,6 +16,7 @@
 
 /**
  * Show the non-respondents to a questionnaire.
+ *
  * @author Joseph Rézeau (copied from feedback plugin show_nonrespondents by original author Andreas Grabs)
  * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
@@ -55,11 +56,11 @@ if ($id) {
         throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 
-    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+    if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
         throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
     }
 
-    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+    if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
         throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 }
@@ -75,7 +76,7 @@ if (!$coursecontext = context_course::instance($course->id)) {
 
 require_course_login($course, true, $cm);
 
-$url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id' => $cm->id));
+$url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', ['id' => $cm->id]);
 $PAGE->set_url($url);
 
 $questionnaire = new questionnaire($course, $cm, $sid, $questionnaire);
@@ -129,7 +130,7 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
 
     $shortname = format_string($course->shortname,
                             true,
-                            array('context' => context_course::instance($course->id)));
+                            ['context' => context_course::instance($course->id)]);
     $strquestionnaires = get_string("modulenameplural", "questionnaire");
 
     $htmlmessage = "<body id=\"email\">";
@@ -147,7 +148,7 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
 
     if (is_array($messageuser)) {
         foreach ($messageuser as $userid) {
-            $senduser = $DB->get_record('user', array('id' => $userid));
+            $senduser = $DB->get_record('user', ['id' => $userid]);
             $eventdata = new \core\message\message();
             $eventdata->courseid = $course->id;
             $eventdata->name = 'message';
@@ -167,7 +168,7 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
             $msg = $questionnaire->renderer->heading(get_string('messagedselectedusersfailed'));
         }
 
-        $url = new moodle_url('/mod/questionnaire/view.php', array('id' => $cm->id));
+        $url = new moodle_url('/mod/questionnaire/view.php', ['id' => $cm->id]);
         redirect($url, $msg, 4);
         exit;
     }
@@ -198,9 +199,9 @@ if ($fullname) {
 
     // Preparing the table for output.
     $baseurl = new moodle_url('/mod/questionnaire/show_nonrespondents.php');
-    $baseurl->params(array('id' => $cm->id, 'showall' => $showall));
+    $baseurl->params(['id' => $cm->id, 'showall' => $showall]);
 
-    $tablecolumns = array('userpic', 'fullname');
+    $tablecolumns = ['userpic', 'fullname'];
 
     // Extra columns copied from participants view.
     if (class_exists('\core_user\fields')) {
@@ -208,7 +209,7 @@ if ($fullname) {
     } else {
         $extrafields = get_extra_user_fields($context);
     }
-    $tableheaders = array(get_string('userpic'), get_string('fullnameuser'));
+    $tableheaders = [get_string('userpic'), get_string('fullnameuser')];
 
     if (in_array('email', $extrafields) || has_capability('moodle/course:viewhiddenuserfields', $context)) {
         $tablecolumns[] = 'email';
@@ -246,12 +247,12 @@ if ($fullname) {
     $table->set_attribute('cellspacing', '0');
     $table->set_attribute('id', 'showentrytable');
     $table->set_attribute('class', 'flexible generaltable generalbox');
-    $table->set_control_variables(array(
+    $table->set_control_variables([
                 TABLE_VAR_SORT => 'ssort',
                 TABLE_VAR_IFIRST => 'sifirst',
                 TABLE_VAR_ILAST => 'silast',
-                TABLE_VAR_PAGE => 'spage'
-                ));
+                TABLE_VAR_PAGE => 'spage',
+                ]);
 
     $table->no_sorting('status');
     $table->no_sorting('select');
@@ -336,11 +337,11 @@ if (!$nonrespondents) {
         ob_start();
         $buffering = true;
         foreach ($nonrespondents as $nonrespondent) {
-            $user = $DB->get_record('user', array('id' => $nonrespondent));
+            $user = $DB->get_record('user', ['id' => $nonrespondent]);
             // Userpicture and link to the profilepage.
             $profileurl = $CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id;
             $profilelink = '<strong><a href="'.$profileurl.'">'.fullname($user).'</a></strong>';
-            $data = array ($questionnaire->renderer->user_picture($user, array('courseid' => $course->id)), $profilelink);
+            $data = [$questionnaire->renderer->user_picture($user, ['courseid' => $course->id]), $profilelink];
             if (in_array('email', $tablecolumns)) {
                 $data[] = $user->email;
             }
@@ -362,7 +363,7 @@ if (!$nonrespondents) {
                 $checkboxaltvalue = '';
                 if ($resume) {
                     if ($DB->record_exists('questionnaire_response', ['questionnaireid' => $questionnaire->id,
-                            'userid' => $nonrespondent, 'complete' => 'n']) ) {
+                            'userid' => $nonrespondent, 'complete' => 'n', ]) ) {
                         $data[] = get_string('started', 'questionnaire');
                         $checkboxaltvalue = 1;
                     } else {
@@ -387,12 +388,12 @@ if (!$nonrespondents) {
             $allurl->param('showall', 0);
             $questionnaire->page->add_to_page('formarea',
                 $questionnaire->renderer->container(html_writer::link($allurl,
-                    get_string('showperpage', '', QUESTIONNAIRE_DEFAULT_PAGE_COUNT)), array(), 'showall'));
+                    get_string('showperpage', '', QUESTIONNAIRE_DEFAULT_PAGE_COUNT)), [], 'showall'));
 
         } else if ($countnonrespondents > 0 && $perpage < $countnonrespondents) {
             $allurl->param('showall', 1);
             $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->container(html_writer::link($allurl,
-                get_string('showall', '', $countnonrespondents)), array(), 'showall'));
+                get_string('showall', '', $countnonrespondents)), [], 'showall'));
         }
         if (has_capability('mod/questionnaire:message', $context)) {
             $questionnaire->page->add_to_page('formarea',
@@ -475,15 +476,15 @@ if (!$nonrespondents) {
             $editor = editors_get_preferred_editor();
             $editor->use_editor($id, questionnaire_get_editor_options($context));
             $texteditor = html_writer::tag('div', html_writer::tag('textarea', $message,
-                    array('id' => $id, 'name' => "message",  'class' => "form-control", 'rows' => '10', 'cols' => '60')));
+                    ['id' => $id, 'name' => "message",  'class' => "form-control", 'rows' => '10', 'cols' => '60']));
             $questionnaire->page->add_to_page('formarea', '<input type="hidden" name="format" value="'.FORMAT_HTML.'" />');
 
 
         // Print editor.
         $table = new html_table();
-        $table->align = array('left', 'left');
-        $table->data[] = array( '<strong>'.get_string('subject', 'questionnaire').'</strong>', $subjecteditor);
-        $table->data[] = array('<strong>'.get_string('messagebody').'</strong>', $texteditor);
+        $table->align = ['left', 'left'];
+        $table->data[] = [ '<strong>'.get_string('subject', 'questionnaire').'</strong>', $subjecteditor];
+        $table->data[] = ['<strong>'.get_string('messagebody').'</strong>', $texteditor];
 
         $questionnaire->page->add_to_page('formarea', html_writer::table($table));
 
@@ -504,7 +505,7 @@ if (!$nonrespondents) {
         $questionnaire->page->add_to_page('formarea', html_writer::end_tag('form'));
 
         // Include the needed js.
-        $module = array('name' => 'mod_questionnaire', 'fullpath' => '/mod/questionnaire/module.js');
+        $module = ['name' => 'mod_questionnaire', 'fullpath' => '/mod/questionnaire/module.js'];
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_sendmessage', null, false, $module);
     }
 }
@@ -518,9 +519,9 @@ echo $questionnaire->renderer->footer();
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-$event = \mod_questionnaire\event\non_respondents_viewed::create(array(
+$event = \mod_questionnaire\event\non_respondents_viewed::create([
                 'objectid' => $questionnaire->id,
                 'anonymous' => $anonymous,
-                'context' => $context
-));
+                'context' => $context,
+]);
 $event->trigger();

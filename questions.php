@@ -38,11 +38,11 @@ if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
     throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
-if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 
-if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
     throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
@@ -101,7 +101,7 @@ if ($delq) {
 
     if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
         foreach ($records as $record) {
-            $DB->set_field('questionnaire_question', 'position', $record->position - 1, array('id' => $record->id));
+            $DB->set_field('questionnaire_question', 'position', $record->position - 1, ['id' => $record->id]);
         }
     }
     // Delete section breaks without asking for confirmation.
@@ -121,11 +121,11 @@ if ($delq) {
     // Log question deleted event.
     $context = context_module::instance($questionnaire->cm->id);
     $questiontype = \mod_questionnaire\question\question::qtypename($questionnaire->questions[$qid]->type_id);
-    $params = array(
+    $params = [
                     'context' => $context,
                     'courseid' => $questionnaire->course->id,
-                    'other' => array('questiontype' => $questiontype)
-    );
+                    'other' => ['questiontype' => $questiontype],
+    ];
     $event = \mod_questionnaire\event\question_deleted::create($params);
     $event->trigger();
 
@@ -297,11 +297,11 @@ if ($action == 'main') {
     if (isset($qformdata)) {
         $context = context_module::instance($questionnaire->cm->id);
         $questiontype = \mod_questionnaire\question\question::qtypename($qformdata->type_id);
-        $params = array(
+        $params = [
                         'context' => $context,
                         'courseid' => $questionnaire->course->id,
-                        'other' => array('questiontype' => $questiontype)
-        );
+                        'other' => ['questiontype' => $questiontype],
+        ];
         $event = \mod_questionnaire\event\question_created::create($params);
         $event->trigger();
     }
@@ -362,9 +362,9 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     // Count responses already saved for that question.
     $countresps = 0;
     if ($qtype != QUESSECTIONTEXT) {
-        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', array('typeid' => $qtype));
+        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', ['typeid' => $qtype]);
         if (!empty($responsetable)) {
-            $countresps = $DB->count_records('questionnaire_'.$responsetable, array('question_id' => $qid));
+            $countresps = $DB->count_records('questionnaire_'.$responsetable, ['question_id' => $qid]);
         }
     }
 

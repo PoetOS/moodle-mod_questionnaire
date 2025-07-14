@@ -40,7 +40,7 @@ class response {
     /** @var int $submitted The most recent submission date of this response. */
     public $submitted;
 
-    /** @var boolean $complete Flag for final submission of this response. */
+    /** @var bool $complete Flag for final submission of this response. */
     public $complete;
 
     /** @var int $grade Numeric grade for this response (if applicable). */

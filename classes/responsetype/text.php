@@ -208,7 +208,7 @@ class text extends responsetype {
                 $pagetags->responses[] = (object)['response' => $response];
                 $evencolor = !$evencolor;
             }
-            // sort table only when row count is greater than one.
+            // Sort table only when row count is greater than one.
             if (count($weights) > 1) {
                 $pagetags->sortresponse = true;
             }

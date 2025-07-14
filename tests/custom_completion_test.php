@@ -44,7 +44,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php')
  * @copyright 2022 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class custom_completion_test extends \advanced_testcase {
+final class custom_completion_test extends \advanced_testcase {
 
     /**
      * Data provider for get_state().
@@ -54,16 +54,16 @@ class custom_completion_test extends \advanced_testcase {
     public static function get_state_provider(): array {
         return [
             'Undefined rule' => [
-                'somenonexistentrule', COMPLETION_DISABLED, false, null, coding_exception::class
+                'somenonexistentrule', COMPLETION_DISABLED, false, null, coding_exception::class,
             ],
             'Rule not available' => [
-                'completionsubmit', COMPLETION_DISABLED, false, null, moodle_exception::class
+                'completionsubmit', COMPLETION_DISABLED, false, null, moodle_exception::class,
             ],
             'Rule available, user has not submitted' => [
-                'completionsubmit', COMPLETION_ENABLED, false, COMPLETION_INCOMPLETE, null
+                'completionsubmit', COMPLETION_ENABLED, false, COMPLETION_INCOMPLETE, null,
             ],
             'Rule available, user has submitted' => [
-                'completionsubmit', COMPLETION_ENABLED, true, COMPLETION_COMPLETE, null
+                'completionsubmit', COMPLETION_ENABLED, true, COMPLETION_COMPLETE, null,
             ],
         ];
     }
@@ -82,7 +82,7 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\completion\custom_completion
      */
-    public function test_get_state(string $rule, int $available, ?bool $submitted, ?int $status, ?string $exception) {
+    public function test_get_state(string $rule, int $available, ?bool $submitted, ?int $status, ?string $exception): void {
         if (!is_null($exception)) {
             $this->expectException($exception);
         }
@@ -93,7 +93,7 @@ class custom_completion_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
         $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $questionnaire = $generator->create_instance(['course' => $course->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            $rule => $available]);
+            $rule => $available, ]);
 
         $questiondata['type_id'] = 1;
         $questiondata['surveyid'] = $questionnaire->sid;
@@ -119,7 +119,7 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\completion\custom_completion
      */
-    public function test_get_defined_custom_rules() {
+    public function test_get_defined_custom_rules(): void {
         $rules = custom_completion::get_defined_custom_rules();
         $this->assertCount(1, $rules);
         $this->assertEquals('completionsubmit', reset($rules));
@@ -130,7 +130,7 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\completion\custom_completion
      */
-    public function test_get_custom_rule_descriptions() {
+    public function test_get_custom_rule_descriptions(): void {
         // Get defined custom rules.
         $rules = custom_completion::get_defined_custom_rules();
 
@@ -158,7 +158,7 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\completion\custom_completion
      */
-    public function test_is_defined() {
+    public function test_is_defined(): void {
         // Build a mock cm_info instance.
         $mockcminfo = $this->getMockBuilder(cm_info::class)
             ->disableOriginalConstructor()
@@ -181,10 +181,10 @@ class custom_completion_test extends \advanced_testcase {
     public static function get_available_custom_rules_provider(): array {
         return [
             'Completion submit available' => [
-                COMPLETION_ENABLED, ['completionsubmit']
+                COMPLETION_ENABLED, ['completionsubmit'],
             ],
             'Completion submit not available' => [
-                COMPLETION_DISABLED, []
+                COMPLETION_DISABLED, [],
             ],
         ];
     }
@@ -199,11 +199,11 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\completion\custom_completion
      */
-    public function test_get_available_custom_rules(int $status, array $expected) {
+    public function test_get_available_custom_rules(int $status, array $expected): void {
         $customdataval = [
             'customcompletionrules' => [
-                'completionsubmit' => $status
-            ]
+                'completionsubmit' => $status,
+            ],
         ];
 
         // Build a mock cm_info instance.

@@ -183,12 +183,12 @@ class mobile {
             'templates' => [
                 [
                     'id' => 'main',
-                    'html' => $OUTPUT->render_from_template($template, $data)
+                    'html' => $OUTPUT->render_from_template($template, $data),
                 ],
             ],
             'javascript' => file_get_contents($CFG->dirroot . '/mod/questionnaire/appjs/uncheckother.js'),
             'otherdata' => $responses,
-            'files' => null
+            'files' => null,
         ];
         return $return;
     }

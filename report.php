@@ -60,10 +60,10 @@ if ($instance === false) {
 $SESSION->instance = $instance;
 $usergraph = get_config('questionnaire', 'usergraph');
 
-if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
+if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $instance])) {
     throw new \moodle_exception('incorrectquestionnaire', 'mod_questionnaire');
 }
-if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
@@ -228,7 +228,7 @@ switch ($action) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
-        } else if (!($resp = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
+        } else if (!($resp = $DB->get_record('questionnaire_response', ['id' => $rid]))) {
             throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
         }
 
@@ -262,10 +262,10 @@ switch ($action) {
         $msg = '<div class="warning centerpara">';
         $msg .= get_string('confirmdelresp', 'questionnaire', $ruser.$timesubmitted);
         $msg .= '</div>';
-        $urlyes = new moodle_url('report.php', array('action' => 'dvresp',
-            'rid' => $rid, 'individualresponse' => 1, 'instance' => $instance, 'group' => $currentgroupid));
-        $urlno = new moodle_url('report.php', array('action' => 'vresp', 'instance' => $instance,
-            'rid' => $rid, 'individualresponse' => 1, 'group' => $currentgroupid));
+        $urlyes = new moodle_url('report.php', ['action' => 'dvresp',
+            'rid' => $rid, 'individualresponse' => 1, 'instance' => $instance, 'group' => $currentgroupid, ]);
+        $urlno = new moodle_url('report.php', ['action' => 'vresp', 'instance' => $instance,
+            'rid' => $rid, 'individualresponse' => 1, 'group' => $currentgroupid, ]);
         $buttonyes = new single_button($urlyes, get_string('delete'), 'post');
         $buttonno = new single_button($urlno, get_string('cancel'), 'get');
         $questionnaire->page->add_to_page('notifications', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
@@ -297,9 +297,9 @@ switch ($action) {
             }
             $msg .= '</div>';
 
-            $urlyes = new moodle_url('report.php', array('action' => 'dvallresp', 'sid' => $sid,
-                'instance' => $instance, 'group' => $currentgroupid));
-            $urlno = new moodle_url('report.php', array('instance' => $instance, 'group' => $currentgroupid));
+            $urlyes = new moodle_url('report.php', ['action' => 'dvallresp', 'sid' => $sid,
+                'instance' => $instance, 'group' => $currentgroupid, ]);
+            $urlno = new moodle_url('report.php', ['instance' => $instance, 'group' => $currentgroupid]);
             $buttonyes = new single_button($urlyes, get_string('delete'), 'post');
             $buttonno = new single_button($urlno, get_string('cancel'), 'get');
 
@@ -319,12 +319,12 @@ switch ($action) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
-        } else if (!($response = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
+        } else if (!($response = $DB->get_record('questionnaire_response', ['id' => $rid]))) {
             throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
         }
 
         if (questionnaire_delete_response($response, $questionnaire)) {
-            if (!$DB->count_records('questionnaire_response', array('questionnaireid' => $questionnaire->id, 'complete' => 'y'))) {
+            if (!$DB->count_records('questionnaire_response', ['questionnaireid' => $questionnaire->id, 'complete' => 'y'])) {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$cm->id;
             } else {
                 $redirection = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;instance='.
@@ -332,10 +332,10 @@ switch ($action) {
             }
 
             // Log this questionnaire delete single response action.
-            $params = array('objectid' => $questionnaire->survey->id,
+            $params = ['objectid' => $questionnaire->survey->id,
                 'context' => $questionnaire->context,
                 'courseid' => $questionnaire->course->id,
-                'relateduserid' => $response->userid);
+                'relateduserid' => $response->userid, ];
             $event = \mod_questionnaire\event\response_deleted::create($params);
             $event->trigger();
 
@@ -385,7 +385,7 @@ switch ($action) {
                     $resp = current($resps);
                     $rid = $resp->id;
                 } else {
-                    $resp = $DB->get_record('questionnaire_response', array('id' => $rid));
+                    $resp = $DB->get_record('questionnaire_response', ['id' => $rid]);
                 }
                 if (!empty($resp->userid)) {
                     if ($user = $DB->get_record('user', ['id' => $resp->userid])) {
@@ -415,11 +415,11 @@ switch ($action) {
             $context = context_module::instance($questionnaire->cm->id);
             $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-            $event = \mod_questionnaire\event\all_responses_deleted::create(array(
+            $event = \mod_questionnaire\event\all_responses_deleted::create([
                 'objectid' => $questionnaire->id,
                 'anonymous' => $anonymous,
-                'context' => $context
-            ));
+                'context' => $context,
+            ]);
             $event->trigger();
 
             redirect($redirection);
@@ -469,7 +469,7 @@ switch ($action) {
             'user' => $user,
             'sid' => $sid,
             'action' => 'dfs',
-            'group' => $currentgroupid
+            'group' => $currentgroupid,
         ];
         $extrafields = $questionnaire->renderer->render_from_template('mod_questionnaire/extrafields', []);
         $output .= $questionnaire->renderer->download_dataformat_selector(get_string('downloadtypes', 'questionnaire'),
@@ -482,11 +482,11 @@ switch ($action) {
         echo $questionnaire->renderer->footer('none');
 
         // Log saved as text action.
-        $params = array('objectid' => $questionnaire->id,
+        $params = ['objectid' => $questionnaire->id,
             'context' => $questionnaire->context,
             'courseid' => $course->id,
-            'other' => array('action' => $action, 'instance' => $instance, 'currentgroupid' => $currentgroupid)
-        );
+            'other' => ['action' => $action, 'instance' => $instance, 'currentgroupid' => $currentgroupid],
+        ];
         $event = \mod_questionnaire\event\all_responses_saved_as_text::create($params);
         $event->trigger();
 
@@ -566,7 +566,7 @@ switch ($action) {
         }
 
         $respinfo = '';
-        $resps = array();
+        $resps = [];
         // Enable choose_group if there are questionnaire groups and groupmode is not set to "no groups"
         // and if there are more goups than 1 (or if user can view all groups).
         if (is_array($questionnairegroups) && $groupmode > 0) {
@@ -626,11 +626,11 @@ switch ($action) {
             }
         }
 
-        $params = array('objectid' => $questionnaire->id,
+        $params = ['objectid' => $questionnaire->id,
             'context' => $context,
             'courseid' => $course->id,
-            'other' => array('action' => $action, 'instance' => $instance, 'groupid' => $currentgroupid)
-        );
+            'other' => ['action' => $action, 'instance' => $instance, 'groupid' => $currentgroupid],
+        ];
 
         if ($outputtarget == 'pdf') {
             $pdf = questionnaire_report_start_pdf();
@@ -661,17 +661,17 @@ switch ($action) {
                 $linkname = get_string('downloadpdf', 'mod_questionnaire');
                 $link = new moodle_url('/mod/questionnaire/report.php',
                         ['action' => 'vall', 'instance' => $instance, 'group' => $currentgroupid, 'target' => 'pdf',
-                                'responsestats' => $userview]);
+                                'responsestats' => $userview, ]);
                 $downpdficon = new pix_icon('f/pdf', $linkname);
                 $respinfo .= $questionnaire->renderer->action_link($link, null, null, null, $downpdficon);
 
                 $linkname = get_string('print', 'mod_questionnaire');
                 $link = new \moodle_url('/mod/questionnaire/report.php',
                         ['action' => 'vall', 'instance' => $instance, 'group' => $currentgroupid, 'target' => 'print',
-                                'responsestats' => $userview]);
+                                'responsestats' => $userview, ]);
                 $htmlicon = new pix_icon('t/print', $linkname);
                 $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                    'height' => 600, 'width' => 800, 'title' => $linkname];
+                    'height' => 600, 'width' => 800, 'title' => $linkname, ];
                 $name = 'popup';
                 $action = new popup_action('click', $link, $name, $options);
                 $class = '';
@@ -805,6 +805,7 @@ switch ($action) {
             }
 
             // Print the main part of the page.
+            // phpcs:disable moodle.Commenting.TodoComment
             // TODO provide option to select how many columns and/or responses per page.
 
             $groupname = get_string('group').': <strong>'.groups_get_group_name($currentgroupid).'</strong>';
@@ -831,6 +832,10 @@ switch ($action) {
         }
         break;
 }
+
+// phpcs:disable moodle.Commenting.FileExpectedTags.CopyrightTagMissing
+// phpcs:disable moodle.Commenting.FileExpectedTags.LicenseTagMissing
+// phpcs:disable moodle.Commenting.Package.Missing
 
 /**
  * Return a pdf object.

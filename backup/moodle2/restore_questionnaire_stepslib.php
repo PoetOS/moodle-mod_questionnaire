@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 use mod_questionnaire\feedback\section;
 
 /**
@@ -48,7 +49,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
      */
     protected function define_structure() {
 
-        $paths = array();
+        $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('questionnaire', '/activity/questionnaire');
@@ -150,7 +151,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->set_mapping('questionnaire_survey', $oldid, $newitemid, true);
 
         // Update the questionnaire record we just created with the new survey id.
-        $DB->set_field('questionnaire', 'sid', $newitemid, array('id' => $this->get_new_parentid('questionnaire')));
+        $DB->set_field('questionnaire', 'sid', $newitemid, ['id' => $this->get_new_parentid('questionnaire')]);
     }
 
     /**
@@ -191,7 +192,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         // If this questionnaire has separate sections feedbacks.
         if (isset($data->scorecalculation)) {
             $scorecalculation = section::decode_scorecalculation($data->scorecalculation);
-            $newscorecalculation = array();
+            $newscorecalculation = [];
             foreach ($scorecalculation as $qid => $val) {
                 $newqid = $this->get_mappingid('questionnaire_question', $qid);
                 $newscorecalculation[$newqid] = $val;

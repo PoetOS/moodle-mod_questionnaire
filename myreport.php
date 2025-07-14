@@ -23,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
@@ -33,10 +34,10 @@ $byresponse = optional_param('byresponse', 0, PARAM_INT);
 $action = optional_param('action', 'summary', PARAM_ALPHA);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
-if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
+if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $instance])) {
     throw new \moodle_exception('incorrectquestionnaire', 'mod_questionnaire');
 }
-if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
@@ -51,7 +52,7 @@ if ( !has_capability('mod/questionnaire:readownresponses', $context)
     || $userid != $USER->id) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance' => $instance));
+$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', ['instance' => $instance]);
 if (isset($userid)) {
     $url->param('userid', $userid);
 }
@@ -251,7 +252,7 @@ switch ($action) {
             $userresps = $resps;
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $userresps);
         }
-        $resps = array();
+        $resps = [];
         // Determine here which "global" responses should get displayed for comparison with current user.
         // Current user is viewing his own group's results.
         if (isset($currentgroupresps)) {

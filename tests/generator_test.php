@@ -29,7 +29,7 @@ namespace mod_questionnaire;
  * Unit tests for questionnaire_generator_testcase.
  * @group mod_questionnaire
  */
-class generator_test extends \advanced_testcase {
+final class generator_test extends \advanced_testcase {
     /**
      * Test generator create_instance function.
      *
@@ -39,20 +39,20 @@ class generator_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\generator\
      */
-    public function test_create_instance() {
+    public function test_create_instance(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
         $course = $this->getDataGenerator()->create_course();
-        $this->assertFalse($DB->record_exists('questionnaire', array('course' => $course->id)));
+        $this->assertFalse($DB->record_exists('questionnaire', ['course' => $course->id]));
 
         /** @var mod_questionnaire_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $this->assertInstanceOf('mod_questionnaire_generator', $generator);
         $this->assertEquals('questionnaire', $generator->get_modulename());
 
-        $questionnaire = $generator->create_instance(array('course' => $course->id));
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
         $this->assertEquals(1, $DB->count_records('questionnaire'));
 
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
@@ -63,7 +63,7 @@ class generator_test extends \advanced_testcase {
         $context = \context_module::instance($cm->id);
         $this->assertEquals($questionnaire->cmid, $context->instanceid);
 
-        $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid));
+        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]);
         $this->assertEquals($survey->id, $questionnaire->sid);
         $this->assertEquals($questionnaire->name, $survey->name);
         $this->assertEquals($questionnaire->name, $survey->title);
@@ -82,18 +82,18 @@ class generator_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\generator\
      */
-    public function test_create_content() {
+    public function test_create_content(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course' => $course->id));
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
         $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, false);
 
-        $newcontent = array(
+        $newcontent = [
             'title' => 'New title',
             'email' => 'test@email.com',
             'subtitle' => 'New subtitle',
@@ -101,10 +101,10 @@ class generator_test extends \advanced_testcase {
             'thanks_page' => 'http://thankurl.com',
             'thank_head' => 'New thank header',
             'thank_body' => 'New thank body',
-        );
+        ];
         $sid = $generator->create_content($questionnaire, $newcontent);
         $this->assertEquals($sid, $questionnaire->sid);
-        $survey = $DB->get_record('questionnaire_survey', array('id' => $sid));
+        $survey = $DB->get_record('questionnaire_survey', ['id' => $sid]);
         foreach ($newcontent as $name => $value) {
             $this->assertEquals($survey->{$name}, $value);
         }

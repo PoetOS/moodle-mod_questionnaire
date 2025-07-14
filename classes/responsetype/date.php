@@ -113,7 +113,7 @@ class date extends responsetype {
         global $DB;
 
         $rsql = '';
-        $params = array($this->question->id);
+        $params = [$this->question->id];
         if (!empty($rids)) {
             list($rsql, $rparams) = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
@@ -230,7 +230,7 @@ class date extends responsetype {
         foreach ($records as $qid => $row) {
             unset ($row->id);
             $row = (array)$row;
-            $newrow = array();
+            $newrow = [];
             foreach ($row as $key => $val) {
                 if (!is_numeric($key)) {
                     $newrow[] = $val;

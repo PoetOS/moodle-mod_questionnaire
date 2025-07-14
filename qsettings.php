@@ -34,11 +34,11 @@ if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
     throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
-if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 
-if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
     throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
@@ -46,7 +46,7 @@ if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->insta
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/qsettings.php', array('id' => $id));
+$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/qsettings.php', ['id' => $id]);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 if (!isset($SESSION->questionnaire)) {
@@ -71,13 +71,13 @@ $sdata->id = $cm->id;
 
 $draftideditor = file_get_submitted_draft_itemid('info');
 $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'info',
-                $sdata->sid, array('subdirs' => true), $questionnaire->survey->info);
-$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
+                $sdata->sid, ['subdirs' => true], $questionnaire->survey->info);
+$sdata->info = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
 $draftideditor = file_get_submitted_draft_itemid('thankbody');
 $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'thankbody',
-                $sdata->sid, array('subdirs' => true), $questionnaire->survey->thank_body);
-$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
+                $sdata->sid, ['subdirs' => true], $questionnaire->survey->thank_body);
+$sdata->thank_body = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
 $settingsform->set_data($sdata);
 
@@ -97,7 +97,7 @@ if ($settings = $settingsform->get_data()) {
     $sdata->infoformat = $settings->info['format'];
     $sdata->info = $settings->info['text'];
     $sdata->info = file_save_draft_area_files($sdata->infoitemid, $context->id, 'mod_questionnaire', 'info',
-                                              $sdata->id, array('subdirs' => true), $sdata->info);
+                                              $sdata->id, ['subdirs' => true], $sdata->info);
 
     $sdata->theme = ''; // Deprecated theme field.
     $sdata->thanks_page = $settings->thanks_page;
@@ -107,7 +107,7 @@ if ($settings = $settingsform->get_data()) {
     $sdata->thankformat = $settings->thank_body['format'];
     $sdata->thank_body = $settings->thank_body['text'];
     $sdata->thank_body = file_save_draft_area_files($sdata->thankitemid, $context->id, 'mod_questionnaire', 'thankbody',
-                                                    $sdata->id, array('subdirs' => true), $sdata->thank_body);
+                                                    $sdata->id, ['subdirs' => true], $sdata->thank_body);
     $sdata->email = $settings->email;
 
     $sdata->courseid = $settings->courseid;

@@ -69,7 +69,7 @@ class questionnaire {
         global $DB;
 
         if ($id) {
-            $questionnaire = $DB->get_record('questionnaire', array('id' => $id));
+            $questionnaire = $DB->get_record('questionnaire', ['id' => $id]);
         }
 
         if (is_object($questionnaire)) {
@@ -114,7 +114,7 @@ class questionnaire {
         global $DB;
 
         if ($sid) {
-            $this->survey = $DB->get_record('questionnaire_survey', array('id' => $sid));
+            $this->survey = $DB->get_record('questionnaire_survey', ['id' => $sid]);
         } else if (is_object($survey)) {
             $this->survey = clone($survey);
         }
@@ -305,13 +305,13 @@ class questionnaire {
                 // Log this submitted response. Note this removes the anonymity in the logged event.
                 $context = context_module::instance($this->cm->id);
                 $anonymous = $this->respondenttype == 'anonymous';
-                $params = array(
+                $params = [
                     'context' => $context,
                     'courseid' => $this->course->id,
                     'relateduserid' => $USER->id,
                     'anonymous' => $anonymous,
-                    'other' => array('questionnaireid' => $this->id)
-                );
+                    'other' => ['questionnaireid' => $this->id],
+                ];
                 $event = \mod_questionnaire\event\attempt_submitted::create($params);
                 $event->trigger();
 
@@ -364,7 +364,7 @@ class questionnaire {
             'courseid' => $this->course->id,
             'relateduserid' => $quser,
             'anonymous' => $anonymous,
-            'other' => array('questionnaireid' => $this->id)
+            'other' => ['questionnaireid' => $this->id],
         ];
         $event = \mod_questionnaire\event\attempt_submitted::create($params);
         $event->trigger();
@@ -653,7 +653,7 @@ class questionnaire {
         global $USER, $DB;
 
         if (!empty($rid)) {
-            $response = $DB->get_record('questionnaire_response', array('id' => $rid));
+            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
 
             // If the response was not found, can't view it.
             if (empty($response)) {
@@ -1176,6 +1176,7 @@ class questionnaire {
         $msg = '';
         $action = $CFG->wwwroot.'/mod/questionnaire/complete.php?id='.$this->cm->id;
 
+        // phpcs:disable moodle.Commenting.TodoComment
         // TODO - Need to rework this. Too much crossover with ->view method.
 
         // Skip logic :: if this is page 1, it cannot be the end page with no questions on it!
@@ -1250,17 +1251,18 @@ class questionnaire {
         $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
         $formdatarid = isset($formdata->rid) ? $formdata->rid : '0';
         $this->page->add_to_page('formstart', $this->renderer->complete_formstart($action, ['referer' => $formdatareferer,
-            'a' => $this->id, 'sid' => $this->survey->id, 'rid' => $formdatarid, 'sec' => $formdata->sec, 'sesskey' => sesskey()]));
+            'a' => $this->id, 'sid' => $this->survey->id, 'rid' => $formdatarid, 'sec' => $formdata->sec,
+            'sesskey' => sesskey(), ]));
         if (isset($this->questions) && $numsections) { // Sanity check.
             $this->survey_render($formdata, $formdata->sec, $msg);
             $controlbuttons = [];
             if ($formdata->sec > 1) {
                 $controlbuttons['prev'] = ['type' => 'submit', 'class' => 'btn btn-secondary control-button-prev',
-                    'value' => '<< '.get_string('previouspage', 'questionnaire')];
+                    'value' => '<< '.get_string('previouspage', 'questionnaire'), ];
             }
             if ($this->resume) {
                 $controlbuttons['resume'] = ['type' => 'submit', 'class' => 'btn btn-secondary control-button-save',
-                    'value' => get_string('save_and_exit', 'questionnaire')];
+                    'value' => get_string('save_and_exit', 'questionnaire'), ];
             }
 
             // Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
@@ -1268,10 +1270,10 @@ class questionnaire {
             if ($formdata->sec == $numsections) {
                 $controlbuttons['submittype'] = ['type' => 'hidden', 'value' => 'Submit Survey'];
                 $controlbuttons['submit'] = ['type' => 'submit', 'class' => 'btn btn-primary control-button-submit',
-                    'value' => get_string('submitsurvey', 'questionnaire')];
+                    'value' => get_string('submitsurvey', 'questionnaire'), ];
             } else {
                 $controlbuttons['next'] = ['type' => 'submit', 'class' => 'btn btn-secondary control-button-next',
-                    'value' => get_string('nextpage', 'questionnaire').' >>'];
+                    'value' => get_string('nextpage', 'questionnaire').' >>', ];
             }
             $this->page->add_to_page('controlbuttons', $this->renderer->complete_controlbuttons($controlbuttons));
         } else {
@@ -1371,7 +1373,7 @@ class questionnaire {
         // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
         if ($rid) {
             $courseid = $this->course->id;
-            if ($resp = $DB->get_record('questionnaire_response', array('id' => $rid)) ) {
+            if ($resp = $DB->get_record('questionnaire_response', ['id' => $rid]) ) {
                 if ($this->respondenttype == 'fullname') {
                     $userid = $resp->userid;
                     // Display name of group(s) that student belongs to... if questionnaire is set to Groups separate or visible.
@@ -1393,13 +1395,13 @@ class questionnaire {
                         }
                     }
 
-                    $params = array(
+                    $params = [
                         'objectid' => $this->survey->id,
                         'context' => $this->context,
                         'courseid' => $this->course->id,
                         'relateduserid' => $userid,
-                        'other' => array('action' => 'vresp', 'currentgroupid' => $currentgroupid, 'rid' => $rid)
-                    );
+                        'other' => ['action' => 'vresp', 'currentgroupid' => $currentgroupid, 'rid' => $rid],
+                    ];
                     $event = \mod_questionnaire\event\response_viewed::create($params);
                     $event->trigger();
                 }
@@ -1408,7 +1410,7 @@ class questionnaire {
         $ruser = '';
         if ($resp && !$blankquestionnaire) {
             if ($userid) {
-                if ($user = $DB->get_record('user', array('id' => $userid))) {
+                if ($user = $DB->get_record('user', ['id' => $userid])) {
                     $ruser = fullname($user);
                 }
             }
@@ -1433,7 +1435,7 @@ class questionnaire {
                             'instance' => $this->id,
                             'target' => 'pdf',
                             'individualresponse' => 1,
-                            'rid' => $rid
+                            'rid' => $rid,
                         ]
                     );
                     $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
@@ -1445,7 +1447,7 @@ class questionnaire {
                     ['action' => 'vresp', 'instance' => $this->id, 'target' => 'print', 'individualresponse' => 1, 'rid' => $rid]);
                 $htmlicon = new pix_icon('t/print', $linkname);
                 $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                    'height' => 600, 'width' => 800, 'title' => $linkname];
+                    'height' => 600, 'width' => 800, 'title' => $linkname, ];
                 $name = 'popup';
                 $action = new popup_action('click', $link, $name, $options);
                 $respinfo .= $this->renderer->action_link($link, null, $action, ['title' => $linkname], $htmlicon) . '&nbsp;';
@@ -1475,14 +1477,14 @@ class questionnaire {
             $linkname = '&nbsp;'.get_string('printblank', 'questionnaire');
             $title = get_string('printblanktooltip', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&amp;rid=0&amp;'.'courseid='.$this->course->id.'&amp;sec=1';
-            $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                'height' => 600, 'width' => 800, 'title' => $title);
+            $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
+                'height' => 600, 'width' => 800, 'title' => $title, ];
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
             $class = "floatprinticon";
             $this->page->add_to_page('printblank',
-                $this->renderer->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
+                $this->renderer->action_link($link, $linkname, $action, ['class' => $class, 'title' => $title],
                     new pix_icon('t/print', $title)));
         }
         if ($section == 1) {
@@ -1537,7 +1539,7 @@ class questionnaire {
     public function survey_print_render($courseid, $message = '', $referer='', $rid=0, $blankquestionnaire=false) {
         global $DB, $CFG;
 
-        if (! $course = $DB->get_record("course", array("id" => $courseid))) {
+        if (! $course = $DB->get_record("course", ["id" => $courseid])) {
             throw new \moodle_exception('incorrectcourseid', 'mod_questionnaire');
         }
 
@@ -1651,13 +1653,14 @@ class questionnaire {
     public function survey_update($sdata) {
         global $DB;
 
+        // phpcs:disable moodle.Commenting.TodoComment
         $errstr = ''; // TODO: notused!
 
         // New survey.
         if (empty($this->survey->id)) {
             // Create a new survey in the database.
-            $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page', 'thank_head',
-                'thank_body', 'feedbacknotes', 'info', 'feedbacksections', 'feedbackscores', 'chart_type');
+            $fields = ['name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page', 'thank_head',
+                'thank_body', 'feedbacknotes', 'info', 'feedbacksections', 'feedbackscores', 'chart_type', ];
             // Theme field deprecated.
             $record = new stdClass();
             $record->id = 0;
@@ -1673,6 +1676,7 @@ class questionnaire {
             $this->add_survey($this->survey->id);
 
             if (!$this->survey->id) {
+                // phpcs:disable moodle.Commenting.TodoComment
                 $errstr = get_string('errnewname', 'questionnaire') .' [ :  ]'; // TODO: notused!
                 return(false);
             }
@@ -1684,14 +1688,15 @@ class questionnaire {
                 $sdata->chart_type = '';
             }
 
-            $fields = array('name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page',
-                'thank_head', 'thank_body', 'feedbacknotes', 'info', 'feedbacksections', 'feedbackscores', 'chart_type');
-            $name = $DB->get_field('questionnaire_survey', 'name', array('id' => $this->survey->id));
+            $fields = ['name', 'realm', 'title', 'subtitle', 'email', 'theme', 'thanks_page',
+                'thank_head', 'thank_body', 'feedbacknotes', 'info', 'feedbacksections', 'feedbackscores', 'chart_type', ];
+            $name = $DB->get_field('questionnaire_survey', 'name', ['id' => $this->survey->id]);
 
             // Trying to change survey name.
             if (trim($name) != trim(stripslashes($sdata->name))) {  // Var $sdata will already have slashes added to it.
-                $count = $DB->count_records('questionnaire_survey', array('name' => $sdata->name));
+                $count = $DB->count_records('questionnaire_survey', ['name' => $sdata->name]);
                 if ($count != 0) {
+                    // phpcs:disable moodle.Commenting.TodoComment
                     $errstr = get_string('errnewname', 'questionnaire');  // TODO: notused!
                     return(false);
                 }
@@ -1708,6 +1713,7 @@ class questionnaire {
 
             $result = $DB->update_record('questionnaire_survey', $surveyrecord);
             if (!$result) {
+                // phpcs:disable moodle.Commenting.TodoComment
                 $errstr = get_string('warning', 'questionnaire').' [ :  ]';  // TODO: notused!
                 return(false);
             }
@@ -1738,7 +1744,7 @@ class questionnaire {
         // Check for 'name' conflict, and resolve.
         $i = 0;
         $name = $survey->name;
-        while ($DB->count_records('questionnaire_survey', array('name' => $name)) > 0) {
+        while ($DB->count_records('questionnaire_survey', ['name' => $name]) > 0) {
             $name = $survey->name.(++$i);
         }
         if ($i) {
@@ -1753,8 +1759,8 @@ class questionnaire {
         // Make copies of all the questions.
         $pos = 1;
         // Skip logic: some changes needed here for dependencies down below.
-        $qidarray = array();
-        $cidarray = array();
+        $qidarray = [];
+        $cidarray = [];
         foreach ($this->questions as $question) {
             // Fix some fields first.
             $oldid = $question->id;
@@ -1802,6 +1808,7 @@ class questionnaire {
         }
 
         // Replicate any feedback data.
+        // phpcs:disable moodle.Commenting.TodoComment
         // TODO: Need to handle image attachments (same for other copies above).
         if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->survey->id], 'id')) {
             foreach ($fbsections as $fbsid => $fbsection) {
@@ -1929,7 +1936,7 @@ class questionnaire {
             $sec = min($numsections , $sec);
 
             /* get question_id's in this section */
-            $qids = array();
+            $qids = [];
             foreach ($this->questionsbysec[$sec] as $questionid) {
                 $qids[] = $questionid;
             }
@@ -1943,13 +1950,13 @@ class questionnaire {
         } else {
             /* delete all */
             $qsql = '';
-            $params = array();
+            $params = [];
         }
 
         /* delete values */
         $select = 'response_id = \'' . $rid . '\' ' . $qsql;
-        foreach (array('response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
-                     'response_other', 'response_date') as $tbl) {
+        foreach (['response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
+                     'response_other', 'response_date', ] as $tbl) {
             $DB->delete_records_select('questionnaire_'.$tbl, $select, $params);
         }
     }
@@ -2019,14 +2026,14 @@ class questionnaire {
 
         $max = 0;
 
-        foreach (array('response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
-                     'response_other', 'response_date') as $tbl) {
+        foreach (['response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
+                     'response_other', 'response_date', ] as $tbl) {
             $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_'.$tbl.'} a, {questionnaire_question} q '.
                 'WHERE a.response_id = ? AND '.
                 'q.id = a.question_id AND '.
                 'q.surveyid = ? AND '.
                 'q.deleted = \'n\'';
-            if ($record = $DB->get_record_sql($sql, array($rid, $this->sid))) {
+            if ($record = $DB->get_record_sql($sql, [$rid, $this->sid])) {
                 $newmax = (int)$record->num;
                 if ($newmax > $max) {
                     $max = $newmax;
@@ -2315,7 +2322,7 @@ class questionnaire {
 
         reset($answers);
 
-        $formatted = array('plaintext' => '', 'html' => '');
+        $formatted = ['plaintext' => '', 'html' => ''];
         for ($i = 0; $i < count($answers[0]); $i++) {
             $sep = ' : ';
 
@@ -2427,13 +2434,13 @@ class questionnaire {
             // Needed for the event logging.
             $context = context_module::instance($this->cm->id);
             $anonymous = $this->respondenttype == 'anonymous';
-            $params = array(
+            $params = [
                 'context' => $context,
                 'courseid' => $this->course->id,
                 'relateduserid' => $userid,
                 'anonymous' => $anonymous,
-                'other' => array('questionnaireid' => $this->id)
-            );
+                'other' => ['questionnaireid' => $this->id],
+            ];
             $event = \mod_questionnaire\event\attempt_saved::create($params);
             $event->trigger();
         }
@@ -2525,6 +2532,7 @@ class questionnaire {
             format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
                 $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML, ['noclean' => true]));
         // Default set currentgroup to view all participants.
+        // phpcs:disable moodle.Commenting.TodoComment
         // TODO why not set to current respondent's groupid (if any)?
         $currentgroupid = 0;
         $currentgroupid = groups_get_activity_group($this->cm);
@@ -2533,7 +2541,7 @@ class questionnaire {
         }
         if ($this->capabilities->readownresponses) {
             $url = new moodle_url('myreport.php', ['id' => $this->cm->id, 'instance' => $this->cm->instance, 'user' => $USER->id,
-                'byresponse' => 0, 'action' => 'vresp']);
+                'byresponse' => 0, 'action' => 'vresp', ]);
             $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
         } else {
             $url = new moodle_url('/course/view.php', ['id' => $this->course->id]);
@@ -2600,18 +2608,18 @@ class questionnaire {
         if ($total === 0) {
             return;
         }
-        $rids = array();
+        $rids = [];
         if ($isfullname) {
-            $ridssub = array();
-            $ridsuserfullname = array();
-            $ridsuserid = array();
+            $ridssub = [];
+            $ridsuserfullname = [];
+            $ridsuserid = [];
         }
         $i = 0;
         $currpos = -1;
         foreach ($responses as $response) {
             array_push($rids, $response->id);
             if ($isfullname) {
-                $user = $DB->get_record('user', array('id' => $response->userid));
+                $user = $DB->get_record('user', ['id' => $response->userid]);
                 array_push($ridssub, $response->submitted);
                 array_push($ridsuserfullname, fullname($user));
                 array_push($ridsuserid, $response->userid);
@@ -2677,8 +2685,8 @@ class questionnaire {
             $url = '/mod/questionnaire/print.php?qid='.$this->id.'&rid='.$currrid.
                 '&courseid='.$this->course->id.'&sec=1';
             $title = get_string('printtooltip', 'questionnaire');
-            $options = array('menubar' => true, 'location' => false, 'scrollbars' => true,
-                'resizable' => true, 'height' => 600, 'width' => 800);
+            $options = ['menubar' => true, 'location' => false, 'scrollbars' => true,
+                'resizable' => true, 'height' => 600, 'width' => 800, ];
             $name = 'popup';
             $link = new moodle_url($url);
             $action = new popup_action('click', $link, $name, $options);
@@ -2705,6 +2713,7 @@ class questionnaire {
             $total = count($resparr);
             $entries = count($resparr);
             // Default max 3 columns, max 25 lines per column.
+            // phpcs:disable moodle.Commenting.TodoComment
             // TODO make this setting customizable.
             $maxlines = 20;
             $maxcols = 3;
@@ -2755,9 +2764,9 @@ class questionnaire {
         $stranonymous = get_string('anonymous', 'questionnaire');
 
         $total = count($resps);
-        $rids = array();
-        $ridssub = array();
-        $ridsusers = array();
+        $rids = [];
+        $ridssub = [];
+        $ridsusers = [];
         $i = 0;
         $currpos = -1;
         $title = '';
@@ -2832,14 +2841,15 @@ class questionnaire {
         // Build associative array holding whether each question
         // type has answer choices or not and the table the answers are in
         // TO DO - FIX BELOW TO USE STANDARD FUNCTIONS.
-        $haschoices = array();
-        $responsetable = array();
-        if (!($types = $DB->get_records('questionnaire_question_type', array(), 'typeid', 'typeid, has_choices, response_table'))) {
+        $haschoices = [];
+        $responsetable = [];
+        if (!($types = $DB->get_records('questionnaire_question_type', [], 'typeid', 'typeid, has_choices, response_table'))) {
             $errmsg = sprintf('%s [ %s: question_type ]',
                 get_string('errortable', 'questionnaire'), 'Table');
             return($errmsg);
         }
         foreach ($types as $type) {
+            // phpcs:disable moodle.Commenting.TodoComment
             $haschoices[$type->typeid] = $type->has_choices; // TODO is that variable actually used?
             $responsetable[$type->typeid] = $type->response_table;
         }
@@ -2894,7 +2904,7 @@ class questionnaire {
                 return($errmsg);
             }
 
-            $rids = array();
+            $rids = [];
             foreach ($rows as $row) {
                 array_push($rids, $row->id);
             }
@@ -3127,6 +3137,7 @@ class questionnaire {
 
         // Moodle:
         // Determine if the user is a member of a group in this course or not.
+        // phpcs:disable moodle.Commenting.TodoComment
         // TODO - review for performance.
         $groupname = '';
         if (groups_get_activity_groupmode($this->cm, $this->course)) {
@@ -3230,18 +3241,18 @@ class questionnaire {
 
         raise_memory_limit('1G');
 
-        $output = array();
+        $output = [];
         $stringother = get_string('other', 'questionnaire');
 
         $config = get_config('questionnaire', 'downloadoptions');
-        $options = empty($config) ? array() : explode(',', $config);
+        $options = empty($config) ? [] : explode(',', $config);
         if ($showincompletes == 1) {
             $options[] = 'complete';
         }
-        $columns = array();
-        $types = array();
+        $columns = [];
+        $types = [];
         foreach ($options as $option) {
-            if (in_array($option, array('response', 'submitted', 'id'))) {
+            if (in_array($option, ['response', 'submitted', 'id'])) {
                 $columns[] = get_string($option, 'questionnaire');
                 $types[] = 0;
             } else if ($option == 'useridentityfields') {
@@ -3258,7 +3269,7 @@ class questionnaire {
         }
         $nbinfocols = count($columns);
 
-        $idtocsvmap = array(
+        $idtocsvmap = [
             '0',    // 0: unused
             '0',    // 1: bool -> boolean
             '1',    // 2: text -> string
@@ -3271,9 +3282,9 @@ class questionnaire {
             '1',    // 9: date -> string
             '0',    // 10: numeric -> number.
             '0',    // 11: slider -> number.
-        );
+        ];
 
-        if (!$survey = $DB->get_record('questionnaire_survey', array('id' => $this->survey->id))) {
+        if (!$survey = $DB->get_record('questionnaire_survey', ['id' => $this->survey->id])) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
 
@@ -3391,7 +3402,7 @@ class questionnaire {
                                 $nameddegrees++;
                             } else {
                                 if ($osgood) {
-                                    list($contentleft, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                                    list($contentleft, $contentright) = array_merge(preg_split('/[|]/', $content), [' ']);
                                     $contents = questionnaire_choice_values($contentleft);
                                     if ($contents->title) {
                                         $contentleft = $contents->title;
@@ -3759,7 +3770,7 @@ class questionnaire {
         $numsections = count($fbsections);
 
         // Get all response ids for all respondents.
-        $rids = array();
+        $rids = [];
         foreach ($resps as $key => $resp) {
             $rids[] = $key;
         }
@@ -3824,7 +3835,7 @@ class questionnaire {
             $sectionlabel = $fbsections[$sectionid]->sectionlabel;
 
             $sectionheading = $fbsections[$sectionid]->sectionheading;
-            $labels = array();
+            $labels = [];
             if ($feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $sectionid])) {
                 foreach ($feedbacks as $feedback) {
                     if ($feedback->feedbacklabel != '') {
@@ -3838,8 +3849,8 @@ class questionnaire {
             // To eliminate all potential % chars in heading text (might interfere with the sprintf function).
             $sectionheading = str_replace('%', '', $sectionheading);
             // Replace section heading placeholders with their actual value (if any).
-            $original = array('$scorepercent', '$oppositescorepercent');
-            $result = array('%s%%', '%s%%');
+            $original = ['$scorepercent', '$oppositescorepercent'];
+            $result = ['%s%%', '%s%%'];
             $sectionheading = str_replace($original, $result, $sectionheading);
             $sectionheading = sprintf($sectionheading , $scorepercent, $oppositescorepercent);
             $sectionheading = file_rewrite_pluginfile_urls($sectionheading, 'pluginfile.php',
@@ -3859,10 +3870,10 @@ class questionnaire {
                 $feedbackmessages[] = $feedbacktext;
                 $feedbackmessages[] = $this->renderer->box_end();
             }
-            $score = array($scorepercent, 100 - $scorepercent);
+            $score = [$scorepercent, 100 - $scorepercent];
             $allscore = null;
             if ($compare  || $allresponses) {
-                $allscore = array($allscorepercent, 100 - $allscorepercent);
+                $allscore = [$allscorepercent, 100 - $allscorepercent];
             }
             $usergraph = get_config('questionnaire', 'usergraph');
             if ($usergraph && $this->survey->chart_type) {
@@ -3883,9 +3894,9 @@ class questionnaire {
             if ($this->survey->feedbackscores) {
                 $table = $table ?? new html_table();
                 if ($compare) {
-                    $table->data[] = array($sectionlabel, $score[0].'%'.$oppositescore, $allscore[0].'%'.$oppositeallscore);
+                    $table->data[] = [$sectionlabel, $score[0].'%'.$oppositescore, $allscore[0].'%'.$oppositeallscore];
                 } else {
-                    $table->data[] = array($sectionlabel, $allscore[0].'%'.$oppositeallscore);
+                    $table->data[] = [$sectionlabel, $allscore[0].'%'.$oppositeallscore];
                 }
 
                 $this->page->add_to_page('feedbackscores', html_writer::table($table));
@@ -3897,16 +3908,16 @@ class questionnaire {
         // Now process scores for more than one section.
 
         // Initialize scores and maxscores to 0.
-        $score = array();
-        $allscore = array();
-        $maxscore = array();
-        $scorepercent = array();
-        $allscorepercent = array();
-        $oppositescorepercent = array();
-        $alloppositescorepercent = array();
-        $chartlabels = array();
+        $score = [];
+        $allscore = [];
+        $maxscore = [];
+        $scorepercent = [];
+        $allscorepercent = [];
+        $oppositescorepercent = [];
+        $alloppositescorepercent = [];
+        $chartlabels = [];
         // Sections where all questions are unseen because of the $advdependencies.
-        $nanscores = array();
+        $nanscores = [];
 
         for ($i = 1; $i <= $numsections; $i++) {
             $score[$i] = 0;
@@ -3970,8 +3981,8 @@ class questionnaire {
                 $sectionheading = str_replace('%', '', $sectionheading);
 
                 // Replace section heading placeholders with their actual value (if any).
-                $original = array('$scorepercent', '$oppositescorepercent');
-                $result = array("$scorepercent[$section]%", "$oppositescorepercent[$section]%");
+                $original = ['$scorepercent', '$oppositescorepercent'];
+                $result = ["$scorepercent[$section]%", "$oppositescorepercent[$section]%"];
                 $sectionheading = str_replace($original, $result, $sectionheading);
                 $formatoptions = new stdClass();
                 $formatoptions->noclean = true;
@@ -3982,7 +3993,7 @@ class questionnaire {
                 $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, $formatoptions);
                 $feedback = $DB->get_record_select('questionnaire_feedback',
                     'sectionid = ? AND minscore <= ? AND ? < maxscore',
-                    array($feedbacksectionid, $scorepercent[$section], $scorepercent[$section]),
+                    [$feedbacksectionid, $scorepercent[$section], $scorepercent[$section]],
                     'id,feedbacktext,feedbacktextformat');
                 $feedbackmessages[] = $this->renderer->box_end();
                 if (!empty($feedback->feedbacktext)) {
@@ -4026,11 +4037,11 @@ class questionnaire {
                     // If all questions of $section are unseen then don't show feedbackscores for this section.
                     if ($compare && !is_nan($scorepercent[$key])) {
                         $table = $table ?? new html_table();
-                        $table->data[] = array($sectionlabel, $scorepercent[$key] . '%' . $oppositescore,
-                            $allscorepercent[$key] . '%' . $oppositeallscore);
+                        $table->data[] = [$sectionlabel, $scorepercent[$key] . '%' . $oppositescore,
+                            $allscorepercent[$key] . '%' . $oppositeallscore, ];
                     } else if (isset($allscorepercent[$key]) && !is_nan($allscorepercent[$key])) {
                         $table = $table ?? new html_table();
-                        $table->data[] = array($sectionlabel, $allscorepercent[$key] . '%' . $oppositeallscore);
+                        $table->data[] = [$sectionlabel, $allscorepercent[$key] . '%' . $oppositeallscore];
                     }
                 }
             }

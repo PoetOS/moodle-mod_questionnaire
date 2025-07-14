@@ -16,11 +16,11 @@
 
 namespace mod_questionnaire\privacy;
 
-use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\contextlist;
-use \core_privacy\local\request\userlist;
-use \core_privacy\local\request\approved_contextlist;
-use \core_privacy\local\request\approved_userlist;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\contextlist;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
 
 /**
  * Contains class mod_questionnaire\privacy\provider

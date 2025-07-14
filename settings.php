@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 if ($ADMIN->fulltree) {
-    $options = array(0 => get_string('no'), 1 => get_string('yes'));
+    $options = [0 => get_string('no'), 1 => get_string('yes')];
     $str = get_string('configusergraphlong', 'questionnaire');
     $settings->add(new admin_setting_configselect('questionnaire/usergraph',
                                     get_string('configusergraph', 'questionnaire'),
@@ -35,7 +35,7 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('questionnaire/maxsections',
                                     get_string('configmaxsections', 'questionnaire'),
                                     '', 10, PARAM_INT));
-    $choices = array(
+    $choices = [
         'response' => get_string('response', 'questionnaire'),
         'submitted' => get_string('submitted', 'questionnaire'),
         'institution' => get_string('institution'),
@@ -45,8 +45,8 @@ if ($ADMIN->fulltree) {
         'id' => get_string('id', 'questionnaire'),
         'fullname' => get_string('fullname'),
         'username' => get_string('username'),
-        'useridentityfields' => get_string('showuseridentity', 'admin')
-    );
+        'useridentityfields' => get_string('showuseridentity', 'admin'),
+    ];
 
     $settings->add(new admin_setting_configmultiselect('questionnaire/downloadoptions',
             get_string('textdownloadoptions', 'questionnaire'), '', array_keys($choices), $choices));
