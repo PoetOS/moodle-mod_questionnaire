@@ -11,7 +11,8 @@ Developers Note:
 
 There is no main branch. Questionnaire is maintained in MOODLE_XXX_STABLE
 branches. Use the latest STABLE branch for development or installation.
-The current stable branch is MOODLE_404_STABLE, and supports Moodle 4.4 through 4.5.
+MOODLE_500_STABLE is currently in beta.
+The current stable branch is MOODLE_400_STABLE, and supports Moodle 4.4 through 4.5.
 Use the MOODLE_401_STABLE branch for Moodle 4.1 through 4.3.
 
 --------------------------------------------------------------------------------
