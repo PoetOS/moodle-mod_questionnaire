@@ -84,7 +84,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="quest_question_sididx" UNIQUE="false" FIELDS="surveyid,deleted" />
+        <INDEX NAME="quest_question_sididx" UNIQUE="false" FIELDS="surveyid, deleted" />
       </INDEXES>
     </TABLE>
     <TABLE NAME="questionnaire_quest_choice" COMMENT="questionnaire_quest_choice table retrofitted from MySQL">
