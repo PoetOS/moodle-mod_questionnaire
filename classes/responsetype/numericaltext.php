@@ -34,7 +34,8 @@ class numericaltext extends text {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && is_numeric($responsedata->{'q'.$question->id})) {
+        // Do not check with is_numeric, all the characters replacing needs to be done for non-numeric
+        if (isset($responsedata->{'q'.$question->id})) {
             $val = $responsedata->{'q' . $question->id};
             // Allow commas as well as points in decimal numbers.
             $val = str_replace(",", ".", $responsedata->{'q' . $question->id});
