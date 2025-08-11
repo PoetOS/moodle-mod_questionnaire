@@ -82,16 +82,16 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\completion\custom_completion
      */
-    public function test_get_state(string $rule, int $available, ?bool $submitted, ?int $status, ?string $exception) {
+    public static function test_get_state(string $rule, int $available, ?bool $submitted, ?int $status, ?string $exception) {
         if (!is_null($exception)) {
-            $this->expectException($exception);
+            \PHPUnit\Framework\TestCase::expectException($exception);
         }
 
-        $this->resetAfterTest();
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $this_>resetAfterTest();
+        $generator = self::getDataGenerator()->get_plugin_generator('mod_questionnaire');
 
-        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
-        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $course = self::getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $student = self::getDataGenerator()->create_and_enrol($course, 'student');
         $questionnaire = $generator->create_instance(['course' => $course->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC,
             $rule => $available]);
 
@@ -106,12 +106,12 @@ class custom_completion_test extends \advanced_testcase {
             $response = $generator->create_question_response($questionnaire, $question, 'y', (int)$student->id);
         }
 
-        $this->setUser($student);
+        self::setUser($student);
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
         $cm = cm_info::create($cm);
 
         $customcompletion = new custom_completion($cm, (int)$student->id);
-        $this->assertEquals($status, $customcompletion->get_state($rule));
+        self::assertEquals($status, $customcompletion->get_state($rule));
     }
 
     /**
