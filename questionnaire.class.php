@@ -2109,7 +2109,7 @@ class questionnaire {
             $info->name = format_string($this->name);
             $info->submissionurl = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&sid='.$this->survey->id.
                 '&rid='.$rid.'&instance='.$this->id;
-            $info->coursename = $this->course->fullname;
+            $info->coursename = format_string($this->course->fullname);
 
             $info->postsubject = get_string('submissionnotificationsubject', 'questionnaire');
             $info->posttext = get_string($langstringtext, 'questionnaire', $info);
@@ -2214,8 +2214,8 @@ class questionnaire {
         $responses = $this->get_full_submission_for_export($rid);
         $message = '';
         foreach ($responses as $response) {
-            $message .= html_to_text($response->questionname) . "<br />\n";
-            $message .= get_string('question') . ': ' . html_to_text($response->questiontext) . "<br />\n";
+            $message .= html_to_text(format_string($response->questionname)) . "<br />\n";
+            $message .= get_string('question') . ': ' . html_to_text(format_string($response->questiontext)) . "<br />\n";
             $message .= get_string('answers', 'questionnaire') . ":<br />\n";
             foreach ($response->answers as $answer) {
                 $message .= html_to_text($answer) . "<br />\n";
