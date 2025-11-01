@@ -43,6 +43,7 @@ if ($ADMIN->fulltree) {
         'course' => get_string('course'),
         'group' => get_string('group'),
         'id' => get_string('id', 'questionnaire'),
+        'useridnumber' => get_string('useridnumber', 'questionnaire'),
         'fullname' => get_string('fullname'),
         'username' => get_string('username'),
         'useridentityfields' => get_string('showuseridentity', 'admin')
