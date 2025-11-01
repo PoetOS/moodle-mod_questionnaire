@@ -35,7 +35,7 @@ Feature: Review responses
     Then I should see "View all responses"
     And I navigate to "View all responses" in current page administration
     And I should see "View Default order"
-    And I should see "Responses: 7"
+    And I should see "Responses: 7 (Submissions: 6 | In progress: 1)"
     And I set the field "View" to "Full submissions"
     And I should see "Submissions: 6"
     And I set the field "View" to "Responses not submitted"
@@ -70,7 +70,7 @@ Feature: Review responses
     Then I should see "1 / 6"
     And I follow "Summary"
     And I should see "View Default order"
-    And I should see "Responses: 6"
+    And I should see "Responses: 6 (Submissions: 6 | In progress: 0)"
     And I follow "Delete ALL Responses"
     Then I should see "Are you sure you want to delete ALL the responses in this questionnaire?"
     And I press "Delete"

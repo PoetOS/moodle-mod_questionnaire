@@ -2891,6 +2891,23 @@ class questionnaire {
             if ($userview === 'y') {
                 $respondentstring = get_string('submissions', 'questionnaire');
             }
+            if (!$userview) {
+                $completedcount = 0;
+                $inprogresscount = 0;
+
+                foreach ($rows as $row) {
+                    if ($row->complete === 'y') {
+                        $completedcount++;
+                    } else if ($row->complete === 'n') {
+                        $inprogresscount++;
+                    }
+                }
+                $numresps .= ' ' . get_string('responses_breakdown', 'questionnaire',
+                    [
+                        'responses' => $completedcount,
+                        'incomplete' => $inprogresscount,
+                    ]);
+            }
             $this->page->add_to_page('respondentinfo',
                     ' ' . $respondentstring . ': <strong>' . $numresps . '</strong>');
             if (empty($rows)) {

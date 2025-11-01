@@ -570,6 +570,7 @@ $string['responsefieldlines'] = 'Input box size';
 $string['responseformat'] = 'Response format';
 $string['responseoptions'] = 'Response options';
 $string['responses'] = 'Responses';
+$string['responses_breakdown'] = '(Submissions: {$a->responses} | In progress: {$a->incomplete})';
 $string['responseview'] = 'Students can view ALL responses';
 $string['responseview_help'] = 'You can specify who can see the responses of all respondents to submitted questionnaires (general statistics tables).';
 $string['responseview_link'] = 'mod/questionnaire/mod#Response_viewing';
