@@ -2671,7 +2671,7 @@ class questionnaire {
                 $this->renderer->render_progress_bar(count($this->questionsbysec) + 1, $this->questionsbysec)
             );
         }
-        $this->page->add_to_page('title', $thankhead);
+        $this->page->add_to_page('title', format_string($thankhead));
         $this->page->add_to_page(
             'addinfo',
             format_text(
