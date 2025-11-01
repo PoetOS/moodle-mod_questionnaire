@@ -423,6 +423,10 @@ class questionnaire {
         }
         $pdf = ($outputtarget == 'pdf') ? true : false;
         foreach ($this->questions as $question) {
+            // Only show eligible questions in the response.
+            if (!$question->dependency_fulfilled($rid, $this->questions)) {
+                continue;
+            }
             if ($question->type_id < QUESPAGEBREAK) {
                 $i++;
             }
