@@ -51,7 +51,7 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function get_state_provider(): array {
+    public static function get_state_provider(): array {
         return [
             'Undefined rule' => [
                 'somenonexistentrule', COMPLETION_DISABLED, false, null, coding_exception::class
@@ -75,7 +75,7 @@ class custom_completion_test extends \advanced_testcase {
      * @dataProvider get_state_provider
      * @param string $rule The custom completion rule.
      * @param int $available Whether this rule is available.
-     * @param bool $submitted
+     * @param bool|null $submitted
      * @param int|null $status Expected status.
      * @param string|null $exception Expected exception.
      * @throws coding_exception
@@ -178,7 +178,7 @@ class custom_completion_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function get_available_custom_rules_provider(): array {
+    public static function get_available_custom_rules_provider(): array {
         return [
             'Completion submit available' => [
                 COMPLETION_ENABLED, ['completionsubmit']

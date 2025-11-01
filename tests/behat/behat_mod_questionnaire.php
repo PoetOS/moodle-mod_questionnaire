@@ -418,7 +418,7 @@ class behat_mod_questionnaire extends behat_base {
      *                         to replace with mapped values.
      * @return null
      */
-    private function add_data(array $data, $datatable, $mapvar = '', array $replvars = null) {
+    private function add_data(array $data, $datatable, $mapvar = '', ?array $replvars = null) {
         global $DB;
 
         if ($replvars === null) {

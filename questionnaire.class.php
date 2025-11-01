@@ -4216,9 +4216,9 @@ class questionnaire {
     }
 
     /**
-     * Output the questionnair information.
+     * Output the questionnaire information.
      *
-     * @param array $messages any access messages that should be described.
+     * @return string
      */
     public function view_information() {
         $messages = [];

@@ -30,15 +30,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - php: '8.4'
+            moodle-branch: 'MOODLE_500_STABLE'
+            database: 'pgsql'
           - php: '8.3'
-            moodle-branch: 'MOODLE_405_STABLE'
+            moodle-branch: 'MOODLE_500_STABLE'
             database: 'mariadb'
           - php: '8.2'
-            moodle-branch: 'MOODLE_405_STABLE'
+            moodle-branch: 'MOODLE_500_STABLE'
             database: 'pgsql'
-          - php: '8.1'
-            moodle-branch: 'MOODLE_404_STABLE'
-            database: 'mariadb'
 
     steps:
       - name: Checkout
@@ -88,7 +88,7 @@ jobs:
 
       - name: Moodle PHPDoc Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci phpdoc || true
+        run: moodle-plugin-ci phpdoc
 
       - name: Validating
         if: ${{ always() }}

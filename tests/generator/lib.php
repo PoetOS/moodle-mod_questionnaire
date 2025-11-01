@@ -76,10 +76,10 @@ class mod_questionnaire_generator extends testing_module_generator {
     /**
      * Create a questionnaire activity.
      * @param array $record Will be changed in this function.
-     * @param array $options
+     * @param array|null $options
      * @return questionnaire
      */
-    public function create_instance($record = null, array $options = null) {
+    public function create_instance($record = null, ?array $options = null) {
         $record = (object)(array)$record;
 
         $defaultquestionnairesettings = array(
