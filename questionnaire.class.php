@@ -2524,7 +2524,7 @@ class questionnaire {
             $this->page->add_to_page('progressbar',
                     $this->renderer->render_progress_bar(count($this->questionsbysec) + 1, $this->questionsbysec));
         }
-        $this->page->add_to_page('title', $thankhead);
+        $this->page->add_to_page('title', format_string($thankhead));
         $this->page->add_to_page('addinfo',
             format_text(file_rewrite_pluginfile_urls($thankbody, 'pluginfile.php',
                 $this->context->id, 'mod_questionnaire', 'thankbody', $this->survey->id), FORMAT_HTML, ['noclean' => true]));
