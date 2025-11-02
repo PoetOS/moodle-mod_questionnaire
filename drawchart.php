@@ -34,8 +34,16 @@
  * @param null|string $globallabel
  * @return string
  */
-function draw_chart($feedbacktype, $labels, $groupname,
-                    $allresponses, $charttype=null, $score=null, $allscore=null, $globallabel=null) {
+function draw_chart(
+    $feedbacktype,
+    $labels,
+    $groupname,
+    $allresponses,
+    $charttype = null,
+    $score = null,
+    $allscore = null,
+    $globallabel = null
+) {
     global $PAGE;
 
     $pageoutput = '';
@@ -64,11 +72,10 @@ function draw_chart($feedbacktype, $labels, $groupname,
 
     // We do not have labels other than global in this feedback type.
     if ($feedbacktype == 'global') {
-        $labels = array($globallabel);
+        $labels = [$globallabel];
     }
 
     switch ($charttype) {
-
         case 'bipolar':
             // Global feedback with only one score.
             if ($feedbacktype == 'global') {
@@ -77,27 +84,27 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         $score = null;
                     } else {
                         $score2 = $score;
-                        $score = array($score2[0]);
-                        $oppositescore = array($score2[1]);
+                        $score = [$score2[0]];
+                        $oppositescore = [$score2[1]];
                     }
                 }
 
                 if ($allscore) {
                     $allscore2 = $allscore;
-                    $allscore = array($allscore2[0]);
-                    $alloppositescore = array($allscore2[1]);
+                    $allscore = [$allscore2[0]];
+                    $alloppositescore = [$allscore2[1]];
                 }
                 $nblabels = 1.5;     // For a single horizontal bar with 1.5 height.
                 $nbvalues = 1;       // Only one hbar.
             } else {
                 if ($score) {
-                    $oppositescore = array();
+                    $oppositescore = [];
                     foreach ($score as $sc) {
                         $oppositescore[] = 100 - $sc;
                     }
                 }
                 if ($allscore) {
-                    $alloppositescore = array();
+                    $alloppositescore = [];
                     foreach ($allscore as $sc) {
                         $alloppositescore[] = 100 - $sc;
                     }
@@ -122,7 +129,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         $padlength = $lenleft + $diffright;
                         $right = str_pad($right, $padlength, ' ', STR_PAD_RIGHT);
                     }
-                    $labels[$key] = $left .' '.$right;
+                    $labels[$key] = $left . ' ' . $right;
                 }
             }
             // Find length of longest label.
@@ -138,10 +145,9 @@ function draw_chart($feedbacktype, $labels, $groupname,
             // JSON_UNESCAPED_UNICODE available since php 5.4, used to correctly treat French accents etc.
 
             // The bar colors :: use green for "positive" (left column) and pink for "negative" (right column).
-            $chartcolors = array();
-            $chartcolors2 = array();
+            $chartcolors = [];
+            $chartcolors2 = [];
             if ($score) {
-
                 for ($i = 0; $i < $nbvalues; $i++) {
                     if ($score[$i] != 0) {
                         $chartcolors[] = 'lightgreen';
@@ -152,7 +158,6 @@ function draw_chart($feedbacktype, $labels, $groupname,
                 }
             }
             if ($allscore) {
-
                 for ($i = 0; $i < $nbvalues; $i++) {
                     if ($allscore[$i] != 0) {
                         $chartcolors2[] = 'lightgreen';
@@ -181,12 +186,12 @@ function draw_chart($feedbacktype, $labels, $groupname,
             $canvaswidth = max(300, (100 + ($maxlen * 7)));
             if (!$allresponses) {
                 $pageoutput .= '
-                        <canvas id="cvs" width="'.$canvaswidth.'" height="'.$canvasheight.'">[No canvas support]</canvas>
+                        <canvas id="cvs" width="' . $canvaswidth . '" height="' . $canvasheight . '">[No canvas support]</canvas>
                     ';
             }
             if ($allscore) {
                 $pageoutput .= '
-                        <canvas id="cvs2" width="'.$canvaswidth.'" height="'.$canvasheight.'">[No canvas support]</canvas>
+                        <canvas id="cvs2" width="' . $canvaswidth . '" height="' . $canvasheight . '">[No canvas support]</canvas>
                     ';
             }
             $pageoutput .= '
@@ -194,11 +199,11 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         window.onload = function () {';
             if (!$allresponses) {
                 $pageoutput .= '
-                            var chart = new RGraph.Bipolar("cvs", '.$score.', '.$oppositescore.');
-                            chart.Set("chart.title", "'.$charttitle.'");
-                            chart.Set("chart.title.font", "'.$charttitlefont.'");
-                            chart.Set("chart.title.size", "'.$charttitlesize.'");
-                            chart.Set("chart.labels", '.$labels.');
+                            var chart = new RGraph.Bipolar("cvs", ' . $score . ', ' . $oppositescore . ');
+                            chart.Set("chart.title", "' . $charttitle . '");
+                            chart.Set("chart.title.font", "' . $charttitlefont . '");
+                            chart.Set("chart.title.size", "' . $charttitlesize . '");
+                            chart.Set("chart.labels", ' . $labels . ');
                             chart.Set("chart.gutter.center", 0);
                             chart.Set("chart.gutter.left", 10);
                             chart.Set("chart.gutter.top", 40);
@@ -206,17 +211,17 @@ function draw_chart($feedbacktype, $labels, $groupname,
                             chart.Set("chart.xmax", 100);
                             chart.Set("chart.text.size", 10);
                             chart.Set("chart.text.font", "Courier");
-                            chart.Set("chart.colors", '.$chartcolors.');
+                            chart.Set("chart.colors", ' . $chartcolors . ');
                             chart.Set("chart.colors.sequential", true);
                             chart.Draw();';
             }
             if ($allscore) {
                 $pageoutput .= '
-                            var chart = new RGraph.Bipolar("cvs2", '.$allscore.', '.$alloppositescore.');
-                            chart.Set("chart.title", "'.$charttitle2.'");
-                            chart.Set("chart.title.font", "'.$charttitlefont.'");
-                            chart.Set("chart.title.size", "'.$charttitlesize2.'");
-                            chart.Set("chart.labels", '.$labels.');
+                            var chart = new RGraph.Bipolar("cvs2", ' . $allscore . ', ' . $alloppositescore . ');
+                            chart.Set("chart.title", "' . $charttitle2 . '");
+                            chart.Set("chart.title.font", "' . $charttitlefont . '");
+                            chart.Set("chart.title.size", "' . $charttitlesize2 . '");
+                            chart.Set("chart.labels", ' . $labels . ');
                             chart.Set("chart.gutter.center", 0);
                             chart.Set("chart.gutter.left", 10);
                             chart.Set("chart.gutter.right", 15);
@@ -225,7 +230,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                             chart.Set("chart.xmax", 100);
                             chart.Set("chart.text.size", 10);
                             chart.Set("chart.text.font", "Courier");
-                            chart.Set("chart.colors", '.$chartcolors2.');
+                            chart.Set("chart.colors", ' . $chartcolors2 . ');
                             chart.Set("chart.colors.sequential", true);
                             chart.Draw();
                         ';
@@ -238,7 +243,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
 
         case 'hbar':
             // The bar colors.
-            $chartcolors = array();
+            $chartcolors = [];
             $chartcolors = json_encode($chartcolors);
             $sequential = 'true';
             // Global feedback with only one score.
@@ -262,7 +267,6 @@ function draw_chart($feedbacktype, $labels, $groupname,
                     $labels[0] = $left;
                     $labels[1] = $right;
                 }
-
             } else {
                 if ($nblabels > $nbvalues) {
                     for ($i = 1; $i < $nblabels - 1; $i++) {
@@ -285,7 +289,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                 }
             }
             foreach ($labels as $value) {
-                $output[] = '"'.$value.'"';
+                $output[] = '"' . $value . '"';
             }
             $labels = '[' . implode(',', $output) . ']';
             $canvasheight = ($nblabels * 20) + 60;
@@ -294,12 +298,12 @@ function draw_chart($feedbacktype, $labels, $groupname,
             $canvaswidth = 400 + $gutterleft;
             if (!$allresponses) {
                 $pageoutput .= '
-                    <canvas id="cvs" width="'.$canvaswidth.'" height="'.$canvasheight.'">[No canvas support]</canvas>
+                    <canvas id="cvs" width="' . $canvaswidth . '" height="' . $canvasheight . '">[No canvas support]</canvas>
                     ';
             }
             if ($allscore) {
                 $pageoutput .= '
-                        <canvas id="cvs2" width="'.$canvaswidth.'" height="'.$canvasheight.'">[No canvas support]</canvas>
+                        <canvas id="cvs2" width="' . $canvaswidth . '" height="' . $canvasheight . '">[No canvas support]</canvas>
                     ';
             }
             $pageoutput .= '
@@ -307,34 +311,34 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         window.onload = function () {';
             if (!$allresponses) {
                 $pageoutput .= '
-                            var chart = new RGraph.HBar("cvs", '.$score.');
-                            chart.Set("chart.title", "'.$charttitle.'");
-                            chart.Set("chart.title.font", "'.$charttitlefont.'");
-                            chart.Set("chart.title.size", "'.$charttitlesize.'");
+                            var chart = new RGraph.HBar("cvs", ' . $score . ');
+                            chart.Set("chart.title", "' . $charttitle . '");
+                            chart.Set("chart.title.font", "' . $charttitlefont . '");
+                            chart.Set("chart.title.size", "' . $charttitlesize . '");
                             chart.Set("chart.title.x", 400);
-                            chart.Set("gutter.left", "'.$gutterleft.'");
+                            chart.Set("gutter.left", "' . $gutterleft . '");
                             chart.Set("gutter.right", 2);
-                            chart.Set("chart.text.font", "'.$charttextfont.'");
-                            chart.Set("labels", '.$labels.');
-                            chart.Set("chart.colors", '.$chartcolorsgradient.');
-                            chart.Set("chart.colors.sequential", '.$sequential.');
+                            chart.Set("chart.text.font", "' . $charttextfont . '");
+                            chart.Set("labels", ' . $labels . ');
+                            chart.Set("chart.colors", ' . $chartcolorsgradient . ');
+                            chart.Set("chart.colors.sequential", ' . $sequential . ');
                             chart.Set("xmax",100);
                             chart.Draw();
                             ';
             }
             if ($allscore) {
                 $pageoutput .= '
-                            var chart = new RGraph.HBar("cvs2", '.$allscore.');
-                            chart.Set("chart.title", "'.$charttitle2.'");
-                            chart.Set("chart.title.font", "'.$charttitlefont.'");
-                            chart.Set("chart.title.size", "'.$charttitlesize.'");
+                            var chart = new RGraph.HBar("cvs2", ' . $allscore . ');
+                            chart.Set("chart.title", "' . $charttitle2 . '");
+                            chart.Set("chart.title.font", "' . $charttitlefont . '");
+                            chart.Set("chart.title.size", "' . $charttitlesize . '");
                             chart.Set("chart.title.x", 400);
-                            chart.Set("gutter.left", "'.$gutterleft.'");
+                            chart.Set("gutter.left", "' . $gutterleft . '");
                             chart.Set("gutter.right", 2);
-                            chart.Set("chart.text.font", "'.$charttextfont.'");
-                            chart.Set("labels", '.$labels.');
-                            chart.Set("chart.colors", '.$chartcolorsgradient.');
-                            chart.Set("chart.colors.sequential",  '.$sequential.');
+                            chart.Set("chart.text.font", "' . $charttextfont . '");
+                            chart.Set("labels", ' . $labels . ');
+                            chart.Set("chart.colors", ' . $chartcolorsgradient . ');
+                            chart.Set("chart.colors.sequential",  ' . $sequential . ');
                             chart.Set("xmax",100);
                             chart.Draw();
                             ';
@@ -351,11 +355,11 @@ function draw_chart($feedbacktype, $labels, $groupname,
                 if ($key != 0) {
                     $labels[$key] = wordwrap($label, 20, "\\r\\n");
                 } else {
-                    $labels[$key] = $label ."\\r\\n";
+                    $labels[$key] = $label . "\\r\\n";
                 }
             }
             foreach ($labels as $value) {
-                $output[] = '"'.$value.'"';
+                $output[] = '"' . $value . '"';
             }
             $labels = '[' . implode(',', $output) . ']';
             if ($allscore) {
@@ -376,9 +380,9 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         window.onload = function () {';
             if (!$allresponses) {
                 $pageoutput .= '
-                            var chart = new RGraph.Radar("cvs", '.$score.');
-                            chart.Set("chart.title", "'.$charttitle.'");
-                            chart.Set("chart.labels", '.$labels.');
+                            var chart = new RGraph.Radar("cvs", ' . $score . ');
+                            chart.Set("chart.title", "' . $charttitle . '");
+                            chart.Set("chart.labels", ' . $labels . ');
                             chart.Set("chart.labels.offset", 15);
                             chart.Set("chart.radius", 150);
                             chart.Set("chart.ymax", 100);
@@ -388,9 +392,9 @@ function draw_chart($feedbacktype, $labels, $groupname,
             }
             if ($allscore) {
                 $pageoutput .= '
-                            var chart = new RGraph.Radar("cvs2", '.$allscore.');
-                            chart.Set("chart.title", "'.$charttitle2.'");
-                            chart.Set("chart.labels", '.$labels.');
+                            var chart = new RGraph.Radar("cvs2", ' . $allscore . ');
+                            chart.Set("chart.title", "' . $charttitle2 . '");
+                            chart.Set("chart.labels", ' . $labels . ');
                             chart.Set("chart.labels.offset", 15);
                             chart.Set("chart.radius", 150);
                             chart.Set("chart.ymax", 100);
@@ -413,7 +417,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                 $labels[$key] = wordwrap($label, 8, "\\r\\n");
             }
             foreach ($labels as $value) {
-                $output[] = '"'.$value.'"';
+                $output[] = '"' . $value . '"';
             }
             $labels = '[' . implode(',', $output) . ']';
 
@@ -423,12 +427,12 @@ function draw_chart($feedbacktype, $labels, $groupname,
             $size = 400;
             if (!$allresponses) {
                 $pageoutput .= '
-                        <canvas id="cvs" width="'.$size.'" height="'.$size.'">[No canvas support]</canvas>
+                        <canvas id="cvs" width="' . $size . '" height="' . $size . '">[No canvas support]</canvas>
                     ';
             }
             if ($allscore) {
                 $pageoutput .= '&nbsp;&nbsp;&nbsp;
-                        <canvas id="cvs2" width="'.$size.'" height="'.$size.'">[No canvas support]</canvas>
+                        <canvas id="cvs2" width="' . $size . '" height="' . $size . '">[No canvas support]</canvas>
                     ';
             }
             $pageoutput .= '
@@ -436,14 +440,14 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         window.onload = function () {';
             if (!$allresponses) {
                 $pageoutput .= '
-                            var chart = new RGraph.Rose("cvs", '.$score.');
-                            chart.Set("chart.title", "'.$charttitle.'");
-                            chart.Set("chart.title.font", "'.$charttitlefont.'");
-                            chart.Set("chart.title.size", "'.$charttitlesize.'");
+                            var chart = new RGraph.Rose("cvs", ' . $score . ');
+                            chart.Set("chart.title", "' . $charttitle . '");
+                            chart.Set("chart.title.font", "' . $charttitlefont . '");
+                            chart.Set("chart.title.size", "' . $charttitlesize . '");
                             chart.Set("chart.title.vpos", 0.2);
-                            chart.Set("chart.labels", '.$labels.');
+                            chart.Set("chart.labels", ' . $labels . ');
                             chart.Set("chart.labels.offset", 10);
-                            chart.Set("chart.background.grid.spokes", '.$nblabels.');
+                            chart.Set("chart.background.grid.spokes", ' . $nblabels . ');
                             chart.Set("chart.labels.axes","n");
                             chart.Set("chart.radius", 100);
                             chart.Set("chart.ymax", 100);
@@ -457,14 +461,14 @@ function draw_chart($feedbacktype, $labels, $groupname,
             }
             if ($allscore) {
                 $pageoutput .= '
-                            var chart = new RGraph.Rose("cvs2", '.$allscore.');
-                            chart.Set("chart.title", "'.$charttitle2.'");
-                            chart.Set("chart.title.font", "'.$charttitlefont.'");
-                            chart.Set("chart.title.size", "'.$charttitlesize.'");
+                            var chart = new RGraph.Rose("cvs2", ' . $allscore . ');
+                            chart.Set("chart.title", "' . $charttitle2 . '");
+                            chart.Set("chart.title.font", "' . $charttitlefont . '");
+                            chart.Set("chart.title.size", "' . $charttitlesize . '");
                             chart.Set("chart.title.vpos", 0.2);
-                            chart.Set("chart.labels", '.$labels.');
+                            chart.Set("chart.labels", ' . $labels . ');
                             chart.Set("chart.labels.offset", 10);
-                            chart.Set("chart.background.grid.spokes", '.$nblabels.');
+                            chart.Set("chart.background.grid.spokes", ' . $nblabels . ');
                             chart.Set("chart.labels.axes","n");
                             chart.Set("chart.radius", 100);
                             chart.Set("chart.ymax", 100);
@@ -506,7 +510,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                     }
                 }
                 foreach ($labels as $value) {
-                    $output[] = '"'.$value.'"';
+                    $output[] = '"' . $value . '"';
                 }
                 $labels = '[' . implode(',', $output) . ']';
             } else {
@@ -518,7 +522,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
 
             if (!$allresponses) {
                 $pageoutput .= '
-                        <canvas id="cvs" width="'.$canvaswidth.'" height="400">[No canvas support]</canvas>
+                        <canvas id="cvs" width="' . $canvaswidth . '" height="400">[No canvas support]</canvas>
                     ';
             }
             if ($allscore) {
@@ -532,20 +536,20 @@ function draw_chart($feedbacktype, $labels, $groupname,
 
             if (!$allresponses) {
                 $pageoutput .= '
-                        var chart = new RGraph.VProgress("cvs", '.$score.',100);
+                        var chart = new RGraph.VProgress("cvs", ' . $score . ',100);
                         chart.Set("chart.gutter.top", 30);
                         chart.Set("chart.gutter.left", 50);
-                        chart.Set("chart.gutter.right", "'.$gutterright.'");
+                        chart.Set("chart.gutter.right", "' . $gutterright . '");
                         chart.Set("scale.decimals", 0);
-                        chart.Set("chart.text.font", "'.$charttextfont.'");
-                        chart.Set("chart.title", "'.$charttitle.'");
-                        chart.Set("chart.title.font", "'.$charttitlefont.'");
-                        chart.Set("chart.title.size", "'.$charttitlesize.'");
+                        chart.Set("chart.text.font", "' . $charttextfont . '");
+                        chart.Set("chart.title", "' . $charttitle . '");
+                        chart.Set("chart.title.font", "' . $charttitlefont . '");
+                        chart.Set("chart.title.size", "' . $charttitlesize . '");
                         ';
 
                 if ($labels) {
                     $pageoutput .= '
-                                chart.Set("chart.labels.specific", '.$labels.');
+                                chart.Set("chart.labels.specific", ' . $labels . ');
                                 ';
                 }
                 $pageoutput .= '
@@ -555,14 +559,14 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if ($allscore) {
                 // Display participants graph.
                 $pageoutput .= '
-                            var chart = new RGraph.VProgress("cvs2", '.$allscore.',100);
+                            var chart = new RGraph.VProgress("cvs2", ' . $allscore . ',100);
                             chart.Set("chart.gutter.top", 30);
                             chart.Set("chart.gutter.left", 50);
                             chart.Set("chart.gutter.right", 150);
-                            chart.Set("chart.title", "'.$charttitle2.'");
-                            chart.Set("chart.text.font", "'.$charttextfont.'");
-                            chart.Set("chart.title.font", "'.$charttitlefont.'");
-                            chart.Set("chart.title.size", "'.$charttitlesize.'");
+                            chart.Set("chart.title", "' . $charttitle2 . '");
+                            chart.Set("chart.text.font", "' . $charttextfont . '");
+                            chart.Set("chart.title.font", "' . $charttitlefont . '");
+                            chart.Set("chart.title.size", "' . $charttitlesize . '");
                             chart.Set("scale.decimals", 0);
                             chart.Draw();
                         ';

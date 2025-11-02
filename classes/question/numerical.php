@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @package mod_questionnaire
  */
 class numerical extends question {
-
     /**
      * Constructor. Use to set any default properties.
      * @param int $id
@@ -79,7 +78,7 @@ class numerical extends question {
      * @param boolean $blankquestionnaire
      * @return \stdClass The check question context tags.
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         // Numeric.
         $questiontags = new \stdClass();
         $precision = $this->precise;
@@ -88,7 +87,7 @@ class numerical extends question {
             $mynumber = $response->answers[$this->id][0]->value;
             if ($mynumber != '') {
                 $mynumber0 = $mynumber;
-                if (!is_numeric($mynumber) ) {
+                if (!is_numeric($mynumber)) {
                     $msg = get_string('notanumber', 'questionnaire', $mynumber);
                     $this->add_notification($msg);
                 } else {
@@ -96,13 +95,13 @@ class numerical extends question {
                         $pos = strpos($mynumber, '.');
                         if (!$pos) {
                             if (strlen($mynumber) > $this->length) {
-                                $mynumber = substr($mynumber, 0 , $this->length);
+                                $mynumber = substr($mynumber, 0, $this->length);
                             }
                         }
                         $this->length += (1 + $precision); // To allow for n numbers after decimal point.
                     }
-                    $mynumber = number_format($mynumber, $precision , '.', '');
-                    if ( $mynumber != $mynumber0) {
+                    $mynumber = number_format($mynumber, $precision, '.', '');
+                    if ($mynumber != $mynumber0) {
                         $a->number = $mynumber0;
                         $a->precision = $precision;
                         $msg = get_string('numberfloat', 'questionnaire', $a);
@@ -120,7 +119,7 @@ class numerical extends question {
         $choice->size = $this->length;
         // Add a 'thousands separator' instruction if there is a size setting greater than three.
         $choice->instruction = (empty($choice->size) || ($choice->size > 3)) ? get_string('thousands', 'mod_questionnaire') : '';
-        $choice->name = 'q'.$this->id;
+        $choice->name = 'q' . $this->id;
         $choice->maxlength = $this->length;
         $choice->value = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
         $choice->id = self::qtypename($this->type_id) . $this->id;
@@ -143,7 +142,7 @@ class numerical extends question {
                 $answer = $responsedata->answers[$this->id][0];
                 $responseval = $answer->value;
             }
-        } else if (isset($responsedata->{'q'.$this->id})) {
+        } else if (isset($responsedata->{'q' . $this->id})) {
             $responseval = $responsedata->{'q' . $this->id};
         }
         if ($responseval !== false) {

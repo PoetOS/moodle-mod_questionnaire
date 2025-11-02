@@ -21,10 +21,10 @@
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
  */
+
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 $instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $userid = optional_param('user', $USER->id, PARAM_INT);
@@ -33,10 +33,10 @@ $byresponse = optional_param('byresponse', 0, PARAM_INT);
 $action = optional_param('action', 'summary', PARAM_ALPHA);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
-if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
+if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $instance])) {
     throw new \moodle_exception('incorrectquestionnaire', 'mod_questionnaire');
 }
-if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
@@ -47,11 +47,10 @@ require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 $questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
 // Should never happen, unless called directly by a snoop...
-if ( !has_capability('mod/questionnaire:readownresponses', $context)
-    || $userid != $USER->id) {
+if (!has_capability('mod/questionnaire:readownresponses', $context) || $userid != $USER->id) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance' => $instance));
+$url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/myreport.php', ['instance' => $instance]);
 if (isset($userid)) {
     $url->param('userid', $userid);
 }
@@ -211,7 +210,6 @@ switch ($action) {
                 }
                 // Current group members.
                 $currentgroupresps = $questionnaire->get_responses(false, $currentgroupid);
-
             } else {
                 // Groupmode = separate groups but user is not member of any group
                 // and does not have moodle/site:accessallgroups capability -> refuse view responses.
@@ -221,9 +219,9 @@ switch ($action) {
             }
 
             if ($currentgroupid > 0) {
-                $groupname = get_string('group').' <strong>'.groups_get_group_name($currentgroupid).'</strong>';
+                $groupname = get_string('group') . ' <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
             } else {
-                $groupname = '<strong>'.get_string('allparticipants').'</strong>';
+                $groupname = '<strong>' . get_string('allparticipants') . '</strong>';
             }
         }
 
@@ -249,9 +247,9 @@ switch ($action) {
 
         if (count($resps) > 1) {
             $userresps = $resps;
-            $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $userresps);
+            $questionnaire->survey_results_navbar_student($rid, $userid, $instance, $userresps);
         }
-        $resps = array();
+        $resps = [];
         // Determine here which "global" responses should get displayed for comparison with current user.
         // Current user is viewing his own group's results.
         if (isset($currentgroupresps)) {
@@ -276,5 +274,5 @@ switch ($action) {
 
     case get_string('return', 'questionnaire'):
     default:
-        redirect('view.php?id='.$cm->id);
+        redirect('view.php?id=' . $cm->id);
 }

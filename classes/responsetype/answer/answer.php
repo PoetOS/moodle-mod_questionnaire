@@ -25,7 +25,6 @@ namespace mod_questionnaire\responsetype\answer;
  * @copyright 2019, onwards Poet
  */
 class answer {
-
     // Class properties.
 
     /** @var int $id The id of the question response data record this applies to. */
@@ -55,7 +54,14 @@ class answer {
      * @param null $otheresponse
      * @param null $value
      */
-    public function __construct($id = null, $responseid = null, $questionid = null, $choiceid = null, $value = null, $otheresponse = null) {
+    public function __construct(
+        $id = null,
+        $responseid = null,
+        $questionid = null,
+        $choiceid = null,
+        $value = null,
+        $otheresponse = null
+    ) {
         $this->id = $id;
         $this->responseid = $responseid;
         $this->questionid = $questionid;
@@ -82,7 +88,13 @@ class answer {
             }
         }
 
-        return new answer($answerdata['id'], $answerdata['responseid'], $answerdata['questionid'], $answerdata['choiceid'],
-                $answerdata['value'], $answerdata['otheresponse']);
+        return new answer(
+            $answerdata['id'],
+            $answerdata['responseid'],
+            $answerdata['questionid'],
+            $answerdata['choiceid'],
+            $answerdata['value'],
+            $answerdata['otheresponse']
+        );
     }
 }

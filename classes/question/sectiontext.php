@@ -27,7 +27,6 @@ use mod_questionnaire\feedback\section;
  * @package mod_questionnaire
  */
 class sectiontext extends question {
-
     /**
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.
@@ -81,8 +80,18 @@ class sectiontext extends question {
             'name' => $this->name,
             'type_id' => $this->type_id,
             'length' => $this->length,
-            'content' => format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php', $this->context->id,
-                'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options),
+            'content' => format_text(
+                file_rewrite_pluginfile_urls(
+                    $this->content,
+                    'pluginfile.php',
+                    $this->context->id,
+                    'mod_questionnaire',
+                    'question',
+                    $this->id
+                ),
+                FORMAT_HTML,
+                $options
+            ),
             'content_stripped' => strip_tags($this->content),
             'required' => false,
             'deleted' => $this->deleted,
@@ -90,7 +99,7 @@ class sectiontext extends question {
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise,
             'qnum' => '',
-            'errormessage' => get_string('required') . ': ' . $this->name
+            'errormessage' => get_string('required') . ': ' . $this->name,
         ];
 
         $mobiledata->issectiontext = true;
@@ -135,9 +144,9 @@ class sectiontext extends question {
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         global $DB, $CFG, $PAGE;
-        require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
         // If !isset then normal behavior as sectiontext question.
         if (!isset($response->questionnaireid)) {
@@ -162,7 +171,7 @@ class sectiontext extends question {
             return '';
         }
 
-        list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items(null, $response->questionnaireid);
+        [$cm, $course, $questionnaire] = questionnaire_get_standard_page_items(null, $response->questionnaireid);
         $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
         $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
         $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
@@ -174,8 +183,15 @@ class sectiontext extends question {
         $rid = (isset($response->id) && !empty($response->id)) ? $response->id : 0;
         $resps = [$rid => null];
         // For $filteredsections -> get the feedback messages only for this sections!
-        $feedbackmessages = $questionnaire->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses,
-            $currentgroupid, $filteredsections);
+        $feedbackmessages = $questionnaire->response_analysis(
+            $rid,
+            $resps,
+            $compare,
+            $isgroupmember,
+            $allresponses,
+            $currentgroupid,
+            $filteredsections
+        );
 
         // Output.
         $questiontags = new \stdClass();

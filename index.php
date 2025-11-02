@@ -23,19 +23,20 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 $id = required_param('id', PARAM_INT);
-$PAGE->set_url('/mod/questionnaire/index.php', array('id' => $id));
-if (! $course = $DB->get_record('course', array('id' => $id))) {
+$PAGE->set_url('/mod/questionnaire/index.php', ['id' => $id]);
+if (! $course = $DB->get_record('course', ['id' => $id])) {
     throw new \moodle_exception('Filter has not been set.', 'mod_questionnaire');
 }
 $coursecontext = context_course::instance($id);
 require_login($course->id);
 $PAGE->set_pagelayout('incourse');
 
-$event = \mod_questionnaire\event\course_module_instance_list_viewed::create(array(
-                'context' => context_course::instance($course->id)));
+$event = \mod_questionnaire\event\course_module_instance_list_viewed::create(
+    ['context' => context_course::instance($course->id)]
+);
 $event->trigger();
 
 // Print the header.
@@ -63,15 +64,15 @@ foreach ($questionnaires as $questionnaire) {
 }
 
 // Configure table for displaying the list of instances.
-$headings = array(get_string('name'));
-$align = array('left');
+$headings = [get_string('name')];
+$align = ['left'];
 
 if ($showclosingheader) {
     array_push($headings, get_string('questionnairecloses', 'questionnaire'));
     array_push($align, 'left');
 }
 
-array_unshift($headings, get_string('sectionname', 'format_'.$course->format));
+array_unshift($headings, get_string('sectionname', 'format_' . $course->format));
 array_unshift($align, 'left');
 
 $showing = '';
@@ -98,8 +99,8 @@ $table->align = $align;
 $currentsection = '';
 foreach ($questionnaires as $questionnaire) {
     $cmid = $questionnaire->coursemodule;
-    $data = array();
-    $realm = $DB->get_field('questionnaire_survey', 'realm', array('id' => $questionnaire->sid));
+    $data = [];
+    $realm = $DB->get_field('questionnaire_survey', 'realm', ['id' => $questionnaire->sid]);
     // Template surveys should NOT be displayed as an activity to students.
     if (!($realm == 'template' && !has_capability('mod/questionnaire:manage', context_module::instance($cmid)))) {
         // Section number if necessary.
@@ -128,10 +129,10 @@ foreach ($questionnaires as $questionnaire) {
             if ($responses = questionnaire_get_user_responses($questionnaire->id, $USER->id, $complete = false)) {
                 foreach ($responses as $response) {
                     if ($response->complete == 'y') {
-                        $status .= get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
+                        $status .= get_string('submitted', 'questionnaire') . ' ' . userdate($response->submitted) . '<br />';
                     } else {
-                        $status .= get_string('attemptstillinprogress', 'questionnaire').' '.
-                            userdate($response->submitted).'<br />';
+                        $status .= get_string('attemptstillinprogress', 'questionnaire') . ' ' .
+                            userdate($response->submitted) . '<br />';
                     }
                 }
             }
@@ -146,54 +147,65 @@ foreach ($questionnaires as $questionnaire) {
                         $publicoriginal = '';
                         $originalcourse = $DB->get_record('course', ['id' => $survey->courseid]);
                         $originalcoursecontext = context_course::instance($survey->courseid);
-                        $originalquestionnaire = $DB->get_record('questionnaire',
-                            ['sid' => $survey->id, 'course' => $survey->courseid]);
+                        $originalquestionnaire = $DB->get_record(
+                            'questionnaire',
+                            ['sid' => $survey->id, 'course' => $survey->courseid]
+                        );
                         $cm = get_coursemodule_from_instance("questionnaire", $originalquestionnaire->id, $survey->courseid);
                         $context = context_course::instance($survey->courseid, MUST_EXIST);
                         $canvieworiginal = has_capability('mod/questionnaire:preview', $context, $USER->id, true);
                         // If current user can view questionnaires in original course,
                         // provide a link to the original public questionnaire.
                         if ($canvieworiginal) {
-                            $publicoriginal = '<br />'.get_string('publicoriginal', 'questionnaire').'&nbsp;'.
-                                '<a href="'.$CFG->wwwroot.'/mod/questionnaire/preview.php?id='.
-                                $cm->id.'" title="'.$strpreview.']">'.$originalquestionnaire->name.' ['.
-                                $originalcourse->fullname.']</a>';
+                            $publicoriginal = '<br />' . get_string('publicoriginal', 'questionnaire') . '&nbsp;' .
+                                '<a href="' . $CFG->wwwroot . '/mod/questionnaire/preview.php?id=' .
+                                $cm->id . '" title="' . $strpreview . ']">' . $originalquestionnaire->name . ' [' .
+                                $originalcourse->fullname . ']</a>';
                         } else {
                             // If current user is not enrolled as teacher in original course,
                             // only display the original public questionnaire's name and course name.
-                            $publicoriginal = '<br />'.get_string('publicoriginal', 'questionnaire').'&nbsp;'.
-                                $originalquestionnaire->name.' ['.$originalcourse->fullname.']';
+                            $publicoriginal = '<br />' . get_string('publicoriginal', 'questionnaire') . '&nbsp;' .
+                                $originalquestionnaire->name . ' [' . $originalcourse->fullname . ']';
                         }
-                        $data[] = get_string($realm, 'questionnaire').' '.$publicoriginal;
+                        $data[] = get_string($realm, 'questionnaire') . ' ' . $publicoriginal;
                     } else {
                         // Original public questionnaire was created in current course.
                         // Find which courses it is used in.
                         $publiccopy = '';
-                        $select = 'course != '.$course->id.' AND sid = '.$questionnaire->sid;
-                        if ($copies = $DB->get_records_select('questionnaire', $select, null,
-                                $sort = 'course ASC', $fields = 'id, course, name')) {
+                        $select = 'course != ' . $course->id . ' AND sid = ' . $questionnaire->sid;
+                        if (
+                            $copies = $DB->get_records_select(
+                                'questionnaire',
+                                $select,
+                                null,
+                                $sort = 'course ASC',
+                                $fields = 'id, course, name'
+                            )
+                        ) {
                             foreach ($copies as $copy) {
-                                $copycourse = $DB->get_record('course', array('id' => $copy->course));
-                                $select = 'course = '.$copycourse->id.' AND sid = '.$questionnaire->sid;
-                                $copyquestionnaire = $DB->get_record('questionnaire',
-                                    array('id' => $copy->id, 'sid' => $survey->id, 'course' => $copycourse->id));
+                                $copycourse = $DB->get_record('course', ['id' => $copy->course]);
+                                $select = 'course = ' . $copycourse->id . ' AND sid = ' . $questionnaire->sid;
+                                $copyquestionnaire = $DB->get_record(
+                                    'questionnaire',
+                                    ['id' => $copy->id, 'sid' => $survey->id, 'course' => $copycourse->id]
+                                );
                                 $cm = get_coursemodule_from_instance("questionnaire", $copyquestionnaire->id, $copycourse->id);
                                 $context = context_course::instance($copycourse->id, MUST_EXIST);
                                 $canviewcopy = has_capability('mod/questionnaire:view', $context, $USER->id, true);
                                 if ($canviewcopy) {
-                                    $publiccopy .= '<br />'.get_string('publiccopy', 'questionnaire').'&nbsp;:&nbsp;'.
-                                        '<a href = "'.$CFG->wwwroot.'/mod/questionnaire/preview.php?id='.
-                                        $cm->id.'" title = "'.$strpreview.'">'.
-                                        $copyquestionnaire->name.' ['.$copycourse->fullname.']</a>';
+                                    $publiccopy .= '<br />' . get_string('publiccopy', 'questionnaire') . '&nbsp;:&nbsp;' .
+                                        '<a href = "' . $CFG->wwwroot . '/mod/questionnaire/preview.php?id=' .
+                                        $cm->id . '" title = "' . $strpreview . '">' .
+                                        $copyquestionnaire->name . ' [' . $copycourse->fullname . ']</a>';
                                 } else {
                                     // If current user does not have "view" capability in copy course,
                                     // only display the copied public questionnaire's name and course name.
-                                    $publiccopy .= '<br />'.get_string('publiccopy', 'questionnaire').'&nbsp;:&nbsp;'.
-                                        $copyquestionnaire->name.' ['.$copycourse->fullname.']';
+                                    $publiccopy .= '<br />' . get_string('publiccopy', 'questionnaire') . '&nbsp;:&nbsp;' .
+                                        $copyquestionnaire->name . ' [' . $copycourse->fullname . ']';
                                 }
                             }
                         }
-                        $data[] = get_string($realm, 'questionnaire').' '.$publiccopy;
+                        $data[] = get_string($realm, 'questionnaire') . ' ' . $publiccopy;
                     }
                 } else {
                     $data[] = get_string($realm, 'questionnaire');

@@ -113,5 +113,4 @@ function xmldb_questionnaire_install() {
     $questiontype->has_choices = 'n';
     $questiontype->response_table = '';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
-
 }

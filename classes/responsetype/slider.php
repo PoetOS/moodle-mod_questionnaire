@@ -62,15 +62,14 @@ class slider extends numericaltext {
         $rsql = '';
         $params = [$this->question->id];
         if (!empty($rids)) {
-            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
         $sql = 'SELECT response_id as rid, response AS score ' .
-            'FROM {'.$this->response_table().'} r ' .
+            'FROM {' . $this->response_table() . '} r ' .
             'WHERE r.question_id= ? ' . $rsql . ' ' .
             'ORDER BY response_id ASC';
         return $DB->get_records_sql($sql, $params);
     }
-
 }

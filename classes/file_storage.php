@@ -24,7 +24,6 @@ namespace mod_questionnaire;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class file_storage extends \file_storage {
-
     /**
      * Copy all the files in a file area from one context to another.
      *
@@ -39,8 +38,14 @@ class file_storage extends \file_storage {
      * @throws \file_exception
      * @throws \stored_file_creation_exception
      */
-    public function copy_area_files_to_new_context($oldcontextid, $newcontextid, $component, $filearea, $olditemid = false,
-                                                   $newitemid = false) {
+    public function copy_area_files_to_new_context(
+        $oldcontextid,
+        $newcontextid,
+        $component,
+        $filearea,
+        $olditemid = false,
+        $newitemid = false
+    ) {
         $count = 0;
 
         $oldfiles = $this->get_area_files($oldcontextid, $component, $filearea, $olditemid, 'id', false);

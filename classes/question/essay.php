@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\question;
-use \html_writer;
+use html_writer;
 use mod_questionnaire\responsetype\response\response;
 
 /**
@@ -27,7 +27,6 @@ use mod_questionnaire\responsetype\response\response;
  * @package mod_questionnaire
  */
 class essay extends text {
-
     /**
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.
@@ -67,7 +66,7 @@ class essay extends text {
      * @param bool $blankquestionnaire
      *
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         $output = '';
 
         // Essay.
@@ -83,7 +82,7 @@ class essay extends text {
             // Prior to version 2.6, "precise" was used for rows number.
             $rows = $this->precise > 1 ? $this->precise : $this->length;
         }
-        $name = 'q'.$this->id;
+        $name = 'q' . $this->id;
         if (isset($response->answers[$this->id][0])) {
             $value = $response->answers[$this->id][0]->value;
         } else {
@@ -92,11 +91,17 @@ class essay extends text {
         if ($canusehtmleditor && !$this->get_isprint()) {
             $editor = editors_get_preferred_editor();
             $editor->use_editor($name, questionnaire_get_editor_options($this->context));
-            $texteditor = html_writer::tag('textarea', $value,
-                            ['id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols, 'class' => 'form-control']);
+            $texteditor = html_writer::tag(
+                'textarea',
+                $value,
+                ['id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols, 'class' => 'form-control']
+            );
         } else {
-            $texteditor = html_writer::tag('textarea', $value,
-                            ['id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols]);
+            $texteditor = html_writer::tag(
+                'textarea',
+                $value,
+                ['id' => $name, 'name' => $name, 'rows' => $rows, 'cols' => $cols]
+            );
         }
         $output .= $texteditor;
 

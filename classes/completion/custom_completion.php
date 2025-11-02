@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 declare(strict_types=1);
 
 namespace mod_questionnaire\completion;
@@ -57,7 +58,7 @@ class custom_completion extends activity_custom_completion {
      */
     public static function get_defined_custom_rules(): array {
         return [
-            'completionsubmit'
+            'completionsubmit',
         ];
     }
 
@@ -68,7 +69,7 @@ class custom_completion extends activity_custom_completion {
      */
     public function get_custom_rule_descriptions(): array {
         return [
-            'completionsubmit' => get_string('completionsubmit', 'questionnaire')
+            'completionsubmit' => get_string('completionsubmit', 'questionnaire'),
         ];
     }
 

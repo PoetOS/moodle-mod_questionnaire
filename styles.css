@@ -645,7 +645,7 @@ td.selected {
     #page-mod-questionnaire-print input[type="range"] {
         appearance: none;
         width: 100%;
-        border: 1px solid #000000;
+        border: 1px solid #000;
         border-radius: 5px;
     }
 }

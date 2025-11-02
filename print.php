@@ -23,20 +23,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 $qid = required_param('qid', PARAM_INT);
 $rid = required_param('rid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
 $sec = required_param('sec', PARAM_INT);
 $null = null;
-$referer = $CFG->wwwroot.'/mod/questionnaire/report.php';
+$referer = $CFG->wwwroot . '/mod/questionnaire/report.php';
 
-if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $qid))) {
+if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $qid])) {
     throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
-if (! $course = $DB->get_record("course", array("id" => $questionnaire->course))) {
+if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
@@ -65,7 +66,7 @@ $blankquestionnaire = true;
 if ($rid != 0) {
     $blankquestionnaire = false;
 }
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/print.php');
+$url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/print.php');
 $url->param('qid', $qid);
 $url->param('rid', $rid);
 $url->param('courseid', $courseid);

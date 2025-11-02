@@ -43,7 +43,7 @@ class multiple extends single {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id})) {
+        if (isset($responsedata->{'q' . $question->id})) {
             foreach ($responsedata->{'q' . $question->id} as $cid => $cvalue) {
                 $cid = clean_param($cid, PARAM_CLEAN);
                 if (isset($question->choices[$cid])) {
@@ -74,7 +74,7 @@ class multiple extends single {
     public static function answers_from_appdata($responsedata, $question) {
         // Need to override "single" class' implementation.
         $answers = [];
-        $qname = 'q'.$question->id;
+        $qname = 'q' . $question->id;
         if (isset($responsedata->{$qname}) && !empty($responsedata->{$qname})) {
             foreach ($responsedata->{$qname} as $choiceid => $choicevalue) {
                 if ($choicevalue) {
@@ -109,7 +109,7 @@ class multiple extends single {
 
         $values = [];
         $sql = 'SELECT a.id, q.id as qid, q.content, c.content as ccontent, c.id as cid, o.response ' .
-            'FROM {'.static::response_table().'} a ' .
+            'FROM {' . static::response_table() . '} a ' .
             'INNER JOIN {questionnaire_question} q ON a.question_id = q.id ' .
             'INNER JOIN {questionnaire_quest_choice} c ON a.choice_id = c.id ' .
             'LEFT JOIN {questionnaire_response_other} o ON a.response_id = o.response_id AND c.id = o.choice_id ' .
@@ -168,7 +168,7 @@ class multiple extends single {
         }
 
         if (is_array($questionnaireids)) {
-            list($qsql, $params) = $DB->get_in_or_equal($questionnaireids);
+            [$qsql, $params] = $DB->get_in_or_equal($questionnaireids);
         } else {
             $qsql = ' = ? ';
             $params = [$questionnaireids];
@@ -212,11 +212,11 @@ class multiple extends single {
         $extraselect .= 'qrm.choice_id, ' . $DB->sql_order_by_text('qro.response', 1000) . ' AS response, 0 AS rankvalue';
 
         return "
-            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
+            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'" . $this->question->helpname() . "'", $alias . '.id']) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".static::response_table()."} $alias ON $alias.response_id = qr.id
+              JOIN {" . static::response_table() . "} $alias ON $alias.response_id = qr.id
         ";
     }
 }

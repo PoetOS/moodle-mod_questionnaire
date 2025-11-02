@@ -27,15 +27,27 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 if ($ADMIN->fulltree) {
-    $options = array(0 => get_string('no'), 1 => get_string('yes'));
+    $options = [0 => get_string('no'), 1 => get_string('yes')];
     $str = get_string('configusergraphlong', 'questionnaire');
-    $settings->add(new admin_setting_configselect('questionnaire/usergraph',
-                                    get_string('configusergraph', 'questionnaire'),
-                                    $str, 0, $options));
-    $settings->add(new admin_setting_configtext('questionnaire/maxsections',
-                                    get_string('configmaxsections', 'questionnaire'),
-                                    '', 10, PARAM_INT));
-    $choices = array(
+    $settings->add(
+        new admin_setting_configselect(
+            'questionnaire/usergraph',
+            get_string('configusergraph', 'questionnaire'),
+            $str,
+            0,
+            $options
+        )
+    );
+    $settings->add(
+        new admin_setting_configtext(
+            'questionnaire/maxsections',
+            get_string('configmaxsections', 'questionnaire'),
+            '',
+            10,
+            PARAM_INT
+        )
+    );
+    $choices = [
         'response' => get_string('response', 'questionnaire'),
         'submitted' => get_string('submitted', 'questionnaire'),
         'institution' => get_string('institution'),
@@ -46,14 +58,27 @@ if ($ADMIN->fulltree) {
         'useridnumber' => get_string('useridnumber', 'questionnaire'),
         'fullname' => get_string('fullname'),
         'username' => get_string('username'),
-        'useridentityfields' => get_string('showuseridentity', 'admin')
+        'useridentityfields' => get_string('showuseridentity', 'admin'),
+    ];
+
+    $settings->add(
+        new admin_setting_configmultiselect(
+            'questionnaire/downloadoptions',
+            get_string('textdownloadoptions', 'questionnaire'),
+            '',
+            array_keys($choices),
+            $choices
+        )
     );
 
-    $settings->add(new admin_setting_configmultiselect('questionnaire/downloadoptions',
-            get_string('textdownloadoptions', 'questionnaire'), '', array_keys($choices), $choices));
-
-    $settings->add(new admin_setting_configcheckbox('questionnaire/allowemailreporting',
-        get_string('configemailreporting', 'questionnaire'), get_string('configemailreportinglong', 'questionnaire'), 0));
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'questionnaire/allowemailreporting',
+            get_string('configemailreporting', 'questionnaire'),
+            get_string('configemailreportinglong', 'questionnaire'),
+            0
+        )
+    );
 
     // Delete old responses after. The default value is 24 months.
     $options = [
@@ -66,7 +91,13 @@ if ($ADMIN->fulltree) {
     $settings->add($setting);
 
     $options = questionnaire_create_remove_options();
-    $settings->add(new admin_setting_configselect('questionnaire/removeoldresponses',
+    $settings->add(
+        new admin_setting_configselect(
+            'questionnaire/removeoldresponses',
             get_string('removeoldresponsesafter', 'questionnaire'),
-            get_string('configremoveoldresponses', 'questionnaire'), 0, $options));
+            get_string('configremoveoldresponses', 'questionnaire'),
+            0,
+            $options
+        )
+    );
 }
