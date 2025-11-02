@@ -27,14 +27,14 @@
 defined('MOODLE_INTERNAL') || die();
 
 /** @var array $tasks */
-$tasks = array(
-    array(
+$tasks = [
+    [
         'classname' => 'mod_questionnaire\task\cleanup',
         'blocking' => 0,
         'minute' => 'R',
         'hour' => '*/12',
         'day' => '*',
         'month' => '*',
-        'dayofweek' => '*'
-    )
-);
+        'dayofweek' => '*',
+    ],
+    ];

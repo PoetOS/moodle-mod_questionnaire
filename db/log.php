@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $logs = array(
-    array('module' => 'questionnaire', 'action' => 'view all', 'mtable' => 'questionnaire', 'field' => 'name'),
-    array('module' => 'questionnaire', 'action' => 'submit', 'mtable' => 'questionnaire_response', 'field' => 'id'),
-    array('module' => 'questionnaire', 'action' => 'view', 'mtable' => 'questionnaire', 'field' => 'name'),
+    ['module' => 'questionnaire', 'action' => 'view all', 'mtable' => 'questionnaire', 'field' => 'name'],
+    ['module' => 'questionnaire', 'action' => 'submit', 'mtable' => 'questionnaire_response', 'field' => 'id'],
+    ['module' => 'questionnaire', 'action' => 'view', 'mtable' => 'questionnaire', 'field' => 'name'],
 );
