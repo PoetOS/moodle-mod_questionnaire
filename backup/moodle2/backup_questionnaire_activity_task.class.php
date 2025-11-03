@@ -29,7 +29,6 @@ require_once($CFG->dirroot . '/mod/questionnaire/backup/moodle2/backup_questionn
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_questionnaire_activity_task extends backup_activity_task {
-
     /**
      * Define (add) particular settings this activity can have
      */
@@ -57,11 +56,11 @@ class backup_questionnaire_activity_task extends backup_activity_task {
         $base = preg_quote($CFG->wwwroot, "/");
 
         // Link to the list of questionnaires.
-        $search = "/(".$base."\/mod\/questionnaire\/index.php\?id\=)([0-9]+)/";
+        $search = "/(" . $base . "\/mod\/questionnaire\/index.php\?id\=)([0-9]+)/";
         $content = preg_replace($search, '$@QUESTIONNAIREINDEX*$2@$', $content);
 
         // Link to questionnaire view by moduleid.
-        $search = "/(".$base."\/mod\/questionnaire\/view.php\?id\=)([0-9]+)/";
+        $search = "/(" . $base . "\/mod\/questionnaire\/view.php\?id\=)([0-9]+)/";
         $content = preg_replace($search, '$@QUESTIONNAIREVIEWBYID*$2@$', $content);
 
         return $content;

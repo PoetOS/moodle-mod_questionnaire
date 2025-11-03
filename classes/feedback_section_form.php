@@ -30,7 +30,6 @@ require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class feedback_section_form extends \moodleform {
-
     /** @var mixed $_feedbacks */
     protected $_feedbacks;
     /**
@@ -303,8 +302,8 @@ class feedback_section_form extends \moodleform {
         if (!empty($data['feedbackboundaries'])) {
             for ($i = $numboundaries; $i < count($data['feedbackboundaries']); $i += 1) {
                 if (
-                    !empty($data['feedbackboundaries'][$i] ) &&
-                    trim($data['feedbackboundaries'][$i] ) != ''
+                    !empty($data['feedbackboundaries'][$i]) &&
+                    trim($data['feedbackboundaries'][$i]) != ''
                 ) {
                     $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorjunkinboundary', 'questionnaire', $i + 1);
                 }
@@ -313,7 +312,7 @@ class feedback_section_form extends \moodleform {
         for ($i = $numboundaries + 1; $i < count($data['feedbacktext']); $i += 1) {
             if (
                 !empty($data['feedbacktext'][$i]['text']) &&
-                trim($data['feedbacktext'][$i]['text'] ) != ''
+                trim($data['feedbacktext'][$i]['text']) != ''
             ) {
                 $errors["feedbacktext[$i]"] = get_string('feedbackerrorjunkinfeedback', 'questionnaire', $i + 1);
             }

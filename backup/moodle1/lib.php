@@ -26,7 +26,6 @@
  * Choice conversion handler
  */
 class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
-
     /**
      * Declare the paths in moodle.xml we are able to convert
      *
@@ -42,22 +41,23 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
      * @return array of convert_path instances
      */
     public function get_paths() {
-        return array(
+        return [
             new convert_path(
-                'questionnaire', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE',
-                array(
-                    'renamefields' => array(
+                'questionnaire',
+                '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE',
+                [
+                    'renamefields' => [
                         'summary' => 'intro',
-                    ),
-                    'newfields' => array(
+                    ],
+                    'newfields' => [
                         'introformat' => 0,
-                    ),
-                )
+                    ],
+                ]
             ),
             new convert_path('survey', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY'),
             new convert_path('question', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION'),
             new convert_path('question_choice', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUESTIONNAIRE/SURVEY/QUESTION/QUESTION_CHOICE'),
-        );
+        ];
     }
 
     /**
@@ -74,9 +74,13 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
 
         // We now have all information needed to start writing into the file.
         $this->open_xml_writer("activities/questionnaire_{$moduleid}/questionnaire.xml");
-        $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $moduleid,
-            'modulename' => 'questionnaire', 'contextid' => $contextid));
-        $this->xmlwriter->begin_tag('questionnaire', array('id' => $instanceid));
+        $this->xmlwriter->begin_tag('activity', [
+            'id' => $instanceid,
+            'moduleid' => $moduleid,
+            'modulename' => 'questionnaire',
+            'contextid' => $contextid,
+        ]);
+        $this->xmlwriter->begin_tag('questionnaire', ['id' => $instanceid]);
 
         unset($data['id']); // We already write it as attribute, do not repeat it as child element.
         foreach ($data as $field => $value) {
@@ -101,7 +105,7 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
      * @param array $data
      */
     public function process_survey($data) {
-        $this->xmlwriter->begin_tag('survey', array('id' => $data['id']));
+        $this->xmlwriter->begin_tag('survey', ['id' => $data['id']]);
         unset($data['id']); // We already write it as attribute, do not repeat it as child element.
         foreach ($data as $field => $value) {
             $this->xmlwriter->full_tag($field, $value);
@@ -124,7 +128,7 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
      */
     public function process_question($data) {
 
-        $this->xmlwriter->begin_tag('question', array('id' => $data['id']));
+        $this->xmlwriter->begin_tag('question', ['id' => $data['id']]);
 
         unset($data['id']); // We already write it as attribute, do not repeat it as child element.
         foreach ($data as $field => $value) {
@@ -139,7 +143,6 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
     public function on_question_end() {
         $this->xmlwriter->end_tag('quest_choices');
         $this->xmlwriter->end_tag('question');
-
     }
 
     /**
@@ -148,6 +151,6 @@ class moodle1_mod_questionnaire_handler extends moodle1_mod_handler {
      * @param array $data
      */
     public function process_question_choice($data) {
-        $this->write_xml('quest_choice', $data, array('/question_choice/id'));
+        $this->write_xml('quest_choice', $data, ['/question_choice/id']);
     }
 }
