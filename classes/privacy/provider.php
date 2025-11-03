@@ -283,8 +283,8 @@ class provider implements
                     'questionnaire_response',
                     ['questionnaireid' => $questionnaire->id,
                     'userid' => $userid]
-                    )
-                ) {
+                )
+            ) {
                 self::delete_responses($responses);
             }
             $responses->close();

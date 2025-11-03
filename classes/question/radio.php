@@ -120,7 +120,7 @@ class radio extends question {
                     $value = ' (' . $choice->value . ') ';
                 }
                 $contents = questionnaire_choice_values($choice->content);
-                $radio->label = $value.format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
+                $radio->label = $value . format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
                 }
@@ -139,7 +139,7 @@ class radio extends question {
                 }
                 $otherempty = !empty($radio->checked) && empty($odata);
                 $radio->label = format_text($othertext, FORMAT_HTML, ['noclean' => true]);
-                $radio->oname = 'q' . $this->id.choice::id_other_choice_name($id);
+                $radio->oname = 'q' . $this->id . choice::id_other_choice_name($id);
                 $radio->oid = $htmlid . '-other';
                 if (isset($odata)) {
                     $radio->ovalue = format_string(stripslashes($odata));

@@ -221,7 +221,7 @@ class questions_form extends \moodleform {
                     'static',
                     'qnums',
                     '',
-                    '<div class="qnums">' . $strposition . ' ' . $pos.'</div>'
+                    '<div class="qnums">' . $strposition . ' ' . $pos . '</div>'
                 );
 
                 // Need to index by 'id' since IE doesn't return assigned 'values' for image inputs.
@@ -318,7 +318,7 @@ class questions_form extends \moodleform {
                         $reqsrc = $questionnaire->renderer->image_url('t/go');
                         $strrequired = get_string('notrequired', 'questionnaire');
                     }
-                    $strrequired .= ' '  .get_string('clicktoswitch', 'questionnaire');
+                    $strrequired .= ' ' . get_string('clicktoswitch', 'questionnaire');
                     $reqextra = [
                         'value' => $question->id,
                         'alt' => $strrequired,
@@ -331,7 +331,7 @@ class questions_form extends \moodleform {
                         $reqextra
                     );
                 }
-                $manageqgroup[] =& $mform->createElement('static', 'closetag_'.$question->id, '', '');
+                $manageqgroup[] =& $mform->createElement('static', 'closetag_' . $question->id, '', '');
             } else {
                 $manageqgroup[] =& $mform->createElement(
                     'static',
@@ -395,7 +395,7 @@ class questions_form extends \moodleform {
             } else {
                 $qname = '';
             }
-            $manageqgroup[] =& $mform->createElement('static', 'qinfo_'  .$question->id, '', $qtype . ' ' . $qname);
+            $manageqgroup[] =& $mform->createElement('static', 'qinfo_' . $question->id, '', $qtype . ' ' . $qname);
 
             if (!empty($dependencies)) {
                 $mform->addElement('static', 'qdepend_' . $question->id, '', $dependencies);
@@ -423,7 +423,7 @@ class questions_form extends \moodleform {
                     'static',
                     'qcontent_' . $question->id,
                     '',
-                    $qnumber . '<div class="qn-question">'.$content.'</div>'
+                    $qnumber . '<div class="qn-question">' . $content . '</div>'
                 );
             }
             $mform->addElement('html', '</div>'); // End div qn-container.

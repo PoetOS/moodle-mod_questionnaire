@@ -48,7 +48,7 @@ define('QUESSECTIONTEXT', 100);
 global $idcounter, $CFG;
 $idcounter = 0;
 
-require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 #[\AllowDynamicProperties]
 /**
@@ -294,7 +294,8 @@ abstract class question {
         if (
             $dependencies = $DB->get_records(
                 'questionnaire_dependency',
-                ['questionid' => $this->id , 'surveyid' => $this->surveyid], 'id ASC'
+                ['questionid' => $this->id, 'surveyid' => $this->surveyid],
+                'id ASC'
             )
         ) {
             foreach ($dependencies as $dependency) {
@@ -437,7 +438,7 @@ abstract class question {
      */
     public function get_results($rids = false) {
         if (
-            isset ($this->responsetype) && is_object($this->responsetype) &&
+            isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
         ) {
             return $this->responsetype->get_results($rids);
@@ -455,7 +456,7 @@ abstract class question {
      */
     public function display_results($rids = false, $sort = '', $anonymous = false) {
         if (
-            isset ($this->responsetype) && is_object($this->responsetype) &&
+            isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
         ) {
             return $this->responsetype->display_results($rids, $sort, $anonymous);
@@ -895,7 +896,7 @@ abstract class question {
      */
     public function results_template($pdf = false) {
         if (
-            isset ($this->responsetype) && is_object($this->responsetype) &&
+            isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
         ) {
             return $this->responsetype->results_template($pdf);
@@ -912,7 +913,7 @@ abstract class question {
      * @param int $qnum
      * @return \stdClass
      */
-    public function question_output($response, $blankquestionnaire, $dependants=[], $qnum = '') {
+    public function question_output($response, $blankquestionnaire, $dependants = [], $qnum = '') {
         $pagetags = $this->questionstart_survey_display($qnum, $response);
         $pagetags->qformelement = $this->question_survey_display($response, $dependants, $blankquestionnaire);
         return $pagetags;
@@ -1214,7 +1215,8 @@ abstract class question {
             // Area for "must"-criteria.
             $mform->addElement(
                 'static',
-                'mandatory', '',
+                'mandatory',
+                '',
                 '<div class="dimmed_text">' . get_string('mandatory', 'questionnaire') . '</div>'
             );
             $selectand = $mform->createElement(
@@ -1223,7 +1225,7 @@ abstract class question {
                 get_string('condition', 'questionnaire'),
                 [
                     get_string('answernotgiven', 'questionnaire'),
-                    get_string('answergiven', 'questionnaire')
+                    get_string('answergiven', 'questionnaire'),
                 ]
             );
             $selectand->setSelected('1');
@@ -1241,8 +1243,8 @@ abstract class question {
                 get_string('dependquestion', 'questionnaire'),
                 $groupitemsand,
                 ' ',
-                 false
-                );
+                false
+            );
             $form->repeat_elements(
                 [$groupand],
                 $dependenciescountand + 1,
