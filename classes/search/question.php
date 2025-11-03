@@ -74,8 +74,12 @@ class question extends \core_search\base_mod {
 
         // Because there is no database agnostic way to combine all of the possible question content data into one record in
         // get_recordset_by_timestamp, I need to grab it all now and add it to the document.
-        $recordset = $DB->get_recordset('questionnaire_question', ['surveyid' => $record->sid, 'deleted' => 'n'],
-            'id', 'id,content');
+        $recordset = $DB->get_recordset(
+            'questionnaire_question',
+            ['surveyid' => $record->sid, 'deleted' => 'n'],
+            'id',
+            'id,content'
+        );
 
         // If no question data, don't index this document.
         if (empty($recordset)) {
@@ -125,9 +129,11 @@ class question extends \core_search\base_mod {
 
         // If the user has the ability to see questions beyond completing a questionnaire, grant access.
         $context = \context_module::instance($cminfo->id);
-        if (!(has_capability('mod/questionnaire:readallresponses', $context) ||
+        if (
+            !(has_capability('mod/questionnaire:readallresponses', $context) ||
               has_capability('mod/questionnaire:readallresponseanytime', $context) ||
-              has_capability('mod/questionnaire:editquestions', $context))) {
+              has_capability('mod/questionnaire:editquestions', $context))
+        ) {
             return \core_search\manager::ACCESS_DENIED;
         }
         return \core_search\manager::ACCESS_GRANTED;

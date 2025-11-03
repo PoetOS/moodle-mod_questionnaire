@@ -33,7 +33,6 @@ namespace mod_questionnaire\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class questionnaire_previewed extends \core\event\base {
-
     /**
      * Set basic properties for the event.
      */
@@ -67,9 +66,8 @@ class questionnaire_previewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        $params = array();
+        $params = [];
         $params['id'] = $this->contextinstanceid;
         return new \moodle_url("/mod/questionnaire/preview.php", $params);
     }
-
 }

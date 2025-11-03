@@ -16,11 +16,11 @@
 
 namespace mod_questionnaire\privacy;
 
-use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\contextlist;
-use \core_privacy\local\request\userlist;
-use \core_privacy\local\request\approved_contextlist;
-use \core_privacy\local\request\approved_userlist;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\contextlist;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
 
 /**
  * Contains class mod_questionnaire\privacy\provider
@@ -33,13 +33,10 @@ use \core_privacy\local\request\approved_userlist;
 class provider implements
     // This plugin has data.
     \core_privacy\local\metadata\provider,
-
     // This plugin is capable of determining which users have data within it.
     \core_privacy\local\request\core_userlist_provider,
-
     // This plugin currently implements the original plugin_provider interface.
     \core_privacy\local\request\plugin\provider {
-
     /**
      * Returns meta data about this system.
      *
@@ -281,8 +278,13 @@ class provider implements
                 continue;
             }
 
-            if ($responses = $DB->get_recordset('questionnaire_response',
-                ['questionnaireid' => $questionnaire->id, 'userid' => $userid])) {
+            if (
+                $responses = $DB->get_recordset(
+                    'questionnaire_response',
+                    ['questionnaireid' => $questionnaire->id,
+                    'userid' => $userid]
+                    )
+                ) {
                 self::delete_responses($responses);
             }
             $responses->close();

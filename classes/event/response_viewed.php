@@ -33,7 +33,6 @@ namespace mod_questionnaire\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class response_viewed extends \core\event\base {
-
     /**
      * Set basic properties for the event.
      */
@@ -68,7 +67,7 @@ class response_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        $params = array();
+        $params = [];
         $params['action'] = 'vresp';
         $params['individualresponse'] = 1;
         $params['rid'] = $this->other['rid'];

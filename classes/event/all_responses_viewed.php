@@ -40,7 +40,6 @@ namespace mod_questionnaire\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class all_responses_viewed extends \core\event\base {
-
     /**
      * Set basic properties for the event.
      */
@@ -75,7 +74,7 @@ class all_responses_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        $params = array();
+        $params = [];
         $params['id'] = $this->contextinstanceid;
         if (isset($this->other['action'])) {
             $params['action'] = $this->other['action'];
