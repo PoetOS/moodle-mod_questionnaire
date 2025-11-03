@@ -264,26 +264,42 @@ function questionnaire_get_coursemodule_info($coursemodule) {
     $questionnaire = $DB->get_record(
         'questionnaire',
         ['id' => $coursemodule->instance],
-        'id, name, intro, introformat, completionsubmit'
+        'id,
+        name,
+        intro,
+        introformat,
+        opendate,
+        closedate,
+        completionsubmit',
     );
+
     if (!$questionnaire) {
         return null;
     }
 
-    $info = new cached_cm_info();
-    $info->customdata = (object)[];
+    $result = new cached_cm_info();
+    $result->name = $questionnaire->name;
 
     if ($coursemodule->showdescription) {
         // Convert intro to html. Do not filter cached version, filters run at display time.
         // Based on the function quiz_get_coursemodule_info() in the quiz module.
-        $info->content = format_module_intro('questionnaire', $questionnaire, $coursemodule->id, false);
+        $result->content = format_module_intro('questionnaire', $questionnaire, $coursemodule->id, false);
     }
 
     // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
-        $info->customdata->customcompletionrules['completionsubmit'] = $questionnaire->completionsubmit;
+        $result->customdata['customcompletionrules']['completionsubmit'] = $questionnaire->completionsubmit;
     }
-    return $info;
+
+    // Populate some other values that can be used in calendar or on dashboard.
+    if ($questionnaire->opendate) {
+        $result->customdata['timeopen'] = $questionnaire->opendate;
+    }
+    if ($questionnaire->closedate) {
+        $result->customdata['timeclose'] = $questionnaire->closedate;
+    }
+
+    return $result;
 }
 
 /**

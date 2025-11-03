@@ -48,6 +48,7 @@ $string['alreadyfilled'] = 'You have already filled out this questionnaire for u
 $string['andaveragevalues'] = 'and average values';
 $string['anonymous'] = 'Anonymous';
 $string['answer'] = 'Answer';
+$string['answered'] = 'Answered';
 $string['answergiven'] = 'This answer given';
 $string['answernotgiven'] = 'This answer not given';
 $string['answerquestions'] = 'Answer the questions...';
@@ -168,6 +169,7 @@ $string['dropdown'] = 'Dropdown Box';
 $string['dropdown_help'] = 'There is no real advantage to using the Dropdown Box over using the Radio Buttons
  except perhaps for longish lists of options, to save screen space.';
 $string['dropdown_link'] = 'mod/questionnaire/questions#Dropdown_Box';
+$string['duedate'] = 'Due date';
 $string['edit'] = 'Edit';
 $string['editingfeedback'] = 'Editing feedback settings';
 $string['editingquestionnaire'] = 'Editing Questionnaire Settings';
@@ -365,6 +367,7 @@ $string['noresponsedata'] = 'No responses for this question.';
 $string['noresponses'] = 'No responses';
 $string['normal'] = 'Normal';
 $string['not_started'] = 'not started';
+$string['notanswered'] = 'Not answered';
 $string['notanumber'] = '<strong>{$a}</strong> is not an accepted number format.';
 $string['notapplicable'] = 'N/A';
 $string['notapplicablecolumn'] = 'N/A column';
@@ -569,6 +572,7 @@ $string['required_link'] = 'mod/questionnaire/questions#Response_Required';
 $string['requiredparameter'] = 'A required parameter was missing.';
 $string['reset'] = 'Reset';
 $string['respeligiblerepl'] = '(replaced by role overrides)';
+$string['responded'] = 'Responded';
 $string['respondent'] = 'Respondent';
 $string['respondenteligibleall'] = 'all';
 $string['respondenteligiblestudents'] = 'students only';
@@ -644,6 +648,7 @@ $string['strfdateformatcsv'] = 'd/m/Y H:i:s';
 // Prior to release 3.6.0, you could specify an input date format in the above string. Now, the format must be as below.
 // This string is used now in case sites modified the above string.
 $string['strictdateformatting'] = 'Enter the date using the date picker below.';
+$string['studentwhoresponded'] = 'Students who responded';
 $string['subject'] = 'Subject';
 $string['submissionnotificationhtmlanon'] = 'There is a new <a href="{$a->submissionurl}">submission</a> to the "{$a->name}" questionnaire.';
 $string['submissionnotificationhtmluser'] = '<a href="{$a->profileurl}">{$a->username}</a> has a new <a href="{$a->submissionurl}">submission</a> to the "{$a->name}" questionnaire in the course "{$a->coursename}".';
@@ -710,6 +715,7 @@ $string['viewallresponses_help'] = 'If the questionnaire is set to **Group Mode*
  If the setting is **Group Mode**: *Separate groups*, then users who do not have the *moodle/site:accessallgroups* capability
  (usually students, or non-editing teachers, etc.) will only be able to view the responses of the group(s) they belong to.';
 $string['viewallresponses_link'] = 'Viewing_Questionnaire_responses#Group_filtering';
+$string['viewallxresponses'] = 'View all {$a} responses';
 $string['viewbyresponse'] = 'List of responses';
 $string['viewindividualresponse'] = 'Individual responses';
 $string['viewindividualresponse_help'] = 'Click on the respondents\' names in the list below to view their individual responses.';

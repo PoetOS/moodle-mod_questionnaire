@@ -63,7 +63,7 @@ class questionnaire {
     /**
      * The constructor.
      * @param stdClass $course
-     * @param stdClass $cm
+     * @param cm_info $cm
      * @param int $id
      * @param null|stdClass $questionnaire
      * @param bool $addquestions
