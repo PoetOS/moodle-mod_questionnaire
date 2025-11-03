@@ -418,7 +418,7 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
                 if (
                     ($choice->value == null || $choice->value == 'NULL') &&
                     !preg_match("/^([0-9]{1,3}=.*|!other=.*)$/", $choice->content)
-                    ) {
+                ) {
                     $content = questionnaire_choice_values($choice->content);
                     if (strpos($content->text, '=')) {
                         $newcontent = str_replace('=', '::', $content->text);

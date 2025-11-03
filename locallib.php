@@ -78,10 +78,12 @@ $questionnaireresponseviewers = [
 ];
 
 global $autonumbering;
-$autonumbering = array (0 => get_string('autonumberno', 'questionnaire'),
-        1 => get_string('autonumberquestions', 'questionnaire'),
-        2 => get_string('autonumberpages', 'questionnaire'),
-        3 => get_string('autonumberpagesandquestions', 'questionnaire'));
+$autonumbering = [
+    0 => get_string('autonumberno', 'questionnaire'),
+    1 => get_string('autonumberquestions', 'questionnaire'),
+    2 => get_string('autonumberpages', 'questionnaire'),
+    3 => get_string('autonumberpagesandquestions', 'questionnaire'),
+];
 
 /**
  * Return the choice values for the content.
@@ -774,12 +776,12 @@ function questionnaire_check_page_breaks($questionnaire) {
     $delpb = 0;
     $sid = $questionnaire->survey->id;
     $positions = [];
-    if ($questions = $DB->get_records(
+    $questions = $DB->get_records(
         'questionnaire_question',
         ['surveyid' => $sid, 'deleted' => 'n'],
         'position'
-        )
-    ) {
+    );
+    if ($questions) {
         foreach ($questions as $key => $qu) {
             $newqu = new stdClass();
             $newqu->question_id = $key;
@@ -787,8 +789,13 @@ function questionnaire_check_page_breaks($questionnaire) {
             $newqu->qname = $qu->name;
             $newqu->qpos = $qu->position;
 
-            $dependencies = $DB->get_records('questionnaire_dependency', ['questionid' => $key, 'surveyid' => $sid],
-                    'id ASC', 'id, dependquestionid, dependchoiceid, dependlogic');
+            $dependencies = $DB->get_records(
+                'questionnaire_dependency',
+                ['questionid' => $key,
+                'surveyid' => $sid],
+                'id ASC',
+                'id, dependquestionid, dependchoiceid, dependlogic'
+            );
             $newqu->dependencies = $dependencies ?? [];
             $positions[] = (array)$newqu;
         }
@@ -865,7 +872,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                 if (
                     ($prevtypeid != QUESPAGEBREAK && $diffdependencies != 0) ||
                     (!isset($qu['dependencies']) && isset($prevdependencies))
-                    ) {
+                ) {
                     $sql = 'SELECT MAX(position) as maxpos FROM {questionnaire_question} ' .
                         'WHERE surveyid = ' . $questionnaire->survey->id . ' AND deleted = \'n\'';
                     if ($record = $DB->get_record_sql($sql)) {
@@ -926,7 +933,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             ['subdirs' => true],
             $question->content
         );
-        $question->content = array('text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
+        $question->content = ['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
         if (isset($question->dependencies)) {
             foreach ($question->dependencies as $dependencies) {
