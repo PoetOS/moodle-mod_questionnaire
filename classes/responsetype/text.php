@@ -276,7 +276,7 @@ class text extends responsetype {
 
         $values = [];
         $sql = 'SELECT q.id, q.content, a.response as aresponse ' .
-            'FROM {' . static::response_table() . '} a, {questionnaire_question} q '.
+            'FROM {' . static::response_table() . '} a, {questionnaire_question} q ' .
             'WHERE a.response_id=? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {

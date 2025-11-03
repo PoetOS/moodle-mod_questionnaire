@@ -263,12 +263,12 @@ class rank extends responsetype {
                       FROM {questionnaire_quest_choice} c
                 INNER JOIN
                          (SELECT c2.id, SUM(a2.rankvalue) AS sum, COUNT(a2.response_id) AS num
-                            FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
-                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id 
+                            FROM {questionnaire_quest_choice} c2, {" . static::response_table() . "} a2
+                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                   GROUP BY c2.id) a ON a.id = c.id";
 
-            $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
+            $results = $DB->get_records_sql($sql, array_merge([$this->question->id, $this->question->id], $params));
 
             if ($otherrecs) {
                 $i = 1;

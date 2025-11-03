@@ -134,10 +134,10 @@ class check extends question {
             if (!empty($response->answers[$this->id])) {
                 $checked = isset($response->answers[$this->id][$id]);
             }
-            $checkbox->name = 'q'.$this->id. '[' . $id . ']';
+            $checkbox->name = 'q' . $this->id . '[' . $id . ']';
             $checkbox->value = $id;
             $checkbox->id = 'checkbox_' . $id;
-            $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
+            $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
             if ($checked) {
                 $checkbox->checked = $checked;
             }
@@ -181,7 +181,7 @@ class check extends question {
                 if (isset($response->answers[$this->id][$id])) {
                     $chobj->selected = 1;
                 }
-                $chobj->name = $id.$uniquetag++;
+                $chobj->name = $id . $uniquetag++;
                 $chobj->content = (($choice->content === '') ? $id :
                     format_text(
                         $choice->content,
@@ -215,7 +215,7 @@ class check extends question {
      */
     public function response_complete($responsedata) {
         if (
-            isset($responsedata->{'q'.$this->id}) && $this->required() &&
+            isset($responsedata->{'q' . $this->id}) && $this->required() &&
             is_array($responsedata->{'q' . $this->id})
         ) {
             foreach ($responsedata->{'q' . $this->id} as $key => $choice) {

@@ -89,7 +89,7 @@ class mobile {
                 if (!$data['notifications']) {
                     $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
                 }
-
+                // Fall through.
             case 'respond':
             case 'resume':
                 // Completing a questionnaire.

@@ -31,11 +31,8 @@ use core_privacy\local\request\approved_userlist;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
-    // This plugin has data.
     \core_privacy\local\metadata\provider,
-    // This plugin is capable of determining which users have data within it.
     \core_privacy\local\request\core_userlist_provider,
-    // This plugin currently implements the original plugin_provider interface.
     \core_privacy\local\request\plugin\provider {
     /**
      * Returns meta data about this system.
@@ -170,7 +167,7 @@ class provider implements
 
         $user = $contextlist->get_user();
 
-        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        [$contextsql, $contextparams] = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT cm.id AS cmid,
                    q.id AS qid, q.course AS qcourse,
@@ -309,7 +306,7 @@ class provider implements
             return;
         }
 
-        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        [$userinsql, $userinparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
         $params = array_merge(['questionnaireid' => $questionnaire->id], $userinparams);
         $select = 'questionnaireid = :questionnaireid AND userid ' . $userinsql;
         if ($responses = $DB->get_recordset_select('questionnaire_response', $select, $params)) {

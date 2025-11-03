@@ -209,7 +209,7 @@ class rate extends question {
         if ($blankquestionnaire) {
             $disabled = ' disabled="disabled"';
         }
-        if (!empty($data) && ( !isset($data->{'q' . $this->id}) || !is_array($data->{'q' . $this->id}) ) ) {
+        if (!empty($data) && (!isset($data->{'q' . $this->id}) || !is_array($data->{'q' . $this->id}))) {
             $data->{'q' . $this->id} = [];
         }
 
@@ -531,7 +531,7 @@ class rate extends question {
                     $content = $contents->text;
                 }
                 if ($this->osgood_rate_scale()) {
-                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), [' ']);
+                    [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
                 }
                 if ($choice->is_other_choice()) {
                     $content = $choice->other_choice_display();
@@ -895,7 +895,7 @@ class rate extends question {
             $choice->fieldkey = $this->mobile_fieldkey($choiceid);
 
             if ($this->osgood_rate_scale()) {
-                list($choice->leftlabel, $choice->rightlabel) = array_merge(preg_split('/[|]/', $choice->content), []);
+                [$choice->leftlabel, $choice->rightlabel] = array_merge(preg_split('/[|]/', $choice->content), []);
             }
 
             if ($this->normal_rate_scale() || $this->no_duplicate_choices()) {
@@ -1110,7 +1110,7 @@ class rate extends question {
                 'id,surveyid'
             );
             if (!empty($qids)) {
-                list($qsql, $qparams) = $DB->get_in_or_equal(array_keys($qids));
+                [$qsql, $qparams] = $DB->get_in_or_equal(array_keys($qids));
             } else {
                 // No relevant questions, so no need to do this step.
                 $skip = true;

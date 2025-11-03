@@ -183,7 +183,7 @@ abstract class responsetype {
                     $response->alt2 = $alt;
                     $response->width2 = $percent * 1.4;
                     $response->image2 = $imageurl . 'hbar.gif';
-                    $response->percent = sprintf('&nbsp;%.'  .$precision . 'f%%', $percent);
+                    $response->percent = sprintf('&nbsp;%.' . $precision . 'f%%', $percent);
                 }
                 $response->total = $num;
                 // The 'evencolor' attribute is used by the PDF template.
@@ -388,13 +388,13 @@ abstract class responsetype {
 
         return "
             SELECT " . $DB->sql_concat_join(
-                "'_'",
-                [
-                    'qr.id',
-                    "'" . $this->question->helpname() . "'",
-                    $alias . '.id',
-                    ]
-                ) . " AS id,
+            "'_'",
+            [
+                'qr.id',
+                "'" . $this->question->helpname() . "'",
+                $alias . '.id',
+            ]
+        ) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
