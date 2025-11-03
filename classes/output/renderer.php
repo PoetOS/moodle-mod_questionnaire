@@ -145,7 +145,7 @@ class renderer extends \plugin_renderer_base {
      * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
      * @return string The output for the page.
      */
-    public function complete_formstart($action, $hiddeninputs=[]) {
+    public function complete_formstart($action, $hiddeninputs = []) {
         $output = '';
         $output .= \html_writer::start_tag('form', ['id' => 'phpesp_response', 'method' => 'post', 'action' => $action]) . "\n";
         foreach ($hiddeninputs as $name => $value) {
@@ -160,7 +160,7 @@ class renderer extends \plugin_renderer_base {
      * @param array $inputs Type/attribute array of inputs and values used by the form.
      * @return string The output for the page.
      */
-    public function complete_formend($inputs=[]) {
+    public function complete_formend($inputs = []) {
         $output = '';
         foreach ($inputs as $type => $attributes) {
             $output .= \html_writer::empty_tag('input', array_merge(['type' => $type], $attributes)) . "\n";
@@ -174,7 +174,7 @@ class renderer extends \plugin_renderer_base {
      * @param array|string $inputs Name/(Type/attribute) array of input types and values used by the form.
      * @return string The output for the page.
      */
-    public function complete_controlbuttons($inputs=null) {
+    public function complete_controlbuttons($inputs = null) {
         $output = '';
         if (is_array($inputs)) {
             foreach ($inputs as $name => $attributes) {
@@ -228,7 +228,7 @@ class renderer extends \plugin_renderer_base {
      * @param array $dependants Array of all questions/choices depending on $question.
      * @return string The output for the page.
      */
-    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants=[]) {
+    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants = []) {
 
         $pagetags = $question->question_output($response, $blankquestionnaire, $dependants, $qnum);
 
@@ -245,7 +245,7 @@ class renderer extends \plugin_renderer_base {
             }
         }
         $pagetags->questionname = $question->name;
-        
+
         return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }
 
@@ -258,7 +258,7 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      * @throws \moodle_exception
      */
-    public function response_output($question, $response, $qnum=null, $pdf=false) {
+    public function response_output($question, $response, $qnum = null, $pdf = false) {
         $pagetags = $question->response_output($response, $qnum);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
@@ -416,11 +416,11 @@ class renderer extends \plugin_renderer_base {
     public function dependency_warnings($children, $langstring, $strnum) {
         $msg = '<div class="warning">' . get_string($langstring, 'questionnaire') . '</div><br />';
         foreach ($children as $child) {
-            $loopindicator = array();
+            $loopindicator = [];
             foreach ($child as $subchild) {
                 $childname = '';
                 if ($subchild->name) {
-                    $childname = ' ('.$subchild->name.')';
+                    $childname = ' (' . $subchild->name . ')';
                 }
 
                 // Add conditions.
@@ -448,21 +448,21 @@ class renderer extends \plugin_renderer_base {
                 }
 
                 if (!in_array($subchild->qdependquestion, $loopindicator)) {
-                    $msg .= '<div class = "qn-container">'.$strnum.' '.$subchild->position.$childname.
-                        '<br/><span class="'.$color.'"><strong>'.
-                        get_string('dependquestion', 'questionnaire').'</strong>'.
-                        ' ('.$strnum.' '.$subchild->parentposition.') '.
-                        '&nbsp;:&nbsp;'.$subchild->parent.' '.$logic.'</span>';
+                    $msg .= '<div class = "qn-container">' . $strnum . ' ' . $subchild->position . $childname .
+                        '<br/><span class="' . $color . '"><strong>' .
+                        get_string('dependquestion', 'questionnaire') . '</strong>' .
+                        ' (' . $strnum . ' ' . $subchild->parentposition . ') ' .
+                        '&nbsp;:&nbsp;' . $subchild->parent . ' ' . $logic . '</span>';
                 } else {
-                    $msg .= '<br/><span class="'.$color.'"><strong>'.
-                        get_string('dependquestion', 'questionnaire').'</strong>'.
-                        ' ('.$strnum.' '.$subchild->parentposition.') '.
-                        '&nbsp;:&nbsp;'.$subchild->parent.' '.$logic.'</span>';
+                    $msg .= '<br/><span class="' . $color . '"><strong>' .
+                        get_string('dependquestion', 'questionnaire') . '</strong>' .
+                        ' (' . $strnum . ' ' . $subchild->parentposition . ') ' .
+                        '&nbsp;:&nbsp;' . $subchild->parent . ' ' . $logic . '</span>';
                 }
                 $loopindicator[] = $subchild->qdependquestion;
             }
-            $msg .= '<div class="qn-question">'.
-                $subchild->content.
+            $msg .= '<div class="qn-question">' .
+                $subchild->content .
                 '</div></div>';
         }
         return $msg;
@@ -492,12 +492,14 @@ class renderer extends \plugin_renderer_base {
             if ($dependency->dependandor == "and") {
                 $html .= '<div id="qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' .
                     $dependency->dependchoiceid . '" class="qdepend">' . '<strong>' .
-                    get_string('dependquestion', 'questionnaire') . '</strong> : '. get_string('position', 'questionnaire') . ' ' .
+                    get_string('dependquestion', 'questionnaire') . '</strong> : ' .
+                    get_string('position', 'questionnaire') . ' ' .
                     $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
             } else {
                 $html .= '<div id="qdepend_or_' . $qid . '_' . $dependency->dependquestionid . '_' .
                     $dependency->dependchoiceid . '" class="qdepend-or">' . '<strong>' .
-                    get_string('dependquestion', 'questionnaire') . '</strong> : '. get_string('position', 'questionnaire') . ' ' .
+                    get_string('dependquestion', 'questionnaire') . '</strong> : ' .
+                    get_string('position', 'questionnaire') . ' ' .
                     $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
             }
         }
@@ -534,26 +536,26 @@ class renderer extends \plugin_renderer_base {
      * @param string $extrafields HTML for extra form fields
      * @return string HTML fragment
      */
-    public function download_dataformat_selector($label, $base, $name = 'dataformat', $params = array(), $extrafields = '') {
+    public function download_dataformat_selector($label, $base, $name = 'dataformat', $params = [], $extrafields = '') {
 
         $formats = \core_plugin_manager::instance()->get_plugins_of_type('dataformat');
-        $options = array();
+        $options = [];
         foreach ($formats as $format) {
             if ($format->is_enabled()) {
-                $options[] = array(
+                $options[] = [
                     'value' => $format->name,
                     'label' => get_string('dataformat', $format->component),
-                );
+                ];
             }
         }
-        $hiddenparams = array();
+        $hiddenparams = [];
         foreach ($params as $key => $value) {
-            $hiddenparams[] = array(
+            $hiddenparams[] = [
                 'name' => $key,
                 'value' => $value,
-            );
+            ];
         }
-        $data = array(
+        $data = [
             'label' => $label,
             'base' => $base,
             'name' => $name,
@@ -565,12 +567,14 @@ class renderer extends \plugin_renderer_base {
             'emailroleshelp' => $this->help_icon('emailroles', 'questionnaire'),
             'emailextrahelp' => $this->help_icon('emailextra', 'questionnaire'),
             'allowemailreporting' => get_config('questionnaire', 'allowemailreporting'),
-        );
+        ];
 
         return $this->render_from_template('mod_questionnaire/dataformat_selector', $data);
     }
 
     /**
+     * Render the print menu.
+     *
      * @param moodle_url $urlroot
      * @param array $options
      * @param string $userview

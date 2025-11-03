@@ -25,7 +25,6 @@ namespace mod_questionnaire\output;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class questionspage implements \renderable, \templatable {
-
     /**
      * The data to be exported.
      * @var array

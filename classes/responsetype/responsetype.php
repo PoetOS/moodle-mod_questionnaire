@@ -16,9 +16,8 @@
 
 namespace mod_questionnaire\responsetype;
 
-use \html_writer;
-use \html_table;
-
+use html_writer;
+use html_table;
 use mod_questionnaire\db\bulk_sql_config;
 
 /**
@@ -30,7 +29,6 @@ use mod_questionnaire\db\bulk_sql_config;
  * @package mod_questionnaire
  */
 abstract class responsetype {
-
     // Class properties.
     /** @var \mod_questionnaire\question\question $question The question for this response. */
     public $question;
@@ -97,7 +95,7 @@ abstract class responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return array - Array of data records.
      */
-    abstract public function get_results($rids=false, $anonymous=false);
+    abstract public function get_results($rids = false, $anonymous = false);
 
     /**
      * Provide the result information for the specified result records.
@@ -107,7 +105,7 @@ abstract class responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    abstract public function display_results($rids=false, $sort='', $anonymous=false);
+    abstract public function display_results($rids = false, $sort = '', $anonymous = false);
 
     /**
      * If the choice id needs to be transformed into a different value, override this in the child class.
@@ -143,7 +141,7 @@ abstract class responsetype {
         $pagetags = new \stdClass();
         $precision = 0;
         $alt = '';
-        $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/';
+        $imageurl = $CFG->wwwroot . '/mod/questionnaire/images/';
 
         if (!empty($weights) && is_array($weights)) {
             $pos = 0;
@@ -156,7 +154,7 @@ abstract class responsetype {
                     break;
             }
 
-            reset ($weights);
+            reset($weights);
             $pagetags->responses = [];
             $evencolor = false;
             foreach ($weights as $content => $num) {
@@ -185,7 +183,7 @@ abstract class responsetype {
                     $response->alt2 = $alt;
                     $response->width2 = $percent * 1.4;
                     $response->image2 = $imageurl . 'hbar.gif';
-                    $response->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
+                    $response->percent = sprintf('&nbsp;%.'  .$precision . 'f%%', $percent);
                 }
                 $response->total = $num;
                 // The 'evencolor' attribute is used by the PDF template.
@@ -219,7 +217,7 @@ abstract class responsetype {
                 $pagetags->total->alt2 = $alt;
                 $pagetags->total->width2 = $percent * 1.4;
                 $pagetags->total->image2 = $imageurl . 'thbar.gif';
-                $pagetags->total->percent = sprintf('&nbsp;%.'.$precision.'f%%', $percent);
+                $pagetags->total->percent = sprintf('&nbsp;%.' . $precision . 'f%%', $percent);
                 $pagetags->total->total = "($respondents)";
                 $pagetags->total->evencolor = $evencolor;
             }
@@ -268,8 +266,8 @@ abstract class responsetype {
     public static function answers_from_appdata($responsedata, $question) {
         // In most cases this can be a direct call to answers_from_webform with the one modification below. Override when this will
         // not work.
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
-            $responsedata->{'q'.$question->id} = $responsedata->{'q'.$question->id}[0];
+        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
+            $responsedata->{'q' . $question->id} = $responsedata->{'q' . $question->id}[0];
         }
         return static::answers_from_webform($responsedata, $question);
     }
@@ -291,7 +289,7 @@ abstract class responsetype {
         $userfields = '';
         foreach ($userfieldsarr as $field) {
             $userfields .= $userfields === '' ? '' : ', ';
-            $userfields .= 'u.'.$field;
+            $userfields .= 'u.' . $field;
         }
         $userfields .= ', u.id as usrid';
         return $userfields;
@@ -320,7 +318,7 @@ abstract class responsetype {
         }
 
         if (is_array($questionnaireids)) {
-            list($qsql, $params) = $DB->get_in_or_equal($questionnaireids);
+            [$qsql, $params] = $DB->get_in_or_equal($questionnaireids);
         } else {
             $qsql = ' = ? ';
             $params = [$questionnaireids];
@@ -378,24 +376,30 @@ abstract class responsetype {
                 // The 'response' field can be varchar or text, which doesn't work for all DB's (Oracle).
                 // So convert the text if needed.
                 if ($field === 'response') {
-                    $extraselect .= $DB->sql_order_by_text($alias . '.' . $field, 1000).' AS '.$field;
+                    $extraselect .= $DB->sql_order_by_text($alias . '.' . $field, 1000) . ' AS ' . $field;
                 } else {
                     $extraselect .= $alias . '.' . $field;
                 }
             } else {
                 $default = $field === 'response' ? 'null' : 0;
-                $extraselect .= $default.' AS ' . $field;
+                $extraselect .= $default . ' AS ' . $field;
             }
         }
 
         return "
-            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
+            SELECT " . $DB->sql_concat_join(
+                "'_'",
+                [
+                    'qr.id',
+                    "'" . $this->question->helpname() . "'",
+                    $alias . '.id',
+                    ]
+                ) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".$config->table."} $alias
+              JOIN {" . $config->table . "} $alias
                 ON $alias.response_id = qr.id
         ";
     }
-
 }
