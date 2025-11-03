@@ -19,7 +19,7 @@ namespace mod_questionnaire;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
 
 /**
  * Print the form to manage feedback settings.
@@ -30,7 +30,6 @@ require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class feedback_form extends \moodleform {
-
     /**
      * Defition of the form.
      */
@@ -60,9 +59,13 @@ class feedback_form extends \moodleform {
             $charttypes = [null => get_string('none'),
                 'bipolar' => get_string('chart:bipolar', 'questionnaire'),
                 'vprogress' => get_string('chart:vprogress', 'questionnaire')];
-            $chartgroup[] = $mform->createElement('select', 'chart_type_global',
+            $chartgroup[] = $mform->createElement(
+                'select',
+                'chart_type_global',
                 get_string('chart:type', 'questionnaire') . ' (' .
-                get_string('feedbackglobal', 'questionnaire') . ')', $charttypes);
+                get_string('feedbackglobal', 'questionnaire') . ')',
+                $charttypes
+            );
             if ($questionnaire->survey->feedbacksections == 1) {
                 $mform->setDefault('chart_type_global', $questionnaire->survey->chart_type);
             }
@@ -73,9 +76,13 @@ class feedback_form extends \moodleform {
                 'bipolar' => get_string('chart:bipolar', 'questionnaire'),
                 'hbar' => get_string('chart:hbar', 'questionnaire'),
                 'rose' => get_string('chart:rose', 'questionnaire')];
-            $chartgroup[] = $mform->createElement('select', 'chart_type_two_sections',
+            $chartgroup[] = $mform->createElement(
+                'select',
+                'chart_type_two_sections',
                 get_string('chart:type', 'questionnaire') . ' (' .
-                get_string('feedbackbysection', 'questionnaire') . ')', $charttypes);
+                get_string('feedbackbysection', 'questionnaire') . ')',
+                $charttypes
+            );
             if ($questionnaire->survey->feedbacksections > 1) {
                 $mform->setDefault('chart_type_two_sections', $questionnaire->survey->chart_type);
             }
@@ -86,9 +93,13 @@ class feedback_form extends \moodleform {
                 'hbar' => get_string('chart:hbar', 'questionnaire'),
                 'radar' => get_string('chart:radar', 'questionnaire'),
                 'rose' => get_string('chart:rose', 'questionnaire')];
-            $chartgroup[] = $mform->createElement('select', 'chart_type_sections',
+            $chartgroup[] = $mform->createElement(
+                'select',
+                'chart_type_sections',
                 get_string('chart:type', 'questionnaire') . ' (' .
-                get_string('feedbackbysection', 'questionnaire') . ')', $charttypes);
+                get_string('feedbackbysection', 'questionnaire') . ')',
+                $charttypes
+            );
             if ($questionnaire->survey->feedbacksections > 1) {
                 $mform->setDefault('chart_type_sections', $questionnaire->survey->chart_type);
             }
@@ -96,8 +107,13 @@ class feedback_form extends \moodleform {
             $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 1);
             $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 2);
 
-            $mform->addGroup($chartgroup, 'chartgroup',
-                get_string('chart:type', 'questionnaire'), null, false);
+            $mform->addGroup(
+                $chartgroup,
+                'chartgroup',
+                get_string('chart:type', 'questionnaire'),
+                null,
+                false
+            );
             $mform->addHelpButton('chartgroup', 'chart:type', 'questionnaire');
         }
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
