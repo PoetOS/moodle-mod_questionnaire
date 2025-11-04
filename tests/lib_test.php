@@ -37,7 +37,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php')
  * Unit tests for questionnaire_lib_testcase.
  * @group mod_questionnaire
  */
-class lib_test extends \advanced_testcase {
+final class lib_test extends \advanced_testcase {
     /**
      * Test for questionnaire_supports.
      *

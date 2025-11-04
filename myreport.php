@@ -210,7 +210,6 @@ switch ($action) {
                 }
                 // Current group members.
                 $currentgroupresps = $questionnaire->get_responses(false, $currentgroupid);
-
             } else {
                 // Groupmode = separate groups but user is not member of any group
                 // and does not have moodle/site:accessallgroups capability -> refuse view responses.

@@ -494,7 +494,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $rs = $DB->get_records_sql("SELECT * FROM {questionnaire_quest_choice} $select", $params, 0, 1);
                 $choice = reset($rs);
                 if (!$choice) {
-                    throw new coding_exception('Could not find choice for "' .$choiceval .
+                    throw new coding_exception('Could not find choice for "' . $choiceval .
                         '" (question_id = ' . $question->id . ')', var_export($choiceval, true));
                 }
                 $choiceid = $choice->id;
@@ -639,7 +639,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 case QUESDATE:
                     $date = mktime(0, 0, 0, 12, 28, 2017);
                     $dateformat = get_string('strfdate', 'questionnaire');
-                    $datestr = userdate ($date, $dateformat, '1', false);
+                    $datestr = userdate($date, $dateformat, '1', false);
                     $responses[] = new question_response($question->id, $datestr);
                     break;
                 case QUESRADIO:
