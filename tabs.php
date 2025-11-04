@@ -148,7 +148,8 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
         $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr . '&action=vall'),
         get_string('viewallresponses', 'questionnaire')
     );
-    if (in_array(
+    if (
+        in_array(
             $currenttab,
             [
                 'vall',
@@ -161,7 +162,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
                 'vrespsummary',
                 'individualresp',
                 'printresp',
-                'deleteresp'
+                'deleteresp',
             ]
         )
     ) {
