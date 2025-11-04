@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\questionnaire;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 /**

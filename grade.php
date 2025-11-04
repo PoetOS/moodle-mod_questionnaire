@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\questionnaire;
+
 /**
  * Redirects the user to either a questionnaire or to the questionnaire report
  *
@@ -26,7 +28,6 @@
  * Require config.php
  */
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 $id = required_param('id', PARAM_INT);
 $cm = get_coursemodule_from_id('questionnaire', $id, 0, false, MUST_EXIST);

@@ -16,6 +16,7 @@
 
 namespace mod_questionnaire\privacy;
 
+use mod_questionnaire\questionnaire;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\contextlist;
 use core_privacy\local\request\userlist;
@@ -159,7 +160,6 @@ class provider implements
      */
     public static function export_user_data(approved_contextlist $contextlist) {
         global $DB, $CFG;
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
         if (empty($contextlist->count())) {
             return;
@@ -202,7 +202,7 @@ class provider implements
                 $lastcmid = $response->cmid;
                 $course = $DB->get_record("course", ["id" => $response->qcourse]);
                 $cm = get_coursemodule_from_instance("questionnaire", $response->qid, $course->id);
-                $questionnaire = new \questionnaire($course, $cm, $response->qid, null);
+                $questionnaire = new questionnaire($course, $cm, $response->qid, null);
             }
             $responsedata['responses'][] = [
                 'complete' => (($response->complete == 'y') ? get_string('yes') : get_string('no')),

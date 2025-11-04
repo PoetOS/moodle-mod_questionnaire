@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\questionnaire;
+
 /**
  * Library of functions and constants for module questionnaire.
  * @package mod_questionnaire
@@ -89,8 +91,7 @@ function questionnaire_add_instance($questionnaire) {
     // will create a new instance and return the id number
     // of the new instance.
     global $DB, $CFG;
-    require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
+    require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
 
     $copyfiles = false;
 
@@ -602,8 +603,6 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     $rid = optional_param('rid', false, PARAM_INT); // Response id.
     $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 
-    require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-
     $cm = $settings->get_page()->cm;
     $context = $cm->context;
     $cmid = $cm->id;
@@ -966,7 +965,6 @@ function questionnaire_get_recent_mod_activity(
 
     global $CFG, $COURSE, $USER, $DB;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-    require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
     if ($COURSE->id == $courseid) {
         $course = $COURSE;

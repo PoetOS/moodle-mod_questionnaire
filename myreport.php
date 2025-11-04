@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\questionnaire;
+
 /**
  * This page shows results of a questionnaire to a student.
  *
@@ -24,7 +26,6 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 $instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $userid = optional_param('user', $USER->id, PARAM_INT);

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\questionnaire;
+
 /**
  * Show the non-respondents to a questionnaire.
  * @author Joseph Rézeau (copied from feedback plugin show_nonrespondents by original author Andreas Grabs)
@@ -24,9 +26,8 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-require_once($CFG->libdir . '/tablelib.php');
+require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->libdir.'/tablelib.php');
 
 // Get the params.
 $id = required_param('id', PARAM_INT);

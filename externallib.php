@@ -38,7 +38,6 @@ use external_value;
 use external_warnings;
 
 require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 /**
  * Questionnaire module external functions

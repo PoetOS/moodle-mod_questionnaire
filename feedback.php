@@ -16,6 +16,8 @@
 
 // This page prints a particular instance of questionnaire.
 
+use mod_questionnaire\questionnaire;
+
 /**
  * Manage feedback settings.
  *
@@ -26,7 +28,6 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.

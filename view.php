@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\questionnaire;
+
 /**
  * This main view page for a questionnaire.
  *
@@ -27,7 +29,6 @@
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
