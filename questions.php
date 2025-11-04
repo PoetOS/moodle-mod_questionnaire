@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\questionnaire;
+
 /**
  * This page handles the main question editing screen.
  *
@@ -23,8 +25,7 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
+require_once($CFG->dirroot.'/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.

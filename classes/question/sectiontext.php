@@ -16,6 +16,7 @@
 
 namespace mod_questionnaire\question;
 
+use mod_questionnaire\questionnaire;
 use mod_questionnaire\feedback\section;
 
 /**
@@ -146,7 +147,6 @@ class sectiontext extends question {
      */
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         global $DB, $CFG, $PAGE;
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
         // If !isset then normal behavior as sectiontext question.
         if (!isset($response->questionnaireid)) {

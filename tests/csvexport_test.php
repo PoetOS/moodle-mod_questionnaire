@@ -73,7 +73,7 @@ final class csvexport_test extends \advanced_testcase {
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
             [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-            $questionnaireinst = new \questionnaire($course, $cm, 0, $questionnaire);
+            $questionnaireinst = new questionnaire($course, $cm, 0, $questionnaire);
 
             // Test for only complete responses.
             $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 0));
@@ -153,7 +153,7 @@ final class csvexport_test extends \advanced_testcase {
         assign_capability('moodle/site:viewuseridentity', CAP_ALLOW, $roleid, $context);
 
         // Generate CSV output.
-        $questionnaire = new \questionnaire($course, $cm, $item->id);
+        $questionnaire = new questionnaire($course, $cm, $item->id);
         $output = $questionnaire->generate_csv(0, '', '', 0, 0, 1);
 
         $this->assertNotNull($output);

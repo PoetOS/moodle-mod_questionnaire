@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\questionnaire;
+
 /**
  * This page handles the question settings.
  *
@@ -23,7 +25,6 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.

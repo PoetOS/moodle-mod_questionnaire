@@ -14,7 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_questionnaire;
+
 use mod_questionnaire\feedback\section;
+use stdClass;
+use context_module;
+use html_writer;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -254,14 +259,14 @@ class questionnaire {
                 $questions[$questionid] = $this->questions[$questionid];
             }
         }
-        return mod_questionnaire\responsetype\response\response::response_from_appdata($this->id, 0, $appdata, $questions);
+        return responsetype\response\response::response_from_appdata($this->id, 0, $appdata, $questions);
     }
 
     /**
      * Add the renderer to the questionnaire object.
      * @param plugin_renderer_base $renderer The module renderer, extended from core renderer.
      */
-    public function add_renderer(plugin_renderer_base $renderer) {
+    public function add_renderer(\plugin_renderer_base $renderer) {
         $this->renderer = $renderer;
     }
 
@@ -328,7 +333,7 @@ class questionnaire {
                 $this->update_grades($quser);
 
                 // Update completion state.
-                $completion = new completion_info($this->course);
+                $completion = new \completion_info($this->course);
                 if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
                     $completion->update_state($this->cm, COMPLETION_COMPLETE);
                 }
@@ -1509,7 +1514,7 @@ class questionnaire {
                             'rid' => $rid,
                         ]
                     );
-                    $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
+                    $downpdficon = new \pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
                     $respinfo .= $this->renderer->action_link($link, null, null, null, $downpdficon);
                 }
 
@@ -1528,7 +1533,7 @@ class questionnaire {
                 $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
                     'height' => 600, 'width' => 800, 'title' => $linkname];
                 $name = 'popup';
-                $action = new popup_action('click', $link, $name, $options);
+                $action = new \popup_action('click', $link, $name, $options);
                 $respinfo .= $this->renderer->action_link($link, null, $action, ['title' => $linkname], $htmlicon) . '&nbsp;';
             }
             $respinfo .= get_string('respondent', 'questionnaire') . ': <strong>' . $ruser . '</strong>';
@@ -1567,8 +1572,8 @@ class questionnaire {
                 'title' => $title,
             ];
             $name = 'popup';
-            $link = new moodle_url($url);
-            $action = new popup_action('click', $link, $name, $options);
+            $link = new \moodle_url($url);
+            $action = new \popup_action('click', $link, $name, $options);
             $class = "floatprinticon";
             $this->page->add_to_page(
                 'printblank',
@@ -2725,11 +2730,11 @@ class questionnaire {
             $currentgroupid = 0;
         }
         if ($this->capabilities->readownresponses) {
-            $url = new moodle_url('myreport.php', ['id' => $this->cm->id, 'instance' => $this->cm->instance, 'user' => $USER->id,
+            $url = new \moodle_url('myreport.php', ['id' => $this->cm->id, 'instance' => $this->cm->instance, 'user' => $USER->id,
                 'byresponse' => 0, 'action' => 'vresp']);
             $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
         } else {
-            $url = new moodle_url('/course/view.php', ['id' => $this->course->id]);
+            $url = new \moodle_url('/course/view.php', ['id' => $this->course->id]);
             $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
         }
         return;
@@ -4052,7 +4057,7 @@ class questionnaire {
             }
         }
         if ($this->survey->feedbackscores) {
-            $table = new html_table();
+            $table = new \html_table();
             $table->size = [null, null];
             $table->align = ['left', 'right', 'right'];
             $table->head = [];
@@ -4215,7 +4220,7 @@ class questionnaire {
                 $oppositeallscore = ' | ' . $allscore[1] . '%';
             }
             if ($this->survey->feedbackscores) {
-                $table = $table ?? new html_table();
+                $table = $table ?? new \html_table();
                 if ($compare) {
                     $table->data[] = [$sectionlabel, $score[0] . '%' . $oppositescore, $allscore[0] . '%' . $oppositeallscore];
                 } else {

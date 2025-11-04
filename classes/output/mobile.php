@@ -16,6 +16,7 @@
 
 namespace mod_questionnaire\output;
 
+use mod_questionnaire\questionnaire;
 use mod_questionnaire\responsetype\response\response;
 
 /**
@@ -35,7 +36,6 @@ class mobile {
      */
     public static function mobile_view_activity($args) {
         global $OUTPUT, $USER, $CFG, $DB;
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
         $args = (object) $args;
 
