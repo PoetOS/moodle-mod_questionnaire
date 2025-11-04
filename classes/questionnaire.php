@@ -213,7 +213,7 @@ class questionnaire {
 
         $responses = $this->get_responses($userid);
         foreach ($responses as $response) {
-            $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
+            $this->responses[$response->id] = responsetype\response\response::create_from_data($response);
         }
     }
 
@@ -231,7 +231,7 @@ class questionnaire {
         }
 
         $response = $DB->get_record('questionnaire_response', ['id' => $responseid]);
-        $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
+        $this->responses[$response->id] = responsetype\response\response::create_from_data($response);
     }
 
     /**
@@ -240,7 +240,7 @@ class questionnaire {
      * @param stdClass $formdata
      */
     public function add_response_from_formdata(stdClass $formdata) {
-        $this->responses[0] = mod_questionnaire\responsetype\response\response::response_from_webform($formdata, $this->questions);
+        $this->responses[0] = responsetype\response\response::response_from_webform($formdata, $this->questions);
     }
 
     /**
@@ -1147,7 +1147,7 @@ class questionnaire {
 
     /**
      * Return the correct action to a next page request.
-     * @param mod_questionnaire\responsetype\response\response $response
+     * @param responsetype\response\response $response
      * @param int $userid
      * @return bool|int|string
      */
@@ -1163,7 +1163,7 @@ class questionnaire {
 
     /**
      * Return the correct action to a previous page request.
-     * @param mod_questionnaire\responsetype\response\response $response
+     * @param responsetype\response\response $response
      * @param int $userid
      * @return bool|int
      */
@@ -1174,7 +1174,7 @@ class questionnaire {
 
     /**
      * Handle updating an existing response.
-     * @param mod_questionnaire\responsetype\response\response $response
+     * @param responsetype\response\response $response
      * @param int $userid
      * @return bool|int
      */

@@ -253,7 +253,7 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @return mixed
      */
     private function response_commit($questionnaire, $responseid) {
-        $method = new ReflectionMethod('questionnaire', 'response_commit');
+        $method = new ReflectionMethod('\\mod_questionnaire\\questionnaire', 'response_commit');
         $method->setAccessible(true);
         return $method->invoke($questionnaire, $responseid);
     }
