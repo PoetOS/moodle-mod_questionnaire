@@ -403,7 +403,7 @@ class questionnaire {
      */
     public function view_response(
         $rid,
-        $referer= '',
+        $referer = '',
         $resps = '',
         $compare = false,
         $isgroupmember = false,
@@ -796,7 +796,6 @@ class questionnaire {
                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                     ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
                     ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
-
     }
 
     /**
@@ -1423,7 +1422,7 @@ class questionnaire {
                             if (count($groups) == 1) {
                                 $group = current($groups);
                                 $currentgroupid = $group->id;
-                                $groupname = ' (' . get_string('group') . ': ' . $group->name.')';
+                                $groupname = ' (' . get_string('group') . ': ' . $group->name . ')';
                             } else {
                                 $groupname = ' (' . get_string('groups') . ': ';
                                 foreach ($groups as $group) {
@@ -1456,7 +1455,7 @@ class questionnaire {
                 }
             }
             if ($this->respondenttype == 'anonymous') {
-                $ruser = '- ' . get_string('anonymous', 'questionnaire').' -';
+                $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
             } else {
                 // JR DEV comment following line out if you do NOT want time submitted displayed in Anonymous surveys.
                 if ($resp->submitted) {
@@ -1477,7 +1476,7 @@ class questionnaire {
                             'instance' => $this->id,
                             'target' => 'pdf',
                             'individualresponse' => 1,
-                            'rid' => $rid
+                            'rid' => $rid,
                         ]
                     );
                     $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
@@ -1492,7 +1491,7 @@ class questionnaire {
                         'instance' => $this->id,
                         'target' => 'print',
                         'individualresponse' => 1,
-                        'rid' => $rid
+                        'rid' => $rid,
                     ]
                 );
                 $htmlicon = new pix_icon('t/print', $linkname);
@@ -1672,7 +1671,7 @@ class questionnaire {
                     }
                     $this->page->add_to_page(
                         'notifications',
-                        $this->renderer->notification($pageerror.$errormessage, \core\output\notification::NOTIFY_ERROR)
+                        $this->renderer->notification($pageerror . $errormessage, \core\output\notification::NOTIFY_ERROR)
                     );
                     $errors++;
                 }
