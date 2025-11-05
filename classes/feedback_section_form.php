@@ -30,8 +30,8 @@ require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class feedback_section_form extends \moodleform {
-    /** @var mixed $_feedbacks */
-    protected $_feedbacks;
+    /** @var mixed $feedbacks */
+    protected $feedbacks;
     /**
      * @var \context $context The used context.
      */
@@ -47,7 +47,7 @@ class feedback_section_form extends \moodleform {
         $validquestions = $this->_customdata->validquestions;
         $survey = $this->_customdata->survey;
         $feedbacksections = $questionnaire->survey->feedbacksections;
-        $this->_feedbacks = $feedbacksection->sectionfeedback;
+        $this->feedbacks = $feedbacksection->sectionfeedback;
         $this->context = $questionnaire->context;
         $mform    =& $this->_form;
 
@@ -184,7 +184,7 @@ class feedback_section_form extends \moodleform {
         $repeatedoptions['feedbacktext']['type'] = PARAM_RAW;
         $repeatedoptions['feedbackboundaries']['type'] = PARAM_RAW;
 
-        $numfeedbacks = max(count($this->_feedbacks) * 1, 3);
+        $numfeedbacks = max(count($this->feedbacks) * 1, 3);
 
         $nextel = $this->repeat_elements(
             $repeatarray,
@@ -238,9 +238,9 @@ class feedback_section_form extends \moodleform {
      * @param array $toform
      */
     public function data_preprocessing(&$toform) {
-        if (count($this->_feedbacks)) {
+        if (count($this->feedbacks)) {
             $key = 0;
-            foreach ($this->_feedbacks as $feedback) {
+            foreach ($this->feedbacks as $feedback) {
                 $draftid = file_get_submitted_draft_itemid('feedbacktext[' . $key . ']');
                 $toform['feedbacktext[' . $key . ']']['text'] = file_prepare_draft_area(
                     $draftid,
