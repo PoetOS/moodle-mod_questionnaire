@@ -462,9 +462,9 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
     }
 
     if ($questionnaire->cmidnumber != '') {
-        $params = array('itemname' => $questionnaire->name, 'idnumber' => $questionnaire->cmidnumber);
+        $params = ['itemname' => $questionnaire->name, 'idnumber' => $questionnaire->cmidnumber];
     } else {
-        $params = array('itemname' => $questionnaire->name);
+        $params = ['itemname' => $questionnaire->name];
     }
 
     if ($questionnaire->grade > 0) {
@@ -1201,7 +1201,7 @@ function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, 
         }
         echo html_writer::tag(
             'a',
-            get_string('response', 'questionnaire') .  ' '. $activity->nbattempts . $stranonymous,
+            get_string('response', 'questionnaire') .  ' ' . $activity->nbattempts . $stranonymous,
             ['href' => new moodle_url('/mod/questionnaire/' . $report, $urlparams)]
         );
         echo html_writer::end_tag('div');
