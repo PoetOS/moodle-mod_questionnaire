@@ -91,10 +91,10 @@ if ($message !== false) {
             $questionnaire->page->add_to_page(
                 'complete',
                 '<a href="' .
-                    $CFG->wwwroot.htmlspecialchars(
+                    $CFG->wwwroot . htmlspecialchars(
                         '/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->cm->id . '&resume=1'
                     ) .
-                    '" title="' . $resumesurvey . '" class="btn btn-primary">'.$resumesurvey.'</a>'
+                    '" title="' . $resumesurvey . '" class="btn btn-primary">' . $resumesurvey . '</a>'
             );
         }
     } else {
@@ -105,7 +105,7 @@ if ($message !== false) {
 if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
     $questionnaire->page->add_to_page(
         'complete',
-        '<a href="' . $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?' .
+        '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' .
             'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' .
             get_string('addquestions', 'questionnaire') . '</a>'
     );
@@ -152,7 +152,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
     }
     $questionnaire->page->add_to_page(
         'yourresponse',
-        '<a href="' .$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr) .
+        '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr) .
             '" class="btn btn-primary">' . $titletext . '</a>'
     );
 }
@@ -161,7 +161,7 @@ if ($questionnaire->can_view_all_responses($usernumresp)) {
     $argstr = 'instance=' . $questionnaire->id . '&group=' . $currentgroupid;
     $questionnaire->page->add_to_page(
         'allresponses',
-        '<a href="' . $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?' . $argstr) .
+        '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr) .
             '" class="btn btn-primary">' . get_string('viewallresponses', 'questionnaire') . '</a>'
     );
 }

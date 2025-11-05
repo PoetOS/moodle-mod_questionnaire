@@ -739,7 +739,8 @@ switch ($action) {
                     $link,
                     null,
                     $action,
-                    ['class' => $class, 'title' => $linkname], $htmlicon
+                    ['class' => $class, 'title' => $linkname],
+                    $htmlicon
                 ) . '&nbsp;';
 
                 $respinfo .= $questionnaire->renderer->viewresponse_print_menu($url->out(), $responsestatus, $userview);

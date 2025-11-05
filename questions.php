@@ -93,8 +93,7 @@ if ($delq) {
 
     // Just in case the page is refreshed (F5) after a question has been deleted.
     if (isset($questions[$qid])) {
-        $select = 'surveyid = ' . $sid . ' AND deleted = \'n\' AND position > '.
-                        $questions[$qid]->position;
+        $select = 'surveyid = ' . $sid . ' AND deleted = \'n\' AND position > ' . $questions[$qid]->position;
     } else {
         redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
     }
