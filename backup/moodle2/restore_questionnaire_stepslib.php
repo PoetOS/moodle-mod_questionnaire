@@ -113,7 +113,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
                     'questionnaire_response_text',
                     '/activity/questionnaire/attempts/attempt/responses/response/response_texts/response_text'
                 );
-
             } else {
                 // New system.
                 $paths[] = new restore_path_element(

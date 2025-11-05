@@ -50,8 +50,10 @@ class restore_questionnaire_activity_task extends restore_activity_task {
         $contents = [];
 
         $contents[] = new restore_decode_content('questionnaire', ['intro'], 'questionnaire');
-        $contents[] = new restore_decode_content('questionnaire_survey',
-            ['info', 'thank_head', 'thank_body', 'thanks_page', 'feedbacknotes'], 'questionnaire_survey');
+        $contents[] = new restore_decode_content(
+            'questionnaire_survey',
+            ['info', 'thank_head', 'thank_body', 'thanks_page', 'feedbacknotes'], 'questionnaire_survey'
+        );
         $contents[] = new restore_decode_content('questionnaire_question', ['content'], 'questionnaire_question');
         $contents[] = new restore_decode_content('questionnaire_fb_sections', ['sectionheading'], 'questionnaire_fb_sections');
         $contents[] = new restore_decode_content('questionnaire_feedback', ['feedbacktext'], 'questionnaire_feedback');

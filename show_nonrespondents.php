@@ -136,10 +136,10 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
 
     $htmlmessage = "<body id=\"email\">";
 
-    $link1 = $CFG->wwwroot . '/mod/questionnaire/view.php?id= '. $cm->id;
+    $link1 = $CFG->wwwroot . '/mod/questionnaire/view.php?id= ' . $cm->id;
 
     $htmlmessage .= '<div class="navbar">' .
-    '<a target="_blank" href="' . $link1 .'">' . format_string($questionnaire->name, true) . '</a>' .
+    '<a target="_blank" href="' . $link1 . '">' . format_string($questionnaire->name, true) . '</a>' .
     '</div>';
 
     $htmlmessage .= $message;
@@ -353,7 +353,7 @@ if (!$nonrespondents) {
             $user = $DB->get_record('user', ['id' => $nonrespondent]);
             // Userpicture and link to the profilepage.
             $profileurl = $CFG->wwwroot . '/user/view.php?id=' . $user->id . '&amp;course=' . $course->id;
-            $profilelink = '<strong><a href="' . $profileurl . '">'.fullname($user) . '</a></strong>';
+            $profilelink = '<strong><a href="' . $profileurl . '">' . fullname($user) . '</a></strong>';
             $data = [$questionnaire->renderer->user_picture($user, ['courseid' => $course->id]), $profilelink];
             if (in_array('email', $tablecolumns)) {
                 $data[] = $user->email;
@@ -375,14 +375,12 @@ if (!$nonrespondents) {
                 // we use the alt attribute of the checkboxes to store the started/not started value!
                 $checkboxaltvalue = '';
                 if ($resume) {
-                    if ($DB->record_exists(
-                        'questionnaire_response',
-                        [
-                            'questionnaireid' => $questionnaire->id,
-                            'userid' => $nonrespondent,
-                            'complete' => 'n',
-                        ]
-                    )) {
+                    if (
+                        $DB->record_exists(
+                            'questionnaire_response',
+                            ['questionnaireid' => $questionnaire->id, 'userid' => $nonrespondent, 'complete' => 'n']
+                        )
+                    ) {
                         $data[] = get_string('started', 'questionnaire');
                         $checkboxaltvalue = 1;
                     } else {
@@ -394,7 +392,6 @@ if (!$nonrespondents) {
                     $user->id . '" alt="' . $checkboxaltvalue . '" />';
             }
             $table->add_data($data);
-
         }
 
         if (isset($table)) {
@@ -413,7 +410,6 @@ if (!$nonrespondents) {
                     'showall'
                 )
             );
-
         } else if ($countnonrespondents > 0 && $perpage < $countnonrespondents) {
             $allurl->param('showall', 1);
             $questionnaire->page->add_to_page(
@@ -483,7 +479,7 @@ if (!$nonrespondents) {
                         $questionnaire->page->add_to_page(
                             'formarea',
                             '<input type="radio" name="selectedanonymous" value="started" id="started" ' . $checked . ' />
-                            <label for="started">'.get_string('status') . ': ' .
+                            <label for="started">' . get_string('status') . ': ' .
                             get_string('started', 'questionnaire') . ' (' . $countstarted . ')</label>'
                         );
                 }
@@ -526,13 +522,13 @@ if (!$nonrespondents) {
         $subjecteditor = '&nbsp;&nbsp;&nbsp;<input type="text" id="questionnaire_subject" class="form-control" size="65"
             maxlength="255" name="subject" value="' . $subject . '" />';
         $format = '';
-            $editor = editors_get_preferred_editor();
-            $editor->use_editor($id, questionnaire_get_editor_options($context));
-            $texteditor = html_writer::tag(
-                'div',
-                html_writer::tag(
-                    'textarea',
-                    $message,
+        $editor = editors_get_preferred_editor();
+        $editor->use_editor($id, questionnaire_get_editor_options($context));
+        $texteditor = html_writer::tag(
+            'div',
+            html_writer::tag(
+                'textarea',
+                $message,
                 ['id' => $id, 'name' => "message", 'class' => "form-control", 'rows' => '10', 'cols' => '60']
             )
         );
