@@ -167,7 +167,7 @@ Feature: Questionnaires can be public, private or template
     And "div.qn-datemsg + div > input[type='date']" "css_element" should not exist
     # Check dropdown question type.
     And "div.printdropdown input[type='checkbox']" "css_element" should exist
-    And "select.custom-select" "css_element" should not exist
+    And "select.form-select" "css_element" should not exist
     # Check essay question type.
     And ".qn-content textarea" "css_element" should exist
     And ".qn-content .tox-tinymce" "css_element" should not exist

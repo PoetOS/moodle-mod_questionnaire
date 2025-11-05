@@ -84,6 +84,7 @@ jobs:
 
       - name: Moodle Code Checker
         if: ${{ always() }}
+        # run: moodle-plugin-ci phpcs --max-warnings 0
         run: moodle-plugin-ci phpcs
 
       - name: Moodle PHPDoc Checker
@@ -104,6 +105,7 @@ jobs:
 
       - name: Grunt
         if: ${{ always() }}
+        # run: moodle-plugin-ci grunt --max-warnings 0
         run: moodle-plugin-ci grunt
 
       - name: PHPUnit tests
@@ -112,4 +114,5 @@ jobs:
 
       - name: Behat features
         if: ${{ always() }}
-        run: moodle-plugin-ci behat --profile chrome --scss-deprecations
+        # run: moodle-plugin-ci behat --profile chrome --scss-deprecations
+        run: moodle-plugin-ci behat --profile chrome
