@@ -180,11 +180,11 @@ foreach ($questionnaires as $questionnaire) {
                                 null,
                                 $sort = 'course ASC',
                                 $fields = 'id, course, name'
-                                )
-                            ) {
+                            )
+                        ) {
                             foreach ($copies as $copy) {
                                 $copycourse = $DB->get_record('course', ['id' => $copy->course]);
-                                $select = 'course = '.$copycourse->id.' AND sid = '.$questionnaire->sid;
+                                $select = 'course = ' . $copycourse->id . ' AND sid = ' . $questionnaire->sid;
                                 $copyquestionnaire = $DB->get_record(
                                     'questionnaire',
                                     ['id' => $copy->id, 'sid' => $survey->id, 'course' => $copycourse->id]
@@ -193,14 +193,14 @@ foreach ($questionnaires as $questionnaire) {
                                 $context = context_course::instance($copycourse->id, MUST_EXIST);
                                 $canviewcopy = has_capability('mod/questionnaire:view', $context, $USER->id, true);
                                 if ($canviewcopy) {
-                                    $publiccopy .= '<br />' . get_string('publiccopy', 'questionnaire').'&nbsp;:&nbsp;' .
+                                    $publiccopy .= '<br />' . get_string('publiccopy', 'questionnaire') . '&nbsp;:&nbsp;' .
                                         '<a href = "' . $CFG->wwwroot . '/mod/questionnaire/preview.php?id=' .
                                         $cm->id . '" title = "' . $strpreview . '">' .
                                         $copyquestionnaire->name . ' [' . $copycourse->fullname . ']</a>';
                                 } else {
                                     // If current user does not have "view" capability in copy course,
                                     // only display the copied public questionnaire's name and course name.
-                                    $publiccopy .= '<br />' . get_string('publiccopy', 'questionnaire') . '&nbsp;:&nbsp;'.
+                                    $publiccopy .= '<br />' . get_string('publiccopy', 'questionnaire') . '&nbsp;:&nbsp;' .
                                         $copyquestionnaire->name . ' [' . $copycourse->fullname . ']';
                                 }
                             }
