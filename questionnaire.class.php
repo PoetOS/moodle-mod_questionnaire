@@ -3927,7 +3927,7 @@ class questionnaire {
             if ($pos) {
                 $thisoutput = substr($thisoutput, 0, $pos);
             }
-            $out = 'Q ' . sprintf("%02d", $numquestion) . $sep . $thisoutput;
+            $out = 'Q' . sprintf("%02d", $numquestion) . $sep . $thisoutput;
             $output[0][$i] = $out;
         }
         return $output;
