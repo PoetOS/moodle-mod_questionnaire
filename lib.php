@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_questionnaire\questionnaire;
-
 /**
  * Library of functions and constants for module questionnaire.
  * @package mod_questionnaire
@@ -23,6 +21,8 @@ use mod_questionnaire\questionnaire;
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use mod_questionnaire\questionnaire;
 
 /** This may no longer be needed. */
 define('QUESTIONNAIRE_RESETFORM_RESET', 'questionnaire_reset_data_');
@@ -91,7 +91,7 @@ function questionnaire_add_instance($questionnaire) {
     // will create a new instance and return the id number
     // of the new instance.
     global $DB, $CFG;
-    require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $copyfiles = false;
 

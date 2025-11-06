@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_questionnaire\questionnaire;
-
 /**
  * This page displays a non-completable instance of questionnaire.
  *
@@ -24,6 +22,8 @@ use mod_questionnaire\questionnaire;
  * @copyright  2016 onward Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward
  */
+
+use mod_questionnaire\questionnaire;
 
 require_once("../../config.php");
 
