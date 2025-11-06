@@ -35,7 +35,6 @@ require_once($CFG->libdir . '/formslib.php');
  * @property array _customdata
  */
 class edit_question_form extends \moodleform {
-
     /**
      * Form definition.
      */
@@ -75,7 +74,7 @@ class edit_question_form extends \moodleform {
                 $errors["length"] = get_string('notenoughscaleitems', 'questionnaire');
             }
             // If this is a rate question with no duplicates option.
-            if ($data['precise'] == 2 ) {
+            if ($data['precise'] == 2) {
                 $allchoices = $data['allchoices'];
                 $allchoices = explode("\n", $allchoices);
                 $nbvalues = 0;
@@ -92,8 +91,12 @@ class edit_question_form extends \moodleform {
 
         // If this is a slider question.
         if ($data['type_id'] == QUESSLIDER) {
-            if (isset($data['minrange']) && isset($data['maxrange']) && isset($data['startingvalue']) &&
-                    isset($data['stepvalue'])) {
+            if (
+                isset($data['minrange']) &&
+                isset($data['maxrange']) &&
+                isset($data['startingvalue']) &&
+                isset($data['stepvalue'])
+            ) {
                 if ($data['minrange'] >= $data['maxrange']) {
                     $errors['maxrange'] = get_string('invalidrange', 'questionnaire');
                 }
@@ -134,7 +137,7 @@ class edit_question_form extends \moodleform {
         } else if ($name == '_customdata') {
             return $this->_customdata;
         } else {
-            throw new \coding_exception($name.' is not a publicly accessible property of '.get_class($this));
+            throw new \coding_exception($name . ' is not a publicly accessible property of ' . get_class($this));
         }
     }
 }

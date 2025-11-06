@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @copyright 2019, onwards Poet
  */
 class choice {
-
     // Class properties.
 
     /** The table name. */

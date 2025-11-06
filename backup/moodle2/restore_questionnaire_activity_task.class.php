@@ -27,7 +27,6 @@ require_once($CFG->dirroot . '/mod/questionnaire/backup/moodle2/restore_question
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_questionnaire_activity_task extends restore_activity_task {
-
     /**
      * Define (add) particular settings this activity can have
      */
@@ -48,14 +47,17 @@ class restore_questionnaire_activity_task extends restore_activity_task {
      * processed by the link decoder
      */
     public static function define_decode_contents() {
-        $contents = array();
+        $contents = [];
 
-        $contents[] = new restore_decode_content('questionnaire', array('intro'), 'questionnaire');
-        $contents[] = new restore_decode_content('questionnaire_survey',
-                        array('info', 'thank_head', 'thank_body', 'thanks_page', 'feedbacknotes'), 'questionnaire_survey');
-        $contents[] = new restore_decode_content('questionnaire_question', array('content'), 'questionnaire_question');
-        $contents[] = new restore_decode_content('questionnaire_fb_sections', array('sectionheading'), 'questionnaire_fb_sections');
-        $contents[] = new restore_decode_content('questionnaire_feedback', array('feedbacktext'), 'questionnaire_feedback');
+        $contents[] = new restore_decode_content('questionnaire', ['intro'], 'questionnaire');
+        $contents[] = new restore_decode_content(
+            'questionnaire_survey',
+            ['info', 'thank_head', 'thank_body', 'thanks_page', 'feedbacknotes'],
+            'questionnaire_survey'
+        );
+        $contents[] = new restore_decode_content('questionnaire_question', ['content'], 'questionnaire_question');
+        $contents[] = new restore_decode_content('questionnaire_fb_sections', ['sectionheading'], 'questionnaire_fb_sections');
+        $contents[] = new restore_decode_content('questionnaire_feedback', ['feedbacktext'], 'questionnaire_feedback');
 
         return $contents;
     }
@@ -65,13 +67,12 @@ class restore_questionnaire_activity_task extends restore_activity_task {
      * to the activity to be executed by the link decoder
      */
     public static function define_decode_rules() {
-        $rules = array();
+        $rules = [];
 
         $rules[] = new restore_decode_rule('QUESTIONNAIREVIEWBYID', '/mod/questionnaire/view.php?id=$1', 'course_module');
         $rules[] = new restore_decode_rule('QUESTIONNAIREINDEX', '/mod/questionnaire/index.php?id=$1', 'course');
 
         return $rules;
-
     }
 
     /**
@@ -81,7 +82,7 @@ class restore_questionnaire_activity_task extends restore_activity_task {
      * of restore_log_rule objects
      */
     public static function define_restore_log_rules() {
-        $rules = array();
+        $rules = [];
 
         $rules[] = new restore_log_rule('questionnaire', 'add', 'view.php?id={course_module}', '{questionnaire}');
         $rules[] = new restore_log_rule('questionnaire', 'update', 'view.php?id={course_module}', '{questionnaire}');
@@ -104,11 +105,18 @@ class restore_questionnaire_activity_task extends restore_activity_task {
      * activity level. All them are rules not linked to any module instance (cmid = 0)
      */
     public static function define_restore_log_rules_for_course() {
-        $rules = array();
+        $rules = [];
 
         // Fix old wrong uses (missing extension).
-        $rules[] = new restore_log_rule('questionnaire', 'view all', 'index?id={course}', null,
-                                        null, null, 'index.php?id={course}');
+        $rules[] = new restore_log_rule(
+            'questionnaire',
+            'view all',
+            'index?id={course}',
+            null,
+            null,
+            null,
+            'index.php?id={course}'
+        );
         $rules[] = new restore_log_rule('questionnaire', 'view all', 'index.php?id={course}', null);
 
         return $rules;

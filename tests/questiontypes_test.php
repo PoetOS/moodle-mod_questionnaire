@@ -30,15 +30,14 @@ use mod_questionnaire\question\question;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
  * Unit tests for questionnaire_questiontypes_testcase.
  * @group mod_questionnaire
  */
-class questiontypes_test extends \advanced_testcase {
-
+final class questiontypes_test extends \advanced_testcase {
     /**
      * Create a check boxes test question.
      *
@@ -46,9 +45,12 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_checkbox() {
-        $this->create_test_question_with_choices(QUESCHECK,
-            '\\mod_questionnaire\\question\\check', array('content' => 'Check one'));
+    public function test_create_question_checkbox(): void {
+        $this->create_test_question_with_choices(
+            QUESCHECK,
+            '\\mod_questionnaire\\question\\check',
+            ['content' => 'Check one']
+        );
     }
 
     /**
@@ -58,8 +60,8 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_date() {
-        $this->create_test_question(QUESDATE, '\\mod_questionnaire\\question\\date', array('content' => 'Enter a date'));
+    public function test_create_question_date(): void {
+        $this->create_test_question(QUESDATE, '\\mod_questionnaire\\question\\date', ['content' => 'Enter a date']);
     }
 
     /**
@@ -69,8 +71,8 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_dropdown() {
-        $this->create_test_question_with_choices(QUESDROP, '\\mod_questionnaire\\question\\drop', array('content' => 'Select one'));
+    public function test_create_question_dropdown(): void {
+        $this->create_test_question_with_choices(QUESDROP, '\\mod_questionnaire\\question\\drop', ['content' => 'Select one']);
     }
 
     /**
@@ -80,11 +82,12 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_essay() {
-        $questiondata = array(
+    public function test_create_question_essay(): void {
+        $questiondata = [
             'content' => 'Enter an essay',
             'length' => 0,
-            'precise' => 5);
+            'precise' => 5,
+        ];
         $this->create_test_question(QUESESSAY, '\\mod_questionnaire\\question\\essay', $questiondata);
     }
 
@@ -95,9 +98,12 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_sectiontext() {
-        $this->create_test_question(QUESSECTIONTEXT, '\\mod_questionnaire\\question\\sectiontext',
-            array('name' => null, 'content' => 'This a section label.'));
+    public function test_create_question_sectiontext(): void {
+        $this->create_test_question(
+            QUESSECTIONTEXT,
+            '\\mod_questionnaire\\question\\sectiontext',
+            ['name' => null, 'content' => 'This a section label.']
+        );
     }
 
     /**
@@ -107,11 +113,12 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_numeric() {
-        $questiondata = array(
+    public function test_create_question_numeric(): void {
+        $questiondata = [
             'content' => 'Enter a number',
             'length' => 10,
-            'precise' => 0);
+            'precise' => 0,
+        ];
         $this->create_test_question(QUESNUMERIC, '\\mod_questionnaire\\question\\numerical', $questiondata);
     }
 
@@ -122,9 +129,8 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_radiobuttons() {
-        $this->create_test_question_with_choices(QUESRADIO,
-            '\\mod_questionnaire\\question\\radio', array('content' => 'Choose one'));
+    public function test_create_question_radiobuttons(): void {
+        $this->create_test_question_with_choices(QUESRADIO, '\\mod_questionnaire\\question\\radio', ['content' => 'Choose one']);
     }
 
     /**
@@ -134,8 +140,8 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_ratescale() {
-        $this->create_test_question_with_choices(QUESRATE, '\\mod_questionnaire\\question\\rate', array('content' => 'Rate these'));
+    public function test_create_question_ratescale(): void {
+        $this->create_test_question_with_choices(QUESRATE, '\\mod_questionnaire\\question\\rate', ['content' => 'Rate these']);
     }
 
     /**
@@ -145,11 +151,12 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_textbox() {
-        $questiondata = array(
+    public function test_create_question_textbox(): void {
+        $questiondata = [
             'content' => 'Enter some text',
             'length' => 20,
-            'precise' => 25);
+            'precise' => 25,
+        ];
         $this->create_test_question(QUESTEXT, '\\mod_questionnaire\\question\\text', $questiondata);
     }
 
@@ -160,9 +167,8 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_slider() {
-        $questiondata = array(
-                'content' => 'Enter a number');
+    public function test_create_question_slider(): void {
+        $questiondata = ['content' => 'Enter a number'];
         $this->create_test_question(QUESSLIDER, '\\mod_questionnaire\\question\\slider', $questiondata);
     }
 
@@ -173,8 +179,8 @@ class questiontypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
-    public function test_create_question_yesno() {
-        $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', array('content' => 'Enter yes or no'));
+    public function test_create_question_yesno(): void {
+        $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', ['content' => 'Enter yes or no']);
     }
 
 
@@ -187,14 +193,14 @@ class questiontypes_test extends \advanced_testcase {
      * @param array $questiondata
      * @param null|array $choicedata
      */
-    private function create_test_question($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
+    private function create_test_question($qtype, $questionclass, $questiondata = [], $choicedata = null) {
         global $DB;
 
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_instance(array('course' => $course->id));
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata['type_id'] = $qtype;
@@ -215,7 +221,7 @@ class questiontypes_test extends \advanced_testcase {
             $this->assertEquals(count($choicedata), count($question->choices));
             $choicedatum = reset($choicedata);
             foreach ($question->choices as $cid => $choice) {
-                $this->assertTrue($DB->record_exists('questionnaire_quest_choice', array('id' => $cid)));
+                $this->assertTrue($DB->record_exists('questionnaire_quest_choice', ['id' => $cid]));
                 $this->assertEquals($choice->content, $choicedatum->content);
                 $this->assertEquals($choice->value, $choicedatum->value);
                 $choicedatum = next($choicedata);
@@ -224,7 +230,7 @@ class questiontypes_test extends \advanced_testcase {
 
         // Questionnaire object should now have question record(s).
         $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, true);
-        $this->assertTrue($DB->record_exists('questionnaire_question', array('id' => $question->id)));
+        $this->assertTrue($DB->record_exists('questionnaire_question', ['id' => $question->id]));
         $this->assertEquals('array', gettype($questionnaire->questions));
         $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
         $this->assertEquals(1, count($questionnaire->questions));
@@ -240,12 +246,13 @@ class questiontypes_test extends \advanced_testcase {
      * @param array $questiondata
      * @param null|array $choicedata
      */
-    private function create_test_question_with_choices($qtype, $questionclass, $questiondata = array(), $choicedata = null) {
+    private function create_test_question_with_choices($qtype, $questionclass, $questiondata = [], $choicedata = null) {
         if ($choicedata === null) {
-            $choicedata = array(
-                (object)array('content' => 'One', 'value' => 1),
-                (object)array('content' => 'Two', 'value' => 2),
-                (object)array('content' => 'Three', 'value' => 3));
+            $choicedata = [
+                (object) ['content' => 'One', 'value' => 1],
+                (object) ['content' => 'Two', 'value' => 2],
+                (object) ['content' => 'Three', 'value' => 3],
+            ];
         }
         $this->create_test_question($qtype, $questionclass, $questiondata, $choicedata);
     }

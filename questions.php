@@ -23,8 +23,8 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
-require_once($CFG->dirroot.'/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
@@ -38,18 +38,18 @@ if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
     throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
-if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 
-if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
     throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
 
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/questions.php');
+$url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/questions.php');
 $url->param('id', $id);
 if ($qid) {
     $url->param('qid', $qid);
@@ -93,15 +93,14 @@ if ($delq) {
 
     // Just in case the page is refreshed (F5) after a question has been deleted.
     if (isset($questions[$qid])) {
-        $select = 'surveyid = '.$sid.' AND deleted = \'n\' AND position > '.
-                        $questions[$qid]->position;
+        $select = 'surveyid = ' . $sid . ' AND deleted = \'n\' AND position > ' . $questions[$qid]->position;
     } else {
-        redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
+        redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
     }
 
     if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
         foreach ($records as $record) {
-            $DB->set_field('questionnaire_question', 'position', $record->position - 1, array('id' => $record->id));
+            $DB->set_field('questionnaire_question', 'position', $record->position - 1, ['id' => $record->id]);
         }
     }
     // Delete section breaks without asking for confirmation.
@@ -121,11 +120,11 @@ if ($delq) {
     // Log question deleted event.
     $context = context_module::instance($questionnaire->cm->id);
     $questiontype = \mod_questionnaire\question\question::qtypename($questionnaire->questions[$qid]->type_id);
-    $params = array(
-                    'context' => $context,
-                    'courseid' => $questionnaire->course->id,
-                    'other' => array('questiontype' => $questiontype)
-    );
+    $params = [
+        'context' => $context,
+        'courseid' => $questionnaire->course->id,
+        'other' => ['questiontype' => $questiontype],
+    ];
     $event = \mod_questionnaire\event\question_deleted::create($params);
     $event->trigger();
 
@@ -143,7 +142,7 @@ if ($action == 'main') {
     if (!empty($questionnaire->questions)) {
         $pos = 1;
         foreach ($questionnaire->questions as $qidx => $question) {
-            $sdata->{'pos_'.$qidx} = $pos;
+            $sdata->{'pos_' . $qidx} = $pos;
             $pos++;
         }
     }
@@ -151,7 +150,7 @@ if ($action == 'main') {
     if ($questionsform->is_cancelled()) {
         // Switch to main screen.
         $action = 'main';
-        redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
+        redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
         $reload = true;
     }
     if ($qformdata = $questionsform->get_data()) {
@@ -180,7 +179,7 @@ if ($action == 'main') {
 
             // Delete section breaks without asking for confirmation.
             if ($qtype == QUESPAGEBREAK) {
-                redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.'&amp;delq='.$qid);
+                redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id . '&amp;delq=' . $qid);
             }
 
             $action = "confirmdelquestion";
@@ -199,7 +198,6 @@ if ($action == 'main') {
             // value in the <input> tag.
             $qid = key($qformdata->editbutton);
             $reload = true;
-
         } else if (isset($qformdata->requiredbutton)) {
             // Need to use the key, since IE returns the image position as the value rather than the specified
             // value in the <input> tag.
@@ -207,13 +205,11 @@ if ($action == 'main') {
             $qid = key($qformdata->requiredbutton);
             if ($questionnaire->questions[$qid]->required()) {
                 $questionnaire->questions[$qid]->set_required(false);
-
             } else {
                 $questionnaire->questions[$qid]->set_required(true);
             }
 
             $reload = true;
-
         } else if (isset($qformdata->addqbutton)) {
             if ($qformdata->type_id == QUESPAGEBREAK) { // Adding section break is handled right away....
                 $questionrec = new stdClass();
@@ -230,15 +226,11 @@ if ($action == 'main') {
                 $qid = 0;
                 $reload = true;
             }
-
         } else if (isset($qformdata->movebutton)) {
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
-            redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id.
-                     '&moveq='.key($qformdata->movebutton));
+            redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id .
+                '&moveq=' . key($qformdata->movebutton));
             $reload = true;
-
-
-
         } else if (isset($qformdata->moveherebutton)) {
             // Need to use the key, since IE returns the image position as the value rather than the specified
             // value in the <input> tag.
@@ -252,17 +244,14 @@ if ($action == 'main') {
                 $SESSION->questionnaire->validateresults = questionnaire_check_page_breaks($questionnaire);
             }
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
-            redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
+            redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
             $reload = true;
-
         } else if (isset($qformdata->validate)) {
             // Validates page breaks for depend questions.
             $SESSION->questionnaire->validateresults = questionnaire_check_page_breaks($questionnaire);
             $reload = true;
         }
     }
-
-
 } else if ($action == 'question') {
     $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
     $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
@@ -271,7 +260,6 @@ if ($action == 'main') {
         // Switch to main screen.
         $action = 'main';
         $reload = true;
-
     } else if ($qformdata = $questionsform->get_data()) {
         // Saving question data.
         if (isset($qformdata->makecopy)) {
@@ -297,11 +285,11 @@ if ($action == 'main') {
     if (isset($qformdata)) {
         $context = context_module::instance($questionnaire->cm->id);
         $questiontype = \mod_questionnaire\question\question::qtypename($qformdata->type_id);
-        $params = array(
-                        'context' => $context,
-                        'courseid' => $questionnaire->course->id,
-                        'other' => array('questiontype' => $questiontype)
-        );
+        $params = [
+            'context' => $context,
+            'courseid' => $questionnaire->course->id,
+            'other' => ['questiontype' => $questiontype],
+        ];
         $event = \mod_questionnaire\event\question_created::create($params);
         $event->trigger();
     }
@@ -324,7 +312,7 @@ if ($reload) {
         if (!empty($questionnaire->questions)) {
             $pos = 1;
             foreach ($questionnaire->questions as $qidx => $question) {
-                $sdata->{'pos_'.$qidx} = $pos;
+                $sdata->{'pos_' . $qidx} = $pos;
                 $pos++;
             }
         }
@@ -354,7 +342,6 @@ echo $questionnaire->renderer->header();
 require('tabs.php');
 
 if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
-
     $qid = key($qformdata->removebutton);
     $question = $questionnaire->questions[$qid];
     $qtype = $question->type_id;
@@ -362,9 +349,9 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     // Count responses already saved for that question.
     $countresps = 0;
     if ($qtype != QUESSECTIONTEXT) {
-        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', array('typeid' => $qtype));
+        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', ['typeid' => $qtype]);
         if (!empty($responsetable)) {
-            $countresps = $DB->count_records('questionnaire_'.$responsetable, array('question_id' => $qid));
+            $countresps = $DB->count_records('questionnaire_' . $responsetable, ['question_id' => $qid]);
         }
     }
 
@@ -378,18 +365,18 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
 
     $qname = '';
     if ($question->name) {
-        $qname = ' ('.$question->name.')';
+        $qname = ' (' . $question->name . ')';
     }
 
     $num = get_string('position', 'questionnaire');
-    $pos = $question->position.$qname;
+    $pos = $question->position . $qname;
 
-    $msg = '<div class="warning centerpara"><p>'.get_string('confirmdelquestion', 'questionnaire', $pos).'</p>';
+    $msg = '<div class="warning centerpara"><p>' . get_string('confirmdelquestion', 'questionnaire', $pos) . '</p>';
     if ($countresps !== 0) {
-        $msg .= '<p>'.get_string('confirmdelquestionresps', 'questionnaire', $countresps).'</p>';
+        $msg .= '<p>' . get_string('confirmdelquestionresps', 'questionnaire', $countresps) . '</p>';
     }
     $msg .= '</div>';
-    $msg .= '<div class = "qn-container">'.$num.' '.$pos.'<div class="qn-question">'.$question->content.'</div></div>';
+    $msg .= '<div class = "qn-container">' . $num . ' ' . $pos . '<div class="qn-question">' . $question->content . '</div></div>';
     $args = "id={$questionnaire->cm->id}";
     $urlno = new moodle_url("/mod/questionnaire/questions.php?{$args}");
     $args .= "&delq={$qid}";
@@ -409,7 +396,6 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
         }
     }
     $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
-
 } else {
     $questionnaire->page->add_to_page('formarea', $questionsform->render());
 }

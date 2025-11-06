@@ -30,7 +30,7 @@ use mod_questionnaire\question\question;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/generator_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/questiontypes_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
@@ -39,7 +39,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php')
  * Unit tests for questionnaire_responsetypes_testcase.
  * @group mod_questionnaire
  */
-class responsetypes_test extends \advanced_testcase {
+final class responsetypes_test extends \advanced_testcase {
     /**
      * Test responses in a yes/no question.
      *
@@ -48,7 +48,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\yesno
      */
-    public function test_create_response_boolean() {
+    public function test_create_response_boolean(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -82,7 +82,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\essay
      */
-    public function test_create_response_text() {
+    public function test_create_response_text(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -117,7 +117,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\slider
      */
-    public function test_create_response_slider() {
+    public function test_create_response_slider(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -152,7 +152,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\date
      */
-    public function test_create_response_date() {
+    public function test_create_response_date(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -188,7 +188,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\radio
      */
-    public function test_create_response_single() {
+    public function test_create_response_single(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -203,7 +203,7 @@ class responsetypes_test extends \advanced_testcase {
             (object)['content' => 'One', 'value' => 1],
             (object)['content' => 'Two', 'value' => 2],
             (object)['content' => 'Three', 'value' => 3],
-            (object)['content' => '!other=Something else', 'value' => 4]
+            (object)['content' => '!other=Something else', 'value' => 4],
         ];
         $questionnaire = $generator->create_test_questionnaire($course, QUESRADIO, ['content' => 'Select one'], $choicedata);
 
@@ -233,8 +233,8 @@ class responsetypes_test extends \advanced_testcase {
                 $val = $cid;
             }
         }
-        $vals = ['q'.$question->id => $val,
-                 'q'.$question->id. \mod_questionnaire\question\choice::id_other_choice_name($val) => 'Forty-four'];
+        $vals = ['q' . $question->id => $val,
+                 'q' . $question->id . \mod_questionnaire\question\choice::id_other_choice_name($val) => 'Forty-four'];
         $userid = 2;
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
@@ -249,8 +249,10 @@ class responsetypes_test extends \advanced_testcase {
         $this->assertEquals($val, $singresponse->choice_id);
 
         // Retrieve the 'other' response data.
-        $otherresponses = $DB->get_records('questionnaire_response_other',
-            ['response_id' => $response->id, 'question_id' => $question->id]);
+        $otherresponses = $DB->get_records(
+            'questionnaire_response_other',
+            ['response_id' => $response->id, 'question_id' => $question->id]
+        );
         $this->assertEquals(1, count($otherresponses));
         $otherresponse = reset($otherresponses);
         $this->assertEquals($val, $otherresponse->choice_id);
@@ -265,7 +267,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\rate
      */
-    public function test_create_response_multiple() {
+    public function test_create_response_multiple(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -280,7 +282,7 @@ class responsetypes_test extends \advanced_testcase {
             (object)['content' => 'One', 'value' => 1],
             (object)['content' => 'Two', 'value' => 2],
             (object)['content' => 'Three', 'value' => 3],
-            (object)['content' => '!other=Another number', 'value' => 4]
+            (object)['content' => '!other=Another number', 'value' => 4],
         ];
         $questionnaire = $generator->create_test_questionnaire($course, QUESCHECK, ['content' => 'Select any'], $choicedata);
 
@@ -295,7 +297,7 @@ class responsetypes_test extends \advanced_testcase {
                 $ocid = $cid;
             }
         }
-        $vals = ['q'.$question->id => $val];
+        $vals = ['q' . $question->id => $val];
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
@@ -312,8 +314,10 @@ class responsetypes_test extends \advanced_testcase {
         $this->assertEquals(next($val), $multresponse->choice_id);
 
         // Retrieve the specific other response.
-        $otherresponses = $DB->get_records('questionnaire_response_other',
-            ['response_id' => $response->id, 'question_id' => $question->id]);
+        $otherresponses = $DB->get_records(
+            'questionnaire_response_other',
+            ['response_id' => $response->id, 'question_id' => $question->id]
+        );
         $this->assertEquals(1, count($otherresponses));
         $otherresponse = reset($otherresponses);
         $this->assertEquals($ocid, $otherresponse->choice_id);
@@ -328,7 +332,7 @@ class responsetypes_test extends \advanced_testcase {
      *
      * @covers \mod_questionnaire\question\rate
      */
-    public function test_create_response_rank() {
+    public function test_create_response_rank(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -342,7 +346,7 @@ class responsetypes_test extends \advanced_testcase {
         $choicedata = [
             (object)['content' => 'One', 'value' => 1],
             (object)['content' => 'Two', 'value' => 2],
-            (object)['content' => 'Three', 'value' => 3]
+            (object)['content' => 'Three', 'value' => 3],
         ];
         $questiondata = ['content' => 'Rank these', 'length' => 5, 'precise' => 0];
         $questionnaire = $generator->create_test_questionnaire($course, QUESRATE, $questiondata, $choicedata);
@@ -353,7 +357,7 @@ class responsetypes_test extends \advanced_testcase {
         $i = 1;
         foreach ($question->choices as $cid => $choice) {
             $vals[$cid] = $i;
-            $vals['q'.$question->id.'_'.$cid] = $i++;
+            $vals['q' . $question->id . '_' . $cid] = $i++;
         }
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
@@ -393,7 +397,7 @@ class responsetypes_test extends \advanced_testcase {
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $generator->create_question($questionnaire, $questiondata, $choicedata);
 
-        $questionnaire = new \questionnaire( $course, $cm, $questionnaire->id, null, true);
+        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, true);
 
         return $questionnaire;
     }
@@ -407,12 +411,19 @@ class responsetypes_test extends \advanced_testcase {
      * @param int $attemptcount
      * @param int $responsecount
      */
-    private function response_tests($questionnaireid, $responseid, $userid,
-                                    $attemptcount = 1, $responsecount = 1) {
+    private function response_tests(
+        $questionnaireid,
+        $responseid,
+        $userid,
+        $attemptcount = 1,
+        $responsecount = 1
+    ): void {
         global $DB;
 
-        $attempts = $DB->get_records('questionnaire_response',
-                    ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'id' => $responseid, 'complete' => 'y']);
+        $attempts = $DB->get_records(
+            'questionnaire_response',
+            ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'id' => $responseid, 'complete' => 'y']
+        );
         $this->assertEquals($attemptcount, count($attempts));
         $responses = $DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaireid]);
         $this->assertEquals($responsecount, count($responses));
@@ -420,7 +431,12 @@ class responsetypes_test extends \advanced_testcase {
         $this->assertEquals($responseid, $responses[$responseid]->id);
     }
 
-    public function test_create_old_response_boolean() {
+    /**
+     * Tests that an old boolean response is deleted correctly.
+     *
+     * @covers \mod_questionnaire\responsetype\boolean
+     */
+    public function test_create_old_response_boolean(): void {
         global $DB;
 
         $this->resetAfterTest();

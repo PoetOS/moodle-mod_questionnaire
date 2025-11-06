@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @package mod_questionnaire
  */
 class slider extends question {
-
     /**
      * Return the responseclass used.
      * @return string

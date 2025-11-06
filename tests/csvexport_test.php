@@ -29,14 +29,14 @@ namespace mod_questionnaire;
  * Unit tests for questionnaire_csvexport_test.
  * @group mod_questionnaire
  */
-class csvexport_test extends \advanced_testcase {
-
+final class csvexport_test extends \advanced_testcase {
     public function setUp(): void {
         global $CFG;
 
-        require_once($CFG->dirroot.'/lib/testing/generator/data_generator.php');
-        require_once($CFG->dirroot.'/lib/testing/generator/component_generator_base.php');
-        require_once($CFG->dirroot.'/lib/testing/generator/module_generator.php');
+        require_once($CFG->dirroot . '/lib/testing/generator/data_generator.php');
+        require_once($CFG->dirroot . '/lib/testing/generator/component_generator_base.php');
+        require_once($CFG->dirroot . '/lib/testing/generator/module_generator.php');
+        parent::setUp();
     }
 
     /**
@@ -63,7 +63,7 @@ class csvexport_test extends \advanced_testcase {
      *
      * @covers \questionnaire::generate_csv
      */
-    public function test_csvexport() {
+    public function test_csvexport(): void {
         $this->resetAfterTest();
         $dg = $this->getDataGenerator();
         $qdg = $dg->get_plugin_generator('mod_questionnaire');
@@ -72,7 +72,7 @@ class csvexport_test extends \advanced_testcase {
         // The following line simply.
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
-            list ($course, $cm) = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
+            [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
             $questionnaireinst = new \questionnaire($course, $cm, 0, $questionnaire);
 
             // Test for only complete responses.
@@ -96,7 +96,7 @@ class csvexport_test extends \advanced_testcase {
      *
      * @covers \questionnaire::generate_csv
      */
-    public function test_csvexport_identity_fields() {
+    public function test_csvexport_identity_fields(): void {
         global $DB;
         $this->resetAfterTest();
 
@@ -116,7 +116,7 @@ class csvexport_test extends \advanced_testcase {
 
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $item) {
-            list($course, $cm) = get_course_and_cm_from_instance($item->id, 'questionnaire', $item->course);
+            [$course, $cm] = get_course_and_cm_from_instance($item->id, 'questionnaire', $item->course);
 
             $this->do_test_csvexport_identity_fields($course, $cm, $user, $roleid, $profilefields, $item, false);
             $this->do_test_csvexport_identity_fields($course, $cm, $user, $roleid, $profilefields, $item, true);
@@ -199,7 +199,9 @@ class csvexport_test extends \advanced_testcase {
      * @return string[]
      */
     private function expected_complete_output() {
-        return ["Institution	Department	Course	Group	User idnumber	Full name	Username	Q01_Text Box 1000	Q02_Essay Box 1002	" .
+        return [
+            "Institution	Department	Course	Group	User idnumber	Full name	Username	Q01_Text Box 1000	" .
+            "Q02_Essay Box 1002	" .
             "Q03_Numeric 1004	Q04_Date 1006	Q05_Radio Buttons 1008	Q06_Drop Down 1010	Q07_Check Boxes 1012->four	" .
             "Q07_Check Boxes 1012->five	Q07_Check Boxes 1012->six	Q07_Check Boxes 1012->seven	Q07_Check Boxes 1012->eight	" .
             "Q07_Check Boxes 1012->nine	Q07_Check Boxes 1012->ten	Q07_Check Boxes 1012->eleven	" .
@@ -222,7 +224,8 @@ class csvexport_test extends \advanced_testcase {
      * @return string[]
      */
     private function expected_incomplete_output() {
-        return ["Institution	Department	Course	Group	User idnumber	Full name	Username	Complete	Q01_Text Box 1000	" .
+        return [
+            "Institution	Department	Course	Group	User idnumber	Full name	Username	Complete	Q01_Text Box 1000	" .
             "Q02_Essay Box 1002	" .
             "Q03_Numeric 1004	Q04_Date 1006	Q05_Radio Buttons 1008	Q06_Drop Down 1010	Q07_Check Boxes 1012->four	" .
             "Q07_Check Boxes 1012->five	Q07_Check Boxes 1012->six	Q07_Check Boxes 1012->seven	Q07_Check Boxes 1012->eight	" .

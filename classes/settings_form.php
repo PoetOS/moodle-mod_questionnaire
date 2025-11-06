@@ -28,7 +28,6 @@ require_once($CFG->libdir . '/formslib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class settings_form extends \moodleform {
-
     /**
      * Defines the form.
      */
@@ -55,18 +54,18 @@ class settings_form extends \moodleform {
         }
         $mform->setType('realm', PARAM_RAW);
 
-        $mform->addElement('text', 'title', get_string('title', 'questionnaire'), array('size' => '60'));
+        $mform->addElement('text', 'title', get_string('title', 'questionnaire'), ['size' => '60']);
         $mform->setDefault('title', $questionnaire->survey->title);
         $mform->setType('title', PARAM_TEXT);
         $mform->addRule('title', null, 'required', null, 'client');
         $mform->addHelpButton('title', 'title', 'questionnaire');
 
-        $mform->addElement('text', 'subtitle', get_string('subtitle', 'questionnaire'), array('size' => '60'));
+        $mform->addElement('text', 'subtitle', get_string('subtitle', 'questionnaire'), ['size' => '60']);
         $mform->setDefault('subtitle', $questionnaire->survey->subtitle);
         $mform->setType('subtitle', PARAM_TEXT);
         $mform->addHelpButton('subtitle', 'subtitle', 'questionnaire');
 
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true);
+        $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
         $mform->addElement('editor', 'info', get_string('additionalinfo', 'questionnaire'), null, $editoroptions);
         $mform->setDefault('info', $questionnaire->survey->info);
         $mform->setType('info', PARAM_RAW);
@@ -74,7 +73,7 @@ class settings_form extends \moodleform {
 
         $mform->addElement('header', 'submithdr', get_string('submitoptions', 'questionnaire'));
 
-        $mform->addElement('text', 'thanks_page', get_string('url', 'questionnaire'), array('size' => '60'));
+        $mform->addElement('text', 'thanks_page', get_string('url', 'questionnaire'), ['size' => '60']);
         $mform->setType('thanks_page', PARAM_TEXT);
         $mform->setDefault('thanks_page', $questionnaire->survey->thanks_page);
         $mform->addHelpButton('thanks_page', 'url', 'questionnaire');
@@ -82,11 +81,11 @@ class settings_form extends \moodleform {
         $mform->addElement('static', 'confmes', get_string('confalts', 'questionnaire'));
         $mform->addHelpButton('confmes', 'confpage', 'questionnaire');
 
-        $mform->addElement('text', 'thank_head', get_string('headingtext', 'questionnaire'), array('size' => '30'));
+        $mform->addElement('text', 'thank_head', get_string('headingtext', 'questionnaire'), ['size' => '30']);
         $mform->setType('thank_head', PARAM_TEXT);
         $mform->setDefault('thank_head', $questionnaire->survey->thank_head);
 
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true);
+        $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
         $mform->addElement('editor', 'thank_body', get_string('bodytext', 'questionnaire'), null, $editoroptions);
         $mform->setType('thank_body', PARAM_RAW);
         $mform->setDefault('thank_body', $questionnaire->survey->thank_body);
@@ -119,15 +118,14 @@ class settings_form extends \moodleform {
         $mform = $this->_form;
 
         // Elements in a row need a group.
-        $buttonarray = array();
+        $buttonarray = [];
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton2', $submit2label);
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton', $submitlabel);
         $buttonarray[] = &$mform->createElement('cancel');
 
-        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
         $mform->setType('buttonar', PARAM_RAW);
         $mform->closeHeaderBefore('buttonar');
-
     }
 
     /**

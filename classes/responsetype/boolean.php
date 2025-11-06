@@ -30,7 +30,6 @@ use stdClass;
  * @package mod_questionnaire
  */
 class boolean extends responsetype {
-
     /**
      * Provide the necessary response data table name. Should probably always be used with late static binding 'static::' form
      * rather than 'self::' form to allow for class extending.
@@ -50,7 +49,7 @@ class boolean extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id;
@@ -69,8 +68,8 @@ class boolean extends responsetype {
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
     public static function answers_from_appdata($responsedata, $question) {
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
-            $responsedata->{'q'.$question->id} = ($responsedata->{'q'.$question->id}[0] == 1) ? 'y' : 'n';
+        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
+            $responsedata->{'q' . $question->id} = ($responsedata->{'q' . $question->id}[0] == 1) ? 'y' : 'n';
         }
         return static::answers_from_webform($responsedata, $question);
     }
@@ -108,20 +107,20 @@ class boolean extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return array - Array of data records.
      */
-    public function get_results($rids=false, $anonymous=false) {
+    public function get_results($rids = false, $anonymous = false) {
         global $DB;
 
         $rsql = '';
-        $params = array($this->question->id);
+        $params = [$this->question->id];
         if (!empty($rids)) {
-            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
         $params[] = '';
 
         $sql = 'SELECT choice_id, COUNT(response_id) AS num ' .
-               'FROM {'.static::response_table().'} ' .
+               'FROM {' . static::response_table() . '} ' .
                'WHERE question_id= ? ' . $rsql . ' AND choice_id != ? ' .
                'GROUP BY choice_id';
         return $DB->get_records_sql($sql, $params);
@@ -152,7 +151,7 @@ class boolean extends responsetype {
         $rsql = '';
         $params = [$this->question->id];
         if (!empty($rids)) {
-            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
@@ -160,7 +159,7 @@ class boolean extends responsetype {
 
         $feedbackscores = false;
         $sql = 'SELECT response_id, choice_id ' .
-            'FROM {'.$this->response_table().'} ' .
+            'FROM {' . $this->response_table() . '} ' .
             'WHERE question_id= ? ' . $rsql . ' ' .
             'ORDER BY response_id ASC';
         if ($responses = $DB->get_recordset_sql($sql, $params)) {
@@ -195,7 +194,7 @@ class boolean extends responsetype {
      * @param bool $anonymous
      * @return string
      */
-    public function display_results($rids=false, $sort='', $anonymous=false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false) {
         $stryes = get_string('yes');
         $strno = get_string('no');
 
@@ -237,14 +236,14 @@ class boolean extends responsetype {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id, q.content, a.choice_id '.
-            'FROM {'.static::response_table().'} a, {questionnaire_question} q '.
+        $sql = 'SELECT q.id, q.content, a.choice_id ' .
+            'FROM {' . static::response_table() . '} a, {questionnaire_question} q ' .
             'WHERE a.response_id= ? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {
             $choice = $row->choice_id;
-            unset ($row->id);
-            unset ($row->choice_id);
+            unset($row->id);
+            unset($row->choice_id);
             $row = (array)$row;
             $newrow = [];
             foreach ($row as $key => $val) {
@@ -273,7 +272,7 @@ class boolean extends responsetype {
 
         $answers = [];
         $sql = 'SELECT id, response_id as responseid, question_id as questionid, choice_id as choiceid, choice_id as value ' .
-            'FROM {' . static::response_table() .'} ' .
+            'FROM {' . static::response_table() . '} ' .
             'WHERE response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
@@ -310,12 +309,11 @@ class boolean extends responsetype {
         $extraselect = '0 AS choice_id, ' . $DB->sql_order_by_text('qrb.choice_id', 1000) . ' AS response, 0 AS rankvalue';
 
         return "
-            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
+            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'" . $this->question->helpname() . "'", $alias . '.id']) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".static::response_table()."} $alias ON $alias.response_id = qr.id
+              JOIN {" . static::response_table() . "} $alias ON $alias.response_id = qr.id
         ";
     }
 }
-

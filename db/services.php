@@ -30,8 +30,8 @@ $services = [
     'mod_questionnaire_ws' => [
         'functions' => ['mod_questionnaire_submit_questionnaire_response'],
         'requiredcapability' => '',
-        'enabled' => 1
-    ]
+        'enabled' => 1,
+    ],
 ];
 
 $functions = [
@@ -42,6 +42,6 @@ $functions = [
         'description' => 'Questionnaire submit',
         'type' => 'write',
         'capabilities' => 'mod/questionnaire:submit',
-        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE]
-    ]
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
 ];

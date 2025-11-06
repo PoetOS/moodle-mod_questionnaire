@@ -26,7 +26,7 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
@@ -48,7 +48,7 @@ if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
-$PAGE->set_url(new moodle_url($CFG->wwwroot.'/mod/questionnaire/feedback.php', ['id' => $id]));
+$PAGE->set_url(new moodle_url($CFG->wwwroot . '/mod/questionnaire/feedback.php', ['id' => $id]));
 $PAGE->set_context($context);
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
@@ -71,8 +71,15 @@ $sdata->sid = $questionnaire->survey->id;
 $sdata->id = $cm->id;
 
 $draftideditor = file_get_submitted_draft_itemid('feedbacknotes');
-$currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'feedbacknotes',
-    $sdata->sid, ['subdirs' => true], $questionnaire->survey->feedbacknotes);
+$currentinfo = file_prepare_draft_area(
+    $draftideditor,
+    $context->id,
+    'mod_questionnaire',
+    'feedbacknotes',
+    $sdata->sid,
+    ['subdirs' => true],
+    $questionnaire->survey->feedbacknotes
+);
 $sdata->feedbacknotes = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
 $feedbackform->set_data($sdata);
@@ -92,18 +99,25 @@ foreach ($questionnaire->questions as $question) {
 
 if ($settings = $feedbackform->get_data()) {
     if (isset($settings->feedbacksettingsbutton1) || isset($settings->feedbacksettingsbutton2) || isset($settings->buttongroup)) {
-        if (isset ($settings->feedbackscores)) {
+        if (isset($settings->feedbackscores)) {
             $sdata->feedbackscores = $settings->feedbackscores;
         } else {
             $sdata->feedbackscores = 0;
         }
 
-        if (isset ($settings->feedbacknotes)) {
+        if (isset($settings->feedbacknotes)) {
             $sdata->fbnotesitemid = $settings->feedbacknotes['itemid'];
             $sdata->fbnotesformat = $settings->feedbacknotes['format'];
             $sdata->feedbacknotes = $settings->feedbacknotes['text'];
-            $sdata->feedbacknotes = file_save_draft_area_files($sdata->fbnotesitemid, $context->id, 'mod_questionnaire',
-                'feedbacknotes', $sdata->id, ['subdirs' => true], $sdata->feedbacknotes);
+            $sdata->feedbacknotes = file_save_draft_area_files(
+                $sdata->fbnotesitemid,
+                $context->id,
+                'mod_questionnaire',
+                'feedbacknotes',
+                $sdata->id,
+                ['subdirs' => true],
+                $sdata->feedbacknotes
+            );
         } else {
             $sdata->feedbacknotes = '';
         }

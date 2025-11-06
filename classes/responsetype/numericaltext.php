@@ -34,7 +34,7 @@ class numericaltext extends text {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && is_numeric($responsedata->{'q'.$question->id})) {
+        if (isset($responsedata->{'q' . $question->id}) && is_numeric($responsedata->{'q' . $question->id})) {
             $val = $responsedata->{'q' . $question->id};
             // Allow commas as well as points in decimal numbers.
             $val = str_replace(",", ".", $responsedata->{'q' . $question->id});
@@ -56,7 +56,7 @@ class numericaltext extends text {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    public function display_results($rids=false, $sort='', $anonymous=false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {

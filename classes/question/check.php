@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @package mod_questionnaire
  */
 class check extends question {
-
     /**
      * Return the responseclass used.
      * @return string
@@ -113,10 +112,10 @@ class check extends question {
                         if ($min && ($nbboxes < $min)) {
                             $msg .= get_string('boxesnbmin', 'questionnaire', $min);
                             if ($nbboxes > $max) {
-                                $msg .= ' & ' .get_string('boxesnbmax', 'questionnaire', $max);
+                                $msg .= ' & ' . get_string('boxesnbmax', 'questionnaire', $max);
                             }
                         } else {
-                            if ($nbboxes > $max ) {
+                            if ($nbboxes > $max) {
                                 $msg .= get_string('boxesnbmax', 'questionnaire', $max);
                             }
                         }
@@ -132,21 +131,21 @@ class check extends question {
             $checkbox = new \stdClass();
             $contents = questionnaire_choice_values($choice->content);
             $checked = false;
-            if (!empty($response->answers[$this->id]) ) {
+            if (!empty($response->answers[$this->id])) {
                 $checked = isset($response->answers[$this->id][$id]);
             }
-            $checkbox->name = 'q'.$this->id.'['.$id.']';
+            $checkbox->name = 'q' . $this->id . '[' . $id . ']';
             $checkbox->value = $id;
-            $checkbox->id = 'checkbox_'.$id;
-            $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
+            $checkbox->id = 'checkbox_' . $id;
+            $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
             if ($checked) {
                 $checkbox->checked = $checked;
             }
             if ($choice->is_other_choice()) {
-                $checkbox->oname = 'q'.$this->id.'['.$choice->other_choice_name().']';
+                $checkbox->oname = 'q' . $this->id . '[' . $choice->other_choice_name() . ']';
                 $checkbox->ovalue = (isset($response->answers[$this->id][$id]) && !empty($response->answers[$this->id][$id]) ?
                     format_string(stripslashes($response->answers[$this->id][$id]->value)) : '');
-                $checkbox->label = format_text($choice->other_choice_display().'', FORMAT_HTML, ['noclean' => true]);
+                $checkbox->label = format_text($choice->other_choice_display() . '', FORMAT_HTML, ['noclean' => true]);
             }
             if (!empty($this->qlegend)) {
                 $checkbox->alabel = strip_tags("{$this->qlegend} {$checkbox->label}");
@@ -178,13 +177,18 @@ class check extends question {
             $chobj = new \stdClass();
             if (!$choice->is_other_choice()) {
                 $contents = questionnaire_choice_values($choice->content);
-                $choice->content = $contents->text.$contents->image;
+                $choice->content = $contents->text . $contents->image;
                 if (isset($response->answers[$this->id][$id])) {
                     $chobj->selected = 1;
                 }
-                $chobj->name = $id.$uniquetag++;
-                $chobj->content = (($choice->content === '') ? $id : format_text($choice->content, FORMAT_HTML,
-                    ['noclean' => true]));
+                $chobj->name = $id . $uniquetag++;
+                $chobj->content = (($choice->content === '') ? $id :
+                    format_text(
+                        $choice->content,
+                        FORMAT_HTML,
+                        ['noclean' => true]
+                    )
+                );
             } else {
                 $othertext = $choice->other_choice_display();
                 if (isset($response->answers[$this->id][$id])) {
@@ -192,7 +196,7 @@ class check extends question {
                     $chobj->selected = 1;
                     $chobj->othercontent = (!empty($oresp) ? htmlspecialchars($oresp) : '&nbsp;');
                 }
-                $chobj->name = $id.$uniquetag++;
+                $chobj->name = $id . $uniquetag++;
                 $chobj->content = (($othertext === '') ? $id : $othertext);
             }
             if (!empty($this->qlegend)) {
@@ -210,8 +214,10 @@ class check extends question {
      * @return boolean
      */
     public function response_complete($responsedata) {
-        if (isset($responsedata->{'q'.$this->id}) && $this->required() &&
-            is_array($responsedata->{'q'.$this->id})) {
+        if (
+            isset($responsedata->{'q' . $this->id}) && $this->required() &&
+            is_array($responsedata->{'q' . $this->id})
+        ) {
             foreach ($responsedata->{'q' . $this->id} as $key => $choice) {
                 // If only an 'other' choice is selected and empty, question is not completed.
                 if ((strpos($key, 'o') === 0) && empty($choice)) {
@@ -244,12 +250,12 @@ class check extends question {
                     }
                 }
             }
-        } else if (isset($responsedata->{'q'.$this->id})) {
-            foreach ($responsedata->{'q'.$this->id} as $key => $answer) {
+        } else if (isset($responsedata->{'q' . $this->id})) {
+            foreach ($responsedata->{'q' . $this->id} as $key => $answer) {
                 if (strpos($key, 'o') === 0) {
                     // ..."other" choice is checked but text box is empty.
                     $okey = substr($key, 1);
-                    if (isset($responsedata->{'q'.$this->id}[$okey]) && empty(trim($answer))) {
+                    if (isset($responsedata->{'q' . $this->id}[$okey]) && empty(trim($answer))) {
                         $valid = false;
                         break;
                     }

@@ -24,7 +24,7 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 $id = optional_param('id', 0, PARAM_INT);
 $sid = optional_param('sid', 0, PARAM_INT);
@@ -37,15 +37,15 @@ if ($id) {
         throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 
-    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+    if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
         throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
     }
 
-    if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
+    if (!$questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
         throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
 } else {
-    if (! $survey = $DB->get_record("questionnaire_survey", array("id" => $sid))) {
+    if (!$survey = $DB->get_record("questionnaire_survey", ["id" => $sid])) {
         throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
     }
     if (! $course = $DB->get_record("course", ["id" => $survey->courseid])) {
@@ -134,19 +134,33 @@ $questionnaire->page->add_to_page('heading', clean_text($pq));
 if ($questionnaire->capabilities->printblank) {
     // Open print friendly as popup window.
 
-    $linkname = '&nbsp;'.get_string('printblank', 'questionnaire');
+    $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
     $title = get_string('printblanktooltip', 'questionnaire');
-    $url = '/mod/questionnaire/print.php?qid='.$questionnaire->id.'&amp;rid=0&amp;'.'courseid='.
-            $questionnaire->course->id.'&amp;sec=1';
-    $options = array('menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                    'height' => 600, 'width' => 800, 'title' => $title);
+    $url = '/mod/questionnaire/print.php?qid=' . $questionnaire->id . '&amp;rid=0&amp;' . 'courseid=' .
+            $questionnaire->course->id . '&amp;sec=1';
+    $options = [
+        'menubar' => true,
+        'location' => false,
+        'scrollbars' => true,
+        'resizable' => true,
+        'height' => 600,
+        'width' => 800,
+        'title' => $title,
+    ];
     $name = 'popup';
     $link = new moodle_url($url);
     $action = new popup_action('click', $link, $name, $options);
     $class = "floatprinticon";
-    $questionnaire->page->add_to_page('printblank',
-        $questionnaire->renderer->action_link($link, $linkname, $action, array('class' => $class, 'title' => $title),
-            new pix_icon('t/print', $title)));
+    $questionnaire->page->add_to_page(
+        'printblank',
+        $questionnaire->renderer->action_link(
+            $link,
+            $linkname,
+            $action,
+            ['class' => $class, 'title' => $title],
+            new pix_icon('t/print', $title)
+        )
+    );
 }
 $questionnaire->survey_print_render($course->id, '', 'preview', $rid = 0, $popup);
 if ($popup) {
@@ -159,9 +173,9 @@ echo $questionnaire->renderer->footer($course);
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-$event = \mod_questionnaire\event\questionnaire_previewed::create(array(
-                'objectid' => $questionnaire->id,
-                'anonymous' => $anonymous,
-                'context' => $context
-));
+$event = \mod_questionnaire\event\questionnaire_previewed::create([
+    'objectid' => $questionnaire->id,
+    'anonymous' => $anonymous,
+    'context' => $context,
+]);
 $event->trigger();

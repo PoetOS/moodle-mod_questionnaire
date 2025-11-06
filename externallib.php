@@ -50,7 +50,6 @@ require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
  * @since      Moodle 3.0
  */
 class external extends external_api {
-
     /**
      * Describes the parameters for submit_questionnaire_response.
      *
@@ -73,11 +72,13 @@ class external extends external_api {
                     new external_single_structure(
                         [
                             'name' => new external_value(PARAM_RAW, 'data key'),
-                            'value' => new external_value(PARAM_RAW, 'data value')
+                            'value' => new external_value(PARAM_RAW, 'data value'),
                         ]
                     ),
-                    'The data to be saved', VALUE_DEFAULT, []
-                )
+                    'The data to be saved',
+                    VALUE_DEFAULT,
+                    []
+                ),
             ]
         );
     }
@@ -97,9 +98,20 @@ class external extends external_api {
      * @param array $responses the response ids
      * @return array answers information and warnings
      */
-    public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $rid,
-                                                         $submit, $action, $responses) {
-        self::validate_parameters(self::submit_questionnaire_response_parameters(),
+    public static function submit_questionnaire_response(
+        $questionnaireid,
+        $surveyid,
+        $userid,
+        $cmid,
+        $sec,
+        $completed,
+        $rid,
+        $submit,
+        $action,
+        $responses
+    ) {
+        self::validate_parameters(
+            self::submit_questionnaire_response_parameters(),
             [
                 'questionnaireid' => $questionnaireid,
                 'surveyid' => $surveyid,
@@ -110,11 +122,11 @@ class external extends external_api {
                 'rid' => $rid,
                 'submit' => $submit,
                 'action' => $action,
-                'responses' => $responses
+                'responses' => $responses,
             ]
         );
 
-        list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
+        [$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($cmid);
         $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
 
         $context = \context_module::instance($cm->id);
@@ -142,7 +154,7 @@ class external extends external_api {
         return new external_single_structure(
             [
                 'submitted' => new external_value(PARAM_BOOL, 'submitted', VALUE_REQUIRED, false, false),
-                'warnings' => new external_warnings()
+                'warnings' => new external_warnings(),
             ]
         );
     }

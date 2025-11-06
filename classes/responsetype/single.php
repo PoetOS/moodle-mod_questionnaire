@@ -45,18 +45,18 @@ class single extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && isset($question->choices[$responsedata->{'q'.$question->id}])) {
+        if (isset($responsedata->{'q' . $question->id}) && isset($question->choices[$responsedata->{'q' . $question->id}])) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id;
-            $record->choiceid = $responsedata->{'q'.$question->id};
+            $record->choiceid = $responsedata->{'q' . $question->id};
             // If this choice is an "other" choice, look for the added input.
-            if ($question->choices[$responsedata->{'q'.$question->id}]->is_other_choice()) {
+            if ($question->choices[$responsedata->{'q' . $question->id}]->is_other_choice()) {
                 $cname = 'q' . $question->id .
-                    \mod_questionnaire\question\choice::id_other_choice_name($responsedata->{'q'.$question->id});
+                    \mod_questionnaire\question\choice::id_other_choice_name($responsedata->{'q' . $question->id});
                 $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
             }
-            $answers[$responsedata->{'q'.$question->id}] = answer\answer::create_from_data($record);
+            $answers[$responsedata->{'q' . $question->id}] = answer\answer::create_from_data($record);
         }
         return $answers;
     }
@@ -70,7 +70,7 @@ class single extends responsetype {
      */
     public static function answers_from_appdata($responsedata, $question) {
         $answers = [];
-        $qname = 'q'.$question->id;
+        $qname = 'q' . $question->id;
         if (isset($responsedata->{$qname}[0]) && !empty($responsedata->{$qname}[0])) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
@@ -139,13 +139,13 @@ class single extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return array - Array of data records.
      */
-    public function get_results($rids=false, $anonymous=false) {
+    public function get_results($rids = false, $anonymous = false) {
         global $DB;
 
         $rsql = '';
-        $params = array($this->question->id);
+        $params = [$this->question->id];
         if (!empty($rids)) {
-            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
@@ -153,7 +153,7 @@ class single extends responsetype {
         // Added qc.id to preserve original choices ordering.
         $sql = 'SELECT rt.id, qc.id as cid, qc.content ' .
                'FROM {questionnaire_quest_choice} qc, ' .
-               '{'.static::response_table().'} rt ' .
+               '{' . static::response_table() . '} rt ' .
                'WHERE qc.question_id= ? AND qc.content NOT LIKE \'!other%\' AND ' .
                      'rt.question_id=qc.question_id AND rt.choice_id=qc.id' . $rsql . ' ' .
                'ORDER BY qc.id';
@@ -170,9 +170,9 @@ class single extends responsetype {
         if ($recs = $DB->get_records_sql($sql, $params)) {
             $i = 1;
             foreach ($recs as $rec) {
-                $rows['other'.$i] = new \stdClass();
-                $rows['other'.$i]->content = $rec->content;
-                $rows['other'.$i]->response = $rec->response;
+                $rows['other' . $i] = new \stdClass();
+                $rows['other' . $i]->content = $rec->content;
+                $rows['other' . $i]->response = $rec->response;
                 $i++;
             }
         }
@@ -191,14 +191,14 @@ class single extends responsetype {
         $rsql = '';
         $params = [$this->question->id];
         if (!empty($rids)) {
-            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
         $params[] = 'y';
 
         $sql = 'SELECT response_id as rid, c.value AS score ' .
-            'FROM {'.$this->response_table().'} r ' .
+            'FROM {' . $this->response_table() . '} r ' .
             'INNER JOIN {questionnaire_quest_choice} c ON r.choice_id = c.id ' .
             'WHERE r.question_id= ? ' . $rsql . ' ' .
             'ORDER BY response_id ASC';
@@ -226,7 +226,7 @@ class single extends responsetype {
      * @param bool $anonymous
      * @return string
      */
-    public function display_results($rids=false, $sort='', $anonymous=false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false) {
         global $DB;
 
         $rows = $this->get_results($rids, $anonymous);
@@ -239,7 +239,7 @@ class single extends responsetype {
 
         $rsql = '';
         if (!empty($rids)) {
-            list($rsql, $params) = $DB->get_in_or_equal($rids);
+            [$rsql, $params] = $DB->get_in_or_equal($rids);
             $rsql = ' AND response_id ' . $rsql;
         }
 
@@ -262,7 +262,7 @@ class single extends responsetype {
                     $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 } else {
                     $contents = questionnaire_choice_values($row->content);
-                    $textidx = $contents->text.$contents->image;
+                    $textidx = $contents->text . $contents->image;
                     $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 }
             }
@@ -285,7 +285,7 @@ class single extends responsetype {
 
         $values = [];
         $sql = 'SELECT a.id, q.id as qid, q.content, c.content as ccontent, c.id as cid, o.response ' .
-            'FROM {'.static::response_table().'} a ' .
+            'FROM {' . static::response_table() . '} a ' .
             'INNER JOIN {questionnaire_question} q ON a.question_id = q.id ' .
             'INNER JOIN {questionnaire_quest_choice} c ON a.choice_id = c.id ' .
             'LEFT JOIN {questionnaire_response_other} o ON a.response_id = o.response_id AND c.id = o.choice_id ' .
@@ -319,7 +319,7 @@ class single extends responsetype {
         $answers = [];
         $sql = 'SELECT r.id as id, r.response_id as responseid, r.question_id as questionid, r.choice_id as choiceid, ' .
             'o.response as value ' .
-            'FROM {' . static::response_table() .'} r ' .
+            'FROM {' . static::response_table() . '} r ' .
             'LEFT JOIN {questionnaire_response_other} o ON r.response_id = o.response_id AND r.question_id = o.question_id AND ' .
             'r.choice_id = o.choice_id ' .
             'WHERE r.response_id = ? ';
@@ -354,7 +354,7 @@ class single extends responsetype {
         }
 
         if (is_array($questionnaireids)) {
-            list($qsql, $params) = $DB->get_in_or_equal($questionnaireids);
+            [$qsql, $params] = $DB->get_in_or_equal($questionnaireids);
         } else {
             $qsql = ' = ? ';
             $params = [$questionnaireids];
@@ -398,11 +398,11 @@ class single extends responsetype {
         $extraselect = 'qrs.choice_id, ' . $DB->sql_order_by_text('qro.response', 1000) . ' AS response, 0 AS rankvalue';
 
         return "
-            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'".$this->question->helpname()."'", $alias.'.id']) . " AS id,
+            SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'" . $this->question->helpname() . "'", $alias . '.id']) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {".static::response_table()."} $alias ON $alias.response_id = qr.id
+              JOIN {" . static::response_table() . "} $alias ON $alias.response_id = qr.id
         ";
     }
 }

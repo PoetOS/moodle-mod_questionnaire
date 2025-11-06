@@ -46,7 +46,7 @@ class date extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id;
@@ -64,9 +64,9 @@ class date extends responsetype {
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
     public static function answers_from_appdata($responsedata, $question) {
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
             // The app can send the date including time (e.g. 2021-06-28T09:03:46.613+02:00), get only the date.
-            $responsedata->{'q'.$question->id} = substr($responsedata->{'q'.$question->id}[0], 0, 10);
+            $responsedata->{'q' . $question->id} = substr($responsedata->{'q' . $question->id}[0], 0, 10);
         }
         return static::answers_from_webform($responsedata, $question);
     }
@@ -109,19 +109,19 @@ class date extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return array - Array of data records.
      */
-    public function get_results($rids=false, $anonymous=false) {
+    public function get_results($rids = false, $anonymous = false) {
         global $DB;
 
         $rsql = '';
-        $params = array($this->question->id);
+        $params = [$this->question->id];
         if (!empty($rids)) {
-            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
 
         $sql = 'SELECT id, response ' .
-               'FROM {'.static::response_table().'} ' .
+               'FROM {' . static::response_table() . '} ' .
                'WHERE question_id= ? ' . $rsql;
 
         return $DB->get_records_sql($sql, $params);
@@ -148,7 +148,7 @@ class date extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    public function display_results($rids=false, $sort='', $anonymous=false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false) {
         $numresps = count($rids);
         if ($rows = $this->get_results($rids, $anonymous)) {
             $numrespondents = count($rows);
@@ -190,7 +190,7 @@ class date extends responsetype {
         if (!empty($weights) && is_array($weights)) {
             $pagetags->responses = [];
             $numresps = 0;
-            ksort ($weights); // Sort dates into chronological order.
+            ksort($weights); // Sort dates into chronological order.
             $evencolor = false;
             foreach ($weights as $content => $num) {
                 $response = new \stdClass();
@@ -222,15 +222,15 @@ class date extends responsetype {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id, q.content, a.response as aresponse '.
-            'FROM {'.static::response_table().'} a, {questionnaire_question} q '.
+        $sql = 'SELECT q.id, q.content, a.response as aresponse ' .
+            'FROM {' . static::response_table() . '} a, {questionnaire_question} q ' .
             'WHERE a.response_id=? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         $dateformat = get_string('strfdate', 'questionnaire');
         foreach ($records as $qid => $row) {
-            unset ($row->id);
+            unset($row->id);
             $row = (array)$row;
-            $newrow = array();
+            $newrow = [];
             foreach ($row as $key => $val) {
                 if (!is_numeric($key)) {
                     $newrow[] = $val;
@@ -239,7 +239,7 @@ class date extends responsetype {
                     if (preg_match('/\d\d\d\d-\d\d-\d\d/', $val)) {
                         $dateparts = preg_split('/-/', $val);
                         $val = make_timestamp($dateparts[0], $dateparts[1], $dateparts[2]); // Unix timestamp.
-                        $val = userdate ( $val, $dateformat);
+                        $val = userdate($val, $dateformat);
                         $newrow[] = $val;
                     }
                 }
@@ -265,7 +265,7 @@ class date extends responsetype {
 
         $answers = [];
         $sql = 'SELECT id, response_id as responseid, question_id as questionid, 0 as choiceid, response as value ' .
-            'FROM {' . static::response_table() .'} ' .
+            'FROM {' . static::response_table() . '} ' .
             'WHERE response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {

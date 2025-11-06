@@ -23,9 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+
 require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
@@ -38,14 +39,14 @@ $a = optional_param('a', null, PARAM_INT);      // Questionnaire ID.
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 $resume = optional_param('resume', null, PARAM_INT);    // Is this attempt a resume of a saved attempt?
 
-list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($id, $a);
+[$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($id, $a);
 
 // Check login and get context.
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/questionnaire:view', $context);
 
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/complete.php');
+$url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/complete.php');
 if (isset($id)) {
     $url->param('id', $id);
 } else {
@@ -54,7 +55,7 @@ if (isset($id)) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-$questionnaire = new questionnaire( $course, $cm, 0, $questionnaire);
+$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\completepage());
@@ -70,11 +71,11 @@ if ($resume) {
     $context = context_module::instance($questionnaire->cm->id);
     $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-    $event = \mod_questionnaire\event\attempt_resumed::create(array(
-                    'objectid' => $questionnaire->id,
-                    'anonymous' => $anonymous,
-                    'context' => $context
-    ));
+    $event = \mod_questionnaire\event\attempt_resumed::create([
+        'objectid' => $questionnaire->id,
+        'anonymous' => $anonymous,
+        'context' => $context,
+    ]);
     $event->trigger();
 }
 

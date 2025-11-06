@@ -42,7 +42,7 @@ function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users 
     if (!class_exists($classname)) {
         throw new coding_exception("Unable to locate dataformat/$dataformat/classes/writer.php");
     }
-    $format = new $classname;
+    $format = new $classname();
 
     // The data format export could take a while to generate...
     set_time_limit(0);
@@ -91,12 +91,28 @@ function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users 
         fclose($fp);
         $subjecttext = get_string('summaryreportattached', 'questionnaire');
         foreach ($users as $user) {
-            email_to_user($user, $CFG->noreplyaddress, $subjecttext, $subjecttext, '', $filepath, $filename.$ext);
+            email_to_user(
+                $user,
+                $CFG->noreplyaddress,
+                $subjecttext,
+                $subjecttext,
+                '',
+                $filepath,
+                $filename . $ext
+            );
         }
         foreach ($emails as $email) {
             $email = trim($email);
             $user = (object)['id' => -10, 'email' => $email, 'firstname' => $email, 'lastname' => $email, 'mailformat' => 1];
-            email_to_user($user, $CFG->noreplyaddress, $subjecttext, $subjecttext, '', $filepath, $filename.$ext);
+            email_to_user(
+                $user,
+                $CFG->noreplyaddress,
+                $subjecttext,
+                $subjecttext,
+                '',
+                $filepath,
+                $filename . $ext
+            );
         }
         unlink($filepath);
     }
