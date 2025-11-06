@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_questionnaire\questionnaire;
-
 /**
  * Redirects the user to either a questionnaire or to the questionnaire report
  *
@@ -23,6 +21,8 @@ use mod_questionnaire\questionnaire;
  * @copyright 2013 onwards Joseph Rézeau  email moodle@rezeau.org
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
+
+use mod_questionnaire\questionnaire;
 
 /**
  * Require config.php

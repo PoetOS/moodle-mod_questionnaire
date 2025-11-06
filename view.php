@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_questionnaire\questionnaire;
-
 /**
  * This main view page for a questionnaire.
  *
@@ -25,6 +23,8 @@ use mod_questionnaire\questionnaire;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+
+use mod_questionnaire\questionnaire;
 
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');

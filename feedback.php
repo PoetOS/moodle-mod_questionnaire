@@ -16,8 +16,6 @@
 
 // This page prints a particular instance of questionnaire.
 
-use mod_questionnaire\questionnaire;
-
 /**
  * Manage feedback settings.
  *
@@ -26,6 +24,8 @@ use mod_questionnaire\questionnaire;
  * @author Joseph Rezeau
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
+
+use mod_questionnaire\questionnaire;
 
 require_once("../../config.php");
 
