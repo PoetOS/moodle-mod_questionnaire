@@ -385,7 +385,7 @@ class renderer extends \plugin_renderer_base {
         $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr,
             'class' => 'btn btn-primary']);
         $output .= ' ';
-        $output .= \html_writer::tag('a', $resetstr, ['href' => $url, 'class' => 'btn btn-secondary mr-1']);
+        $output .= \html_writer::tag('a', $resetstr, ['href' => $url, 'class' => 'btn btn-secondary me-1']);
         $output .= \html_writer::end_tag('div') . "\n";
         $output .= \html_writer::end_tag('form') . "\n";
         return $output;
