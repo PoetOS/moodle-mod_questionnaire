@@ -361,17 +361,10 @@ function questionnaire_restore_deleted_question($qid, $sid) {
                AND deleted IS NOT NULL";
     $question = $DB->get_record_sql($sql, [$sid, $qid, $sid]);
     if ($question) {
-        // Update question.
-        $updatesql = "UPDATE {questionnaire_question}
-                         SET deleted = null, position = :position
-                       WHERE id = :qid
-                         AND surveyid = :sid";
-        $params = [
-                'position' => $question->lastposition ?? 1,
-                'qid' => $qid,
-                'sid' => $sid
-        ];
-        $DB->execute($updatesql, $params);
+        // Update question using Moodle API. Only 'id' is needed for update_record.
+        $question->deleted = null;
+        $question->position = $question->lastposition ?? 1;
+        $DB->update_record('questionnaire_question', $question);
     }
 }
 
@@ -1062,16 +1055,17 @@ function questionnaire_get_standard_page_items($id = null, $a = null) {
  * @param int $qtype question type.
  * @return int number or 0 if responses were not found.
  */
-function count_reponses_question($qid, $qtype) {
+function count_reponses_question(int $qid, int $qtype): int {
     global $DB;
 
     $countresps = 0;
     if ($qtype != QUESSECTIONTEXT) {
-        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', array('typeid' => $qtype));
+        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', ['typeid' => $qtype]);
         if (!empty($responsetable)) {
-            $countresps = $DB->count_records('questionnaire_'.$responsetable, array('question_id' => $qid));
+            $countresps = $DB->count_records('questionnaire_'.$responsetable, ['question_id' => $qid]);
         }
     }
+
     return $countresps;
 }
 

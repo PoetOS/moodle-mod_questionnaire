@@ -148,10 +148,10 @@ if ($delpermanentlyq) {
     $qid = $delpermanentlyq;
     $sid = $questionnaire->survey->id;
     questionnaire_delete_permanently_questions($qid, $sid);
-    $deletedQuestion = $questionnaire->deletequestions[$qid] ?? null;
-    if ($deletedQuestion !== null) {
-        $questionType = \mod_questionnaire\question\question::qtypename($deletedQuestion->type_id);
-        questionnaire_observe_event_delete($questionnaire->cm->id, $questionType, $questionnaire->course->id);
+    $deletedquestion = $questionnaire->deletequestions[$qid] ?? null;
+    if ($deletedquestion !== null) {
+        $questiontype = \mod_questionnaire\question\question::qtypename($deletedquestion->type_id);
+        questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id]);
         $PAGE->set_url($url->out(false));
         $reload = true;
