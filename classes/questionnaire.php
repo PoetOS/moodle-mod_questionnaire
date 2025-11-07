@@ -17,6 +17,9 @@
 namespace mod_questionnaire;
 
 use mod_questionnaire\feedback\section;
+use moodle_url;
+use pix_icon;
+use popup_action;
 use stdClass;
 use context_module;
 use html_writer;
@@ -2834,7 +2837,7 @@ class questionnaire {
         $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&group=' . $currentgroupid . '&individualresponse=1';
         if (!$byresponse) {     // Display navbar.
             // Build navbar.
-            $navbar = new \stdClass();
+            $navbar = new stdClass();
             $prevrid = ($currpos > 0) ? $rids[$currpos - 1] : null;
             $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
             $firstrid = $rids[0];
