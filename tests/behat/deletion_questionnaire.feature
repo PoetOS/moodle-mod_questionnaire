@@ -18,9 +18,11 @@ Feature: Deletion questions area
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
       | student1 | C1     | student        |
+    And the following config values are set as admin:
+      | enableasyncbackup | 0 |
     And I log in as "teacher1"
     And I am on the "Course 1" "restore" page
-    And I press "Manage backup files"
+    And I press "Manage course backups"
     And I upload "mod/questionnaire/tests/fixtures/backup-activity-questionnaire.mbz" file to "Files" filemanager
     And I press "Save changes"
     Then I restore "backup-activity-questionnaire.mbz" backup into "Course 1" course using this options:

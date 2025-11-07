@@ -1030,14 +1030,11 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, 'required');
         if ($dbman->field_exists($table, $field)) {
-            $sql = "UPDATE {questionnaire_question}
-                       SET deleted = ?
-                     WHERE deleted = 'y'";
-            $DB->execute($sql, [time()]);
-            $sql = "UPDATE {questionnaire_question}
-                       SET deleted = null
-                     WHERE deleted = 'n'";
-            $DB->execute($sql);
+            // Instead of updating all 'deleted' = 'y' to a timestamp (which could be slow on large tables),
+            // simply delete those records, as they were not restorable before this upgrade.
+            $DB->delete_records('questionnaire_question', ['deleted' => 'y']);
+            // Optionally, clear 'deleted' = 'n' to null if required by new logic.
+            $DB->set_field('questionnaire_question', 'deleted', null, ['deleted' => 'n']);
             $dbman->change_field_type($table, $field);
         }
         unset($field);
