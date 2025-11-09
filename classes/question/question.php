@@ -17,7 +17,7 @@
 namespace mod_questionnaire\question;
 use mod_questionnaire\edit_question_form;
 use mod_questionnaire\responsetype\response\response;
-use questionnaire;
+use mod_questionnaire\questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
 use html_writer;
@@ -1038,7 +1038,7 @@ abstract class question {
      * @param \mod_questionnaire\questionnaire $questionnaire The questionnaire being edited.
      * @return bool
      */
-    public function edit_form(edit_question_form $form, \mod_questionnaire\questionnaire $questionnaire) {
+    public function edit_form(edit_question_form $form, questionnaire $questionnaire) {
         $mform =& $form->_form;
         $this->form_header($mform);
         $this->form_name($mform);

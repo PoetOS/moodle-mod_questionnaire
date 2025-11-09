@@ -28,6 +28,7 @@ use mod_questionnaire\questionnaire;
 
 require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
