@@ -74,9 +74,10 @@ class question extends \core_search\base_mod {
 
         // Because there is no database agnostic way to combine all of the possible question content data into one record in
         // get_recordset_by_timestamp, I need to grab it all now and add it to the document.
-        $recordset = $DB->get_recordset(
+        $recordset = $DB->get_recordset_select(
             'questionnaire_question',
-            ['surveyid' => $record->sid, 'deleted' => 'n'],
+            'surveyid = ? AND deleted IS NULL',
+            [$record->sid],
             'id',
             'id,content'
         );
