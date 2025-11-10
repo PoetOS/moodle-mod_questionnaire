@@ -55,6 +55,10 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('questionnaire/allowemailreporting',
         get_string('configemailreporting', 'questionnaire'), get_string('configemailreportinglong', 'questionnaire'), 0));
 
+    $settings->add(new admin_setting_configduration('questionnaire_questiondeletion/duration',
+        get_string('deletequestionsolderthan', 'questionnaire'),
+        get_string('deletesettingdescription', 'questionnaire'),  7 * 86400));
+
     // Delete old responses after. The default value is 24 months.
     $options = [
             '0' => new lang_string('disabled', 'questionnaire'),

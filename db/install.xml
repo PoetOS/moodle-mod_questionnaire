@@ -77,7 +77,7 @@
         <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="required" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false"/>
-        <FIELD NAME="deleted" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false"/>
+        <FIELD NAME="deleted" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The timestamp record last deleted."/>
         <FIELD NAME="extradata" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="If a question needs more than the standard fields provided, use this field."/>
       </FIELDS>
       <KEYS>
