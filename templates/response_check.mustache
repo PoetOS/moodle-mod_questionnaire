@@ -49,16 +49,16 @@
 }}{{#choices}}{{!
     }}{{#selected}}{{!
     }}<span class="selected">{{^pdf}}
-    <input type="checkbox" name="{{name}}" checked="checked" disabled="disabled" aria-label="{{alabel}}"/>{{/pdf}}
+    <input type="checkbox" name="{{name}}" checked="checked" disabled="disabled" aria-label="{{alabel}}">{{/pdf}}
     {{{content}}}{{#pdf}} &#10003;{{/pdf}}</span>
     {{#othercontent}}<span class="response text">{{{.}}}</span>{{/othercontent}}
 {{/selected}}
     {{^selected}}
         <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}
-            <input type="checkbox" name="{{name}}" disabled="disabled" aria-label="{{alabel}}"/>{{/pdf}}
+            <input type="checkbox" name="{{name}}" disabled="disabled" aria-label="{{alabel}}">{{/pdf}}
             {{{content}}}</span>
     {{/selected}}
-    <br/>
+    <br>
 {{/choices}}
 </div>
 <!-- End HTML generated from response_check template. -->

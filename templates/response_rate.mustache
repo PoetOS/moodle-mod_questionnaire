@@ -74,12 +74,12 @@
         {{#cols}}
         {{#checked}}
         <td style="text-align:center;" class="selected">
-            <span class="selected"><input type="radio" name="{{str}}" checked="checked" disabled="disabled"/></span>
+            <span class="selected"><input type="radio" name="{{str}}" checked="checked" disabled="disabled"></span>
         </td>
         {{/checked}}
         {{^checked}}
         <td style="text-align:center;" class="{{bg}}">
-            <span class="unselected"><input type="radio" disabled="disabled" name="{{str}}" onclick="this.checked=false;" /></span>
+            <span class="unselected"><input type="radio" disabled="disabled" name="{{str}}" onclick="this.checked=false;"></span>
         </td>
         {{/checked}}
         {{/cols}}

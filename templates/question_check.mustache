@@ -57,11 +57,11 @@
 {{#qelements}}
     {{#choice}}
         <input id="{{choice.id}}" value="{{choice.value}}" name="{{choice.name}}" type="checkbox"
-               {{#choice.checked}}checked="checked"{{/choice.checked}} aria-label="{{choice.alabel}}"/>
+               {{#choice.checked}}checked="checked"{{/choice.checked}} aria-label="{{choice.alabel}}">
         <label for="{{choice.id}}">{{{choice.label}}}</label>
         {{#choice.oname}}<input size="25" name="{{choice.oname}}" onclick="other_check(name)" value="{{choice.ovalue}}"
-                                type="text"/>{{/choice.oname}}
-        <br/>
+                                type="text">{{/choice.oname}}
+        <br>
     {{/choice}}
 {{/qelements}}
 <!-- End HTML generated from question_check template. -->
