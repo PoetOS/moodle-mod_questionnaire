@@ -914,7 +914,7 @@ class questionnaire {
                     return true;
                 }
             }
-        } else {
+        } else if (key_exists($section, $this->questionsbysec)) {
             foreach ($this->questionsbysec[$section] as $questionid) {
                 if ($this->questions[$questionid]->required()) {
                     return true;
@@ -1355,21 +1355,23 @@ class questionnaire {
             $this->page->add_to_page('progressbar',
                     $this->renderer->render_progress_bar($section, $this->questionsbysec));
         }
-        foreach ($this->questionsbysec[$section] as $questionid) {
-            if ($this->questions[$questionid]->is_numbered()) {
-                $i++;
+        if (key_exists($section, $this->questionsbysec)) {
+            foreach ($this->questionsbysec[$section] as $questionid) {
+                if ($this->questions[$questionid]->is_numbered()) {
+                    $i++;
+                }
+                // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
+                $formdata->questionnaire_id = $this->id;
+                if (isset($formdata->rid) && !empty($formdata->rid)) {
+                    $this->add_response($formdata->rid);
+                } else {
+                    $this->add_response_from_formdata($formdata);
+                }
+                $this->page->add_to_page('questions',
+                    $this->renderer->question_output($this->questions[$questionid],
+                        (isset($this->responses[$formdata->rid]) ? $this->responses[$formdata->rid] : []),
+                        $i, $this->usehtmleditor, []));
             }
-            // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
-            $formdata->questionnaire_id = $this->id;
-            if (isset($formdata->rid) && !empty($formdata->rid)) {
-                $this->add_response($formdata->rid);
-            } else {
-                $this->add_response_from_formdata($formdata);
-            }
-            $this->page->add_to_page('questions',
-                $this->renderer->question_output($this->questions[$questionid],
-                    (isset($this->responses[$formdata->rid]) ? $this->responses[$formdata->rid] : []),
-                    $i, $this->usehtmleditor, []));
         }
 
         $this->print_survey_end($section, $numsections);
