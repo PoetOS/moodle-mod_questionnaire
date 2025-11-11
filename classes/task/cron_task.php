@@ -17,7 +17,7 @@
 namespace mod_questionnaire\task;
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 /**
  * A schedule task for mod_questionnaire cron.
  *

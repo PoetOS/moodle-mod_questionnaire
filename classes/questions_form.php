@@ -265,12 +265,13 @@ class questions_form extends \moodleform {
                         if ($nextquestion) {
                             $nextquestiondependencies = $DB->get_records(
                                 'questionnaire_dependency',
-                                ['questionid' => $nextquestion->id ,
+                                ['questionid' => $nextquestion->id,
                                 'surveyid' => $sid],
                                 'id ASC'
                             );
 
-                            if ($previousquestion = $DB->get_record_select(
+                            if (
+                                $previousquestion = $DB->get_record_select(
                                     'questionnaire_question',
                                     $select,
                                     [$sid, $pos - 1],
@@ -279,12 +280,14 @@ class questions_form extends \moodleform {
                             ) {
                                 $previousquestiondependencies = $DB->get_records(
                                     'questionnaire_dependency',
-                                    ['questionid' => $previousquestion->id , 'surveyid' => $sid],
+                                    ['questionid' => $previousquestion->id, 'surveyid' => $sid],
                                     'id ASC'
                                 );
 
-                                if (!empty($nextquestiondependencies) ||
-                                    (!empty($previousquestiondependencies) && empty($nextquestiondependencies))) {
+                                if (
+                                    !empty($nextquestiondependencies) ||
+                                    (!empty($previousquestiondependencies) && empty($nextquestiondependencies))
+                                ) {
                                     $strdisabled = get_string('movedisabled', 'questionnaire');
                                     $msrc = $questionnaire->renderer->image_url('t/block');
                                     $mextra = [
@@ -455,8 +458,13 @@ class questions_form extends \moodleform {
                     $timedeleted = get_string('recylebindisabled', 'questionnaire');
                 } else {
                     if (!empty($timedeleted)) {
-                        $timedeleted = get_string('timedeletednext7days', 'questionnaire',
-                            date("D j M, Y", $timedeleted + $rangetimecrontask));
+                        $timedeleted = get_string(
+                            'timedeletednext7days',
+                            'questionnaire',
+                            date("D j M, Y",
+                            $timedeleted + $rangetimecrontask
+                        )
+                    );
                     }
                 }
                 $qtypeandname = [];
@@ -464,10 +472,16 @@ class questions_form extends \moodleform {
                 $qtypeandname['type'] = questionnaire_get_type($deletequestion->type_id);
 
                 $content = format_text(
-                    file_rewrite_pluginfile_urls($deletequestion->content, 'pluginfile.php',
-                    $deletequestion->context->id,
-                    'mod_questionnaire', 'question', $deletequestion->id),
-                    FORMAT_HTML, ['noclean' => true]
+                    file_rewrite_pluginfile_urls(
+                        $deletequestion->content,
+                        'pluginfile.php',
+                        $deletequestion->context->id,
+                        'mod_questionnaire',
+                        'question',
+                        $deletequestion->id
+                    ),
+                    FORMAT_HTML,
+                    ['noclean' => true]
                 );
 
                 $qnumber = '<div class="qn-info"><h2 class="qn-number">NA</h2></div>';
@@ -479,22 +493,42 @@ class questions_form extends \moodleform {
                 $deleleextra = [
                     'value' => $deletequestion->id,
                     'alt' => get_string('deletepermanentlybutton', 'questionnaire'),
-                    'title' => get_string('deletepermanentlybutton', 'questionnaire')
+                    'title' => get_string('deletepermanentlybutton', 'questionnaire'),
                 ];
                 $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
                 $delquestiongroup[] =& $mform->createElement('static', 'opentag_' . $deletequestion->id, '', '');
-                $delquestiongroup[] =& $mform->createElement('image', 'restorebutton[' . $deletequestion->id . ']',
-                    $restoreimg, $restorextra);
-                $delquestiongroup[] =& $mform->createElement('image', 'deletebutton[' . $deletequestion->id . ']',
-                    $deleteimg, $deleleextra);
+                $delquestiongroup[] =& $mform->createElement(
+                    'image',
+                    'restorebutton[' . $deletequestion->id . ']',
+                    $restoreimg,
+                    $restorextra
+                );
+                $delquestiongroup[] =& $mform->createElement(
+                    'image',
+                    'deletebutton[' . $deletequestion->id . ']',
+                    $deleteimg,
+                    $deleleextra
+                );
                 $delquestiongroup[] =& $mform->createElement('static', 'closetag_' . $deletequestion->id, '', '');
-                $delquestiongroup[] =& $mform->createElement('static', 'qinfo_' . $deletequestion->id, '',
-                    get_string('questiontypeandname', 'questionnaire', $qtypeandname));
-                $delquestiongroup[] =& $mform->createElement('static', 'qinfo_' . $deletequestion->id,
-                        '', $timedeleted);
+                $delquestiongroup[] =& $mform->createElement(
+                    'static',
+                    'qinfo_' . $deletequestion->id,
+                    '',
+                    get_string('questiontypeandname', 'questionnaire', $qtypeandname)
+                );
+                $delquestiongroup[] =& $mform->createElement(
+                    'static',
+                    'qinfo_' . $deletequestion->id,
+                    '',
+                    $timedeleted
+                );
                 $mform->addGroup($delquestiongroup, 'delquestiongroup', '', '&nbsp;', false);
-                $mform->addElement('static', 'qcontent_'.$deletequestion->id, '',
-                    $qnumber.'<div class="qn-question">'.$content.'</div>');
+                $mform->addElement(
+                    'static',
+                    'qcontent_' . $deletequestion->id,
+                    '',
+                    $qnumber . '<div class="qn-question">' . $content . '</div>'
+                );
                 $mform->addElement('html', '</div>'); // End div qn-container.
             }
         }

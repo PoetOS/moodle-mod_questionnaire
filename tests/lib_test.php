@@ -347,8 +347,10 @@ final class lib_test extends \advanced_testcase {
      * Test for questionnaire_restore_deleted_question().
      *
      * @return void
+     *
+     * @covers \questionnaire_restore_deleted_question
      */
-    public function test_questionnaire_restore_deleted_question() {
+    public function test_questionnaire_restore_deleted_question(): void {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();

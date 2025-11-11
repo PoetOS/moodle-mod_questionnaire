@@ -124,8 +124,11 @@ class questionnaire {
               ORDER BY deleted DESC";
         if ($records = $DB->get_records_sql($sql, [$this->sid, QUESPAGEBREAK])) {
             foreach ($records as $record) {
-                $this->deletequestions[$record->id] = \mod_questionnaire\question\question::question_builder($record->type_id,
-                $record, $this->context);
+                $this->deletequestions[$record->id] = \mod_questionnaire\question\question::question_builder(
+                    $record->type_id,
+                    $record,
+                    $this->context
+                );
             }
         }
     }
@@ -2175,19 +2178,21 @@ class questionnaire {
 
         $max = 0;
 
-        foreach ([
-            'response_bool',
-            'resp_single',
-            'resp_multiple',
-            'response_rank',
-            'response_text',
-            'response_other',
-            'response_date',
-        ] as $tbl) {
-            $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_'.$tbl.'} a, {questionnaire_question} q '.
-                'WHERE a.response_id = ? AND '.
-                'q.id = a.question_id AND '.
-                'q.surveyid = ? AND '.
+        foreach (
+            [
+                'response_bool',
+                'resp_single',
+                'resp_multiple',
+                'response_rank',
+                'response_text',
+                'response_other',
+                'response_date',
+            ]
+        as $tbl) {
+            $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_' . $tbl . '} a, {questionnaire_question} q ' .
+                'WHERE a.response_id = ? AND ' .
+                'q.id = a.question_id AND ' .
+                'q.surveyid = ? AND ' .
                 'q.deleted IS NULL';
             if ($record = $DB->get_record_sql($sql, [$rid, $this->sid])) {
                 $newmax = (int)$record->num;

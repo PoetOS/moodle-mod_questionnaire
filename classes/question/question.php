@@ -680,8 +680,8 @@ abstract class question {
         // Create new question.
         if ($calcposition) {
             // Set the position to the end.
-            $sql = 'SELECT MAX(position) as maxpos '.
-                   'FROM {questionnaire_question} '.
+            $sql = 'SELECT MAX(position) as maxpos ' .
+                   'FROM {questionnaire_question} ' .
                    'WHERE surveyid = ? AND deleted IS NULL';
             $params = ['surveyid' => $questionrecord->surveyid];
             if ($record = $DB->get_record_sql($sql, $params)) {

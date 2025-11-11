@@ -324,7 +324,7 @@ function questionnaire_delete_survey($sid, $questionnaireid) {
 function questionnaire_delete_permanently_questions($qid, $sid) {
     global $DB;
     $select = 'id = :id AND surveyid = :sid AND deleted IS NOT NULL';
-    $DB->delete_records_select('questionnaire_question', $select , ['id' => $qid, 'sid' => $sid]);
+    $DB->delete_records_select('questionnaire_question', $select, ['id' => $qid, 'sid' => $sid]);
     $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
     questionnaire_delete_responses($qid);
     questionnaire_delete_dependencies($qid);
@@ -343,7 +343,7 @@ function questionnaire_observe_event_delete($cmid, $questiontype, $courseid) {
     $params = [
             'context' => $context,
             'courseid' => $courseid,
-            'other' => ['questiontype' => $questiontype]
+            'other' => ['questiontype' => $questiontype],
     ];
     $event = \mod_questionnaire\event\question_deleted::create($params);
     $event->trigger();
@@ -470,12 +470,14 @@ function questionnaire_delete_dependencies($qid) {
  */
 function questionnaire_delete_pagebreaks($sid) {
     global $DB;
-    $DB->delete_records_select('questionnaire_question',
-            'surveyid = :sid AND deleted IS NOT NULL AND type_id = :type_id',
-            [
-                    'sid' => $sid,
-                    'type_id' => QUESPAGEBREAK
-            ]);
+    $DB->delete_records_select(
+        'questionnaire_question',
+        'surveyid = :sid AND deleted IS NOT NULL AND type_id = :type_id',
+        [
+            'sid' => $sid,
+            'type_id' => QUESPAGEBREAK,
+        ]
+    );
 }
 
 /**
@@ -866,7 +868,8 @@ function questionnaire_check_page_breaks($questionnaire) {
     $delpb = 0;
     $sid = $questionnaire->survey->id;
     $positions = [];
-    if ($questions = $DB->get_records_select(
+    if (
+        $questions = $DB->get_records_select(
             'questionnaire_question',
             'surveyid = :sid AND deleted IS NULL',
             ['sid' => $sid],
@@ -911,7 +914,8 @@ function questionnaire_check_page_breaks($questionnaire) {
                 $delpb++;
                 $msg .= get_string("checkbreaksremoved", "questionnaire", $delpb) . '<br />';
                 // Need to reload questions.
-                if ($questions = $DB->get_records_select(
+                if (
+                    $questions = $DB->get_records_select(
                         'questionnaire_question',
                         'surveyid = :sid AND deleted IS NULL',
                         ['sid' => $sid],
@@ -971,7 +975,8 @@ function questionnaire_check_page_breaks($questionnaire) {
 
                 $diffdependencies = count($outerdependencies) + count($innerdependencies);
 
-                if (($prevtypeid != QUESPAGEBREAK && $diffdependencies != 0) ||
+                if (
+                    ($prevtypeid != QUESPAGEBREAK && $diffdependencies != 0) ||
                     (!isset($qu['dependencies']) && isset($prevdependencies))
                 ) {
                     $sql = "SELECT MAX(position) as maxpos
@@ -1121,7 +1126,7 @@ function count_reponses_question(int $qid, int $qtype): int {
     if ($qtype != QUESSECTIONTEXT) {
         $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', ['typeid' => $qtype]);
         if (!empty($responsetable)) {
-            $countresps = $DB->count_records('questionnaire_'.$responsetable, ['question_id' => $qid]);
+            $countresps = $DB->count_records('questionnaire_' . $responsetable, ['question_id' => $qid]);
         }
     }
 
