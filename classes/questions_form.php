@@ -487,11 +487,13 @@ class questions_form extends \moodleform {
                     'value' => $deletequestion->id,
                     'alt' => get_string('restorebutton', 'questionnaire'),
                     'title' => get_string('restorebutton', 'questionnaire'),
+                    'class' => 'mod_questionnaire_recycleq',
                 ];
                 $deleleextra = [
                     'value' => $deletequestion->id,
                     'alt' => get_string('deletepermanentlybutton', 'questionnaire'),
                     'title' => get_string('deletepermanentlybutton', 'questionnaire'),
+                    'class' => 'mod_questionnaire_recycleq',
                 ];
                 $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
                 $delquestiongroup[] =& $mform->createElement('static', 'opentag_' . $deletequestion->id, '', '');
