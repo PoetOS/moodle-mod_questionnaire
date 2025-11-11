@@ -95,8 +95,8 @@ $string['checkstarted'] = 'Select started';
 $string['clicktoswitch'] = '(click to switch)';
 $string['closebeforeopen'] = 'You have specified a close date before the open date.';
 $string['closed'] = 'Closed on {$a}.';
-$string['closedate'] = 'Allow responses until';
 $string['cleanrecylebin'] = "Empty Questionnaire 'Recycle bin'";
+$string['closedate'] = 'Allow responses until';
 $string['closesat'] = 'Closes at {$a}';
 $string['closeson'] = 'Questionnaire closes on {$a}';
 $string['completionsubmit'] = 'Student must submit this questionnaire to complete it';
@@ -140,8 +140,8 @@ $string['deletedallresp'] = 'Questionnaire responses deleted';
 $string['deletedisabled'] = 'This item cannot be deleted';
 $string['deletedresp'] = 'Deleted Response';
 $string['deletepermanentlybutton'] = 'Permanently delete question';
-$string['deleteresp'] = 'Delete this Response';
 $string['deletequestionsolderthan'] = 'Delete questions older than';
+$string['deleteresp'] = 'Delete this Response';
 $string['deletesection'] = 'Delete this section';
 $string['deletesettingdescription'] = 'The scheduled task will delete questions in deletion area that are older than this many days';
 $string['deletingresp'] = 'Deleting Response';
@@ -290,10 +290,10 @@ $string['kindofratescale_link'] = 'mod/questionnaire/questions#Type_of_rate_scal
 $string['lastrespondent'] = 'Last Respondent';
 $string['leftlabel'] = 'Left label';
 $string['leftpart'] = '{$a->min} is {$a->leftlabel}';
-$string['leftpartdefault'] = '{$a->min} is minimum slider range';
 $string['deletionquetions'] = 'Question deletion area';
-$string['length'] = 'Length';
+$string['leftpartdefault'] = '{$a->min} is minimum slider range';
 $string['deletionquetions_help'] = 'Deleted or otherwise orphaned questions will be first moved here rather than be outright deleted. The questions can be permanently deleted either manually through a user pressing the \'X\' icon, or the system will automatically remove any questions after a week. Use the \'up arrow\' button to restore the question.';
+$string['length'] = 'Length';
 $string['managequestions'] = 'Manage questions';
 $string['managequestions_help'] = 'In the Manage questions section of the Edit Questions page, you can conduct a number of operations on a Questionnaire\'s questions.';
 $string['managequestions_link'] = 'mod/questionnaire/questions#Manage_questions';
@@ -532,8 +532,8 @@ $string['questionnairereport'] = 'Questionnaire Report';
 $string['questionnum'] = 'Question #';
 $string['questions'] = 'Questions';
 $string['questionsinsection'] = 'Questions in this section:';
-$string['questiontypes'] = 'Question types';
 $string['questiontypeandname'] = '[{$a->type}] ({$a->name})';
+$string['questiontypes'] = 'Question types';
 $string['questiontypes_help'] = 'See the Moodle Documentation below';
 $string['questiontypes_link'] = 'mod/questionnaire/questions#Question_Types';
 $string['radiobuttons'] = 'Radio Buttons';
@@ -548,8 +548,8 @@ $string['realm_help'] = '* **There are  three types of questionnaires:**
  * Private - belongs to the course it is defined in only.
  * Template - can be copied and edited.
  * Public - can be shared among courses.';
-$string['recylebindisabled'] = '<span class="timedeletednext7days">Automatic deletion is disabled</span>';
 $string['realm_link'] = 'mod/questionnaire/qsettings#Questionnaire_Type';
+$string['recylebindisabled'] = '<span class="timedeletednext7days">Automatic deletion is disabled</span>';
 $string['redirecturl'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['remove'] = 'Move to deletion area';
 $string['removeallquestionnaireattempts'] = 'Delete all questionnaire responses';
@@ -594,9 +594,9 @@ $string['responseviewstudentswhenanswered'] = 'After answering the questionnaire
 $string['responseviewstudentswhenclosed'] = 'After the questionnaire is closed';
 $string['restrictedtoteacher'] = 'These functions are restricted to editing teachers only!';
 $string['resume'] = 'Save/Resume answers';
+$string['restorebutton'] = 'Restore this question';
 $string['resume_help'] = 'Setting this option allows users to save their answers to a questionnaire before submitting them.
  Users can leave the questionnaire unfinished and resume from the save point at a later date.';
-$string['restorebutton'] = 'Restore this question';
 $string['resume_link'] = 'mod/questionnaire/mod#Save/Resume_answers';
 $string['resumesurvey'] = 'Resume questionnaire';
 $string['return'] = 'Return';

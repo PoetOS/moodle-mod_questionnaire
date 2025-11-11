@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
  *
  * @group mod_questionnaire
  */
-final class deletion_question_test extends advanced_testcase {
+final class deletion_question_test extends \advanced_testcase {
     public function setUp(): void {
         $this->create_question_by_type(
             QUESDATE,
