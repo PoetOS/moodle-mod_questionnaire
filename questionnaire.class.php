@@ -2187,8 +2187,8 @@ class questionnaire {
                 'response_text',
                 'response_other',
                 'response_date',
-            ]
-        as $tbl) {
+            ] as $tbl
+        ) {
             $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_' . $tbl . '} a, {questionnaire_question} q ' .
                 'WHERE a.response_id = ? AND ' .
                 'q.id = a.question_id AND ' .

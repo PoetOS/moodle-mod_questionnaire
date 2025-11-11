@@ -461,10 +461,8 @@ class questions_form extends \moodleform {
                         $timedeleted = get_string(
                             'timedeletednext7days',
                             'questionnaire',
-                            date("D j M, Y",
-                            $timedeleted + $rangetimecrontask
-                        )
-                    );
+                            date("D j M, Y", $timedeleted + $rangetimecrontask)
+                        );
                     }
                 }
                 $qtypeandname = [];

@@ -22,6 +22,7 @@
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -62,7 +63,7 @@ final class deletion_question_test extends advanced_testcase {
      *
      * @return void
      *
-     * @covers questionnaire::restore_deleted_question
+     * @covers \questionnaire::restore_deleted_question
      */
     public function test_restore_deleted_question(): void {
         global $DB;
@@ -77,7 +78,7 @@ final class deletion_question_test extends advanced_testcase {
      *
      * @return void
      *
-     * @covers questionnaire::delete_permanently_question
+     * @covers \questionnaire::delete_permanently_questions
      */
     public function test_delete_permanently_question(): void {
         global $DB;
@@ -89,10 +90,8 @@ final class deletion_question_test extends advanced_testcase {
 
     /**
      * Create a question by type of question.
-     *
-     * @param int question type.
-     * @param string class name of question.
-     * @param object data of question.
+     * @param mixed $qtype
+     * @param mixed $qdata
      * @return void
      */
     public function create_question_by_type($qtype, $qdata): void {
