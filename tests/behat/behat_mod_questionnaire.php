@@ -212,6 +212,22 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Custom deleteddate for run cron task.
+     *
+     * @Given /^I custom deleted date in table questionnaire question for cron task$/
+     */
+    public function i_custom_deleted_date_in_table_questionnaire_question_for_cron_task() {
+        global $DB;
+        if (!$questionnaire = $DB->get_records_select("questionnaire_question", 'deleted IS NOT NULL')) {
+            throw new ExpectationException('Invalid questionnaire name specified.', $this->getSession());
+        }
+        foreach ($questionnaire as $question) {
+            $question->deleted = $question->deleted - 8 * 24 * 60 * 60;
+            $DB->set_field('questionnaire_question', 'deleted', $question->deleted, ['id' => $question->id]);
+        }
+    }
+
+    /**
      * Adds a question data to the given survey id.
      *
      * @param int $sid The id field of an existing questionnaire_survey record.
@@ -234,7 +250,7 @@ class behat_mod_questionnaire extends behat_base {
                 "dependquestion",
                 "dependchoice",
             ],
-            ["1", $sid, "own car", "1", null, "0", "0", "1", "<p>Do you own a car?</p>", "y", "n", "0", "0"],
+            ["1", $sid, "own car", "1", null, "0", "0", "1", "<p>Do you own a car?</p>", "y", null, "0", "0"],
             [
                 "2",
                 $sid,
@@ -246,11 +262,11 @@ class behat_mod_questionnaire extends behat_base {
                 "3",
                 "<p>What is the colour of your car?</p>",
                 "y",
-                "n",
+                null,
                 "121",
                 "0",
             ],
-            ["3", $sid, null, "99", null, "0", "0", "2", "break", "n", "n", "0", "0"],
+            ["3", $sid, null, "99", null, "0", "0", "2", "break", "n", null, "0", "0"],
             [
                 "4",
                 $sid,
@@ -262,11 +278,11 @@ class behat_mod_questionnaire extends behat_base {
                 "5",
                 "<p>Do you sometimes use public transport to go to work?</p>",
                 "y",
-                "n",
+                null,
                 "0",
                 "0",
             ],
-            ["5", $sid, null, "99", null, "0", "0", "4", "break", "n", "n", "0", "0"],
+            ["5", $sid, null, "99", null, "0", "0", "4", "break", "n", null, "0", "0"],
             [
                 "6",
                 $sid,
@@ -278,20 +294,20 @@ class behat_mod_questionnaire extends behat_base {
                 "6",
                 "<p>Enter no more than 10 characters.<br></p>",
                 "n",
-                "n",
+                null,
                 "0",
                 "0",
             ],
-            ["7", $sid, "q7", "5", null, "0", "0", "7", "<p>Check all that apply<br></p>", "n", "n", "0", "0"],
-            ["8", $sid, "q8", "9", null, "0", "0", "8", "<p>Enter today's date<br></p>", "n", "n", "0", "0"],
-            ["9", $sid, "q9", "6", null, "0", "0", "9", "<p>Choose One<br></p>", "n", "n", "0", "0"],
-            ["10", $sid, "q10", "3", null, "5", "0", "10", "<p>Write an essay<br></p>", "n", "n", "0", "0"],
-            ["11", $sid, "q11", "10", null, "10", "0", "11", "<p>Enter a number<br></p>", "n", "n", "0", "0"],
-            ["12", $sid, "q12", "4", null, "1", "0", "13", "<p>Choose a colour<br></p>", "n", "n", "0", "0"],
-            ["13", $sid, "q13", "8", null, "5", "1", "14", "<p>Rate this.<br></p>", "n", "n", "0", "0"],
-            ["14", $sid, null, "99", null, "0", "0", "12", "break", "n", "y", "0", "0"],
-            ["15", $sid, null, "99", null, "0", "0", "12", "break", "n", "n", "0", "0"],
-            ["16", $sid, "Q1", "10", null, "3", "2", "15", "Enter a number<br><p><br></p>", "y", "n", "0", "0"],
+            ["7", $sid, "q7", "5", null, "0", "0", "7", "<p>Check all that apply<br></p>", "n", null, "0", "0"],
+            ["8", $sid, "q8", "9", null, "0", "0", "8", "<p>Enter today's date<br></p>", "n", null, "0", "0"],
+            ["9", $sid, "q9", "6", null, "0", "0", "9", "<p>Choose One<br></p>", "n", null, "0", "0"],
+            ["10", $sid, "q10", "3", null, "5", "0", "10", "<p>Write an essay<br></p>", "n", null, "0", "0"],
+            ["11", $sid, "q11", "10", null, "10", "0", "11", "<p>Enter a number<br></p>", "n", null, "0", "0"],
+            ["12", $sid, "q12", "4", null, "1", "0", "13", "<p>Choose a colour<br></p>", "n", null, "0", "0"],
+            ["13", $sid, "q13", "8", null, "5", "1", "14", "<p>Rate this.<br></p>", "n", null, "0", "0"],
+            ["14", $sid, null, "99", null, "0", "0", "12", "break", "n", time(), "0", "0"],
+            ["15", $sid, null, "99", null, "0", "0", "12", "break", "n", null, "0", "0"],
+            ["16", $sid, "Q1", "10", null, "3", "2", "15", "Enter a number<br><p><br></p>", "y", null, "0", "0"],
         ];
 
         $choicedata = [

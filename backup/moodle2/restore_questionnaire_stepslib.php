@@ -208,7 +208,10 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $data = (object)$data;
         $oldid = $data->id;
         $data->surveyid = $this->get_new_parentid('questionnaire_survey');
-
+        // Cover for legacy backup data.
+        if ($data->deleted === 'n') {
+            $data->deleted = null;
+        }
         // Insert the questionnaire_question record.
         $newitemid = $DB->insert_record('questionnaire_question', $data);
         $this->set_mapping('questionnaire_question', $oldid, $newitemid, true);

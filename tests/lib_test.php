@@ -342,4 +342,49 @@ final class lib_test extends \advanced_testcase {
         $questionnaire->courseid = $questionnaire->course->id;
         $this->assertEquals(GRADE_UPDATE_OK, questionnaire_grade_item_update($questionnaire));
     }
+
+    /**
+     * Test for questionnaire_restore_deleted_question().
+     *
+     * @return void
+     *
+     * @covers \questionnaire_restore_deleted_question
+     */
+    public function test_questionnaire_restore_deleted_question(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire($course);
+        $sid = $questionnaire->sid;
+
+        // Add three questions.
+        $q1 = $DB->insert_record('questionnaire_question', [
+            'surveyid' => $sid, 'type_id' => 1, 'position' => 1, 'deleted' => null, 'content' => 'Q1']);
+        $q2 = $DB->insert_record('questionnaire_question', [
+            'surveyid' => $sid, 'type_id' => 1, 'position' => 2, 'deleted' => null, 'content' => 'Q2']);
+        $q3 = $DB->insert_record('questionnaire_question', [
+            'surveyid' => $sid, 'type_id' => 1, 'position' => 3, 'deleted' => null, 'content' => 'Q3']);
+
+        // Delete Q2 and Q3.
+        $DB->set_field('questionnaire_question', 'deleted', 1234567890, ['id' => $q2]);
+        $DB->set_field('questionnaire_question', 'deleted', 1234567891, ['id' => $q3]);
+
+        // Restore Q2.
+        questionnaire_restore_deleted_question($q2, $sid);
+        $restoredq2 = $DB->get_record('questionnaire_question', ['id' => $q2]);
+        $this->assertNull($restoredq2->deleted);
+        $this->assertEquals(2, $restoredq2->position); // Should be after Q1.
+
+        // Restore Q3.
+        questionnaire_restore_deleted_question($q3, $sid);
+        $restoredq3 = $DB->get_record('questionnaire_question', ['id' => $q3]);
+        $this->assertNull($restoredq3->deleted);
+        $this->assertEquals(3, $restoredq3->position); // Should be after Q2.
+
+        // Check for no duplicate positions.
+        $positions = $DB->get_fieldset_select('questionnaire_question', 'position', 'surveyid = ?', [$sid]);
+        $this->assertCount(count(array_unique($positions)), $positions);
+    }
 }

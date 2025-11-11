@@ -477,6 +477,28 @@ td.selected {
     margin-left: 20px;
 }
 
+#page-mod-questionnaire-questions .qcontainer .restored-question {
+    border: 1px solid #008196;
+    background: #fff2d8;
+    color: #343a40;
+}
+
+#page-mod-questionnaire-questions .qcontainer .timedeletednext7days {
+    color: #f00;
+}
+
+#page-mod-questionnaire-questions .generalbox .modal-content {
+    border: 1px solid #b0dfeb;
+}
+
+#page-mod-questionnaire-questions #id_deletionq .qn-question {
+    margin-left: 50px;
+}
+
+input[type=image].mod_questionnaire_recycleq {
+    max-height: 1em;
+}
+
 .mod_questionnaire_flex-container {
     display: inline-flex;
 }
