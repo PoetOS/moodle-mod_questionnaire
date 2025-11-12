@@ -473,7 +473,7 @@ function questionnaire_get_survey_list($courseid=0, $type='') {
     global $DB;
 
     if ($courseid == 0) {
-        if (isadmin()) {
+        if (is_siteadmin()) {
             $sql = "SELECT id,name,courseid,realm,status " .
                    "{questionnaire_survey} " .
                    "ORDER BY realm,name ";
