@@ -1673,7 +1673,7 @@ abstract class question {
      */
     protected function form_preprocess_choicedata($formdata) {
         if (empty($formdata->allchoices)) {
-            error(get_string('enterpossibleanswers', 'questionnaire'));
+            throw new \moodle_exception('enterpossibleanswers', 'mod_questionnaire');
         }
         return false;
     }
