@@ -52,7 +52,7 @@ define(['jquery'], function($) {
                 $(this).addClass('asc').removeClass('desc');
             }
             var arrData = $(this).closest('table').find('tbody >tr:has(td.cell)').get();
-            arrData.sort(function (a, b) {
+            arrData.sort(function(a, b) {
                 var val1 = $(a).children('td').eq(col).text();
                 var val2 = $(b).children('td').eq(col).text();
                 // Regex to check for date sorting.
@@ -60,15 +60,27 @@ define(['jquery'], function($) {
                 if (dateregx.test(val1) && dateregx.test(val2)) {
                     val1 = new Date(val1);
                     val2 = new Date(val2);
-                    return (val1 < val2) ? -sortOrder : (val1 > val2) ? sortOrder : 0;
+                    if (val1 < val2) {
+                        return -sortOrder;
+                    } else if (val1 > val2) {
+                        return sortOrder;
+                    } else {
+                        return 0;
+                    }
                 } else if ($.isNumeric(val1) && $.isNumeric(val2)) {
                     return sortOrder == 1 ? val1 - val2 : val2 - val1;
                 } else {
-                    return (val1 < val2) ? -sortOrder : (val1 > val2) ? sortOrder : 0;
+                    if (val1 < val2) {
+                        return -sortOrder;
+                    } else if (val1 > val2) {
+                        return sortOrder;
+                    } else {
+                        return 0;
+                    }
                 }
             });
             /* Append the sorted rows to tbody*/
-            $.each(arrData, function (index, row) {
+            $.each(arrData, function(index, row) {
                 var tableid = $('#' + id + ' tbody');
                 tableid.append(row);
             });

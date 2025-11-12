@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @package mod_questionnaire
  */
 class rate extends question {
-
     /** @var array $nameddegrees */
     public $nameddegrees = [];
 
@@ -42,7 +41,7 @@ class rate extends question {
      * @param \context $context
      * @param array $params
      */
-    public function __construct($id = 0, $question = null, $context = null, $params = array()) {
+    public function __construct($id = 0, $question = null, $context = null, $params = []) {
         $this->length = 5;
         parent::__construct($id, $question, $context, $params);
         $this->add_nameddegrees_from_extradata();
@@ -201,7 +200,7 @@ class rate extends question {
      * TODO: This function needs to be rewritten. It is a mess!
      *
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
         $choicetags->qelements['caption'] = strip_tags($this->content);
@@ -210,8 +209,8 @@ class rate extends question {
         if ($blankquestionnaire) {
             $disabled = ' disabled="disabled"';
         }
-        if (!empty($data) && ( !isset($data->{'q'.$this->id}) || !is_array($data->{'q'.$this->id}) ) ) {
-            $data->{'q'.$this->id} = [];
+        if (!empty($data) && (!isset($data->{'q' . $this->id}) || !is_array($data->{'q' . $this->id}))) {
+            $data->{'q' . $this->id} = [];
         }
 
         // Check if rate question has one line only to display full width columns of choices.
@@ -249,16 +248,16 @@ class rate extends question {
                 $width = 30;
             }
             $nn = 100 - ($width * 2);
-            $colwidth = ($nn / $this->length).'%';
+            $colwidth = ($nn / $this->length) . '%';
             $textalign = 'right';
             $width = $width . '%';
         } else if ($nocontent) {
             $width = '0%';
-            $colwidth = (100 / $this->length).'%';
+            $colwidth = (100 / $this->length) . '%';
             $textalign = 'right';
         } else {
             $width = '59%';
-            $colwidth = (40 / $this->length).'%';
+            $colwidth = (40 / $this->length) . '%';
             $textalign = 'left';
         }
 
@@ -300,12 +299,12 @@ class rate extends question {
             }
             $val = $j;
             if ($blankquestionnaire) {
-                $val = '<br />('.$val.')';
+                $val = '<br />(' . $val . ')';
             } else {
                 $val = '';
             }
             $col['colwidth'] = $colwidth;
-            $col['coltext'] = $str.$val;
+            $col['coltext'] = $str . $val;
             $collabel[$j] = $col['coltext'];
             $choicetags->qelements['headerrow']['cols'][] = $col;
         }
@@ -320,7 +319,7 @@ class rate extends question {
         }
 
         $notcomplete = false;
-        if ( ($num != $nbchoices) && ($num != 0) ) {
+        if (($num != $nbchoices) && ($num != 0)) {
             $this->add_notification(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
             $notcomplete = true;
         }
@@ -330,11 +329,11 @@ class rate extends question {
         foreach ($this->choices as $cid => $choice) {
             $cols = [];
             if (isset($choice->content)) {
-                $str = 'q'."{$this->id}_$cid";
+                $str = 'q' . "{$this->id}_$cid";
                 $content = $choice->content;
                 $rendercontent = format_text($choice->content, FORMAT_PLAIN);
                 if ($this->osgood_rate_scale()) {
-                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                    [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
                 }
                 if ($choice->is_other_choice()) {
                     $othertext = $choice->other_choice_display();
@@ -349,7 +348,7 @@ class rate extends question {
                             'colstyle' => 'text-align: ' . $textalign . ';',
                             'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;'];
                 } else {
-                    $cols[] = ['colstyle' => 'text-align: '.$textalign.';',
+                    $cols[] = ['colstyle' => 'text-align: ' . $textalign . ';',
                             'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;'];
                 }
 
@@ -360,8 +359,10 @@ class rate extends question {
                     $checked = ' checked="checked"';
                     $completeclass = 'notanswered';
                     $title = '';
-                    if ($notcomplete && isset($response->answers[$this->id][$cid]) &&
-                        ($response->answers[$this->id][$cid]->value == -999)) {
+                    if (
+                        $notcomplete && isset($response->answers[$this->id][$cid]) &&
+                        ($response->answers[$this->id][$cid]->value == -999)
+                    ) {
                         $completeclass = 'notcompleted';
                         $title = get_string('pleasecomplete', 'questionnaire');
                     }
@@ -373,8 +374,12 @@ class rate extends question {
                     if (!empty($order)) {
                         $colinput['onclick'] = $order;
                     }
-                    $colinput['label'] = $this->set_label($rowstart, $rendercontent, self::COL_START,
-                        get_string('unanswered', 'questionnaire'));
+                    $colinput['label'] = $this->set_label(
+                        $rowstart,
+                        $rendercontent,
+                        self::COL_START,
+                        get_string('unanswered', 'questionnaire')
+                    );
                     $cols[] = ['colstyle' => 'width:1%;', 'colclass' => $completeclass, 'coltitle' => $title,
                         'colinput' => $colinput];
                 }
@@ -404,7 +409,7 @@ class rate extends question {
                     $col['colhiddentext'] = get_string('option', 'questionnaire', $j);
                     $col['colinput']['name'] = $str;
                     $col['colinput']['value'] = $value;
-                    $col['colinput']['id'] = $str.'_'.$value;
+                    $col['colinput']['id'] = $str . '_' . $value;
                     if (!empty($checked)) {
                         $col['colinput']['checked'] = true;
                     }
@@ -424,7 +429,9 @@ class rate extends question {
                     $cols[] = $col;
                 }
                 if ($this->osgood_rate_scale()) {
-                    $cols[] = ['coltext' => '&nbsp;'.format_text($contentright, FORMAT_HTML, ['noclean' => true])];
+                    $cols[] = [
+                        'coltext' => '&nbsp;' . format_text($contentright, FORMAT_HTML, ['noclean' => true]),
+                    ];
                 }
                 $choicetags->qelements['rows'][] = ['cols' => $cols];
                 $rowstart++;
@@ -462,7 +469,7 @@ class rate extends question {
 
         $bg = 'c0';
         $nameddegrees = 0;
-        $cidnamed = array();
+        $cidnamed = [];
         // Max length of potential named degree in column head.
         $maxndlen = 0;
         if ($this->osgood_rate_scale()) {
@@ -479,11 +486,11 @@ class rate extends question {
             }
             $nn = 100 - ($sidecolwidthn * 2);
             $resptags->sidecolwidth = $sidecolwidth;
-            $resptags->colwidth = ($nn / $this->length).'%';
+            $resptags->colwidth = ($nn / $this->length) . '%';
             $resptags->textalign = 'right';
         } else {
             $resptags->sidecolwidth = '49%';
-            $resptags->colwidth = (50 / $this->length).'%';
+            $resptags->colwidth = (50 / $this->length) . '%';
             $resptags->textalign = 'left';
         }
         if (!empty($this->nameddegrees)) {
@@ -517,14 +524,14 @@ class rate extends question {
             $rowobj = new \stdClass();
             // Do not print column names if named column exist.
             if (!array_key_exists($cid, $cidnamed)) {
-                $str = 'q'."{$this->id}_$cid";
+                $str = 'q' . "{$this->id}_$cid";
                 $content = $choice->content;
                 $contents = questionnaire_choice_values($content);
                 if ($contents->modname) {
                     $content = $contents->text;
                 }
                 if ($this->osgood_rate_scale()) {
-                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                    [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
                 }
                 if ($choice->is_other_choice()) {
                     $content = $choice->other_choice_display();
@@ -532,7 +539,7 @@ class rate extends question {
                         $rowobj->othercontent = $response->answers[$this->id][$cid]->otheresponse;
                     }
                 }
-                $rowobj->content = format_text($content, FORMAT_HTML, ['noclean' => true]).'&nbsp;';
+                $rowobj->content = format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;';
                 $bg = 'c0';
                 $cols = [];
                 if (!empty($this->nameddegrees)) {
@@ -551,7 +558,7 @@ class rate extends question {
                             $cellobj->checked = 1;
                         }
                     }
-                    $cellobj->str = $str.$j.$uniquetag++;
+                    $cellobj->str = $str . $j . $uniquetag++;
                     $cellobj->bg = $bg;
                     // N/A column checked.
                     $checkedna = (isset($response->answers[$this->id][$cid]) && ($response->answers[$this->id][$cid]->value == -1));
@@ -567,13 +574,13 @@ class rate extends question {
                     if ($checkedna) {
                         $cellobj->checked = 1;
                     }
-                    $cellobj->str = $str.$j.$uniquetag++.'na';
+                    $cellobj->str = $str . $j . $uniquetag++ . 'na';
                     $cellobj->bg = $bg;
                     $cols[] = $cellobj;
                 }
                 $rowobj->cols = $cols;
                 if ($this->osgood_rate_scale()) {
-                    $rowobj->osgoodstr = '&nbsp;'.format_text($contentright, FORMAT_HTML, ['noclean' => true]);
+                    $rowobj->osgoodstr = '&nbsp;' . format_text($contentright, FORMAT_HTML, ['noclean' => true]);
                 }
                 $resptags->rows[] = $rowobj;
             }
@@ -676,7 +683,7 @@ class rate extends question {
         // If nodupes and nb choice restricted, nbchoices may be > actual choices, so limit it to $question->length.
         $isrestricted = ($this->length < count($this->choices)) && $this->no_duplicate_choices();
         if ($isrestricted) {
-            $nbchoices = min ($nbchoices, $this->length);
+            $nbchoices = min($nbchoices, $this->length);
         }
 
         // Test for duplicate answers in a no duplicate question type.
@@ -710,10 +717,12 @@ class rate extends question {
      * @param string $helptext
      */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
-        $precoptions = array("0" => get_string('normal', 'questionnaire'),
-                             "1" => get_string('notapplicablecolumn', 'questionnaire'),
-                             "2" => get_string('noduplicates', 'questionnaire'),
-                             "3" => get_string('osgood', 'questionnaire'));
+        $precoptions = [
+            "0" => get_string('normal', 'questionnaire'),
+            "1" => get_string('notapplicablecolumn', 'questionnaire'),
+            "2" => get_string('noduplicates', 'questionnaire'),
+            "3" => get_string('osgood', 'questionnaire'),
+        ];
         $mform->addElement('select', 'precise', get_string('kindofratescale', 'questionnaire'), $precoptions);
         $mform->addHelpButton('precise', 'kindofratescale', 'questionnaire');
         $mform->setType('precise', PARAM_INT);
@@ -754,8 +763,10 @@ class rate extends question {
             $nameddegreelines = explode("\n", $formdata->allnameddegrees);
             foreach ($nameddegreelines as $nameddegreeline) {
                 $nameddegreeline = trim($nameddegreeline);
-                if (($nameddegree = \mod_questionnaire\question\choice::content_is_named_degree_choice($nameddegreeline)) !==
-                    false) {
+                if (
+                    ($nameddegree = \mod_questionnaire\question\choice::content_is_named_degree_choice($nameddegreeline)) !==
+                    false
+                ) {
                     $nameddegrees += $nameddegree;
                 }
             }
@@ -884,7 +895,7 @@ class rate extends question {
             $choice->fieldkey = $this->mobile_fieldkey($choiceid);
 
             if ($this->osgood_rate_scale()) {
-                list($choice->leftlabel, $choice->rightlabel) = array_merge(preg_split('/[|]/', $choice->content), []);
+                [$choice->leftlabel, $choice->rightlabel] = array_merge(preg_split('/[|]/', $choice->content), []);
             }
 
             if ($this->normal_rate_scale() || $this->no_duplicate_choices()) {
@@ -898,7 +909,6 @@ class rate extends question {
                 }
                 $choices[$cnum]->max = intval($this->length) - 1;
                 $choices[$cnum]->maxstr = intval($this->length);
-
             } else if ($this->has_na_column()) {
                 $choices[$cnum] = $choice;
                 if ($this->required()) {
@@ -910,7 +920,6 @@ class rate extends question {
                 }
                 $choices[$cnum]->max = intval($this->length);
                 $choices[$cnum]->na = true;
-
             } else {
                 $excludes[$choiceid] = $choiceid;
                 if ($choice->value == null) {
@@ -940,7 +949,7 @@ class rate extends question {
                 $extracontents = array_unique($extracontents);
                 $extrahtml = '<br><ul>';
                 foreach ($extracontents as $extracontent) {
-                    $extrahtml .= '<li>'.$extracontent.'</li>';
+                    $extrahtml .= '<li>' . $extracontent . '</li>';
                 }
                 $extrahtml .= '</ul>';
                 $options = ['noclean' => true, 'para' => false, 'filter' => true,
@@ -1026,9 +1035,9 @@ class rate extends question {
      * Helper function used to move existing named degree choices for the specified question from the "quest_choice" table to the
      * "question" table.
      * @param int $qid
-     * @param null|\stdClass $questionrec
+     * @param \stdClass|null $questionrec
      */
-    public static function move_nameddegree_choices(int $qid = 0, \stdClass $questionrec = null) {
+    public static function move_nameddegree_choices(int $qid = 0, ?\stdClass $questionrec = null) {
         global $DB;
 
         if ($qid !== 0) {
@@ -1064,8 +1073,12 @@ class rate extends question {
                 foreach ($responses as $response) {
                     // Then, if the old value exists, set it to the new one.
                     if (isset($newvalues[$response->rankvalue])) {
-                        $DB->set_field('questionnaire_response_rank', 'rankvalue', $newvalues[$response->rankvalue],
-                            ['id' => $response->id]);
+                        $DB->set_field(
+                            'questionnaire_response_rank',
+                            'rankvalue',
+                            $newvalues[$response->rankvalue],
+                            ['id' => $response->id]
+                        );
                     }
                 }
                 $responses->close();
@@ -1079,7 +1092,7 @@ class rate extends question {
      * questionnaire before '2018110103'.
      * @param int|null $surveyid
      */
-    public static function move_all_nameddegree_choices(int $surveyid = null) {
+    public static function move_all_nameddegree_choices(?int $surveyid = null) {
         global $DB;
 
         // This operation might take a while. Cancel PHP timeouts for this.
@@ -1089,10 +1102,15 @@ class rate extends question {
         // If a specific survey is being dealt with, only use the questions from that survey.
         $skip = false;
         if ($surveyid !== null) {
-            $qids = $DB->get_records_menu('questionnaire_question', ['surveyid' => $surveyid, 'type_id' => QUESRATE],
-                '', 'id,surveyid');
+            $qids = $DB->get_records_menu(
+                'questionnaire_question',
+                ['surveyid' => $surveyid,
+                'type_id' => QUESRATE],
+                '',
+                'id,surveyid'
+            );
             if (!empty($qids)) {
-                list($qsql, $qparams) = $DB->get_in_or_equal(array_keys($qids));
+                [$qsql, $qparams] = $DB->get_in_or_equal(array_keys($qids));
             } else {
                 // No relevant questions, so no need to do this step.
                 $skip = true;

@@ -31,7 +31,6 @@ use coding_exception;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class section {
-
     /** @var int */
     public $id = 0;
     /** @var int */

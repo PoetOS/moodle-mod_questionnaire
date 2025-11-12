@@ -84,7 +84,7 @@ class rank extends responsetype {
      */
     public static function answers_from_appdata($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && !empty($responsedata->{'q'.$question->id})) {
+        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
             foreach ($responsedata->{'q' . $question->id} as $choiceid => $choicevalue) {
                 if (isset($question->choices[$choiceid])) {
                     $record = new \stdClass();
@@ -146,19 +146,21 @@ class rank extends responsetype {
     }
 
     /**
+     * Provide the result information for the specified result records.
+     *
      * @param bool $rids
      * @param bool $anonymous
      * @return array
      *
      * TODO - This works differently than all other get_results methods. This needs to be refactored.
      */
-    public function get_results($rids=false, $anonymous=false) {
+    public function get_results($rids = false, $anonymous = false) {
         global $DB;
 
         $rsql = '';
         $params = [];
         if (!empty($rids)) {
-            list($rsql, $params) = $DB->get_in_or_equal($rids);
+            [$rsql, $params] = $DB->get_in_or_equal($rids);
             $rsql = ' AND response_id ' . $rsql;
         }
         // Get other choices.
@@ -167,8 +169,14 @@ class rank extends responsetype {
         $select = 'question_id=' . $this->question->id . ' ORDER BY id ASC';
         if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
             foreach ($rows as $row) {
-                $nbna = $DB->count_records(static::response_table(), array('question_id' => $this->question->id,
-                        'choice_id' => $row->id, 'rankvalue' => '-1'));
+                $nbna = $DB->count_records(
+                    static::response_table(),
+                    [
+                        'question_id' => $this->question->id,
+                        'choice_id' => $row->id,
+                        'rankvalue' => '-1',
+                    ]
+                );
                 if (\mod_questionnaire\question\choice::content_is_other_choice($row->content) && !empty($otherrecs)) {
                     foreach (array_keys($otherrecs) as $key) {
                         $this->counts[$key] = new \stdClass();
@@ -177,7 +185,7 @@ class rank extends responsetype {
                     }
                 } else {
                     $this->counts[$row->content] = new \stdClass();
-                    $this->counts[$row->content]->nbna = $nbna; 
+                    $this->counts[$row->content]->nbna = $nbna;
                 }
             }
         }
@@ -191,9 +199,9 @@ class rank extends responsetype {
         $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->no_duplicate_choices();
         // Usual case.
         if (!$isrestricted) {
-            if (!empty ($rankvalue)) {
+            if (!empty($rankvalue)) {
                 $sql = "SELECT r.id, c.content, r.rankvalue, c.id AS choiceid
-                FROM {questionnaire_quest_choice} c, {".static::response_table()."} r
+                FROM {questionnaire_quest_choice} c, {" . static::response_table() . "} r
                 WHERE r.choice_id = c.id
                 AND c.question_id = " . $this->question->id . "
                 AND r.rankvalue >= 0{$rsql}
@@ -202,7 +210,7 @@ class rank extends responsetype {
                 $value = [];
                 foreach ($results as $result) {
                     if (isset($rankvalue[$result->rankvalue])) {
-                        if (isset ($value[$result->choiceid])) {
+                        if (isset($value[$result->choiceid])) {
                             $value[$result->choiceid] += $rankvalue[$result->rankvalue] + 1;
                         } else {
                             $value[$result->choiceid] = $rankvalue[$result->rankvalue] + 1;
@@ -215,28 +223,28 @@ class rank extends responsetype {
                       FROM {questionnaire_quest_choice} c
                 INNER JOIN
                          (SELECT c2.id, AVG(a2.rankvalue) AS average, COUNT(a2.response_id) AS num
-                            FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
-                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id 
+                            FROM {questionnaire_quest_choice} c2, {" . static::response_table() . "} a2
+                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                         GROUP BY c2.id) a ON a.id = c.id
                   ORDER BY c.id";
-            $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
+            $results = $DB->get_records_sql($sql, array_merge([$this->question->id, $this->question->id], $params));
 
             // Handle 'other...'.
             if ($otherrecs) {
                 $i = 1;
                 foreach ($otherrecs as $rec) {
-                    $results['other'.$i] = new \stdClass();
-                    $results['other'.$i]->id = $rec->cid;
-                    $results['other'.$i]->content = $rec->response;
-                    $results['other'.$i]->average = $rec->average;
-                    $results['other'.$i]->num = $rec->num;
-                    $results['other'.$i]->isother = true;
+                    $results['other' . $i] = new \stdClass();
+                    $results['other' . $i]->id = $rec->cid;
+                    $results['other' . $i]->content = $rec->response;
+                    $results['other' . $i]->average = $rec->average;
+                    $results['other' . $i]->num = $rec->num;
+                    $results['other' . $i]->isother = true;
                     $i++;
                 }
             }
 
-            if (!empty ($rankvalue)) {
+            if (!empty($rankvalue)) {
                 foreach ($results as $key => $result) {
                     if (isset($value[$key])) {
                         $result->averagevalue = $value[$key] / $result->num;
@@ -255,22 +263,22 @@ class rank extends responsetype {
                       FROM {questionnaire_quest_choice} c
                 INNER JOIN
                          (SELECT c2.id, SUM(a2.rankvalue) AS sum, COUNT(a2.response_id) AS num
-                            FROM {questionnaire_quest_choice} c2, {".static::response_table()."} a2
-                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id 
+                            FROM {questionnaire_quest_choice} c2, {" . static::response_table() . "} a2
+                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                   GROUP BY c2.id) a ON a.id = c.id";
 
-            $results = $DB->get_records_sql($sql, array_merge(array($this->question->id, $this->question->id), $params));
+            $results = $DB->get_records_sql($sql, array_merge([$this->question->id, $this->question->id], $params));
 
             if ($otherrecs) {
                 $i = 1;
                 foreach ($otherrecs as $rec) {
-                    $results['other'.$i] = new \stdClass();
-                    $results['other'.$i]->id = $rec->cid;
-                    $results['other'.$i]->content = $rec->response;
-                    $results['other'.$i]->sum = $rec->average;
-                    $results['other'.$i]->num = $rec->num;
-                    $results['other'.$i]->isother = true;
+                    $results['other' . $i] = new \stdClass();
+                    $results['other' . $i]->id = $rec->cid;
+                    $results['other' . $i]->content = $rec->response;
+                    $results['other' . $i]->sum = $rec->average;
+                    $results['other' . $i]->num = $rec->num;
+                    $results['other' . $i]->isother = true;
                     $i++;
                 }
             }
@@ -325,14 +333,14 @@ class rank extends responsetype {
         $rsql = '';
         $params = [$this->question->id];
         if (!empty($rids)) {
-            list($rsql, $rparams) = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
             $rsql = ' AND response_id ' . $rsql;
         }
         $params[] = 'y';
 
         $sql = 'SELECT r.id, r.response_id as rid, r.question_id AS qid, r.choice_id AS cid, r.rankvalue ' .
-            'FROM {'.$this->response_table().'} r ' .
+            'FROM {' . $this->response_table() . '} r ' .
             'INNER JOIN {questionnaire_quest_choice} c ON r.choice_id = c.id ' .
             'WHERE r.question_id= ? ' . $rsql . ' ' .
             'ORDER BY rid,cid ASC';
@@ -375,7 +383,7 @@ class rank extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    public function display_results($rids=false, $sort='', $anonymous=false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false) {
         $output = '';
 
         if (is_array($rids)) {
@@ -399,7 +407,7 @@ class rank extends responsetype {
                             $osgood = true;
                         }
                         if ($stravgvalue == '' && !$osgood) {
-                            $stravgvalue = ' ('.get_string('andaveragevalues', 'questionnaire').')';
+                            $stravgvalue = ' (' . get_string('andaveragevalues', 'questionnaire') . ')';
                         }
                     } else {
                         $avgvalue = null;
@@ -430,9 +438,9 @@ class rank extends responsetype {
 
         $values = [];
         $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid, q.content, c.content as ccontent,
-                                a.rankvalue as arank '.
-            'FROM {'.static::response_table().'} a, {questionnaire_question} q, {questionnaire_quest_choice} c '.
-            'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id '.
+                                a.rankvalue as arank ' .
+            'FROM {' . static::response_table() . '} a, {questionnaire_question} q, {questionnaire_quest_choice} c ' .
+            'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id ' .
             'ORDER BY aid, a.question_id, c.id';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $row) {
@@ -441,7 +449,7 @@ class rank extends responsetype {
             if (\mod_questionnaire\question\rate::type_is_osgood_rate_scale($row->precise)) {
                 $osgood = true;
             }
-            $qid = $row->qid.'_'.$row->cid;
+            $qid = $row->qid . '_' . $row->cid;
             unset($row->aid); // Get rid of the answer id.
             unset($row->qid);
             unset($row->cid);
@@ -452,7 +460,7 @@ class rank extends responsetype {
                 if ($key != 'content') { // No need to keep question text - ony keep choice text and rank.
                     if ($key == 'ccontent') {
                         if ($osgood) {
-                            list($contentleft, $contentright) = array_merge(preg_split('/[|]/', $val), [' ']);
+                            [$contentleft, $contentright] = array_merge(preg_split('/[|]/', $val), [' ']);
                             $contents = questionnaire_choice_values($contentleft);
                             if ($contents->title) {
                                 $contentleft = $contents->title;
@@ -461,7 +469,7 @@ class rank extends responsetype {
                             if ($contents->title) {
                                 $contentright = $contents->title;
                             }
-                            $val = strip_tags($contentleft.'|'.$contentright);
+                            $val = strip_tags($contentleft . '|' . $contentright);
                             $val = preg_replace("/[\r\n\t]/", ' ', $val);
                         } else {
                             $contents = questionnaire_choice_values($val);
@@ -496,11 +504,11 @@ class rank extends responsetype {
         global $DB;
 
         $answers = [];
-        $sql = 'SELECT r.id, 
-                       r.response_id AS responseid, 
-                       r.question_id AS questionid, 
-                       r.choice_id AS choiceid, 
-                       r.rankvalue AS value, 
+        $sql = 'SELECT r.id,
+                       r.response_id AS responseid,
+                       r.question_id AS questionid,
+                       r.choice_id AS choiceid,
+                       r.rankvalue AS value,
                        rt.response AS otheresponse
                   FROM {' . static::response_table() . '} r
              LEFT JOIN {questionnaire_response_other} rt ON rt.choice_id = r.choice_id
@@ -529,7 +537,7 @@ class rank extends responsetype {
      * @param string $stravgvalue
      * @return \stdClass
      */
-    private function mkresavg($sort, $stravgvalue='') {
+    private function mkresavg($sort, $stravgvalue = '') {
         global $CFG;
 
         $stravgrank = get_string('averagerank', 'questionnaire');
@@ -538,7 +546,7 @@ class rank extends responsetype {
             $osgood = true;
             $stravgrank = get_string('averageposition', 'questionnaire');
         }
-        $stravg = '<div style="text-align:right">'.$stravgrank.$stravgvalue.'</div>';
+        $stravg = '<div style="text-align:right">' . $stravgrank . $stravgvalue . '</div>';
 
         $isna = $this->question->precise == 1;
         $isnahead = '';
@@ -566,7 +574,7 @@ class rank extends responsetype {
             $header4->align = 'right';
         } else {
             if ($osgood) {
-                $stravg = '<div style="text-align:center">'.$stravgrank.'</div>';
+                $stravg = '<div style="text-align:center">' . $stravgrank . '</div>';
                 $header1 = new \stdClass();
                 $header1->text = '';
                 $header1->align = '';
@@ -619,7 +627,7 @@ class rank extends responsetype {
             $pagetags->averages->headers[] = $header4;
         }
 
-        $imageurl = $CFG->wwwroot.'/mod/questionnaire/images/hbar.gif';
+        $imageurl = $CFG->wwwroot . '/mod/questionnaire/images/hbar.gif';
         $spacerimage = $CFG->wwwroot . '/mod/questionnaire/images/hbartransp.gif';
         $llength = $this->question->length;
         if (!$llength) {
@@ -628,7 +636,7 @@ class rank extends responsetype {
         // Add an extra column to accomodate lower ranks in this case.
         $llength += $isrestricted;
         $width = 100 / $llength;
-        $n = array();
+        $n = [];
         $nameddegrees = 0;
         foreach ($this->question->nameddegrees as $degree) {
             // To take into account languages filter.
@@ -678,7 +686,7 @@ class rank extends responsetype {
                 uasort($this->counts, self::class . '::sortavgdesc');
                 break;
         }
-        reset ($this->counts);
+        reset($this->counts);
 
         if (!empty($this->counts) && is_array($this->counts)) {
             $pagetags->averages->choiceaverages = [];
@@ -717,15 +725,17 @@ class rank extends responsetype {
 
                     if ($osgood) {
                         // Ensure there are two bits of content.
-                        list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                        [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
                     } else {
                         $contents = questionnaire_choice_values($content);
                         if ($contents->modname) {
                             $content = $contents->text;
                         }
                     }
-                    if (isset($contentobj->content) &&
-                            \mod_questionnaire\question\choice::content_other_choice_display($contentobj->content)) {
+                    if (
+                        isset($contentobj->content) &&
+                        \mod_questionnaire\question\choice::content_other_choice_display($contentobj->content)
+                    ) {
                         $othertext = \mod_questionnaire\question\choice::content_other_choice_display($contentobj->content);
                         $content = $othertext . ' ' . clean_text($content);
                     }
@@ -757,9 +767,9 @@ class rank extends responsetype {
                         $stravgval = '';
                         if ($avg) {
                             if ($stravgvalue) {
-                                $stravgval = '('.sprintf('%.1f', $avgvalue).')';
+                                $stravgval = '(' . sprintf('%.1f', $avgvalue) . ')';
                             }
-                            $stravgval = sprintf('%.1f', $avg).'&nbsp;'.$stravgval;
+                            $stravgval = sprintf('%.1f', $avg) . '&nbsp;' . $stravgval;
                             if ($isna) {
                                 $choicecol4 = new \stdClass();
                                 $choicecol4->width = $header4->width;
@@ -849,15 +859,15 @@ class rank extends responsetype {
 
         $rsql = '';
         if (!empty($rids)) {
-            list($rsql, $params) = $DB->get_in_or_equal($rids);
+            [$rsql, $params] = $DB->get_in_or_equal($rids);
             $rsql = ' AND response_id ' . $rsql;
         }
 
         // This is question_id.
         array_push($params, $this->question->id);
         $sql = "SELECT r.id,
-                       CASE 
-                            WHEN c.content = '!other' THEN o.response 
+                       CASE
+                            WHEN c.content = '!other' THEN o.response
                             ELSE c.content
                        END as content, r.rankvalue, c.id AS choiceid
                   FROM {questionnaire_quest_choice} c
@@ -872,11 +882,11 @@ class rank extends responsetype {
 
         // Sort rows (results) by average value.
         if ($sort != 'default') {
-            $sortarray = array();
+            $sortarray = [];
             foreach ($rows as $row) {
                 foreach ($row as $key => $value) {
                     if (!isset($sortarray[$key])) {
-                        $sortarray[$key] = array();
+                        $sortarray[$key] = [];
                     }
                     $sortarray[$key][] = $value;
                 }
@@ -903,8 +913,10 @@ class rank extends responsetype {
                 if ($choice->choiceid == $choiceid && $choice->content === $key) {
                     $n = 0;
                     for ($i = 1; $i <= $nbranks; $i++) {
-                        if ((isset($rankvalue[$choice->rankvalue]) && ($rankvalue[$choice->rankvalue] == ($i - 1))) ||
-                            (empty($rankvalue) && ($choice->rankvalue == $i))) {
+                        if (
+                            (isset($rankvalue[$choice->rankvalue]) && ($rankvalue[$choice->rankvalue] == ($i - 1))) ||
+                            (empty($rankvalue) && ($choice->rankvalue == $i))
+                        ) {
                             $n++;
                             if (!isset($ranks[$choice->content][$i])) {
                                 $ranks[$choice->content][$i] = 0;
@@ -919,7 +931,7 @@ class rank extends responsetype {
         }
 
         // Psettings for display.
-        $strtotal = '<strong>'.get_string('total', 'questionnaire').'</strong>';
+        $strtotal = '<strong>' . get_string('total', 'questionnaire') . '</strong>';
         $isna = $this->question->precise == 1;
         $osgood = false;
         if ($this->question->precise == 3) { // Osgood's semantic differential.
@@ -931,7 +943,7 @@ class rank extends responsetype {
             $na = '';
         }
         $nameddegrees = 0;
-        $n = array();
+        $n = [];
         foreach ($this->question->nameddegrees as $degree) {
             $content = $degree;
             $n[$nameddegrees] = format_text($content, FORMAT_HTML, ['noclean' => true]);
@@ -952,8 +964,10 @@ class rank extends responsetype {
         } else {
             $align = 'left';
         }
-        $pagetags->totals->headers[] = (object)['align' => $align,
-            'text' => '<span class="smalltext">'.get_string('responses', 'questionnaire').'</span>'];
+        $pagetags->totals->headers[] = (object)[
+            'align' => $align,
+            'text' => '<span class="smalltext">' . get_string('responses', 'questionnaire') . '</span>',
+        ];
 
         // Display the column titles.
         for ($j = 0; $j < $this->question->length; $j++) {
@@ -962,7 +976,7 @@ class rank extends responsetype {
             } else {
                 $str = $j + 1;
             }
-            $pagetags->totals->headers[] = (object)['align' => 'center', 'text' => '<span class="smalltext">'.$str.'</span>'];
+            $pagetags->totals->headers[] = (object)['align' => 'center', 'text' => '<span class="smalltext">' . $str . '</span>'];
         }
         if ($osgood) {
             $pagetags->totals->headers[] = (object)['align' => 'left', 'text' => ''];
@@ -986,10 +1000,10 @@ class rank extends responsetype {
                 $nbna = $this->counts[$content]->nbna;
                 // TOTAL number of responses for this possible answer.
                 $total = $this->counts[$content]->num;
-                $nbresp = '<strong>('.$total.')</strong>';
+                $nbresp = '<strong>(' . $total . ')</strong>';
                 if ($osgood) {
                     // Ensure there are two bits of content.
-                    list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
+                    [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
                     $header = reset($pagetags->totals->headers);
                     if (isset($rows[$content]) && isset($rows[$content]->isother) && $rows[$content]->isother) {
                         $content = get_string('other', 'questionnaire') . ' ' . $content;
@@ -1016,17 +1030,17 @@ class rank extends responsetype {
                     if (isset($rank[$i])) {
                         $str = $rank[$i];
                         if ($total !== 0 && $str !== 0) {
-                            $percent = ' (<span class="percent">'.number_format(($str * 100) / $total).'%</span>)';
+                            $percent = ' (<span class="percent">' . number_format(($str * 100) / $total) . '%</span>)';
                         }
                         // Emphasize responses with max rank value.
                         if ($str == $maxrank) {
-                            $str = '<strong>'.$str.'</strong>';
+                            $str = '<strong>' . $str . '</strong>';
                         }
                     } else {
                         $str = 0;
                     }
                     $header = next($pagetags->totals->headers);
-                    $totalcols[] = (object)['align' => $header->align, 'text' => $str.$percent];
+                    $totalcols[] = (object)['align' => $header->align, 'text' => $str . $percent];
                 }
                 if ($osgood) {
                     $header = next($pagetags->totals->headers);
@@ -1059,9 +1073,9 @@ class rank extends responsetype {
      */
     private static function sortavgasc($a, $b) {
         if (isset($a->avg) && isset($b->avg)) {
-            if ( $a->avg < $b->avg ) {
+            if ($a->avg < $b->avg) {
                 return -1;
-            } else if ($a->avg > $b->avg ) {
+            } else if ($a->avg > $b->avg) {
                 return 1;
             } else {
                 return 0;
@@ -1077,7 +1091,7 @@ class rank extends responsetype {
      */
     private static function sortavgdesc($a, $b) {
         if (isset($a->avg) && isset($b->avg)) {
-            if ( $a->avg > $b->avg ) {
+            if ($a->avg > $b->avg) {
                 return -1;
             } else if ($a->avg < $b->avg) {
                 return 1;

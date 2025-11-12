@@ -29,5 +29,5 @@ $messageproviders = [
     // Message to nonrespondents.
     'message' => [],
     // Response submissions.
-    'notification' => []
+    'notification' => [],
 ];

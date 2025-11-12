@@ -54,17 +54,17 @@
             <span class="selected">
         {{^pdf}}
             <input type="radio" name="{{name}}" checked="checked" disabled="disabled"
-                   aria-label="{{alabel}}"/>{{/pdf}}
+                   aria-label="{{alabel}}">{{/pdf}}
                 {{#pdf}}&#10003;{{/pdf}} {{{content}}}{{#othercontent}} <span class="response text">{{.}}</span>{{/othercontent}}
     </span>
         {{/selected}}
         {{^selected}}
             <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}
-                <input type="radio" name="{{name}}" disabled="disabled" aria-label="{{alabel}}"/>{{/pdf}}
+                <input type="radio" name="{{name}}" disabled="disabled" aria-label="{{alabel}}">{{/pdf}}
                 {{{content}}}</span>&nbsp;
         {{/selected}}
         {{#horizontal}}</span>{{/horizontal}}
-        {{^horizontal}}<br/>{{/horizontal}}
+        {{^horizontal}}<br>{{/horizontal}}
     {{/choices}}
 </div>
 <!-- End HTML generated from response_radio template. -->

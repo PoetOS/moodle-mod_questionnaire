@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\question;
-use \html_writer;
+use html_writer;
 use mod_questionnaire\question\choice;
 use mod_questionnaire\responsetype\response\response;
 
@@ -28,7 +28,6 @@ use mod_questionnaire\responsetype\response\response;
  * @package mod_questionnaire
  */
 class drop extends question {
-
     /**
      * Each question type must define its response class.
      * @return string The response object based off of questionnaire_response_base.
@@ -92,7 +91,7 @@ class drop extends question {
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($response, $dependants, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants, $blankquestionnaire = false) {
         // Drop.
         $options = [];
 
@@ -112,9 +111,9 @@ class drop extends question {
             $options[] = $option;
         }
         $chobj = new \stdClass();
-        $chobj->name = 'q'.$this->id;
+        $chobj->name = 'q' . $this->id;
         $chobj->id = self::qtypename($this->type_id) . $this->name;
-        $chobj->class = 'select custom-select menu q'.$this->id;
+        $chobj->class = 'select form-select menu q' . $this->id;
         $chobj->options = $options;
         $choicetags->qelements->choice = $chobj;
         $choicetags->isprint = $this->get_isprint();
@@ -131,9 +130,9 @@ class drop extends question {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
-        $resptags->name = 'q' . $this->id.$uniquetag++;
+        $resptags->name = 'q' . $this->id . $uniquetag++;
         $resptags->id = 'menu' . $resptags->name;
-        $resptags->class = 'select custom-select ' . $resptags->id;
+        $resptags->class = 'select form-select ' . $resptags->id;
         $resptags->options = [];
         $resptags->options[] = (object)['value' => '', 'label' => get_string('choosedots')];
 

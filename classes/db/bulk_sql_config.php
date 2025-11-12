@@ -24,7 +24,6 @@ namespace mod_questionnaire\db;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class bulk_sql_config {
-
     /**
      * @var string $table
      */
@@ -74,7 +73,7 @@ class bulk_sql_config {
         return [
             'choice_id' => $this->usechoiceid,
             'response' => $this->useresponse,
-            'rankvalue' => $this->userank
+            'rankvalue' => $this->userank,
         ];
     }
 }

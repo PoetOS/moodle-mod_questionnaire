@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @package mod_questionnaire
  */
 class yesno extends question {
-
     /**
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.
@@ -117,7 +116,7 @@ class yesno extends question {
      * @return object The check question context tags.
      * @throws \coding_exception
      */
-    protected function question_survey_display($response, $dependants=[], $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants = [], $blankquestionnaire = false) {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $stryes = get_string('yes');
@@ -127,12 +126,12 @@ class yesno extends question {
         $val2 = 'n';
 
         if ($blankquestionnaire) {
-            $stryes = ' (1) '.$stryes;
-            $strno = ' (0) '.$strno;
+            $stryes = ' (1) ' . $stryes;
+            $strno = ' (0) ' . $strno;
         }
 
         $options = [$val1 => $stryes, $val2 => $strno];
-        $name = 'q'.$this->id;
+        $name = 'q' . $this->id;
         $checked = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
         $ischecked = false;
 
@@ -141,7 +140,7 @@ class yesno extends question {
         $choicetags->qelements->choice = [];
 
         foreach ($options as $value => $label) {
-            $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
+            $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
             $option = new \stdClass();
             $option->name = $name;
             $option->id = $htmlid;
@@ -162,7 +161,7 @@ class yesno extends question {
         // CONTRIB-846.
         if (!$this->required()) {
             $id = '';
-            $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
+            $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
             $content = get_string('noanswer', 'questionnaire');
             $option = new \stdClass();
             $option->name = $name;
@@ -193,8 +192,8 @@ class yesno extends question {
 
         $resptags = new \stdClass();
 
-        $resptags->yesname = 'q'.$this->id.$uniquetag++.'y';
-        $resptags->noname = 'q'.$this->id.$uniquetag++.'n';
+        $resptags->yesname = 'q' . $this->id . $uniquetag++ . 'y';
+        $resptags->noname = 'q' . $this->id . $uniquetag++ . 'n';
         $resptags->stryes = get_string('yes');
         $resptags->strno = get_string('no');
         if (!isset($response->answers[$this->id])) {

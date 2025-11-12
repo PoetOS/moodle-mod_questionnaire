@@ -44,22 +44,22 @@
     {{#yesselected}}
         {{#pdf}}&#10003;{{/pdf}}<span class="selected">{{^pdf}}
         <input type="radio" name="{{yesname}}" checked="checked" disabled="disabled"
-               aria-label="{{alabelyes}}"/>{{/pdf}} {{{stryes}}}</span>
+               aria-label="{{alabelyes}}">{{/pdf}} {{{stryes}}}</span>
     {{/yesselected}}
     {{^yesselected}}
         <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}
             <input type="radio" name="{{yesname}}" disabled="disabled"
-                   aria-label="{{alabelyes}}"/>{{/pdf}} {{{stryes}}}</span>
+                   aria-label="{{alabelyes}}">{{/pdf}} {{{stryes}}}</span>
     {{/yesselected}}
     {{#noselected}}
         {{#pdf}}&nbsp; &#10003;{{/pdf}}<span class="selected">{{^pdf}}
         <input type="radio" name="{{noname}}" checked="checked" disabled="disabled"
-               aria-label="{{alabelno}}"/>{{/pdf}} {{{strno}}}</span>
+               aria-label="{{alabelno}}">{{/pdf}} {{{strno}}}</span>
     {{/noselected}}
     {{^noselected}}
         <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}
             <input type="radio" name="{{noname}}" disabled="disabled"
-                   aria-label="{{alabelno}}"/>{{/pdf}} {{{strno}}}</span>
+                   aria-label="{{alabelno}}">{{/pdf}} {{{strno}}}</span>
     {{/noselected}}
 </div>
 <!-- End HTML generated from response_yesno template. -->

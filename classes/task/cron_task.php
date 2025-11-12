@@ -15,36 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\task;
+defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 /**
- * A scheduled task for Questionnaire.
+ * A schedule task for mod_questionnaire cron.
  *
- * @package mod_questionnaire
- * @copyright 2015 The Open University
- * @author     Mike Churchward
+ * @package   mod_questionnaire
+ * @copyright 2022 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cleanup extends \core\task\scheduled_task {
+class cron_task extends \core\task\scheduled_task {
     /**
      * Get a descriptive name for this task (shown to admins).
      *
      * @return string
      */
     public function get_name() {
-        return get_string('crontask', 'mod_questionnaire');
+        return get_string('cleanrecylebin', 'mod_questionnaire');
     }
 
     /**
-     * Execute method.
+     * Run mod_questionnaire cron.
      */
     public function execute() {
-        global $CFG;
-        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
-        questionnaire_cleanup();
-        $isautodelete = (bool) get_config('questionnaire', 'autodeleteresponse');
-        if ($isautodelete) {
-            questionnaire_delete_old_responses();
+        global $DB;
+        $rangetimecrontask = questionnaire_get_range_time_permanently();
+        $sql = "SELECT *
+                  FROM {questionnaire_question}
+                 WHERE deleted IS NOT NULL
+                   AND deleted < ?";
+        if ($deletequestions = $DB->get_records_sql($sql, [time() - $rangetimecrontask])) {
+            foreach ($deletequestions as $question) {
+                questionnaire_delete_permanently_questions($question->id, $question->surveyid);
+            }
         }
     }
 }

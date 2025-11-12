@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @package mod_questionnaire
  */
 class radio extends question {
-
     /**
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.
@@ -88,7 +87,7 @@ class radio extends question {
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($response, $dependants=[], $blankquestionnaire=false) {
+    protected function question_survey_display($response, $dependants = [], $blankquestionnaire = false) {
         // Radio buttons.
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
@@ -106,9 +105,9 @@ class radio extends question {
             }
 
             if (!$choice->is_other_choice()) { // This is a normal radio button.
-                $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
+                $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
 
-                $radio->name = 'q'.$this->id;
+                $radio->name = 'q' . $this->id;
                 $radio->id = $htmlid;
                 $radio->value = $id;
                 if (isset($response->answers[$this->id][$id])) {
@@ -118,10 +117,10 @@ class radio extends question {
                 $value = '';
                 if ($blankquestionnaire) {
                     $radio->disabled = true;
-                    $value = ' ('.$choice->value.') ';
+                    $value = ' (' . $choice->value . ') ';
                 }
                 $contents = questionnaire_choice_values($choice->content);
-                $radio->label = $value.format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
+                $radio->label = $value . format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
                 }
@@ -129,9 +128,9 @@ class radio extends question {
                 $othertext = $choice->other_choice_display();
                 $cname = choice::id_other_choice_name($id);
                 $odata = isset($response->answers[$this->id][$id]) ? $response->answers[$this->id][$id]->value : '';
-                $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
+                $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
 
-                $radio->name = 'q'.$this->id;
+                $radio->name = 'q' . $this->id;
                 $radio->id = $htmlid;
                 $radio->value = $id;
                 if (isset($response->answers[$this->id][$id]) || !empty($odata)) {
@@ -140,12 +139,12 @@ class radio extends question {
                 }
                 $otherempty = !empty($radio->checked) && empty($odata);
                 $radio->label = format_text($othertext, FORMAT_HTML, ['noclean' => true]);
-                $radio->oname = 'q'.$this->id.choice::id_other_choice_name($id);
-                $radio->oid = $htmlid.'-other';
+                $radio->oname = 'q' . $this->id . choice::id_other_choice_name($id);
+                $radio->oid = $htmlid . '-other';
                 if (isset($odata)) {
                     $radio->ovalue = format_string(stripslashes($odata));
                 }
-                $radio->olabel = 'Text for '.format_text($othertext, FORMAT_HTML, ['noclean' => true]);
+                $radio->olabel = 'Text for ' . format_text($othertext, FORMAT_HTML, ['noclean' => true]);
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
                     $radio->aolabel = strip_tags("{$this->qlegend} {$radio->olabel}");
@@ -157,12 +156,12 @@ class radio extends question {
         // CONTRIB-846.
         if (!$this->required()) {
             $radio = new \stdClass();
-            $htmlid = 'auto-rb'.sprintf('%04d', ++$idcounter);
+            $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
             if ($horizontal) {
                 $radio->horizontal = $horizontal;
             }
 
-            $radio->name = 'q'.$this->id;
+            $radio->name = 'q' . $this->id;
             $radio->id = $htmlid;
             $radio->value = 0;
 
@@ -209,9 +208,9 @@ class radio extends question {
             if ($horizontal) {
                 $chobj->horizontal = 1;
             }
-            $chobj->name = $id.$uniquetag++;
+            $chobj->name = $id . $uniquetag++;
             $contents = questionnaire_choice_values($choice->content);
-            $choice->content = $contents->text.$contents->image;
+            $choice->content = $contents->text . $contents->image;
             if ($id == $checked) {
                 $chobj->selected = 1;
                 if ($choice->is_other_choice()) {
@@ -239,9 +238,15 @@ class radio extends question {
      * @return boolean
      */
     public function response_complete($responsedata) {
-        if (isset($responsedata->{'q'.$this->id}) && ($this->required()) &&
-                (strpos($responsedata->{'q'.$this->id}, 'other_') !== false)) {
-            return (trim($responsedata->{'q'.$this->id.''.substr($responsedata->{'q'.$this->id}, 5)}) != false);
+        if (
+            isset($responsedata->{'q' . $this->id}) && ($this->required()) &&
+            (strpos($responsedata->{'q' . $this->id}, 'other_') !== false)
+        ) {
+            return (
+                trim(
+                    $responsedata->{'q' . $this->id . '' . substr($responsedata->{'q' . $this->id}, 5)}
+                ) != false
+            );
         } else {
             return parent::response_complete($responsedata);
         }

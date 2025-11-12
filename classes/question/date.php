@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @package mod_questionnaire
  */
 class date extends question {
-
     /**
      * Return the responseclass used.
      * @return string
@@ -65,7 +64,7 @@ class date extends question {
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         // Date.
         $questiontags = new \stdClass();
         if (!empty($response->answers[$this->id])) {
@@ -81,7 +80,7 @@ class date extends question {
         $choice = new \stdClass();
         $choice->type = 'date'; // Using HTML5 date input.
         $choice->onkeypress = 'return event.keyCode != 13;';
-        $choice->name = 'q'.$this->id;
+        $choice->name = 'q' . $this->id;
         $choice->value = (isset($response->answers[$this->id][0]->value) ? $response->answers[$this->id][0]->value : '');
         $questiontags->qelements = new \stdClass();
         $questiontags->qelements->choice = $choice;
@@ -117,7 +116,7 @@ class date extends question {
                 $answer = $responsedata->answers[$this->id][0];
                 $responseval = $answer->value;
             }
-        } else if (isset($responsedata->{'q'.$this->id})) {
+        } else if (isset($responsedata->{'q' . $this->id})) {
             $responseval = $responsedata->{'q' . $this->id};
         }
         if ($responseval !== false) {

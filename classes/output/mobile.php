@@ -27,7 +27,6 @@ use mod_questionnaire\responsetype\response\response;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mobile {
-
     /**
      * Returns the initial page when viewing the activity for the mobile app.
      *
@@ -36,7 +35,7 @@ class mobile {
      */
     public static function mobile_view_activity($args) {
         global $OUTPUT, $USER, $CFG, $DB;
-        require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
         $args = (object) $args;
 
@@ -49,7 +48,7 @@ class mobile {
         $submit = isset($args->submit) ? $args->submit : false;
         $completed = isset($args->completed) ? $args->completed : false;
 
-        list($cm, $course, $questionnaire) = questionnaire_get_standard_page_items($cmid);
+        [$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($cmid);
         $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
 
         $data = [];
@@ -86,10 +85,11 @@ class mobile {
             case 'submit':
             case 'nextpage':
             case 'previouspage':
+                // Check for notifications.
                 if (!$data['notifications']) {
                     $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
                 }
-
+                // Fall through.
             case 'respond':
             case 'resume':
                 // Completing a questionnaire.
@@ -183,12 +183,12 @@ class mobile {
             'templates' => [
                 [
                     'id' => 'main',
-                    'html' => $OUTPUT->render_from_template($template, $data)
+                    'html' => $OUTPUT->render_from_template($template, $data),
                 ],
             ],
             'javascript' => file_get_contents($CFG->dirroot . '/mod/questionnaire/appjs/uncheckother.js'),
             'otherdata' => $responses,
-            'files' => null
+            'files' => null,
         ];
         return $return;
     }
@@ -238,7 +238,7 @@ class mobile {
      * @param response $response
      * @return array
      */
-    protected static function add_pagequestion_data($questionnaire, $pagenum, $response=null) {
+    protected static function add_pagequestion_data($questionnaire, $pagenum, $response = null) {
         $qnum = 1;
         $pagequestions = [];
         $responses = [];

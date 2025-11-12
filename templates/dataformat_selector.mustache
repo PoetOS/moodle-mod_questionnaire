@@ -64,16 +64,16 @@
             <option value="{{value}}">{{label}}</option>
         {{/options}}
         </select>
-        <input type="submit" value="{{submit}}" class="btn btn-primary"></div><br />
+        <input type="submit" value="{{submit}}" class="btn btn-primary"></div><br>
         {{#allowemailreporting}}
-        <div><input type="checkbox" name="emailroles" id="emailroles" value="1" />
+        <div><input type="checkbox" name="emailroles" id="emailroles" value="1">
         <label for="emailroles">{{#str}}emailroles, questionnaire{{/str}}</label> {{{emailroleshelp}}}
-        <input type="text" name="emailextra" id="emailextra" value="" />
+        <input type="text" name="emailextra" id="emailextra" value="">
         <label for="emailextra">{{#str}}emailextra, questionnaire{{/str}}</label> {{{emailextrahelp}}}
-        <input type="submit" value="{{#str}}emailsend, questionnaire{{/str}}" name="emailreport" class="btn btn-primary" /></div>
+        <input type="submit" value="{{#str}}emailsend, questionnaire{{/str}}" name="emailreport" class="btn btn-primary"></div>
         {{/allowemailreporting}}
         {{#params}}
-        <input type="hidden" name="{{name}}" value="{{value}}" />
+        <input type="hidden" name="{{name}}" value="{{value}}">
         {{/params}}
     </div>
 </form>

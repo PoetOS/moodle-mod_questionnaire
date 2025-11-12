@@ -16,9 +16,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
-require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 /**
  * print the form to add or edit a questionnaire-instance
@@ -29,7 +29,6 @@ require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class mod_questionnaire_mod_form extends moodleform_mod {
-
     /**
      * Form definition.
      */
@@ -43,7 +42,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('name', 'questionnaire'), array('size' => '64'));
+        $mform->addElement('text', 'name', get_string('name', 'questionnaire'), ['size' => '64']);
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
@@ -67,16 +66,19 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
-        $notificationoptions = array(0 => get_string('no'), 1 => get_string('notificationsimple', 'questionnaire'),
-            2 => get_string('notificationfull', 'questionnaire'));
+        $notificationoptions = [
+            0 => get_string('no'),
+            1 => get_string('notificationsimple', 'questionnaire'),
+            2 => get_string('notificationfull', 'questionnaire'),
+        ];
         $mform->addElement('select', 'notifications', get_string('notifications', 'questionnaire'), $notificationoptions);
         $mform->addHelpButton('notifications', 'notifications', 'questionnaire');
 
-        $options = array('0' => get_string('no'), '1' => get_string('yes'));
+        $options = ['0' => get_string('no'), '1' => get_string('yes')];
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
 
-        $options = array('0' => get_string('no'), '1' => get_string('yes'));
+        $options = ['0' => get_string('no'), '1' => get_string('yes')];
         $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
         $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
 
@@ -122,8 +124,12 @@ class mod_questionnaire_mod_form extends moodleform_mod {
                     $prelabel = '';
                 }
             } else {
-                $mform->addElement('static', 'usetemplate', get_string('usetemplate', 'questionnaire'),
-                                '('.get_string('notemplatesurveys', 'questionnaire').')');
+                $mform->addElement(
+                    'static',
+                    'usetemplate',
+                    get_string('usetemplate', 'questionnaire'),
+                    '(' . get_string('notemplatesurveys', 'questionnaire') . ')'
+                );
             }
 
             // Retrieve existing public questionnaires from this site.
@@ -135,8 +141,12 @@ class mod_questionnaire_mod_form extends moodleform_mod {
                     $prelabel = '';
                 }
             } else {
-                $mform->addElement('static', 'usepublic', get_string('usepublic', 'questionnaire'),
-                                   '('.get_string('nopublicsurveys', 'questionnaire').')');
+                $mform->addElement(
+                    'static',
+                    'usepublic',
+                    get_string('usepublic', 'questionnaire'),
+                    '(' . get_string('nopublicsurveys', 'questionnaire') . ')'
+                );
             }
 
             $mform->setDefault('create', 'new-0');
@@ -147,8 +157,12 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         if ($isautodelete) {
             $options = $this->create_remove_options();
             $mform->addElement('header', 'responsehdr', get_string('removeoldresponses', 'questionnaire'));
-            $mform->addElement('select', 'removeafter',
-                    get_string('removeoldresponsesafter', 'questionnaire'), $options);
+            $mform->addElement(
+                'select',
+                'removeafter',
+                get_string('removeoldresponsesafter', 'questionnaire'),
+                $options
+            );
             $mform->addHelpButton('removeafter', 'removeoldresponses', 'questionnaire');
             // Just set default value when creating a new questionare.
             if (empty($questionnaire->sid)) {
@@ -182,8 +196,10 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $defaultvalues['cannotchangerespondenttype'] = 0;
         if (!empty($defaultvalues['respondenttype']) && $defaultvalues['respondenttype'] == "anonymous") {
             // If this questionnaire has responses.
-            $numresp = $DB->count_records('questionnaire_response',
-                            array('questionnaireid' => $defaultvalues['instance'], 'complete' => 'y'));
+            $numresp = $DB->count_records(
+                'questionnaire_response',
+                ['questionnaireid' => $defaultvalues['instance'], 'complete' => 'y']
+            );
             if ($numresp) {
                 $defaultvalues['cannotchangerespondenttype'] = 1;
             }
@@ -200,8 +216,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $errors = parent::validation($data, $files);
 
         // Check open and close times are consistent.
-        if ($data['opendate'] && $data['closedate'] &&
-            $data['closedate'] < $data['opendate']) {
+        if (($data['opendate'] && $data['closedate']) && ($data['closedate'] < $data['opendate'])) {
             $errors['closedate'] = get_string('closebeforeopen', 'questionnaire');
         }
 
@@ -223,8 +238,12 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         }
 
         $mform =& $this->_form;
-        $mform->addElement('checkbox', 'completionsubmit' . $suffix, '',
-            get_string('completionsubmit', 'questionnaire'));
+        $mform->addElement(
+            'checkbox',
+            'completionsubmit' . $suffix,
+            '',
+            get_string('completionsubmit', 'questionnaire')
+        );
         return ['completionsubmit' . $suffix];
     }
 
@@ -250,5 +269,4 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         }
         return $options;
     }
-
 }

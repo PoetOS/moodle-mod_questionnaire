@@ -19,7 +19,7 @@ namespace mod_questionnaire;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
 
 /**
  * Print the form to add or edit a questionnaire-instance
@@ -30,9 +30,8 @@ require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class feedback_section_form extends \moodleform {
-
-    /** @var mixed $_feedbacks */
-    protected $_feedbacks;
+    /** @var mixed $feedbacks */
+    protected $feedbacks;
     /**
      * @var \context $context The used context.
      */
@@ -48,22 +47,29 @@ class feedback_section_form extends \moodleform {
         $validquestions = $this->_customdata->validquestions;
         $survey = $this->_customdata->survey;
         $feedbacksections = $questionnaire->survey->feedbacksections;
-        $this->_feedbacks = $feedbacksection->sectionfeedback;
+        $this->feedbacks = $feedbacksection->sectionfeedback;
         $this->context = $questionnaire->context;
         $mform    =& $this->_form;
 
         if ($survey->feedbacksections > 1) {
             $mform->addElement('header', 'feedbacksectionsheader', get_string('feedbacksections', 'questionnaire'));
             $sselectgroup = [];
-            $sselect = $mform->createElement('select', 'navigatesections', get_string('navigatetosection', 'questionnaire'),
-                $this->_customdata->sectionselect);
+            $sselect = $mform->createElement(
+                'select',
+                'navigatesections',
+                get_string('navigatetosection', 'questionnaire'),
+                $this->_customdata->sectionselect
+            );
             $sselect->setSelected($feedbacksection->id);
             $sselectgroup[] = $sselect;
             $sselectgroup[] = $mform->createElement('submit', 'gotosection', get_string('navigatetosection', 'questionnaire'));
             $mform->addGroup($sselectgroup, '');
             $addnewsectionarray = [];
-            $addnewsectionarray[] = $mform->createElement('text', 'newsectionlabel',
-                get_string('feedbacksectionlabel', 'questionnaire'));
+            $addnewsectionarray[] = $mform->createElement(
+                'text',
+                'newsectionlabel',
+                get_string('feedbacksectionlabel', 'questionnaire')
+            );
             $mform->setType('newsectionlabel', PARAM_TEXT);
             $addnewsectionarray[] = $mform->createElement('submit', 'addnewsection', get_string('addnewsection', 'questionnaire'));
             $mform->addGroup($addnewsectionarray, '', get_string('feedbacksectionlabel', 'questionnaire'));
@@ -80,15 +86,24 @@ class feedback_section_form extends \moodleform {
         }
 
         $mform->addElement('header', 'contenthdr', $feedbackheading);
-        $mform->addElement('text', 'sectionlabel', get_string('feedbacksectionlabel', 'questionnaire'),
-            ['size' => '50', 'maxlength' => '50']);
+        $mform->addElement(
+            'text',
+            'sectionlabel',
+            get_string('feedbacksectionlabel', 'questionnaire'),
+            ['size' => '50', 'maxlength' => '50']
+        );
         $mform->setType('sectionlabel', PARAM_TEXT);
         $mform->addRule('sectionlabel', null, 'required', null, 'client');
         $mform->addHelpButton('sectionlabel', 'feedbacksectionlabel', 'questionnaire');
 
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
-        $mform->addElement('editor', 'sectionheading', get_string('feedbacksectionheadingtext', 'questionnaire'),
-            null, $editoroptions);
+        $mform->addElement(
+            'editor',
+            'sectionheading',
+            get_string('feedbacksectionheadingtext', 'questionnaire'),
+            null,
+            $editoroptions
+        );
         $mform->setType('sectionheading', PARAM_RAW);
         $mform->setDefault('feedbacknotes', $questionnaire->survey->feedbacknotes);
         $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
@@ -96,8 +111,11 @@ class feedback_section_form extends \moodleform {
         if ($questionnaire->survey->feedbacksections > 0) {
             // Sections.
             if ($survey->feedbacksections > 1) {
-                $mform->addElement('header', 'fbsection_' . $feedbacksection->id,
-                    get_string('feedbacksectionquestions', 'questionnaire', $label));
+                $mform->addElement(
+                    'header',
+                    'fbsection_' . $feedbacksection->id,
+                    get_string('feedbacksectionquestions', 'questionnaire', $label)
+                );
                 $qvalid = $validquestions;
                 if (!empty($feedbacksection->scorecalculation)) {
                     $rsrc = $questionnaire->renderer->image_url('t/delete');
@@ -112,7 +130,7 @@ class feedback_section_form extends \moodleform {
                                 'name="weight[' . $qid . ']" min="0.0" max="1.0" step="0.01" ' .
                                 'value="' . $score . '">';
                         } else {
-                            $weight = '<input type="hidden" id="weight' . $counter . '" name="weight[' . $qid . ']" '.
+                            $weight = '<input type="hidden" id="weight' . $counter . '" name="weight[' . $qid . ']" ' .
                                 'value="' . $score . '">';
                         }
                         $questionactions[] = $mform->createElement('html', $weight);
@@ -127,8 +145,12 @@ class feedback_section_form extends \moodleform {
                 if (!empty($qvalid)) {
                     // Merge arrays maintaining keys.
                     $qselect = [];
-                    $qselect[] = $mform->createElement('select', 'addquestionselect',
-                        get_string('addquestiontosection', 'questionnaire'), $qvalid);
+                    $qselect[] = $mform->createElement(
+                        'select',
+                        'addquestionselect',
+                        get_string('addquestiontosection', 'questionnaire'),
+                        $qvalid
+                    );
                     $qselect[] = $mform->createElement('submit', 'addquestion', get_string('addquestion', 'questionnaire'));
                     $mform->addGroup($qselect, '', get_string('addquestiontosection', 'questionnaire'));
                 }
@@ -145,27 +167,56 @@ class feedback_section_form extends \moodleform {
         $repeatarray = [];
         $repeatedoptions = [];
 
-        $repeatarray[] = $mform->createElement('editor', 'feedbacktext', get_string('feedback', 'questionnaire'), null,
-            ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context]);
         $repeatarray[] = $mform->createElement(
-            'text', 'feedbackboundaries', get_string('feedbackscoreboundary', 'questionnaire'), ['size' => 10]);
+            'editor',
+            'feedbacktext',
+            get_string('feedback', 'questionnaire'),
+            null,
+            ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context]
+        );
+        $repeatarray[] = $mform->createElement(
+            'text',
+            'feedbackboundaries',
+            get_string('feedbackscoreboundary', 'questionnaire'),
+            ['size' => 10]
+        );
         $repeatedoptions['feedbacklabel']['type'] = PARAM_RAW;
         $repeatedoptions['feedbacktext']['type'] = PARAM_RAW;
         $repeatedoptions['feedbackboundaries']['type'] = PARAM_RAW;
 
-        $numfeedbacks = max(count($this->_feedbacks) * 1, 3);
+        $numfeedbacks = max(count($this->feedbacks) * 1, 3);
 
-        $nextel = $this->repeat_elements($repeatarray, $numfeedbacks - 1, $repeatedoptions, 'boundary_repeats',
-            'boundary_add_fields', 2, get_string('feedbackaddmorefeedbacks', 'questionnaire'), true);
+        $nextel = $this->repeat_elements(
+            $repeatarray,
+            $numfeedbacks - 1,
+            $repeatedoptions,
+            'boundary_repeats',
+            'boundary_add_fields',
+            2,
+            get_string('feedbackaddmorefeedbacks', 'questionnaire'),
+            true
+        );
 
         // Put some extra elements in before the button.
         $mform->insertElementBefore(
-            $mform->createElement('editor', "feedbacktext[$nextel]", get_string('feedback', 'questionnaire'), null,
-                ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context]),
-            'boundary_add_fields');
+            $mform->createElement(
+                'editor',
+                "feedbacktext[$nextel]",
+                get_string('feedback', 'questionnaire'),
+                null,
+                ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context]
+            ),
+            'boundary_add_fields'
+        );
         $mform->insertElementBefore(
-            $mform->createElement('static', 'scoreboundarystatic2', get_string('feedbackscoreboundary', 'questionnaire'), '0%'),
-            'boundary_add_fields');
+            $mform->createElement(
+                'static',
+                'scoreboundarystatic2',
+                get_string('feedbackscoreboundary', 'questionnaire'),
+                '0%'
+            ),
+            'boundary_add_fields'
+        );
 
         // Hidden fields.
         $mform->addElement('hidden', 'id', 0);
@@ -187,25 +238,25 @@ class feedback_section_form extends \moodleform {
      * @param array $toform
      */
     public function data_preprocessing(&$toform) {
-        if (count($this->_feedbacks)) {
+        if (count($this->feedbacks)) {
             $key = 0;
-            foreach ($this->_feedbacks as $feedback) {
-                $draftid = file_get_submitted_draft_itemid('feedbacktext['.$key.']');
-                $toform['feedbacktext['.$key.']']['text'] = file_prepare_draft_area(
-                    $draftid,               // Draftid.
-                    $this->context->id,     // Context.
-                    'mod_questionnaire',    // Component.
-                    'feedback',             // Filarea.
-                    !empty($feedback->id) ? (int)$feedback->id : null, // Itemid.
+            foreach ($this->feedbacks as $feedback) {
+                $draftid = file_get_submitted_draft_itemid('feedbacktext[' . $key . ']');
+                $toform['feedbacktext[' . $key . ']']['text'] = file_prepare_draft_area(
+                    $draftid,
+                    $this->context->id,
+                    'mod_questionnaire', // Component.
+                    'feedback',
+                    !empty($feedback->id) ? (int)$feedback->id : null,
                     null,
-                    $feedback->feedbacktext // Text.
+                    $feedback->feedbacktext
                 );
-                $toform['feedbacktext['.$key.']']['format'] = 1;
-                $toform['feedbacklabel['.$key.']'] = $feedback->feedbacklabel;
-                $toform['feedbacktext['.$key.']']['itemid'] = $draftid;
+                $toform['feedbacktext[' . $key . ']']['format'] = 1;
+                $toform['feedbacklabel[' . $key . ']'] = $feedback->feedbacklabel;
+                $toform['feedbacktext[' . $key . ']']['itemid'] = $draftid;
 
                 if ($feedback->minscore > 0) {
-                    $toform['feedbackboundaries['.$key.']'] = (100.0 * $feedback->minscore / 100 ) . '%';
+                    $toform['feedbackboundaries[' . $key . ']'] = (100.0 * $feedback->minscore / 100 ) . '%';
                 }
                 $key++;
             }
@@ -236,8 +287,10 @@ class feedback_section_form extends \moodleform {
             if (is_numeric($boundary) && $boundary <= 0) {
                 $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryoutofrange', 'questionnaire', $i + 1);
             }
-            if (is_numeric($boundary) && $i > 0 &&
-                    $boundary >= $data['feedbackboundaries'][$i - 1]) {
+            if (
+                is_numeric($boundary) && $i > 0 &&
+                $boundary >= $data['feedbackboundaries'][$i - 1]
+            ) {
                 $errors["feedbackboundaries[$i]"] = get_string('feedbackerrororder', 'questionnaire', $i + 1);
             }
             $data['feedbackboundaries'][$i] = $boundary;
@@ -248,15 +301,19 @@ class feedback_section_form extends \moodleform {
         // Check there is nothing in the remaining unused fields.
         if (!empty($data['feedbackboundaries'])) {
             for ($i = $numboundaries; $i < count($data['feedbackboundaries']); $i += 1) {
-                if (!empty($data['feedbackboundaries'][$i] ) &&
-                        trim($data['feedbackboundaries'][$i] ) != '') {
+                if (
+                    !empty($data['feedbackboundaries'][$i]) &&
+                    trim($data['feedbackboundaries'][$i]) != ''
+                ) {
                     $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorjunkinboundary', 'questionnaire', $i + 1);
                 }
             }
         }
         for ($i = $numboundaries + 1; $i < count($data['feedbacktext']); $i += 1) {
-            if (!empty($data['feedbacktext'][$i]['text']) &&
-                    trim($data['feedbacktext'][$i]['text'] ) != '') {
+            if (
+                !empty($data['feedbacktext'][$i]['text']) &&
+                trim($data['feedbacktext'][$i]['text']) != ''
+            ) {
                 $errors["feedbacktext[$i]"] = get_string('feedbackerrorjunkinfeedback', 'questionnaire', $i + 1);
             }
         }

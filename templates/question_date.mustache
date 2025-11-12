@@ -45,13 +45,13 @@
 {{#choice}}
 {{#isprint}}
     <div class="qn-datemsg">{{# str }}printstrictdateformatting, mod_questionnaire{{/ str}}</div>
-    <input type="text" size="{{choice.size}}" name="{{choice.name}}" />
+    <input type="text" size="{{choice.size}}" name="{{choice.name}}">
 {{/isprint}}
 {{^isprint}}
     <div class="qn-datemsg">{{# str }}strictdateformatting, mod_questionnaire{{/ str}}</div>
     <div class="qn-date">
-        <input type="{{type}}" name="{{choice.name}}" value="{{choice.value}}" />
-        <!--    <input {{#choice.onkeypress}}onkeypress="{{.}}"{{/choice.onkeypress}} type="text" size="12" name="{{choice.name}}" maxlength="10" value="{{choice.value}}" /> -->
+        <input type="{{type}}" name="{{choice.name}}" value="{{choice.value}}">
+        <!--    <input {{#choice.onkeypress}}onkeypress="{{.}}"{{/choice.onkeypress}} type="text" size="12" name="{{choice.name}}" maxlength="10" value="{{choice.value}}"> -->
     </div>
 {{/isprint}}
 {{/choice}}

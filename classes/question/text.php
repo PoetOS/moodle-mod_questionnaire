@@ -25,7 +25,6 @@ namespace mod_questionnaire\question;
  * @package mod_questionnaire
  */
 class text extends question {
-
     /**
      * The class constructor
      * @param int $id
@@ -78,14 +77,14 @@ class text extends question {
      * @param bool $blankquestionnaire
      *
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         // Text Box.
         $questiontags = new \stdClass();
         $questiontags->qelements = new \stdClass();
         $choice = new \stdClass();
         $choice->onkeypress = 'return event.keyCode != 13;';
         $choice->size = $this->length;
-        $choice->name = 'q'.$this->id;
+        $choice->name = 'q' . $this->id;
         if ($this->precise > 0) {
             $choice->maxlength = $this->precise;
         }

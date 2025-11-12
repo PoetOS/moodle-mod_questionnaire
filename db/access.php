@@ -25,217 +25,180 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
-
+$capabilities = [
     // Ability to add a new questionnaire instance to the course.
-    'mod/questionnaire:addinstance' => array(
-
+    'mod/questionnaire:addinstance' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
-        'clonepermissionsfrom' => 'moodle/course:manageactivities'
-    ),
-
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/course:manageactivities',
+    ],
     // Ability to see that the questionnaire exists, and the basic information
     // about it.
-    'mod/questionnaire:view' => array(
-
+    'mod/questionnaire:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
+        'legacy' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    // Ability to complete the questionnaire and submit.
-    'mod/questionnaire:submit' => array(
-
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'student' => CAP_ALLOW
-        )
-    ),
-
-    // Ability to view individual responses to the questionnaire.
-    'mod/questionnaire:viewsingleresponse' => array(
-
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-         )
-    ),
-
-    // Receive a notificaton for every submission.
-    'mod/questionnaire:submissionnotification' => array(
-
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-         )
-    ),
-
-    // Ability to download responses in a CSV file.
-    'mod/questionnaire:downloadresponses' => array(
-
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    // Ability to delete someone's (or own) previous responses.
-    'mod/questionnaire:deleteresponses' => array(
-
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    // Ability to create and edit surveys.
-    'mod/questionnaire:manage' => array(
-
-        'riskbitmask' => RISK_XSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'editingteacher' => CAP_ALLOW,
-            'coursecreator' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    // Ability to edit survey questions.
-    'mod/questionnaire:editquestions' => array(
-
-        'riskbitmask' => RISK_XSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'editingteacher' => CAP_ALLOW,
-            'coursecreator' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    // Ability to create template surveys which can be copied, but not used.
-    'mod/questionnaire:createtemplates' => array(
-
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'coursecreator' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    // Ability to create public surveys which can be accessed from multiple places.
-    'mod/questionnaire:createpublic' => array(
-
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-            'coursecreator' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    // Ability to read own previous responses to questionnaires.
-    'mod/questionnaire:readownresponses' => array(
-
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
             'manager' => CAP_ALLOW,
-            'student' => CAP_ALLOW
-        )
-    ),
-
+        ],
+    ],
+    // Ability to complete the questionnaire and submit.
+    'mod/questionnaire:submit' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => ['student' => CAP_ALLOW],
+    ],
+    // Ability to view individual responses to the questionnaire.
+    'mod/questionnaire:viewsingleresponse' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Receive a notificaton for every submission.
+    'mod/questionnaire:submissionnotification' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Ability to download responses in a CSV file.
+    'mod/questionnaire:downloadresponses' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Ability to delete someone's (or own) previous responses.
+    'mod/questionnaire:deleteresponses' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Ability to create and edit surveys.
+    'mod/questionnaire:manage' => [
+        'riskbitmask' => RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'editingteacher' => CAP_ALLOW,
+            'coursecreator' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Ability to edit survey questions.
+    'mod/questionnaire:editquestions' => [
+        'riskbitmask' => RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'editingteacher' => CAP_ALLOW,
+            'coursecreator' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Ability to create template surveys which can be copied, but not used.
+    'mod/questionnaire:createtemplates' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'coursecreator' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Ability to create public surveys which can be accessed from multiple places.
+    'mod/questionnaire:createpublic' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'coursecreator' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Ability to read own previous responses to questionnaires.
+    'mod/questionnaire:readownresponses' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => [
+            'manager' => CAP_ALLOW,
+            'student' => CAP_ALLOW,
+        ],
+    ],
     // Ability to read others' previous responses to questionnaires.
     // Subject to constraints on whether responses can be viewed whilst
     // questionnaire still open or user has not yet responded themselves.
-    'mod/questionnaire:readallresponses' => array(
-
+    'mod/questionnaire:readallresponses' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
+        'legacy' => [
             'manager' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'student' => CAP_ALLOW
-        )
-    ),
-
+            'student' => CAP_ALLOW,
+        ],
+    ],
     // Ability to read others's responses without the above checks.
-    'mod/questionnaire:readallresponseanytime' => array(
-
+    'mod/questionnaire:readallresponseanytime' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
+        'legacy' => [
             'manager' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW
-        )
-    ),
-
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
     // Ability to print a blank questionnaire.
-    'mod/questionnaire:printblank' => array(
-
+    'mod/questionnaire:printblank' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
+        'legacy' => [
             'manager' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'student' => CAP_ALLOW
-        )
-    ),
-
+            'student' => CAP_ALLOW,
+        ],
+    ],
     // Ability to preview a questionnaire.
-    'mod/questionnaire:preview' => array(
-
+    'mod/questionnaire:preview' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
-                        'manager' => CAP_ALLOW,
-                        'coursecreator' => CAP_ALLOW,
-                        'teacher' => CAP_ALLOW,
-                        'editingteacher' => CAP_ALLOW
-        )
-    ),
-
+        'legacy' => [
+            'manager' => CAP_ALLOW,
+            'coursecreator' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
     // Ability to message students from a questionnaire.
-    'mod/questionnaire:message' => array(
-
+    'mod/questionnaire:message' => [
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-                            'manager' => CAP_ALLOW,
-                            'teacher' => CAP_ALLOW,
-                            'editingteacher' => CAP_ALLOW
-        )
-    )
-
-);
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
+];

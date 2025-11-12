@@ -17,10 +17,10 @@
 namespace mod_questionnaire\question;
 use mod_questionnaire\edit_question_form;
 use mod_questionnaire\responsetype\response\response;
-use \questionnaire;
+use questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
-use \html_writer;
+use html_writer;
 
 /**
  * This file contains the parent class for questionnaire question types.
@@ -48,7 +48,7 @@ define('QUESSECTIONTEXT', 100);
 global $idcounter, $CFG;
 $idcounter = 0;
 
-require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 #[\AllowDynamicProperties]
 /**
@@ -59,7 +59,6 @@ require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
  * @package mod_questionnaire
  */
 abstract class question {
-
     // Class Properties.
     /** @var int $id The database id of this question. */
     public $id = 0;
@@ -100,16 +99,16 @@ abstract class question {
     /** @var string $allchoices The list of all question's choices. */
     public $allchoices = '';
 
-    /** @var boolean $required The required flag. */
+    /** @var bool $required The required flag. */
     public $required = 'n';
 
-    /** @var boolean $deleted The deleted flag. */
-    public $deleted = 'n';
+    /** @var int $deleted The deleted flag. */
+    public $deleted = null;
 
     /** @var mixed $extradata Any custom data for the question type. */
     public $extradata = '';
 
-    /** @var boolean $isprint The isprint flag. */
+    /** @var bool $isprint The isprint flag. */
     public $isprint = false;
 
     /** @var array $qtypenames List of all question names. */
@@ -145,8 +144,12 @@ abstract class question {
         static $qtypes = null;
 
         if ($qtypes === null) {
-            $qtypes = $DB->get_records('questionnaire_question_type', [], 'typeid',
-                                       'typeid, type, has_choices, response_table') ?? [];
+            $qtypes = $DB->get_records(
+                'questionnaire_question_type',
+                [],
+                'typeid',
+                'typeid, type, has_choices, response_table'
+            ) ?? [];
         }
 
         if ($id) {
@@ -202,7 +205,7 @@ abstract class question {
      * @return mixed
      */
     public static function question_builder($qtype, $qdata = null, $context = null) {
-        $qclassname = '\\mod_questionnaire\\question\\'.self::qtypename($qtype);
+        $qclassname = '\\mod_questionnaire\\question\\' . self::qtypename($qtype);
         $qid = 0;
         if (!empty($qdata) && is_array($qdata)) {
             $qdata = (object)$qdata;
@@ -288,8 +291,13 @@ abstract class question {
         global $DB;
 
         $this->dependencies = [];
-        if ($dependencies = $DB->get_records('questionnaire_dependency',
-            ['questionid' => $this->id , 'surveyid' => $this->surveyid], 'id ASC')) {
+        if (
+            $dependencies = $DB->get_records(
+                'questionnaire_dependency',
+                ['questionid' => $this->id, 'surveyid' => $this->surveyid],
+                'id ASC'
+            )
+        ) {
             foreach ($dependencies as $dependency) {
                 $this->dependencies[$dependency->id] = new \stdClass();
                 $this->dependencies[$dependency->id]->dependquestionid = $dependency->dependquestionid;
@@ -378,7 +386,6 @@ abstract class question {
                         break;
                     }
                 }
-
             }
             $fulfilled = ($dependencyandfulfilled && $dependencyorfulfilled);
         }
@@ -402,8 +409,10 @@ abstract class question {
     public function response_has_choice($rid, $choiceid) {
         global $DB;
         $choiceval = $this->responsetype->transform_choiceid($choiceid);
-        return $DB->record_exists($this->response_table(),
-            ['response_id' => $rid, 'question_id' => $this->id, 'choice_id' => $choiceval]);
+        return $DB->record_exists(
+            $this->response_table(),
+            ['response_id' => $rid, 'question_id' => $this->id, 'choice_id' => $choiceval]
+        );
     }
 
     /**
@@ -412,8 +421,10 @@ abstract class question {
      * @return bool
      */
     public function insert_response($responsedata) {
-        if (isset($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+        if (
+            isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+        ) {
             return $this->responsetype->insert_response($responsedata);
         } else {
             return false;
@@ -426,8 +437,10 @@ abstract class question {
      * @return array|false
      */
     public function get_results($rids = false) {
-        if (isset ($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+        if (
+            isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+        ) {
             return $this->responsetype->get_results($rids);
         } else {
             return false;
@@ -441,9 +454,11 @@ abstract class question {
      * @param bool $anonymous
      * @return false|string
      */
-    public function display_results($rids=false, $sort='', $anonymous=false) {
-        if (isset ($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+    public function display_results($rids = false, $sort = '', $anonymous = false) {
+        if (
+            isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+        ) {
             return $this->responsetype->display_results($rids, $sort, $anonymous);
         } else {
             return false;
@@ -547,8 +562,10 @@ abstract class question {
      * @return array|bool
      */
     public function get_feedback_scores(array $rids) {
-        if ($this->valid_feedback() && isset($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+        if (
+            $this->valid_feedback() && isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+        ) {
             return $this->responsetype->get_feedback_scores($rids);
         } else {
             return false;
@@ -585,8 +602,10 @@ abstract class question {
             // If $responsedata is a response object, look through the answers.
             if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
                 $answer = $responsedata->answers[$this->id][0];
-                if (!empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
-                    $this->choices[$answer->choiceid]->is_other_choice()) {
+                if (
+                    !empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
+                    $this->choices[$answer->choiceid]->is_other_choice()
+                ) {
                     $answered = !empty($answer->value);
                 } else {
                     $answered = (!empty($answer->choiceid) || !empty($answer->value));
@@ -596,9 +615,9 @@ abstract class question {
             }
         } else {
             // If $responsedata is webform data, check that its not empty.
-            $answered = isset($responsedata->{'q'.$this->id}) && ($responsedata->{'q'.$this->id} != '');
+            $answered = isset($responsedata->{'q' . $this->id}) && ($responsedata->{'q' . $this->id} != '');
         }
-        return !($this->required() && ($this->deleted == 'n') && !$answered);
+        return !($this->required() && (empty($this->deleted)) && !$answered);
     }
 
     /**
@@ -652,19 +671,19 @@ abstract class question {
     /**
      * Add the question to the database from supplied arguments.
      * @param \stdClass $questionrecord The required data for adding the question.
-     * @param array $choicerecords An array of choice records with 'content' and 'value' properties.
-     * @param boolean $calcposition Whether or not to calculate the next available position in the survey.
+     * @param array|null $choicerecords An array of choice records with 'content' and 'value' properties.
+     * @param bool|null $calcposition Whether or not to calculate the next available position in the survey.
      */
-    public function add($questionrecord, array $choicerecords = null, $calcposition = true) {
+    public function add($questionrecord, ?array $choicerecords = null, ?bool $calcposition = true) {
         global $DB;
 
         // Create new question.
         if ($calcposition) {
             // Set the position to the end.
-            $sql = 'SELECT MAX(position) as maxpos '.
-                   'FROM {questionnaire_question} '.
-                   'WHERE surveyid = ? AND deleted = ?';
-            $params = ['surveyid' => $questionrecord->surveyid, 'deleted' => 'n'];
+            $sql = 'SELECT MAX(position) as maxpos ' .
+                   'FROM {questionnaire_question} ' .
+                   'WHERE surveyid = ? AND deleted IS NULL';
+            $params = ['surveyid' => $questionrecord->surveyid];
             if ($record = $DB->get_record_sql($sql, $params)) {
                 $questionrecord->position = $record->maxpos + 1;
             } else {
@@ -876,8 +895,10 @@ abstract class question {
      * @return bool|string
      */
     public function results_template($pdf = false) {
-        if (isset ($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')) {
+        if (
+            isset($this->responsetype) && is_object($this->responsetype) &&
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+        ) {
             return $this->responsetype->results_template($pdf);
         } else {
             return false;
@@ -892,7 +913,7 @@ abstract class question {
      * @param int $qnum
      * @return \stdClass
      */
-    public function question_output($response, $blankquestionnaire, $dependants=[], $qnum='') {
+    public function question_output($response, $blankquestionnaire, $dependants = [], $qnum = '') {
         $pagetags = $this->questionstart_survey_display($qnum, $response);
         $pagetags->qformelement = $this->question_survey_display($response, $dependants, $blankquestionnaire);
         return $pagetags;
@@ -904,7 +925,7 @@ abstract class question {
      * @param string $qnum
      * @return \stdClass
      */
-    public function response_output($response, $qnum='') {
+    public function response_output($response, $qnum = '') {
         $pagetags = $this->questionstart_survey_display($qnum, $response);
         $pagetags->qformelement = $this->response_survey_display($response);
         return $pagetags;
@@ -916,7 +937,7 @@ abstract class question {
      * @param \mod_questionnaire\responsetype\response\response $response
      * @return \stdClass
      */
-    public function questionstart_survey_display($qnum, $response=null) {
+    public function questionstart_survey_display($qnum, $response = null) {
         global $OUTPUT, $SESSION, $questionnaire, $PAGE;
 
         $pagetags = new \stdClass();
@@ -934,21 +955,25 @@ abstract class question {
         if ($response instanceof \mod_questionnaire\responsetype\response\response) {
             $skippedquestion = !isset($response->answers[$this->id]);
         } else {
-            $skippedquestion = !empty($response) && !isset($response->{'q'.$this->id});
+            $skippedquestion = !empty($response) && !isset($response->{'q' . $this->id});
         }
 
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
-        if (($pagetype == 'mod-questionnaire-myreport' || $pagetype == 'mod-questionnaire-report') &&
-            ($nonumbering == false) && !empty($this->dependencies) && $skippedquestion) {
+        if (
+            ($pagetype == 'mod-questionnaire-myreport' || $pagetype == 'mod-questionnaire-report') &&
+            ($nonumbering == false) && !empty($this->dependencies) && $skippedquestion
+        ) {
             $skippedclass = ' unselected';
-            $qnum = '<span class="'.$skippedclass.'">('.$qnum.')</span>';
+            $qnum = '<span class="' . $skippedclass . '">(' . $qnum . ')</span>';
         }
         // In preview mode, hide children questions that have not been answered.
         // In report mode, If questionnaire is set to no numbering,
         // also hide answers to questions that have not been answered.
         $displayclass = 'qn-container';
-        if ($pagetype == 'mod-questionnaire-preview' || ($nonumbering &&
-            ($currenttab == 'mybyresponse' || $currenttab == 'individualresp'))) {
+        if (
+            $pagetype == 'mod-questionnaire-preview' ||
+            ($nonumbering && ($currenttab == 'mybyresponse' || $currenttab == 'individualresp'))
+        ) {
             // This needs to be done to ensure all dependency data is loaded.
             // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
             $questionnaire->load_parents($this);
@@ -985,8 +1010,14 @@ abstract class question {
         } else if ($this->type_id == QUESESSAY) {
             $pagetags->label = (object)['for' => 'q' . $this->id];
         }
-        $content = file_rewrite_pluginfile_urls($this->content, 'pluginfile.php',
-                $this->context->id, 'mod_questionnaire', 'question', $this->id);
+        $content = file_rewrite_pluginfile_urls(
+            $this->content,
+            'pluginfile.php',
+            $this->context->id,
+            'mod_questionnaire',
+            'question',
+            $this->id
+        );
         $options = ['noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
         $pagetags->qcontent = format_text($content, FORMAT_HTML, $options);
         $this->qlegend = strip_tags($content);
@@ -1080,8 +1111,12 @@ abstract class question {
      * @return \MoodleQuickForm
      */
     protected function form_name(\MoodleQuickForm $mform) {
-        $mform->addElement('text', 'name', get_string('optionalname', 'questionnaire'),
-                        ['size' => '30', 'maxlength' => '30']);
+        $mform->addElement(
+            'text',
+            'name',
+            get_string('optionalname', 'questionnaire'),
+            ['size' => '30', 'maxlength' => '30']
+        );
         $mform->setType('name', PARAM_TEXT);
         $mform->addHelpButton('name', 'optionalname', 'questionnaire');
         return $mform;
@@ -1132,8 +1167,10 @@ abstract class question {
         $dependencies = [];
         $dependencies[''][0] = get_string('choosedots');
         foreach ($questions as $question) {
-            if (($question->position < $position) && !empty($question->name) &&
-                !empty($dependopts = $question->get_dependency_options())) {
+            if (
+                ($question->position < $position) && !empty($question->name) &&
+                !empty($dependopts = $question->get_dependency_options())
+            ) {
                 $dependencies[$question->name] = $dependopts;
             }
         }
@@ -1176,34 +1213,92 @@ abstract class question {
              */
 
             // Area for "must"-criteria.
-            $mform->addElement('static', 'mandatory', '',
-                '<div class="dimmed_text">' . get_string('mandatory', 'questionnaire') . '</div>');
-            $selectand = $mform->createElement('select', 'dependlogic_and', get_string('condition', 'questionnaire'),
-                [get_string('answernotgiven', 'questionnaire'), get_string('answergiven', 'questionnaire')]);
+            $mform->addElement(
+                'static',
+                'mandatory',
+                '',
+                '<div class="dimmed_text">' . get_string('mandatory', 'questionnaire') . '</div>'
+            );
+            $selectand = $mform->createElement(
+                'select',
+                'dependlogic_and',
+                get_string('condition', 'questionnaire'),
+                [
+                    get_string('answernotgiven', 'questionnaire'),
+                    get_string('answergiven', 'questionnaire'),
+                ]
+            );
             $selectand->setSelected('1');
             $groupitemsand = [];
-            $groupitemsand[] =& $mform->createElement('selectgroups', 'dependquestions_and',
-                get_string('parent', 'questionnaire'), $dependencies);
+            $groupitemsand[] =& $mform->createElement(
+                'selectgroups',
+                'dependquestions_and',
+                get_string('parent', 'questionnaire'),
+                $dependencies
+            );
             $groupitemsand[] =& $selectand;
-            $groupand = $mform->createElement('group', 'selectdependencies_and', get_string('dependquestion', 'questionnaire'),
-                $groupitemsand, ' ', false);
-            $form->repeat_elements([$groupand], $dependenciescountand + 1, [],
-                'numdependencies_and', 'adddependencies_and', 2, null, true);
+            $groupand = $mform->createElement(
+                'group',
+                'selectdependencies_and',
+                get_string('dependquestion', 'questionnaire'),
+                $groupitemsand,
+                ' ',
+                false
+            );
+            $form->repeat_elements(
+                [$groupand],
+                $dependenciescountand + 1,
+                [],
+                'numdependencies_and',
+                'adddependencies_and',
+                2,
+                null,
+                true
+            );
 
             // Area for "can"-criteria.
-            $mform->addElement('static', 'optional', '',
-                '<div class="dimmed_text">' . get_string('optional', 'questionnaire') . '</div>');
-            $selector = $mform->createElement('select', 'dependlogic_or', get_string('condition', 'questionnaire'),
-                [get_string('answernotgiven', 'questionnaire'), get_string('answergiven', 'questionnaire')]);
+            $mform->addElement(
+                'static',
+                'optional',
+                '',
+                '<div class="dimmed_text">' . get_string('optional', 'questionnaire') . '</div>'
+            );
+            $selector = $mform->createElement(
+                'select',
+                'dependlogic_or',
+                get_string('condition', 'questionnaire'),
+                [
+                    get_string('answernotgiven', 'questionnaire'),
+                    get_string('answergiven', 'questionnaire'),
+                ]
+            );
             $selector->setSelected('1');
             $groupitemsor = [];
-            $groupitemsor[] =& $mform->createElement('selectgroups', 'dependquestions_or',
-                get_string('parent', 'questionnaire'), $dependencies);
+            $groupitemsor[] =& $mform->createElement(
+                'selectgroups',
+                'dependquestions_or',
+                get_string('parent', 'questionnaire'),
+                $dependencies
+            );
             $groupitemsor[] =& $selector;
-            $groupor = $mform->createElement('group', 'selectdependencies_or', get_string('dependquestion', 'questionnaire'),
-                $groupitemsor, ' ', false);
-            $form->repeat_elements([$groupor], $dependenciescountor + 1, [], 'numdependencies_or',
-                'adddependencies_or', 2, null, true);
+            $groupor = $mform->createElement(
+                'group',
+                'selectdependencies_or',
+                get_string('dependquestion', 'questionnaire'),
+                $groupitemsor,
+                ' ',
+                false
+            );
+            $form->repeat_elements(
+                [$groupor],
+                $dependenciescountor + 1,
+                [],
+                'numdependencies_or',
+                'adddependencies_or',
+                2,
+                null,
+                true
+            );
         }
         return true;
     }
@@ -1334,14 +1429,20 @@ abstract class question {
 
         $this->form_preprocess_data($formdata);
         if (!empty($formdata->qid)) {
-
             // Update existing question.
             // Handle any attachments in the content.
             $formdata->itemid = $formdata->content['itemid'];
             $formdata->format = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
-            $formdata->content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
-                'question', $formdata->qid, ['subdirs' => true], $formdata->content);
+            $formdata->content = file_save_draft_area_files(
+                $formdata->itemid,
+                $questionnaire->context->id,
+                'mod_questionnaire',
+                'question',
+                $formdata->qid,
+                ['subdirs' => true],
+                $formdata->content
+            );
 
             $fields = ['name', 'type_id', 'length', 'precise', 'required', 'content', 'extradata'];
             $questionrecord = new \stdClass();
@@ -1376,8 +1477,15 @@ abstract class question {
             $formdata->itemid = $formdata->content['itemid'];
             $formdata->format = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
-            $content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
-                'question', $this->qid, ['subdirs' => true], $formdata->content);
+            $content = file_save_draft_area_files(
+                $formdata->itemid,
+                $questionnaire->context->id,
+                'mod_questionnaire',
+                'question',
+                $this->qid,
+                ['subdirs' => true],
+                $formdata->content
+            );
             $DB->set_field('questionnaire_question', 'content', $content, ['id' => $this->qid]);
         }
 
@@ -1462,11 +1570,12 @@ abstract class question {
                 $newcount = 0;
             }
             while (($nidx < $newcount) && ($cidx < $oldcount)) {
-                if ($formdata->dependquestion[$nidx] != $edependency->dependquestionid ||
+                if (
+                    $formdata->dependquestion[$nidx] != $edependency->dependquestionid ||
                     $formdata->dependchoice[$nidx] != $edependency->dependchoiceid ||
                     $formdata->dependlogic_cleaned[$nidx] != $edependency->dependlogic ||
-                    $formdata->dependandor[$nidx] != $edependency->dependandor) {
-
+                    $formdata->dependandor[$nidx] != $edependency->dependandor
+                ) {
                     $dependencyrecord = new \stdClass();
                     $dependencyrecord->id = $ekey;
                     $dependencyrecord->questionid = $this->qid;
@@ -1523,8 +1632,10 @@ abstract class question {
 
         // Dependencies logic does not (yet) need preprocessing, might change with more complex conditions.
         // Check, if entries exist and whether they are not only 0 (form elements created but no value selected).
-        if (isset($formdata->dependquestions_and) &&
-            !(count(array_keys($formdata->dependquestions_and, 0, true)) == count($formdata->dependquestions_and))) {
+        if (
+            isset($formdata->dependquestions_and) &&
+            !(count(array_keys($formdata->dependquestions_and, 0, true)) == count($formdata->dependquestions_and))
+        ) {
             for ($i = 0; $i < count($formdata->dependquestions_and); $i++) {
                 $dependency = explode(",", $formdata->dependquestions_and[$i]);
 
@@ -1537,8 +1648,10 @@ abstract class question {
             }
         }
 
-        if (isset($formdata->dependquestions_or) &&
-            !(count(array_keys($formdata->dependquestions_or, 0, true)) == count($formdata->dependquestions_or))) {
+        if (
+            isset($formdata->dependquestions_or) &&
+            !(count(array_keys($formdata->dependquestions_or, 0, true)) == count($formdata->dependquestions_or))
+        ) {
             for ($i = 0; $i < count($formdata->dependquestions_or); $i++) {
                 $dependency = explode(",", $formdata->dependquestions_or[$i]);
 
@@ -1587,8 +1700,18 @@ abstract class question {
             'name' => $this->name,
             'type_id' => $this->type_id,
             'length' => $this->length,
-            'content' => format_text(file_rewrite_pluginfile_urls($this->content, 'pluginfile.php', $this->context->id,
-                'mod_questionnaire', 'question', $this->id), FORMAT_HTML, $options),
+            'content' => format_text(
+                file_rewrite_pluginfile_urls(
+                    $this->content,
+                    'pluginfile.php',
+                    $this->context->id,
+                    'mod_questionnaire',
+                    'question',
+                    $this->id
+                ),
+                FORMAT_HTML,
+                $options
+            ),
             'content_stripped' => strip_tags($this->content),
             'required' => ($this->required == 'y') ? 1 : 0,
             'deleted' => $this->deleted,
@@ -1596,7 +1719,7 @@ abstract class question {
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise,
             'qnum' => $qnum,
-            'errormessage' => get_string('required') . ': ' . $this->name
+            'errormessage' => get_string('required') . ': ' . $this->name,
         ];
         $mobiledata->choices = $this->mobile_question_choices_display();
 
@@ -1622,7 +1745,7 @@ abstract class question {
             foreach ($this->choices as $choice) {
                 $choices[$cnum] = clone($choice);
                 $contents = questionnaire_choice_values($choice->content);
-                $choices[$cnum]->content = format_text($contents->text, FORMAT_HTML, ['noclean' => true]).$contents->image;
+                $choices[$cnum]->content = format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
                 $cnum++;
             }
         }

@@ -45,7 +45,7 @@ class text extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q'.$question->id}) && (strlen($responsedata->{'q'.$question->id}) > 0)) {
+        if (isset($responsedata->{'q' . $question->id}) && (strlen($responsedata->{'q' . $question->id}) > 0)) {
             $val = $responsedata->{'q' . $question->id};
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
@@ -89,19 +89,19 @@ class text extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return array - Array of data records.
      */
-    public function get_results($rids=false, $anonymous=false) {
+    public function get_results($rids = false, $anonymous = false) {
         global $DB;
 
         $rsql = '';
         if (!empty($rids)) {
-            list($rsql, $params) = $DB->get_in_or_equal($rids);
+            [$rsql, $params] = $DB->get_in_or_equal($rids);
             $rsql = ' AND response_id ' . $rsql;
         }
 
         if ($anonymous) {
             $sql = 'SELECT t.id, t.response, r.submitted AS submitted, ' .
                     'r.questionnaireid, r.id AS rid ' .
-                    'FROM {'.static::response_table().'} t, ' .
+                    'FROM {' . static::response_table() . '} t, ' .
                     '{questionnaire_response} r ' .
                     'WHERE question_id=' . $this->question->id . $rsql .
                     ' AND t.response_id = r.id ' .
@@ -110,7 +110,7 @@ class text extends responsetype {
             $sql = 'SELECT t.id, t.response, r.submitted AS submitted, r.userid, u.username AS username, ' .
                     'u.id as usrid, ' .
                     'r.questionnaireid, r.id AS rid ' .
-                    'FROM {'.static::response_table().'} t, ' .
+                    'FROM {' . static::response_table() . '} t, ' .
                     '{questionnaire_response} r, ' .
                     '{user} u ' .
                     'WHERE question_id=' . $this->question->id . $rsql .
@@ -142,7 +142,7 @@ class text extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    public function display_results($rids=false, $sort='', $anonymous=false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -184,8 +184,8 @@ class text extends responsetype {
                 if (isset($SESSION->questionnaire->currentgroupid)) {
                     $currentgroupid = $SESSION->questionnaire->currentgroupid;
                 }
-                $url = $CFG->wwwroot.'/mod/questionnaire/report.php?action=vresp&amp;sid='.$questionnaire->survey->id.
-                    '&currentgroupid='.$currentgroupid;
+                $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;sid=' . $questionnaire->survey->id .
+                    '&currentgroupid=' . $currentgroupid;
             }
             $users = [];
             $evencolor = false;
@@ -193,12 +193,13 @@ class text extends responsetype {
                 $response = new \stdClass();
                 $response->text = format_text($row->response, FORMAT_HTML);
                 if ($viewsingleresponse && $nonanonymous) {
-                    $rurl = $url.'&amp;rid='.$row->rid.'&amp;individualresponse=1';
+                    $rurl = $url . '&amp;rid=' . $row->rid . '&amp;individualresponse=1';
                     $title = userdate($row->submitted);
                     if (!isset($users[$row->userid])) {
                         $users[$row->userid] = $DB->get_record('user', ['id' => $row->userid]);
                     }
-                    $response->respondent = '<a href="'.$rurl.'" title="'.$title.'">'.fullname($users[$row->userid]).'</a>';
+                    $response->respondent = '<a href="' . $rurl . '" title="' . $title . '">' .
+                        fullname($users[$row->userid]) . '</a>';
                 } else {
                     $response->respondent = '';
                 }
@@ -208,7 +209,7 @@ class text extends responsetype {
                 $pagetags->responses[] = (object)['response' => $response];
                 $evencolor = !$evencolor;
             }
-            // sort table only when row count is greater than one.
+            // Sort table only when row count is greater than one.
             if (count($weights) > 1) {
                 $pagetags->sortresponse = true;
             }
@@ -274,8 +275,8 @@ class text extends responsetype {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id, q.content, a.response as aresponse '.
-            'FROM {'.static::response_table().'} a, {questionnaire_question} q '.
+        $sql = 'SELECT q.id, q.content, a.response as aresponse ' .
+            'FROM {' . static::response_table() . '} a, {questionnaire_question} q ' .
             'WHERE a.response_id=? AND a.question_id=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {
@@ -308,7 +309,7 @@ class text extends responsetype {
 
         $answers = [];
         $sql = 'SELECT id, response_id as responseid, question_id as questionid, 0 as choiceid, response as value ' .
-            'FROM {' . static::response_table() .'} ' .
+            'FROM {' . static::response_table() . '} ' .
             'WHERE response_id = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
@@ -326,4 +327,3 @@ class text extends responsetype {
         return new bulk_sql_config(static::response_table(), 'qrt', false, true, false);
     }
 }
-

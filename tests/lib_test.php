@@ -30,15 +30,14 @@ use mod_questionnaire\question\question;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/questionnaire/lib.php');
-require_once($CFG->dirroot.'/mod/questionnaire/classes/question/question.php');
+require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
  * Unit tests for questionnaire_lib_testcase.
  * @group mod_questionnaire
  */
-class lib_test extends \advanced_testcase {
-
+final class lib_test extends \advanced_testcase {
     /**
      * Test for questionnaire_supports.
      *
@@ -46,7 +45,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_supports
      */
-    public function test_questionnaire_supports() {
+    public function test_questionnaire_supports(): void {
         $this->assertTrue(questionnaire_supports(FEATURE_BACKUP_MOODLE2));
         $this->assertFalse(questionnaire_supports(FEATURE_COMPLETION_TRACKS_VIEWS));
         $this->assertTrue(questionnaire_supports(FEATURE_COMPLETION_HAS_RULES));
@@ -66,7 +65,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_get_extra_capabilities
      */
-    public function test_questionnaire_get_extra_capabilities() {
+    public function test_questionnaire_get_extra_capabilities(): void {
         $caps = questionnaire_get_extra_capabilities();
         $this->assertIsArray($caps);
         $this->assertEquals(1, count($caps));
@@ -81,7 +80,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_add_instance
      */
-    public function test_add_instance() {
+    public function test_add_instance(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
@@ -119,7 +118,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_update_instance
      */
-    public function test_update_instance() {
+    public function test_update_instance(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -128,7 +127,7 @@ class lib_test extends \advanced_testcase {
         /** @var mod_questionnaire_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         /** @var questionnaire $questionnaire */
-        $questionnaire = $generator->create_instance(array('course' => $course->id, 'sid' => 1));
+        $questionnaire = $generator->create_instance(['course' => $course->id, 'sid' => 1]);
 
         $qid = $questionnaire->id;
         $this->assertTrue($qid > 0);
@@ -157,7 +156,7 @@ class lib_test extends \advanced_testcase {
 
         $this->assertTrue(questionnaire_update_instance($qrow));
 
-        $questrecord = $DB->get_record('questionnaire', array('id' => $qid));
+        $questrecord = $DB->get_record('questionnaire', ['id' => $qid]);
         $this->assertNotEmpty($questrecord);
         $this->assertEquals($qrow->qtype, $questrecord->qtype);
         $this->assertEquals($qrow->respondenttype, $questrecord->respondenttype);
@@ -184,14 +183,14 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_delete_instance
      */
-    public function test_delete_instance() {
+    public function test_delete_instance(): void {
         global $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
 
         // Set up a new questionnaire.
-        $questiondata = array();
+        $questiondata = [];
         $questiondata['content'] = 'Enter yes or no';
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
@@ -203,16 +202,16 @@ class lib_test extends \advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, 'y');
 
         // Get records for database deletion confirmation.
-        $survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid));
+        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]);
 
         // Now delete it all.
         $this->assertTrue(questionnaire_delete_instance($questionnaire->id));
-        $this->assertEmpty($DB->get_record('questionnaire', array('id' => $questionnaire->id)));
-        $this->assertEmpty($DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid)));
-        $this->assertEmpty($DB->get_records('questionnaire_question', array('surveyid' => $survey->id)));
-        $this->assertEmpty($DB->get_records('questionnaire_response', array('questionnaireid' => $questionnaire->id)));
-        $this->assertEmpty($DB->get_records('questionnaire_response_bool', array('response_id' => $response->id)));
-        $this->assertEmpty($DB->get_records('event', array("modulename" => 'questionnaire', "instance" => $questionnaire->id)));
+        $this->assertEmpty($DB->get_record('questionnaire', ['id' => $questionnaire->id]));
+        $this->assertEmpty($DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]));
+        $this->assertEmpty($DB->get_records('questionnaire_question', ['surveyid' => $survey->id]));
+        $this->assertEmpty($DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaire->id]));
+        $this->assertEmpty($DB->get_records('questionnaire_response_bool', ['response_id' => $response->id]));
+        $this->assertEmpty($DB->get_records('event', ["modulename" => 'questionnaire', "instance" => $questionnaire->id]));
     }
 
     /**
@@ -223,13 +222,13 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_user_outline
      */
-    public function test_questionnaire_user_outline() {
+    public function test_questionnaire_user_outline(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questiondata = array();
+        $questiondata = [];
         $questiondata['content'] = 'Enter yes or no';
         $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO, $questiondata);
 
@@ -240,7 +239,7 @@ class lib_test extends \advanced_testcase {
         // Test for a user with one response.
         $generator->create_question_response($questionnaire, reset($questionnaire->questions), 'y', $user->id);
         $outline = questionnaire_user_outline($course, $user, null, $questionnaire);
-        $this->assertEquals('1 '.get_string("response", "questionnaire"), $outline->info);
+        $this->assertEquals('1 ' . get_string("response", "questionnaire"), $outline->info);
     }
 
     /**
@@ -251,7 +250,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_user_complete
      */
-    public function test_questionnaire_user_complete() {
+    public function test_questionnaire_user_complete(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $user = $this->getDataGenerator()->create_user();
@@ -270,7 +269,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_print_recent_activity
      */
-    public function test_questionnaire_print_recent_activity() {
+    public function test_questionnaire_print_recent_activity(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $this->assertFalse(questionnaire_print_recent_activity(null, null, null));
@@ -283,7 +282,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_grades
      */
-    public function test_questionnaire_grades() {
+    public function test_questionnaire_grades(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $this->assertNull(questionnaire_grades(null));
@@ -296,7 +295,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_get_user_grades
      */
-    public function test_questionnaire_get_user_grades() {
+    public function test_questionnaire_get_user_grades(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -321,7 +320,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_update_grades
      */
-    public function test_questionnaire_update_grades() {
+    public function test_questionnaire_update_grades(): void {
         // Don't know how to test this yet! It doesn't return anything.
         $this->assertNull(questionnaire_update_grades());
     }
@@ -333,7 +332,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers \questionnaire_grade_item_update
      */
-    public function test_questionnaire_grade_item_update() {
+    public function test_questionnaire_grade_item_update(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
@@ -342,5 +341,50 @@ class lib_test extends \advanced_testcase {
         $questionnaire->cmidnumber = $questionnaire->cm->idnumber;
         $questionnaire->courseid = $questionnaire->course->id;
         $this->assertEquals(GRADE_UPDATE_OK, questionnaire_grade_item_update($questionnaire));
+    }
+
+    /**
+     * Test for questionnaire_restore_deleted_question().
+     *
+     * @return void
+     *
+     * @covers \questionnaire_restore_deleted_question
+     */
+    public function test_questionnaire_restore_deleted_question(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire($course);
+        $sid = $questionnaire->sid;
+
+        // Add three questions.
+        $q1 = $DB->insert_record('questionnaire_question', [
+            'surveyid' => $sid, 'type_id' => 1, 'position' => 1, 'deleted' => null, 'content' => 'Q1']);
+        $q2 = $DB->insert_record('questionnaire_question', [
+            'surveyid' => $sid, 'type_id' => 1, 'position' => 2, 'deleted' => null, 'content' => 'Q2']);
+        $q3 = $DB->insert_record('questionnaire_question', [
+            'surveyid' => $sid, 'type_id' => 1, 'position' => 3, 'deleted' => null, 'content' => 'Q3']);
+
+        // Delete Q2 and Q3.
+        $DB->set_field('questionnaire_question', 'deleted', 1234567890, ['id' => $q2]);
+        $DB->set_field('questionnaire_question', 'deleted', 1234567891, ['id' => $q3]);
+
+        // Restore Q2.
+        questionnaire_restore_deleted_question($q2, $sid);
+        $restoredq2 = $DB->get_record('questionnaire_question', ['id' => $q2]);
+        $this->assertNull($restoredq2->deleted);
+        $this->assertEquals(2, $restoredq2->position); // Should be after Q1.
+
+        // Restore Q3.
+        questionnaire_restore_deleted_question($q3, $sid);
+        $restoredq3 = $DB->get_record('questionnaire_question', ['id' => $q3]);
+        $this->assertNull($restoredq3->deleted);
+        $this->assertEquals(3, $restoredq3->position); // Should be after Q2.
+
+        // Check for no duplicate positions.
+        $positions = $DB->get_fieldset_select('questionnaire_question', 'position', 'surveyid = ?', [$sid]);
+        $this->assertCount(count(array_unique($positions)), $positions);
     }
 }

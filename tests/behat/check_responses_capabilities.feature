@@ -33,7 +33,7 @@ Feature: Review responses with different capabilities
     And I navigate to "View all responses" in current page administration
     Then I should see "All responses"
     And I should see "View Default order"
-    And I should see "Responses: 7"
+    And I should see "Responses: 7 (Submissions: 6 | In progress: 1)"
     And I log out
 
   @javascript

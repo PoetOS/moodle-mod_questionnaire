@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\question;
 use mod_questionnaire\edit_question_form;
-use \questionnaire;
+use questionnaire;
 
 /**
  * This file contains the parent class for pagebreak question types.
@@ -27,7 +27,6 @@ use \questionnaire;
  * @package mod_questionnaire
  */
 class pagebreak extends question {
-
     /**
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.
@@ -50,7 +49,7 @@ class pagebreak extends question {
      * @param \mod_questionnaire\responsetype\response\response $response
      * @return \stdClass
      */
-    public function questionstart_survey_display($qnum, $response=null) {
+    public function questionstart_survey_display($qnum, $response = null) {
         return '';
     }
 
@@ -61,7 +60,7 @@ class pagebreak extends question {
      * @param bool $blankquestionnaire
      *
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire=false) {
+    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire = alse) {
         return '';
     }
 
