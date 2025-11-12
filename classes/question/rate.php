@@ -209,8 +209,8 @@ class rate extends question {
         if ($blankquestionnaire) {
             $disabled = ' disabled="disabled"';
         }
-        if (!empty($data) && (!isset($data->{'q' . $this->id}) || !is_array($data->{'q' . $this->id}))) {
-            $data->{'q' . $this->id} = [];
+        if (!empty($response) && (!isset($response->{'q' . $this->id}) || !is_array($response->{'q' . $this->id}))) {
+            $response->{'q' . $this->id} = [];
         }
 
         // Check if rate question has one line only to display full width columns of choices.
