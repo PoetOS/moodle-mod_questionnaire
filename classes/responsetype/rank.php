@@ -317,8 +317,8 @@ class rank extends responsetype {
                   WHERE c.question_id = ?
                         AND c.content = '!other'
                         AND ro.response <> ''
-               GROUP BY ro.response, cid
-               ORDER BY cid";
+               GROUP BY ro.response, c.id
+               ORDER BY c.id";
         return $DB->get_records_sql($osql, array_merge($params, [$this->question->id]));
     }
 
