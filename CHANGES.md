@@ -1,13 +1,13 @@
-Release Notes
+# Release Notes #
 
-Release 5.0.1 (Build - 2025110900)
+## Release 5.0.1 (Build - 2025110900) ##
 * Initial release for Moodle 5.0 forward.
 
-Release 4.4.0 (Build - 2025110900)
-New Features:
+## Release 4.4.0 (Build - 2025110900) ##
+### New Features: ###
 * [PR590](https://github.com/PoetOS/moodle-mod_questionnaire/pull/590): Allow responses to be deleted automatically after a specified time. This is disabled by default.
 
-Improvements:
+### Improvements: ###
 * [PR618](https://github.com/PoetOS/moodle-mod_questionnaire/pull/618): Make printable questionnaire more readable.
 * Updated deprecated functions.
 * [PR589](https://github.com/PoetOS/moodle-mod_questionnaire/pull/589): Allow selection of submitted responses or in progress responses on results pages.
@@ -18,16 +18,16 @@ Improvements:
 * [PR616](https://github.com/PoetOS/moodle-mod_questionnaire/pull/616): Only show dependent questions answered on response page.
 * [I120](https://github.com/PoetOS/moodle-mod_questionnaire/issues/120): Added idnumber to export.
 
-Bug Fixes:
+### Bug Fixes: ###
 * Ensure numbering doesn't appear on results pages when they are turned off.
 * Mobile - ensure pull to refresh doesn't resend question responses.
 * Fixed empty key error.
 * Fixed oversize icon display in 4.5.
 * Thank you page header is now filtered.
 
-Release 4.1.1 (Build - 2024082900)
+## Release 4.1.1 (Build - 2024082900) ##
 
-Improvements:
+### Improvements: ###
 * Compatible with Moodle 4.3 and 4.4.
 * Compatible with PHP8.2.
 * PR449 - Allow localized answer options to be displayed correctly in conditions.
@@ -49,13 +49,13 @@ Improvements:
 * PR586, PR579, PR594 - Various deprecations fixed.
 * PR593 - Ensure "pdf" extension force.
 
-Bug Fixes:
+### Bug Fixes: ###
 * PR508 - General PHP fixes.
 * PR523 - Behat activity completion fix.
 * PR514 - Section text qtype should not support feedback.
 * PR516 - Course description displays properly.
 
-Release 4.1.0 (Build - 2023081100)
+## Release 4.1.0 (Build - 2023081100) ##
 
 Initial release for Moodle 4.1 forward.
 
