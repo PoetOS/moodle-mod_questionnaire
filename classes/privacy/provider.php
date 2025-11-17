@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\local\privacy;
+namespace mod_questionnaire\privacy;
 
 use mod_questionnaire\local\questionnaire;
 use core_privacy\local\metadata\collection;

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\local\task;
+namespace mod_questionnaire\task;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');

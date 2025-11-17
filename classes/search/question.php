@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\local\search;
+namespace mod_questionnaire\search;
 
 /**
  * Contains the question class definition for search.
