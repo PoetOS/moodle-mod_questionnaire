@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\local\output;
+namespace mod_questionnaire\output;
 
 /**
  * Contains class mod_questionnaire\output\feedback

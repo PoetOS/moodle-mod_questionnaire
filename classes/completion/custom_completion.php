@@ -16,7 +16,7 @@
 
 declare(strict_types=1);
 
-namespace mod_questionnaire\local\completion;
+namespace mod_questionnaire\completion;
 
 defined('MOODLE_INTERNAL') || die();
 
