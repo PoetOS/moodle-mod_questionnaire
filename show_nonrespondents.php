@@ -23,7 +23,7 @@
  *
  */
 
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -83,7 +83,7 @@ $questionnaire = new questionnaire($course, $cm, $sid, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\nonrespondentspage());
+$questionnaire->add_page(new \mod_questionnaire\local\output\nonrespondentspage());
 
 $resume = $questionnaire->resume;
 $fullname = $questionnaire->respondenttype == 'fullname';
@@ -575,7 +575,7 @@ echo $questionnaire->renderer->footer();
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-$event = \mod_questionnaire\event\non_respondents_viewed::create(
+$event = \mod_questionnaire\local\event\non_respondents_viewed::create(
     [
         'objectid' => $questionnaire->id,
         'anonymous' => $anonymous,

@@ -26,7 +26,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -346,7 +346,7 @@ function questionnaire_observe_event_delete($cmid, $questiontype, $courseid) {
             'courseid' => $courseid,
             'other' => ['questiontype' => $questiontype],
     ];
-    $event = \mod_questionnaire\event\question_deleted::create($params);
+    $event = \mod_questionnaire\local\event\question_deleted::create($params);
     $event->trigger();
 }
 
@@ -1023,7 +1023,7 @@ function questionnaire_check_page_breaks($questionnaire) {
  * @param stdClass $questionnaire
  * @param int $qid
  * @param int $qtype
- * @return mixed|\mod_questionnaire\question\question
+ * @return mixed|\mod_questionnaire\local\question\question
  */
 function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
     $context = context_module::instance($questionnaire->cm->id);
@@ -1056,7 +1056,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             }
         }
     } else {
-        $question = \mod_questionnaire\question\question::question_builder($qtype);
+        $question = \mod_questionnaire\local\question\question::question_builder($qtype);
         $question->sid = $questionnaire->survey->id;
         $question->id = $questionnaire->cm->id;
         $question->type_id = $qtype;

@@ -22,7 +22,7 @@
  * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  */
 
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
 
@@ -57,7 +57,7 @@ $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\qsettingspage());
+$questionnaire->add_page(new \mod_questionnaire\local\output\qsettingspage());
 
 $SESSION->questionnaire->current_tab = 'settings';
 
@@ -65,7 +65,7 @@ if (!$questionnaire->capabilities->manage) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$settingsform = new \mod_questionnaire\settings_form('qsettings.php');
+$settingsform = new \mod_questionnaire\local\settings_form('qsettings.php');
 $sdata = clone($questionnaire->survey);
 $sdata->sid = $questionnaire->survey->id;
 $sdata->id = $cm->id;

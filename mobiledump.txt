@@ -15,7 +15,7 @@
     <%/choices%>
 </ion-list>
 
-<button ion-button item-end outline icon-end block core-site-plugins-new-content component="mod_questionnaire" method="mobile_view_activity"
+<button ion-button item-end outline icon-end block core-site-plugins-new-content component="mod_questionnaire\local" method="mobile_view_activity"
     [args]="{
         cmid: <%cmid%>,
         rid: <%rid%>,
@@ -27,7 +27,7 @@
     [preSets]="{getFromCache: 0, saveToCache: 0}"
     refreshOnSuccess="true"
     samePage="true" type="submit"
->{{ 'plugin.mod_questionnaire.nextpage' | translate }} <ion-icon name="arrow-forward"></ion-icon></button>
+>{{ 'plugin.mod_questionnaire\local.nextpage' | translate }} <ion-icon name="arrow-forward"></ion-icon></button>
 
 
 

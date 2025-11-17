@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local;
 
 /**
  * Unit tests for questionnaire_generator_testcase.
@@ -37,7 +37,7 @@ final class generator_test extends \advanced_testcase {
      * @throws coding_exception
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\generator\
+     * @covers \mod_questionnaire\local\generator\
      */
     public function test_create_instance(): void {
         global $DB;
@@ -80,7 +80,7 @@ final class generator_test extends \advanced_testcase {
      * @throws coding_exception
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\generator\
+     * @covers \mod_questionnaire\local\generator\
      */
     public function test_create_content(): void {
         global $DB;

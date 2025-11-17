@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/question_container
+    @template mod_questionnaire\local/question_container
 
     Template which defines a check type question survey display.
 
@@ -45,7 +45,7 @@
 <fieldset id="qn-{{fieldset.id}}" class="{{fieldset.class}}">
     {{{dependencylist}}}
     {{#qnum}}
-    <legend class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}} {{qlegend}}</legend>
+    <legend class="accesshide">{{# str }}questionnum, mod_questionnaire\local{{/ str}}{{{qnum}}} {{qlegend}}</legend>
     <div class="qn-legend">
         <div class="qn-info">
             <h2 class="qn-number">{{{qnum}}}</h2>

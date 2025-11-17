@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/mobile_main_index_page
+    @template mod_questionnaire\local/mobile_main_index_page
 
     Template which defines the main page that displays notices, submissions and the start answering link.
 
@@ -79,7 +79,7 @@
 {{=<% %>=}}
 <div>
     <core-course-module-description description="<%intro%>"
-                                    component="mod_questionnaire" componentId="<%cmid%>"
+                                    component="mod_questionnaire\local" componentId="<%cmid%>"
                                     pagenum="<%pagenum%>"></core-course-module-description>
     <%#notifications%>
     <ion-card>
@@ -92,15 +92,15 @@
     <ion-card>
         <ion-card-content>
             <%#resume%>
-            <ion-button expand="block" core-site-plugins-new-content component="mod_questionnaire"
+            <ion-button expand="block" core-site-plugins-new-content component="mod_questionnaire\local"
                     method="mobile_view_activity" [args]="{cmid: <%cmid%>, action: 'resume'}">
-                {{ 'plugin.mod_questionnaire.resumesurvey' | translate }}
+                {{ 'plugin.mod_questionnaire\local.resumesurvey' | translate }}
             </ion-button>
             <%/resume%>
             <%^resume%>
-            <ion-button expand="block" core-site-plugins-new-content component="mod_questionnaire"
+            <ion-button expand="block" core-site-plugins-new-content component="mod_questionnaire\local"
                     method="mobile_view_activity" [args]="{cmid: <%cmid%>, action: 'respond'}">
-                {{ 'plugin.mod_questionnaire.answerquestions' | translate }}
+                {{ 'plugin.mod_questionnaire\local.answerquestions' | translate }}
             </ion-button>
             <%/resume%>
         </ion-card-content>
@@ -110,10 +110,10 @@
     <ion-card>
         <ion-card-content>
             <%#submissions%>
-            <ion-item button core-site-plugins-new-content component="mod_questionnaire" method="mobile_view_activity"
+            <ion-item button core-site-plugins-new-content component="mod_questionnaire\local" method="mobile_view_activity"
                 [args]="{cmid: <%cmid%>, action: 'review', submissionid: <%submissionid%>}">
                 <ion-label>
-                    {{ 'plugin.mod_questionnaire.submitted' | translate }} <%submissiondate%>
+                    {{ 'plugin.mod_questionnaire\local.submitted' | translate }} <%submissiondate%>
                 </ion-label>
             </ion-item>
             <%/submissions%>

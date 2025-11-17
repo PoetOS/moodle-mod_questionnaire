@@ -24,7 +24,7 @@
  *
  */
 
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
@@ -60,7 +60,7 @@ $PAGE->set_context($context);
 $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\completepage());
+$questionnaire->add_page(new \mod_questionnaire\local\output\completepage());
 
 $questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
 $questionnaire->strquestionnaire = get_string("modulename", "questionnaire");
@@ -73,7 +73,7 @@ if ($resume) {
     $context = context_module::instance($questionnaire->cm->id);
     $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-    $event = \mod_questionnaire\event\attempt_resumed::create([
+    $event = \mod_questionnaire\local\event\attempt_resumed::create([
         'objectid' => $questionnaire->id,
         'anonymous' => $anonymous,
         'context' => $context,

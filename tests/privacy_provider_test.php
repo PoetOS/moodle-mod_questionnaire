@@ -23,9 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local;
 
-use mod_questionnaire\privacy\provider;
+use mod_questionnaire\local\privacy\provider;
 
 /**
  * Privacy test for the mod questionnaire.
@@ -49,7 +49,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     /**
      * Check that the expected context is returned if there is any user data for this module.
      *
-     * @covers \mod_questionnaire\privacy\provider::get_contexts_for_userid
+     * @covers \mod_questionnaire\local\privacy\provider::get_contexts_for_userid
      */
     public function test_get_contexts_for_userid(): void {
         global $DB;
@@ -75,7 +75,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     /**
      * Test that only users with a questionnaire context are fetched.
      *
-     * @covers \mod_questionnaire\privacy\provider::get_users_in_context
+     * @covers \mod_questionnaire\local\privacy\provider::get_users_in_context
      */
     public function test_get_users_in_context(): void {
         global $DB;
@@ -108,7 +108,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     /**
      * Test that user data is exported correctly.
      *
-     * @covers \mod_questionnaire\privacy\provider::export_user_data
+     * @covers \mod_questionnaire\local\privacy\provider::export_user_data
      */
     public function test_export_user_data(): void {
         global $DB;
@@ -145,7 +145,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     /**
      * Test deleting all user data for a specific context.
      *
-     * @covers \mod_questionnaire\privacy\provider::delete_data_for_all_users_in_context
+     * @covers \mod_questionnaire\local\privacy\provider::delete_data_for_all_users_in_context
      */
     public function test_delete_data_for_all_users_in_context(): void {
         global $DB;
@@ -171,7 +171,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     /**
      * This should work identical to the above test.
      *
-     * @covers \mod_questionnaire\privacy\provider::delete_data_for_user
+     * @covers \mod_questionnaire\local\privacy\provider::delete_data_for_user
      */
     public function test_delete_data_for_user(): void {
         global $DB;
@@ -202,7 +202,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     /**
      * Test that data for users in approved userlist is deleted.
      *
-     * @covers \mod_questionnaire\privacy\provider::delete_data_for_users
+     * @covers \mod_questionnaire\local\privacy\provider::delete_data_for_users
      */
     public function test_delete_data_for_users(): void {
         global $DB;
