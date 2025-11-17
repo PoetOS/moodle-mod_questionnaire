@@ -23,7 +23,7 @@
  * @author     Mike Churchward
  */
 
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
 
@@ -91,7 +91,7 @@ $questionnaire = new questionnaire($course, $cm, $qid, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\previewpage());
+$questionnaire->add_page(new \mod_questionnaire\local\output\previewpage());
 
 $canpreview = (!isset($questionnaire->capabilities) &&
                has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
@@ -174,7 +174,7 @@ echo $questionnaire->renderer->footer($course);
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-$event = \mod_questionnaire\event\questionnaire_previewed::create([
+$event = \mod_questionnaire\local\event\questionnaire_previewed::create([
     'objectid' => $questionnaire->id,
     'anonymous' => $anonymous,
     'context' => $context,

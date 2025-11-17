@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
 
@@ -79,12 +79,12 @@ $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 if ($outputtarget == 'pdf') {
     if ($action == 'vresp') {
-        $questionnaire->add_page(new \mod_questionnaire\output\responsepagepdf());
+        $questionnaire->add_page(new \mod_questionnaire\local\output\responsepagepdf());
     } else {
-        $questionnaire->add_page(new \mod_questionnaire\output\reportpagepdf());
+        $questionnaire->add_page(new \mod_questionnaire\local\output\reportpagepdf());
     }
 } else { // Default to HTML.
-    $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+    $questionnaire->add_page(new \mod_questionnaire\local\output\reportpage());
 }
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
@@ -349,7 +349,7 @@ switch ($action) {
                 'courseid' => $questionnaire->course->id,
                 'relateduserid' => $response->userid,
             ];
-            $event = \mod_questionnaire\event\response_deleted::create($params);
+            $event = \mod_questionnaire\local\event\response_deleted::create($params);
             $event->trigger();
 
             redirect($redirection);
@@ -438,7 +438,7 @@ switch ($action) {
             $context = context_module::instance($questionnaire->cm->id);
             $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-            $event = \mod_questionnaire\event\all_responses_deleted::create([
+            $event = \mod_questionnaire\local\event\all_responses_deleted::create([
                 'objectid' => $questionnaire->id,
                 'anonymous' => $anonymous,
                 'context' => $context,
@@ -520,7 +520,7 @@ switch ($action) {
             'courseid' => $course->id,
             'other' => ['action' => $action, 'instance' => $instance, 'currentgroupid' => $currentgroupid],
         ];
-        $event = \mod_questionnaire\event\all_responses_saved_as_text::create($params);
+        $event = \mod_questionnaire\local\event\all_responses_saved_as_text::create($params);
         $event->trigger();
 
         exit();
@@ -707,7 +707,7 @@ switch ($action) {
             @$pdf->Output(clean_param($questionnaire->name, PARAM_FILE) . '.pdf', 'D');
             error_reporting($errorreporting);
         } else { // Default to HTML.
-            $event = \mod_questionnaire\event\all_responses_viewed::create($params);
+            $event = \mod_questionnaire\local\event\all_responses_viewed::create($params);
             $event->trigger();
 
             if ($outputtarget != 'print') {

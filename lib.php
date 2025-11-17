@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 /** This may no longer be needed. */
 define('QUESTIONNAIRE_RESETFORM_RESET', 'questionnaire_reset_data_');
@@ -1498,7 +1498,7 @@ function mod_questionnaire_coursemodule_edit_post_actions($data, $course) {
         $newcontext = context_module::instance($data->coursemodule);
         $areas = $questionnaire->get_all_file_areas();
         $oldareas = $oldquestionnaire->get_all_file_areas();
-        $fs = new \mod_questionnaire\file_storage();
+        $fs = new \mod_questionnaire\local\file_storage();
         foreach ($areas as $area => $ids) {
             if (is_array($ids)) {
                 $oldid = current($oldareas[$area]);

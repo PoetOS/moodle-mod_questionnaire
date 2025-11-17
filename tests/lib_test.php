@@ -23,9 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local;
 
-use mod_questionnaire\question\question;
+use mod_questionnaire\local\question\question;
 
 defined('MOODLE_INTERNAL') || die();
 

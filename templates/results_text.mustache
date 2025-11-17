@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire/results_text
+    @template mod_questionnaire\local/results_text
 
     Template which defines a results display for text responses.
 
@@ -53,13 +53,13 @@
 <table class="generaltable table-reboot"  {{#tableid}}id="{{tableid}}"{{/tableid}}>
     <thead>
     <tr>
-        <th class="header c0 {{#tableid}}qn-handcursor{{/tableid}}" style="text-align:left;" scope="col" data-value="{{#str}} respondent, mod_questionnaire {{/str}}">
+        <th class="header c0 {{#tableid}}qn-handcursor{{/tableid}}" style="text-align:left;" scope="col" data-value="{{#str}} respondent, mod_questionnaire\local {{/str}}">
                 {{#sortresponse}}
                     <a href="#"
-                       title="{{#str}} respondent, mod_questionnaire {{/str}}"
+                       title="{{#str}} respondent, mod_questionnaire\local {{/str}}"
                        role="link"
-                       aria-label="{{#str}} respondent, mod_questionnaire {{/str}}" onclick="return false;">
-                        {{#str}} respondent, mod_questionnaire {{/str}}
+                       aria-label="{{#str}} respondent, mod_questionnaire\local {{/str}}" onclick="return false;">
+                        {{#str}} respondent, mod_questionnaire\local {{/str}}
                         <span class="icon-container-asc">
                             {{#pix}} t/sort_asc, moodle, {{#str}} sortbyx {{/str}}{{/pix}}
                         </span>
@@ -69,7 +69,7 @@
                     </a>
                 {{/sortresponse}}
                 {{^sortresponse}}
-                    {{#str}} respondent, mod_questionnaire {{/str}}
+                    {{#str}} respondent, mod_questionnaire\local {{/str}}
                 {{/sortresponse}}
                 {{#tableid}}
                 <div class="frtlst">{{#str}} firstname {{/str}}/{{#str}} lastname {{/str}}</div>
@@ -94,7 +94,7 @@
                 </th>
             {{/tableid}}
         </th>
-        <th class="header c2 lastcol" style="text-align:right;" scope="col">{{#str}} response, mod_questionnaire{{/str}}</th>
+        <th class="header c2 lastcol" style="text-align:right;" scope="col">{{#str}} response, mod_questionnaire\local{{/str}}</th>
     </tr>
     </thead>
     <tbody>
@@ -120,7 +120,7 @@
     </tr>
     <tr class="lastrow">
         <td class="cell c0" {{#tableid}} colspan="2"{{/tableid}} style="text-align:left;">
-            {{#str}} totalresponses, mod_questionnaire{{/str}}</td>
+            {{#str}} totalresponses, mod_questionnaire\local{{/str}}</td>
         <td class="cell c1 lastcol" style="text-align:right;">{{total}}</td>
     </tr>
 {{/total}}

@@ -22,7 +22,7 @@
  * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  */
 
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
@@ -66,7 +66,7 @@ $questionnaire->get_delete_questions();
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\questionspage());
+$questionnaire->add_page(new \mod_questionnaire\local\output\questionspage());
 
 if (!$questionnaire->capabilities->editquestions) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
@@ -143,7 +143,7 @@ if ($delq) {
     }
 
     // Log question deleted event.
-    $questiontype = \mod_questionnaire\question\question::qtypename($questionnaire->questions[$qid]->type_id);
+    $questiontype = \mod_questionnaire\local\question\question::qtypename($questionnaire->questions[$qid]->type_id);
     questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
 
     if ($questionnairehasdependencies) {
@@ -159,7 +159,7 @@ if ($delpermanentlyq) {
     questionnaire_delete_permanently_questions($qid, $sid);
     $deletedquestion = $questionnaire->deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
-        $questiontype = \mod_questionnaire\question\question::qtypename($deletedquestion->type_id);
+        $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->type_id);
         questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id]);
         $PAGE->set_url($url->out(false));
@@ -180,7 +180,7 @@ if ($restoreq) {
 }
 
 if ($action == 'main') {
-    $questionsform = new \mod_questionnaire\questions_form('questions.php', $moveq);
+    $questionsform = new \mod_questionnaire\local\questions_form('questions.php', $moveq);
     $sdata = clone($questionnaire->survey);
     $sdata->sid = $questionnaire->survey->id;
     $sdata->id = $cm->id;
@@ -265,7 +265,7 @@ if ($action == 'main') {
                 $questionrec->surveyid = $qformdata->sid;
                 $questionrec->type_id = QUESPAGEBREAK;
                 $questionrec->content = 'break';
-                $question = \mod_questionnaire\question\question::question_builder(QUESPAGEBREAK);
+                $question = \mod_questionnaire\local\question\question::question_builder(QUESPAGEBREAK);
                 $question->add($questionrec);
                 $reload = true;
             } else {
@@ -313,7 +313,7 @@ if ($action == 'main') {
     }
 } else if ($action == 'question') {
     $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
-    $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
+    $questionsform = new \mod_questionnaire\local\edit_question_form('questions.php');
     $questionsform->set_data($question);
     if ($questionsform->is_cancelled()) {
         // Switch to main screen.
@@ -343,13 +343,13 @@ if ($action == 'main') {
     // Log question created event.
     if (isset($qformdata)) {
         $context = context_module::instance($questionnaire->cm->id);
-        $questiontype = \mod_questionnaire\question\question::qtypename($qformdata->type_id);
+        $questiontype = \mod_questionnaire\local\question\question::qtypename($qformdata->type_id);
         $params = [
             'context' => $context,
             'courseid' => $questionnaire->course->id,
             'other' => ['questiontype' => $questiontype],
         ];
-        $event = \mod_questionnaire\event\question_created::create($params);
+        $event = \mod_questionnaire\local\event\question_created::create($params);
         $event->trigger();
     }
 
@@ -363,9 +363,9 @@ if ($reload) {
     $questionnaire->get_delete_questions();
     // Add renderer and page objects to the questionnaire object for display use.
     $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-    $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
+    $questionnaire->add_page(new \mod_questionnaire\local\output\questionspage());
     if ($action == 'main') {
-        $questionsform = new \mod_questionnaire\questions_form('questions.php', $moveq);
+        $questionsform = new \mod_questionnaire\local\questions_form('questions.php', $moveq);
         $sdata = clone($questionnaire->survey);
         $sdata->sid = $questionnaire->survey->id;
         $sdata->id = $cm->id;
@@ -379,7 +379,7 @@ if ($reload) {
         $questionsform->set_data($sdata);
     } else if ($action == 'question') {
         $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
-        $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
+        $questionsform = new \mod_questionnaire\local\edit_question_form('questions.php');
         $questionsform->set_data($question);
     }
 }

@@ -24,7 +24,7 @@
  * @since      Moodle 3.0
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local;
 
 defined('MOODLE_INTERNAL') || die();
 

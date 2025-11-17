@@ -25,7 +25,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
 
@@ -58,7 +58,7 @@ $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\feedbackpage());
+$questionnaire->add_page(new \mod_questionnaire\local\output\feedbackpage());
 
 $SESSION->questionnaire->current_tab = 'feedback';
 
@@ -66,7 +66,7 @@ if (!$questionnaire->capabilities->editquestions) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$feedbackform = new \mod_questionnaire\feedback_form('feedback.php');
+$feedbackform = new \mod_questionnaire\local\feedback_form('feedback.php');
 $sdata = clone($questionnaire->survey);
 $sdata->sid = $questionnaire->survey->id;
 $sdata->id = $cm->id;
@@ -156,7 +156,7 @@ if ($settings = $feedbackform->get_data()) {
             } else {
                 $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
             }
-            $feedbacksection = mod_questionnaire\feedback\section::new_section($questionnaire->sid, $sectionlabel);
+            $feedbacksection = mod_questionnaire\local\feedback\section::new_section($questionnaire->sid, $sectionlabel);
         }
         redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'section' => $firstsection]));
     }

@@ -23,9 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local;
 
-use mod_questionnaire\question\question;
+use mod_questionnaire\local\question\question;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -43,7 +43,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_checkbox(): void {
         $this->create_test_question_with_choices(
@@ -58,7 +58,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_date(): void {
         $this->create_test_question(QUESDATE, '\\mod_questionnaire\\question\\date', ['content' => 'Enter a date']);
@@ -69,7 +69,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_dropdown(): void {
         $this->create_test_question_with_choices(QUESDROP, '\\mod_questionnaire\\question\\drop', ['content' => 'Select one']);
@@ -80,7 +80,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_essay(): void {
         $questiondata = [
@@ -96,7 +96,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_sectiontext(): void {
         $this->create_test_question(
@@ -111,7 +111,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_numeric(): void {
         $questiondata = [
@@ -127,7 +127,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_radiobuttons(): void {
         $this->create_test_question_with_choices(QUESRADIO, '\\mod_questionnaire\\question\\radio', ['content' => 'Choose one']);
@@ -138,7 +138,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_ratescale(): void {
         $this->create_test_question_with_choices(QUESRATE, '\\mod_questionnaire\\question\\rate', ['content' => 'Rate these']);
@@ -149,7 +149,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_textbox(): void {
         $questiondata = [
@@ -165,7 +165,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_slider(): void {
         $questiondata = ['content' => 'Enter a number'];
@@ -177,7 +177,7 @@ final class questiontypes_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \mod_questionnaire\questiontypes_test::create_test_question
+     * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_yesno(): void {
         $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', ['content' => 'Enter yes or no']);

@@ -1,6 +1,6 @@
-[![Moodle plugin CI](https://github.com/PoetOS/moodle-mod_questionnaire/actions/workflows/ci.yml/badge.svg)](https://github.com/PoetOS/moodle-mod_questionnaire/actions/workflows/ci.yml)
+[![Moodle plugin CI](https://github.com/PoetOS/moodle-mod_questionnaire\local/actions/workflows/ci.yml/badge.svg)](https://github.com/PoetOS/moodle-mod_questionnaire\local/actions/workflows/ci.yml)
 
-# moodle-mod_questionnaire
+# moodle-mod_questionnaire\local
 
 The questionnaire module allows you to construct questionnaires (surveys) from a
 variety of question type. It was originally based on phpESP, and Open Source
