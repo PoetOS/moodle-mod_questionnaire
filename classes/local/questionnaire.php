@@ -1738,7 +1738,9 @@ class questionnaire {
         foreach ($this->questionsbysec as $section) {
             $output = '';
             if ($numsections > 1) {
-                $output .= $this->renderer->print_preview_pagenumber(get_string('page', 'questionnaire') . ' questionnaire.php' . $page);
+                $output .= $this->renderer->print_preview_pagenumber(
+                    get_string('page', 'questionnaire') . ' questionnaire.php' . $page
+                );
                 $page++;
             }
             foreach ($section as $questionid) {
@@ -3139,7 +3141,8 @@ class questionnaire {
             }
             $this->page->add_to_page('respondentinfo', ' ' . $respondentstring . ': <strong>' . $numresps . '</strong>');
             if (empty($rows)) {
-                $errmsg = get_string('erroropening', 'questionnaire') . ' questionnaire.php' . get_string('noresponsedata', 'questionnaire');
+                $errmsg = get_string('erroropening', 'questionnaire') .
+                    ' questionnaire.php' . get_string('noresponsedata', 'questionnaire');
                 return($errmsg);
             }
 

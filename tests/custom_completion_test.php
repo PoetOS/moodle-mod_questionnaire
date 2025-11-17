@@ -29,13 +29,13 @@ namespace mod_questionnaire\local;
 use cm_info;
 use coding_exception;
 use mod_questionnaire\local\completion\custom_completion;
+use mod_questionnaire\local\question\question
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
  * Class for unit testing mod_questionnaire/custom_completion.

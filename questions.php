@@ -25,7 +25,7 @@
 use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php'); // Needed for question type constants.
+use mod_questionnaire\local\question\question;
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
