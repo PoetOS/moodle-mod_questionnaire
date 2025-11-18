@@ -24,11 +24,12 @@
  */
 namespace mod_questionnaire\local;
 
+use mod_questionnaire\local\question\question;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
 
 /**
  * Unit tests for questionnaire_deletion_question_testcase.

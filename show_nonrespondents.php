@@ -83,7 +83,7 @@ $questionnaire = new questionnaire($course, $cm, $sid, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\local\output\nonrespondentspage());
+$questionnaire->add_page(new \mod_questionnaire\output\nonrespondentspage());
 
 $resume = $questionnaire->resume;
 $fullname = $questionnaire->respondenttype == 'fullname';

@@ -174,7 +174,7 @@ class sectiontext extends question {
         [$cm, $course, $questionnaire] = questionnaire_get_standard_page_items(null, $response->questionnaireid);
         $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
         $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-        $questionnaire->add_page(new \mod_questionnaire\local\output\reportpage());
+        $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
 
         $compare = false;
         $allresponses = false;

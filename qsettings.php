@@ -57,7 +57,7 @@ $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\local\output\qsettingspage());
+$questionnaire->add_page(new \mod_questionnaire\output\qsettingspage());
 
 $SESSION->questionnaire->current_tab = 'settings';
 

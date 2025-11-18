@@ -19,6 +19,7 @@ namespace mod_questionnaire\local;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 #[\AllowDynamicProperties]
 /**

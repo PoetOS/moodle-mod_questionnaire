@@ -25,7 +25,7 @@
 use mod_questionnaire\local\questionnaire;
 
 require_once("../../config.php");
-use mod_questionnaire\local\question\question;
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
@@ -66,7 +66,7 @@ $questionnaire->get_delete_questions();
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\local\output\questionspage());
+$questionnaire->add_page(new \mod_questionnaire\output\questionspage());
 
 if (!$questionnaire->capabilities->editquestions) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
@@ -363,7 +363,7 @@ if ($reload) {
     $questionnaire->get_delete_questions();
     // Add renderer and page objects to the questionnaire object for display use.
     $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-    $questionnaire->add_page(new \mod_questionnaire\local\output\questionspage());
+    $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
     if ($action == 'main') {
         $questionsform = new \mod_questionnaire\local\questions_form('questions.php', $moveq);
         $sdata = clone($questionnaire->survey);
