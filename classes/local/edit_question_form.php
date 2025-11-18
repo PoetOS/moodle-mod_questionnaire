@@ -23,6 +23,7 @@
  */
 
 namespace mod_questionnaire\local;
+use mod_questionnaire\local\question\question;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -69,7 +70,7 @@ class edit_question_form extends \moodleform {
         $errors = parent::validation($data, $files);
 
         // If this is a rate question.
-        if ($data['type_id'] == QUESRATE) {
+        if ($data['type_id'] == question::QUESRATE) {
             if ($data['length'] < 2) {
                 $errors["length"] = get_string('notenoughscaleitems', 'questionnaire');
             }
@@ -90,7 +91,7 @@ class edit_question_form extends \moodleform {
         }
 
         // If this is a slider question.
-        if ($data['type_id'] == QUESSLIDER) {
+        if ($data['type_id'] == question::QUESSLIDER) {
             if (
                 isset($data['minrange']) &&
                 isset($data['maxrange']) &&

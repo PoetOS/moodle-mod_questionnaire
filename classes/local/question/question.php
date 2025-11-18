@@ -30,21 +30,6 @@ use html_writer;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
- // Constants.
-define('QUESCHOOSE', 0);
-define('QUESYESNO', 1);
-define('QUESTEXT', 2);
-define('QUESESSAY', 3);
-define('QUESRADIO', 4);
-define('QUESCHECK', 5);
-define('QUESDROP', 6);
-define('QUESRATE', 8);
-define('QUESDATE', 9);
-define('QUESNUMERIC', 10);
-define('QUESSLIDER', 11);
-define('QUESPAGEBREAK', 99);
-define('QUESSECTIONTEXT', 100);
-
 global $idcounter, $CFG;
 $idcounter = 0;
 
@@ -59,7 +44,35 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
  * @package mod_questionnaire
  */
 abstract class question {
-    // Class Properties.
+    // Constants.
+    /** @var int Define choose question type. */
+    const QUESCHOOSE = 0;
+    /** @var int Define Yes/No question type. */
+    const QUESYESNO = 1;
+    /** @var int Define text question type. */
+    const QUESTEXT = 2;
+    /** @var int Define essay question type. */
+    const QUESESSAY = 3;
+    /** @var int Define radio question type. */
+    const QUESRADIO = 4;
+    /** @var int Define check question type. */
+    const QUESCHECK = 5;
+    /** @var int Define drop question type. */
+    const QUESDROP = 6;
+    /** @var int Define rate question type. */
+    const QUESRATE = 8;
+    /** @var int Define date question type. */
+    const QUESDATE = 9;
+    /** @var int Define numeric question type. */
+    const QUESNUMERIC = 10;
+    /** @var int Define slider question type. */
+    const QUESSLIDER = 11;
+    /** @var int Define page break question type. */
+    const QUESPAGEBREAK = 99;
+    /** @var int Define section text question type. */
+    const QUESSECTIONTEXT = 100;
+
+// Class Properties.
     /** @var int $id The database id of this question. */
     public $id = 0;
 
@@ -113,18 +126,18 @@ abstract class question {
 
     /** @var array $qtypenames List of all question names. */
     private static $qtypenames = [
-        QUESYESNO => 'yesno',
-        QUESTEXT => 'text',
-        QUESESSAY => 'essay',
-        QUESRADIO => 'radio',
-        QUESCHECK => 'check',
-        QUESDROP => 'drop',
-        QUESRATE => 'rate',
-        QUESDATE => 'date',
-        QUESNUMERIC => 'numerical',
-        QUESPAGEBREAK => 'pagebreak',
-        QUESSECTIONTEXT => 'sectiontext',
-        QUESSLIDER => 'slider',
+        self::QUESYESNO => 'yesno',
+        self::QUESTEXT => 'text',
+        self::QUESESSAY => 'essay',
+        self::QUESRADIO => 'radio',
+        self::QUESCHECK => 'check',
+        self::QUESDROP => 'drop',
+        self::QUESRATE => 'rate',
+        self::QUESDATE => 'date',
+        self::QUESNUMERIC => 'numerical',
+        self::QUESPAGEBREAK => 'pagebreak',
+        self::QUESSECTIONTEXT => 'sectiontext',
+        self::QUESSLIDER => 'slider',
     ];
 
     /** @var array $notifications Array of extra messages for display purposes. */
@@ -984,7 +997,7 @@ abstract class question {
         $pagetags->fieldset = (object)['id' => $this->id, 'class' => $displayclass];
 
         // Do not display the info box for the label question type.
-        if ($this->type_id != QUESSECTIONTEXT) {
+        if ($this->type_id != self::QUESSECTIONTEXT) {
             if (!$nonumbering) {
                 $pagetags->qnum = $qnum;
             }
@@ -1003,11 +1016,11 @@ abstract class question {
             $this->content = '';
         }
         $pagetags->skippedclass = $skippedclass;
-        if ($this->type_id == QUESNUMERIC || $this->type_id == QUESTEXT || $this->type_id == QUESSLIDER) {
+        if ($this->type_id == self::QUESNUMERIC || $this->type_id == self::QUESTEXT || $this->type_id == self::QUESSLIDER) {
             $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->id];
-        } else if ($this->type_id == QUESDROP) {
+        } else if ($this->type_id == self::QUESDROP) {
             $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->name];
-        } else if ($this->type_id == QUESESSAY) {
+        } else if ($this->type_id == self::QUESESSAY) {
             $pagetags->label = (object)['for' => 'q' . $this->id];
         }
         $content = file_rewrite_pluginfile_urls(

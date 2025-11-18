@@ -248,7 +248,7 @@ class mobile {
         if ($pagenum > 1) {
             for ($j = 2; $j <= $pagenum; $j++) {
                 foreach ($questionnaire->questionsbysec[$j - 1] as $questionid) {
-                    if ($questionnaire->questions[$questionid]->type_id < QUESPAGEBREAK) {
+                    if ($questionnaire->questions[$questionid]->type_id < self::QUESPAGEBREAK) {
                         $i++;
                     }
                 }
