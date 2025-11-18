@@ -60,7 +60,11 @@ final class questiontypes_test extends \advanced_testcase {
      * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_date(): void {
-        $this->create_test_question(question::QUESDATE, '\\mod_questionnaire\\local\\question\\date', ['content' => 'Enter a date']);
+        $this->create_test_question(
+            question::QUESDATE,
+            '\\mod_questionnaire\\local\\question\\date',
+            ['content' => 'Enter a date']
+        );
     }
 
     /**
@@ -151,8 +155,8 @@ final class questiontypes_test extends \advanced_testcase {
         $this->create_test_question_with_choices(
             question::QUESRATE,
             '\\mod_questionnaire\\local\\question\\rate',
-             ['content' => 'Rate these']
-            );
+            ['content' => 'Rate these']
+        );
     }
 
     /**
@@ -191,7 +195,11 @@ final class questiontypes_test extends \advanced_testcase {
      * @covers \mod_questionnaire\local\questiontypes_test::create_test_question
      */
     public function test_create_question_yesno(): void {
-        $this->create_test_question(question::QUESYESNO, '\\mod_questionnaire\\local\\question\\yesno', ['content' => 'Enter yes or no']);
+        $this->create_test_question(
+            question::QUESYESNO,
+            '\\mod_questionnaire\\local\\question\\yesno',
+            ['content' => 'Enter yes or no']
+        );
     }
 
 

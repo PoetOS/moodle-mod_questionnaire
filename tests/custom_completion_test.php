@@ -28,7 +28,7 @@ namespace mod_questionnaire\local;
 
 use cm_info;
 use coding_exception;
-use mod_questionnaire\local\completion\custom_completion;
+use mod_questionnaire\completion\custom_completion;
 use mod_questionnaire\local\question\question;
 use moodle_exception;
 
