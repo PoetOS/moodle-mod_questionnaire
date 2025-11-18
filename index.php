@@ -34,7 +34,7 @@ $coursecontext = context_course::instance($id);
 require_login($course->id);
 $PAGE->set_pagelayout('incourse');
 
-$event = \mod_questionnaire\local\event\course_module_instance_list_viewed::create(
+$event = \mod_questionnaire\event\course_module_instance_list_viewed::create(
     ['context' => context_course::instance($course->id)]
 );
 $event->trigger();

@@ -73,7 +73,7 @@ if ($resume) {
     $context = context_module::instance($questionnaire->cm->id);
     $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-    $event = \mod_questionnaire\local\event\attempt_resumed::create([
+    $event = \mod_questionnaire\event\attempt_resumed::create([
         'objectid' => $questionnaire->id,
         'anonymous' => $anonymous,
         'context' => $context,

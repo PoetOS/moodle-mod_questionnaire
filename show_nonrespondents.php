@@ -575,7 +575,7 @@ echo $questionnaire->renderer->footer();
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-$event = \mod_questionnaire\local\event\non_respondents_viewed::create(
+$event = \mod_questionnaire\event\non_respondents_viewed::create(
     [
         'objectid' => $questionnaire->id,
         'anonymous' => $anonymous,

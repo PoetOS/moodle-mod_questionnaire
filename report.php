@@ -349,7 +349,7 @@ switch ($action) {
                 'courseid' => $questionnaire->course->id,
                 'relateduserid' => $response->userid,
             ];
-            $event = \mod_questionnaire\local\event\response_deleted::create($params);
+            $event = \mod_questionnaire\event\response_deleted::create($params);
             $event->trigger();
 
             redirect($redirection);
@@ -438,7 +438,7 @@ switch ($action) {
             $context = context_module::instance($questionnaire->cm->id);
             $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-            $event = \mod_questionnaire\local\event\all_responses_deleted::create([
+            $event = \mod_questionnaire\event\all_responses_deleted::create([
                 'objectid' => $questionnaire->id,
                 'anonymous' => $anonymous,
                 'context' => $context,
@@ -520,7 +520,7 @@ switch ($action) {
             'courseid' => $course->id,
             'other' => ['action' => $action, 'instance' => $instance, 'currentgroupid' => $currentgroupid],
         ];
-        $event = \mod_questionnaire\local\event\all_responses_saved_as_text::create($params);
+        $event = \mod_questionnaire\event\all_responses_saved_as_text::create($params);
         $event->trigger();
 
         exit();
@@ -707,7 +707,7 @@ switch ($action) {
             @$pdf->Output(clean_param($questionnaire->name, PARAM_FILE) . '.pdf', 'D');
             error_reporting($errorreporting);
         } else { // Default to HTML.
-            $event = \mod_questionnaire\local\event\all_responses_viewed::create($params);
+            $event = \mod_questionnaire\event\all_responses_viewed::create($params);
             $event->trigger();
 
             if ($outputtarget != 'print') {

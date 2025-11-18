@@ -132,7 +132,7 @@ if (isguestuser()) {
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-$event = \mod_questionnaire\local\event\course_module_viewed::create(
+$event = \mod_questionnaire\event\course_module_viewed::create(
     [
         'objectid' => $questionnaire->id,
         'anonymous' => $anonymous,

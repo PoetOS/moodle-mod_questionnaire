@@ -346,7 +346,7 @@ function questionnaire_observe_event_delete($cmid, $questiontype, $courseid) {
             'courseid' => $courseid,
             'other' => ['questiontype' => $questiontype],
     ];
-    $event = \mod_questionnaire\local\event\question_deleted::create($params);
+    $event = \mod_questionnaire\event\question_deleted::create($params);
     $event->trigger();
 }
 
