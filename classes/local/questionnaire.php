@@ -17,6 +17,7 @@
 namespace mod_questionnaire\local;
 
 use mod_questionnaire\local\feedback\section;
+use mod_questionnaire\local\question\question;
 use moodle_url;
 use pix_icon;
 use popup_action;
