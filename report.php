@@ -79,12 +79,12 @@ $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 if ($outputtarget == 'pdf') {
     if ($action == 'vresp') {
-        $questionnaire->add_page(new \mod_questionnaire\local\output\responsepagepdf());
+        $questionnaire->add_page(new \mod_questionnaire\output\responsepagepdf());
     } else {
-        $questionnaire->add_page(new \mod_questionnaire\local\output\reportpagepdf());
+        $questionnaire->add_page(new \mod_questionnaire\output\reportpagepdf());
     }
 } else { // Default to HTML.
-    $questionnaire->add_page(new \mod_questionnaire\local\output\reportpage());
+    $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
 }
 
 // If you can't view the questionnaire, or can't view a specified response, error out.

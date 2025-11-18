@@ -58,7 +58,7 @@ $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\local\output\feedbackpage());
+$questionnaire->add_page(new \mod_questionnaire\output\feedbackpage());
 
 $SESSION->questionnaire->current_tab = 'feedback';
 
