@@ -33,7 +33,7 @@ class drop extends question {
      * @return string The response object based off of questionnaire_response_base.
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\responsetype\\single';
+        return '\\mod_questionnaire\\local\\responsetype\\single';
     }
 
     /**
