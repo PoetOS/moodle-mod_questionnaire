@@ -351,7 +351,7 @@ class questionnaire {
                     'anonymous' => $anonymous,
                     'other' => ['questionnaireid' => $this->id],
                 ];
-                $event = \mod_questionnaire\local\event\attempt_submitted::create($params);
+                $event = \mod_questionnaire\event\attempt_submitted::create($params);
                 $event->trigger();
 
                 $this->submission_notify($this->rid);
@@ -405,7 +405,7 @@ class questionnaire {
             'anonymous' => $anonymous,
             'other' => ['questionnaireid' => $this->id],
         ];
-        $event = \mod_questionnaire\local\event\attempt_submitted::create($params);
+        $event = \mod_questionnaire\event\attempt_submitted::create($params);
         $event->trigger();
     }
 
@@ -1480,7 +1480,7 @@ class questionnaire {
                         'relateduserid' => $userid,
                         'other' => ['action' => 'vresp', 'currentgroupid' => $currentgroupid, 'rid' => $rid],
                     ];
-                    $event = \mod_questionnaire\local\event\response_viewed::create($params);
+                    $event = \mod_questionnaire\event\response_viewed::create($params);
                     $event->trigger();
                 }
             }
@@ -2623,7 +2623,7 @@ class questionnaire {
                 'anonymous' => $anonymous,
                 'other' => ['questionnaireid' => $this->id],
             ];
-            $event = \mod_questionnaire\local\event\attempt_saved::create($params);
+            $event = \mod_questionnaire\event\attempt_saved::create($params);
             $event->trigger();
         }
 

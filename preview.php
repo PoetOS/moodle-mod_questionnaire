@@ -174,7 +174,7 @@ echo $questionnaire->renderer->footer($course);
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
 
-$event = \mod_questionnaire\local\event\questionnaire_previewed::create([
+$event = \mod_questionnaire\event\questionnaire_previewed::create([
     'objectid' => $questionnaire->id,
     'anonymous' => $anonymous,
     'context' => $context,

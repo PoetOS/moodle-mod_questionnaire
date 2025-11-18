@@ -349,7 +349,7 @@ if ($action == 'main') {
             'courseid' => $questionnaire->course->id,
             'other' => ['questiontype' => $questiontype],
         ];
-        $event = \mod_questionnaire\local\event\question_created::create($params);
+        $event = \mod_questionnaire\event\question_created::create($params);
         $event->trigger();
     }
 
