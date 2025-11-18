@@ -18,18 +18,10 @@ namespace mod_questionnaire\local\question;
 use mod_questionnaire\local\edit_question_form;
 use mod_questionnaire\local\responsetype\response\response;
 use mod_questionnaire\local\questionnaire;
-
-defined('MOODLE_INTERNAL') || die();
 use html_writer;
 
-/**
- * This file contains the parent class for questionnaire question types.
- *
- * @author Mike Churchward
- * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package mod_questionnaire
- */
+defined('MOODLE_INTERNAL') || die();
+
 global $idcounter, $CFG;
 $idcounter = 0;
 
@@ -72,7 +64,7 @@ abstract class question {
     /** @var int Define section text question type. */
     const QUESSECTIONTEXT = 100;
 
-// Class Properties.
+    // Class Properties.
     /** @var int $id The database id of this question. */
     public $id = 0;
 
@@ -218,7 +210,7 @@ abstract class question {
      * @return mixed
      */
     public static function question_builder($qtype, $qdata = null, $context = null) {
-        $qclassname = '\\mod_questionnaire\\question\\' . self::qtypename($qtype);
+        $qclassname = '\\mod_questionnaire\\local\\question\\' . self::qtypename($qtype);
         $qid = 0;
         if (!empty($qdata) && is_array($qdata)) {
             $qdata = (object)$qdata;
