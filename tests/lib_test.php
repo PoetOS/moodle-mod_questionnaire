@@ -25,6 +25,8 @@
 
 namespace mod_questionnaire\local;
 
+use mod_questionnaire\local\question\question;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
