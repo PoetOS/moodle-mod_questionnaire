@@ -30,7 +30,7 @@ class check extends question {
      * @return string
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\responsetype\\multiple';
+        return '\\mod_questionnaire\\local\\responsetype\\multiple';
     }
 
     /**

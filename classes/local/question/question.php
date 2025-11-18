@@ -33,6 +33,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
  *
  * @author Mike Churchward
  * @copyright 2016 onward Mike Churchward (mike.churchward@poetopensource.org)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
 abstract class question {
@@ -428,7 +429,7 @@ abstract class question {
     public function insert_response($responsedata) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\local\\responsetype')
         ) {
             return $this->responsetype->insert_response($responsedata);
         } else {
@@ -444,7 +445,7 @@ abstract class question {
     public function get_results($rids = false) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\local\\responsetype')
         ) {
             return $this->responsetype->get_results($rids);
         } else {
@@ -462,7 +463,7 @@ abstract class question {
     public function display_results($rids = false, $sort = '', $anonymous = false) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\local\\responsetype')
         ) {
             return $this->responsetype->display_results($rids, $sort, $anonymous);
         } else {
@@ -569,7 +570,7 @@ abstract class question {
     public function get_feedback_scores(array $rids) {
         if (
             $this->valid_feedback() && isset($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\local\\responsetype')
         ) {
             return $this->responsetype->get_feedback_scores($rids);
         } else {
@@ -902,7 +903,7 @@ abstract class question {
     public function results_template($pdf = false) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
-            is_subclass_of($this->responsetype, '\\mod_questionnaire\\responsetype\\responsetype')
+            is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\local\\responsetype')
         ) {
             return $this->responsetype->results_template($pdf);
         } else {
