@@ -3435,7 +3435,7 @@ class questionnaire {
             if (!isset($anonumap[$user->id])) {
                 $anonumap[$user->id] = count($anonumap) + 1;
             }
-            $fullname = questionnaire . phpget_string('anonymous', 'questionnaire') . $anonumap[$user->id];
+            $fullname = get_string('anonymous', 'questionnaire') . $anonumap[$user->id];
             $username = '';
             $uid = '';
         } else {
