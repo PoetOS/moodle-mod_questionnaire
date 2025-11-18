@@ -39,19 +39,19 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 final class deletion_question_test extends \advanced_testcase {
     public function setUp(): void {
         $this->create_question_by_type(
-            QUESDATE,
+            question::QUESDATE,
             ['name' => 'DEMODATE1', 'content' => 'Demo date question 1', 'deleted' => time()]
         );
         $this->create_question_by_type(
-            QUESDATE,
+            question::QUESDATE,
             ['name' => 'DEMODATE2', 'content' => 'Demo date question 2']
         );
         $this->create_question_by_type(
-            QUESDATE,
+            question::QUESDATE,
             ['name' => 'DEMODATE3', 'content' => 'Demo date question 3', 'deleted' => time()]
         );
         $this->create_question_by_type(
-            QUESTEXT,
+            question::QUESTEXT,
             ['name' => 'DEMOTEXT4', 'content' => 'Demo text question 4']
         );
 

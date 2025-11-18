@@ -167,11 +167,11 @@ class mod_questionnaire_generator extends testing_module_generator {
         // Get question type.
         $typeid = $record['type_id'];
 
-        if ($typeid === QUESRATE && !isset($record['length'])) {
+        if ($typeid === question::QUESRATE && !isset($record['length'])) {
             $record['length'] = 5;
         }
 
-        if ($typeid !== QUESPAGEBREAK && $typeid !== QUESSECTIONTEXT) {
+        if ($typeid !== question::QUESPAGEBREAK && $typeid !== question::QUESSECTIONTEXT) {
             $qtype = $DB->get_record('questionnaire_question_type', ['id' => $typeid]);
             if (!$qtype) {
                 throw new coding_exception('Could not find question type with id ' . $typeid);
@@ -188,7 +188,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $question = question::question_builder($record->type_id, $record->id, $record);
 
         // Add the question choices if required.
-        if ($typeid !== QUESPAGEBREAK && $typeid !== QUESSECTIONTEXT) {
+        if ($typeid !== question::QUESPAGEBREAK && $typeid !== question::QUESSECTIONTEXT) {
             if ($question->has_choices()) {
                 $this->add_question_choices($question, $data);
                 $record->opts = $data;
@@ -307,13 +307,13 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param array $data
      */
     protected function validate_question($typeid, $data) {
-        if ($typeid == QUESCHOOSE) {
+        if ($typeid == question::QUESCHOOSE) {
             $this->validate_question_choice($data);
-        } else if ($typeid === QUESRADIO) {
+        } else if ($typeid === question::QUESRADIO) {
             $this->validate_question_radio($data);
-        } else if ($typeid === QUESCHECK) {
+        } else if ($typeid === question::QUESCHECK) {
             $this->validate_question_check($data);
-        } else if ($typeid === QUESRATE) {
+        } else if ($typeid === question::QUESRATE) {
             $this->validate_question_rate($data);
         }
     }
@@ -348,7 +348,7 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @return bool
      */
     public function question_has_choices($typeid) {
-        $choicequestions = [QUESCHOOSE, QUESRADIO, QUESCHECK, QUESDROP, QUESRATE];
+        $choicequestions = [question::QUESCHOOSE, question::QUESRADIO, question::QUESCHECK, question::QUESDROP, question::QUESRATE];
         return in_array($typeid, $choicequestions);
     }
 
@@ -359,40 +359,40 @@ class mod_questionnaire_generator extends testing_module_generator {
      */
     public function type_str($qtypeid) {
         switch ($qtypeid) {
-            case QUESYESNO:
+            case question::QUESYESNO:
                 $qtype = 'yesno';
                 break;
-            case QUESTEXT:
+            case question::QUESTEXT:
                 $qtype = 'textbox';
                 break;
-            case QUESESSAY:
+            case question::QUESESSAY:
                 $qtype = 'essaybox';
                 break;
-            case QUESRADIO:
+            case question::QUESRADIO:
                 $qtype = 'radiobuttons';
                 break;
-            case QUESCHECK:
+            case question::QUESCHECK:
                 $qtype = 'checkboxes';
                 break;
-            case QUESDROP:
+            case question::QUESDROP:
                 $qtype = 'dropdown';
                 break;
-            case QUESRATE:
+            case question::QUESRATE:
                 $qtype = 'ratescale';
                 break;
-            case QUESDATE:
+            case question::QUESDATE:
                 $qtype = 'date';
                 break;
-            case QUESNUMERIC:
+            case question::QUESNUMERIC:
                 $qtype = 'numeric';
                 break;
-            case QUESSECTIONTEXT:
+            case question::QUESSECTIONTEXT:
                 $qtype = 'sectiontext';
                 break;
-            case QUESPAGEBREAK:
+            case question::QUESPAGEBREAK:
                 $qtype = 'sectionbreak';
                 break;
-            case QUESSLIDER:
+            case question::QUESSLIDER:
                 $qtype = 'Slider';
                 break;
         }
@@ -406,40 +406,40 @@ class mod_questionnaire_generator extends testing_module_generator {
      */
     public function type_name($qtypeid) {
         switch ($qtypeid) {
-            case QUESYESNO:
+            case question::QUESYESNO:
                 $qtype = 'Yes / No';
                 break;
-            case QUESTEXT:
+            case question::QUESTEXT:
                 $qtype = 'Text Box';
                 break;
-            case QUESESSAY:
+            case question::QUESESSAY:
                 $qtype = 'Essay Box';
                 break;
-            case QUESRADIO:
+            case question::QUESRADIO:
                 $qtype = 'Radio Buttons';
                 break;
-            case QUESCHECK:
+            case question::QUESCHECK:
                 $qtype = 'Check Boxes';
                 break;
-            case QUESDROP:
+            case question::QUESDROP:
                 $qtype = 'Drop Down';
                 break;
-            case QUESRATE:
+            case question::QUESRATE:
                 $qtype = 'Rate Scale';
                 break;
-            case QUESDATE:
+            case question::QUESDATE:
                 $qtype = 'Date';
                 break;
-            case QUESNUMERIC:
+            case question::QUESNUMERIC:
                 $qtype = 'Numeric';
                 break;
-            case QUESSECTIONTEXT:
+            case question::QUESSECTIONTEXT:
                 $qtype = 'Section Text';
                 break;
-            case QUESPAGEBREAK:
+            case question::QUESPAGEBREAK:
                 $qtype = 'Section Break';
                 break;
-            case QUESSLIDER:
+            case question::QUESSLIDER:
                 $qtype = 'Slider';
                 break;
         }
@@ -466,11 +466,17 @@ class mod_questionnaire_generator extends testing_module_generator {
             return;
         }
 
-        if ($qtype === QUESCHOOSE || $qtype === QUESRADIO || $qtype === QUESDROP || $qtype === QUESCHECK || $qtype === QUESRATE) {
+        if (
+            $qtype === question::QUESCHOOSE ||
+            $qtype === question::QUESRADIO ||
+            $qtype === question::QUESDROP ||
+            $qtype === question::QUESCHECK ||
+            $qtype === question::QUESRATE
+        ) {
             if (is_int($questionresponse->response)) {
                 $choiceid = $questionresponse->response;
             } else {
-                if ($qtype === QUESRATE) {
+                if ($qtype === question::QUESRATE) {
                     if (!$questionresponse->response instanceof question_response_rank) {
                         throw new coding_exception('Question response for ranked choice should be of type question_response_rank');
                     }
@@ -499,7 +505,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 }
                 $choiceid = $choice->id;
             }
-            if ($qtype == QUESRATE) {
+            if ($qtype == question::QUESRATE) {
                 $DB->insert_record(
                     'questionnaire_response_rank',
                     [
@@ -510,9 +516,9 @@ class mod_questionnaire_generator extends testing_module_generator {
                     ]
                 );
             } else {
-                if ($qtype === QUESCHOOSE || $qtype === QUESRADIO || $qtype === QUESDROP) {
+                if ($qtype === question::QUESCHOOSE || $qtype === question::QUESRADIO || $qtype === question::QUESDROP) {
                     $instable = 'questionnaire_resp_single';
-                } else if ($qtype === QUESCHECK) {
+                } else if ($qtype === question::QUESCHECK) {
                     $instable = 'questionnaire_resp_multiple';
                 }
                 $DB->insert_record(
@@ -626,28 +632,28 @@ class mod_questionnaire_generator extends testing_module_generator {
             }
 
             switch ($question->type_id) {
-                case QUESTEXT:
+                case question::QUESTEXT:
                     $responses[] = new question_response($question->id, 'Test answer');
                     break;
-                case QUESESSAY:
+                case question::QUESESSAY:
                     $resptext = '<h1>Some header text</h1><p>Some paragraph text</p>';
                     $responses[] = new question_response($question->id, $resptext);
                     break;
-                case QUESNUMERIC:
+                case question::QUESNUMERIC:
                     $responses[] = new question_response($question->id, 83);
                     break;
-                case QUESDATE:
+                case question::QUESDATE:
                     $date = mktime(0, 0, 0, 12, 28, 2017);
                     $dateformat = get_string('strfdate', 'questionnaire');
                     $datestr = userdate($date, $dateformat, '1', false);
                     $responses[] = new question_response($question->id, $datestr);
                     break;
-                case QUESRADIO:
-                case QUESDROP:
+                case question::QUESRADIO:
+                case question::QUESDROP:
                     $optidx = count($choices) - 1;
                     $responses[] = new question_response($question->id, $choices[$optidx]);
                     break;
-                case QUESCHECK:
+                case question::QUESCHECK:
                     $answers = [];
                     for ($a = 0; $a < count($choices) - 1; $a++) {
                         $optidx = count($choices) - 1;
@@ -658,14 +664,14 @@ class mod_questionnaire_generator extends testing_module_generator {
 
                     $responses[] = new question_response($question->id, $answers);
                     break;
-                case QUESRATE:
+                case question::QUESRATE:
                     $answers = [];
                     for ($a = 0; $a < count($choices) - 1; $a++) {
                         $answers[] = new question_response_rank($choices[$a], (($a % 5) + 1));
                     }
                     $responses[] = new question_response($question->id, $answers);
                     break;
-                case QUESSLIDER:
+                case question::QUESSLIDER:
                     $responses[] = new question_response($question->id, 5);
                     break;
             }
@@ -694,7 +700,17 @@ class mod_questionnaire_generator extends testing_module_generator {
         $qdg = $this;
 
         $this->curpos = 0;
-        $questiontypes = [QUESTEXT, QUESESSAY, QUESNUMERIC, QUESDATE, QUESRADIO, QUESDROP, QUESCHECK, QUESRATE, QUESSLIDER];
+        $questiontypes = [
+            question::QUESTEXT,
+            question::QUESESSAY,
+            question::QUESNUMERIC,
+            question::QUESDATE,
+            question::QUESRADIO,
+            question::QUESDROP,
+            question::QUESCHECK,
+            question::QUESRATE,
+            question::QUESSLIDER,
+        ];
         $students = [];
         $courses = [];
         $questionnaires = [];
@@ -748,7 +764,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         [
                             'surveyid' => $questionnaire->sid,
                             'name' => $qdg->type_name($questiontype),
-                            'type_id' => QUESSECTIONTEXT,
+                            'type_id' => question::QUESSECTIONTEXT,
                         ]
                     );
                     // Create questions.
@@ -773,7 +789,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         [
                             'surveyid' => $questionnaire->sid,
                             'name' => 'pagebreak ' . $qname++,
-                            'type_id' => QUESPAGEBREAK,
+                            'type_id' => question::QUESPAGEBREAK,
                         ]
                     );
                 }

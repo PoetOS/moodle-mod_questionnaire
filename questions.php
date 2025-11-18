@@ -23,6 +23,7 @@
  */
 
 use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\question\question;
 
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -95,7 +96,7 @@ if ($delq) {
         ['sid' => $sid],
         'id'
     );
-    if (isset($questions[$qid]) && $questions[$qid]->type_id == QUESPAGEBREAK) {
+    if (isset($questions[$qid]) && $questions[$qid]->type_id == question::QUESPAGEBREAK) {
         $DB->delete_records('questionnaire_question', ['id' => $qid]);
     } else {
         $updatesql = "UPDATE {questionnaire_question}
@@ -227,7 +228,7 @@ if ($action == 'main') {
             $qtype = $questionnaire->questions[$qid]->type_id;
 
             // Delete section breaks without asking for confirmation.
-            if ($qtype == QUESPAGEBREAK) {
+            if ($qtype == question::QUESPAGEBREAK) {
                 redirect(new \moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id, 'delq' => $qid]));
             }
 
@@ -260,12 +261,12 @@ if ($action == 'main') {
 
             $reload = true;
         } else if (isset($qformdata->addqbutton)) {
-            if ($qformdata->type_id == QUESPAGEBREAK) { // Adding section break is handled right away....
+            if ($qformdata->type_id == question::QUESPAGEBREAK) { // Adding section break is handled right away....
                 $questionrec = new stdClass();
                 $questionrec->surveyid = $qformdata->sid;
-                $questionrec->type_id = QUESPAGEBREAK;
+                $questionrec->type_id = question::QUESPAGEBREAK;
                 $questionrec->content = 'break';
-                $question = \mod_questionnaire\local\question\question::question_builder(QUESPAGEBREAK);
+                $question = question::question_builder(question::QUESPAGEBREAK);
                 $question->add($questionrec);
                 $reload = true;
             } else {
