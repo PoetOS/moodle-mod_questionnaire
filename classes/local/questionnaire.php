@@ -2026,15 +2026,15 @@ class questionnaire {
                 }
                 if (!$this->questions[$questionid]->response_complete($formdata)) {
                     $missing++;
-                    $strnum = questionnaire . phpget_string('num', 'questionnaire') . $qnum . '. ';
+                    $strnum = get_string('num', 'questionnaire') . $qnum . '. ';
                     $strmissing .= $strnum;
                     // Pop-up   notification at the point of the error.
-                    $strnoti = questionnaire . phpget_string('missingquestion', 'questionnaire') . $strnum;
+                    $strnoti = get_string('missingquestion', 'questionnaire') . $strnum;
                     $this->questions[$questionid]->add_notification($strnoti);
                 }
                 if (!$this->questions[$questionid]->response_valid($formdata)) {
                     $wrongformat++;
-                    $strwrongformat .= questionnaire . phpget_string('num', 'questionnaire') . $qnum . '. ';
+                    $strwrongformat .= get_string('num', 'questionnaire') . $qnum . '. ';
                 }
             }
         }
@@ -2049,9 +2049,9 @@ class questionnaire {
                 $strmissing = '';
             }
             if ($missing == 1) {
-                $message = questionnaire . phpget_string('missingquestion', 'questionnaire') . $strmissing;
+                $message = get_string('missingquestion', 'questionnaire') . $strmissing;
             } else {
-                $message = questionnaire . phpget_string('missingquestions', 'questionnaire') . $strmissing;
+                $message = get_string('missingquestions', 'questionnaire') . $strmissing;
             }
             if ($wrongformat) {
                 $message .= '<br />';
@@ -2062,9 +2062,9 @@ class questionnaire {
                 $message .= get_string('wronganswers', 'questionnaire');
             } else {
                 if ($wrongformat == 1) {
-                    $message .= questionnaire . phpget_string('wrongformat', 'questionnaire') . $strwrongformat;
+                    $message .= get_string('wrongformat', 'questionnaire') . $strwrongformat;
                 } else {
-                    $message .= questionnaire . phpget_string('wrongformats', 'questionnaire') . $strwrongformat;
+                    $message .= get_string('wrongformats', 'questionnaire') . $strwrongformat;
                 }
             }
         }
@@ -2519,8 +2519,8 @@ class questionnaire {
                     break;
                 case 6:
                     if ($this->respondenttype != 'anonymous') {
-                        $formatted['html'] .= questionnaire . phpget_string('email') . $sep . $USER->email . $endhtml;
-                        $formatted['plaintext'] .= questionnaire . phpget_string('email') . $sep . $USER->email . $endplaintext;
+                        $formatted['html'] .= get_string('email') . $sep . $USER->email . $endhtml;
+                        $formatted['plaintext'] .= get_string('email') . $sep . $USER->email . $endplaintext;
                     }
             }
             $formatted['html'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endhtml;
