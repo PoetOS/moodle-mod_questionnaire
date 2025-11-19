@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire\local/reportpagepdf
+    @template mod_questionnaire/reportpagepdf
 
     Template which defines a questionnaire completion page. This template uses a simple level of HTML, suitable for being
     translated into a PDF file by the TCPDF library.
@@ -73,7 +73,7 @@
         {{#feedbackcharts}}{{{.}}}{{/feedbackcharts}}
         {{#feedbackscores}}{{{.}}}{{/feedbackscores}}
         {{#feedbackmessages}}
-        <h3>{{# str }} feedbackreport, mod_questionnaire\local {{/ str }}</h3>
+        <h3>{{# str }} feedbackreport, mod_questionnaire {{/ str }}</h3>
         {{{.}}}
         {{/feedbackmessages}}
         {{#feedbacknotes}}{{{.}}}{{/feedbacknotes}}

@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_questionnaire\local/reportpage
+    @template mod_questionnaire/reportpage
 
     Template which defines a questionnaire completion page.
 
@@ -76,21 +76,21 @@
         {{#feedbackcharts}}{{{.}}}{{/feedbackcharts}}
         {{#feedbackscores}}{{{.}}}{{/feedbackscores}}
         {{#feedbackmessages}}
-        <h3>{{# str }} feedbackreport, mod_questionnaire\local {{/ str }}</h3>
+        <h3>{{# str }} feedbackreport, mod_questionnaire {{/ str }}</h3>
         {{{.}}}
         {{/feedbackmessages}}
         {{#feedbacknotes}}{{{.}}}{{/feedbacknotes}}
         {{#responses}}{{{.}}}{{/responses}}
         {{#bottomnavigationbar}}<div class="box respondentsnavbar">{{{.}}}</div>{{/bottomnavigationbar}}
         {{#printparam}}
-            <button id="print-button" class="btn btn-primary" title="{{#str}}print, mod_questionnaire\local{{/str}}">
-                    {{#str}}printbutton, mod_questionnaire\local{{/str}}
+            <button id="print-button" class="btn btn-primary" title="{{#str}}print, mod_questionnaire{{/str}}">
+                    {{#str}}printbutton, mod_questionnaire{{/str}}
             </button>
         {{/printparam}}
     </div>
 </div>
 {{#js}}
-    require(['jquery', 'mod_questionnaire\local/table_sort'], function($, TableSort) {
+    require(['jquery', 'mod_questionnaire/table_sort'], function($, TableSort) {
         $(document).ready(function() {
             TableSort.init();
         });
