@@ -484,7 +484,7 @@ class questionnaire {
             if ($question->type_id < question::QUESPAGEBREAK) {
                 $i++;
             }
-            if ($question->type_id != question::PAGEBREAK) {
+            if ($question->type_id != question::QUESPAGEBREAK) {
                 $this->page->add_to_page(
                     'responses',
                     $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf)
@@ -3021,18 +3021,18 @@ class questionnaire {
             $navbar->previous = ['url' => ($url . '&rid=' . $prevrid), 'title' => $title];
         }
         for ($i = 0; $i < $currpos; $i++) {
-            $title = questionnaire . phpuserdate($ridssub[$i]) . $ridsusers[$i];
+            $title = userdate($ridssub[$i]) . $ridsusers[$i];
             $navbar->prevrespnumbers[] = ['url' => ($url . '&rid=' . $rids[$i]), 'title' => $title, 'respnumber' => $displaypos];
             $displaypos++;
         }
         $navbar->currrespnumber = $displaypos;
         for (++$i; $i < $total; $i++) {
             $displaypos++;
-            $title = questionnaire . phpuserdate($ridssub[$i]) . $ridsusers[$i];
+            $title = userdate($ridssub[$i]) . $ridsusers[$i];
             $navbar->nextrespnumbers[] = ['url' => ($url . '&rid=' . $rids[$i]), 'title' => $title, 'respnumber' => $displaypos];
         }
         if ($nextrid != null) {
-            $title = questionnaire . phpuserdate($ridssub[$currpos + 1]) . $ridsusers[$currpos + 1];
+            $title = userdate($ridssub[$currpos + 1]) . $ridsusers[$currpos + 1];
             $navbar->next = ['url' => ($url . '&rid=' . $nextrid), 'title' => $title];
         }
         $this->page->add_to_page('navigationbar', $this->renderer->usernavigationbar($navbar));
