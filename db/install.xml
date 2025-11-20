@@ -34,7 +34,7 @@
         <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
-        <INDEX NAME="respview" UNIQUE="false" FIELDS="resp_view" />
+        <INDEX NAME="respview" UNIQUE="false" FIELDS="respview" />
       </INDEXES>
     </TABLE>
     <TABLE NAME="questionnaire_survey" COMMENT="questionnaire_survey table retrofitted from MySQL">
