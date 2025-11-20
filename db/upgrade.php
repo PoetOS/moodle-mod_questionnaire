@@ -1056,7 +1056,6 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
     }
 
     if ($oldversion < 2025111100.01) {
-
         // Rename field resp_eligible on table questionnaire to respeligible.
         $table = new xmldb_table('questionnaire');
         $field = new xmldb_field('resp_eligible', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'all', 'respondenttype');

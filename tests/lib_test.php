@@ -160,7 +160,7 @@ final class lib_test extends \advanced_testcase {
         $this->assertEquals($qrow->qtype, $questrecord->qtype);
         $this->assertEquals($qrow->respondenttype, $questrecord->respondenttype);
         $this->assertEquals($qrow->respeligible, $questrecord->respeligible);
-        $this->assertEquals($qrow->resp_view, $questrecord->resp_view);
+        $this->assertEquals($qrow->respview, $questrecord->respview);
         $this->assertEquals($qrow->opendate, $questrecord->opendate);
         $this->assertEquals($qrow->closedate, $questrecord->closedate);
         $this->assertEquals($qrow->resume, $questrecord->resume);
