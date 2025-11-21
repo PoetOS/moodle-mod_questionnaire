@@ -730,9 +730,9 @@ class questionnaire {
             // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
             if (
                 $this->capabilities->readallresponses &&
-                ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
             ) {
                 return true;
             }
@@ -754,9 +754,9 @@ class questionnaire {
             // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
             if (
                 $this->capabilities->readallresponses &&
-                ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
             ) {
                 return true;
             }
@@ -830,9 +830,9 @@ class questionnaire {
         // subject to viewing settings..
         return $grouplogic && $respslogic && $this->is_survey_owner() &&
             ($this->capabilities->readallresponses &&
-                ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
     }
 
     /**
