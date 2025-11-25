@@ -71,16 +71,6 @@ function questionnaire_get_extra_capabilities() {
 }
 
 /**
- * Implementation of get_instance.
- * @param int $questionnaireid
- * @return false|mixed|stdClass
- */
-function questionnaire_get_instance($questionnaireid) {
-    global $DB;
-    return $DB->get_record('questionnaire', ['id' => $questionnaireid]);
-}
-
-/**
  * Implementation of add_instance.
  * @param stdClass $questionnaire
  * @return bool|int
@@ -265,26 +255,42 @@ function questionnaire_get_coursemodule_info($coursemodule) {
     $questionnaire = $DB->get_record(
         'questionnaire',
         ['id' => $coursemodule->instance],
-        'id, name, intro, introformat, completionsubmit'
+        'id,
+        name,
+        intro,
+        introformat,
+        opendate,
+        closedate,
+        completionsubmit',
     );
+
     if (!$questionnaire) {
         return null;
     }
 
-    $info = new cached_cm_info();
-    $info->customdata = (object)[];
+    $result = new cached_cm_info();
+    $result->name = $questionnaire->name;
 
     if ($coursemodule->showdescription) {
         // Convert intro to html. Do not filter cached version, filters run at display time.
         // Based on the function quiz_get_coursemodule_info() in the quiz module.
-        $info->content = format_module_intro('questionnaire', $questionnaire, $coursemodule->id, false);
+        $result->content = format_module_intro('questionnaire', $questionnaire, $coursemodule->id, false);
     }
 
     // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
-        $info->customdata->customcompletionrules['completionsubmit'] = $questionnaire->completionsubmit;
+        $result->customdata['customcompletionrules']['completionsubmit'] = $questionnaire->completionsubmit;
     }
-    return $info;
+
+    // Populate some other values that can be used in calendar or on dashboard.
+    if ($questionnaire->opendate) {
+        $result->customdata['timeopen'] = $questionnaire->opendate;
+    }
+    if ($questionnaire->closedate) {
+        $result->customdata['timeclose'] = $questionnaire->closedate;
+    }
+
+    return $result;
 }
 
 /**
@@ -363,16 +369,6 @@ function questionnaire_print_recent_activity($course, $isteacher, $timestart) {
 }
 
 /**
- * Must return an array of grades for a given instance of this module, indexed by user.  It also returns a maximum allowed grade.
- * $questionnaireid is unused, but API requires it. Suppress PHPMD warning.
- * @param int $questionnaireid
- * @return null
- */
-function questionnaire_grades($questionnaireid) {
-    return null;
-}
-
-/**
  * Return grade for given user or all users.
  *
  * @param stdClass $questionnaire
@@ -430,8 +426,8 @@ function questionnaire_update_grades($questionnaire = null, $userid = 0, $nullif
         }
     } else {
         $sql = "SELECT q.*, cm.idnumber as cmidnumber, q.course as courseid
-                  FROM {questionnaire} q, {course_modules} cm, {modules} m
-                 WHERE m.name='questionnaire' AND m.id=cm.module AND cm.instance=q.id";
+                FROM {questionnaire} q, {course_modules} cm, {modules} m
+                WHERE m.name='questionnaire' AND m.id=cm.module AND cm.instance=q.id";
         if ($rs = $DB->get_recordset_sql($sql)) {
             foreach ($rs as $questionnaire) {
                 if ($questionnaire->grade != 0) {
@@ -444,7 +440,6 @@ function questionnaire_update_grades($questionnaire = null, $userid = 0, $nullif
         }
     }
 }
-
 /**
  * Create grade item for given questionnaire
  *
@@ -497,21 +492,6 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
         $grades,
         $params
     );
-}
-
-/**
- * This function returns if a scale is being used by one questionnaire
- * it it has support for grading and scales. Commented code should be
- * modified if necessary. See forum, glossary or journal modules
- * as reference.
- * @param int $questionnaireid
- * @param int $scaleid
- * @return boolean True if the scale is used by any questionnaire
- *
- * Function parameters are unused, but API requires them. Suppress PHPMD warning.
- */
-function questionnaire_scale_used($questionnaireid, $scaleid) {
-    return false;
 }
 
 /**
@@ -587,6 +567,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
 
     // Finally send the file.
     send_stored_file($file, 0, 0, true); // Download MUST be forced - security!
+    return true;
 }
 /**
  * Adds module specific settings to the settings block
@@ -927,22 +908,6 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 // starts with questionnaire_.
 
 /**
- * Return the view actions.
- * @return string[]
- */
-function questionnaire_get_view_actions() {
-    return ['view', 'view all'];
-}
-
-/**
- * Return the post actions.
- * @return string[]
- */
-function questionnaire_get_post_actions() {
-    return ['submit', 'update'];
-}
-
-/**
  * Return the recent activity.
  * @param array $activities
  * @param int $index
@@ -1224,101 +1189,6 @@ function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, 
 
     return;
 }
-
-/**
- * Prints questionnaire summaries on 'My home' page
- *
- * Prints questionnaire name, due date and attempt information on
- * questionnaires that have a deadline that has not already passed
- * and it is available for taking.
- *
- * @param array $courses An array of course objects to get questionnaire instances from
- * @param array $htmlarray Store overview output array( course ID => 'questionnaire' => HTML output )
- * @return void
- */
-function questionnaire_print_overview($courses, &$htmlarray) {
-    global $USER, $CFG, $DB, $OUTPUT;
-
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
-    if (!$questionnaires = get_all_instances_in_courses('questionnaire', $courses)) {
-        return;
-    }
-
-    // Get Necessary Strings.
-    $strquestionnaire = get_string('modulename', 'questionnaire');
-    $strnotattempted = get_string('noattempts', 'questionnaire');
-    $strattempted = get_string('attempted', 'questionnaire');
-    $strsavedbutnotsubmitted = get_string('savedbutnotsubmitted', 'questionnaire');
-
-    $now = time();
-    foreach ($questionnaires as $questionnaire) {
-        // The questionnaire has a deadline.
-        if (
-            ($questionnaire->closedate != 0) &&
-            // And it is before the deadline has been met.
-            ($questionnaire->closedate >= $now) &&
-            // And the questionnaire is available.
-            (($questionnaire->opendate == 0) || ($questionnaire->opendate <= $now))
-        ) {
-            if (!$questionnaire->visible) {
-                $class = ' class="dimmed"';
-            } else {
-                $class = '';
-            }
-            $str = $OUTPUT->box(
-                "$strquestionnaire:
-                    <a$class href=\"$CFG->wwwroot/mod/questionnaire/view.php?id=$questionnaire->coursemodule\">" .
-                    format_string($questionnaire->name) . '</a>',
-                'name'
-            );
-
-            // Deadline.
-            $str .= $OUTPUT->box(get_string('closeson', 'questionnaire', userdate($questionnaire->closedate)), 'info');
-            $attempts = $DB->get_records(
-                'questionnaire_response',
-                ['questionnaireid' => $questionnaire->id, 'userid' => $USER->id, 'complete' => 'y']
-            );
-            $nbattempts = count($attempts);
-
-            // Do not display a questionnaire as due if it can only be sumbitted once and it has already been submitted!
-            if ($nbattempts != 0 && $questionnaire->qtype == QUESTIONNAIREONCE) {
-                continue;
-            }
-
-            // Attempt information.
-            if (has_capability('mod/questionnaire:manage', context_module::instance($questionnaire->coursemodule))) {
-                // Number of user attempts.
-                $attempts = $DB->count_records(
-                    'questionnaire_response',
-                    ['questionnaireid' => $questionnaire->id, 'complete' => 'y']
-                );
-                $str .= $OUTPUT->box(get_string('numattemptsmade', 'questionnaire', $attempts), 'info');
-            } else {
-                if ($responses = questionnaire_get_user_responses($questionnaire->id, $USER->id, false)) {
-                    foreach ($responses as $response) {
-                        if ($response->complete == 'y') {
-                            $str .= $OUTPUT->box($strattempted, 'info');
-                            break;
-                        } else {
-                            $str .= $OUTPUT->box($strsavedbutnotsubmitted, 'info');
-                        }
-                    }
-                } else {
-                    $str .= $OUTPUT->box($strnotattempted, 'info');
-                }
-            }
-            $str = $OUTPUT->box($str, 'questionnaire overview');
-
-            if (empty($htmlarray[$questionnaire->course]['questionnaire'])) {
-                $htmlarray[$questionnaire->course]['questionnaire'] = $str;
-            } else {
-                $htmlarray[$questionnaire->course]['questionnaire'] .= $str;
-            }
-        }
-    }
-}
-
 
 /**
  * Implementation of the function for printing the form elements that control

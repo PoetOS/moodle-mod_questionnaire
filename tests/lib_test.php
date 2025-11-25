@@ -93,8 +93,8 @@ final class lib_test extends \advanced_testcase {
         $questdata->introformat = FORMAT_HTML;
         $questdata->qtype = 1;
         $questdata->respondenttype = 'anonymous';
-        $questdata->resp_eligible = 'none';
-        $questdata->resp_view = 2;
+        $questdata->respeligible = 'none';
+        $questdata->respview = 2;
         $questdata->opendate = 99;
         $questdata->closedate = 50;
         $questdata->resume = 1;
@@ -136,8 +136,8 @@ final class lib_test extends \advanced_testcase {
         $qrow = $DB->get_record('questionnaire', ['id' => $qid]);
         $qrow->qtype = 1;
         $qrow->respondenttype = 'anonymous';
-        $qrow->resp_eligible = 'none';
-        $qrow->resp_view = 2;
+        $qrow->respeligible = 'none';
+        $qrow->respview = 2;
         $qrow->opendate = 99;
         $qrow->closedate = 50;
         $qrow->resume = 1;
@@ -159,8 +159,8 @@ final class lib_test extends \advanced_testcase {
         $this->assertNotEmpty($questrecord);
         $this->assertEquals($qrow->qtype, $questrecord->qtype);
         $this->assertEquals($qrow->respondenttype, $questrecord->respondenttype);
-        $this->assertEquals($qrow->resp_eligible, $questrecord->resp_eligible);
-        $this->assertEquals($qrow->resp_view, $questrecord->resp_view);
+        $this->assertEquals($qrow->respeligible, $questrecord->respeligible);
+        $this->assertEquals($qrow->respview, $questrecord->respview);
         $this->assertEquals($qrow->opendate, $questrecord->opendate);
         $this->assertEquals($qrow->closedate, $questrecord->closedate);
         $this->assertEquals($qrow->resume, $questrecord->resume);
@@ -272,19 +272,6 @@ final class lib_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $this->assertFalse(questionnaire_print_recent_activity(null, null, null));
-    }
-
-    /**
-     * Test for questionnaire_grades().
-     *
-     * @return void
-     *
-     * @covers \questionnaire_grades
-     */
-    public function test_questionnaire_grades(): void {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-        $this->assertNull(questionnaire_grades(null));
     }
 
     /**

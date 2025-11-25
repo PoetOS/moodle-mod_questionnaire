@@ -1055,6 +1055,43 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2025041400.01, 'questionnaire');
     }
 
+    if ($oldversion < 2025111100.01) {
+        // Rename field resp_eligible on table questionnaire to respeligible.
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('resp_eligible', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'all', 'respondenttype');
+
+        // Launch rename field respeligible.
+        $dbman->rename_field($table, $field, 'respeligible');
+
+        // Define index respview (not unique) to be dropped form questionnaire.
+        $table = new xmldb_table('questionnaire');
+        $index = new xmldb_index('respview', XMLDB_INDEX_NOTUNIQUE, ['resp_view']);
+
+        // Conditionally launch drop index respview.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Rename field resp_view on table questionnaire to respview.
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('resp_view', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'respeligible');
+
+        // Launch rename field resp_view.
+        $dbman->rename_field($table, $field, 'respview');
+
+        // Define index respview (not unique) to be added to questionnaire.
+        $table = new xmldb_table('questionnaire');
+        $index = new xmldb_index('respview', XMLDB_INDEX_NOTUNIQUE, ['respview']);
+
+        // Conditionally launch add index respview.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2025111100.01, 'questionnaire');
+    }
+
     return true;
 }
 

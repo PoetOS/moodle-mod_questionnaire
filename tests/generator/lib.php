@@ -84,8 +84,8 @@ class mod_questionnaire_generator extends testing_module_generator {
         $defaultquestionnairesettings = [
             'qtype' => 0,
             'respondenttype' => 'fullname',
-            'resp_eligible' => 'all',
-            'resp_view' => 0,
+            'respeligible' => 'all',
+            'respview' => 0,
             'opendate' => 0,
             'closedate' => 0,
             'resume' => 0,
