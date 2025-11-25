@@ -1307,7 +1307,7 @@ function questionnaire_get_completion_state($cm, $userid, $type) {
  *
  * @param calendar_event $event
  * @param \core_calendar\action_factory $factory
- * @return \core_calendar\local\event\entities\action_interface|null
+ * @return \core_calendar\event\entities\action_interface|null
  */
 function mod_questionnaire_core_calendar_provide_event_action(
     calendar_event $event,
