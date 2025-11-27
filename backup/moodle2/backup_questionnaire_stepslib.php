@@ -264,6 +264,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
                 $responsebool->set_source_table('questionnaire_response_bool', ['response_id' => backup::VAR_PARENTID]);
                 $responsedate->set_source_table('questionnaire_response_date', ['response_id' => backup::VAR_PARENTID]);
                 $responsefile->set_source_table('questionnaire_response_file', ['response_id' => backup::VAR_PARENTID]);
+                $responsefile->annotate_files('mod_questionnaire', 'response_file', null);
                 $responsemultiple->set_source_table('questionnaire_resp_multiple', ['response_id' => backup::VAR_PARENTID]);
                 $responseother->set_source_table('questionnaire_response_other', ['response_id' => backup::VAR_PARENTID]);
                 $responserank->set_source_table('questionnaire_response_rank', ['response_id' => backup::VAR_PARENTID]);

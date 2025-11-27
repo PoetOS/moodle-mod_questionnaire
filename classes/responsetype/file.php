@@ -48,7 +48,7 @@ class file extends responsetype {
                 $val,
                 $question->context->id,
                 'mod_questionnaire',
-                'file',
+                'response_file',
                 $val,
                 \mod_questionnaire\question\file::get_file_manager_option()
             );
@@ -56,7 +56,7 @@ class file extends responsetype {
             $files = $fs->get_area_files(
                 $question->context->id,
                 'mod_questionnaire',
-                'file',
+                'response_file',
                 $val,
                 "itemid, filepath, filename",
                 false
@@ -143,7 +143,14 @@ class file extends responsetype {
         ]);
         if ($record) {
             // Old record found, then delete all referenced entries in the files table and then delete this entry.
-            $DB->delete_records('files', ['component' => 'mod_questionnaire', 'itemid' => $record->id]);
+            $DB->delete_records(
+                'files',
+                [
+                    'component' => 'mod_questionnaire',
+                    'filearea' => 'response_file',
+                    'itemid' => $record->id,
+                ]
+            );
             $DB->delete_records(self::response_table(), ['id' => $record->id]);
         }
     }
@@ -185,6 +192,7 @@ class file extends responsetype {
                     'files',
                     [
                         'component' => 'mod_questionnaire',
+                        'filearea' => 'response_file',
                         'itemid' => $olditem->itemid,
                     ]
                 );

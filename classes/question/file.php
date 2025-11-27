@@ -80,42 +80,31 @@ class file extends question {
         require_once($CFG->libdir . '/filelib.php');
 
         $elname = 'q' . $this->id;
-        // Make sure there is a response, fetch the draft id from the original request.
-        if (isset($response->answers[$this->id]) && !empty($response->answers[$this->id]) && isset($_REQUEST[$elname . 'draft'])) {
-            $draftitemid = (int)$_REQUEST[$elname . 'draft'];
-        } else {
-            $draftitemid = file_get_submitted_draft_itemid($elname);
-        }
-        if ($draftitemid > 0) {
-            file_prepare_draft_area(
-                $draftitemid,
-                $this->context->id,
-                'mod_questionnaire',
-                'file',
-                $this->id,
-                self::get_file_manager_option()
-            );
-        } else {
-            $draftitemid = file_get_unused_draft_itemid();
-        }
+        // If there is a response and the response is resumed, get the original itemid.
+        $itemid = (
+            isset($response->answers[$this->id]) &&
+            !empty($response->answers[$this->id]) &&
+            isset($_REQUEST['resume']) &&
+            $_REQUEST['resume'] === '1'
+        ) ? (int)$response->answers[$this->id][0]->id : 0;
+        // Prepare the draft area.
+        $draftitemid = file_get_submitted_draft_itemid($elname);
+        file_prepare_draft_area(
+            $draftitemid,
+            $this->context->id,
+            'mod_questionnaire',
+            'response_file',
+            $itemid,
+            self::get_file_manager_option()
+        );
         // Filemanager form element implementation is far from optimal, we need to rework this if we ever fix it...
         require_once("$CFG->dirroot/lib/form/filemanager.php");
-
-        $options = array_merge(self::get_file_manager_option(), [
-            'client_id' => uniqid(),
-            'itemid' => $draftitemid,
-            'target' => $this->id,
-            'name' => $elname,
-        ]);
-        $fm = new form_filemanager((object)$options);
+        $fm = new form_filemanager((object)self::get_file_manager_option($draftitemid));
         $output = $PAGE->get_renderer('core', 'files');
-
         $html = '<div class="form-filemanager" data-fieldtype="filemanager">' .
             $output->render($fm) .
             '<input type="hidden" name="' . $elname . '" value="' . $draftitemid . '" />' .
-            '<input type="hidden" name="' . $elname . 'draft" value="' . $draftitemid . '" />' .
             '</div>';
-
         return $html;
     }
 
@@ -145,21 +134,23 @@ class file extends question {
     }
 
     /**
-     * Get file manager options
+     * Get file manager options, here allow only one image or pdf file, without
+     * creating subdirectories.
      *
+     * @param ?int $draftitemid
      * @return array
      */
-    public static function get_file_manager_option() {
+    public static function get_file_manager_option(?int $draftitemid = 0) {
         return [
-            'mainfile' => '',
             'subdirs' => false,
-            'accepted_types' => ['image', '.pdf'],
+            'accepted_types' => ['image', 'document'],
             'maxfiles' => 1,
+            'itemid' => $draftitemid,
         ];
     }
 
     /**
-     * Response display output.
+     * Response display output, e.g. render the file image/pdf or show a linkt to download it.
      *
      * @param \stdClass $data
      * @return string

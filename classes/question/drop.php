@@ -17,7 +17,6 @@
 namespace mod_questionnaire\question;
 use html_writer;
 use mod_questionnaire\question\choice;
-use mod_questionnaire\responsetype\answer\answer;
 use mod_questionnaire\responsetype\response\response;
 
 /**
@@ -138,7 +137,7 @@ class drop extends question {
         $resptags->options[] = (object)['value' => '', 'label' => get_string('choosedots')];
 
         if (!isset($response->answers[$this->id])) {
-            $response->answers[$this->id][] = new answer();
+            $response->answers[$this->id][] = new \mod_questionnaire\responsetype\answer\answer();
         }
 
         foreach ($this->choices as $id => $choice) {

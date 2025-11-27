@@ -565,7 +565,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
 
     require_course_login($course, true, $cm);
 
-    $fileareas = ['intro', 'info', 'thankbody', 'question', 'feedbacknotes', 'sectionheading', 'feedback', 'file'];
+    $fileareas = ['intro', 'info', 'thankbody', 'question', 'feedbacknotes', 'sectionheading', 'feedback', 'response_file'];
     if (!in_array($filearea, $fileareas)) {
         return false;
     }
@@ -584,7 +584,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
         if (!$DB->record_exists('questionnaire_feedback', ['id' => $componentid])) {
             return false;
         }
-    } else if ($filearea == 'file') {
+    } else if ($filearea == 'response_file') {
         if (!$DB->record_exists('questionnaire_response_file', ['id' => $componentid])) {
             return false;
         }

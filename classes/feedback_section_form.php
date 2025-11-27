@@ -38,9 +38,6 @@ class feedback_section_form extends \moodleform {
      */
     public $context;
 
-    /** @var int $sid The section id. */
-    public $sid;
-
     /**
      * Form definition.
      */
