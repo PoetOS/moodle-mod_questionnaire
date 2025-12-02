@@ -1819,8 +1819,9 @@ class questionnaire {
                 }
             }
 
+            $surveyrecord = (new \mod_questionnaire\survey_record(0, $record))->create();
             $this->survey = new stdClass();
-            $this->survey->id = $DB->insert_record('questionnaire_survey', $record);
+            $this->survey->id = $surveyrecord->get('id');
             $this->add_survey($this->survey->id);
 
             if (!$this->survey->id) {
