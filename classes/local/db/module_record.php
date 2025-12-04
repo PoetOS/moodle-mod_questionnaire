@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\db;
+
+use mod_questionnaire\local\questionnaire;
+use stdClass;
 
 /**
  * Main module instance class for Questionnaire.
@@ -223,5 +226,18 @@ class module_record extends \core\persistent {
                 'description' => 'Deletion duration.',
             ],
         ];
+    }
+
+    /**
+     * Given an object containing all the necessary data, (defined by the form in mod.html) this function will create and return
+     * a new instance.
+     * @param stdClass $formdata
+     * @throws \moodle_exception
+     * @return module_record
+     */
+    public static function create_from_formdata(stdClass $formdata): self {
+        global $DB;
+
+        return (new self(0, $formdata))->create();
     }
 }

@@ -18,7 +18,7 @@ namespace mod_questionnaire\courseformat;
 
 use cm_info;
 use core\output\pix_icon;
-use mod_questionnaire\manager;
+use mod_questionnaire\local\manager;
 use core\activity_dates;
 use core\output\action_link;
 use core_calendar\output\humandate;

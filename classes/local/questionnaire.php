@@ -1819,7 +1819,7 @@ class questionnaire {
                 }
             }
 
-            $surveyrecord = (new \mod_questionnaire\survey_record(0, $record))->create();
+            $surveyrecord = (new \mod_questionnaire\local\db\survey_record(0, $record))->create();
             $this->survey = new stdClass();
             $this->survey->id = $surveyrecord->get('id');
             $this->add_survey($this->survey->id);

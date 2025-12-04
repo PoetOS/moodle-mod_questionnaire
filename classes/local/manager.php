@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local;
 
 use cm_info;
 use context_module;
+use mod_questionnaire\local\db\module_record;
 use stdClass;
 
 /**
@@ -175,5 +176,94 @@ class manager {
             ['questionnaireid' => $this->instance->id],
             'id ASC',
         );
+    }
+
+    /**
+     * Given an object containing all the necessary data, (defined by the form in mod.html) this function will create and return
+     * the new instance id.
+     * @param stdClass $formdata
+     * @throws \moodle_exception
+     * @return int The id of the newly created instance.
+     */
+    public static function create_module_instance(stdClass $formdata): int {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
+
+        $copyfiles = false;
+
+        // Check the realm and set it to the survey if it's set.
+        if (empty($formdata->sid)) {
+            // Create a new survey.
+            $course = get_course($formdata->course);
+            $cm = new stdClass();
+            $qobject = new questionnaire($course, $cm, 0, $formdata);
+
+            if ($formdata->create == 'new-0') {
+                $sdata = new stdClass();
+                $sdata->name = $formdata->name;
+                $sdata->realm = 'private';
+                $sdata->title = $formdata->name;
+                $sdata->subtitle = '';
+                $sdata->info = '';
+                $sdata->theme = ''; // Theme is deprecated.
+                $sdata->thankspage = '';
+                $sdata->thankhead = '';
+                $sdata->thankbody = '';
+                $sdata->email = '';
+                $sdata->feedbacknotes = '';
+                $sdata->courseid = $course->id;
+                if (!($sid = $qobject->survey_update($sdata))) {
+                    throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
+                }
+            } else {
+                $copyid = explode('-', $formdata->create);
+                $copyrealm = $copyid[0];
+                $copyid = $copyid[1];
+                if (empty($qobject->survey)) {
+                    $qobject->add_survey($copyid);
+                    $qobject->add_questions($copyid);
+                }
+                // New questionnaires created as "use public" should not create a new survey instance.
+                if ($copyrealm == 'public') {
+                    $sid = $copyid;
+                } else {
+                    $sid = $qobject->sid = $qobject->survey_copy($course->id);
+                    // All new questionnaires should be created as "private".
+                    // Even if they are *copies* of public or template questionnaires.
+                    $DB->set_field('questionnaire_survey', 'realm', 'private', ['id' => $sid]);
+
+                    // Need to copy any files from the old questionnaire instance to the new one.
+                    $formdata->copyid = $copyid;
+                }
+                // If the survey has dependency data, need to set the questionnaire to allow dependencies.
+                if ($DB->count_records('questionnaire_dependency', ['surveyid' => $sid]) > 0) {
+                    $formdata->navigate = 1;
+                }
+            }
+            $formdata->sid = $sid;
+        }
+
+        $formdata->timemodified = time();
+
+        if ($formdata->resume == '1') {
+            $formdata->resume = 1;
+        } else {
+            $formdata->resume = 0;
+        }
+
+        $instanceid = (module_record::create_from_formdata($formdata))->get('id');
+        $formdata->id = $instanceid;
+
+        questionnaire_set_events($formdata);
+
+        $completiontimeexpected = !empty($formdata->completionexpected) ? $formdata->completionexpected : null;
+        \core_completion\api::update_completion_date_event(
+            $formdata->coursemodule,
+            'questionnaire',
+            $instanceid,
+            $completiontimeexpected
+        );
+
+        return $instanceid;
     }
 }

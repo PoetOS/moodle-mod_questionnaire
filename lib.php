@@ -23,7 +23,7 @@
  */
 
 use mod_questionnaire\local\questionnaire;
-use function DI\create;
+use mod_questionnaire\local\manager;
 
 /** This may no longer be needed. */
 define('QUESTIONNAIRE_RESETFORM_RESET', 'questionnaire_reset_data_');
@@ -73,93 +73,11 @@ function questionnaire_get_extra_capabilities() {
 
 /**
  * Implementation of add_instance.
- * @param stdClass $questionnaire
+ * @param stdClass $formdata
  * @return bool|int
  */
-function questionnaire_add_instance($questionnaire) {
-    // Given an object containing all the necessary data,
-    // (defined by the form in mod.html) this function
-    // will create a new instance and return the id number
-    // of the new instance.
-    global $DB, $CFG;
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
-    $copyfiles = false;
-
-    // Check the realm and set it to the survey if it's set.
-    if (empty($questionnaire->sid)) {
-        // Create a new survey.
-        $course = get_course($questionnaire->course);
-        $cm = new stdClass();
-        $qobject = new questionnaire($course, $cm, 0, $questionnaire);
-
-        if ($questionnaire->create == 'new-0') {
-            $sdata = new stdClass();
-            $sdata->name = $questionnaire->name;
-            $sdata->realm = 'private';
-            $sdata->title = $questionnaire->name;
-            $sdata->subtitle = '';
-            $sdata->info = '';
-            $sdata->theme = ''; // Theme is deprecated.
-            $sdata->thankspage = '';
-            $sdata->thankhead = '';
-            $sdata->thankbody = '';
-            $sdata->email = '';
-            $sdata->feedbacknotes = '';
-            $sdata->courseid = $course->id;
-            if (!($sid = $qobject->survey_update($sdata))) {
-                throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
-            }
-        } else {
-            $copyid = explode('-', $questionnaire->create);
-            $copyrealm = $copyid[0];
-            $copyid = $copyid[1];
-            if (empty($qobject->survey)) {
-                $qobject->add_survey($copyid);
-                $qobject->add_questions($copyid);
-            }
-            // New questionnaires created as "use public" should not create a new survey instance.
-            if ($copyrealm == 'public') {
-                $sid = $copyid;
-            } else {
-                $sid = $qobject->sid = $qobject->survey_copy($course->id);
-                // All new questionnaires should be created as "private".
-                // Even if they are *copies* of public or template questionnaires.
-                $DB->set_field('questionnaire_survey', 'realm', 'private', ['id' => $sid]);
-
-                // Need to copy any files from the old questionnaire instance to the new one.
-                $questionnaire->copyid = $copyid;
-            }
-            // If the survey has dependency data, need to set the questionnaire to allow dependencies.
-            if ($DB->count_records('questionnaire_dependency', ['surveyid' => $sid]) > 0) {
-                $questionnaire->navigate = 1;
-            }
-        }
-        $questionnaire->sid = $sid;
-    }
-
-    $questionnaire->timemodified = time();
-
-    if ($questionnaire->resume == '1') {
-        $questionnaire->resume = 1;
-    } else {
-        $questionnaire->resume = 0;
-    }
-
-    $questionnairerecord = (new \mod_questionnaire\module_record(0, $questionnaire))->create();
-    $questionnaire->id = $questionnairerecord->get('id');
-
-    questionnaire_set_events($questionnaire);
-
-    $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
-    \core_completion\api::update_completion_date_event(
-        $questionnaire->coursemodule,
-        'questionnaire',
-        $questionnaire->id,
-        $completiontimeexpected
-    );
-
-    return $questionnaire->id;
+function questionnaire_add_instance($formdata) {
+    return manager::create_module_instance($formdata);
 }
 
 /**

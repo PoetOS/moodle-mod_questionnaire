@@ -32,7 +32,7 @@ jobs:
         include:
           - php: '8.4'
             moodle-branch: 'main'
-            database: 'pgsql'
+            database: 'mariadb'
           - php: '8.3'
             moodle-branch: 'MOODLE_501_STABLE'
             database: 'pgsql'
