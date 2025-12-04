@@ -168,6 +168,16 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $data->closedate = $this->apply_date_offset($data->closedate);
         $data->timemodified = $this->apply_date_offset($data->timemodified);
 
+        // Convert renamed fields if necessary.
+        if (isset($data->resp_eligible)) {
+            $data->respeligible = $data->resp_eligible;
+            unset($data->resp_eligible);
+        }
+        if (isset($data->resp_view)) {
+            $data->respview = $data->resp_view;
+            unset($data->resp_view);
+        }
+
         // Insert the questionnaire record.
         $newitemid = $DB->insert_record('questionnaire', $data);
         // Immediately after inserting "activity" record, call this.
@@ -188,6 +198,24 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         // Check for a 'feedbacksections' value larger than 2, and limit it to 2. As of 3.5.1 this has a different meaning.
         if ($data->feedbacksections > 2) {
             $data->feedbacksections = 2;
+        }
+
+        // Convert renamed fields if necessary.
+        if (isset($data->thanks_page)) {
+            $data->thankspage = $data->thanks_page;
+            unset($data->thanks_page);
+        }
+        if (isset($data->thank_body)) {
+            $data->thankbody = $data->thank_body;
+            unset($data->thank_body);
+        }
+        if (isset($data->thank_head)) {
+            $data->thankhead = $data->thank_head;
+            unset($data->thank_head);
+        }
+        if (isset($data->chart_type)) {
+            $data->charttype = $data->chart_type;
+            unset($data->chart_type);
         }
 
         // Insert the questionnaire_survey record.

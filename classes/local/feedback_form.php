@@ -67,7 +67,7 @@ class feedback_form extends \moodleform {
                 $charttypes
             );
             if ($questionnaire->survey->feedbacksections == 1) {
-                $mform->setDefault('chart_type_global', $questionnaire->survey->chart_type);
+                $mform->setDefault('chart_type_global', $questionnaire->survey->charttype);
             }
             $mform->disabledIf('chart_type_global', 'feedbacksections', 'eq', 0);
             $mform->disabledIf('chart_type_global', 'feedbacksections', 'neq', 1);
@@ -84,7 +84,7 @@ class feedback_form extends \moodleform {
                 $charttypes
             );
             if ($questionnaire->survey->feedbacksections > 1) {
-                $mform->setDefault('chart_type_two_sections', $questionnaire->survey->chart_type);
+                $mform->setDefault('chart_type_two_sections', $questionnaire->survey->charttype);
             }
             $mform->disabledIf('chart_type_two_sections', 'feedbacksections', 'neq', 2);
 
@@ -101,7 +101,7 @@ class feedback_form extends \moodleform {
                 $charttypes
             );
             if ($questionnaire->survey->feedbacksections > 1) {
-                $mform->setDefault('chart_type_sections', $questionnaire->survey->chart_type);
+                $mform->setDefault('chart_type_sections', $questionnaire->survey->charttype);
             }
             $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 0);
             $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 1);

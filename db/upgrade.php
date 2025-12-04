@@ -1056,37 +1056,53 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
     }
 
     if ($oldversion < 2025111100.01) {
-        // Rename field resp_eligible on table questionnaire to respeligible.
+        // Setup table for renaming fields.
         $table = new xmldb_table('questionnaire');
-        $field = new xmldb_field('resp_eligible', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'all', 'respondenttype');
 
+        // Rename field resp_eligible on table questionnaire to respeligible.
+        $field = new xmldb_field('resp_eligible', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'all', 'respondenttype');
         // Launch rename field respeligible.
         $dbman->rename_field($table, $field, 'respeligible');
-
         // Define index respview (not unique) to be dropped form questionnaire.
-        $table = new xmldb_table('questionnaire');
         $index = new xmldb_index('respview', XMLDB_INDEX_NOTUNIQUE, ['resp_view']);
-
         // Conditionally launch drop index respview.
         if ($dbman->index_exists($table, $index)) {
             $dbman->drop_index($table, $index);
         }
 
         // Rename field resp_view on table questionnaire to respview.
-        $table = new xmldb_table('questionnaire');
         $field = new xmldb_field('resp_view', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'respeligible');
-
         // Launch rename field resp_view.
         $dbman->rename_field($table, $field, 'respview');
-
         // Define index respview (not unique) to be added to questionnaire.
-        $table = new xmldb_table('questionnaire');
         $index = new xmldb_index('respview', XMLDB_INDEX_NOTUNIQUE, ['respview']);
-
         // Conditionally launch add index respview.
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
+
+        // Setup table for renaming fields.
+        $table = new xmldb_table('questionnaire_survey');
+
+        // Rename field thanks_page on table questionnaire_survey to thankspage.
+        $field = new xmldb_field('thanks_page', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'theme');
+        // Launch rename field thankspage.
+        $dbman->rename_field($table, $field, 'thankspage');
+
+        // Rename field thanks_page on table questionnaire_survey to thankspage.
+        $field = new xmldb_field('thank_head', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'thankspage');
+        // Launch rename field thank_head.
+        $dbman->rename_field($table, $field, 'thankhead');
+
+        // Rename field thank_body on table questionnaire_survey to thankbody.
+        $field = new xmldb_field('thank_body', XMLDB_TYPE_TEXT, null, null, null, null, null, 'thankhead');
+        // Launch rename field thank_body.
+        $dbman->rename_field($table, $field, 'thankbody');
+
+        // Rename field chart_type on table questionnaire_survey to charttype.
+        $field = new xmldb_field('chart_type', XMLDB_TYPE_CHAR, '64', null, null, null, null, 'feedbackscores');
+        // Launch rename field chart_type.
+        $dbman->rename_field($table, $field, 'charttype');
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2025111100.01, 'questionnaire');

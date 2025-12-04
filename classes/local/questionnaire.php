@@ -1800,14 +1800,14 @@ class questionnaire {
                 'subtitle',
                 'email',
                 'theme',
-                'thanks_page',
-                'thank_head',
-                'thank_body',
+                'thankspage',
+                'thankhead',
+                'thankbody',
                 'feedbacknotes',
                 'info',
                 'feedbacksections',
                 'feedbackscores',
-                'chart_type',
+                'charttype',
             ];
             // Theme field deprecated.
             $record = new stdClass();
@@ -1832,8 +1832,8 @@ class questionnaire {
             if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
                 return(false);
             }
-            if (!isset($sdata->chart_type)) {
-                $sdata->chart_type = '';
+            if (!isset($sdata->charttype)) {
+                $sdata->charttype = '';
             }
 
             $fields = [
@@ -1843,14 +1843,14 @@ class questionnaire {
                 'subtitle',
                 'email',
                 'theme',
-                'thanks_page',
-                'thank_head',
-                'thank_body',
+                'thankspage',
+                'thankhead',
+                'thankbody',
                 'feedbacknotes',
                 'info',
                 'feedbacksections',
                 'feedbackscores',
-                'chart_type',
+                'charttype',
             ];
             $name = $DB->get_field('questionnaire_survey', 'name', ['id' => $this->survey->id]);
 
@@ -2674,11 +2674,11 @@ class questionnaire {
         global $CFG, $USER, $DB;
 
         $select = 'id = ' . $this->survey->id;
-        $fields = 'thanks_page, thank_head, thank_body';
+        $fields = 'thankspage, thankhead, thankbody';
         if ($result = $DB->get_record_select('questionnaire_survey', $select, null, $fields)) {
-            $thankurl = $result->thanks_page;
-            $thankhead = $result->thank_head;
-            $thankbody = $result->thank_body;
+            $thankurl = $result->thankspage;
+            $thankhead = $result->thankhead;
+            $thankbody = $result->thankbody;
         } else {
             $thankurl = '';
             $thankhead = '';
@@ -2704,7 +2704,7 @@ class questionnaire {
             exit;
         }
         if (empty($thankhead)) {
-            $thankhead = get_string('thank_head', 'questionnaire');
+            $thankhead = get_string('thankhead', 'questionnaire');
         }
         if ($this->progressbar && isset($this->questionsbysec) && count($this->questionsbysec) > 1) {
             // Show 100% full progress bar on completion.
@@ -4202,7 +4202,7 @@ class questionnaire {
                 $allscore = [$allscorepercent, 100 - $allscorepercent];
             }
             $usergraph = get_config('questionnaire', 'usergraph');
-            if ($usergraph && $this->survey->chart_type) {
+            if ($usergraph && $this->survey->charttype) {
                 $this->page->add_to_page(
                     'feedbackcharts',
                     draw_chart(
@@ -4210,7 +4210,7 @@ class questionnaire {
                         $labels,
                         $groupname,
                         $allresponses,
-                        $this->survey->chart_type,
+                        $this->survey->charttype,
                         $score,
                         $allscore,
                         $sectionlabel
@@ -4408,7 +4408,7 @@ class questionnaire {
             unset($allscorepercent[$val]);
         }
 
-        if ($usergraph && $this->survey->chart_type) {
+        if ($usergraph && $this->survey->charttype) {
             $this->page->add_to_page(
                 'feedbackcharts',
                 draw_chart(
@@ -4416,7 +4416,7 @@ class questionnaire {
                     array_values($chartlabels),
                     $groupname,
                     $allresponses,
-                    $this->survey->chart_type,
+                    $this->survey->charttype,
                     array_values($scorepercent),
                     array_values($allscorepercent),
                     $sectionlabel

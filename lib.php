@@ -23,6 +23,7 @@
  */
 
 use mod_questionnaire\local\questionnaire;
+use function DI\create;
 
 /** This may no longer be needed. */
 define('QUESTIONNAIRE_RESETFORM_RESET', 'questionnaire_reset_data_');
@@ -100,9 +101,9 @@ function questionnaire_add_instance($questionnaire) {
             $sdata->subtitle = '';
             $sdata->info = '';
             $sdata->theme = ''; // Theme is deprecated.
-            $sdata->thanks_page = '';
-            $sdata->thank_head = '';
-            $sdata->thank_body = '';
+            $sdata->thankspage = '';
+            $sdata->thankhead = '';
+            $sdata->thankbody = '';
             $sdata->email = '';
             $sdata->feedbacknotes = '';
             $sdata->courseid = $course->id;
@@ -145,9 +146,8 @@ function questionnaire_add_instance($questionnaire) {
         $questionnaire->resume = 0;
     }
 
-    if (!$questionnaire->id = $DB->insert_record("questionnaire", $questionnaire)) {
-        return false;
-    }
+    $questionnairerecord = (new \mod_questionnaire\module_record(0, $questionnaire))->create();
+    $questionnaire->id = $questionnairerecord->get('id');
 
     questionnaire_set_events($questionnaire);
 

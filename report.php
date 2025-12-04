@@ -184,7 +184,7 @@ if ($groupmode > 0) {
     }
 }
 if ($usergraph) {
-    $charttype = $questionnaire->survey->chart_type;
+    $charttype = $questionnaire->survey->charttype;
     if ($charttype) {
         $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
 
@@ -775,7 +775,7 @@ switch ($action) {
         $ruser = false;
         $noresponses = false;
         if ($usergraph) {
-            $charttype = $questionnaire->survey->chart_type;
+            $charttype = $questionnaire->survey->charttype;
             if ($charttype) {
                 $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
 

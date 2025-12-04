@@ -90,9 +90,9 @@ $currentinfo = file_prepare_draft_area(
     'thankbody',
     $sdata->sid,
     ['subdirs' => true],
-    $questionnaire->survey->thank_body
+    $questionnaire->survey->thankbody
 );
-$sdata->thank_body = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
+$sdata->thankbody = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
 $settingsform->set_data($sdata);
 
@@ -122,20 +122,20 @@ if ($settings = $settingsform->get_data()) {
     );
 
     $sdata->theme = ''; // Deprecated theme field.
-    $sdata->thanks_page = $settings->thanks_page;
-    $sdata->thank_head = $settings->thank_head;
+    $sdata->thankspage = $settings->thankspage;
+    $sdata->thankhead = $settings->thankhead;
 
-    $sdata->thankitemid = $settings->thank_body['itemid'];
-    $sdata->thankformat = $settings->thank_body['format'];
-    $sdata->thank_body = $settings->thank_body['text'];
-    $sdata->thank_body = file_save_draft_area_files(
+    $sdata->thankitemid = $settings->thankbody['itemid'];
+    $sdata->thankformat = $settings->thankbody['format'];
+    $sdata->thankbody = $settings->thankbody['text'];
+    $sdata->thankbody = file_save_draft_area_files(
         $sdata->thankitemid,
         $context->id,
         'mod_questionnaire',
         'thankbody',
         $sdata->id,
         ['subdirs' => true],
-        $sdata->thank_body
+        $sdata->thankbody
     );
     $sdata->email = $settings->email;
 

@@ -69,13 +69,13 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             'subtitle',
             'info',
             'theme',
-            'thanks_page',
-            'thank_head',
-            'thank_body',
+            'thankspage',
+            'thankhead',
+            'thankbody',
             'feedbacksections',
             'feedbacknotes',
             'feedbackscores',
-            'chart_type',
+            'charttype',
         ]);
 
         $questions = new backup_nested_element('questions');

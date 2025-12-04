@@ -25,7 +25,6 @@ namespace mod_questionnaire;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class survey_record extends \core\persistent {
-
     /** Table name for the persistent. */
     const TABLE = 'questionnaire_survey';
 
@@ -60,13 +59,13 @@ class survey_record extends \core\persistent {
     protected $theme;
 
     /** @var string|null Thank you page URL. */
-    protected $thanks_page;
+    protected $thankspage;
 
     /** @var string|null Thank you page heading. */
-    protected $thank_head;
+    protected $thankhead;
 
     /** @var string|null Thank you page body content. */
-    protected $thank_body;
+    protected $thankbody;
 
     /** @var int|null Number of feedback sections. */
     protected $feedbacksections;
@@ -78,7 +77,7 @@ class survey_record extends \core\persistent {
     protected $feedbackscores;
 
     /** @var string|null Chart type for results display. */
-    protected $chart_type;
+    protected $charttype;
 
     /**
      * Return the definition of the properties of this model.
@@ -143,19 +142,19 @@ class survey_record extends \core\persistent {
                 'null' => NULL_ALLOWED,
                 'description' => 'Survey theme.',
             ],
-            'thanks_page' => [
+            'thankspage' => [
                 'type' => PARAM_TEXT,
                 'default' => null,
                 'null' => NULL_ALLOWED,
                 'description' => 'Thank you page URL.',
             ],
-            'thank_head' => [
+            'thankhead' => [
                 'type' => PARAM_TEXT,
                 'default' => null,
                 'null' => NULL_ALLOWED,
                 'description' => 'Thank you page heading.',
             ],
-            'thank_body' => [
+            'thankbody' => [
                 'type' => PARAM_RAW,
                 'default' => null,
                 'null' => NULL_ALLOWED,
@@ -179,7 +178,7 @@ class survey_record extends \core\persistent {
                 'default' => 0,
                 'description' => 'Whether to show feedback scores.',
             ],
-            'chart_type' => [
+            'charttype' => [
                 'type' => PARAM_TEXT,
                 'default' => null,
                 'null' => NULL_ALLOWED,

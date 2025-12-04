@@ -681,7 +681,7 @@ $string['textbox'] = 'Text Box';
 $string['textbox_help'] = 'For the Text Box question type, enter the Input Box length and the Maximum text length of text to be entered by respondent.
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
 $string['textdownloadoptions'] = 'Options for CSV download';
-$string['thank_head'] = 'Thank you for completing this Questionnaire.';
+$string['thankhead'] = 'Thank you for completing this Questionnaire.';
 $string['theme'] = 'Theme';
 $string['thismonth'] = 'this month';
 $string['thisresponse'] = 'This response';

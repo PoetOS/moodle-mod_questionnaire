@@ -98,9 +98,9 @@ final class generator_test extends \advanced_testcase {
             'email' => 'test@email.com',
             'subtitle' => 'New subtitle',
             'info' => 'New info',
-            'thanks_page' => 'http://thankurl.com',
-            'thank_head' => 'New thank header',
-            'thank_body' => 'New thank body',
+            'thankspage' => 'http://thankurl.com',
+            'thankhead' => 'New thank header',
+            'thankbody' => 'New thank body',
         ];
         $sid = $generator->create_content($questionnaire, $newcontent);
         $this->assertEquals($sid, $questionnaire->sid);
