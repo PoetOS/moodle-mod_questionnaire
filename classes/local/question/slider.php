@@ -117,7 +117,7 @@ class slider extends question {
             $extradata->startingvalue = $response->answers[$this->id][0]->value;
         }
         $extradata->name = 'q' . $this->id;
-        $extradata->id = self::qtypename($this->type_id) . $this->id;
+        $extradata->id = self::qtypename($this->typeid) . $this->id;
         $questiontags->qelements = new \stdClass();
         $questiontags->qelements->extradata = $extradata;
         $questiontags->isprint = $this->get_isprint();

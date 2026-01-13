@@ -112,7 +112,7 @@ class drop extends question {
         }
         $chobj = new \stdClass();
         $chobj->name = 'q' . $this->id;
-        $chobj->id = self::qtypename($this->type_id) . $this->name;
+        $chobj->id = self::qtypename($this->typeid) . $this->name;
         $chobj->class = 'select form-select menu q' . $this->id;
         $chobj->options = $options;
         $choicetags->qelements->choice = $chobj;

@@ -39,10 +39,10 @@ class question_record extends \core\persistent {
     protected $name;
 
     /** @var int Question type id. */
-    protected $type_id;
+    protected $typeid;
 
     /** @var int Result id. */
-    protected $result_id;
+    protected $resultid;
 
     /** @var int Question length. */
     protected $length;
@@ -89,13 +89,13 @@ class question_record extends \core\persistent {
                 'null' => NULL_ALLOWED,
                 'description' => 'Question name.',
             ],
-            'type_id' => [
+            'typeid' => [
                 'type' => PARAM_INT,
                 'default' => 0,
                 'null' => NULL_NOT_ALLOWED,
                 'description' => 'Question type id.',
             ],
-            'result_id' => [
+            'resultid' => [
                 'type' => PARAM_INT,
                 'default' => null,
                 'null' => NULL_ALLOWED,

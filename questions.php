@@ -33,7 +33,7 @@ $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
 $qid = optional_param('qid', 0, PARAM_INT);             // Question id.
 $moveq = optional_param('moveq', 0, PARAM_INT);           // Question id to move.
 $delq = optional_param('delq', 0, PARAM_INT);             // Question id to delete.
-$qtype = optional_param('type_id', 0, PARAM_INT);         // Question type.
+$qtype = optional_param('typeid', 0, PARAM_INT);         // Question type.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 $delpermanentlyq = optional_param('delpermanentlyq', 0, PARAM_INT); // Question id to delete.
 $restoreq = optional_param(QUESTIONNAIRE_RESTORE_PARAM, 0, PARAM_INT); // Question id to restore question.
@@ -96,7 +96,7 @@ if ($delq) {
         ['sid' => $sid],
         'id'
     );
-    if (isset($questions[$qid]) && $questions[$qid]->type_id == question::QUESPAGEBREAK) {
+    if (isset($questions[$qid]) && $questions[$qid]->typeid == question::QUESPAGEBREAK) {
         $DB->delete_records('questionnaire_question', ['id' => $qid]);
     } else {
         $updatesql = "UPDATE {questionnaire_question}
@@ -144,7 +144,7 @@ if ($delq) {
     }
 
     // Log question deleted event.
-    $questiontype = \mod_questionnaire\local\question\question::qtypename($questionnaire->questions[$qid]->type_id);
+    $questiontype = \mod_questionnaire\local\question\question::qtypename($questionnaire->questions[$qid]->typeid);
     questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
 
     if ($questionnairehasdependencies) {
@@ -160,7 +160,7 @@ if ($delpermanentlyq) {
     questionnaire_delete_permanently_questions($qid, $sid);
     $deletedquestion = $questionnaire->deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
-        $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->type_id);
+        $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid);
         questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id]);
         $PAGE->set_url($url->out(false));
@@ -225,7 +225,7 @@ if ($action == 'main') {
             // Need to use the key, since IE returns the image position as the value rather than the specified
             // value in the <input> tag.
             $qid = key($qformdata->removebutton);
-            $qtype = $questionnaire->questions[$qid]->type_id;
+            $qtype = $questionnaire->questions[$qid]->typeid;
 
             // Delete section breaks without asking for confirmation.
             if ($qtype == question::QUESPAGEBREAK) {
@@ -261,10 +261,10 @@ if ($action == 'main') {
 
             $reload = true;
         } else if (isset($qformdata->addqbutton)) {
-            if ($qformdata->type_id == question::QUESPAGEBREAK) { // Adding section break is handled right away....
+            if ($qformdata->typeid == question::QUESPAGEBREAK) { // Adding section break is handled right away....
                 $questionrec = new stdClass();
                 $questionrec->surveyid = $qformdata->sid;
-                $questionrec->type_id = question::QUESPAGEBREAK;
+                $questionrec->typeid = question::QUESPAGEBREAK;
                 $questionrec->content = 'break';
                 $question = question::question_builder(question::QUESPAGEBREAK);
                 $question->add($questionrec);
@@ -272,7 +272,7 @@ if ($action == 'main') {
             } else {
                 // Switch to edit question screen.
                 $action = 'question';
-                $qtype = $qformdata->type_id;
+                $qtype = $qformdata->typeid;
                 $qid = 0;
                 $reload = true;
             }
@@ -335,7 +335,7 @@ if ($action == 'main') {
 
         questionnaire_check_page_breaks($questionnaire);
         $SESSION->questionnaire->required = $qformdata->required;
-        $SESSION->questionnaire->type_id = $qformdata->type_id;
+        $SESSION->questionnaire->typeid = $qformdata->typeid;
         // Switch to main screen.
         $action = 'main';
         $reload = true;
@@ -344,7 +344,7 @@ if ($action == 'main') {
     // Log question created event.
     if (isset($qformdata)) {
         $context = context_module::instance($questionnaire->cm->id);
-        $questiontype = \mod_questionnaire\local\question\question::qtypename($qformdata->type_id);
+        $questiontype = \mod_questionnaire\local\question\question::qtypename($qformdata->typeid);
         $params = [
             'context' => $context,
             'courseid' => $questionnaire->course->id,
@@ -388,9 +388,9 @@ if ($reload) {
 // Print the page header.
 if ($action == 'question') {
     if (isset($question->qid)) {
-        $streditquestion = get_string('editquestion', 'questionnaire', questionnaire_get_type($question->type_id));
+        $streditquestion = get_string('editquestion', 'questionnaire', questionnaire_get_type($question->typeid));
     } else {
-        $streditquestion = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($question->type_id));
+        $streditquestion = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($question->typeid));
     }
 } else {
     $streditquestion = get_string('managequestions', 'questionnaire');
@@ -405,7 +405,7 @@ require('tabs.php');
 if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $qid = key($qformdata->removebutton);
     $question = $questionnaire->questions[$qid];
-    $qtype = $question->type_id;
+    $qtype = $question->typeid;
 
     $countresps = count_reponses_question($qid, $qtype);
 
@@ -452,7 +452,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
 } else if ($action === QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY) {
     $qid = key($qformdata->deletebutton);
-    $qtype = $questionnaire->deletequestions[$qid]->type_id;
+    $qtype = $questionnaire->deletequestions[$qid]->typeid;
     $questiondelete = $questionnaire->deletequestions[$qid];
     $countresps = count_reponses_question($qid, $qtype);
 

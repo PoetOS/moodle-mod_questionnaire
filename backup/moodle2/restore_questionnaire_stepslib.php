@@ -240,6 +240,17 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         if ($data->deleted === 'n') {
             $data->deleted = null;
         }
+
+        // Convert renamed fields if necessary.
+        if (isset($data->type_id)) {
+            $data->typeid = $data->type_id;
+            unset($data->type_id);
+        }
+        if (isset($data->result_id)) {
+            $data->resultid = $data->result_id;
+            unset($data->result_id);
+        }
+
         // Insert the questionnaire_question record.
         $newitemid = $DB->insert_record('questionnaire_question', $data);
         $this->set_mapping('questionnaire_question', $oldid, $newitemid, true);
@@ -514,7 +525,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
             $newrec->surveyid = $this->get_new_parentid('questionnaire_survey');
             $newrec->dependquestionid = $this->get_mappingid('questionnaire_question', $olddependid);
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependqtype = $DB->get_field('questionnaire_question', 'type_id', ['id' => $newrec->dependquestionid]);
+            $dependqtype = $DB->get_field('questionnaire_question', 'typeid', ['id' => $newrec->dependquestionid]);
             if (($dependqtype !== false) && ($dependqtype != 1)) {
                 $newrec->dependchoiceid = $this->get_mappingid(
                     'questionnaire_quest_choice',
@@ -533,7 +544,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
             $data->dependquestionid = $this->get_mappingid('questionnaire_question', $data->dependquestionid);
 
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependqtype = $DB->get_field('questionnaire_question', 'type_id', ['id' => $data->dependquestionid]);
+            $dependqtype = $DB->get_field('questionnaire_question', 'typeid', ['id' => $data->dependquestionid]);
             if (($dependqtype !== false) && ($dependqtype != 1)) {
                 $data->dependchoiceid = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoiceid);
             }

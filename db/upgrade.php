@@ -1108,8 +1108,27 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2025111100.01, 'questionnaire');
     }
 
+    if ($oldversion < 2025111100.02) {
+        $table = new xmldb_table('questionnaire_question');
+
+        // Rename the field from type_id to typeid.
+        $field = new xmldb_field('type_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        if ($dbman->field_exists($table, 'type_id')) {
+            $dbman->rename_field($table, $field, 'typeid');
+        }
+
+        // Rename the field from result_id to resultid.
+        $field = new xmldb_field('result_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        if ($dbman->field_exists($table, 'result_id')) {
+            $dbman->rename_field($table, $field, 'resultid');
+        }
+
+        upgrade_mod_savepoint(true, 2025111100.02, 'questionnaire');
+    }
+
     return true;
 }
+
 
 /**
  * Supporting functions used once.

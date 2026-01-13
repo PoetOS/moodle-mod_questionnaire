@@ -1105,7 +1105,7 @@ class rate extends question {
             $qids = $DB->get_records_menu(
                 'questionnaire_question',
                 ['surveyid' => $surveyid,
-                'type_id' => self::QUESRATE],
+                'typeid' => self::QUESRATE],
                 '',
                 'id,surveyid'
             );
@@ -1130,7 +1130,7 @@ class rate extends question {
             $DB->execute($select, $qparams);
         }
 
-        $args = ['type_id' => self::QUESRATE];
+        $args = ['typeid' => self::QUESRATE];
         if ($surveyid !== null) {
             $args['surveyid'] = $surveyid;
         }

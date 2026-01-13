@@ -48,7 +48,7 @@ class edit_question_form extends \moodleform {
         if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
             $question->required = $SESSION->questionnaire->required;
         }
-        if (!isset($question->type_id)) {
+        if (!isset($question->typeid)) {
             throw new \moodle_exception('undefinedquestiontype', 'mod_questionnaire');
         }
 
@@ -70,7 +70,7 @@ class edit_question_form extends \moodleform {
         $errors = parent::validation($data, $files);
 
         // If this is a rate question.
-        if ($data['type_id'] == question::QUESRATE) {
+        if ($data['typeid'] == question::QUESRATE) {
             if ($data['length'] < 2) {
                 $errors["length"] = get_string('notenoughscaleitems', 'questionnaire');
             }
@@ -91,7 +91,7 @@ class edit_question_form extends \moodleform {
         }
 
         // If this is a slider question.
-        if ($data['type_id'] == question::QUESSLIDER) {
+        if ($data['typeid'] == question::QUESSLIDER) {
             if (
                 isset($data['minrange']) &&
                 isset($data['maxrange']) &&

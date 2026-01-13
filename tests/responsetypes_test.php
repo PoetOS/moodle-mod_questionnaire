@@ -400,7 +400,7 @@ final class responsetypes_test extends \advanced_testcase {
         $questionnaire = $generator->create_instance(['course' => $course->id]);
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
-        $questiondata['type_id'] = $qtype;
+        $questiondata['typeid'] = $qtype;
         $questiondata['surveyid'] = $questionnaire->sid;
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';

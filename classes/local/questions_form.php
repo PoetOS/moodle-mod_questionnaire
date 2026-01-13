@@ -84,11 +84,11 @@ class questions_form extends \moodleform {
         }
         natsort($qtypes);
         $addqgroup = [];
-        $addqgroup[] =& $mform->createElement('select', 'type_id', '', $qtypes);
+        $addqgroup[] =& $mform->createElement('select', 'typeid', '', $qtypes);
 
-        // The 'sticky' type_id value for further new questions.
-        if (isset($SESSION->questionnaire->type_id)) {
-                $mform->setDefault('type_id', $SESSION->questionnaire->type_id);
+        // The 'sticky' typeid value for further new questions.
+        if (isset($SESSION->questionnaire->typeid)) {
+                $mform->setDefault('typeid', $SESSION->questionnaire->typeid);
         }
 
         $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
@@ -126,7 +126,7 @@ class questions_form extends \moodleform {
             $manageqgroup = [];
 
             $qid = $question->id;
-            $tid = $question->type_id;
+            $tid = $question->typeid;
             $qtype = $question->type;
             $required = $question->required;
 
@@ -370,7 +370,7 @@ class questions_form extends \moodleform {
                     }
                 }
 
-                $typeid = $DB->get_field('questionnaire_question', 'type_id', ['id' => $this->moveq]);
+                $typeid = $DB->get_field('questionnaire_question', 'typeid', ['id' => $this->moveq]);
 
                 if ($display) {
                     // Do not move a page break to first position.
@@ -469,7 +469,7 @@ class questions_form extends \moodleform {
                 }
                 $qtypeandname = [];
                 $qtypeandname['name'] = $deletequestion->name;
-                $qtypeandname['type'] = questionnaire_get_type($deletequestion->type_id);
+                $qtypeandname['type'] = questionnaire_get_type($deletequestion->typeid);
 
                 $content = format_text(
                     file_rewrite_pluginfile_urls(

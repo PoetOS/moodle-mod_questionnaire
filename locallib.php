@@ -474,10 +474,10 @@ function questionnaire_delete_pagebreaks($sid) {
     global $DB;
     $DB->delete_records_select(
         'questionnaire_question',
-        'surveyid = :sid AND deleted IS NOT NULL AND type_id = :type_id',
+        'surveyid = :sid AND deleted IS NOT NULL AND typeid = :typeid',
         [
             'sid' => $sid,
-            'type_id' => question::QUESPAGEBREAK,
+            'typeid' => question::QUESPAGEBREAK,
         ]
     );
 }
@@ -756,11 +756,11 @@ function questionnaire_get_parent($question) {
     $dependquestion = $DB->get_record(
         'questionnaire_question',
         ['id' => $question->dependquestionid],
-        'id, position, name, type_id'
+        'id, position, name, typeid'
     );
     if (is_object($dependquestion)) {
         $qdependchoice = '';
-        switch ($dependquestion->type_id) {
+        switch ($dependquestion->typeid) {
             case question::QUESRADIO:
             case question::QUESDROP:
             case question::QUESCHECK:
@@ -789,7 +789,7 @@ function questionnaire_get_parent($question) {
         // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
         $parent[$qid]['qdependquestion'] = 'q' . $dependquestion->id;
         $parent[$qid]['qdependchoice'] = $qdependchoice;
-        $parent[$qid]['parenttype'] = $dependquestion->type_id;
+        $parent[$qid]['parenttype'] = $dependquestion->typeid;
         // Other fields to be used in Questions edit mode.
         $parent[$qid]['position'] = $question->position;
         $parent[$qid]['name'] = $question->name;
@@ -881,7 +881,7 @@ function questionnaire_check_page_breaks($questionnaire) {
         foreach ($questions as $key => $qu) {
             $newqu = new stdClass();
             $newqu->question_id = $key;
-            $newqu->type_id = $qu->type_id;
+            $newqu->typeid = $qu->typeid;
             $newqu->qname = $qu->name;
             $newqu->qpos = $qu->position;
 
@@ -905,9 +905,9 @@ function questionnaire_check_page_breaks($questionnaire) {
         $prevtypeid = null;
         if ($i > 0) {
             $prevqu = $positions[$i - 1];
-            $prevtypeid = $prevqu['type_id'];
+            $prevtypeid = $prevqu['typeid'];
         }
-        if ($qu['type_id'] == question::QUESPAGEBREAK) {
+        if ($qu['typeid'] == question::QUESPAGEBREAK) {
             $questionnb--;
             // If more than one consecutive page breaks, remove extra one(s).
             // Remove that extra page break in 1st position.
@@ -941,7 +941,7 @@ function questionnaire_check_page_breaks($questionnaire) {
             }
         }
         // Add pagebreak between question child and not dependent question that follows.
-        if ($qu['type_id'] != question::QUESPAGEBREAK) {
+        if ($qu['typeid'] != question::QUESPAGEBREAK) {
             if ($prevqu) {
                 $prevdependencies = $prevqu['dependencies'];
                 $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ?
@@ -992,7 +992,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                     }
                     $question = new stdClass();
                     $question->surveyid = $questionnaire->survey->id;
-                    $question->type_id = question::QUESPAGEBREAK;
+                    $question->typeid = question::QUESPAGEBREAK;
                     $question->position = $pos;
                     $question->content = 'break';
 
@@ -1060,7 +1060,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
         $question = \mod_questionnaire\local\question\question::question_builder($qtype);
         $question->sid = $questionnaire->survey->id;
         $question->id = $questionnaire->cm->id;
-        $question->type_id = $qtype;
+        $question->typeid = $qtype;
         $question->type = '';
         $draftideditor = file_get_submitted_draft_itemid('question');
         $content = file_prepare_draft_area(

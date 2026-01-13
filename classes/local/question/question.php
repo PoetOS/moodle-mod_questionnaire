@@ -174,13 +174,13 @@ abstract class question {
             $this->deleted = $question->deleted;
             $this->extradata = $question->extradata;
 
-            $this->type_id = $question->type_id;
-            $this->type = $qtypes[$this->type_id]->type;
-            $this->responsetable = $qtypes[$this->type_id]->response_table;
+            $this->typeid = $question->typeid;
+            $this->type = $qtypes[$this->typeid]->type;
+            $this->responsetable = $qtypes[$this->typeid]->response_table;
 
             if (!empty($question->choices)) {
                 $this->choices = $question->choices;
-            } else if ($qtypes[$this->type_id]->has_choices == 'y') {
+            } else if ($qtypes[$this->typeid]->has_choices == 'y') {
                 $this->get_choices();
             }
             // Added for dependencies.
@@ -218,7 +218,7 @@ abstract class question {
         } else if (!empty($qdata) && is_int($qdata)) {
             $qid = $qdata;
         }
-        return new $qclassname($qid, $qdata, $context, ['type_id' => $qtype]);
+        return new $qclassname($qid, $qdata, $context, ['typeid' => $qtype]);
     }
 
     /**
@@ -648,8 +648,8 @@ abstract class question {
             $questionrecord->id = $this->id;
             $questionrecord->surveyid = $this->surveyid;
             $questionrecord->name = $this->name;
-            $questionrecord->type_id = $this->type_id;
-            $questionrecord->result_id = $this->result_id;
+            $questionrecord->typeid = $this->typeid;
+            $questionrecord->resultid = $this->resultid;
             $questionrecord->length = $this->length;
             $questionrecord->precise = $this->precise;
             $questionrecord->position = $this->position;
@@ -698,8 +698,8 @@ abstract class question {
         }
 
         // Make sure we add all necessary data.
-        if (!isset($questionrecord->type_id) || empty($questionrecord->type_id)) {
-            $questionrecord->type_id = $this->type_id;
+        if (!isset($questionrecord->typeid) || empty($questionrecord->typeid)) {
+            $questionrecord->typeid = $this->typeid;
         }
 
         $this->qid = $DB->insert_record('questionnaire_question', $questionrecord);
@@ -990,7 +990,7 @@ abstract class question {
         $pagetags->fieldset = (object)['id' => $this->id, 'class' => $displayclass];
 
         // Do not display the info box for the label question type.
-        if ($this->type_id != self::QUESSECTIONTEXT) {
+        if ($this->typeid != self::QUESSECTIONTEXT) {
             if (!$nonumbering) {
                 $pagetags->qnum = $qnum;
             }
@@ -1009,11 +1009,11 @@ abstract class question {
             $this->content = '';
         }
         $pagetags->skippedclass = $skippedclass;
-        if ($this->type_id == self::QUESNUMERIC || $this->type_id == self::QUESTEXT || $this->type_id == self::QUESSLIDER) {
-            $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->id];
-        } else if ($this->type_id == self::QUESDROP) {
-            $pagetags->label = (object)['for' => self::qtypename($this->type_id) . $this->name];
-        } else if ($this->type_id == self::QUESESSAY) {
+        if ($this->typeid == self::QUESNUMERIC || $this->typeid == self::QUESTEXT || $this->typeid == self::QUESSLIDER) {
+            $pagetags->label = (object)['for' => self::qtypename($this->typeid) . $this->id];
+        } else if ($this->typeid == self::QUESDROP) {
+            $pagetags->label = (object)['for' => self::qtypename($this->typeid) . $this->name];
+        } else if ($this->typeid == self::QUESESSAY) {
             $pagetags->label = (object)['for' => 'q' . $this->id];
         }
         $content = file_rewrite_pluginfile_urls(
@@ -1075,8 +1075,8 @@ abstract class question {
         $mform->setType('qid', PARAM_INT);
         $mform->addElement('hidden', 'sid', 0);
         $mform->setType('sid', PARAM_INT);
-        $mform->addElement('hidden', 'type_id', $this->type_id);
-        $mform->setType('type_id', PARAM_INT);
+        $mform->addElement('hidden', 'typeid', $this->typeid);
+        $mform->setType('typeid', PARAM_INT);
         $mform->addElement('hidden', 'action', 'question');
         $mform->setType('action', PARAM_ALPHA);
 
@@ -1099,9 +1099,9 @@ abstract class question {
     protected function form_header(\MoodleQuickForm $mform, $helpname = '') {
         // Display different messages for new question creation and existing question modification.
         if (isset($this->qid) && !empty($this->qid)) {
-            $header = get_string('editquestion', 'questionnaire', questionnaire_get_type($this->type_id));
+            $header = get_string('editquestion', 'questionnaire', questionnaire_get_type($this->typeid));
         } else {
-            $header = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($this->type_id));
+            $header = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($this->typeid));
         }
         if (empty($helpname)) {
             $helpname = $this->helpname();
@@ -1450,7 +1450,7 @@ abstract class question {
                 $formdata->content
             );
 
-            $fields = ['name', 'type_id', 'length', 'precise', 'required', 'content', 'extradata'];
+            $fields = ['name', 'typeid', 'length', 'precise', 'required', 'content', 'extradata'];
             $questionrecord = new \stdClass();
             $questionrecord->id = $formdata->qid;
             foreach ($fields as $f) {
@@ -1468,7 +1468,7 @@ abstract class question {
             // Create new question:
             // Need to update any image content after the question is created, so create then update the content.
             $formdata->surveyid = $formdata->sid;
-            $fields = ['surveyid', 'name', 'type_id', 'length', 'precise', 'required', 'position', 'extradata'];
+            $fields = ['surveyid', 'name', 'typeid', 'length', 'precise', 'required', 'position', 'extradata'];
             $questionrecord = new \stdClass();
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {
@@ -1704,7 +1704,7 @@ abstract class question {
         $mobiledata = (object)[
             'id' => $this->id,
             'name' => $this->name,
-            'type_id' => $this->type_id,
+            'typeid' => $this->typeid,
             'length' => $this->length,
             'content' => format_text(
                 file_rewrite_pluginfile_urls(
@@ -1768,7 +1768,7 @@ abstract class question {
         if ($choiceid !== 0) {
             $choicefield = '_' . $choiceid;
         }
-        return 'response_' . $this->type_id . '_' . $this->id . $choicefield;
+        return 'response_' . $this->typeid . '_' . $this->id . $choicefield;
     }
 
     /**

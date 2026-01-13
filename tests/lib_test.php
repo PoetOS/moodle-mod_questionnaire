@@ -347,11 +347,11 @@ final class lib_test extends \advanced_testcase {
 
         // Add three questions.
         $q1 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 1, 'deleted' => null, 'content' => 'Q1']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 1, 'deleted' => null, 'content' => 'Q1']);
         $q2 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 2, 'deleted' => null, 'content' => 'Q2']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 2, 'deleted' => null, 'content' => 'Q2']);
         $q3 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 3, 'deleted' => null, 'content' => 'Q3']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 3, 'deleted' => null, 'content' => 'Q3']);
 
         // Delete Q2 and Q3.
         $DB->set_field('questionnaire_question', 'deleted', 1234567890, ['id' => $q2]);
