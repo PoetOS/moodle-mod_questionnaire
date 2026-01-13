@@ -43,6 +43,11 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
     protected $olddependencies = [];
 
     /**
+     * @var array $responsefileids Contains new questionnaire_response_file.id in key and old id in value.
+     */
+    protected $responsefileids = [];
+
+    /**
      * Implementation of define_structure.
      * @return mixed
      */
@@ -396,9 +401,9 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $data = (object)$data;
         $data->response_id = $this->get_new_parentid('questionnaire_response');
         $data->question_id = $this->get_mappingid('questionnaire_question', $data->question_id);
-
         // Insert the questionnaire_response_file record.
-        $DB->insert_record('questionnaire_response_file', $data);
+        $newid = $DB->insert_record('questionnaire_response_file', $data);
+        $this->responsefileids[$newid] = $data->id;
     }
 
     /**
@@ -491,6 +496,64 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
     }
 
     /**
+     * Handle related files for response file assignments and update the references between the
+     * records in the questionnaire_response_file and the files table.
+     */
+    protected function handle_releated_files_for_response_file_assignments() {
+        global $DB;
+        // If there are no response file IDs mapped before, then there are no response files to handle.
+        if (empty($this->responsefileids)) {
+            return;
+        }
+        $newctx = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'context', $this->task->get_old_contextid());
+        restore_dbops::send_files_to_pool(
+            $this->get_basepath(),
+            $this->get_restoreid(),
+            'mod_questionnaire',
+            'response_file',
+            $this->task->get_old_contextid(),
+            $this->task->get_userid()
+        );
+        // Lookup all file records that where just created for this context and component/filearea.
+        [$sql, $params] = $DB->get_in_or_equal(array_values($this->responsefileids), SQL_PARAMS_NAMED, 'id');
+        $params['component'] = 'mod_questionnaire';
+        $params['filearea'] = 'response_file';
+        $params['ctx'] = $newctx->newitemid;
+        $filerecords = $DB->get_records_select(
+            'files',
+            'contextid = :ctx AND component = :component AND filearea = :filearea AND itemid ' . $sql,
+            $params
+        );
+        $oldtonew = array_flip($this->responsefileids);
+        foreach ($filerecords as $filerecord) {
+            if (array_key_exists($filerecord->itemid, $oldtonew)) {
+                if ($filerecord->filename != '.') {
+                    // We have a real file, use that file.id to update the questionnaire_response_file.fileid.
+                    $DB->set_field(
+                        'questionnaire_response_file',
+                        'fileid',
+                        $filerecord->id,
+                        ['id' => $oldtonew[$filerecord->itemid]]
+                    );
+                }
+                // Update the itemid to the new response_file.id.
+                $filerecord->itemid = $oldtonew[$filerecord->itemid];
+                // Calculate new pathnamehash.
+                $filerecord->pathnamehash = \file_storage::get_pathname_hash(
+                    $filerecord->contextid,
+                    $filerecord->component,
+                    $filerecord->filearea,
+                    $filerecord->itemid,
+                    $filerecord->filepath,
+                    $filerecord->filename
+                );
+                // Adjust the files record with the new itemid and pathnamehash.
+                $DB->update_record('files', $filerecord);
+            }
+        }
+    }
+
+    /**
      * Stuff to do after execution.
      */
     protected function after_execute() {
@@ -540,6 +603,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $this->add_related_files('mod_questionnaire', 'question', 'questionnaire_question');
         $this->add_related_files('mod_questionnaire', 'sectionheading', 'questionnaire_fb_sections');
         $this->add_related_files('mod_questionnaire', 'feedback', 'questionnaire_feedback');
+        $this->handle_releated_files_for_response_file_assignments();
 
         // Process any old rate question named degree choices after all questions and choices have been restored.
         if ($this->task->get_old_moduleversion() < 2018110103) {
