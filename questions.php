@@ -22,7 +22,7 @@
  * @copyright  2016 Mike Churchward (mike.churchward@poetopensource.org)
  */
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 use mod_questionnaire\local\question\question;
 
 require_once("../../config.php");
@@ -62,7 +62,7 @@ if ($qid) {
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+$questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
 $questionnaire->get_delete_questions();
 
 // Add renderer and page objects to the questionnaire object for display use.
@@ -360,7 +360,7 @@ if ($action == 'main') {
 // Reload the form data if called for...
 if ($reload) {
     unset($questionsform);
-    $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null);
+    $questionnaire = new questionnairelib($course, $cm, $questionnaire->id, null);
     $questionnaire->get_delete_questions();
     // Add renderer and page objects to the questionnaire object for display use.
     $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));

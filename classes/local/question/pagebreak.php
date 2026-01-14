@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\local\question;
 use mod_questionnaire\local\edit_question_form;
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 
 /**
  * This file contains the parent class for pagebreak question types.
@@ -77,10 +77,10 @@ class pagebreak extends question {
      * Override this, or any of the internal methods, to provide specific form data for editing the question type.
      * The structure of the elements here is the default layout for the question form.
      * @param edit_question_form $form The main moodleform object.
-     * @param questionnaire $questionnaire The questionnaire being edited.
+     * @param questionnairelib $questionnaire The questionnaire being edited.
      * @return bool
      */
-    public function edit_form(edit_question_form $form, questionnaire $questionnaire) {
+    public function edit_form(edit_question_form $form, questionnairelib $questionnaire) {
         return false;
     }
 

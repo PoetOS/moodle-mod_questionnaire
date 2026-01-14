@@ -19,7 +19,7 @@ defined('MOODLE_INTERNAL') || die();
 use mod_questionnaire\local\generator\question_response,
     mod_questionnaire\local\generator\question_response_rank,
     mod_questionnaire\local\question\question,
-    mod_questionnaire\local\questionnaire;
+    mod_questionnaire\local\questionnairelib;
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -49,7 +49,7 @@ class mod_questionnaire_generator extends testing_module_generator {
     protected $responsecount = 0;
 
     /**
-     * @var questionnaire[]
+     * @var questionnairelib[]
      */
     protected $questionnaires = [];
 
@@ -76,7 +76,7 @@ class mod_questionnaire_generator extends testing_module_generator {
      * Create a questionnaire activity.
      * @param array $record Will be changed in this function.
      * @param array|null $options
-     * @return questionnaire
+     * @return questionnairelib
      */
     public function create_instance($record = null, ?array $options = null) {
         $record = (object)(array)$record;
@@ -107,7 +107,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $instance = parent::create_instance($record, (array)$options);
         $cm = get_coursemodule_from_instance('questionnaire', $instance->id);
         $course = get_course($cm->course);
-        $questionnaire = new questionnaire($course, $cm, 0, $instance, false);
+        $questionnaire = new questionnairelib($course, $cm, 0, $instance, false);
 
         $this->questionnaires[$instance->id] = $questionnaire;
 
@@ -116,7 +116,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
     /**
      * Create a survey instance with data from an existing questionnaire object.
-     * @param questionnaire $questionnaire
+     * @param questionnairelib $questionnaire
      * @param array $record
      * @return bool|int
      */
@@ -133,12 +133,12 @@ class mod_questionnaire_generator extends testing_module_generator {
     /**
      * Function to create a question.
      *
-     * @param questionnaire $questionnaire
+     * @param questionnairelib $questionnaire
      * @param array|stdClass $record
      * @param array|stdClass $data - accompanying data for question - e.g. choices
      * @return \mod_questionnaire\local\question\question the question object
      */
-    public function create_question(questionnaire $questionnaire, $record = null, $data = null) {
+    public function create_question(questionnairelib $questionnaire, $record = null, $data = null) {
         global $DB;
 
         // Increment the question count.
@@ -207,7 +207,7 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param null|int $qtype
      * @param array $questiondata
      * @param null|array|stdClass $choicedata
-     * @return questionnaire
+     * @return questionnairelib
      */
     public function create_test_questionnaire($course, $qtype = null, $questiondata = [], $choicedata = null) {
         $questionnaire = $this->create_instance(['course' => $course->id]);
@@ -219,13 +219,13 @@ class mod_questionnaire_generator extends testing_module_generator {
             $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
             $this->create_question($questionnaire, $questiondata, $choicedata);
         }
-        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, true);
+        $questionnaire = new questionnairelib($course, $cm, $questionnaire->id, null, true);
         return $questionnaire;
     }
 
     /**
      * Create a reponse to the supplied question.
-     * @param questionnaire $questionnaire
+     * @param questionnairelib $questionnaire
      * @param question $question
      * @param int|array $respval
      * @param int $userid
@@ -247,12 +247,12 @@ class mod_questionnaire_generator extends testing_module_generator {
     /**
      * Need to create a method to access a private questionnaire method.
      * TO DO - may not need this with above "TO DO".
-     * @param questionnaire $questionnaire
+     * @param questionnairelib $questionnaire
      * @param int $responseid
      * @return mixed
      */
     private function response_commit($questionnaire, $responseid) {
-        $method = new ReflectionMethod('\\mod_questionnaire\\local\\questionnaire', 'response_commit');
+        $method = new ReflectionMethod('\\mod_questionnaire\\local\\questionnairelib', 'response_commit');
         $method->setAccessible(true);
         return $method->invoke($questionnaire, $responseid);
     }
@@ -617,7 +617,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
     /**
      * Generate a response.
-     * @param questionnaire $questionnaire
+     * @param questionnairelib $questionnaire
      * @param \mod_questionnaire\local\question\question[] $questions
      * @param int $userid
      * @param bool $complete

@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 
 /**
  * Require config.php

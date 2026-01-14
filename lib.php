@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 use mod_questionnaire\local\manager;
 
 /** This may no longer be needed. */
@@ -512,7 +512,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     }
 
     $courseid = $course->id;
-    $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+    $questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
 
     if ($owner = $DB->get_field('questionnaire_survey', 'courseid', ['id' => $questionnaire->sid])) {
         $owner = (trim($owner) == trim($courseid));
@@ -859,7 +859,7 @@ function questionnaire_get_recent_mod_activity(
 
     $cm = $modinfo->cms[$cmid];
     $questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance]);
-    $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+    $questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
 
     $context = context_module::instance($cm->id);
     $grader = has_capability('mod/questionnaire:viewsingleresponse', $context);
@@ -1262,10 +1262,10 @@ function mod_questionnaire_coursemodule_edit_post_actions($data, $course) {
 
     if (!empty($data->copyid)) {
         $cm = (object)['id' => $data->coursemodule];
-        $questionnaire = new questionnaire($course, $cm, 0, $data);
+        $questionnaire = new questionnairelib($course, $cm, 0, $data);
         $oldquestionnaireid = $DB->get_field('questionnaire', 'id', ['sid' => $data->copyid]);
         $oldcm = get_coursemodule_from_instance('questionnaire', $oldquestionnaireid);
-        $oldquestionnaire = new questionnaire($course, $oldcm, $oldquestionnaireid, null);
+        $oldquestionnaire = new questionnairelib($course, $oldcm, $oldquestionnaireid, null);
         $oldcontext = context_module::instance($oldcm->id);
         $newcontext = context_module::instance($data->coursemodule);
         $areas = $questionnaire->get_all_file_areas();

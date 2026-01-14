@@ -23,7 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 
 require_once("../../config.php");
 
@@ -59,7 +59,7 @@ if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
 
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+$questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
 
 if ($sectionid) {
     // Get the specified section by its id.

@@ -24,7 +24,7 @@
  *
  */
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 
 require_once("../../config.php");
 
@@ -48,7 +48,7 @@ if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, 
 // Check login and get context.
 require_login($courseid);
 
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+$questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));

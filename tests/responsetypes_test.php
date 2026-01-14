@@ -390,7 +390,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @param int $qtype
      * @param array $questiondata
      * @param null $choicedata
-     * @return questionnaire
+     * @return questionnairelib
      */
     public function create_test_questionnaire($qtype, $questiondata = [], $choicedata = null) {
         $this->resetAfterTest();

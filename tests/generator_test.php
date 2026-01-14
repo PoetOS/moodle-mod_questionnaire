@@ -91,7 +91,7 @@ final class generator_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(['course' => $course->id]);
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null, false);
+        $questionnaire = new questionnairelib($course, $cm, $questionnaire->id, null, false);
 
         $newcontent = [
             'title' => 'New title',

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -37,7 +37,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         global $COURSE, $CFG;
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
-        $questionnaire = new questionnaire($COURSE, $this->_cm, $this->_instance, null);
+        $questionnaire = new questionnairelib($COURSE, $this->_cm, $this->_instance, null);
 
         $mform    =& $this->_form;
 

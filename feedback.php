@@ -25,7 +25,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 
 require_once("../../config.php");
 
@@ -54,7 +54,7 @@ $PAGE->set_context($context);
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+$questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));

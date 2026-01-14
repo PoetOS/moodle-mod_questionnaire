@@ -125,7 +125,7 @@ final class lib_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         /** @var mod_questionnaire_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        /** @var questionnaire $questionnaire */
+        /** @var questionnairelib $questionnaire */
         $questionnaire = $generator->create_instance(['course' => $course->id, 'sid' => 1]);
 
         $qid = $questionnaire->id;

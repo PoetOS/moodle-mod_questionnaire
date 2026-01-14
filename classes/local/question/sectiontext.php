@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\local\question;
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 use mod_questionnaire\local\feedback\section;
 
 /**

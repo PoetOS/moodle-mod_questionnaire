@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\output;
 
-use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\responsetype\response\response;
 
@@ -50,7 +50,7 @@ class mobile {
         $completed = isset($args->completed) ? $args->completed : false;
 
         [$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($cmid);
-        $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
+        $questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
 
         $data = [];
         $data['cmid'] = $cmid;
@@ -208,7 +208,7 @@ class mobile {
 
     /**
      * Add the submissions.
-     * @param \questionnaire $questionnaire
+     * @param questionnairelib $questionnaire
      * @param array $data
      * @param int $userid
      */
@@ -234,9 +234,9 @@ class mobile {
 
     /**
      * Ass the questions for the page.
-     * @param \questionnaire $questionnaire
+     * @param questionnairelib $questionnaire
      * @param int $pagenum
-     * @param response $response
+     * @param \mod_questionnaire\local\responsetype\response\response $response
      * @return array
      */
     protected static function add_pagequestion_data($questionnaire, $pagenum, $response = null) {

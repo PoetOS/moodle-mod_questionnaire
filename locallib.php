@@ -26,7 +26,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 use mod_questionnaire\local\question\question;
 
 defined('MOODLE_INTERNAL') || die();
@@ -1000,7 +1000,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                         return (false);
                     }
                     $newpbids[] = $newqid;
-                    $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null);
+                    $questionnaire = new questionnairelib($course, $cm, $questionnaire->id, null);
                     $questionnaire->move_question($newqid, $qu['qpos']);
                 }
             }
@@ -1011,7 +1011,7 @@ function questionnaire_check_page_breaks($questionnaire) {
     } else if ($newpbids) {
         $msg .= get_string('checkbreaksadded', 'questionnaire') . '&nbsp;';
         $newpbids = array_reverse($newpbids);
-        $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null);
+        $questionnaire = new questionnairelib($course, $cm, $questionnaire->id, null);
         foreach ($newpbids as $newpbid) {
             $msg .= $questionnaire->questions[$newpbid]->position . '&nbsp;';
         }

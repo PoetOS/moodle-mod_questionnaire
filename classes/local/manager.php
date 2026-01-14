@@ -196,7 +196,7 @@ class manager {
             // Create a new survey.
             $course = get_course($formdata->course);
             $cm = new stdClass();
-            $qobject = new questionnaire($course, $cm, 0, $formdata);
+            $qobject = new questionnairelib($course, $cm, 0, $formdata);
 
             if ($formdata->create == 'new-0') {
                 $sdata = new stdClass();

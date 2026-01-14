@@ -23,7 +23,7 @@
  * @author     Mike Churchward
  */
 
-use mod_questionnaire\local\questionnaire;
+use mod_questionnaire\local\questionnairelib;
 
 require_once("../../config.php");
 
@@ -87,7 +87,7 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_cm($cm);   // CONTRIB-5872 - I don't know why this is needed.
 
-$questionnaire = new questionnaire($course, $cm, $qid, $questionnaire);
+$questionnaire = new questionnairelib($course, $cm, $qid, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
