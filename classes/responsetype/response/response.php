@@ -113,7 +113,7 @@ class response {
      *
      * @param \stdClass $responsedata All of the responsedata as an object.
      * @param array $questions
-     * @return bool|response A response object.
+     * @return response A response object.
      */
     public static function response_from_webform($responsedata, $questions) {
         global $USER;
@@ -181,5 +181,6 @@ class response {
         $this->answers += \mod_questionnaire\responsetype\boolean::response_answers_by_question($this->id);
         $this->answers += \mod_questionnaire\responsetype\date::response_answers_by_question($this->id);
         $this->answers += \mod_questionnaire\responsetype\text::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\responsetype\file::response_answers_by_question($this->id);
     }
 }

@@ -414,6 +414,7 @@ function questionnaire_delete_response($response, $questionnaire = '') {
     $DB->delete_records('questionnaire_response_rank', ['response_id' => $rid]);
     $DB->delete_records('questionnaire_resp_single', ['response_id' => $rid]);
     $DB->delete_records('questionnaire_response_text', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_response_file', ['response_id' => $rid]);
 
     $status = $status && $DB->delete_records('questionnaire_response', ['id' => $rid]);
 
@@ -444,6 +445,7 @@ function questionnaire_delete_responses($qid) {
     $DB->delete_records('questionnaire_response_rank', ['question_id' => $qid]);
     $DB->delete_records('questionnaire_resp_single', ['question_id' => $qid]);
     $DB->delete_records('questionnaire_response_text', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_response_file', ['question_id' => $qid]);
 
     return true;
 }
@@ -608,6 +610,8 @@ function questionnaire_get_type($id) {
             return get_string('numeric', 'questionnaire');
         case 11:
             return get_string('slider', 'questionnaire');
+        case 12:
+            return get_string('file', 'questionnaire');
         case 100:
             return get_string('sectiontext', 'questionnaire');
         case 99:
