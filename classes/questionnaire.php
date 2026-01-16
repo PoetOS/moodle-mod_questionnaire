@@ -28,7 +28,6 @@ use mod_questionnaire\local\db\survey_record;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class questionnaire {
-
     /** @var \mod_questionnaire\local\db\module_record The module record instance. */
     public $modulerecord;
 
@@ -38,7 +37,7 @@ class questionnaire {
     /**
      * Summary of __construct
      * @param int $mid
-     * @param mixed $modulerecord
+     * @param module_record|null $modulerecord
      */
     public function __construct(int $mid = 0, ?module_record $modulerecord = null) {
         if (!empty($mid)) {
