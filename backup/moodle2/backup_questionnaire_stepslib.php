@@ -149,6 +149,10 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $responsedate = new backup_nested_element('response_date', ['id'], ['response_id', 'question_id', 'response']);
 
+        $responsefiles = new backup_nested_element('response_files');
+
+        $responsefile = new backup_nested_element('response_file', ['id'], ['response_id', 'question_id', 'fileid']);
+
         $responsemultiples = new backup_nested_element('response_multiples');
 
         $responsemultiple = new backup_nested_element('response_multiple', ['id'], [
@@ -215,6 +219,9 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $response->add_child($responsedates);
         $responsedates->add_child($responsedate);
 
+        $response->add_child($responsefiles);
+        $responsefiles->add_child($responsefile);
+
         $response->add_child($responsemultiples);
         $responsemultiples->add_child($responsemultiple);
 
@@ -256,6 +263,8 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
                 $response->set_source_table('questionnaire_response', ['questionnaireid' => backup::VAR_PARENTID]);
                 $responsebool->set_source_table('questionnaire_response_bool', ['response_id' => backup::VAR_PARENTID]);
                 $responsedate->set_source_table('questionnaire_response_date', ['response_id' => backup::VAR_PARENTID]);
+                $responsefile->set_source_table('questionnaire_response_file', ['response_id' => backup::VAR_PARENTID]);
+                $responsefile->annotate_files('mod_questionnaire', 'response_file', null);
                 $responsemultiple->set_source_table('questionnaire_resp_multiple', ['response_id' => backup::VAR_PARENTID]);
                 $responseother->set_source_table('questionnaire_response_other', ['response_id' => backup::VAR_PARENTID]);
                 $responserank->set_source_table('questionnaire_response_rank', ['response_id' => backup::VAR_PARENTID]);

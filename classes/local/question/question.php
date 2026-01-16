@@ -61,6 +61,8 @@ abstract class question {
     /** @var int Define slider question type. */
     const QUESSLIDER = 11;
     /** @var int Define page break question type. */
+    const QUESFILE = 12;
+    /** @var int Define page break question type. */
     const QUESPAGEBREAK = 99;
     /** @var int Define section text question type. */
     const QUESSECTIONTEXT = 100;
@@ -127,6 +129,7 @@ abstract class question {
         self::QUESDROP => 'drop',
         self::QUESRATE => 'rate',
         self::QUESDATE => 'date',
+        self::QUESFILE => 'file',
         self::QUESNUMERIC => 'numerical',
         self::QUESPAGEBREAK => 'pagebreak',
         self::QUESSECTIONTEXT => 'sectiontext',

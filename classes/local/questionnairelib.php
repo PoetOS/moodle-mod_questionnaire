@@ -161,10 +161,10 @@ class questionnairelib {
      * Adding questions to the object.
      * @param bool $sid
      */
-    public function add_questions($sid = false) {
+    public function add_questions($sid = 0) {
         global $DB;
 
-        if ($sid === false) {
+        if ($sid === 0) {
             $sid = $this->sid;
         }
 
@@ -1756,7 +1756,7 @@ class questionnairelib {
                 $this->questions[$questionid]->set_isprint($referer === 'print');
                 $output .= $this->renderer->question_output(
                     $this->questions[$questionid],
-                    $this->responses[0] ?? [],
+                    $this->responses[0] ?? new \mod_questionnaire\local\responsetype\response\response(),
                     $i++,
                     null,
                     $dependants
