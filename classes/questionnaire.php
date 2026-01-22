@@ -18,6 +18,7 @@ namespace mod_questionnaire;
 
 use mod_questionnaire\local\db\module_record;
 use mod_questionnaire\local\db\survey_record;
+use mod_questionnaire\local\question\question;
 
 /**
  * The main class used to access and manage the questionnaire module.
@@ -34,6 +35,9 @@ class questionnaire {
     /** @var \mod_questionnaire\local\db\survey_record The survey record instance. */
     public $surveyrecord;
 
+    /** @var \mod_questionnaire\local\question\questionold[] The list of question objects. */
+    public $questions = [];
+
     /**
      * Summary of __construct
      * @param int $mid
@@ -48,6 +52,35 @@ class questionnaire {
             throw new \coding_exception('Either mid or modulerecord must be provided to construct a questionnaire object.');
         }
 
-        $this->surveyrecord = new survey_record($this->modulerecord->get('sid'));
+        try {
+            $this->surveyrecord = new survey_record($this->modulerecord->get('sid'));
+        } catch (\dml_missing_record_exception $e) {
+            $this->surveyrecord = new survey_record();
+        }
+        $this->load_questions();
+    }
+
+    /**
+     * Create a questionnaire instance from a course module id.
+     * @param int $cmid
+     * @return self
+     * @throws \dml_exception
+     */
+    public static function create_from_cmid(int $cmid) {
+        return new self(0, module_record::create_from_cmid($cmid));
+    }
+
+    /**
+     * Load all questions for this questionnaire into the questions array.
+     * @return void
+     */
+    protected function load_questions() {
+        $sid = $this->surveyrecord->get('id');
+        if (!empty($sid)) {
+            $questionrecs = \mod_questionnaire\local\db\question_record::questions_for_survey($sid);
+            foreach ($questionrecs as $questionrec) {
+                $this->questions[$questionrec->get('id')] = question::question_builder($questionrec->get('typeid'), $questionrec);
+            }
+        }
     }
 }

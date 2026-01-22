@@ -23,7 +23,7 @@
  */
 
 use mod_questionnaire\local\questionnairelib;
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -96,7 +96,7 @@ if ($delq) {
         ['sid' => $sid],
         'id'
     );
-    if (isset($questions[$qid]) && $questions[$qid]->typeid == question::QUESPAGEBREAK) {
+    if (isset($questions[$qid]) && $questions[$qid]->typeid == questionold::QUESPAGEBREAK) {
         $DB->delete_records('questionnaire_question', ['id' => $qid]);
     } else {
         $updatesql = "UPDATE {questionnaire_question}
@@ -144,7 +144,7 @@ if ($delq) {
     }
 
     // Log question deleted event.
-    $questiontype = \mod_questionnaire\local\question\question::qtypename($questionnaire->questions[$qid]->typeid);
+    $questiontype = \mod_questionnaire\local\question\questionold::qtypename($questionnaire->questions[$qid]->typeid);
     questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
 
     if ($questionnairehasdependencies) {
@@ -160,7 +160,7 @@ if ($delpermanentlyq) {
     questionnaire_delete_permanently_questions($qid, $sid);
     $deletedquestion = $questionnaire->deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
-        $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid);
+        $questiontype = \mod_questionnaire\local\question\questionold::qtypename($deletedquestion->typeid);
         questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id]);
         $PAGE->set_url($url->out(false));
@@ -228,7 +228,7 @@ if ($action == 'main') {
             $qtype = $questionnaire->questions[$qid]->typeid;
 
             // Delete section breaks without asking for confirmation.
-            if ($qtype == question::QUESPAGEBREAK) {
+            if ($qtype == questionold::QUESPAGEBREAK) {
                 redirect(new \moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id, 'delq' => $qid]));
             }
 
@@ -261,12 +261,12 @@ if ($action == 'main') {
 
             $reload = true;
         } else if (isset($qformdata->addqbutton)) {
-            if ($qformdata->typeid == question::QUESPAGEBREAK) { // Adding section break is handled right away....
+            if ($qformdata->typeid == questionold::QUESPAGEBREAK) { // Adding section break is handled right away....
                 $questionrec = new stdClass();
                 $questionrec->surveyid = $qformdata->sid;
-                $questionrec->typeid = question::QUESPAGEBREAK;
+                $questionrec->typeid = questionold::QUESPAGEBREAK;
                 $questionrec->content = 'break';
-                $question = question::question_builder(question::QUESPAGEBREAK);
+                $question = questionold::question_builder(questionold::QUESPAGEBREAK);
                 $question->add($questionrec);
                 $reload = true;
             } else {
@@ -344,7 +344,7 @@ if ($action == 'main') {
     // Log question created event.
     if (isset($qformdata)) {
         $context = context_module::instance($questionnaire->cm->id);
-        $questiontype = \mod_questionnaire\local\question\question::qtypename($qformdata->typeid);
+        $questiontype = \mod_questionnaire\local\question\questionold::qtypename($qformdata->typeid);
         $params = [
             'context' => $context,
             'courseid' => $questionnaire->course->id,

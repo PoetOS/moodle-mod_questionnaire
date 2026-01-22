@@ -17,7 +17,7 @@
 namespace mod_questionnaire\local;
 
 use mod_questionnaire\local\feedback\section;
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 use moodle_url;
 use pix_icon;
 use popup_action;
@@ -42,12 +42,12 @@ class questionnairelib {
     // Class Properties.
 
     /**
-     * @var \mod_questionnaire\local\question\question[] $quesitons
+     * @var \mod_questionnaire\local\question\questionold[] $quesitons
      */
     public $questions = [];
 
     /**
-     * @var \mod_questionnaire\local\question\question[] $deletequestions
+     * @var \mod_questionnaire\local\question\questionold[] $deletequestions
      */
     public $deletequestions = [];
 
@@ -131,9 +131,9 @@ class questionnairelib {
                  WHERE deleted IS NOT NULL
                    AND surveyid = ? AND typeid != ?
               ORDER BY deleted DESC";
-        if ($records = $DB->get_records_sql($sql, [$this->sid, question::QUESPAGEBREAK])) {
+        if ($records = $DB->get_records_sql($sql, [$this->sid, questionold::QUESPAGEBREAK])) {
             foreach ($records as $record) {
-                $this->deletequestions[$record->id] = \mod_questionnaire\local\question\question::question_builder(
+                $this->deletequestions[$record->id] = \mod_questionnaire\local\question\questionold::question_builder(
                     $record->typeid,
                     $record,
                     $this->context
@@ -178,13 +178,13 @@ class questionnairelib {
             $sec = 1;
             $isbreak = false;
             foreach ($records as $record) {
-                $this->questions[$record->id] = question::question_builder(
+                $this->questions[$record->id] = questionold::question_builder(
                     $record->typeid,
                     $record,
                     $this->context
                 );
 
-                if ($record->typeid != question::QUESPAGEBREAK) {
+                if ($record->typeid != questionold::QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][] = $record->id;
                     $isbreak = false;
                 } else {
@@ -481,10 +481,10 @@ class questionnairelib {
             if (!$question->dependency_fulfilled($rid, $this->questions)) {
                 continue;
             }
-            if ($question->typeid < question::QUESPAGEBREAK) {
+            if ($question->typeid < questionold::QUESPAGEBREAK) {
                 $i++;
             }
-            if ($question->typeid != question::QUESPAGEBREAK) {
+            if ($question->typeid != questionold::QUESPAGEBREAK) {
                 $this->page->add_to_page(
                     'responses',
                     $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf)
@@ -1062,7 +1062,7 @@ class questionnairelib {
 
     /**
      * Load needed parent question information into the dependencies structure for the requested question.
-     * @param \mod_questionnaire\local\question\question $question
+     * @param \mod_questionnaire\local\question\questionold $question
      * @return bool
      */
     public function load_parents($question) {
@@ -1070,9 +1070,9 @@ class questionnairelib {
             $dependquestion = $this->questions[$dependency->dependquestionid];
             $qdependchoice = '';
             switch ($dependquestion->typeid) {
-                case question::QUESRADIO:
-                case question::QUESDROP:
-                case question::QUESCHECK:
+                case questionold::QUESRADIO:
+                case questionold::QUESDROP:
+                case questionold::QUESCHECK:
                     $qdependchoice = $dependency->dependchoiceid;
                     $dependchoice = $dependquestion->choices[$dependency->dependchoiceid]->content;
 
@@ -1081,7 +1081,7 @@ class questionnairelib {
                         $dependchoice = $contents->modname;
                     }
                     break;
-                case question::QUESYESNO:
+                case questionold::QUESYESNO:
                     switch ($dependency->dependchoiceid) {
                         case 0:
                             $dependchoice = get_string('yes');
@@ -1377,7 +1377,7 @@ class questionnairelib {
         if ($section > 1) {
             for ($j = 2; $j <= $section; $j++) {
                 foreach ($this->questionsbysec[$j - 1] as $questionid) {
-                    if ($this->questions[$questionid]->typeid < question::QUESPAGEBREAK) {
+                    if ($this->questions[$questionid]->typeid < questionold::QUESPAGEBREAK) {
                         $i++;
                     }
                 }
@@ -2013,7 +2013,7 @@ class questionnairelib {
             // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED.
             foreach ($this->questionsbysec[$j - 1] as $questionid) {
                 $tid = $this->questions[$questionid]->typeid;
-                if ($tid < question::QUESPAGEBREAK) {
+                if ($tid < questionold::QUESPAGEBREAK) {
                     $i++;
                 }
             }
@@ -2176,7 +2176,7 @@ class questionnairelib {
 
         $pos = $this->response_select_max_pos($rid);
         $select = 'surveyid = ? AND typeid = ? AND position < ? AND deleted IS NULL';
-        $params = [$this->sid, question::QUESPAGEBREAK, $pos];
+        $params = [$this->sid, questionold::QUESPAGEBREAK, $pos];
         $max = $DB->count_records_select('questionnaire_question', $select, $params) + 1;
 
         return $max;
@@ -3180,7 +3180,7 @@ class questionnairelib {
         $anonymous = $this->respondenttype == 'anonymous';
 
         foreach ($this->questions as $question) {
-            if ($question->typeid == question::QUESPAGEBREAK) {
+            if ($question->typeid == questionold::QUESPAGEBREAK) {
                 continue;
             }
             if ($question->is_numbered()) {
@@ -3280,7 +3280,7 @@ class questionnairelib {
      * @return array
      */
     protected function choice_types() {
-        return [question::QUESRADIO, question::QUESDROP, question::QUESCHECK, question::QUESRATE];
+        return [questionold::QUESRADIO, questionold::QUESDROP, questionold::QUESCHECK, questionold::QUESRATE];
     }
 
     /**
@@ -3322,7 +3322,7 @@ class questionnairelib {
         }
 
         foreach ($uniquetypes as $type) {
-            $question = \mod_questionnaire\local\question\question::question_builder($type);
+            $question = \mod_questionnaire\local\question\questionold::question_builder($type);
             if (!isset($question->responsetype)) {
                 continue;
             }
@@ -3490,7 +3490,7 @@ class questionnairelib {
             } else if (isset($questionsbyposition[$c])) {
                 $question = $questionsbyposition[$c];
                 $qtype = intval($question->typeid);
-                if ($qtype === question::QUESCHECK) {
+                if ($qtype === questionold::QUESCHECK) {
                     $positioned[] = '0';
                 } else {
                     $positioned[] = null;
@@ -3626,8 +3626,8 @@ class questionnairelib {
                 $choices = $choicesbyqid[$qid];
 
                 switch ($type) {
-                    case question::QUESRADIO: // Single.
-                    case question::QUESDROP:
+                    case questionold::QUESRADIO: // Single.
+                    case questionold::QUESDROP:
                         $columns[][$qpos] = $col;
                         $questionidcols[][$qpos] = $qid;
                         array_push($types, $idtocsvmap[$type]);
@@ -3644,7 +3644,7 @@ class questionnairelib {
                         }
                         break;
 
-                    case question::QUESCHECK: // Multiple.
+                    case questionold::QUESCHECK: // Multiple.
                         $thisnum = 1;
                         foreach ($choices as $choice) {
                             $content = $choice->content;
@@ -3673,7 +3673,7 @@ class questionnairelib {
                         }
                         break;
 
-                    case question::QUESRATE: // Rate.
+                    case questionold::QUESRATE: // Rate.
                         foreach ($choices as $choice) {
                             $nameddegrees = 0;
                             $modality = '';
@@ -3809,7 +3809,7 @@ class questionnairelib {
             $question = $this->questions[$qid];
             $qtype = intval($question->typeid);
             if ($rankaverages) {
-                if ($qtype === question::QUESRATE) {
+                if ($qtype === questionold::QUESRATE) {
                     if (empty($averages[$qid])) {
                         $results = $this->questions[$qid]->responsetype->get_results($rids);
                         foreach ($results as $qresult) {
@@ -3834,10 +3834,10 @@ class questionnairelib {
                 $row = [];
             }
 
-            if ($qtype === question::QUESRATE || $qtype === question::QUESCHECK) {
+            if ($qtype === questionold::QUESRATE || $qtype === questionold::QUESCHECK) {
                 $key = $qid . '_' . $responserow->choice_id;
                 $position = $questionpositions[$key];
-                if ($qtype === question::QUESRATE) {
+                if ($qtype === questionold::QUESRATE) {
                     $choicetxt = $responserow->rankvalue;
                     if ($rankaverages) {
                         $averagerow[$position] = $averages[$qid][$responserow->choice_id];
@@ -3884,7 +3884,7 @@ class questionnairelib {
                     } else {
                         $responsetxt = $content;
                     }
-                } else if (intval($qtype) === question::QUESYESNO) {
+                } else if (intval($qtype) === questionold::QUESYESNO) {
                     // At this point, the boolean responses are returned as characters in the "response"
                     // field instead of "choice_id" for csv exports (CONTRIB-6436).
                     $responsetxt = $responserow->response === 'y' ? "1" : "0";

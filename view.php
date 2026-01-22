@@ -25,6 +25,7 @@
  */
 
 use mod_questionnaire\local\questionnairelib;
+use mod_questionnaire\questionnaire;
 
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -40,7 +41,7 @@ $a = optional_param('a', null, PARAM_INT);      // Or questionnaire ID.
 
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 
-[$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($id, $a);
+[$cm, $course, $questionnairelib] = questionnaire_get_standard_page_items($id, $a);
 
 // Check login and get context.
 require_course_login($course, true, $cm);
@@ -58,114 +59,115 @@ if (isset($sid)) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-$questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
+$questionnaire = questionnaire::create_from_cmid($cm->id);
+$questionnairelib = new questionnairelib($course, $cm, 0, $questionnairelib);
 // Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\viewpage());
+$questionnairelib->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$questionnairelib->add_page(new \mod_questionnaire\output\viewpage());
 
-$PAGE->set_title(format_string($questionnaire->name));
+$PAGE->set_title(format_string($questionnairelib->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-echo $questionnaire->renderer->header();
+echo $questionnairelib->renderer->header();
 // No need to print out intro or name in Moodle 4 and above.
 
-$cm = $questionnaire->cm;
+$cm = $questionnairelib->cm;
 $currentgroupid = groups_get_activity_group($cm);
 if (!groups_is_member($currentgroupid, $USER->id)) {
     $currentgroupid = 0;
 }
 
-$message = $questionnaire->user_access_messages($USER->id);
+$message = $questionnairelib->user_access_messages($USER->id);
 if ($message !== false) {
-    $questionnaire->page->add_to_page('message', $message);
-} else if ($questionnaire->user_can_take($USER->id)) {
-    if ($questionnaire->questions) { // Sanity check.
-        if (!$questionnaire->user_has_saved_response($USER->id)) {
-            $questionnaire->page->add_to_page(
+    $questionnairelib->page->add_to_page('message', $message);
+} else if ($questionnairelib->user_can_take($USER->id)) {
+    if ($questionnairelib->questions) { // Sanity check.
+        if (!$questionnairelib->user_has_saved_response($USER->id)) {
+            $questionnairelib->page->add_to_page(
                 'complete',
                 '<a href="' . $CFG->wwwroot .
-                    htmlspecialchars('/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->cm->id) .
+                    htmlspecialchars('/mod/questionnaire/complete.php?' . 'id=' . $questionnairelib->cm->id) .
                     '" class="btn btn-primary">' . get_string('answerquestions', 'questionnaire') . '</a>'
             );
         } else {
             $resumesurvey = get_string('resumesurvey', 'questionnaire');
-            $questionnaire->page->add_to_page(
+            $questionnairelib->page->add_to_page(
                 'complete',
                 '<a href="' .
                     $CFG->wwwroot . htmlspecialchars(
-                        '/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->cm->id . '&resume=1'
+                        '/mod/questionnaire/complete.php?' . 'id=' . $questionnairelib->cm->id . '&resume=1'
                     ) .
                     '" title="' . $resumesurvey . '" class="btn btn-primary">' . $resumesurvey . '</a>'
             );
         }
     } else {
-        $questionnaire->page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
+        $questionnairelib->page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
     }
 }
 
-if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
-    $questionnaire->page->add_to_page(
+if ($questionnairelib->capabilities->editquestions && !$questionnairelib->questions && $questionnairelib->is_active()) {
+    $questionnairelib->page->add_to_page(
         'complete',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' .
-            'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' .
+            'id=' . $questionnairelib->cm->id) . '" class="btn btn-primary">' .
             get_string('addquestions', 'questionnaire') . '</a>'
     );
 }
 
 // Time zone message (if required).
-if (!$message && $questionnaire->is_open() && !$questionnaire->is_closed()) {
-    $info = $questionnaire->view_information();
-    $questionnaire->page->add_to_page('info', $questionnaire->access_messages($info));
+if (!$message && $questionnairelib->is_open() && !$questionnairelib->is_closed()) {
+    $info = $questionnairelib->view_information();
+    $questionnairelib->page->add_to_page('info', $questionnairelib->access_messages($info));
 }
 
 if (isguestuser()) {
     $guestno = html_writer::tag('p', get_string('noteligible', 'questionnaire'));
     $liketologin = html_writer::tag('p', get_string('liketologin'));
-    $questionnaire->page->add_to_page(
+    $questionnairelib->page->add_to_page(
         'guestuser',
-        $questionnaire->renderer->confirm($guestno . "\n\n" . $liketologin . "\n", get_login_url(), get_local_referer(false))
+        $questionnairelib->renderer->confirm($guestno . "\n\n" . $liketologin . "\n", get_login_url(), get_local_referer(false))
     );
 }
 
 // Log this course module view.
 // Needed for the event logging.
-$context = context_module::instance($questionnaire->cm->id);
-$anonymous = $questionnaire->respondenttype == 'anonymous';
+$context = context_module::instance($questionnairelib->cm->id);
+$anonymous = $questionnairelib->respondenttype == 'anonymous';
 
 $event = \mod_questionnaire\event\course_module_viewed::create(
     [
-        'objectid' => $questionnaire->id,
+        'objectid' => $questionnairelib->id,
         'anonymous' => $anonymous,
         'context' => $context,
     ]
 );
 $event->trigger();
 
-$usernumresp = $questionnaire->count_submissions($USER->id);
+$usernumresp = $questionnairelib->count_submissions($USER->id);
 
-if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
-    $argstr = 'instance=' . $questionnaire->id . '&user=' . $USER->id;
+if ($questionnairelib->capabilities->readownresponses && ($usernumresp > 0)) {
+    $argstr = 'instance=' . $questionnairelib->id . '&user=' . $USER->id;
     if ($usernumresp > 1) {
         $titletext = get_string('viewyourresponses', 'questionnaire', $usernumresp);
     } else {
         $titletext = get_string('yourresponse', 'questionnaire');
         $argstr .= '&byresponse=1&action=vresp';
     }
-    $questionnaire->page->add_to_page(
+    $questionnairelib->page->add_to_page(
         'yourresponse',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr) .
             '" class="btn btn-primary">' . $titletext . '</a>'
     );
 }
 
-if ($questionnaire->can_view_all_responses($usernumresp)) {
-    $argstr = 'instance=' . $questionnaire->id . '&group=' . $currentgroupid;
-    $questionnaire->page->add_to_page(
+if ($questionnairelib->can_view_all_responses($usernumresp)) {
+    $argstr = 'instance=' . $questionnairelib->id . '&group=' . $currentgroupid;
+    $questionnairelib->page->add_to_page(
         'allresponses',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr) .
             '" class="btn btn-primary">' . get_string('viewallresponses', 'questionnaire') . '</a>'
     );
 }
 
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer();
+echo $questionnairelib->renderer->render($questionnairelib->page);
+echo $questionnairelib->renderer->footer();

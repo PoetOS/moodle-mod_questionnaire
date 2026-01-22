@@ -27,7 +27,7 @@ use mod_questionnaire\local\feedback\section;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class sectiontext extends question {
+class sectiontext extends questionold {
     /**
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.
@@ -238,7 +238,7 @@ class sectiontext extends question {
      * @param string $helpname
      */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return question::form_length_hidden($mform);
+        return questionold::form_length_hidden($mform);
     }
 
     /**
@@ -247,6 +247,6 @@ class sectiontext extends question {
      * @param string $helpname
      */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return question::form_precise_hidden($mform);
+        return questionold::form_precise_hidden($mform);
     }
 }

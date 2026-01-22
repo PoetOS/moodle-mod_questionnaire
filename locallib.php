@@ -27,7 +27,7 @@
  *
  */
 use mod_questionnaire\local\questionnairelib;
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -479,7 +479,7 @@ function questionnaire_delete_pagebreaks($sid) {
         'surveyid = :sid AND deleted IS NOT NULL AND typeid = :typeid',
         [
             'sid' => $sid,
-            'typeid' => question::QUESPAGEBREAK,
+            'typeid' => questionold::QUESPAGEBREAK,
         ]
     );
 }
@@ -765,9 +765,9 @@ function questionnaire_get_parent($question) {
     if (is_object($dependquestion)) {
         $qdependchoice = '';
         switch ($dependquestion->typeid) {
-            case question::QUESRADIO:
-            case question::QUESDROP:
-            case question::QUESCHECK:
+            case questionold::QUESRADIO:
+            case questionold::QUESDROP:
+            case questionold::QUESCHECK:
                 $dependchoice = $DB->get_record('questionnaire_quest_choice', ['id' => $question->dependchoiceid], 'id,content');
                 $qdependchoice = $dependchoice->id;
                 $dependchoice = $dependchoice->content;
@@ -777,7 +777,7 @@ function questionnaire_get_parent($question) {
                     $dependchoice = $contents->modname;
                 }
                 break;
-            case question::QUESYESNO:
+            case questionold::QUESYESNO:
                 switch ($question->dependchoiceid) {
                     case 0:
                         $dependchoice = get_string('yes');
@@ -911,11 +911,11 @@ function questionnaire_check_page_breaks($questionnaire) {
             $prevqu = $positions[$i - 1];
             $prevtypeid = $prevqu['typeid'];
         }
-        if ($qu['typeid'] == question::QUESPAGEBREAK) {
+        if ($qu['typeid'] == questionold::QUESPAGEBREAK) {
             $questionnb--;
             // If more than one consecutive page breaks, remove extra one(s).
             // Remove that extra page break in 1st position.
-            if ($prevtypeid == question::QUESPAGEBREAK || $i == $count - 1 || $qu['qpos'] == 1) {
+            if ($prevtypeid == questionold::QUESPAGEBREAK || $i == $count - 1 || $qu['qpos'] == 1) {
                 $qid = $qu['question_id'];
                 $delpb++;
                 $msg .= get_string("checkbreaksremoved", "questionnaire", $delpb) . '<br />';
@@ -945,7 +945,7 @@ function questionnaire_check_page_breaks($questionnaire) {
             }
         }
         // Add pagebreak between question child and not dependent question that follows.
-        if ($qu['typeid'] != question::QUESPAGEBREAK) {
+        if ($qu['typeid'] != questionold::QUESPAGEBREAK) {
             if ($prevqu) {
                 $prevdependencies = $prevqu['dependencies'];
                 $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ?
@@ -982,7 +982,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                 $diffdependencies = count($outerdependencies) + count($innerdependencies);
 
                 if (
-                    ($prevtypeid != question::QUESPAGEBREAK && $diffdependencies != 0) ||
+                    ($prevtypeid != questionold::QUESPAGEBREAK && $diffdependencies != 0) ||
                     (!isset($qu['dependencies']) && isset($prevdependencies))
                 ) {
                     $sql = "SELECT MAX(position) as maxpos
@@ -996,7 +996,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                     }
                     $question = new stdClass();
                     $question->surveyid = $questionnaire->survey->id;
-                    $question->typeid = question::QUESPAGEBREAK;
+                    $question->typeid = questionold::QUESPAGEBREAK;
                     $question->position = $pos;
                     $question->content = 'break';
 
@@ -1028,7 +1028,7 @@ function questionnaire_check_page_breaks($questionnaire) {
  * @param stdClass $questionnaire
  * @param int $qid
  * @param int $qtype
- * @return mixed|\mod_questionnaire\local\question\question
+ * @return mixed|\mod_questionnaire\local\question\questionold
  */
 function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
     $context = context_module::instance($questionnaire->cm->id);
@@ -1061,7 +1061,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             }
         }
     } else {
-        $question = \mod_questionnaire\local\question\question::question_builder($qtype);
+        $question = \mod_questionnaire\local\question\questionold::question_builder($qtype);
         $question->sid = $questionnaire->survey->id;
         $question->id = $questionnaire->cm->id;
         $question->typeid = $qtype;
@@ -1129,7 +1129,7 @@ function count_reponses_question(int $qid, int $qtype): int {
     global $DB;
 
     $countresps = 0;
-    if ($qtype != question::QUESSECTIONTEXT) {
+    if ($qtype != questionold::QUESSECTIONTEXT) {
         $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', ['typeid' => $qtype]);
         if (!empty($responsetable)) {
             $countresps = $DB->count_records('questionnaire_' . $responsetable, ['question_id' => $qid]);

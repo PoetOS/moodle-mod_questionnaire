@@ -24,7 +24,7 @@ namespace mod_questionnaire\local\question;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class rate extends question {
+class rate extends questionold {
     /** @var array $nameddegrees */
     public $nameddegrees = [];
 

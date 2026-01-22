@@ -25,7 +25,7 @@
 
 namespace mod_questionnaire\local;
 
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -46,7 +46,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_checkbox(): void {
         $this->create_test_question_with_choices(
-            question::QUESCHECK,
+            questionold::QUESCHECK,
             '\\mod_questionnaire\\local\\question\\check',
             ['content' => 'Check one']
         );
@@ -61,7 +61,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_date(): void {
         $this->create_test_question(
-            question::QUESDATE,
+            questionold::QUESDATE,
             '\\mod_questionnaire\\local\\question\\date',
             ['content' => 'Enter a date']
         );
@@ -76,7 +76,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_dropdown(): void {
         $this->create_test_question_with_choices(
-            question::QUESDROP,
+            questionold::QUESDROP,
             '\\mod_questionnaire\\local\\question\\drop',
             ['content' => 'Select one']
         );
@@ -95,7 +95,7 @@ final class questiontypes_test extends \advanced_testcase {
             'length' => 0,
             'precise' => 5,
         ];
-        $this->create_test_question(question::QUESESSAY, '\\mod_questionnaire\\local\\question\\essay', $questiondata);
+        $this->create_test_question(questionold::QUESESSAY, '\\mod_questionnaire\\local\\question\\essay', $questiondata);
     }
 
     /**
@@ -107,7 +107,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_sectiontext(): void {
         $this->create_test_question(
-            question::QUESSECTIONTEXT,
+            questionold::QUESSECTIONTEXT,
             '\\mod_questionnaire\\local\\question\\sectiontext',
             ['name' => null, 'content' => 'This a section label.']
         );
@@ -126,7 +126,7 @@ final class questiontypes_test extends \advanced_testcase {
             'length' => 10,
             'precise' => 0,
         ];
-        $this->create_test_question(question::QUESNUMERIC, '\\mod_questionnaire\\local\\question\\numerical', $questiondata);
+        $this->create_test_question(questionold::QUESNUMERIC, '\\mod_questionnaire\\local\\question\\numerical', $questiondata);
     }
 
     /**
@@ -138,7 +138,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_radiobuttons(): void {
         $this->create_test_question_with_choices(
-            question::QUESRADIO,
+            questionold::QUESRADIO,
             '\\mod_questionnaire\\local\\question\\radio',
             ['content' => 'Choose one']
         );
@@ -153,7 +153,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_ratescale(): void {
         $this->create_test_question_with_choices(
-            question::QUESRATE,
+            questionold::QUESRATE,
             '\\mod_questionnaire\\local\\question\\rate',
             ['content' => 'Rate these']
         );
@@ -172,7 +172,7 @@ final class questiontypes_test extends \advanced_testcase {
             'length' => 20,
             'precise' => 25,
         ];
-        $this->create_test_question(question::QUESTEXT, '\\mod_questionnaire\\local\\question\\text', $questiondata);
+        $this->create_test_question(questionold::QUESTEXT, '\\mod_questionnaire\\local\\question\\text', $questiondata);
     }
 
     /**
@@ -184,7 +184,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_slider(): void {
         $questiondata = ['content' => 'Enter a number'];
-        $this->create_test_question(question::QUESSLIDER, '\\mod_questionnaire\\local\\question\\slider', $questiondata);
+        $this->create_test_question(questionold::QUESSLIDER, '\\mod_questionnaire\\local\\question\\slider', $questiondata);
     }
 
     /**
@@ -196,7 +196,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_yesno(): void {
         $this->create_test_question(
-            question::QUESYESNO,
+            questionold::QUESYESNO,
             '\\mod_questionnaire\\local\\question\\yesno',
             ['content' => 'Enter yes or no']
         );
@@ -208,7 +208,7 @@ final class questiontypes_test extends \advanced_testcase {
     /**
      * Create a test question.
      * @param int $qtype
-     * @param question $questionclass
+     * @param questionold $questionclass
      * @param array $questiondata
      * @param null|array $choicedata
      */
@@ -261,7 +261,7 @@ final class questiontypes_test extends \advanced_testcase {
     /**
      * Create a test question with choices.
      * @param int $qtype
-     * @param question $questionclass
+     * @param questionold $questionclass
      * @param array $questiondata
      * @param null|array $choicedata
      */

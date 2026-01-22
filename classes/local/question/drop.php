@@ -27,7 +27,7 @@ use mod_questionnaire\local\responsetype\response\response;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class drop extends question {
+class drop extends questionold {
     /**
      * Each question type must define its response class.
      * @return string The response object based off of questionnaire_response_base.
@@ -161,7 +161,7 @@ class drop extends question {
      * @param string $helpname
      */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return question::form_length_hidden($mform);
+        return questionold::form_length_hidden($mform);
     }
 
     /**
@@ -170,7 +170,7 @@ class drop extends question {
      * @param string $helpname
      */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return question::form_precise_hidden($mform);
+        return questionold::form_precise_hidden($mform);
     }
 
     /**

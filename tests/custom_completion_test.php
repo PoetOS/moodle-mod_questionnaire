@@ -29,7 +29,7 @@ namespace mod_questionnaire\local;
 use cm_info;
 use coding_exception;
 use mod_questionnaire\completion\custom_completion;
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();

@@ -144,4 +144,13 @@ class question_record extends \core\persistent {
             ],
         ];
     }
+
+    /**
+     * Return all of the question objects for the specified survey.
+     * @param int $surveyid
+     * @return question_record[]
+     */
+    public static function questions_for_survey(int $surveyid): array {
+        return self::get_records(['surveyid' => $surveyid, 'deleted' => null], 'position', 'ASC');
+    }
 }

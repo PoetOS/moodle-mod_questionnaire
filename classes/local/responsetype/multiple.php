@@ -37,7 +37,7 @@ class multiple extends single {
      * Provide an array of answer objects from web form data for the question.
      *
      * @param \stdClass $responsedata All of the responsedata as an object.
-     * @param \mod_questionnaire\local\question\question $question
+     * @param \mod_questionnaire\local\question\questionold $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      * @throws \coding_exception
      */
@@ -68,7 +68,7 @@ class multiple extends single {
      * Provide an array of answer objects from mobile data for the question.
      *
      * @param \stdClass $responsedata All of the responsedata as an object.
-     * @param \mod_questionnaire\local\question\question $question
+     * @param \mod_questionnaire\local\question\questionold $question
      * @return array \mod_questionnaire\responsetype\answer\answer An array of answer objects.
      */
     public static function answers_from_appdata($responsedata, $question) {

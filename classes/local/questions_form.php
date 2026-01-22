@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\local;
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -142,7 +142,7 @@ class questions_form extends \moodleform {
             $pos = $question->position;
 
             // No page break in first position!
-            if ($tid == question::QUESPAGEBREAK && $pos == 1) {
+            if ($tid == questionold::QUESPAGEBREAK && $pos == 1) {
                 $DB->set_field('questionnaire_question', 'deleted', time(), ['id' => $qid, 'surveyid' => $sid]);
                 if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
                     foreach ($records as $record) {
@@ -168,7 +168,7 @@ class questions_form extends \moodleform {
             if ($question->content == '<p>  </p>') {
                 $question->content = '';
             }
-            if ($tid != question::QUESPAGEBREAK) {
+            if ($tid != questionold::QUESPAGEBREAK) {
                 // Needed to print potential media in question text.
                 $content = format_text(
                     file_rewrite_pluginfile_urls(
@@ -216,7 +216,7 @@ class questions_form extends \moodleform {
                     'title' => $strremove,
                 ];
 
-                if ($tid == question::QUESPAGEBREAK) {
+                if ($tid == questionold::QUESPAGEBREAK) {
                     $esrc = $spacer;
                     $eextra = ['disabled' => 'disabled'];
                 } else {
@@ -256,7 +256,7 @@ class questions_form extends \moodleform {
 
                     // Do not allow moving or deleting a page break if immediately followed by a child question
                     // or immediately preceded by a question with a dependency and followed by a non-dependent question.
-                    if ($tid == question::QUESPAGEBREAK) {
+                    if ($tid == questionold::QUESPAGEBREAK) {
                         $select = 'surveyid = ? AND position = ? AND deleted IS NULL';
                         $nextquestion = $DB->get_record_select(
                             'questionnaire_question',
@@ -321,7 +321,7 @@ class questions_form extends \moodleform {
                 $manageqgroup[] =& $mform->createElement('image', 'editbutton[' . $question->id . ']', $esrc, $eextra);
                 $manageqgroup[] =& $mform->createElement('image', 'removebutton[' . $question->id . ']', $rsrc, $rextra);
 
-                if ($tid != question::QUESPAGEBREAK && $tid != question::QUESSECTIONTEXT  && $tid != question::QUESSLIDER) {
+                if ($tid != questionold::QUESPAGEBREAK && $tid != questionold::QUESSECTIONTEXT  && $tid != questionold::QUESSLIDER) {
                     if ($required == 'y') {
                         $reqsrc = $questionnaire->renderer->image_url('t/stop');
                         $strrequired = get_string('required', 'questionnaire');
@@ -374,7 +374,7 @@ class questions_form extends \moodleform {
 
                 if ($display) {
                     // Do not move a page break to first position.
-                    if ($typeid == question::QUESPAGEBREAK && $pos == 1) {
+                    if ($typeid == questionold::QUESPAGEBREAK && $pos == 1) {
                         $manageqgroup[] =& $mform->createElement('static', 'qnums', '', '');
                     } else {
                         if ($this->moveq == $question->id) {
@@ -429,7 +429,7 @@ class questions_form extends \moodleform {
                 }
             }
             $mform->addGroup($manageqgroup, 'manageqgroup', '', '&nbsp;', false);
-            if ($tid != question::QUESPAGEBREAK) {
+            if ($tid != questionold::QUESPAGEBREAK) {
                 $mform->addElement(
                     'static',
                     'qcontent_' . $question->id,

@@ -17,7 +17,7 @@
 namespace mod_questionnaire\output;
 
 use mod_questionnaire\local\questionnairelib;
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 use mod_questionnaire\responsetype\response\response;
 
 /**
@@ -249,7 +249,7 @@ class mobile {
         if ($pagenum > 1) {
             for ($j = 2; $j <= $pagenum; $j++) {
                 foreach ($questionnaire->questionsbysec[$j - 1] as $questionid) {
-                    if ($questionnaire->questions[$questionid]->typeid < question::QUESPAGEBREAK) {
+                    if ($questionnaire->questions[$questionid]->typeid < questionold::QUESPAGEBREAK) {
                         $i++;
                     }
                 }

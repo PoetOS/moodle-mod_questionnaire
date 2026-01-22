@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\local\question;
-use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\edit_question_form;
 use mod_questionnaire\local\responsetype\response\response;
 use mod_questionnaire\local\questionnairelib;
@@ -37,7 +36,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-abstract class question {
+abstract class questionold {
     // Constants.
     /** @var int Define choose question type. */
     const QUESCHOOSE = 0;
@@ -69,6 +68,14 @@ abstract class question {
     const QUESSECTIONTEXT = 100;
 
     // Class Properties.
+    /** @var int $id The database id of this question. */
+    public $id = 0;
+
+    /** @var int $surveyid The database id of the survey this question belongs to. */
+    public $surveyid = 0;
+
+    /** @var string $name The name of this question. */
+    public $name = '';
 
     /** @var string $type The name of the question type. */
     public $type = '';
@@ -82,20 +89,35 @@ abstract class question {
     /** @var string $responsetable The table name for responses. */
     public $responsetable = '';
 
+    /** @var int $length The length field. */
+    public $length = 0;
+
+    /** @var int $precise The precision field. */
+    public $precise = 0;
+
+    /** @var int $position Position in the questionnaire */
+    public $position = 0;
+
+    /** @var string $content The question's content. */
+    public $content = '';
+
     /** @var string $qlegend The question's legend. */
     public $qlegend = '';
 
     /** @var string $allchoices The list of all question's choices. */
     public $allchoices = '';
 
+    /** @var bool $required The required flag. */
+    public $required = 'n';
+
+    /** @var int $deleted The deleted flag. */
+    public $deleted = null;
+
+    /** @var mixed $extradata Any custom data for the question type. */
+    public $extradata = '';
+
     /** @var bool $isprint The isprint flag. */
     public $isprint = false;
-
-    /** @var \mod_questionnaire\local\db\question_record $record The question record object. */
-    protected $record;
-
-    /** @var \mod_questionnaire\local\responsetype\response\response $responsetype The response type object. */
-    protected $responsetype;
 
     /** @var array $qtypenames List of all question names. */
     private static $qtypenames = [
@@ -122,16 +144,11 @@ abstract class question {
     /**
      * The class constructor
      * @param int $id
-     * @param \mod_questionnaire\local\db\question_record|null $question
-     * @param \context|null $context
+     * @param \stdClass $question
+     * @param \context $context
      * @param array $params
      */
-    public function __construct(
-        int $id = 0,
-        ?\mod_questionnaire\local\db\question_record $question = null,
-        ?\context $context = null,
-        array $params = []
-    ) {
+    public function __construct($id = 0, $question = null, $context = null, $params = []) {
         global $DB;
         static $qtypes = null;
 
@@ -145,27 +162,42 @@ abstract class question {
         }
 
         if ($id) {
-            $this->record = new question_record($id);
-        } else {
-            $this->record = $question;
+            $question = $DB->get_record('questionnaire_question', ['id' => $id]);
         }
 
-        $typeid = $this->record->get('typeid');
-        $this->type = $qtypes[$typeid]->type;
-        $this->responsetable = $qtypes[$typeid]->response_table;
+        if (is_object($question)) {
+            $this->id = $question->id;
+            $this->surveyid = $question->surveyid;
+            $this->name = $question->name;
+            $this->length = $question->length;
+            $this->precise = $question->precise;
+            $this->position = $question->position;
+            $this->content = $question->content;
+            $this->required = $question->required;
+            $this->deleted = $question->deleted;
+            $this->extradata = $question->extradata;
 
-        if ($qtypes[$typeid]->has_choices == 'y') {
-            $this->get_choices();
+            $this->typeid = $question->typeid;
+            $this->type = $qtypes[$this->typeid]->type;
+            $this->responsetable = $qtypes[$this->typeid]->response_table;
+
+            if (!empty($question->choices)) {
+                $this->choices = $question->choices;
+            } else if ($qtypes[$this->typeid]->has_choices == 'y') {
+                $this->get_choices();
+            }
+            // Added for dependencies.
+            $this->get_dependencies();
         }
-        // Added for dependencies.
-        $this->get_dependencies();
         $this->context = $context;
 
         foreach ($params as $property => $value) {
             $this->$property = $value;
         }
 
-        $this->responsetype = new ($this->responseclass())($this);
+        if ($respclass = $this->responseclass()) {
+            $this->responsetype = new $respclass($this);
+        }
     }
 
     /**
@@ -177,15 +209,17 @@ abstract class question {
     /**
      * Build a question from data.
      * @param int $qtype
-     * @param question_record $qdata
-     * @param \context|null $context
-     * @return self
+     * @param int|array $qdata
+     * @param \stdClass $context
+     * @return mixed
      */
-    public static function question_builder(int $qtype, ?question_record $qdata = null, ?\context $context = null): self {
+    public static function question_builder($qtype, $qdata = null, $context = null) {
         $qclassname = '\\mod_questionnaire\\local\\question\\' . self::qtypename($qtype);
         $qid = 0;
-        if (!empty($qdata)) {
-            $qid = $qdata->get('id');
+        if (!empty($qdata) && is_array($qdata)) {
+            $qdata = (object)$qdata;
+        } else if (!empty($qdata) && is_int($qdata)) {
+            $qid = $qdata;
         }
         return new $qclassname($qid, $qdata, $context, ['typeid' => $qtype]);
     }
@@ -195,7 +229,7 @@ abstract class question {
      * @param int $qtype
      * @return string
      */
-    public static function qtypename(int $qtype): string {
+    public static function qtypename($qtype) {
         if (array_key_exists($qtype, self::$qtypenames)) {
             return self::$qtypenames[$qtype];
         } else {
@@ -207,7 +241,7 @@ abstract class question {
      * Return all of the different question type names.
      * @return array
      */
-    public static function qtypenames(): array {
+    public static function qtypenames() {
         return self::$qtypenames;
     }
 
@@ -215,7 +249,7 @@ abstract class question {
      * Override and return true if the question has choices.
      * @return bool
      */
-    public function has_choices(): bool {
+    public function has_choices() {
         return false;
     }
 
@@ -226,7 +260,7 @@ abstract class question {
     private function get_choices() {
         global $DB;
 
-        if ($choices = $DB->get_records('questionnaire_quest_choice', ['question_id' => $this->record->get('id')], 'id ASC')) {
+        if ($choices = $DB->get_records('questionnaire_quest_choice', ['question_id' => $this->id], 'id ASC')) {
             foreach ($choices as $choice) {
                 $this->choices[$choice->id] = \mod_questionnaire\local\question\choice::create_from_data($choice);
             }
@@ -239,15 +273,15 @@ abstract class question {
      * Return true if this question has been marked as required.
      * @return bool
      */
-    public function required(): bool {
-        return ($this->record->get('required') == 'y');
+    public function required() {
+        return ($this->required == 'y');
     }
 
     /**
      * Return true if the question has defined dependencies.
      * @return bool
      */
-    public function has_dependencies(): bool {
+    public function has_dependencies() {
         return !empty($this->dependencies);
     }
 
@@ -255,7 +289,7 @@ abstract class question {
      * Override this and return true if the question type allows dependent questions.
      * @return bool
      */
-    public function allows_dependents(): bool {
+    public function allows_dependents() {
         return false;
     }
 
@@ -269,7 +303,7 @@ abstract class question {
         if (
             $dependencies = $DB->get_records(
                 'questionnaire_dependency',
-                ['questionid' => $this->record->get('id'), 'surveyid' => $this->record->get('surveyid')],
+                ['questionid' => $this->id, 'surveyid' => $this->surveyid],
                 'id ASC'
             )
         ) {
@@ -300,7 +334,7 @@ abstract class question {
                 } else {
                     $choice->content = format_string($contents->text);
                 }
-                $options[$this->record->get('id') . ',' . $key] = $this->record->get('name') . '->' . $choice->content;
+                $options[$this->id . ',' . $key] = $this->name . '->' . $choice->content;
             }
         }
         return $options;
@@ -371,7 +405,7 @@ abstract class question {
      * Return the responsetype table for this question.
      * @return string
      */
-    public function response_table(): string {
+    public function response_table() {
         return $this->responsetype->response_table();
     }
 
@@ -381,12 +415,12 @@ abstract class question {
      * @param int $choiceid
      * @return bool
      */
-    public function response_has_choice(int $rid, int $choiceid): bool {
+    public function response_has_choice($rid, $choiceid) {
         global $DB;
         $choiceval = $this->responsetype->transform_choiceid($choiceid);
         return $DB->record_exists(
             $this->response_table(),
-            ['response_id' => $rid, 'question_id' => $this->record->get('id'), 'choice_id' => $choiceval]
+            ['response_id' => $rid, 'question_id' => $this->id, 'choice_id' => $choiceval]
         );
     }
 
@@ -395,7 +429,7 @@ abstract class question {
      * @param \stdClass $responsedata All of the responsedata.
      * @return bool
      */
-    public function insert_response(\stdClass $responsedata): bool {
+    public function insert_response($responsedata) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\responsetype')
@@ -411,7 +445,7 @@ abstract class question {
      * @param array|bool $rids
      * @return array|false
      */
-    public function get_results(array|bool $rids = false): array|false {
+    public function get_results($rids = false) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\responsetype')
@@ -429,7 +463,7 @@ abstract class question {
      * @param bool $anonymous
      * @return false|string
      */
-    public function display_results(bool $rids = false, string $sort = '', bool $anonymous = false): false|string {
+    public function display_results($rids = false, $sort = '', $anonymous = false) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\responsetype')
@@ -444,15 +478,15 @@ abstract class question {
      * Add a notification.
      * @param string $message
      */
-    public function add_notification(string $message): void {
+    public function add_notification($message) {
         $this->notifications[] = $message;
     }
 
     /**
      * Get any notifications.
-     * @return array|bool The notifications array or false.
+     * @return array | boolean The notifications array or false.
      */
-    public function get_notifications(): array|bool {
+    public function get_notifications() {
         if (empty($this->notifications)) {
             return false;
         } else {
@@ -488,7 +522,7 @@ abstract class question {
      * True if question type allows responses.
      * @return bool
      */
-    public function supports_responses(): bool {
+    public function supports_responses() {
         return !empty($this->responseclass());
     }
 
@@ -496,7 +530,7 @@ abstract class question {
      * True if question type supports feedback options. False by default.
      * @return bool
      */
-    public function supports_feedback(): bool {
+    public function supports_feedback() {
         return false;
     }
 
@@ -504,7 +538,7 @@ abstract class question {
      * True if question type supports feedback scores and weights. Same as supports_feedback() by default.
      * @return bool
      */
-    public function supports_feedback_scores(): bool {
+    public function supports_feedback_scores() {
         return $this->supports_feedback();
     }
 
@@ -512,15 +546,15 @@ abstract class question {
      * Override and return false if a number should not be rendered for this question in any context.
      * @return bool
      */
-    public function is_numbered(): bool {
+    public function is_numbered() {
         return true;
     }
 
     /**
-     * True if the question supports feedback and has valid settings for feedback.
+     * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
      * @return bool
      */
-    public function valid_feedback(): bool {
+    public function valid_feedback() {
         if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
             foreach ($this->choices as $choice) {
                 if ($choice->value != null) {
@@ -532,11 +566,11 @@ abstract class question {
     }
 
     /**
-     * Provide the feedback scores for all requested response id's.
+     * Provide the feedback scores for all requested response id's. This should be provided only by questions that provide feedback.
      * @param array $rids
      * @return array|bool
      */
-    public function get_feedback_scores(array $rids): array|bool {
+    public function get_feedback_scores(array $rids) {
         if (
             $this->valid_feedback() && isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\responsetype')
@@ -548,10 +582,10 @@ abstract class question {
     }
 
     /**
-     * Get the maximum score possible for feedback if appropriate.
+     * Get the maximum score possible for feedback if appropriate. Override if default behaviour is not correct.
      * @return int|bool
      */
-    public function get_feedback_maxscore(): int|bool {
+    public function get_feedback_maxscore() {
         if ($this->valid_feedback()) {
             $maxscore = 0;
             foreach ($this->choices as $choice) {
@@ -572,11 +606,11 @@ abstract class question {
      * @param \stdClass $responsedata The data entered into the response.
      * @return bool
      */
-    public function response_complete(\stdClass $responsedata): bool {
+    public function response_complete($responsedata) {
         if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
             // If $responsedata is a response object, look through the answers.
-            if (isset($responsedata->answers[$this->record->get('id')]) && !empty($responsedata->answers[$this->record->get('id')])) {
-                $answer = $responsedata->answers[$this->record->get('id')][0];
+            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
+                $answer = $responsedata->answers[$this->id][0];
                 if (
                     !empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
                     $this->choices[$answer->choiceid]->is_other_choice()
@@ -596,11 +630,11 @@ abstract class question {
     }
 
     /**
-     * Check question's form data for valid response.
+     * Check question's form data for valid response. Override this if type has specific format requirements.
      * @param \stdClass $responsedata The data entered into the response.
      * @return bool
      */
-    public function response_valid(\stdClass $responsedata): bool {
+    public function response_valid($responsedata) {
         return true;
     }
 
@@ -610,12 +644,33 @@ abstract class question {
      * @param bool $updatechoices True if choices should also be updated.
      */
     public function update($questionrecord = null, $updatechoices = true) {
-        if ($questionrecord !== null) {
+        global $DB;
+
+        if ($questionrecord === null) {
+            $questionrecord = new \stdClass();
+            $questionrecord->id = $this->id;
+            $questionrecord->surveyid = $this->surveyid;
+            $questionrecord->name = $this->name;
+            $questionrecord->typeid = $this->typeid;
+            $questionrecord->resultid = $this->resultid;
+            $questionrecord->length = $this->length;
+            $questionrecord->precise = $this->precise;
+            $questionrecord->position = $this->position;
+            $questionrecord->content = $this->content;
+            $questionrecord->required = $this->required;
+            $questionrecord->deleted = $this->deleted;
+            $questionrecord->extradata = $this->extradata;
+            $questionrecord->dependquestion = $this->dependquestion;
+            $questionrecord->dependchoice = $this->dependchoice;
+        } else {
             // Make sure the "id" field is this question's.
-            $questionrecord->id = $this->record->get('id');
-            $this->record->from_record($questionrecord);
+            if (isset($this->qid) && ($this->qid > 0)) {
+                $questionrecord->id = $this->qid;
+            } else {
+                $questionrecord->id = $this->id;
+            }
         }
-        $this->record->update();
+        $DB->update_record('questionnaire_question', $questionrecord);
 
         if ($updatechoices && $this->has_choices()) {
             $this->update_choices();
@@ -647,14 +702,14 @@ abstract class question {
 
         // Make sure we add all necessary data.
         if (!isset($questionrecord->typeid) || empty($questionrecord->typeid)) {
-            $questionrecord->typeid = $this->record->get('typeid');
+            $questionrecord->typeid = $this->typeid;
         }
 
         $this->qid = $DB->insert_record('questionnaire_question', $questionrecord);
 
         if ($this->has_choices() && !empty($choicerecords)) {
             foreach ($choicerecords as $choicerecord) {
-                $choicerecord->question_id = $this->record->get('id');
+                $choicerecord->question_id = $this->qid;
                 $this->add_choice($choicerecord);
             }
         }
@@ -667,10 +722,16 @@ abstract class question {
     public function update_choices() {
         $retvalue = true;
         if ($this->has_choices() && isset($this->choices)) {
+            // Need to fix this messed-up qid/id issue.
+            if (isset($this->qid) && ($this->qid > 0)) {
+                $qid = $this->qid;
+            } else {
+                $qid = $this->id;
+            }
             foreach ($this->choices as $key => $choice) {
                 $choicerecord = new \stdClass();
                 $choicerecord->id = $key;
-                $choicerecord->question_id = $this->record->get('id');
+                $choicerecord->question_id = $qid;
                 $choicerecord->content = $choice->content;
                 $choicerecord->value = $choice->value;
                 $retvalue &= $this->update_choice($choicerecord);
@@ -733,7 +794,7 @@ abstract class question {
      */
     public function insert_extradata($extradata) {
         global $DB;
-        return $DB->set_field('questionnaire_question', 'extradata', $extradata, ['id' => $this->record->get('id')]);
+        return $DB->set_field('questionnaire_question', 'extradata', $extradata, ['id' => $this->id]);
     }
 
     /**
@@ -795,8 +856,14 @@ abstract class question {
     public function set_required($required) {
         global $DB;
         $rval = $required ? 'y' : 'n';
+        // Need to fix this messed-up qid/id issue.
+        if (isset($this->qid) && ($this->qid > 0)) {
+            $qid = $this->qid;
+        } else {
+            $qid = $this->id;
+        }
         $this->required = $rval;
-        return $DB->set_field('questionnaire_question', 'required', $rval, ['id' => $this->record->get('id')]);
+        return $DB->set_field('questionnaire_question', 'required', $rval, ['id' => $qid]);
     }
 
     /**
@@ -895,9 +962,9 @@ abstract class question {
 
         // For now, check what the response type is until we've got it all refactored.
         if ($response instanceof \mod_questionnaire\local\responsetype\response\response) {
-            $skippedquestion = !isset($response->answers[$this->record->get('id')]);
+            $skippedquestion = !isset($response->answers[$this->id]);
         } else {
-            $skippedquestion = !empty($response) && !isset($response->{'q' . $this->record->get('id')});
+            $skippedquestion = !empty($response) && !isset($response->{'q' . $this->id});
         }
 
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
@@ -920,14 +987,13 @@ abstract class question {
             // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
             $questionnaire->load_parents($this);
             // Want this to come from the renderer, meaning we need $questionnaire.
-            $pagetags->dependencylist = $questionnaire->renderer->get_dependency_html($this->record->get('id'), $this->dependencies);
+            $pagetags->dependencylist = $questionnaire->renderer->get_dependency_html($this->id, $this->dependencies);
         }
 
         $pagetags->fieldset = (object)['id' => $this->id, 'class' => $displayclass];
 
         // Do not display the info box for the label question type.
-        $typeid = $this->record->get('typeid');
-        if ($typeid != self::QUESSECTIONTEXT) {
+        if ($this->typeid != self::QUESSECTIONTEXT) {
             if (!$nonumbering) {
                 $pagetags->qnum = $qnum;
             }
@@ -942,16 +1008,16 @@ abstract class question {
             $pagetags->required = $required; // Need to replace this with better renderer / template?
         }
         // If question text is "empty", i.e. 2 non-breaking spaces were inserted, empty it.
-        if ($this->record->get('content') == '<p>  </p>') {
-            $this->record->set('content', '');
+        if ($this->content == '<p>  </p>') {
+            $this->content = '';
         }
         $pagetags->skippedclass = $skippedclass;
-        if ($typeid == self::QUESNUMERIC || $typeid == self::QUESTEXT || $typeid == self::QUESSLIDER) {
-            $pagetags->label = (object)['for' => self::qtypename($typeid) . $this->record->get('id')];
-        } else if ($typeid == self::QUESDROP) {
-            $pagetags->label = (object)['for' => self::qtypename($typeid) . $this->record->get('name')];
-        } else if ($typeid == self::QUESESSAY) {
-            $pagetags->label = (object)['for' => 'q' . $this->record->get('id')];
+        if ($this->typeid == self::QUESNUMERIC || $this->typeid == self::QUESTEXT || $this->typeid == self::QUESSLIDER) {
+            $pagetags->label = (object)['for' => self::qtypename($this->typeid) . $this->id];
+        } else if ($this->typeid == self::QUESDROP) {
+            $pagetags->label = (object)['for' => self::qtypename($this->typeid) . $this->name];
+        } else if ($this->typeid == self::QUESESSAY) {
+            $pagetags->label = (object)['for' => 'q' . $this->id];
         }
         $content = file_rewrite_pluginfile_urls(
             $this->content,
@@ -1625,7 +1691,7 @@ abstract class question {
      * True if question provides mobile support.
      * @return bool
      */
-    public function supports_mobile(): bool {
+    public function supports_mobile() {
         return false;
     }
 
@@ -1700,7 +1766,7 @@ abstract class question {
      * @param int $choiceid
      * @return string
      */
-    public function mobile_fieldkey(int $choiceid = 0): string {
+    public function mobile_fieldkey($choiceid = 0) {
         $choicefield = '';
         if ($choiceid !== 0) {
             $choicefield = '_' . $choiceid;
@@ -1726,17 +1792,19 @@ abstract class question {
 
     /**
      * True if question need extradata for mobile app.
+     *
      * @return bool
      */
-    public function mobile_question_extradata_display(): bool {
+    public function mobile_question_extradata_display() {
         return false;
     }
 
     /**
      * Return the otherdata to be used by the mobile app.
+     *
      * @return array
      */
-    public function mobile_otherdata(): array {
+    public function mobile_otherdata() {
         return [];
     }
 }

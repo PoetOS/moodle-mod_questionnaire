@@ -240,4 +240,14 @@ class module_record extends \core\persistent {
 
         return (new self(0, $formdata))->create();
     }
+    /**
+     * Create a module_record instance from a course module id.
+     * @param int $cmid
+     * @return self
+     * @throws \dml_exception
+     */
+    public static function create_from_cmid(int $cmid): self {
+        $cm = get_coursemodule_from_id(static::TABLE, $cmid, 0, false, MUST_EXIST);
+        return new self($cm->instance);
+    }
 }

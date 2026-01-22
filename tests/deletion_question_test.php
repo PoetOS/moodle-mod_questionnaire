@@ -24,7 +24,7 @@
  */
 namespace mod_questionnaire\local;
 
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,19 +39,19 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 final class deletion_question_test extends \advanced_testcase {
     public function setUp(): void {
         $this->create_question_by_type(
-            question::QUESDATE,
+            questionold::QUESDATE,
             ['name' => 'DEMODATE1', 'content' => 'Demo date question 1', 'deleted' => time()]
         );
         $this->create_question_by_type(
-            question::QUESDATE,
+            questionold::QUESDATE,
             ['name' => 'DEMODATE2', 'content' => 'Demo date question 2']
         );
         $this->create_question_by_type(
-            question::QUESDATE,
+            questionold::QUESDATE,
             ['name' => 'DEMODATE3', 'content' => 'Demo date question 3', 'deleted' => time()]
         );
         $this->create_question_by_type(
-            question::QUESTEXT,
+            questionold::QUESTEXT,
             ['name' => 'DEMOTEXT4', 'content' => 'Demo text question 4']
         );
 

@@ -24,7 +24,7 @@ namespace mod_questionnaire\local\question;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class date extends question {
+class date extends questionold {
     /**
      * Return the responseclass used.
      * @return string
@@ -137,7 +137,7 @@ class date extends question {
      * @return \MoodleQuickForm|void
      */
     protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
-        return question::form_length_hidden($mform);
+        return questionold::form_length_hidden($mform);
     }
 
     /**
@@ -147,7 +147,7 @@ class date extends question {
      * @return \MoodleQuickForm|void
      */
     protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
-        return question::form_precise_hidden($mform);
+        return questionold::form_precise_hidden($mform);
     }
 
     /**

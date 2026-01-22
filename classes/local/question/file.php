@@ -17,7 +17,7 @@
 namespace mod_questionnaire\local\question;
 use core_media_manager;
 use form_filemanager;
-use mod_questionnaire\responsetype\response\response;
+use mod_questionnaire\local\responsetype\response\response;
 use moodle_url;
 use MoodleQuickForm;
 
@@ -113,7 +113,7 @@ class file extends question {
      * @param \stdClass $responsedata The data entered into the response.
      * @return bool
      */
-    public function response_complete($responsedata) {
+    public function response_complete($responsedata): bool {
         $answered = false;
         // If $responsedata is a response object, look through the answers.
         if (
@@ -211,7 +211,7 @@ class file extends question {
      * @return \MoodleQuickForm
      */
     protected function form_length(MoodleQuickForm $mform, $helpname = '') {
-        return question::form_length_hidden($mform);
+        return questionold::form_length_hidden($mform);
     }
 
     /**
@@ -222,6 +222,6 @@ class file extends question {
      * @return \MoodleQuickForm
      */
     protected function form_precise(MoodleQuickForm $mform, $helpname = '') {
-        return question::form_precise_hidden($mform);
+        return questionold::form_precise_hidden($mform);
     }
 }

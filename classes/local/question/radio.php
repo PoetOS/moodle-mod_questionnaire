@@ -24,7 +24,7 @@ namespace mod_questionnaire\local\question;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class radio extends question {
+class radio extends questionold {
     /**
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.
@@ -274,7 +274,7 @@ class radio extends question {
      * @param string $helptext
      */
     protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
-        return question::form_precise_hidden($mform);
+        return questionold::form_precise_hidden($mform);
     }
 
     /**

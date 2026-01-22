@@ -25,7 +25,7 @@
 
 namespace mod_questionnaire\local;
 
-use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question\questionold;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -193,7 +193,7 @@ final class lib_test extends \advanced_testcase {
         $questiondata['content'] = 'Enter yes or no';
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_test_questionnaire($course, question::QUESYESNO, $questiondata);
+        $questionnaire = $generator->create_test_questionnaire($course, questionold::QUESYESNO, $questiondata);
 
         $question = reset($questionnaire->questions);
 
@@ -229,7 +229,7 @@ final class lib_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questiondata = [];
         $questiondata['content'] = 'Enter yes or no';
-        $questionnaire = $generator->create_test_questionnaire($course, question::QUESYESNO, $questiondata);
+        $questionnaire = $generator->create_test_questionnaire($course, questionold::QUESYESNO, $questiondata);
 
         // Test for correct "no response" values.
         $outline = questionnaire_user_outline($course, $user, null, $questionnaire);
@@ -255,7 +255,7 @@ final class lib_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_test_questionnaire($course, question::QUESYESNO);
+        $questionnaire = $generator->create_test_questionnaire($course, questionold::QUESYESNO);
 
         $this->assertTrue(questionnaire_user_complete($course, $user, null, $questionnaire));
         $this->expectOutputString(get_string('noresponses', 'questionnaire'));

@@ -29,7 +29,7 @@ class check extends question {
      * Return the responseclass used.
      * @return string
      */
-    protected function responseclass() {
+    protected function responseclass(): string {
         return '\\mod_questionnaire\\local\\responsetype\\multiple';
     }
 
@@ -37,14 +37,15 @@ class check extends question {
      * Return the help name.
      * @return string
      */
-    public function helpname() {
+    public function helpname(): string {
         return 'checkboxes';
     }
 
     /**
      * Return true if the question has choices.
+     * @return bool
      */
-    public function has_choices() {
+    public function has_choices(): bool {
         return true;
     }
 
@@ -52,7 +53,7 @@ class check extends question {
      * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
      * @return string
      */
-    public function question_template() {
+    public function question_template(): string {
         return 'mod_questionnaire/question_check';
     }
 
@@ -60,7 +61,7 @@ class check extends question {
      * Override and return a form template if provided. Output of response_survey_display is iterpreted based on this.
      * @return string
      */
-    public function response_template() {
+    public function response_template(): string {
         return 'mod_questionnaire/response_check';
     }
 
@@ -68,7 +69,7 @@ class check extends question {
      * Override this and return true if the question type allows dependent questions.
      * @return boolean
      */
-    public function allows_dependents() {
+    public function allows_dependents(): bool {
         return true;
     }
 
@@ -80,7 +81,7 @@ class check extends question {
      * @return \stdClass The check question context tags.
      *
      */
-    protected function question_survey_display($response, $dependants, $blankquestionnaire = false) {
+    protected function question_survey_display($response, $dependants, $blankquestionnaire = false): \stdClass {
         // Check boxes.
         $otherempty = false;
         if (!empty($response)) {
@@ -163,7 +164,7 @@ class check extends question {
      * @param \mod_questionnaire\local\responsetype\response\response $response
      * @return \stdClass The check question response context tags.
      */
-    protected function response_survey_display($response) {
+    protected function response_survey_display($response): \stdClass {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
@@ -213,7 +214,7 @@ class check extends question {
      * @param object $responsedata The data entered into the response.
      * @return boolean
      */
-    public function response_complete($responsedata) {
+    public function response_complete($responsedata): bool {
         if (
             isset($responsedata->{'q' . $this->id}) && $this->required() &&
             is_array($responsedata->{'q' . $this->id})
@@ -236,7 +237,7 @@ class check extends question {
      * @param \stdClass $responsedata The data entered into the response.
      * @return boolean
      */
-    public function response_valid($responsedata) {
+    public function response_valid($responsedata): bool {
         $nbrespchoices = 0;
         $valid = true;
         if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
@@ -290,7 +291,7 @@ class check extends question {
      * @param \MoodleQuickForm $mform
      * @param string $helptext
      */
-    protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
+    protected function form_length(\MoodleQuickForm $mform, $helptext = ''): string {
         return parent::form_length($mform, 'minforcedresponses');
     }
 
@@ -299,7 +300,7 @@ class check extends question {
      * @param \MoodleQuickForm $mform
      * @param string $helptext
      */
-    protected function form_precise(\MoodleQuickForm $mform, $helptext = '') {
+    protected function form_precise(\MoodleQuickForm $mform, $helptext = ''): string {
         return parent::form_precise($mform, 'maxforcedresponses');
     }
 
@@ -308,7 +309,7 @@ class check extends question {
      *
      * @return bool
      */
-    public function supports_mobile() {
+    public function supports_mobile(): bool {
         return true;
     }
 
@@ -317,7 +318,7 @@ class check extends question {
      * @param \stdClass $formdata
      * @return bool
      */
-    protected function form_preprocess_choicedata($formdata) {
+    protected function form_preprocess_choicedata($formdata): bool {
         if (empty($formdata->allchoices)) {
             throw new \moodle_exception('enterpossibleanswers', 'mod_questionnaire');
         } else {
@@ -345,7 +346,7 @@ class check extends question {
      * @param bool $autonum
      * @return \stdClass
      */
-    public function mobile_question_display($qnum, $autonum = false) {
+    public function mobile_question_display($qnum, $autonum = false): \stdClass {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
         $mobiledata->ischeckbox = true;
         return $mobiledata;
@@ -355,7 +356,7 @@ class check extends question {
      * Return the mobile question choices display.
      * @return array
      */
-    public function mobile_question_choices_display() {
+    public function mobile_question_choices_display(): array {
         $choices = parent::mobile_question_choices_display();
         foreach ($choices as $choicenum => $choice) {
             // Add a fieldkey for each choice.
@@ -373,7 +374,7 @@ class check extends question {
      * @param \stdClass $response
      * @return array
      */
-    public function get_mobile_response_data($response) {
+    public function get_mobile_response_data($response): array {
         $resultdata = [];
         if (isset($response->answers[$this->id])) {
             foreach ($response->answers[$this->id] as $answer) {
