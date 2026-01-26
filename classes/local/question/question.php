@@ -177,7 +177,7 @@ abstract class question {
     /**
      * Build a question from data.
      * @param int $qtype
-     * @param question_record $qdata
+     * @param question_record|null $qdata
      * @param \context|null $context
      * @return self
      */
@@ -575,7 +575,9 @@ abstract class question {
     public function response_complete(\stdClass $responsedata): bool {
         if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
             // If $responsedata is a response object, look through the answers.
-            if (isset($responsedata->answers[$this->record->get('id')]) && !empty($responsedata->answers[$this->record->get('id')])) {
+            if (isset($responsedata->answers[$this->record->get('id')]) &&
+                !empty($responsedata->answers[$this->record->get('id')])
+            ) {
                 $answer = $responsedata->answers[$this->record->get('id')][0];
                 if (
                     !empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
@@ -920,7 +922,10 @@ abstract class question {
             // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
             $questionnaire->load_parents($this);
             // Want this to come from the renderer, meaning we need $questionnaire.
-            $pagetags->dependencylist = $questionnaire->renderer->get_dependency_html($this->record->get('id'), $this->dependencies);
+            $pagetags->dependencylist = $questionnaire->renderer->get_dependency_html(
+                $this->record->get('id'),
+                $this->dependencies
+            );
         }
 
         $pagetags->fieldset = (object)['id' => $this->id, 'class' => $displayclass];

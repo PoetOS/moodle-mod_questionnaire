@@ -321,7 +321,7 @@ class questions_form extends \moodleform {
                 $manageqgroup[] =& $mform->createElement('image', 'editbutton[' . $question->id . ']', $esrc, $eextra);
                 $manageqgroup[] =& $mform->createElement('image', 'removebutton[' . $question->id . ']', $rsrc, $rextra);
 
-                if ($tid != questionold::QUESPAGEBREAK && $tid != questionold::QUESSECTIONTEXT  && $tid != questionold::QUESSLIDER) {
+                if ($tid != questionold::QUESPAGEBREAK && $tid != questionold::QUESSECTIONTEXT && $tid != questionold::QUESSLIDER) {
                     if ($required == 'y') {
                         $reqsrc = $questionnaire->renderer->image_url('t/stop');
                         $strrequired = get_string('required', 'questionnaire');

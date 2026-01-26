@@ -348,7 +348,13 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @return bool
      */
     public function question_has_choices($typeid) {
-        $choicequestions = [questionold::QUESCHOOSE, questionold::QUESRADIO, questionold::QUESCHECK, questionold::QUESDROP, questionold::QUESRATE];
+        $choicequestions = [
+            questionold::QUESCHOOSE,
+            questionold::QUESRADIO,
+            questionold::QUESCHECK,
+            questionold::QUESDROP,
+            questionold::QUESRATE,
+        ];
         return in_array($typeid, $choicequestions);
     }
 
