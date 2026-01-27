@@ -96,7 +96,7 @@ class sectiontext extends questionold {
             'content_stripped' => strip_tags($this->content),
             'required' => false,
             'deleted' => $this->deleted,
-            'response_table' => $this->responsetable,
+            'responsetable' => $this->responsetable,
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise,
             'qnum' => '',

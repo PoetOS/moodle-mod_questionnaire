@@ -16,6 +16,7 @@
 
 namespace mod_questionnaire\local\question;
 use mod_questionnaire\local\db\question_record;
+use mod_questionnaire\local\question_type;
 use mod_questionnaire\local\edit_question_form;
 use mod_questionnaire\local\responsetype\response\response;
 use mod_questionnaire\local\questionnairelib;
@@ -26,9 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 global $idcounter, $CFG;
 $idcounter = 0;
 
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
-#[\AllowDynamicProperties]
 /**
  * Class for describing a question
  *
@@ -70,17 +68,14 @@ abstract class question {
 
     // Class Properties.
 
-    /** @var string $type The name of the question type. */
-    public $type = '';
+    /** @var question_type $type The name of the question type. */
+    public $type = null;
 
     /** @var array $choices Array holding any choices for this question. */
     public $choices = [];
 
     /** @var array $dependencies Array holding any dependencies for this question. */
     public $dependencies = [];
-
-    /** @var string $responsetable The table name for responses. */
-    public $responsetable = '';
 
     /** @var string $qlegend The question's legend. */
     public $qlegend = '';
@@ -93,9 +88,6 @@ abstract class question {
 
     /** @var \mod_questionnaire\local\db\question_record $record The question record object. */
     protected $record;
-
-    /** @var \mod_questionnaire\local\responsetype\response\response $responsetype The response type object. */
-    protected $responsetype;
 
     /** @var array $qtypenames List of all question names. */
     private static $qtypenames = [
@@ -123,49 +115,26 @@ abstract class question {
      * The class constructor
      * @param int $id
      * @param \mod_questionnaire\local\db\question_record|null $question
-     * @param \context|null $context
-     * @param array $params
      */
     public function __construct(
         int $id = 0,
-        ?\mod_questionnaire\local\db\question_record $question = null,
-        ?\context $context = null,
-        array $params = []
-    ) {
-        global $DB;
-        static $qtypes = null;
-
-        if ($qtypes === null) {
-            $qtypes = $DB->get_records(
-                'questionnaire_question_type',
-                [],
-                'typeid',
-                'typeid, type, has_choices, response_table'
-            ) ?? [];
-        }
-
+        ?question_record $question = null) {
         if ($id) {
             $this->record = new question_record($id);
-        } else {
+        } else if ($question !== null) {
             $this->record = $question;
+        } else {
+            throw new \coding_exception('Either question id or question_record must be provided to construct a question object.');
         }
 
-        $typeid = $this->record->get('typeid');
-        $this->type = $qtypes[$typeid]->type;
-        $this->responsetable = $qtypes[$typeid]->response_table;
 
-        if ($qtypes[$typeid]->has_choices == 'y') {
+        $this->type = question_type::from_typeid($this->record->get('typeid'));
+
+        if ($this->type->haschoices == 'y') {
             $this->get_choices();
         }
         // Added for dependencies.
         $this->get_dependencies();
-        $this->context = $context;
-
-        foreach ($params as $property => $value) {
-            $this->$property = $value;
-        }
-
-        $this->responsetype = new ($this->responseclass())($this);
     }
 
     /**
@@ -1663,7 +1632,7 @@ abstract class question {
             'content_stripped' => strip_tags($this->content),
             'required' => ($this->required == 'y') ? 1 : 0,
             'deleted' => $this->deleted,
-            'response_table' => $this->responsetable,
+            'responsetable' => $this->responsetable,
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise,
             'qnum' => $qnum,

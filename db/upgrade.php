@@ -1003,7 +1003,7 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
             $questiontype = new stdClass();
             $questiontype->typeid = 11;
             $questiontype->type = 'Slider';
-            $questiontype->has_choices = 'n';
+            $questiontype->haschoices = 'n';
             $questiontype->response_table = 'response_text';
             $DB->insert_record('questionnaire_question_type', $questiontype);
         }
@@ -1033,7 +1033,7 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         $questiontype = new stdClass();
         $questiontype->typeid = 12;
         $questiontype->type = 'File';
-        $questiontype->has_choices = 'n';
+        $questiontype->haschoices = 'n';
         $questiontype->response_table = 'response_file';
         $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 

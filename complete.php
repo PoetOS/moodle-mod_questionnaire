@@ -24,7 +24,7 @@
  *
  */
 
-use mod_questionnaire\local\questionnairelib;
+use mod_questionnaire\questionnaire;
 
 require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
@@ -41,11 +41,15 @@ $a = optional_param('a', null, PARAM_INT);      // Questionnaire ID.
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 $resume = optional_param('resume', null, PARAM_INT);    // Is this attempt a resume of a saved attempt?
 
-[$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($id, $a);
+if (!empty($id)) {
+    $questionnaire = questionnaire::from_cmid($id);
+} else {
+    $questionnaire = questionnaire::from_instanceid($a);
+}
 
 // Check login and get context.
-require_course_login($course, true, $cm);
-$context = context_module::instance($cm->id);
+require_course_login($questionnaire->course(), true, $questionnaire->coursemodule());
+$context = $questionnaire->context();
 require_capability('mod/questionnaire:view', $context);
 
 $url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/complete.php');
@@ -57,7 +61,6 @@ if (isset($id)) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-$questionnaire = new questionnairelib($course, $cm, 0, $questionnaire);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\completepage());
@@ -70,8 +73,7 @@ $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
 if ($resume) {
-    $context = context_module::instance($questionnaire->cm->id);
-    $anonymous = $questionnaire->respondenttype == 'anonymous';
+    $anonymous = $questionnaire->is_anonymous();
 
     $event = \mod_questionnaire\event\attempt_resumed::create([
         'objectid' => $questionnaire->id,

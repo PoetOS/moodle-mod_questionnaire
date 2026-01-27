@@ -3061,7 +3061,7 @@ class questionnairelib {
         // TO DO - FIX BELOW TO USE STANDARD FUNCTIONS.
         $haschoices = [];
         $responsetable = [];
-        if (!($types = $DB->get_records('questionnaire_question_type', [], 'typeid', 'typeid, has_choices, response_table'))) {
+        if (!($types = $DB->get_records('questionnaire_question_type', [], 'typeid', 'typeid, haschoices, responsetable'))) {
             $errmsg = sprintf(
                 '%s [ %s: question_type ]',
                 get_string('errortable', 'questionnaire'),
@@ -3070,8 +3070,8 @@ class questionnairelib {
             return($errmsg);
         }
         foreach ($types as $type) {
-            $haschoices[$type->typeid] = $type->has_choices; // TODO is that variable actually used?
-            $responsetable[$type->typeid] = $type->response_table;
+            $haschoices[$type->typeid] = $type->haschoices; // TODO is that variable actually used?
+            $responsetable[$type->typeid] = $type->responsetable;
         }
 
         // Load survey title (and other globals).

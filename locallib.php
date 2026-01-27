@@ -1130,7 +1130,7 @@ function count_reponses_question(int $qid, int $qtype): int {
 
     $countresps = 0;
     if ($qtype != questionold::QUESSECTIONTEXT) {
-        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', ['typeid' => $qtype]);
+        $responsetable = $DB->get_field('questionnaire_question_type', 'responsetable', ['typeid' => $qtype]);
         if (!empty($responsetable)) {
             $countresps = $DB->count_records('questionnaire_' . $responsetable, ['questionid' => $qid]);
         }

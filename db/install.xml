@@ -104,8 +104,8 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="typeid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The code for the type."/>
         <FIELD NAME="type" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="has_choices" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false"/>
-        <FIELD NAME="response_table" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="haschoices" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="y" SEQUENCE="false"/>
+        <FIELD NAME="responsetable" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

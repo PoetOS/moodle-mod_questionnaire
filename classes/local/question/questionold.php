@@ -157,7 +157,7 @@ abstract class questionold {
                 'questionnaire_question_type',
                 [],
                 'typeid',
-                'typeid, type, has_choices, response_table'
+                'typeid, type, haschoices, responsetable'
             ) ?? [];
         }
 
@@ -179,11 +179,11 @@ abstract class questionold {
 
             $this->typeid = $question->typeid;
             $this->type = $qtypes[$this->typeid]->type;
-            $this->responsetable = $qtypes[$this->typeid]->response_table;
+            $this->responsetable = $qtypes[$this->typeid]->responsetable;
 
             if (!empty($question->choices)) {
                 $this->choices = $question->choices;
-            } else if ($qtypes[$this->typeid]->has_choices == 'y') {
+            } else if ($qtypes[$this->typeid]->haschoices == 'y') {
                 $this->get_choices();
             }
             // Added for dependencies.
@@ -1724,7 +1724,7 @@ abstract class questionold {
             'content_stripped' => strip_tags($this->content),
             'required' => ($this->required == 'y') ? 1 : 0,
             'deleted' => $this->deleted,
-            'response_table' => $this->responsetable,
+            'responsetable' => $this->responsetable,
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise,
             'qnum' => $qnum,
