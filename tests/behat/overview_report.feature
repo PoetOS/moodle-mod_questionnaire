@@ -165,10 +165,7 @@ Feature: Testing overview integration in mod_questionnaire
     And I should not see "Responded" in the "questionnaire_overview_collapsible" "region"
 
   Scenario: The questionnaire index redirect to the activities overview
-    When I log in as "admin"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add the "Activities" block
-    And I click on "Questionnaires" "link" in the "Activities" "block"
+    When I am on the "C1" "course > activities > questionnaire" page logged in as "admin"
     Then I should see "An overview of all activities in the course"
     And I should see "Name" in the "questionnaire_overview_collapsible" "region"
     And I should see "Due date" in the "questionnaire_overview_collapsible" "region"
