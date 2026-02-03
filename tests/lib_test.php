@@ -209,7 +209,7 @@ final class lib_test extends \advanced_testcase {
         $this->assertEmpty($DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]));
         $this->assertEmpty($DB->get_records('questionnaire_question', ['surveyid' => $survey->id]));
         $this->assertEmpty($DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaire->id]));
-        $this->assertEmpty($DB->get_records('questionnaire_response_bool', ['response_id' => $response->id]));
+        $this->assertEmpty($DB->get_records('questionnaire_response_bool', ['responseid' => $response->id]));
         $this->assertEmpty($DB->get_records('event', ["modulename" => 'questionnaire', "instance" => $questionnaire->id]));
     }
 

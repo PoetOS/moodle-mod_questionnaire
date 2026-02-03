@@ -53,47 +53,47 @@ class provider implements
         ], 'privacy:metadata:questionnaire_response');
 
         $collection->add_database_table('questionnaire_response_bool', [
-            'response_id' => 'privacy:metadata:questionnaire_response_bool:response_id',
-            'question_id' => 'privacy:metadata:questionnaire_response_bool:question_id',
-            'choice_id' => 'privacy:metadata:questionnaire_response_bool:choice_id',
+            'responseid' => 'privacy:metadata:questionnaire_response_bool:responseid',
+            'questionid' => 'privacy:metadata:questionnaire_response_bool:questionid',
+            'choiceid' => 'privacy:metadata:questionnaire_response_bool:choiceid',
         ], 'privacy:metadata:questionnaire_response_bool');
 
         $collection->add_database_table('questionnaire_response_date', [
-            'response_id' => 'privacy:metadata:questionnaire_response_date:response_id',
-            'question_id' => 'privacy:metadata:questionnaire_response_date:question_id',
+            'responseid' => 'privacy:metadata:questionnaire_response_date:responseid',
+            'questionid' => 'privacy:metadata:questionnaire_response_date:questionid',
             'response' => 'privacy:metadata:questionnaire_response_date:response',
         ], 'privacy:metadata:questionnaire_response_date');
 
         $collection->add_database_table('questionnaire_response_other', [
-            'response_id' => 'privacy:metadata:questionnaire_response_other:response_id',
-            'question_id' => 'privacy:metadata:questionnaire_response_other:question_id',
-            'choice_id' => 'privacy:metadata:questionnaire_response_other:choice_id',
+            'responseid' => 'privacy:metadata:questionnaire_response_other:responseid',
+            'questionid' => 'privacy:metadata:questionnaire_response_other:questionid',
+            'choiceid' => 'privacy:metadata:questionnaire_response_other:choiceid',
             'response' => 'privacy:metadata:questionnaire_response_other:response',
         ], 'privacy:metadata:questionnaire_response_other');
 
         $collection->add_database_table('questionnaire_response_rank', [
-            'response_id' => 'privacy:metadata:questionnaire_response_rank:response_id',
-            'question_id' => 'privacy:metadata:questionnaire_response_rank:question_id',
-            'choice_id' => 'privacy:metadata:questionnaire_response_rank:choice_id',
+            'responseid' => 'privacy:metadata:questionnaire_response_rank:responseid',
+            'questionid' => 'privacy:metadata:questionnaire_response_rank:questionid',
+            'choiceid' => 'privacy:metadata:questionnaire_response_rank:choiceid',
             'rank' => 'privacy:metadata:questionnaire_response_rank:rankvalue',
         ], 'privacy:metadata:questionnaire_response_rank');
 
         $collection->add_database_table('questionnaire_response_text', [
-            'response_id' => 'privacy:metadata:questionnaire_response_text:response_id',
-            'question_id' => 'privacy:metadata:questionnaire_response_text:question_id',
+            'responseid' => 'privacy:metadata:questionnaire_response_text:responseid',
+            'questionid' => 'privacy:metadata:questionnaire_response_text:questionid',
             'response' => 'privacy:metadata:questionnaire_response_text:response',
         ], 'privacy:metadata:questionnaire_response_text');
 
         $collection->add_database_table('questionnaire_resp_multiple', [
-            'response_id' => 'privacy:metadata:questionnaire_resp_multiple:response_id',
-            'question_id' => 'privacy:metadata:questionnaire_resp_multiple:question_id',
-            'choice_id' => 'privacy:metadata:questionnaire_resp_multiple:choice_id',
+            'responseid' => 'privacy:metadata:questionnaire_resp_multiple:responseid',
+            'questionid' => 'privacy:metadata:questionnaire_resp_multiple:questionid',
+            'choiceid' => 'privacy:metadata:questionnaire_resp_multiple:choiceid',
         ], 'privacy:metadata:questionnaire_resp_multiple');
 
         $collection->add_database_table('questionnaire_resp_single', [
-            'response_id' => 'privacy:metadata:questionnaire_resp_single:response_id',
-            'question_id' => 'privacy:metadata:questionnaire_resp_single:question_id',
-            'choice_id' => 'privacy:metadata:questionnaire_resp_single:choice_id',
+            'responseid' => 'privacy:metadata:questionnaire_resp_single:responseid',
+            'questionid' => 'privacy:metadata:questionnaire_resp_single:questionid',
+            'choiceid' => 'privacy:metadata:questionnaire_resp_single:choiceid',
         ], 'privacy:metadata:questionnaire_resp_single');
 
         return $collection;
@@ -325,13 +325,13 @@ class provider implements
         global $DB;
 
         foreach ($responses as $response) {
-            $DB->delete_records('questionnaire_response_bool', ['response_id' => $response->id]);
-            $DB->delete_records('questionnaire_response_date', ['response_id' => $response->id]);
-            $DB->delete_records('questionnaire_resp_multiple', ['response_id' => $response->id]);
-            $DB->delete_records('questionnaire_response_other', ['response_id' => $response->id]);
-            $DB->delete_records('questionnaire_response_rank', ['response_id' => $response->id]);
-            $DB->delete_records('questionnaire_resp_single', ['response_id' => $response->id]);
-            $DB->delete_records('questionnaire_response_text', ['response_id' => $response->id]);
+            $DB->delete_records('questionnaire_response_bool', ['responseid' => $response->id]);
+            $DB->delete_records('questionnaire_response_date', ['responseid' => $response->id]);
+            $DB->delete_records('questionnaire_resp_multiple', ['responseid' => $response->id]);
+            $DB->delete_records('questionnaire_response_other', ['responseid' => $response->id]);
+            $DB->delete_records('questionnaire_response_rank', ['responseid' => $response->id]);
+            $DB->delete_records('questionnaire_resp_single', ['responseid' => $response->id]);
+            $DB->delete_records('questionnaire_response_text', ['responseid' => $response->id]);
         }
     }
 }

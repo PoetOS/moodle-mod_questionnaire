@@ -1398,7 +1398,7 @@ class questionnairelib {
                     $i++;
                 }
                 // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
-                $formdata->questionnaire_id = $this->id;
+                $formdata->questionnaireid = $this->id;
                 if (isset($formdata->rid) && !empty($formdata->rid)) {
                     $this->add_response($formdata->rid);
                 } else {
@@ -2093,7 +2093,7 @@ class questionnairelib {
             $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
             $sec = min($numsections, $sec);
 
-            /* get question_id's in this section */
+            /* get questionid's in this section */
             $qids = [];
             foreach ($this->questionsbysec[$sec] as $questionid) {
                 $qids[] = $questionid;
@@ -2102,7 +2102,7 @@ class questionnairelib {
                 return;
             } else {
                 [$qsql, $params] = $DB->get_in_or_equal($qids);
-                $qsql = ' AND question_id ' . $qsql;
+                $qsql = ' AND questionid ' . $qsql;
             }
         } else {
             /* delete all */
@@ -2111,7 +2111,7 @@ class questionnairelib {
         }
 
         /* delete values */
-        $select = 'response_id = \'' . $rid . '\' ' . $qsql;
+        $select = 'responseid = \'' . $rid . '\' ' . $qsql;
         foreach (
             [
             'response_bool',
@@ -2204,8 +2204,8 @@ class questionnairelib {
             ] as $tbl
         ) {
             $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_' . $tbl . '} a, {questionnaire_question} q ' .
-                'WHERE a.response_id = ? AND ' .
-                'q.id = a.question_id AND ' .
+                'WHERE a.responseid = ? AND ' .
+                'q.id = a.questionid AND ' .
                 'q.surveyid = ? AND ' .
                 'q.deleted IS NULL';
             if ($record = $DB->get_record_sql($sql, [$rid, $this->sid])) {
@@ -3784,7 +3784,7 @@ class questionnairelib {
         $useridentityfields = [];
         foreach ($allresponsesrs as $responserow) {
             $rid = $responserow->rid;
-            $qid = $responserow->question_id;
+            $qid = $responserow->questionid;
 
             // It's possible for a response to exist for a deleted question. Ignore these.
             if (!isset($this->questions[$qid])) {
@@ -3835,20 +3835,20 @@ class questionnairelib {
             }
 
             if ($qtype === questionold::QUESRATE || $qtype === questionold::QUESCHECK) {
-                $key = $qid . '_' . $responserow->choice_id;
+                $key = $qid . '_' . $responserow->choiceid;
                 $position = $questionpositions[$key];
                 if ($qtype === questionold::QUESRATE) {
                     $choicetxt = $responserow->rankvalue;
                     if ($rankaverages) {
-                        $averagerow[$position] = $averages[$qid][$responserow->choice_id];
+                        $averagerow[$position] = $averages[$qid][$responserow->choiceid];
                     }
                 } else {
-                    $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
+                    $content = $choicesbyqid[$qid][$responserow->choiceid]->content;
                     if (\mod_questionnaire\local\question\choice::content_is_other_choice($content)) {
                         // If this is an "other" column, put the text entered in the next position.
                         $row[$position + 1] = $responserow->response;
-                        $choicetxt = empty($responserow->choice_id) ? '0' : '1';
-                    } else if (!empty($responserow->choice_id)) {
+                        $choicetxt = empty($responserow->choiceid) ? '0' : '1';
+                    } else if (!empty($responserow->choiceid)) {
                         $choicetxt = '1';
                     } else {
                         $choicetxt = '0';
@@ -3866,13 +3866,13 @@ class questionnairelib {
                         // Get position of choice.
                         foreach ($choices as $choice) {
                             $c++;
-                            if ($responserow->choice_id === $choice->cid) {
+                            if ($responserow->choiceid === $choice->cid) {
                                 break;
                             }
                         }
                     }
 
-                    $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
+                    $content = $choicesbyqid[$qid][$responserow->choiceid]->content;
                     if (\mod_questionnaire\local\question\choice::content_is_other_choice($content)) {
                         // If this has an "other" text, use it.
                         $responsetxt = \mod_questionnaire\local\question\choice::content_other_choice_display($content);
@@ -3886,7 +3886,7 @@ class questionnairelib {
                     }
                 } else if (intval($qtype) === questionold::QUESYESNO) {
                     // At this point, the boolean responses are returned as characters in the "response"
-                    // field instead of "choice_id" for csv exports (CONTRIB-6436).
+                    // field instead of "choiceid" for csv exports (CONTRIB-6436).
                     $responsetxt = $responserow->response === 'y' ? "1" : "0";
                 } else {
                     // Strip potential html tags from modality name.

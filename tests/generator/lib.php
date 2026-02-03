@@ -509,9 +509,9 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $DB->insert_record(
                     'questionnaire_response_rank',
                     [
-                        'response_id' => $responseid,
-                        'question_id' => $questionresponse->questionid,
-                        'choice_id' => $choiceid,
+                        'responseid' => $responseid,
+                        'questionid' => $questionresponse->questionid,
+                        'choiceid' => $choiceid,
                         'rankvalue' => $questionresponse->response->rankvalue,
                     ]
                 );
@@ -524,9 +524,9 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $DB->insert_record(
                     $instable,
                     [
-                        'response_id' => $responseid,
-                        'question_id' => $questionresponse->questionid,
-                        'choice_id' => $choiceid,
+                        'responseid' => $responseid,
+                        'questionid' => $questionresponse->questionid,
+                        'choiceid' => $choiceid,
                     ]
                 );
             }
@@ -534,8 +534,8 @@ class mod_questionnaire_generator extends testing_module_generator {
             $DB->insert_record(
                 'questionnaire_response_text',
                 [
-                    'response_id' => $responseid,
-                    'question_id' => $questionresponse->questionid,
+                    'responseid' => $responseid,
+                    'questionid' => $questionresponse->questionid,
                     'response' => $questionresponse->response,
                 ]
             );

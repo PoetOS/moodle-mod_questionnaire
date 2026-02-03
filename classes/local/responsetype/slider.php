@@ -37,11 +37,11 @@ class slider extends numericaltext {
         global $DB;
 
         $answers = [];
-        $sql = 'SELECT qs.id, qs.response_id as responseid, qs.question_id as questionid,
+        $sql = 'SELECT qs.id, qs.responseid as responseid, qs.questionid as questionid,
                        0 as choiceid, qs.response as value,  qq.extradata ' .
                 'FROM {' . static::response_table() . '} qs ' .
-                'INNER JOIN {questionnaire_question} qq ON qq.id = qs.question_id ' .
-                'WHERE response_id = ? ';
+                'INNER JOIN {questionnaire_question} qq ON qq.id = qs.questionid ' .
+                'WHERE responseid = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
             $answers[$record->questionid][] = answer\answer::create_from_data($record);
@@ -64,12 +64,12 @@ class slider extends numericaltext {
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
-            $rsql = ' AND response_id ' . $rsql;
+            $rsql = ' AND responseid ' . $rsql;
         }
-        $sql = 'SELECT response_id as rid, response AS score ' .
+        $sql = 'SELECT responseid as rid, response AS score ' .
             'FROM {' . $this->response_table() . '} r ' .
-            'WHERE r.question_id= ? ' . $rsql . ' ' .
-            'ORDER BY response_id ASC';
+            'WHERE r.questionid= ? ' . $rsql . ' ' .
+            'ORDER BY responseid ASC';
         return $DB->get_records_sql($sql, $params);
     }
 }

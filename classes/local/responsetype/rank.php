@@ -130,16 +130,16 @@ class rank extends responsetype {
             foreach ($response->answers[$this->question->id] as $answer) {
                 // Record the choice selection.
                 $record = new \stdClass();
-                $record->response_id = $response->id;
-                $record->question_id = $this->question->id;
-                $record->choice_id = $answer->choiceid;
+                $record->responseid = $response->id;
+                $record->questionid = $this->question->id;
+                $record->choiceid = $answer->choiceid;
                 $record->rankvalue = $answer->value;
                 $resid = $DB->insert_record(static::response_table(), $record);
                 if (isset($responsedata->{$answer->choiceid . '_qother'})) {
                     $otherrecord = new \stdClass();
-                    $otherrecord->response_id = $response->id;
-                    $otherrecord->question_id = $this->question->id;
-                    $otherrecord->choice_id = $answer->choiceid;
+                    $otherrecord->responseid = $response->id;
+                    $otherrecord->questionid = $this->question->id;
+                    $otherrecord->choiceid = $answer->choiceid;
                     $otherrecord->response = $responsedata->{$answer->choiceid . '_qother'};
                     $DB->insert_record('questionnaire_response_other', $otherrecord);
                 }
@@ -164,7 +164,7 @@ class rank extends responsetype {
         $params = [];
         if (!empty($rids)) {
             [$rsql, $params] = $DB->get_in_or_equal($rids);
-            $rsql = ' AND response_id ' . $rsql;
+            $rsql = ' AND responseid ' . $rsql;
         }
         // Get other choices.
         $otherrecs = $this->get_other_choice($rsql, $params);
@@ -175,8 +175,8 @@ class rank extends responsetype {
                 $nbna = $DB->count_records(
                     static::response_table(),
                     [
-                        'question_id' => $this->question->id,
-                        'choice_id' => $row->id,
+                        'questionid' => $this->question->id,
+                        'choiceid' => $row->id,
                         'rankvalue' => '-1',
                     ]
                 );
@@ -205,8 +205,8 @@ class rank extends responsetype {
             if (!empty($rankvalue)) {
                 $sql = "SELECT r.id, c.content, r.rankvalue, c.id AS choiceid
                 FROM {questionnaire_quest_choice} c, {" . static::response_table() . "} r
-                WHERE r.choice_id = c.id
-                AND c.question_id = " . $this->question->id . "
+                WHERE r.choiceid = c.id
+                AND c.questionid = " . $this->question->id . "
                 AND r.rankvalue >= 0{$rsql}
                 ORDER BY choiceid";
                 $results = $DB->get_records_sql($sql, $params);
@@ -225,9 +225,9 @@ class rank extends responsetype {
             $sql = "SELECT c.id, c.content, a.average, a.num
                       FROM {questionnaire_quest_choice} c
                 INNER JOIN
-                         (SELECT c2.id, AVG(a2.rankvalue) AS average, COUNT(a2.response_id) AS num
+                         (SELECT c2.id, AVG(a2.rankvalue) AS average, COUNT(a2.responseid) AS num
                             FROM {questionnaire_quest_choice} c2, {" . static::response_table() . "} a2
-                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id
+                           WHERE c2.questionid = ? AND a2.questionid = ? AND a2.choiceid = c2.id
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                         GROUP BY c2.id) a ON a.id = c.id
                   ORDER BY c.id";
@@ -265,9 +265,9 @@ class rank extends responsetype {
             $sql = "SELECT c.id, c.content, a.sum, a.num
                       FROM {questionnaire_quest_choice} c
                 INNER JOIN
-                         (SELECT c2.id, SUM(a2.rankvalue) AS sum, COUNT(a2.response_id) AS num
+                         (SELECT c2.id, SUM(a2.rankvalue) AS sum, COUNT(a2.responseid) AS num
                             FROM {questionnaire_quest_choice} c2, {" . static::response_table() . "} a2
-                           WHERE c2.question_id = ? AND a2.question_id = ? AND a2.choice_id = c2.id
+                           WHERE c2.questionid = ? AND a2.questionid = ? AND a2.choiceid = c2.id
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                   GROUP BY c2.id) a ON a.id = c.id";
 
@@ -309,15 +309,15 @@ class rank extends responsetype {
      */
     public function get_other_choice(string $rsql, array $params): array {
         global $DB;
-        $osql = "SELECT ro.response, AVG(a.rankvalue) AS average, COUNT(a.response_id) AS num, c.id as cid
+        $osql = "SELECT ro.response, AVG(a.rankvalue) AS average, COUNT(a.responseid) AS num, c.id as cid
                    FROM {questionnaire_quest_choice} c
-             INNER JOIN {" . static::response_table() . "} a ON a.choice_id = c.id
+             INNER JOIN {" . static::response_table() . "} a ON a.choiceid = c.id
                         AND a.rankvalue >= 0
-                        AND a.question_id = c.question_id{$rsql}
-             INNER JOIN {questionnaire_response_other} ro  ON ro.choice_id = c.id
-                        AND ro.response_id = a.response_id
-                        AND ro.question_id = c.question_id
-                  WHERE c.question_id = ?
+                        AND a.questionid = c.questionid{$rsql}
+             INNER JOIN {questionnaire_response_other} ro  ON ro.choiceid = c.id
+                        AND ro.responseid = a.responseid
+                        AND ro.questionid = c.questionid
+                  WHERE c.questionid = ?
                         AND c.content = '!other'
                         AND ro.response <> ''
                GROUP BY ro.response, c.id
@@ -338,14 +338,14 @@ class rank extends responsetype {
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
-            $rsql = ' AND response_id ' . $rsql;
+            $rsql = ' AND responseid ' . $rsql;
         }
         $params[] = 'y';
 
-        $sql = 'SELECT r.id, r.response_id as rid, r.question_id AS qid, r.choice_id AS cid, r.rankvalue ' .
+        $sql = 'SELECT r.id, r.responseid as rid, r.questionid AS qid, r.choiceid AS cid, r.rankvalue ' .
             'FROM {' . $this->response_table() . '} r ' .
-            'INNER JOIN {questionnaire_quest_choice} c ON r.choice_id = c.id ' .
-            'WHERE r.question_id= ? ' . $rsql . ' ' .
+            'INNER JOIN {questionnaire_quest_choice} c ON r.choiceid = c.id ' .
+            'WHERE r.questionid= ? ' . $rsql . ' ' .
             'ORDER BY rid,cid ASC';
         $responses = $DB->get_recordset_sql($sql, $params);
 
@@ -443,8 +443,8 @@ class rank extends responsetype {
         $sql = 'SELECT a.id as aid, q.id AS qid, q.precise AS precise, c.id AS cid, q.content, c.content as ccontent,
                                 a.rankvalue as arank ' .
             'FROM {' . static::response_table() . '} a, {questionnaire_question} q, {questionnaire_quest_choice} c ' .
-            'WHERE a.response_id= ? AND a.question_id=q.id AND a.choice_id=c.id ' .
-            'ORDER BY aid, a.question_id, c.id';
+            'WHERE a.responseid= ? AND a.questionid=q.id AND a.choiceid=c.id ' .
+            'ORDER BY aid, a.questionid, c.id';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $row) {
             // Next two are 'qid' and 'cid', each with numeric and hash keys.
@@ -508,16 +508,16 @@ class rank extends responsetype {
 
         $answers = [];
         $sql = 'SELECT r.id,
-                       r.response_id AS responseid,
-                       r.question_id AS questionid,
-                       r.choice_id AS choiceid,
+                       r.responseid AS responseid,
+                       r.questionid AS questionid,
+                       r.choiceid AS choiceid,
                        r.rankvalue AS value,
                        rt.response AS otheresponse
                   FROM {' . static::response_table() . '} r
-             LEFT JOIN {questionnaire_response_other} rt ON rt.choice_id = r.choice_id
-                       AND r.question_id = rt.question_id
-                       AND r.response_id = rt.response_id
-                 WHERE r.response_id = ?';
+             LEFT JOIN {questionnaire_response_other} rt ON rt.choiceid = r.choiceid
+                       AND r.questionid = rt.questionid
+                       AND r.responseid = rt.responseid
+                 WHERE r.responseid = ?';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
             $answers[$record->questionid][$record->choiceid] = answer\answer::create_from_data($record);
@@ -863,10 +863,10 @@ class rank extends responsetype {
         $rsql = '';
         if (!empty($rids)) {
             [$rsql, $params] = $DB->get_in_or_equal($rids);
-            $rsql = ' AND response_id ' . $rsql;
+            $rsql = ' AND responseid ' . $rsql;
         }
 
-        // This is question_id.
+        // This is questionid.
         array_push($params, $this->question->id);
         $sql = "SELECT r.id,
                        CASE
@@ -874,12 +874,12 @@ class rank extends responsetype {
                             ELSE c.content
                        END as content, r.rankvalue, c.id AS choiceid
                   FROM {questionnaire_quest_choice} c
-            INNER JOIN {" . static::response_table() . "} r ON r.question_id = c.question_id
-                       AND r.choice_id = c.id{$rsql}
-             LEFT JOIN {questionnaire_response_other} o ON o.choice_id = c.id
-                       AND o.response_id = r.response_id
-                       AND o.question_id = c.question_id
-                 WHERE c.question_id = ? AND (c.content != '!other' OR (o.response IS NOT NULL AND o.response <> ''))
+            INNER JOIN {" . static::response_table() . "} r ON r.questionid = c.questionid
+                       AND r.choiceid = c.id{$rsql}
+             LEFT JOIN {questionnaire_response_other} o ON o.choiceid = c.id
+                       AND o.responseid = r.responseid
+                       AND o.questionid = c.questionid
+                 WHERE c.questionid = ? AND (c.content != '!other' OR (o.response IS NOT NULL AND o.response <> ''))
               ORDER BY choiceid, rankvalue ASC";
         $choices = $DB->get_records_sql($sql, $params);
 

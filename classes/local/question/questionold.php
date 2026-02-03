@@ -420,7 +420,7 @@ abstract class questionold {
         $choiceval = $this->responsetype->transform_choiceid($choiceid);
         return $DB->record_exists(
             $this->response_table(),
-            ['response_id' => $rid, 'question_id' => $this->id, 'choice_id' => $choiceval]
+            ['responseid' => $rid, 'questionid' => $this->id, 'choiceid' => $choiceval]
         );
     }
 

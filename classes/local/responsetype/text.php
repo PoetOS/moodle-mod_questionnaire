@@ -76,8 +76,8 @@ class text extends responsetype {
 
         if (!empty($response) && isset($response->answers[$this->question->id][0])) {
             $record = new \stdClass();
-            $record->response_id = $response->id;
-            $record->question_id = $this->question->id;
+            $record->responseid = $response->id;
+            $record->questionid = $this->question->id;
             $record->response = clean_text($response->answers[$this->question->id][0]->value);
             return $DB->insert_record(static::response_table(), $record);
         } else {
@@ -98,7 +98,7 @@ class text extends responsetype {
         $rsql = '';
         if (!empty($rids)) {
             [$rsql, $params] = $DB->get_in_or_equal($rids);
-            $rsql = ' AND response_id ' . $rsql;
+            $rsql = ' AND responseid ' . $rsql;
         }
 
         if ($anonymous) {
@@ -106,8 +106,8 @@ class text extends responsetype {
                     'r.questionnaireid, r.id AS rid ' .
                     'FROM {' . static::response_table() . '} t, ' .
                     '{questionnaire_response} r ' .
-                    'WHERE question_id=' . $this->question->id . $rsql .
-                    ' AND t.response_id = r.id ' .
+                    'WHERE questionid=' . $this->question->id . $rsql .
+                    ' AND t.responseid = r.id ' .
                     'ORDER BY r.submitted DESC';
         } else {
             $sql = 'SELECT t.id, t.response, r.submitted AS submitted, r.userid, u.username AS username, ' .
@@ -116,8 +116,8 @@ class text extends responsetype {
                     'FROM {' . static::response_table() . '} t, ' .
                     '{questionnaire_response} r, ' .
                     '{user} u ' .
-                    'WHERE question_id=' . $this->question->id . $rsql .
-                    ' AND t.response_id = r.id' .
+                    'WHERE questionid=' . $this->question->id . $rsql .
+                    ' AND t.responseid = r.id' .
                     ' AND u.id = r.userid ' .
                     'ORDER BY r.submitted DESC';
         }
@@ -280,7 +280,7 @@ class text extends responsetype {
         $values = [];
         $sql = 'SELECT q.id, q.content, a.response as aresponse ' .
             'FROM {' . static::response_table() . '} a, {questionnaire_question} q ' .
-            'WHERE a.response_id=? AND a.question_id=q.id ';
+            'WHERE a.responseid=? AND a.questionid=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {
             unset($row->id);
@@ -311,9 +311,9 @@ class text extends responsetype {
         global $DB;
 
         $answers = [];
-        $sql = 'SELECT id, response_id as responseid, question_id as questionid, 0 as choiceid, response as value ' .
+        $sql = 'SELECT id, responseid as responseid, questionid as questionid, 0 as choiceid, response as value ' .
             'FROM {' . static::response_table() . '} ' .
-            'WHERE response_id = ? ';
+            'WHERE responseid = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
             $answers[$record->questionid][] = answer\answer::create_from_data($record);

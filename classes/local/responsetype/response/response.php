@@ -118,7 +118,7 @@ class response {
     public static function response_from_webform($responsedata, $questions) {
         global $USER;
 
-        $questionnaireid = isset($responsedata->questionnaire_id) ? $responsedata->questionnaire_id :
+        $questionnaireid = isset($responsedata->questionnaireid) ? $responsedata->questionnaireid :
             (isset($responsedata->a) ? $responsedata->a : 0);
         $response = new response($responsedata->rid, $questionnaireid, $USER->id, null, null, null, false);
         foreach ($questions as $question) {

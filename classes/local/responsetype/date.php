@@ -96,8 +96,8 @@ class date extends responsetype {
             }
             // Now use ISO date formatting.
             $record = new \stdClass();
-            $record->response_id = $response->id;
-            $record->question_id = $this->question->id;
+            $record->responseid = $response->id;
+            $record->questionid = $this->question->id;
             $record->response = $thisdate;
             return $DB->insert_record(self::response_table(), $record);
         } else {
@@ -120,12 +120,12 @@ class date extends responsetype {
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
-            $rsql = ' AND response_id ' . $rsql;
+            $rsql = ' AND responseid ' . $rsql;
         }
 
         $sql = 'SELECT id, response ' .
                'FROM {' . static::response_table() . '} ' .
-               'WHERE question_id= ? ' . $rsql;
+               'WHERE questionid= ? ' . $rsql;
 
         return $DB->get_records_sql($sql, $params);
     }
@@ -227,7 +227,7 @@ class date extends responsetype {
         $values = [];
         $sql = 'SELECT q.id, q.content, a.response as aresponse ' .
             'FROM {' . static::response_table() . '} a, {questionnaire_question} q ' .
-            'WHERE a.response_id=? AND a.question_id=q.id ';
+            'WHERE a.responseid=? AND a.questionid=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         $dateformat = get_string('strfdate', 'questionnaire');
         foreach ($records as $qid => $row) {
@@ -267,9 +267,9 @@ class date extends responsetype {
         global $DB;
 
         $answers = [];
-        $sql = 'SELECT id, response_id as responseid, question_id as questionid, 0 as choiceid, response as value ' .
+        $sql = 'SELECT id, responseid as responseid, questionid as questionid, 0 as choiceid, response as value ' .
             'FROM {' . static::response_table() . '} ' .
-            'WHERE response_id = ? ';
+            'WHERE responseid = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
             // Leave the date format in data storage format.
