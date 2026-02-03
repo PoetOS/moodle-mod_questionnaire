@@ -312,7 +312,7 @@ class behat_mod_questionnaire extends behat_base {
         ];
 
         $choicedata = [
-            ["id", "question_id", "content", "value"],
+            ["id", "questionid", "content", "value"],
             ["1", "7", "1", null],
             ["2", "7", "2", null],
             ["3", "7", "3", null],
@@ -338,7 +338,7 @@ class behat_mod_questionnaire extends behat_base {
         ];
 
         $this->add_data($questiondata, 'questionnaire_question', 'questionmap');
-        $this->add_data($choicedata, 'questionnaire_quest_choice', 'choicemap', ['questionmap' => 'question_id']);
+        $this->add_data($choicedata, 'questionnaire_quest_choice', 'choicemap', ['questionmap' => 'questionid']);
     }
 
     /**

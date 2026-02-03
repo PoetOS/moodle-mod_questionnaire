@@ -27,7 +27,7 @@ use mod_questionnaire\local\responsetype\response\response;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class drop extends questionold {
+class drop extends question {
     /**
      * Each question type must define its response class.
      * @return string The response object based off of questionnaire_response_base.

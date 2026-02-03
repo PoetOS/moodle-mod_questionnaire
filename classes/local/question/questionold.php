@@ -260,7 +260,7 @@ abstract class questionold {
     private function get_choices() {
         global $DB;
 
-        if ($choices = $DB->get_records('questionnaire_quest_choice', ['question_id' => $this->id], 'id ASC')) {
+        if ($choices = $DB->get_records('questionnaire_quest_choice', ['questionid' => $this->id], 'id ASC')) {
             foreach ($choices as $choice) {
                 $this->choices[$choice->id] = \mod_questionnaire\local\question\choice::create_from_data($choice);
             }
@@ -709,7 +709,7 @@ abstract class questionold {
 
         if ($this->has_choices() && !empty($choicerecords)) {
             foreach ($choicerecords as $choicerecord) {
-                $choicerecord->question_id = $this->qid;
+                $choicerecord->questionid = $this->qid;
                 $this->add_choice($choicerecord);
             }
         }
@@ -731,7 +731,7 @@ abstract class questionold {
             foreach ($this->choices as $key => $choice) {
                 $choicerecord = new \stdClass();
                 $choicerecord->id = $key;
-                $choicerecord->question_id = $qid;
+                $choicerecord->questionid = $qid;
                 $choicerecord->content = $choice->content;
                 $choicerecord->value = $choice->value;
                 $retvalue &= $this->update_choice($choicerecord);
@@ -1517,7 +1517,7 @@ abstract class questionold {
                 if ($newchoices[$nidx] != $echoice->content) {
                     $choicerecord = new \stdClass();
                     $choicerecord->id = $ekey;
-                    $choicerecord->question_id = $this->qid;
+                    $choicerecord->questionid = $this->qid;
                     $choicerecord->content = trim($newchoices[$nidx]);
                     $r = preg_match_all("/^(\d{1,2})(=.*)$/", $newchoices[$nidx], $matches);
                     // This choice has been attributed a "score value" OR this is a rate question type.
@@ -1538,7 +1538,7 @@ abstract class questionold {
             while ($nidx < $newcount) {
                 // New choices.
                 $choicerecord = new \stdClass();
-                $choicerecord->question_id = $this->qid;
+                $choicerecord->questionid = $this->qid;
                 $choicerecord->content = trim($newchoices[$nidx]);
                 $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choicerecord->content, $matches);
                 // This choice has been attributed a "score value" OR this is a rate question type.

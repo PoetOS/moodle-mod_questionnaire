@@ -333,7 +333,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 ];
             }
             $record = (object)[
-                'question_id' => $question->id,
+                'questionid' => $question->id,
                 'content' => $content->content,
                 'value' => $content->value,
             ];
@@ -500,14 +500,14 @@ class mod_questionnaire_generator extends testing_module_generator {
 
                 // Lookup the choice id.
                 $comptext = $DB->sql_compare_text('content');
-                $select = 'WHERE question_id = ? AND ' . $comptext . ' = ?';
+                $select = 'WHERE questionid = ? AND ' . $comptext . ' = ?';
 
                 $params = [intval($question->id), $choiceval];
                 $rs = $DB->get_records_sql("SELECT * FROM {questionnaire_quest_choice} $select", $params, 0, 1);
                 $choice = reset($rs);
                 if (!$choice) {
                     throw new coding_exception('Could not find choice for "' . $choiceval .
-                        '" (question_id = ' . $question->id . ')', var_export($choiceval, true));
+                        '" (questionid = ' . $question->id . ')', var_export($choiceval, true));
                 }
                 $choiceid = $choice->id;
             }

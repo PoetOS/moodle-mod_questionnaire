@@ -36,38 +36,6 @@ $idcounter = 0;
  * @package mod_questionnaire
  */
 abstract class question {
-    // Constants.
-    /** @var int Define choose question type. */
-    const QUESCHOOSE = 0;
-    /** @var int Define Yes/No question type. */
-    const QUESYESNO = 1;
-    /** @var int Define text question type. */
-    const QUESTEXT = 2;
-    /** @var int Define essay question type. */
-    const QUESESSAY = 3;
-    /** @var int Define radio question type. */
-    const QUESRADIO = 4;
-    /** @var int Define check question type. */
-    const QUESCHECK = 5;
-    /** @var int Define drop question type. */
-    const QUESDROP = 6;
-    /** @var int Define rate question type. */
-    const QUESRATE = 8;
-    /** @var int Define date question type. */
-    const QUESDATE = 9;
-    /** @var int Define numeric question type. */
-    const QUESNUMERIC = 10;
-    /** @var int Define slider question type. */
-    const QUESSLIDER = 11;
-    /** @var int Define page break question type. */
-    const QUESFILE = 12;
-    /** @var int Define page break question type. */
-    const QUESPAGEBREAK = 99;
-    /** @var int Define section text question type. */
-    const QUESSECTIONTEXT = 100;
-
-    // Class Properties.
-
     /** @var question_type $type The name of the question type. */
     public $type = null;
 
@@ -89,23 +57,6 @@ abstract class question {
     /** @var \mod_questionnaire\local\db\question_record $record The question record object. */
     protected $record;
 
-    /** @var array $qtypenames List of all question names. */
-    private static $qtypenames = [
-        self::QUESYESNO => 'yesno',
-        self::QUESTEXT => 'text',
-        self::QUESESSAY => 'essay',
-        self::QUESRADIO => 'radio',
-        self::QUESCHECK => 'check',
-        self::QUESDROP => 'drop',
-        self::QUESRATE => 'rate',
-        self::QUESDATE => 'date',
-        self::QUESFILE => 'file',
-        self::QUESNUMERIC => 'numerical',
-        self::QUESPAGEBREAK => 'pagebreak',
-        self::QUESSECTIONTEXT => 'sectiontext',
-        self::QUESSLIDER => 'slider',
-    ];
-
     /** @var array $notifications Array of extra messages for display purposes. */
     private $notifications = [];
 
@@ -118,7 +69,8 @@ abstract class question {
      */
     public function __construct(
         int $id = 0,
-        ?question_record $question = null) {
+        ?question_record $question = null
+    ) {
         if ($id) {
             $this->record = new question_record($id);
         } else if ($question !== null) {
@@ -126,7 +78,6 @@ abstract class question {
         } else {
             throw new \coding_exception('Either question id or question_record must be provided to construct a question object.');
         }
-
 
         $this->type = question_type::from_typeid($this->record->get('typeid'));
 
@@ -165,11 +116,7 @@ abstract class question {
      * @return string
      */
     public static function qtypename(int $qtype): string {
-        if (array_key_exists($qtype, self::$qtypenames)) {
-            return self::$qtypenames[$qtype];
-        } else {
-            return('');
-        }
+        return question_type::qtypename($qtype);
     }
 
     /**
@@ -177,7 +124,7 @@ abstract class question {
      * @return array
      */
     public static function qtypenames(): array {
-        return self::$qtypenames;
+        return question_type::qtypenames();
     }
 
     /**
@@ -195,7 +142,7 @@ abstract class question {
     private function get_choices() {
         global $DB;
 
-        if ($choices = $DB->get_records('questionnaire_quest_choice', ['question_id' => $this->record->get('id')], 'id ASC')) {
+        if ($choices = $DB->get_records('questionnaire_quest_choice', ['questionid' => $this->record->get('id')], 'id ASC')) {
             foreach ($choices as $choice) {
                 $this->choices[$choice->id] = \mod_questionnaire\local\question\choice::create_from_data($choice);
             }
@@ -544,7 +491,8 @@ abstract class question {
     public function response_complete(\stdClass $responsedata): bool {
         if (is_a($responsedata, 'mod_questionnaire\responsetype\response\response')) {
             // If $responsedata is a response object, look through the answers.
-            if (isset($responsedata->answers[$this->record->get('id')]) &&
+            if (
+                isset($responsedata->answers[$this->record->get('id')]) &&
                 !empty($responsedata->answers[$this->record->get('id')])
             ) {
                 $answer = $responsedata->answers[$this->record->get('id')][0];
@@ -625,7 +573,7 @@ abstract class question {
 
         if ($this->has_choices() && !empty($choicerecords)) {
             foreach ($choicerecords as $choicerecord) {
-                $choicerecord->question_id = $this->record->get('id');
+                $choicerecord->questionid = $this->record->get('id');
                 $this->add_choice($choicerecord);
             }
         }
@@ -641,7 +589,7 @@ abstract class question {
             foreach ($this->choices as $key => $choice) {
                 $choicerecord = new \stdClass();
                 $choicerecord->id = $key;
-                $choicerecord->question_id = $this->record->get('id');
+                $choicerecord->questionid = $this->record->get('id');
                 $choicerecord->content = $choice->content;
                 $choicerecord->value = $choice->value;
                 $retvalue &= $this->update_choice($choicerecord);
@@ -901,7 +849,7 @@ abstract class question {
 
         // Do not display the info box for the label question type.
         $typeid = $this->record->get('typeid');
-        if ($typeid != self::QUESSECTIONTEXT) {
+        if ($typeid != question_type::QUESSECTIONTEXT) {
             if (!$nonumbering) {
                 $pagetags->qnum = $qnum;
             }
@@ -920,11 +868,11 @@ abstract class question {
             $this->record->set('content', '');
         }
         $pagetags->skippedclass = $skippedclass;
-        if ($typeid == self::QUESNUMERIC || $typeid == self::QUESTEXT || $typeid == self::QUESSLIDER) {
-            $pagetags->label = (object)['for' => self::qtypename($typeid) . $this->record->get('id')];
-        } else if ($typeid == self::QUESDROP) {
-            $pagetags->label = (object)['for' => self::qtypename($typeid) . $this->record->get('name')];
-        } else if ($typeid == self::QUESESSAY) {
+        if ($typeid == question_type::QUESNUMERIC || $typeid == question_type::QUESTEXT || $typeid == question_type::QUESSLIDER) {
+            $pagetags->label = (object)['for' => question_type::qtypename($typeid) . $this->record->get('id')];
+        } else if ($typeid == question_type::QUESDROP) {
+            $pagetags->label = (object)['for' => question_type::qtypename($typeid) . $this->record->get('name')];
+        } else if ($typeid == question_type::QUESESSAY) {
             $pagetags->label = (object)['for' => 'q' . $this->record->get('id')];
         }
         $content = file_rewrite_pluginfile_urls(
@@ -1425,7 +1373,7 @@ abstract class question {
                 if ($newchoices[$nidx] != $echoice->content) {
                     $choicerecord = new \stdClass();
                     $choicerecord->id = $ekey;
-                    $choicerecord->question_id = $this->qid;
+                    $choicerecord->questionid = $this->qid;
                     $choicerecord->content = trim($newchoices[$nidx]);
                     $r = preg_match_all("/^(\d{1,2})(=.*)$/", $newchoices[$nidx], $matches);
                     // This choice has been attributed a "score value" OR this is a rate question type.
@@ -1446,7 +1394,7 @@ abstract class question {
             while ($nidx < $newcount) {
                 // New choices.
                 $choicerecord = new \stdClass();
-                $choicerecord->question_id = $this->qid;
+                $choicerecord->questionid = $this->qid;
                 $choicerecord->content = trim($newchoices[$nidx]);
                 $r = preg_match_all("/^(\d{1,2})(=.*)$/", $choicerecord->content, $matches);
                 // This choice has been attributed a "score value" OR this is a rate question type.

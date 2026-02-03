@@ -26,7 +26,7 @@ use mod_questionnaire\local\questionnairelib;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class pagebreak extends questionold {
+class pagebreak extends question {
     /**
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.

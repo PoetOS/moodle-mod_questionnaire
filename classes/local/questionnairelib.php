@@ -1936,7 +1936,7 @@ class questionnairelib {
             foreach ($question->choices as $key => $choice) {
                 $oldcid = $key;
                 $newchoice = (object) [
-                    'question_id' => $newqid,
+                    'questionid' => $newqid,
                     'content' => $choice->content,
                     'value' => $choice->value,
                 ];
@@ -3587,7 +3587,7 @@ class questionnairelib {
             $choicesql = "
                 SELECT DISTINCT c.id as cid, q.id as qid, q.precise AS precise, q.name, c.content
                   FROM {questionnaire_question} q
-                  JOIN {questionnaire_quest_choice} c ON question_id = q.id
+                  JOIN {questionnaire_quest_choice} c ON questionid = q.id
                  WHERE q.surveyid = ? ORDER BY cid ASC
             ";
             $choicerecords = $DB->get_records_sql($choicesql, $choiceparams);

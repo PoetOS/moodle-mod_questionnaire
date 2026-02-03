@@ -341,8 +341,14 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
             }
         }
 
+        // Convert renamed fields if necessary.
+        if (isset($data->question_id)) {
+            $data->questionid = $data->question_id;
+            unset($data->question_id);
+        }
+
         $oldid = $data->id;
-        $data->question_id = $this->get_new_parentid('questionnaire_question');
+        $data->questionid = $this->get_new_parentid('questionnaire_question');
 
         // Insert the questionnaire_quest_choice record.
         $newitemid = $DB->insert_record('questionnaire_quest_choice', $data);

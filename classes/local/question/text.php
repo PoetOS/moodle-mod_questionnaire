@@ -24,7 +24,7 @@ namespace mod_questionnaire\local\question;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class text extends questionold {
+class text extends question {
     /**
      * The class constructor
      * @param int $id

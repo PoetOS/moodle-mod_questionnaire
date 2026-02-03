@@ -295,7 +295,7 @@ function questionnaire_delete_survey($sid, $questionnaireid) {
     // Delete all question data for the survey.
     if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid], 'id')) {
         foreach ($questions as $question) {
-            $DB->delete_records('questionnaire_quest_choice', ['question_id' => $question->id]);
+            $DB->delete_records('questionnaire_quest_choice', ['questionid' => $question->id]);
             questionnaire_delete_dependencies($question->id);
         }
         $status = $status && $DB->delete_records('questionnaire_question', ['surveyid' => $sid]);

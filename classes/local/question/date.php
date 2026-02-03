@@ -24,7 +24,7 @@ namespace mod_questionnaire\local\question;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_questionnaire
  */
-class date extends questionold {
+class date extends question {
     /**
      * Return the responseclass used.
      * @return string

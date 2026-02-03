@@ -78,7 +78,8 @@ class questionnaire {
         } catch (\dml_missing_record_exception $e) {
             $this->surveyrecord = new survey_record();
         }
-        $this->coursemodule = $coursemodule ?? get_coursemodule_from_instance('questionnaire', $this->modulerecord->get('id'), 0, false, MUST_EXIST);
+        $this->coursemodule = $coursemodule ??
+            get_coursemodule_from_instance('questionnaire', $this->modulerecord->get('id'), 0, false, MUST_EXIST);
         $this->context = context_module::instance($this->coursemodule->id);
         $this->course = get_course($this->modulerecord->get('course'));
         $this->load_questions();
@@ -87,6 +88,7 @@ class questionnaire {
     /**
      * Return a questionnaire instance from an instance id.
      * @param int $instanceid
+     * @param stdClass|null $cm
      * @return self
      * @throws \dml_exception
      */
@@ -97,6 +99,7 @@ class questionnaire {
     /**
      * Return a questionnaire instance from a course module id.
      * @param int $cmid
+     * @param stdClass|null $cm
      * @return self
      * @throws \dml_exception
      */
@@ -545,7 +548,7 @@ class questionnaire {
                     ($this->modulerecord->get('respview') == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
     }
 
-   // METHODS TO BE POSSIBLY REPLACED AND REFACTORED LATER.
+    // METHODS TO BE POSSIBLY REPLACED AND REFACTORED LATER.
 
     /**
      * Add the renderer to the questionnaire object.

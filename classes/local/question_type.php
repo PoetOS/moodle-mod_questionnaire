@@ -27,6 +27,36 @@ use mod_questionnaire\local\db\question_type_record;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class question_type {
+    // Constants.
+    /** @var int Define choose question type. */
+    const QUESCHOOSE = 0;
+    /** @var int Define Yes/No question type. */
+    const QUESYESNO = 1;
+    /** @var int Define text question type. */
+    const QUESTEXT = 2;
+    /** @var int Define essay question type. */
+    const QUESESSAY = 3;
+    /** @var int Define radio question type. */
+    const QUESRADIO = 4;
+    /** @var int Define check question type. */
+    const QUESCHECK = 5;
+    /** @var int Define drop question type. */
+    const QUESDROP = 6;
+    /** @var int Define rate question type. */
+    const QUESRATE = 8;
+    /** @var int Define date question type. */
+    const QUESDATE = 9;
+    /** @var int Define numeric question type. */
+    const QUESNUMERIC = 10;
+    /** @var int Define slider question type. */
+    const QUESSLIDER = 11;
+    /** @var int Define page break question type. */
+    const QUESFILE = 12;
+    /** @var int Define page break question type. */
+    const QUESPAGEBREAK = 99;
+    /** @var int Define section text question type. */
+    const QUESSECTIONTEXT = 100;
+
     /** @var string The type name. */
     public $type;
 
@@ -35,6 +65,23 @@ class question_type {
 
     /** @var string The response table name. */
     public $responsetable;
+
+    /** @var array $qtypenames List of all question names. */
+    private static $qtypenames = [
+        self::QUESYESNO => 'yesno',
+        self::QUESTEXT => 'text',
+        self::QUESESSAY => 'essay',
+        self::QUESRADIO => 'radio',
+        self::QUESCHECK => 'check',
+        self::QUESDROP => 'drop',
+        self::QUESRATE => 'rate',
+        self::QUESDATE => 'date',
+        self::QUESFILE => 'file',
+        self::QUESNUMERIC => 'numerical',
+        self::QUESPAGEBREAK => 'pagebreak',
+        self::QUESSECTIONTEXT => 'sectiontext',
+        self::QUESSLIDER => 'slider',
+    ];
 
     /**
      * Summary of __construct
@@ -53,5 +100,26 @@ class question_type {
      */
     public static function from_typeid(int $typeid): ?self {
         return new self(question_type_record::from_typeid($typeid));
+    }
+
+    /**
+     * Return the different question type names.
+     * @param int $qtype
+     * @return string
+     */
+    public static function qtypename(int $qtype): string {
+        if (array_key_exists($qtype, self::$qtypenames)) {
+            return self::$qtypenames[$qtype];
+        } else {
+            return('');
+        }
+    }
+
+    /**
+     * Return all of the different question type names.
+     * @return array
+     */
+    public static function qtypenames(): array {
+        return self::$qtypenames;
     }
 }

@@ -65,9 +65,7 @@ class choice {
     public static function create_from_id($id) {
         global $DB;
 
-        // Rename the data field question_id to questionid to conform with code conventions. Eventually, data table should be
-        // changed.
-        if ($record = $DB->get_record(self::tablename(), ['id' => $id], 'id,question_id as questionid,content,value')) {
+        if ($record = $DB->get_record(self::tablename(), ['id' => $id], 'id,questionid,content,value')) {
             return new choice($id, $record->questionid, $record->content, $record->value);
         } else {
             return new choice();
@@ -90,11 +88,6 @@ class choice {
             if (!isset($choicedata[$property])) {
                 $choicedata[$property] = null;
             }
-        }
-        // Since the data table uses 'question_id' instead of 'questionid', look for that field as well. Hack that should be fixed
-        // by renaming the data table column.
-        if (!empty($choicedata['question_id'])) {
-            $choicedata['questionid'] = $choicedata['question_id'];
         }
 
         return new choice($choicedata['id'], $choicedata['questionid'], $choicedata['content'], $choicedata['value']);

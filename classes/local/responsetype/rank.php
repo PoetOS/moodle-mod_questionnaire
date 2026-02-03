@@ -169,7 +169,7 @@ class rank extends responsetype {
         // Get other choices.
         $otherrecs = $this->get_other_choice($rsql, $params);
 
-        $select = 'question_id=' . $this->question->id . ' ORDER BY id ASC';
+        $select = 'questionid=' . $this->question->id . ' ORDER BY id ASC';
         if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
             foreach ($rows as $row) {
                 $nbna = $DB->count_records(

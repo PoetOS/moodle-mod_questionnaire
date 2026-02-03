@@ -90,13 +90,13 @@
     <TABLE NAME="questionnaire_quest_choice" COMMENT="questionnaire_quest_choice table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="question_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="value" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="questionid" TYPE="foreign" FIELDS="question_id" REFTABLE="questionnaire_question" REFFIELDS="id" />
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="questionnaire_question" REFFIELDS="id" />
       </KEYS>
     </TABLE>
     <TABLE NAME="questionnaire_question_type" COMMENT="questionnaire_question_type table retrofitted from MySQL">
