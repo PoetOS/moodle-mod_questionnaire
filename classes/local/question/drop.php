@@ -47,7 +47,7 @@ class drop extends question {
     /**
      * Return true if the question has choices.
      */
-    public function has_choices() {
+    public function has_choices(): bool {
         return true;
     }
 
@@ -55,7 +55,7 @@ class drop extends question {
      * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
      * @return string
      */
-    public function question_template() {
+    public function question_template(): string {
         return 'mod_questionnaire/question_drop';
     }
 
@@ -63,7 +63,7 @@ class drop extends question {
      * Override and return a form template if provided. Output of response_survey_display is iterpreted based on this.
      * @return string
      */
-    public function response_template() {
+    public function response_template(): string {
         return 'mod_questionnaire/response_drop';
     }
 
@@ -71,7 +71,7 @@ class drop extends question {
      * Override this and return true if the question type allows dependent questions.
      * @return bool
      */
-    public function allows_dependents() {
+    public function allows_dependents(): bool {
         return true;
     }
 
@@ -79,7 +79,7 @@ class drop extends question {
      * True if question type supports feedback options. False by default.
      * @return bool
      */
-    public function supports_feedback() {
+    public function supports_feedback(): bool {
         return true;
     }
 
@@ -91,7 +91,7 @@ class drop extends question {
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($response, $dependants, $blankquestionnaire = false) {
+    protected function question_survey_display($response, $dependants, $blankquestionnaire = false): \stdClass {
         // Drop.
         $options = [];
 
@@ -126,7 +126,7 @@ class drop extends question {
      * @param \mod_questionnaire\local\responsetype\response\response $response
      * @return \stdClass The check question response context tags.
      */
-    protected function response_survey_display($response) {
+    protected function response_survey_display($response): \stdClass {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
@@ -160,7 +160,7 @@ class drop extends question {
      * @param \MoodleQuickForm $mform
      * @param string $helpname
      */
-    protected function form_length(\MoodleQuickForm $mform, $helpname = '') {
+    protected function form_length(\MoodleQuickForm $mform, $helpname = ''): \MoodleQuickForm {
         return questionold::form_length_hidden($mform);
     }
 
@@ -169,7 +169,7 @@ class drop extends question {
      * @param \MoodleQuickForm $mform
      * @param string $helpname
      */
-    protected function form_precise(\MoodleQuickForm $mform, $helpname = '') {
+    protected function form_precise(\MoodleQuickForm $mform, $helpname = ''): \MoodleQuickForm {
         return questionold::form_precise_hidden($mform);
     }
 
@@ -177,7 +177,7 @@ class drop extends question {
      * True if question provides mobile support.
      * @return bool
      */
-    public function supports_mobile() {
+    public function supports_mobile(): bool {
         return true;
     }
 
@@ -187,7 +187,7 @@ class drop extends question {
      * @param bool $autonum
      * @return \stdClass
      */
-    public function mobile_question_display($qnum, $autonum = false) {
+    public function mobile_question_display($qnum, $autonum = false): \stdClass {
         $mobiledata = parent::mobile_question_display($qnum, $autonum);
         $mobiledata->isselect = true;
         return $mobiledata;
@@ -198,7 +198,7 @@ class drop extends question {
      * @param response $response
      * @return array
      */
-    public function get_mobile_response_data($response) {
+    public function get_mobile_response_data($response): array {
         $resultdata = [];
         if (isset($response->answers[$this->id])) {
             foreach ($response->answers[$this->id] as $answer) {

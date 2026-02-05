@@ -17,6 +17,7 @@
 namespace mod_questionnaire\output;
 
 use mod_questionnaire\question\question;
+use mod_questionnaire\questionnaire;
 
 /**
  * Contains class mod_questionnaire\output\renderer
@@ -33,8 +34,7 @@ class renderer extends \plugin_renderer_base {
      * @return string | boolean
      */
     public function render_viewpage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/viewpage', $data);
+        return $this->render_from_template($page->template(), $page->export_for_template($this));
     }
 
     /**
@@ -43,8 +43,7 @@ class renderer extends \plugin_renderer_base {
      * @return string | boolean
      */
     public function render_completepage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/completepage', $data);
+        return $this->render_from_template($page->template(), $page->export_for_template($this));
     }
 
     /**
@@ -130,6 +129,8 @@ class renderer extends \plugin_renderer_base {
         $data = $page->export_for_template($this);
         return $this->render_from_template('mod_questionnaire/fbsectionspage', $data);
     }
+
+    // General rendering methods used by multiple pages.
 
     /**
      * Render the respondent information line.

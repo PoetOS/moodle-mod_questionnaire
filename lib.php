@@ -615,7 +615,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 
         if ($usernumresp > 1) {
             $urlargs = [
-                'instance' => $questionnaire->id,
+                'instance' => $questionnaire->id(),
                 'userid' => $USER->id,
                 'byresponse' => 0,
                 'action' => 'summary',
@@ -631,7 +631,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
             $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
             $urlargs = [
-                'instance' => $questionnaire->id,
+                'instance' => $questionnaire->id(),
                 'userid' => $USER->id,
                 'byresponse' => 0,
                 'action' => 'summary',
@@ -640,7 +640,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
             $myreportnode->add(get_string('summary', 'questionnaire'), new moodle_url($url, $urlargs));
 
             $urlargs = [
-                'instance' => $questionnaire->id,
+                'instance' => $questionnaire->id(),
                 'userid' => $USER->id,
                 'byresponse' => 1,
                 'action' => 'vresp',
@@ -652,16 +652,16 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
             );
 
             $urlargs = [
-                'instance' => $questionnaire->id,
+                'instance' => $questionnaire->id(),
                 'userid' => $USER->id,
                 'byresponse' => 0,
                 'action' => 'vall',
                 'group' => $currentgroupid,
             ];
             $myreportnode->add(get_string('myresponses', 'questionnaire'), new moodle_url($url, $urlargs));
-            if ($questionnaire->capabilities->downloadresponses) {
+            if ($questionnaire->can_download_responses()) {
                 $urlargs = [
-                    'instance' => $questionnaire->id,
+                    'instance' => $questionnaire->id(),
                     'user' => $USER->id,
                     'action' => 'dwnpg',
                     'group' => $currentgroupid,

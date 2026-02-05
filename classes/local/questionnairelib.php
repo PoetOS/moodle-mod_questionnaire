@@ -1216,6 +1216,7 @@ class questionnairelib {
     public function print_survey($quser, $userid = false) {
         global $SESSION, $CFG;
 
+        // TODO - Formdata should be a helper class unto itself.
         if (!($formdata = data_submitted()) || !confirm_sesskey()) {
             $formdata = new stdClass();
         }

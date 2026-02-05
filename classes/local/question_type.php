@@ -53,7 +53,7 @@ class question_type {
     /** @var int Define page break question type. */
     const QUESFILE = 12;
     /** @var int Define page break question type. */
-    const QUESPAGEBREAK = 99;
+    public const QUESPAGEBREAK = 99;
     /** @var int Define section text question type. */
     const QUESSECTIONTEXT = 100;
 

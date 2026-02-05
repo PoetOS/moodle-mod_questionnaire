@@ -16,15 +16,17 @@
 
 namespace mod_questionnaire\output;
 
+use mod_questionnaire\questionnaire;
+
 /**
- * Contains class mod_questionnaire\output\viewpage
+ * Contains class mod_questionnaire\output\completepage
  *
  * @package    mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class completepage implements \renderable, \templatable {
+class completepage extends questionnairepage {
     /**
      * The data to be exported.
      * @var array
@@ -32,35 +34,97 @@ class completepage implements \renderable, \templatable {
     protected $data;
 
     /**
-     * Construct the renderable.
-     * @param object $data The template data for export.
+     * The template to use for rendering.
+     * @var string
      */
-    public function __construct($data = null) {
-        if ($data !== null) {
-            $this->data = $data;
-        } else {
-            $this->data = new \stdClass();
+    protected $template = 'mod_questionnaire/completepage';
+
+    /**
+     * Construct the complete page.
+     * @param questionnaire $questionnaire The questionnaire object.
+     * @param object|null $formdata The form data.
+     */
+    public function __construct(questionnaire $questionnaire, ?object $formdata = null) {
+        global $USER;
+        $message = $questionnaire->user_access_messages($USER->id);
+        if (!empty($message)) {
+            $this->add_message($message);
+            return;
+        }
+
+        // Handle the main questionnaire completion page.
+        $quser = $USER->id;
+
+        // Respondent information? May not be valid for complete page.
+
+        // Title, subtitle, print control, progress bar, additional info, and additional messages.
+        $this->add_intro_information($questionnaire);
+        $questionsbysec = $questionnaire->questions_by_section();
+        if ($questionnaire->use_progressbar() && isset($questionsbysec) && count($questionsbysec) > 1) {
+            $this->add_progress_bar(1, count($questionsbysec));
+        }
+
+return;
+        // Survey form, page by page.
+// TODO - currently, print_survey is called from view. print_survey does a lot more than display. view and print_survey share work.
+// TODO - refactor print_survey to separate display from processing, and call from here.
+        $msg = $questionnaire->print_survey($quser, $USER->id);
+
+        // If Questionnaire was submitted with all required fields completed ($msg is empty),
+        // then record the submittal.
+        if (
+            $formdata && confirm_sesskey() && isset($formdata->submit) && isset($formdata->submittype) &&
+            ($formdata->submittype == "Submit Survey") && empty($msg)
+        ) {
+            if (!empty($formdata->rid)) {
+                $formdata->rid = (int)$formdata->rid;
+            }
+            if (!empty($formdata->sec)) {
+                $formdata->sec = (int)$formdata->sec;
+            }
+            $questionnaire->response_delete($formdata->rid, $formdata->sec);
+            $questionnaire->rid = $questionnaire->response_insert($formdata, $quser);
+            $questionnaire->response_commit($questionnaire->rid);
+
+            $questionnaire->update_grades($quser);
+
+            // Update completion state.
+            $completion = new \completion_info($questionnaire->course);
+            if ($completion->is_enabled($questionnaire->cm) && $questionnaire->completionsubmit) {
+                $completion->update_state($questionnaire->cm, COMPLETION_COMPLETE);
+            }
+
+            // Log this submitted response. Note this removes the anonymity in the logged event.
+            $context = context_module::instance($questionnaire->cm->id);
+            $anonymous = $questionnaire->respondenttype == 'anonymous';
+            $params = [
+                'context' => $context,
+                'courseid' => $questionnaire->course->id,
+                'relateduserid' => $USER->id,
+                'anonymous' => $anonymous,
+                'other' => ['questionnaireid' => $questionnaire->id],
+            ];
+            $event = \mod_questionnaire\event\attempt_submitted::create($params);
+            $event->trigger();
+
+            $questionnaire->submission_notify($this->rid);
+            $this->response_goto_thankyou();
         }
     }
 
     /**
-     * Add data for export.
-     * @param string $element The index for the data.
-     * @param string $content The content for the index.
+     * Add a progress bar to the page.
+     *
+     * @param int $current The current step number.
+     * @param int $total The total number of steps.
      */
-    public function add_to_page($element, $content) {
-        if ($element !== 'questions') {
-            $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
-        } else {
-            $this->data->{$element}[] = $content;
-        }
-    }
+    public function add_progress_bar(int $current, int $total) {
+        global $PAGE;
 
-    /**
-     * Export the data for template.
-     * @param \renderer_base $output
-     */
-    public function export_for_template(\renderer_base $output) {
-        return $this->data;
+        // $templatecontext['percent'] = $this->calculate_progress($section, $questionsbysec);
+        $templatecontext['percent'] = '90';
+        $helpicon = new \help_icon('progresshelp', 'mod_questionnaire');
+        $templatecontext['progresshelp'] = $helpicon->export_for_template($PAGE->get_renderer('mod_questionnaire'));
+        $this->data['progressbar'] = $templatecontext;
     }
 }
