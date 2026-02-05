@@ -45,6 +45,22 @@
         "respondentinfo": "<div>This is respondent information</div>",
         "title": "Test Questionnaire",
         "subtitle": "This is a subtitle",
+        "progressbar": {
+            "percent": "90",
+            "progresshelp": {
+                "title": "Help with something",
+                "text": "Help with something",
+                "url": "http://example.org/help",
+                "linktext": "",
+                "icon":{
+                    "extraclasses": "iconhelp",
+                    "attributes": [
+                        {"name": "src", "value": "../../../pix/help.svg"},
+                        {"name": "alt", "value": "Help icon"}
+                    ]
+                }
+            }
+        },
         "addinfo": "<div>This is additional information.</div>",
         "message": "<div>This is a message.</div>",
         "formstart": "<form id=\"formid\" method=\"post\" action=\"index.php\">",
@@ -62,7 +78,22 @@
     {{{respondentinfo}}}
     {{#title}}<h3 class="surveyTitle">{{.}}</h3>{{/title}}{{{printblank}}}
     {{#subtitle}}<h4 class="surveySubTitle">{{.}}</h4>{{/subtitle}}
-    {{#progressbar}}<div class="progressbar">{{{.}}}</div>{{/progressbar}}
+    {{#progressbar}}
+    <div class="progressbar">
+        <div class="questionnaire-progressbar-wrapper">
+            <div class="questionnaire-progressbar-info-sr visually-hidden">{{#str}}
+                progressbar_info, mod_questionnaire, {{percent}}% {{/str}}</div>
+            <div class="questionnaire-progressbar-info" aria-hidden="true">
+                <span id="questionnaire-progressbar-percent">{{percent}}%</span>
+                {{#progresshelp}}
+                    {{>core/help_icon}}
+                {{/progresshelp}}
+            </div>
+            <div class="questionnaire-progressbar">
+                <div class="questionnaire-progressbar-progress" style="width:{{percent}}%;"></div>
+            </div>
+        </div>
+    </div>{{/progressbar}}
     {{#addinfo}}<div class="addInfo">{{{.}}}</div>{{/addinfo}}
     {{#message}}<div class="message">{{{.}}}</div>{{/message}}
     {{#continue}}{{{continue}}}{{/continue}}

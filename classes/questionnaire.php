@@ -20,6 +20,7 @@ use mod_questionnaire\local\db\module_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
 use context_module;
+use question_type;
 use stdClass;
 use html_writer;
 
@@ -49,6 +50,9 @@ class questionnaire {
 
     /** @var \mod_questionnaire\local\question\question[] The list of question objects. */
     protected $questions = [];
+
+    /** @var int[] Question ids organized by section. */
+    protected $questionsbysec = [];
 
     // PROPERTIES TO BE REPLACED AND REFACTORED LATER.
 
@@ -92,7 +96,7 @@ class questionnaire {
      * @return self
      * @throws \dml_exception
      */
-    public static function from_instanceid(int $instanceid, ?stdClass $cm = null) {
+    public static function from_instanceid(int $instanceid, ?stdClass $cm = null): questionnaire {
         return new self($instanceid, null, $cm);
     }
 
@@ -103,7 +107,7 @@ class questionnaire {
      * @return self
      * @throws \dml_exception
      */
-    public static function from_cmid(int $cmid, ?stdClass $cm = null) {
+    public static function from_cmid(int $cmid, ?stdClass $cm = null): questionnaire {
         return new self(0, module_record::from_cmid($cmid), $cm);
     }
 
@@ -125,8 +129,21 @@ class questionnaire {
         $sid = $this->surveyrecord->get('id');
         if (!empty($sid)) {
             $questionrecs = \mod_questionnaire\local\db\question_record::questions_for_survey($sid);
+            $sec = 1;
+            $isbreak = false;
             foreach ($questionrecs as $questionrec) {
                 $this->questions[$questionrec->get('id')] = question::question_builder($questionrec->get('typeid'), $questionrec);
+                // Replace with a question page_break() method.
+                if ($questionrec->get('typeid') != local\question_type::QUESPAGEBREAK) {
+                    $this->questionsbysec[$sec][] = $questionrec->get('id');
+                    $isbreak = false;
+                } else {
+                    // Sanity check: no section break allowed as first position, no 2 consecutive section breaks.
+                    if (($questionrec->get('position') != 1) && ($isbreak == false)) {
+                        $sec++;
+                        $isbreak = true;
+                    }
+                }
             }
         }
     }
@@ -135,7 +152,7 @@ class questionnaire {
      * Get the id of the questionnaire.
      * @return int
      */
-    public function id() {
+    public function id(): int {
         return $this->modulerecord->get('id');
     }
 
@@ -143,7 +160,7 @@ class questionnaire {
      * Get the name of the questionnaire.
      * @return string
      */
-    public function name() {
+    public function name(): string {
         return $this->modulerecord->get('name');
     }
 
@@ -151,7 +168,7 @@ class questionnaire {
      * Get the course id of the questionnaire.
      * @return int
      */
-    public function courseid() {
+    public function courseid(): int {
         return $this->modulerecord->get('course');
     }
 
@@ -159,24 +176,63 @@ class questionnaire {
      * Get the course record of the questionnaire.
      * @return stdClass
      */
-    public function course() {
+    public function course(): stdClass {
         return $this->course;
     }
 
     /**
-     * Get the course module record of the questionnaire.
-     * @return stdClass
+     * Get the respondent type of the questionnaire.
+     * @return bool
      */
-    public function coursemodule() {
-        return $this->coursemodule;
+    public function use_progressbar(): bool {
+        return $this->modulerecord->get('progressbar') == 1;
     }
-
     /**
      * Get the course module record of the questionnaire.
      * @return stdClass
      */
-    public function context() {
+    public function coursemodule(): stdClass {
+        return $this->coursemodule;
+    }
+
+    /**
+     * Get the context module of the questionnaire.
+     * @return stdClass
+     */
+    public function context(): context_module {
         return $this->context;
+    }
+
+    /**
+     * Get the survey id of the questionnaire.
+     * @return int
+     */
+    public function surveyid(): int {
+        return $this->surveyrecord->get('id');
+    }
+
+    /**
+     * Get the survey record of the questionnaire.
+     * @return survey_record
+     */
+    public function surveytitle(): string {
+        return $this->surveyrecord->get('title');
+    }
+
+    /**
+     * Get the survey subtitle of the questionnaire.
+     * @return string
+     */
+    public function surveysubtitle(): string {
+        return $this->surveyrecord->get('subtitle');
+    }
+
+    /**
+     * Get the survey info/description of the questionnaire.
+     * @return string
+     */
+    public function surveyinfo(): string {
+        return $this->surveyrecord->get('info');
     }
 
     /**
@@ -185,6 +241,14 @@ class questionnaire {
      */
     public function questions() {
         return $this->questions;
+    }
+
+    /**
+     * Get the question ids organized by section.
+     * @return int[]
+     */
+    public function questions_by_section() {
+        return $this->questionsbysec;
     }
 
     /**
@@ -227,6 +291,14 @@ class questionnaire {
      */
     public function survey_is_public() {
         return $this->surveyrecord->get('realm') == 'public';
+    }
+
+    /**
+     * Return true if the survey is a 'template' one.
+     * @return bool
+     */
+    public function survey_is_template() {
+        return $this->surveyrecord->get('realm') == 'template';
     }
 
     /**
@@ -370,7 +442,7 @@ class questionnaire {
         $attempt = reset($attempts);
         $timenow = time();
 
-        switch ($this->qtype) {
+        switch ($this->modulerecord->get('qtype')) {
             case QUESTIONNAIREUNLIMITED:
                 $cantake = true;
                 break;
@@ -560,25 +632,67 @@ class questionnaire {
 
     /**
      * Add the templatable page to the questionnaire object.
-     * @param templatable $page The page to render, implementing core classes.
+     * @param \templatable $page The page to render, implementing core classes.
      */
     public function add_page($page) {
         $this->page = $page;
     }
 
     /**
+     * Output the questionnaire information.
+     *
+     * @return array
+     */
+    public function view_information(): array {
+        $messages = [];
+
+        switch ($this->modulerecord->get('qtype')) {
+            case QUESTIONNAIREUNLIMITED:
+                $typestring = get_string('unlimited', 'questionnaire');
+                break;
+            case QUESTIONNAIREONCE:
+                $typestring = get_string('once', 'questionnaire');
+                break;
+            case QUESTIONNAIREDAILY:
+                $typestring = get_string('daily', 'questionnaire');
+                break;
+            case QUESTIONNAIREWEEKLY:
+                $typestring = get_string('weekly', 'questionnaire');
+                break;
+            case QUESTIONNAIREMONTHLY:
+                $typestring = get_string('monthly', 'questionnaire');
+                break;
+            default:
+                $typestring = '';
+                break;
+        }
+        array_push($messages, get_string('attemptsallowed', 'questionnaire', $typestring));
+
+        if ($this->is_open() && !$this->is_closed()) {
+            if ($this->modulerecord->get('opendate') > 0) {
+                array_push($messages, get_string('openedat', 'questionnaire', userdate($this->modulerecord->get('opendate'))));
+            }
+            if ($this->modulerecord->get('closedate') > 0) {
+                array_push($messages, get_string('closesat', 'questionnaire', userdate($this->modulerecord->get('closedate'))));
+            }
+        }
+
+        return $messages;
+    }
+
+    /**
      * Return any message if the user cannot complete this questionnaire, explaining why.
      * @param int $userid
      * @param bool $asnotification Return as a rendered notification.
-     * @return bool|string
+     * @return string|null The message or null if no message.
      */
-    public function user_access_messages($userid = 0, $asnotification = false) {
+    public function user_access_messages(int $userid = 0, bool $asnotification = false): ?string {
         global $USER;
 
         if ($userid == 0) {
             $userid = $USER->id;
         }
-        $message = false;
+        $message = null;
 
         if (!$this->is_active()) {
             if ($this->can_manage_questionnaire()) {
@@ -587,7 +701,7 @@ class questionnaire {
                 $msg = 'notavail';
             }
             $message = get_string($msg, 'questionnaire');
-        } else if ($this->surveyrecord->get('realm') == 'template') {
+        } else if ($this->survey_is_template()) {
             $message = get_string('templatenotviewable', 'questionnaire');
         } else if (!$this->is_open()) {
             $message = get_string('notopen', 'questionnaire', userdate($this->modulerecord->get('opendate')));
@@ -596,7 +710,7 @@ class questionnaire {
         } else if (!$this->user_is_eligible($userid)) {
             $message = get_string('noteligible', 'questionnaire');
         } else if (!$this->user_can_take($userid)) {
-            switch ($this->qtype) {
+            switch ($this->modulerecord->get('qtype')) {
                 case QUESTIONNAIREDAILY:
                     $msgstring = ' ' . get_string('today', 'questionnaire');
                     break;
@@ -613,129 +727,6 @@ class questionnaire {
             $message = get_string("alreadyfilled", "questionnaire", $msgstring);
         }
 
-        if (($message !== false) && $asnotification) {
-            $message = $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR);
-        }
-
         return $message;
-    }
-
-    /**
-     * Output the questionnaire information.
-     *
-     * @return string
-     */
-    public function view_information() {
-        $messages = [];
-
-        if (isset($this->qtype)) {
-            switch ($this->qtype) {
-                case QUESTIONNAIREUNLIMITED:
-                    $typestring = get_string('unlimited', 'questionnaire');
-                    break;
-                case QUESTIONNAIREONCE:
-                    $typestring = get_string('once', 'questionnaire');
-                    break;
-                case QUESTIONNAIREDAILY:
-                    $typestring = get_string('daily', 'questionnaire');
-                    break;
-                case QUESTIONNAIREWEEKLY:
-                    $typestring = get_string('weekly', 'questionnaire');
-                    break;
-                case QUESTIONNAIREMONTHLY:
-                    $typestring = get_string('monthly', 'questionnaire');
-                    break;
-                default:
-                    $typestring = '';
-                    break;
-            }
-            array_push($messages, get_string('attemptsallowed', 'questionnaire', $typestring));
-        }
-
-        if ($this->is_open() && !$this->is_closed()) {
-            if ($this->modulerecord->get('opendate') > 0) {
-                array_push($messages, get_string('openedat', 'questionnaire', userdate($this->modulerecord->get('opendate'))));
-            }
-            if ($this->modulerecord->get('closedate') > 0) {
-                array_push($messages, get_string('closesat', 'questionnaire', userdate($this->modulerecord->get('closedate'))));
-            }
-        }
-
-        return $messages;
-    }
-
-    /**
-     * Print each message in an array, surrounded by &lt;p>, &lt;/p> tags.
-     *
-     * @param array $messages the array of message strings.
-     * @return string HTML to output.
-     */
-    public function access_messages($messages) {
-        $output = '';
-        foreach ($messages as $message) {
-            $output .= html_writer::tag('p', $message) . "\n";
-        }
-        return $output;
-    }
-
-    /**
-     * The main module view function.
-     */
-    public function view() {
-        global $CFG, $USER, $PAGE;
-
-        $PAGE->set_title(format_string($this->name));
-        $PAGE->set_heading(format_string($this->course->fullname));
-        $message = $this->user_access_messages($USER->id, true);
-        if ($message !== false) {
-            $this->page->add_to_page('notifications', $message);
-        } else {
-            // Handle the main questionnaire completion page.
-            $quser = $USER->id;
-
-            $msg = $this->print_survey($quser, $USER->id);
-
-            // If Questionnaire was submitted with all required fields completed ($msg is empty),
-            // then record the submittal.
-            $viewform = data_submitted($CFG->wwwroot . "/mod/questionnaire/complete.php");
-            if (
-                $viewform && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
-                ($viewform->submittype == "Submit Survey") && empty($msg)
-            ) {
-                if (!empty($viewform->rid)) {
-                    $viewform->rid = (int)$viewform->rid;
-                }
-                if (!empty($viewform->sec)) {
-                    $viewform->sec = (int)$viewform->sec;
-                }
-                $this->response_delete($viewform->rid, $viewform->sec);
-                $this->rid = $this->response_insert($viewform, $quser);
-                $this->response_commit($this->rid);
-
-                $this->update_grades($quser);
-
-                // Update completion state.
-                $completion = new \completion_info($this->course);
-                if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
-                    $completion->update_state($this->cm, COMPLETION_COMPLETE);
-                }
-
-                // Log this submitted response. Note this removes the anonymity in the logged event.
-                $context = context_module::instance($this->cm->id);
-                $anonymous = $this->respondenttype == 'anonymous';
-                $params = [
-                    'context' => $context,
-                    'courseid' => $this->course->id,
-                    'relateduserid' => $USER->id,
-                    'anonymous' => $anonymous,
-                    'other' => ['questionnaireid' => $this->id],
-                ];
-                $event = \mod_questionnaire\event\attempt_submitted::create($params);
-                $event->trigger();
-
-                $this->submission_notify($this->rid);
-                $this->response_goto_thankyou();
-            }
-        }
     }
 }

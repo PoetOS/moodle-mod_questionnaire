@@ -36,7 +36,7 @@ class mobile {
      * @return array HTML, javascript and other data
      */
     public static function mobile_view_activity($args) {
-        global $OUTPUT, $USER, $CFG, $DB;
+        global $PAGE, $OUTPUT, $USER, $CFG, $DB;
 
         $args = (object) $args;
 
@@ -70,7 +70,7 @@ class mobile {
 
         // Any notifications will be displayed on top of main page, and prevent questionnaire from being completed. This also checks
         // appropriate capabilities.
-        $data['notifications'] = $questionnaire->user_access_messages($userid);
+        $data['notifications'] = $PAGE->get_renderer('mod_questionnaire')->user_access_messages($questionnaire, $userid);
         $responses = [];
         $result = '';
 

@@ -36,25 +36,32 @@
 
     Example context (json):
     {
-        "questionnairename": "Questionnaire One",
-        "intro": "HTML of the intro text.",
-        "message": "HTML of the message text.",
-        "complete": "HTML of the completion notice and link.",
-        "info": "HTML of the info text.",
+        "completeurl": "URL to complete the questionnaire.",
+        "completetext": "Text for the complete link.",
         "guestuser": "HTML of guest user content.",
-        "yourresponse": "HTML for your responses link.",
-        "allresponses": "HTML for all responses link."
+        "yourresponse": {
+            "url": "URL to view your response.",
+            "title": "Title for your response link."
+        },
+        "allresponses": {
+            "url": "URL to view all responses.",
+            "title": "Title for all responses link."
+        },
+        "info":[
+            "message": "HTML for any additional information.",
+            "message": "Additional information."
+        ]
     }
-    }}
+}}
 <div class="mod_questionnaire_viewpage">
-    <h2>{{questionnairename}}</h2>
-    {{#intro}}<div class="intro">{{{intro}}}</div>{{/intro}}
     {{#message}}<div class="message">{{{message}}}</div>{{/message}}
     <div class="mod_questionnaire_flex-container">
-        {{#complete}}<div class="complete">{{{complete}}}</div>{{/complete}}
+        {{#completeurl}}<div class="complete"><a href="{{completeurl}}" title="{{completetext}}" class="btn btn-primary">{{completetext}}</a></div>{{/completeurl}}
         {{#guestuser}}<div class="guestuser">{{{guestuser}}}</div>{{/guestuser}}
-        {{#yourresponse}}<div class="yourresponse">{{{yourresponse}}}</div>{{/yourresponse}}
-        {{#allresponses}}<div class="allresponses">{{{allresponses}}}</div>{{/allresponses}}
+        {{#yourresponse}}<div class="yourresponse"><a href="{{url}}" class="btn btn-primary" title="{{title}}">{{title}}</a></div>{{/yourresponse}}
+        {{#allresponses}}<div class="allresponses"><a href="{{url}}" class="btn btn-primary" title="{{title}}">{{title}}</a></div>{{/allresponses}}
     </div>
-    {{#info}}<div class="info">{{{info}}}</div>{{/info}}
+    <div class="info">{{#info}}
+        <p>{{{message}}}</p>
+    {{/info}}</div>
 </div>

@@ -37,8 +37,6 @@ $SESSION->questionnaire->current_tab = 'view';
 
 $id = optional_param('id', null, PARAM_INT);    // Course Module ID.
 $a = optional_param('a', null, PARAM_INT);      // Questionnaire ID.
-
-$sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 $resume = optional_param('resume', null, PARAM_INT);    // Is this attempt a resume of a saved attempt?
 
 if (!empty($id)) {
@@ -49,8 +47,7 @@ if (!empty($id)) {
 
 // Check login and get context.
 require_course_login($questionnaire->course(), true, $questionnaire->coursemodule());
-$context = $questionnaire->context();
-require_capability('mod/questionnaire:view', $context);
+require_capability('mod/questionnaire:view', $questionnaire->context());
 
 $url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/complete.php');
 if (isset($id)) {
@@ -59,34 +56,34 @@ if (isset($id)) {
     $url->param('a', $a);
 }
 
-$PAGE->set_url($url);
-$PAGE->set_context($context);
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\completepage());
-
-$questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
-$questionnaire->strquestionnaire = get_string("modulename", "questionnaire");
-
 // Mark as viewed.
-$completion = new completion_info($course);
-$completion->set_module_viewed($cm);
+$completion = new \completion_info($questionnaire->course());
+$completion->set_module_viewed($questionnaire->coursemodule());
 
 if ($resume) {
     $anonymous = $questionnaire->is_anonymous();
-
     $event = \mod_questionnaire\event\attempt_resumed::create([
-        'objectid' => $questionnaire->id,
+        'objectid' => $questionnaire->id(),
         'anonymous' => $anonymous,
-        'context' => $context,
+        'context' => $questionnaire->context(),
     ]);
     $event->trigger();
 }
 
-// Generate the view HTML in the page.
-$questionnaire->view();
+// Get any data submitted from the form.
+$formdata = data_submitted();
+$formdata = (!empty($formdata) && confirm_sesskey()) ? $formdata : null;
 
-// Output the page.
-echo $questionnaire->renderer->header();
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($course);
+
+$PAGE->set_url($url);
+$PAGE->set_context($questionnaire->context());
+$PAGE->set_title(format_string($questionnaire->name()));
+$PAGE->set_heading(format_string($questionnaire->course()->fullname));
+
+// Add renderer and page objects to the questionnaire object for display use.
+$output = $PAGE->get_renderer('mod_questionnaire');
+$page = new \mod_questionnaire\output\completepage($questionnaire, $formdata);
+
+echo $output->header();
+echo $output->render($page);
+echo $output->footer($questionnaire->course());
