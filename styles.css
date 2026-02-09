@@ -404,6 +404,10 @@ td.selected {
     margin-right: 1px;
 }
 
+#page-mod-questionnaire-show_nonrespondents .table-responsive {
+    overflow-x: visible !important; /* stylelint-disable-line declaration-no-important */
+}
+
 .qn-answer label,
 #page-mod-questionnaire-show_nonrespondents label {
     margin-right: 0.6em;
