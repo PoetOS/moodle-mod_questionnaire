@@ -134,15 +134,25 @@ class questionnaire {
     }
 
     /**
+     * Returns a survey record.
+     *
+     * @param int $id
+     * @return false|mixed|stdClass
+     * @throws dml_exception
+     */
+    private function get_survey(int $id): mixed {
+        global $DB;
+        return $DB->get_record('questionnaire_survey', ['id' => $id]);
+    }
+
+    /**
      * Adding a survey record to the object.
      * @param int $sid
      * @param null $survey
      */
     public function add_survey($sid = 0, $survey = null) {
-        global $DB;
-
         if ($sid) {
-            $this->survey = $DB->get_record('questionnaire_survey', ['id' => $sid]);
+            $this->survey = $this->get_survey($sid);
         } else if (is_object($survey)) {
             $this->survey = clone($survey);
         }
@@ -422,7 +432,7 @@ class questionnaire {
      * Function to view an entire responses data.
      * @param int $rid
      * @param string $referer
-     * @param string $resps
+     * @param array $resps
      * @param bool $compare
      * @param bool $isgroupmember
      * @param bool $allresponses
@@ -432,7 +442,7 @@ class questionnaire {
     public function view_response(
         $rid,
         $referer = '',
-        $resps = '',
+        $resps = [],
         $compare = false,
         $isgroupmember = false,
         $allresponses = false,
@@ -1865,6 +1875,7 @@ class questionnaire {
                 $errstr = get_string('warning', 'questionnaire') . ' [ :  ]';  // TODO: notused!
                 return(false);
             }
+            $this->survey = $this->get_survey($this->survey->id);
         }
 
         return($this->survey->id);
@@ -3556,7 +3567,7 @@ class questionnaire {
             '0', // 11: slider -> number.
         ];
 
-        if (!$survey = $DB->get_record('questionnaire_survey', ['id' => $this->survey->id])) {
+        if (!$survey = $this->get_survey($this->survey->id)) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
 
@@ -4010,11 +4021,11 @@ class questionnaire {
      */
     public function response_analysis(
         $rid,
-        $resps,
-        $compare,
-        $isgroupmember,
-        $allresponses,
-        $currentgroupid,
+        $resps = [],
+        $compare = false,
+        $isgroupmember = false,
+        $allresponses = false,
+        $currentgroupid = 0,
         $filteredsections = null
     ) {
         global $DB, $CFG;
@@ -4128,6 +4139,7 @@ class questionnaire {
         $allscorepercent = round($alltotalscore / $nbparticipants / $maxtotalscore * 100);
 
         // No need to go further if feedback is global, i.e. only relying on total score.
+        $sectionlabel = '';
         if ($this->survey->feedbacksections == 1) {
             $sectionid = $fbsectionsnb[0];
             $sectionlabel = $fbsections[$sectionid]->sectionlabel;
@@ -4214,7 +4226,7 @@ class questionnaire {
                 $oppositescore = ' | ' . $score[1] . '%';
                 $oppositeallscore = ' | ' . $allscore[1] . '%';
             }
-            if ($this->survey->feedbackscores) {
+            if ($this->survey->feedbackscores && !empty($allscore)) {
                 $table = $table ?? new html_table();
                 if ($compare) {
                     $table->data[] = [$sectionlabel, $score[0] . '%' . $oppositescore, $allscore[0] . '%' . $oppositeallscore];

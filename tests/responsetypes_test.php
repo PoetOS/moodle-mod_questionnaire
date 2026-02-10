@@ -486,4 +486,122 @@ final class responsetypes_test extends \advanced_testcase {
         $this->assertEmpty($boolresponseresult1);
         $this->assertEmpty($boolresponseresult2);
     }
+
+    /**
+     * Tests the questionnaire response_analysis method.
+     *
+     * @covers \questionnaire::response_analysis
+     */
+    public function test_response_analysis(): void {
+        global $PAGE, $SESSION, $questionnaire;
+
+        $this->resetAfterTest();
+
+        // Set settings etc.
+        set_config('usergraph', '1', 'questionnaire');
+        $SESSION->questionnaire = new \stdClass();
+        $SESSION->questionnaire->current_tab = 'myreport';
+
+        // Create questinnaire with one boolean response question.
+        $userid = 1;
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire(
+            $course,
+            QUESYESNO,
+            ['content' => 'Enter yes or no', 'required' => 'y']
+        );
+        $question = reset($questionnaire->questions);
+        $generator->create_question_response($questionnaire, $question, 'y', $userid);
+
+        $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+        $questionnaire->add_page(new output\feedbackpage());
+
+        // Add feedback section.
+        $fbsection = feedback\section::new_section($questionnaire->sid, 'FB section 1');
+        $feedback = new feedback\sectionfeedback();
+        $feedback->sectionid = $fbsection->id;
+        $feedback->feedbacklabel = 'FB label 1';
+        $feedback->feedbacktext = 'FB text 1';
+        $feedback->maxscore = 101.0;
+        $feedback = feedback\sectionfeedback::new_sectionfeedback($feedback);
+
+        $survey = clone($questionnaire->survey);
+        $survey->sid = $questionnaire->survey->id;
+
+        // Test options for No Feedback.
+        $survey->feedbacksections = 0;
+        $survey->feedbackscores = 0;
+        $this->do_response_analysis($questionnaire, $survey, $feedback, $userid);
+
+        // Test options for Global Feedback.
+        $survey->feedbacksections = 1;
+        // Check without scores and chart type.
+        $survey->feedbackscores = 0;
+        $survey->chart_type = '';
+        $this->do_response_analysis($questionnaire, $survey, $feedback, $userid);
+        // Check with scores and chart type.
+        $survey->feedbackscores = 1;
+        $survey->chart_type = 'bipolar';
+        $this->do_response_analysis($questionnaire, $survey, $feedback, $userid);
+        // Check with question.
+        $this->do_response_analysis($questionnaire, $survey, $feedback, $userid, $question, $fbsection);
+
+        // Test options for Feedback sections.
+        $survey->feedbacksections = 2;
+        // Check without scores and chart type.
+        $survey->feedbackscores = 0;
+        $survey->chart_type = '';
+        $this->do_response_analysis($questionnaire, $survey, $feedback, $userid);
+        // Check with scores and chart type.
+        $survey->feedbackscores = 1;
+        $survey->chart_type = 'hbar';
+        $this->do_response_analysis($questionnaire, $survey, $feedback, $userid);
+        // Check with question.
+        $this->do_response_analysis($questionnaire, $survey, $feedback, $userid, $question, $fbsection);
+    }
+
+    /**
+     * Runs and checks the response_analysis method.
+     *
+     * @param \questionnaire $questionnaire
+     * @param stdClass $survey
+     * @param feedback\sectionfeedback $feedback
+     * @param int $userid
+     * @param question\question $question
+     * @param feedback\section $fbsection
+     */
+    private function do_response_analysis(
+        $questionnaire,
+        $survey,
+        $feedback,
+        $userid,
+        $question = null,
+        $fbsection = null
+    ): void {
+        $questionnaire->survey_update($survey);
+
+        if ($fbsection != null) {
+            if ($question != null) {
+                // Add question to section score calculation.
+                $scorecalculation = [$question->id => 1];
+                $fbsection->set_new_scorecalculation($scorecalculation);
+            } else {
+                // Clear section score calculation.
+                $fbsection->set_new_scorecalculation([]);
+            }
+            $fbsection->update();
+        }
+
+        // Get and check responses.
+        $resps = $questionnaire->get_responses($userid);
+        $this->assertCount(1, $resps, 'Questionnaire responses');
+        $rids = array_keys($resps);
+        $rid = end($rids);
+
+        // Get and check response analysis.
+        $feedbackmessages = $questionnaire->response_analysis($rid, $resps);
+        $this->assertNotEmpty($feedbackmessages);
+        $this->assertContains($feedback->feedbacktext, $feedbackmessages, 'Feedback message');
+    }
 }
