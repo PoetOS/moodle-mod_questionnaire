@@ -1029,39 +1029,6 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2022121601.01, 'questionnaire');
     }
 
-    if ($oldversion < 2023101500) {
-        $questiontype = new stdClass();
-        $questiontype->typeid = 12;
-        $questiontype->type = 'File';
-        $questiontype->has_choices = 'n';
-        $questiontype->response_table = 'response_file';
-        $id = $DB->insert_record('questionnaire_question_type', $questiontype);
-
-        // Define table questionnaire_response_file to be created.
-        $table = new xmldb_table('questionnaire_response_file');
-
-        // Adding fields to table questionnaire_response_file.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('fileid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-
-        // Adding keys to table questionnaire_response_file.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('file_fk', XMLDB_KEY_FOREIGN, ['fileid'], 'files', ['id']);
-
-        // Adding indexes to table questionnaire_response_file.
-        $table->add_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id']);
-
-        // Conditionally launch create table for questionnaire_response_file.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
-        // Questionnaire savepoint reached.
-        upgrade_mod_savepoint(true, 2023101500, 'questionnaire');
-    }
-
     if ($oldversion < 2025041400.02) {
         $table = new xmldb_table('questionnaire_question');
         $index = new xmldb_index('quest_question_sididx', XMLDB_INDEX_NOTUNIQUE, ['surveyid', 'deleted']);
@@ -1086,6 +1053,41 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         unset($field);
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2025041400.02, 'questionnaire');
+    }
+
+    if ($oldversion < 2025041400.03) {
+        $questiontype = new stdClass();
+        $questiontype->typeid = 12;
+        $questiontype->type = 'File';
+        $questiontype->has_choices = 'n';
+        $questiontype->response_table = 'response_file';
+        if (!$DB->record_exists('questionnaire_question_type', ['typeid' => 12])) {
+            $id = $DB->insert_record('questionnaire_question_type', $questiontype);
+        }
+
+        // Define table questionnaire_response_file to be created.
+        $table = new xmldb_table('questionnaire_response_file');
+
+        // Adding fields to table questionnaire_response_file.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('fileid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table questionnaire_response_file.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('file_fk', XMLDB_KEY_FOREIGN, ['fileid'], 'files', ['id']);
+
+        // Adding indexes to table questionnaire_response_file.
+        $table->add_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id']);
+
+        // Conditionally launch create table for questionnaire_response_file.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2025041400.03, 'questionnaire');
     }
 
     return true;
