@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use mod_questionnaire\local\questionnairelib;
+use mod_questionnaire\questionnaire;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -37,7 +38,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         global $COURSE, $CFG;
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
-        $questionnaire = new questionnairelib($COURSE, $this->_cm, $this->_instance, null);
+        $questionnaire = questionnaire::from_instanceid($this->_instance);
 
         $mform    =& $this->_form;
 
@@ -98,10 +99,6 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);
 
         if (empty($questionnaire->sid)) {
-            if (!isset($questionnaire->id)) {
-                $questionnaire->id = 0;
-            }
-
             $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
             $mform->addHelpButton('contenthdr', 'createcontent', 'questionnaire');
 
