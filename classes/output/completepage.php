@@ -64,6 +64,8 @@ class completepage extends questionnairepage {
             $this->add_progress_bar(1, count($questionsbysec));
         }
 
+        $this->data['surveyform'] = (new complete_form($questionnaire))->render();
+
 return;
         // Survey form, page by page.
 // TODO - currently, print_survey is called from view. print_survey does a lot more than display. view and print_survey share work.
@@ -126,5 +128,34 @@ return;
         $helpicon = new \help_icon('progresshelp', 'mod_questionnaire');
         $templatecontext['progresshelp'] = $helpicon->export_for_template($PAGE->get_renderer('mod_questionnaire'));
         $this->data['progressbar'] = $templatecontext;
+    }
+
+    /**
+     * Render the completion form start HTML.
+     * @param string $action The action URL.
+     * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
+     * @return string The output for the page.
+     */
+    public function complete_formstart($action, $hiddeninputs = []) {
+        $output = '';
+        $output .= \html_writer::start_tag('form', ['id' => 'phpesp_response', 'method' => 'post', 'action' => $action]) . "\n";
+        foreach ($hiddeninputs as $name => $value) {
+            $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
+        }
+        return $output;
+    }
+
+    /**
+     * Render the completion form end HTML.
+     * @param array $inputs Type/attribute array of inputs and values used by the form.
+     * @return string The output for the page.
+     */
+    public function complete_formend($inputs = []) {
+        $output = '';
+        foreach ($inputs as $type => $attributes) {
+            $output .= \html_writer::empty_tag('input', array_merge(['type' => $type], $attributes)) . "\n";
+        }
+        $output .= \html_writer::end_tag('form') . "\n";
+        return $output;
     }
 }
