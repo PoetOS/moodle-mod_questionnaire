@@ -30,6 +30,9 @@ class completepage extends questionnairepage {
     /** @var questionnaire */
     protected $questionnaire;
 
+    /** @var \renderer_base */
+    protected $output;
+
     /**
      * The data to be exported.
      * @var array
@@ -47,10 +50,11 @@ class completepage extends questionnairepage {
      * @param questionnaire $questionnaire The questionnaire object.
      * @param object|null $formdata The form data.
      */
-    public function __construct(questionnaire $questionnaire, ?object $formdata = null) {
+    public function __construct(questionnaire $questionnaire, \renderer_base $output, ?object $formdata = null) {
         global $USER;
 
         $this->questionnaire = $questionnaire;
+        $this->output = $output;
         $message = $questionnaire->user_access_messages($USER->id);
         if (!empty($message)) {
             $this->add_message($message);
@@ -69,6 +73,7 @@ class completepage extends questionnairepage {
             $this->add_progress_bar(1, count($questionsbysec));
         }
 
+        $this->data['surveyform'] = (new complete_form($this->questionnaire, $output))->render();
 return;
         // Survey form, page by page.
 // TODO - currently, print_survey is called from view. print_survey does a lot more than display. view and print_survey share work.
@@ -118,17 +123,6 @@ return;
     }
 
     /**
-     * Export the data for template.
-     * @param \renderer_base $output
-     * @return array The data to be used in the template.
-     */
-    public function export_for_template(\renderer_base $output): array {
-        $form = new complete_form($this->questionnaire, $output);
-        $this->data['surveyform'] = $form->form_start();
-        return parent::export_for_template($output);
-    }
-
-    /**
      * Add a progress bar to the page.
      *
      * @param int $current The current step number.
@@ -142,34 +136,5 @@ return;
         $helpicon = new \help_icon('progresshelp', 'mod_questionnaire');
         $templatecontext['progresshelp'] = $helpicon->export_for_template($PAGE->get_renderer('mod_questionnaire'));
         $this->data['progressbar'] = $templatecontext;
-    }
-
-    /**
-     * Render the completion form start HTML.
-     * @param string $action The action URL.
-     * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_formstart($action, $hiddeninputs = []) {
-        $output = '';
-        $output .= \html_writer::start_tag('form', ['id' => 'phpesp_response', 'method' => 'post', 'action' => $action]) . "\n";
-        foreach ($hiddeninputs as $name => $value) {
-            $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
-        }
-        return $output;
-    }
-
-    /**
-     * Render the completion form end HTML.
-     * @param array $inputs Type/attribute array of inputs and values used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_formend($inputs = []) {
-        $output = '';
-        foreach ($inputs as $type => $attributes) {
-            $output .= \html_writer::empty_tag('input', array_merge(['type' => $type], $attributes)) . "\n";
-        }
-        $output .= \html_writer::end_tag('form') . "\n";
-        return $output;
     }
 }

@@ -44,6 +44,8 @@ class complete_form {
     protected $questionnaire;
     /** @var renderer_base */
     protected $output;
+    /** @var array  Mustache context */
+    protected $context;
     /** @var string */
     protected $renderedhtml;
 
@@ -59,27 +61,16 @@ class complete_form {
         $this->mode = $mode;
         $this->questionnaire = $questionnaire;
         $this->output = $output;
-        $this->renderedhtml = $this->form_start();
+        $this->context = $this->form_start();
     }
 
     /**
      * Override the form start to set the form attributes.
-     * @return string
+     * @return array
      */
-    public function form_start() {
-        return $this->output->complete_formstart(
-            '',
-            [
-                'referer' => '',
-                'a' => $this->questionnaire->id(),
-                'sid' => $this->questionnaire->surveyid(),
-                'rid' => 0,
-                'sec' => 0,
-                'sesskey' => sesskey(),
-            ]
-        );
-        $formdata['action'] = '';
-        $formdata['hiddeninputs'] = [
+    protected function form_start(): array {
+        return [
+            'action' => '',
             'referer' => '',
             'a' => $this->questionnaire->id(),
             'sid' => $this->questionnaire->surveyid(),
@@ -87,7 +78,6 @@ class complete_form {
             'sec' => 0,
             'sesskey' => sesskey(),
         ];
-        return $formdata;
     }
 
     /**
@@ -95,6 +85,6 @@ class complete_form {
      * @return string
      */
     public function render(): string {
-        return $this->renderedhtml;
+        return $this->output->render_from_template('mod_questionnaire/surveyform', $this->context);
     }
 }

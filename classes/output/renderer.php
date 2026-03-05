@@ -142,36 +142,6 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Render the completion form start HTML.
-     * @param string $action The action URL.
-     * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_formstart($action, $hiddeninputs = []) {
-        $output = $this->render_from_template(
-            'mod_questionnaire/surveyform',
-            ['action' => $action, 'hiddeninputs' => $hiddeninputs]
-        );
-print_object($output); die;
-        $this->page->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
-        return $output;
-    }
-
-    /**
-     * Render the completion form end HTML.
-     * @param array $inputs Type/attribute array of inputs and values used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_formend($inputs = []) {
-        $output = '';
-        foreach ($inputs as $type => $attributes) {
-            $output .= \html_writer::empty_tag('input', array_merge(['type' => $type], $attributes)) . "\n";
-        }
-        $output .= \html_writer::end_tag('form') . "\n";
-        return $output;
-    }
-
-    /**
      * Render the completion form control buttons.
      * @param array|string $inputs Name/(Type/attribute) array of input types and values used by the form.
      * @return string The output for the page.

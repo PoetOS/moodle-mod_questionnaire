@@ -41,48 +41,21 @@
 
     Example context (json):
     {
-        "notifications": "<div>Notification one</div>",
-        "respondentinfo": "<div>This is respondent information</div>",
-        "title": "Test Questionnaire",
-        "subtitle": "This is a subtitle",
-        "progressbar": {
-            "percent": "90",
-            "progresshelp": {
-                "title": "Help with something",
-                "text": "Help with something",
-                "url": "http://example.org/help",
-                "linktext": "",
-                "icon":{
-                    "extraclasses": "iconhelp",
-                    "attributes": [
-                        {"name": "src", "value": "../../../pix/help.svg"},
-                        {"name": "alt", "value": "Help icon"}
-                    ]
-                }
-            }
-        },
-        "addinfo": "<div>This is additional information.</div>",
-        "message": "<div>This is a message.</div>",
-        "formstart": "<form id=\"formid\" method=\"post\" action=\"index.php\">",
-        "questions": [
-            "<div>Question 1 HTML</div>",
-            "<div>Question 2 HTML</div>"
-        ],
-        "pageinfo": "<div>This is the page information.</div>",
-        "controlbuttons": "<div>control button HTML</div>",
-        "formend": "</form>"
+        "action": "complete.php",
+        "referer": "view.php",
+        "a": "323",
+        "sid": "1",
+        "rid": "0",
+        "sec": "0",
+        "sesskey": "0xffg45"
     }
     }}
-{{#surveyform}}
 <form id="phpesp_response" method="post" action="{{action}}">
-    {{#hiddeninputs}}
-    <input type="hidden" name="referer" value="">
-    <input type="hidden" name="a" value="1">
-    <input type="hidden" name="sid" value="1">
-    <input type="hidden" name="rid" value="0">
-    <input type="hidden" name="sec" value="1">
-    <input type="hidden" name="sesskey" value="8s2uknlqJD">
-    {{/hiddeninputs}}
+    <input type="hidden" name="referer" value="{{referer}}">
+    <input type="hidden" name="a" value="{{a}}">
+    <input type="hidden" name="sid" value="{{sid}}">
+    <input type="hidden" name="rid" value="{{rid}}">
+    <input type="hidden" name="sec" value="{{sec}}">
+    <input type="hidden" name="sesskey" value="{{sesskey}}">
     {{{questions}}}
 </form>
-{{/surveyform}}

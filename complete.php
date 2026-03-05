@@ -82,7 +82,7 @@ $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 
 // Add renderer and page objects to the questionnaire object for display use.
 $output = $PAGE->get_renderer('mod_questionnaire');
-$page = new \mod_questionnaire\output\completepage($questionnaire, $formdata);
+$page = new \mod_questionnaire\output\completepage($questionnaire, $output, $formdata);
 
 echo $output->header();
 echo $output->render($page);
