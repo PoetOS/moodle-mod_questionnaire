@@ -43,6 +43,7 @@ class renderer extends \plugin_renderer_base {
      * @return string | boolean
      */
     public function render_completepage($page) {
+        $this->page->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
         return $this->render_from_template($page->template(), $page->export_for_template($this));
     }
 
@@ -147,11 +148,11 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      */
     public function complete_formstart($action, $hiddeninputs = []) {
-        $output = '';
-        $output .= \html_writer::start_tag('form', ['id' => 'phpesp_response', 'method' => 'post', 'action' => $action]) . "\n";
-        foreach ($hiddeninputs as $name => $value) {
-            $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
-        }
+        $output = $this->render_from_template(
+            'mod_questionnaire/surveyform',
+            ['action' => $action, 'hiddeninputs' => $hiddeninputs]
+        );
+print_object($output); die;
         $this->page->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
         return $output;
     }

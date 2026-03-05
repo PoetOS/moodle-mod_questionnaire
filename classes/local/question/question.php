@@ -21,6 +21,7 @@ use mod_questionnaire\local\edit_question_form;
 use mod_questionnaire\local\responsetype\response\response;
 use mod_questionnaire\local\questionnairelib;
 use html_writer;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -149,6 +150,14 @@ abstract class question {
         } else {
             $this->choices = [];
         }
+    }
+
+    /**
+     * Return the record id for this question.
+     * @return int
+     */
+    public function id(): int {
+        return $this->record->get('id');
     }
 
     /**
@@ -725,7 +734,7 @@ abstract class question {
      * @param bool $blankquestionnaire
      *
      */
-    abstract protected function question_survey_display($formdata, $descendantsdata, $blankquestionnaire);
+    abstract protected function question_survey_display($formdata = null, $descendantsdata = [], $blankquestionnaire = false);
 
     /**
      * Question specific response display method.

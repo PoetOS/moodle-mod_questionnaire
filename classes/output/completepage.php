@@ -27,6 +27,9 @@ use mod_questionnaire\questionnaire;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class completepage extends questionnairepage {
+    /** @var questionnaire */
+    protected $questionnaire;
+
     /**
      * The data to be exported.
      * @var array
@@ -46,6 +49,8 @@ class completepage extends questionnairepage {
      */
     public function __construct(questionnaire $questionnaire, ?object $formdata = null) {
         global $USER;
+
+        $this->questionnaire = $questionnaire;
         $message = $questionnaire->user_access_messages($USER->id);
         if (!empty($message)) {
             $this->add_message($message);
@@ -63,8 +68,6 @@ class completepage extends questionnairepage {
         if ($questionnaire->use_progressbar() && isset($questionsbysec) && count($questionsbysec) > 1) {
             $this->add_progress_bar(1, count($questionsbysec));
         }
-
-        $this->data['surveyform'] = (new complete_form($questionnaire))->render();
 
 return;
         // Survey form, page by page.
@@ -112,6 +115,17 @@ return;
             $questionnaire->submission_notify($this->rid);
             $this->response_goto_thankyou();
         }
+    }
+
+    /**
+     * Export the data for template.
+     * @param \renderer_base $output
+     * @return array The data to be used in the template.
+     */
+    public function export_for_template(\renderer_base $output): array {
+        $form = new complete_form($this->questionnaire, $output);
+        $this->data['surveyform'] = $form->form_start();
+        return parent::export_for_template($output);
     }
 
     /**

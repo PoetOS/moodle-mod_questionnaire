@@ -29,7 +29,7 @@ class yesno extends question {
      * Each question type must define its response class.
      * @return object The response object based off of questionnaire_response_base.
      */
-    protected function responseclass() {
+    protected function responseclass(): string {
         return '\\mod_questionnaire\\local\\responsetype\\boolean';
     }
 
@@ -37,7 +37,7 @@ class yesno extends question {
      * Short name for this question type - no spaces, etc..
      * @return string
      */
-    public function helpname() {
+    public function helpname(): string {
         return 'yesno';
     }
 
@@ -45,7 +45,7 @@ class yesno extends question {
      * Override and return a form template if provided. Output of question_survey_display is iterpreted based on this.
      * @return string
      */
-    public function question_template() {
+    public function question_template(): string {
         return 'mod_questionnaire/question_yesno';
     }
 
@@ -53,7 +53,7 @@ class yesno extends question {
      * Override and return a response template if provided. Output of question_survey_display is iterpreted based on this.
      * @return string
      */
-    public function response_template() {
+    public function response_template(): string {
         return 'mod_questionnaire/response_yesno';
     }
 
@@ -61,7 +61,7 @@ class yesno extends question {
      * Override this and return true if the question type allows dependent questions.
      * @return bool
      */
-    public function allows_dependents() {
+    public function allows_dependents(): bool {
         return true;
     }
 
@@ -69,7 +69,7 @@ class yesno extends question {
      * True if question type supports feedback options. False by default.
      * @return bool
      */
-    public function supports_feedback() {
+    public function supports_feedback(): bool {
         return true;
     }
 
@@ -77,7 +77,7 @@ class yesno extends question {
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
      * @return bool
      */
-    public function valid_feedback() {
+    public function valid_feedback(): bool {
         return $this->required();
     }
 
@@ -85,7 +85,7 @@ class yesno extends question {
      * Get the maximum score possible for feedback if appropriate. Override if default behaviour is not correct.
      * @return int | boolean
      */
-    public function get_feedback_maxscore() {
+    public function get_feedback_maxscore(): bool|int {
         if ($this->valid_feedback()) {
             $maxscore = 1;
         } else {
@@ -99,7 +99,7 @@ class yesno extends question {
      * question types that support this.
      * @return array An array of valid pair options.
      */
-    protected function get_dependency_options() {
+    protected function get_dependency_options(): array {
         $options = [];
         if ($this->name != '') {
             $options[$this->id . ',0'] = $this->name . '->' . get_string('yes');
@@ -116,7 +116,7 @@ class yesno extends question {
      * @return object The check question context tags.
      * @throws \coding_exception
      */
-    protected function question_survey_display($response, $dependants = [], $blankquestionnaire = false) {
+    protected function question_survey_display($response = null, $dependants = [], $blankquestionnaire = false) {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $stryes = get_string('yes');
@@ -237,7 +237,7 @@ class yesno extends question {
      *
      * @return bool
      */
-    public function supports_mobile() {
+    public function supports_mobile(): bool {
         return true;
     }
 

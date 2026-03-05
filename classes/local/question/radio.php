@@ -44,7 +44,7 @@ class radio extends question {
     /**
      * Return true if the question has choices.
      */
-    public function has_choices() {
+    public function has_choices(): bool {
         return true;
     }
 
@@ -68,14 +68,14 @@ class radio extends question {
      * Override this and return true if the question type allows dependent questions.
      * @return boolean
      */
-    public function allows_dependents() {
+    public function allows_dependents(): bool {
         return true;
     }
 
     /**
      * True if question type supports feedback options. False by default.
      */
-    public function supports_feedback() {
+    public function supports_feedback(): bool {
         return true;
     }
 
@@ -87,7 +87,7 @@ class radio extends question {
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($response, $dependants = [], $blankquestionnaire = false) {
+    protected function question_survey_display($response = null, $dependants = [], $blankquestionnaire = false) {
         // Radio buttons.
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
@@ -237,7 +237,7 @@ class radio extends question {
      * @param object $responsedata The data entered into the response.
      * @return boolean
      */
-    public function response_complete($responsedata) {
+    public function response_complete($responsedata): bool {
         if (
             isset($responsedata->{'q' . $this->id}) && ($this->required()) &&
             (strpos($responsedata->{'q' . $this->id}, 'other_') !== false)
@@ -282,7 +282,7 @@ class radio extends question {
      *
      * @return bool
      */
-    public function supports_mobile() {
+    public function supports_mobile(): bool {
         return true;
     }
 

@@ -91,7 +91,7 @@ class drop extends question {
      * @return object The check question context tags.
      *
      */
-    protected function question_survey_display($response, $dependants, $blankquestionnaire = false): \stdClass {
+    protected function question_survey_display($response = null, $dependants = [], $blankquestionnaire = false): \stdClass {
         // Drop.
         $options = [];
 

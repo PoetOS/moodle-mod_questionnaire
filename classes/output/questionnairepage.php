@@ -18,6 +18,7 @@ namespace mod_questionnaire\output;
 
 use html_writer;
 use mod_questionnaire\questionnaire;
+use moodle_page;
 
 /**
  * Contains class mod_questionnaire\output\viewpage

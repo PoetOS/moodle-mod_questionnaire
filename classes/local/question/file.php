@@ -75,7 +75,7 @@ class file extends question {
      * @param bool $blankquestionnaire
      * @return string
      */
-    protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
+    protected function question_survey_display($response = null, $descendantsdata = null, $blankquestionnaire = false) {
         global $CFG, $PAGE;
         require_once($CFG->libdir . '/filelib.php');
 

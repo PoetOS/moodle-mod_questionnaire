@@ -16,6 +16,9 @@
 
 namespace mod_questionnaire\local\question;
 
+use mod_questionnaire\output\complete_form;
+use stdClass;
+
 /**
  * This file contains the parent class for check question types.
  *
@@ -74,6 +77,18 @@ class check extends question {
     }
 
     /**
+     * Return the question element for the survey form.
+     * @param complete_form $form
+     */
+    public function survey_element(complete_form $form)  {
+        $form->add_element(
+            'checkbox',
+            'q' . $this->id(),
+            'Choice1',
+        );
+    }
+
+    /**
      * Return the context tags for the check question template.
      * @param \mod_questionnaire\local\responsetype\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
@@ -81,7 +96,7 @@ class check extends question {
      * @return \stdClass The check question context tags.
      *
      */
-    protected function question_survey_display($response, $dependants, $blankquestionnaire = false): \stdClass {
+    protected function question_survey_display($response = null, $dependants = [], $blankquestionnaire = false): stdClass {
         // Check boxes.
         $otherempty = false;
         if (!empty($response)) {

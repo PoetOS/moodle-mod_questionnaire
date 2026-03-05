@@ -16,8 +16,10 @@
 
 namespace mod_questionnaire\output;
 
+use mod_questionnaire\local\question\question;
 use mod_questionnaire\questionnaire;
 use moodleform;
+use renderer_base;
 
 /**
  * Contains class mod_questionnaire\output\complete_form
@@ -27,7 +29,7 @@ use moodleform;
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class complete_form extends moodleform {
+class complete_form {
 
     /** @var int */
     const MODE_COMPLETE = 1;
@@ -40,56 +42,59 @@ class complete_form extends moodleform {
     protected $mode;
     /** @var questionnaire */
     protected $questionnaire;
+    /** @var renderer_base */
+    protected $output;
+    /** @var string */
+    protected $renderedhtml;
 
     /**
      * Constructor
      *
      * @param questionnaire $questionnaire
+     * @param renderer_base $output
      * @param int $mode
      * @param array $customdata
      */
-    public function __construct(questionnaire $questionnaire, ?int $mode = self::MODE_COMPLETE, ?array $customdata = null) {
+    public function __construct(questionnaire $questionnaire, renderer_base $output, ?int $mode = self::MODE_COMPLETE, ?array $customdata = null) {
         $this->mode = $mode;
         $this->questionnaire = $questionnaire;
-        // TODO: redefine the id attribute.
-        parent::__construct(
-            customdata: $customdata,
-            attributes: ['id' => 'phpesp_response'],
+        $this->output = $output;
+        $this->renderedhtml = $this->form_start();
+    }
+
+    /**
+     * Override the form start to set the form attributes.
+     * @return string
+     */
+    public function form_start() {
+        return $this->output->complete_formstart(
+            '',
+            [
+                'referer' => '',
+                'a' => $this->questionnaire->id(),
+                'sid' => $this->questionnaire->surveyid(),
+                'rid' => 0,
+                'sec' => 0,
+                'sesskey' => sesskey(),
+            ]
         );
+        $formdata['action'] = '';
+        $formdata['hiddeninputs'] = [
+            'referer' => '',
+            'a' => $this->questionnaire->id(),
+            'sid' => $this->questionnaire->surveyid(),
+            'rid' => 0,
+            'sec' => 0,
+            'sesskey' => sesskey(),
+        ];
+        return $formdata;
     }
 
     /**
-     * Define the form elements.
+     * Summary of render
+     * @return string
      */
-    public function definition() {
-        $mform = $this->_form;
-        $mform->addElement('hidden', 'a', $this->questionnaire->id());
-        $mform->setType('a', PARAM_INT);
-        $mform->addElement('hidden', 'sid', $this->questionnaire->surveyid());
-        $mform->setType('sid', PARAM_INT);
-        $mform->addElement('hidden', 'rid', 0);
-        $mform->setType('rid', PARAM_INT);
-        $mform->addElement('hidden', 'sec', 0);
-        $mform->setType('sec', PARAM_INT);
-
-        $this->add_action_buttons(false, get_string('savechanges'));
-    }
-
-    /**
-     * Optional: custom validation.
-     *
-     * @param array $data
-     * @param array $files
-     * @return array of errors
-     */
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        // add your own checks here
-        // if ($data['completed'] < time()) {
-        //     $errors['completed'] = get_string('invaliddate', 'questionnaire');
-        // }
-
-        return $errors;
+    public function render(): string {
+        return $this->renderedhtml;
     }
 }
