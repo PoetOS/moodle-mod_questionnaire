@@ -138,8 +138,8 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $this->assertEquals('7. Numeric 1004', $data->responses[0]['questions'][7]->questionname);
         $this->assertEquals(83, $data->responses[0]['questions'][7]->answers[0]);
         $this->assertEquals('22. Rate Scale 1014', $data->responses[0]['questions'][22]->questionname);
-        $this->assertEquals('fourteen = 1', $data->responses[0]['questions'][22]->answers[0]);
-        $this->assertEquals('happy = 3', $data->responses[0]['questions'][22]->answers[7]);
+        $this->assertEquals('fourteen = ', $data->responses[0]['questions'][22]->answers[0]);
+        $this->assertEquals('happy = ', $data->responses[0]['questions'][22]->answers[7]);
     }
 
     /**

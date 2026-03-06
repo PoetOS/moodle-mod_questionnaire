@@ -46,6 +46,7 @@ define('QUESSLIDER', 11);
 define('QUESFILE', 12);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
+define('QUESRATEUNANSWERED', -999);
 
 global $idcounter, $CFG;
 $idcounter = 0;

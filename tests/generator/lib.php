@@ -661,7 +661,8 @@ class mod_questionnaire_generator extends testing_module_generator {
                 case QUESRATE:
                     $answers = [];
                     for ($a = 0; $a < count($choices) - 1; $a++) {
-                        $answers[] = new question_response_rank($choices[$a], (($a % 5) + 1));
+                        $rank = $complete ? (($a % 5) + 1) : QUESRATEUNANSWERED;
+                        $answers[] = new question_response_rank($choices[$a], $rank);
                     }
                     $responses[] = new question_response($question->id, $answers);
                     break;
