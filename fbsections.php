@@ -62,7 +62,7 @@ $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 if ($sectionid) {
     // Get the specified section by its id.
-    $feedbacksection = new mod_questionnaire\feedback\section($questionnaire->questions, ['id' => $sectionid]);
+    $feedbacksection = new mod_questionnaire\local\feedback\section($questionnaire->questions, ['id' => $sectionid]);
 } else if (!$DB->count_records('questionnaire_fb_sections', ['surveyid' => $questionnaire->sid])) {
     // There are no sections currently, so create one.
     if ($questionnaire->survey->feedbacksections == 1) {
@@ -70,10 +70,10 @@ if ($sectionid) {
     } else {
         $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
     }
-    $feedbacksection = mod_questionnaire\feedback\section::new_section($questionnaire->sid, $sectionlabel);
+    $feedbacksection = mod_questionnaire\local\feedback\section::new_section($questionnaire->sid, $sectionlabel);
 } else {
     // Get the specified section by section number.
-    $feedbacksection = new mod_questionnaire\feedback\section(
+    $feedbacksection = new mod_questionnaire\local\feedback\section(
         $questionnaire->questions,
         ['surveyid' => $questionnaire->survey->id, 'sectionnum' => $section]
     );
@@ -159,7 +159,7 @@ if ($settings = $feedbackform->get_data()) {
             );
         }
     } else if (isset($settings->addnewsection)) {
-        $newsection = mod_questionnaire\feedback\section::new_section($questionnaire->survey->id, $settings->newsectionlabel);
+        $newsection = mod_questionnaire\local\feedback\section::new_section($questionnaire->survey->id, $settings->newsectionlabel);
         redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'sectionid' => $newsection->id]));
     } else if (isset($fullform->confirmdeletesection)) {
         redirect(

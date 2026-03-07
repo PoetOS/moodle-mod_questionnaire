@@ -25,7 +25,7 @@
 
 namespace mod_questionnaire;
 
-use mod_questionnaire\question\question;
+use mod_questionnaire\local\question\question;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -46,7 +46,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\yesno
+     * @covers \mod_questionnaire\local\question\yesno
      */
     public function test_create_response_boolean(): void {
         global $DB;
@@ -80,7 +80,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\essay
+     * @covers \mod_questionnaire\local\question\essay
      */
     public function test_create_response_text(): void {
         global $DB;
@@ -115,7 +115,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\slider
+     * @covers \mod_questionnaire\local\question\slider
      */
     public function test_create_response_slider(): void {
         global $DB;
@@ -150,7 +150,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\date
+     * @covers \mod_questionnaire\local\question\date
      */
     public function test_create_response_date(): void {
         global $DB;
@@ -186,7 +186,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\radio
+     * @covers \mod_questionnaire\local\question\radio
      */
     public function test_create_response_single(): void {
         global $DB;
@@ -234,7 +234,7 @@ final class responsetypes_test extends \advanced_testcase {
             }
         }
         $vals = ['q' . $question->id => $val,
-                 'q' . $question->id . \mod_questionnaire\question\choice::id_other_choice_name($val) => 'Forty-four'];
+                 'q' . $question->id . \mod_questionnaire\local\question\choice::id_other_choice_name($val) => 'Forty-four'];
         $userid = 2;
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
@@ -265,7 +265,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\rate
+     * @covers \mod_questionnaire\local\question\rate
      */
     public function test_create_response_multiple(): void {
         global $DB;
@@ -293,7 +293,7 @@ final class responsetypes_test extends \advanced_testcase {
                 $val[$cid] = $cid;
             } else if ($choice->content == '!other=Another number') {
                 $val[$cid] = $cid;
-                $val[\mod_questionnaire\question\choice::id_other_choice_name($cid)] = 'Forty-four';
+                $val[\mod_questionnaire\local\question\choice::id_other_choice_name($cid)] = 'Forty-four';
                 $ocid = $cid;
             }
         }
@@ -330,7 +330,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\rate
+     * @covers \mod_questionnaire\local\question\rate
      */
     public function test_create_response_rank(): void {
         global $DB;
@@ -434,7 +434,7 @@ final class responsetypes_test extends \advanced_testcase {
     /**
      * Tests that an old boolean response is deleted correctly.
      *
-     * @covers \mod_questionnaire\responsetype\boolean
+     * @covers \mod_questionnaire\local\responsetype\boolean
      */
     public function test_create_old_response_boolean(): void {
         global $DB;

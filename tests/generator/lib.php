@@ -18,7 +18,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use mod_questionnaire\generator\question_response,
     mod_questionnaire\generator\question_response_rank,
-    mod_questionnaire\question\question;
+    mod_questionnaire\local\question\question;
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
@@ -136,7 +136,7 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param questionnaire $questionnaire
      * @param array|stdClass $record
      * @param array|stdClass $data - accompanying data for question - e.g. choices
-     * @return \mod_questionnaire\question\question the question object
+     * @return \mod_questionnaire\local\question\question the question object
      */
     public function create_question(questionnaire $questionnaire, $record = null, $data = null) {
         global $DB;
@@ -185,7 +185,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         // Add the question.
         $record->id = $DB->insert_record('questionnaire_question', $record);
 
-        $question = \mod_questionnaire\question\question::question_builder($record->type_id, $record->id, $record);
+        $question = \mod_questionnaire\local\question\question::question_builder($record->type_id, $record->id, $record);
 
         // Add the question choices if required.
         if ($typeid !== QUESPAGEBREAK && $typeid !== QUESSECTIONTEXT) {
@@ -321,7 +321,7 @@ class mod_questionnaire_generator extends testing_module_generator {
     /**
      * Add choices to question.
      *
-     * @param \mod_questionnaire\question\question $question
+     * @param \mod_questionnaire\local\question\question $question
      * @param array $data
      */
     protected function add_question_choices($question, $data) {
@@ -448,7 +448,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
     /**
      * Add the response choice.
-     * @param \mod_questionnaire\responsetype\response\response $questionresponse
+     * @param \mod_questionnaire\local\responsetype\response\response $questionresponse
      * @param int $responseid
      */
     protected function add_response_choice($questionresponse, $responseid) {
@@ -612,7 +612,7 @@ class mod_questionnaire_generator extends testing_module_generator {
     /**
      * Generate a response.
      * @param questionnaire $questionnaire
-     * @param \mod_questionnaire\question\question[] $questions
+     * @param \mod_questionnaire\local\question\question[] $questions
      * @param int $userid
      * @param bool $complete
      * @return stdClass

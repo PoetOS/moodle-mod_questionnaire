@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_questionnaire\feedback\section;
+use mod_questionnaire\local\feedback\section;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,12 +33,12 @@ class questionnaire {
     // Class Properties.
 
     /**
-     * @var \mod_questionnaire\question\question[] $quesitons
+     * @var \mod_questionnaire\local\question\question[] $quesitons
      */
     public $questions = [];
 
     /**
-     * @var \mod_questionnaire\question\question[] $deletequestions
+     * @var \mod_questionnaire\local\question\question[] $deletequestions
      */
     public $deletequestions = [];
 
@@ -124,7 +124,7 @@ class questionnaire {
               ORDER BY deleted DESC";
         if ($records = $DB->get_records_sql($sql, [$this->sid, QUESPAGEBREAK])) {
             foreach ($records as $record) {
-                $this->deletequestions[$record->id] = \mod_questionnaire\question\question::question_builder(
+                $this->deletequestions[$record->id] = \mod_questionnaire\local\question\question::question_builder(
                     $record->type_id,
                     $record,
                     $this->context
@@ -169,7 +169,7 @@ class questionnaire {
             $sec = 1;
             $isbreak = false;
             foreach ($records as $record) {
-                $this->questions[$record->id] = \mod_questionnaire\question\question::question_builder(
+                $this->questions[$record->id] = \mod_questionnaire\local\question\question::question_builder(
                     $record->type_id,
                     $record,
                     $this->context
@@ -208,7 +208,7 @@ class questionnaire {
 
         $responses = $this->get_responses($userid);
         foreach ($responses as $response) {
-            $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
+            $this->responses[$response->id] = mod_questionnaire\local\responsetype\response\response::create_from_data($response);
         }
     }
 
@@ -226,7 +226,7 @@ class questionnaire {
         }
 
         $response = $DB->get_record('questionnaire_response', ['id' => $responseid]);
-        $this->responses[$response->id] = mod_questionnaire\responsetype\response\response::create_from_data($response);
+        $this->responses[$response->id] = mod_questionnaire\local\responsetype\response\response::create_from_data($response);
     }
 
     /**
@@ -235,7 +235,7 @@ class questionnaire {
      * @param stdClass $formdata
      */
     public function add_response_from_formdata(stdClass $formdata) {
-        $this->responses[0] = mod_questionnaire\responsetype\response\response::response_from_webform($formdata, $this->questions);
+        $this->responses[0] = mod_questionnaire\local\responsetype\response\response::response_from_webform($formdata, $this->questions);
     }
 
     /**
@@ -243,7 +243,7 @@ class questionnaire {
      *
      * @param stdClass $appdata
      * @param int $sec
-     * @return bool|\mod_questionnaire\responsetype\response\response
+     * @return bool|\mod_questionnaire\local\responsetype\response\response
      */
     public function build_response_from_appdata(stdClass $appdata, $sec = 0) {
         $questions = [];
@@ -254,7 +254,7 @@ class questionnaire {
                 $questions[$questionid] = $this->questions[$questionid];
             }
         }
-        return mod_questionnaire\responsetype\response\response::response_from_appdata($this->id, 0, $appdata, $questions);
+        return mod_questionnaire\local\responsetype\response\response::response_from_appdata($this->id, 0, $appdata, $questions);
     }
 
     /**
@@ -1053,7 +1053,7 @@ class questionnaire {
 
     /**
      * Load needed parent question information into the dependencies structure for the requested question.
-     * @param \mod_questionnaire\question\question $question
+     * @param \mod_questionnaire\local\question\question $question
      * @return bool
      */
     public function load_parents($question) {
@@ -1142,7 +1142,7 @@ class questionnaire {
 
     /**
      * Return the correct action to a next page request.
-     * @param mod_questionnaire\responsetype\response\response $response
+     * @param mod_questionnaire\local\responsetype\response\response $response
      * @param int $userid
      * @return bool|int|string
      */
@@ -1158,7 +1158,7 @@ class questionnaire {
 
     /**
      * Return the correct action to a previous page request.
-     * @param mod_questionnaire\responsetype\response\response $response
+     * @param mod_questionnaire\local\responsetype\response\response $response
      * @param int $userid
      * @return bool|int
      */
@@ -1169,7 +1169,7 @@ class questionnaire {
 
     /**
      * Handle updating an existing response.
-     * @param mod_questionnaire\responsetype\response\response $response
+     * @param mod_questionnaire\local\responsetype\response\response $response
      * @param int $userid
      * @return bool|int
      */
@@ -1745,7 +1745,7 @@ class questionnaire {
                 $this->questions[$questionid]->set_isprint($referer === 'print');
                 $output .= $this->renderer->question_output(
                     $this->questions[$questionid],
-                    $this->responses[0] ?? new \mod_questionnaire\responsetype\response\response(),
+                    $this->responses[0] ?? new \mod_questionnaire\local\responsetype\response\response(),
                     $i++,
                     null,
                     $dependants
@@ -2635,22 +2635,22 @@ class questionnaire {
      */
     private function response_select($rid) {
         // Response_bool (yes/no).
-        $values = \mod_questionnaire\responsetype\boolean::response_select($rid);
+        $values = \mod_questionnaire\local\responsetype\boolean::response_select($rid);
 
         // Response_single (radio button or dropdown).
-        $values += \mod_questionnaire\responsetype\single::response_select($rid);
+        $values += \mod_questionnaire\local\responsetype\single::response_select($rid);
 
         // Response_multiple.
-        $values += \mod_questionnaire\responsetype\multiple::response_select($rid);
+        $values += \mod_questionnaire\local\responsetype\multiple::response_select($rid);
 
         // Response_rank.
-        $values += \mod_questionnaire\responsetype\rank::response_select($rid);
+        $values += \mod_questionnaire\local\responsetype\rank::response_select($rid);
 
         // Response_text.
-        $values += \mod_questionnaire\responsetype\text::response_select($rid);
+        $values += \mod_questionnaire\local\responsetype\text::response_select($rid);
 
         // Response_date.
-        $values += \mod_questionnaire\responsetype\date::response_select($rid);
+        $values += \mod_questionnaire\local\responsetype\date::response_select($rid);
 
         return($values);
     }
@@ -3309,7 +3309,7 @@ class questionnaire {
         }
 
         foreach ($uniquetypes as $type) {
-            $question = \mod_questionnaire\question\question::question_builder($type);
+            $question = \mod_questionnaire\local\question\question::question_builder($type);
             if (!isset($question->responsetype)) {
                 continue;
             }
@@ -3622,7 +3622,7 @@ class questionnaire {
                         foreach ($choices as $choice) {
                             $content = $choice->content;
                             // If "Other" add a column for the actual "other" text entered.
-                            if (\mod_questionnaire\question\choice::content_is_other_choice($content)) {
+                            if (\mod_questionnaire\local\question\choice::content_is_other_choice($content)) {
                                 $col = $choice->name . '_' . $stringother;
                                 $columns[][$qpos] = $col;
                                 $questionidcols[][$qpos] = null;
@@ -3650,7 +3650,7 @@ class questionnaire {
                             array_push($types, '0');
                             // If "Other" add a column for the "other" checkbox.
                             // Then add a column for the actual "other" text entered.
-                            if (\mod_questionnaire\question\choice::content_is_other_choice($content)) {
+                            if (\mod_questionnaire\local\question\choice::content_is_other_choice($content)) {
                                 $content = $stringother;
                                 $col = $choice->name . '->[' . $content . ']';
                                 $columns[][$qpos] = $col;
@@ -3666,7 +3666,7 @@ class questionnaire {
                             $modality = '';
                             $content = $choice->content;
                             $osgood = false;
-                            if (\mod_questionnaire\question\rate::type_is_osgood_rate_scale($choice->precise)) {
+                            if (\mod_questionnaire\local\question\rate::type_is_osgood_rate_scale($choice->precise)) {
                                 $osgood = true;
                             }
                             if (preg_match("/^[0-9]{1,3}=/", $content, $ndd)) {
@@ -3831,7 +3831,7 @@ class questionnaire {
                     }
                 } else {
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
-                    if (\mod_questionnaire\question\choice::content_is_other_choice($content)) {
+                    if (\mod_questionnaire\local\question\choice::content_is_other_choice($content)) {
                         // If this is an "other" column, put the text entered in the next position.
                         $row[$position + 1] = $responserow->response;
                         $choicetxt = empty($responserow->choice_id) ? '0' : '1';
@@ -3860,9 +3860,9 @@ class questionnaire {
                     }
 
                     $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
-                    if (\mod_questionnaire\question\choice::content_is_other_choice($content)) {
+                    if (\mod_questionnaire\local\question\choice::content_is_other_choice($content)) {
                         // If this has an "other" text, use it.
-                        $responsetxt = \mod_questionnaire\question\choice::content_other_choice_display($content);
+                        $responsetxt = \mod_questionnaire\local\question\choice::content_other_choice_display($content);
                         $responsetxt1 = $responserow->response;
                     } else if (($choicecodes == 1) && ($choicetext == 1)) {
                         $responsetxt = $c . ' : ' . $content;

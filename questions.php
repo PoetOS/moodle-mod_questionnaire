@@ -142,7 +142,7 @@ if ($delq) {
     }
 
     // Log question deleted event.
-    $questiontype = \mod_questionnaire\question\question::qtypename($questionnaire->questions[$qid]->type_id);
+    $questiontype = \mod_questionnaire\local\question\question::qtypename($questionnaire->questions[$qid]->type_id);
     questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
 
     if ($questionnairehasdependencies) {
@@ -158,7 +158,7 @@ if ($delpermanentlyq) {
     questionnaire_delete_permanently_questions($qid, $sid);
     $deletedquestion = $questionnaire->deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
-        $questiontype = \mod_questionnaire\question\question::qtypename($deletedquestion->type_id);
+        $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->type_id);
         questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id]);
         $PAGE->set_url($url->out(false));
@@ -264,7 +264,7 @@ if ($action == 'main') {
                 $questionrec->surveyid = $qformdata->sid;
                 $questionrec->type_id = QUESPAGEBREAK;
                 $questionrec->content = 'break';
-                $question = \mod_questionnaire\question\question::question_builder(QUESPAGEBREAK);
+                $question = \mod_questionnaire\local\question\question::question_builder(QUESPAGEBREAK);
                 $question->add($questionrec);
                 $reload = true;
             } else {
@@ -342,7 +342,7 @@ if ($action == 'main') {
     // Log question created event.
     if (isset($qformdata)) {
         $context = context_module::instance($questionnaire->cm->id);
-        $questiontype = \mod_questionnaire\question\question::qtypename($qformdata->type_id);
+        $questiontype = \mod_questionnaire\local\question\question::qtypename($qformdata->type_id);
         $params = [
             'context' => $context,
             'courseid' => $questionnaire->course->id,

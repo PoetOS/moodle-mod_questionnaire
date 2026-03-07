@@ -155,7 +155,7 @@ if ($settings = $feedbackform->get_data()) {
             } else {
                 $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
             }
-            $feedbacksection = mod_questionnaire\feedback\section::new_section($questionnaire->sid, $sectionlabel);
+            $feedbacksection = mod_questionnaire\local\feedback\section::new_section($questionnaire->sid, $sectionlabel);
         }
         redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'section' => $firstsection]));
     }
