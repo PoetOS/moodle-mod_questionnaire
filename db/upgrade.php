@@ -836,7 +836,7 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         }
 
         // Need to move rank named degree choices to the new field.
-        \mod_questionnaire\question\rate::move_all_nameddegree_choices();
+        \mod_questionnaire\local\question\rate::move_all_nameddegree_choices();
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2018110103, 'questionnaire');

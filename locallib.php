@@ -1025,7 +1025,7 @@ function questionnaire_check_page_breaks($questionnaire) {
  * @param stdClass $questionnaire
  * @param int $qid
  * @param int $qtype
- * @return mixed|\mod_questionnaire\question\question
+ * @return mixed|\mod_questionnaire\local\question\question
  */
 function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
     $context = context_module::instance($questionnaire->cm->id);
@@ -1058,7 +1058,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             }
         }
     } else {
-        $question = \mod_questionnaire\question\question::question_builder($qtype);
+        $question = \mod_questionnaire\local\question\question::question_builder($qtype);
         $question->sid = $questionnaire->survey->id;
         $question->id = $questionnaire->cm->id;
         $question->type_id = $qtype;

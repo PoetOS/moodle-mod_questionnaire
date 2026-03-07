@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\output;
 
-use mod_questionnaire\responsetype\response\response;
+use mod_questionnaire\local\responsetype\response\response;
 
 /**
  * Mobile output class for mod_questionnaire.
@@ -102,7 +102,7 @@ class mobile {
                         $data['rid'] = $rid;
                     }
                     $response = (isset($questionnaire->responses) && !empty($questionnaire->responses)) ?
-                        end($questionnaire->responses) : \mod_questionnaire\responsetype\response\response::create_from_data([]);
+                        end($questionnaire->responses) : \mod_questionnaire\local\responsetype\response\response::create_from_data([]);
                     $response->sec = $pagenum;
                     if (isset($result['warnings'])) {
                         if ($action == 'submit') {

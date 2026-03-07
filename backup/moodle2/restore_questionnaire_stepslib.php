@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_questionnaire\feedback\section;
+use mod_questionnaire\local\feedback\section;
 
 /**
  * Define all the restore steps that will be used by the restore_questionnaire_activity_task.
@@ -762,7 +762,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         // Process any old rate question named degree choices after all questions and choices have been restored.
         if ($this->task->get_old_moduleversion() < 2018110103) {
-            \mod_questionnaire\question\rate::move_all_nameddegree_choices($this->get_new_parentid('questionnaire_survey'));
+            \mod_questionnaire\local\question\rate::move_all_nameddegree_choices($this->get_new_parentid('questionnaire_survey'));
         }
     }
 }
