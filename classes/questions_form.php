@@ -368,7 +368,7 @@ class questions_form extends \moodleform {
                     }
                 }
 
-                $typeid = $DB->get_field('questionnaire_question', 'type_id', ['id' => $this->moveq]);
+                $typeid = $DB->get_field('questionnaire_question', 'typeid', ['id' => $this->moveq]);
 
                 if ($display) {
                     // Do not move a page break to first position.

@@ -262,7 +262,7 @@ if ($action == 'main') {
             if ($qformdata->type_id == QUESPAGEBREAK) { // Adding section break is handled right away....
                 $questionrec = new stdClass();
                 $questionrec->surveyid = $qformdata->sid;
-                $questionrec->type_id = QUESPAGEBREAK;
+                $questionrec->typeid = QUESPAGEBREAK;
                 $questionrec->content = 'break';
                 $question = \mod_questionnaire\local\question\question::question_builder(QUESPAGEBREAK);
                 $question->add($questionrec);

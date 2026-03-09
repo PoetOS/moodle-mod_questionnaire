@@ -172,8 +172,8 @@ class rank extends responsetype {
                 $nbna = $DB->count_records(
                     static::response_table(),
                     [
-                        'question_id' => $this->question->id,
-                        'choice_id' => $row->id,
+                        'questionid' => $this->question->id,
+                        'choiceid' => $row->id,
                         'rankvalue' => '-1',
                     ]
                 );

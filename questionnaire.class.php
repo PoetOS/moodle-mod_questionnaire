@@ -81,6 +81,9 @@ class questionnaire {
             foreach ($properties as $property => $value) {
                 $this->$property = $value;
             }
+            // Compat aliases for Phase 1 DB column renames (new column → old PHP property name).
+            $this->resp_view = $this->respview ?? $this->resp_view ?? null;
+            $this->resp_eligible = $this->respeligible ?? $this->resp_eligible ?? null;
         }
 
         if (!empty($this->sid)) {
@@ -120,12 +123,12 @@ class questionnaire {
         $sql = "SELECT *
                   FROM {questionnaire_question}
                  WHERE deleted IS NOT NULL
-                   AND surveyid = ? AND type_id != ?
+                   AND surveyid = ? AND typeid != ?
               ORDER BY deleted DESC";
         if ($records = $DB->get_records_sql($sql, [$this->sid, QUESPAGEBREAK])) {
             foreach ($records as $record) {
                 $this->deletequestions[$record->id] = \mod_questionnaire\local\question\question::question_builder(
-                    $record->type_id,
+                    $record->typeid,
                     $record,
                     $this->context
                 );
@@ -170,12 +173,12 @@ class questionnaire {
             $isbreak = false;
             foreach ($records as $record) {
                 $this->questions[$record->id] = \mod_questionnaire\local\question\question::question_builder(
-                    $record->type_id,
+                    $record->typeid,
                     $record,
                     $this->context
                 );
 
-                if ($record->type_id != QUESPAGEBREAK) {
+                if ($record->typeid != QUESPAGEBREAK) {
                     $this->questionsbysec[$sec][] = $record->id;
                     $isbreak = false;
                 } else {
@@ -1789,9 +1792,9 @@ class questionnaire {
                 'subtitle',
                 'email',
                 'theme',
-                'thanks_page',
-                'thank_head',
-                'thank_body',
+                'thankspage',
+                'thankhead',
+                'thankbody',
                 'feedbacknotes',
                 'info',
                 'feedbacksections',
@@ -1831,9 +1834,9 @@ class questionnaire {
                 'subtitle',
                 'email',
                 'theme',
-                'thanks_page',
-                'thank_head',
-                'thank_body',
+                'thankspage',
+                'thankhead',
+                'thankbody',
                 'feedbacknotes',
                 'info',
                 'feedbacksections',
@@ -1924,7 +1927,7 @@ class questionnaire {
             foreach ($question->choices as $key => $choice) {
                 $oldcid = $key;
                 $newchoice = (object) [
-                    'question_id' => $newqid,
+                    'questionid' => $newqid,
                     'content' => $choice->content,
                     'value' => $choice->value,
                 ];
@@ -2090,7 +2093,7 @@ class questionnaire {
                 return;
             } else {
                 [$qsql, $params] = $DB->get_in_or_equal($qids);
-                $qsql = ' AND question_id ' . $qsql;
+                $qsql = ' AND questionid ' . $qsql;
             }
         } else {
             /* delete all */
@@ -2099,7 +2102,7 @@ class questionnaire {
         }
 
         /* delete values */
-        $select = 'response_id = \'' . $rid . '\' ' . $qsql;
+        $select = 'responseid = \'' . $rid . '\' ' . $qsql;
         foreach (
             [
             'response_bool',
@@ -2192,8 +2195,8 @@ class questionnaire {
             ] as $tbl
         ) {
             $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_' . $tbl . '} a, {questionnaire_question} q ' .
-                'WHERE a.response_id = ? AND ' .
-                'q.id = a.question_id AND ' .
+                'WHERE a.responseid = ? AND ' .
+                'q.id = a.questionid AND ' .
                 'q.surveyid = ? AND ' .
                 'q.deleted IS NULL';
             if ($record = $DB->get_record_sql($sql, [$rid, $this->sid])) {
@@ -2662,11 +2665,11 @@ class questionnaire {
         global $CFG, $USER, $DB;
 
         $select = 'id = ' . $this->survey->id;
-        $fields = 'thanks_page, thank_head, thank_body';
+        $fields = 'thankspage, thankhead, thankbody';
         if ($result = $DB->get_record_select('questionnaire_survey', $select, null, $fields)) {
-            $thankurl = $result->thanks_page;
-            $thankhead = $result->thank_head;
-            $thankbody = $result->thank_body;
+            $thankurl = $result->thankspage;
+            $thankhead = $result->thankhead;
+            $thankbody = $result->thankbody;
         } else {
             $thankurl = '';
             $thankhead = '';
@@ -3049,7 +3052,7 @@ class questionnaire {
         // TO DO - FIX BELOW TO USE STANDARD FUNCTIONS.
         $haschoices = [];
         $responsetable = [];
-        if (!($types = $DB->get_records('questionnaire_question_type', [], 'typeid', 'typeid, has_choices, response_table'))) {
+        if (!($types = $DB->get_records('questionnaire_question_type', [], 'typeid', 'typeid, haschoices, responsetable'))) {
             $errmsg = sprintf(
                 '%s [ %s: question_type ]',
                 get_string('errortable', 'questionnaire'),
@@ -3058,8 +3061,8 @@ class questionnaire {
             return($errmsg);
         }
         foreach ($types as $type) {
-            $haschoices[$type->typeid] = $type->has_choices; // TODO is that variable actually used?
-            $responsetable[$type->typeid] = $type->response_table;
+            $haschoices[$type->typeid] = $type->haschoices; // TODO is that variable actually used?
+            $responsetable[$type->typeid] = $type->responsetable;
         }
 
         // Load survey title (and other globals).
@@ -3574,7 +3577,7 @@ class questionnaire {
             $choicesql = "
                 SELECT DISTINCT c.id as cid, q.id as qid, q.precise AS precise, q.name, c.content
                   FROM {questionnaire_question} q
-                  JOIN {questionnaire_quest_choice} c ON question_id = q.id
+                  JOIN {questionnaire_quest_choice} c ON questionid = q.id
                  WHERE q.surveyid = ? ORDER BY cid ASC
             ";
             $choicerecords = $DB->get_records_sql($choicesql, $choiceparams);
@@ -3822,20 +3825,20 @@ class questionnaire {
             }
 
             if ($qtype === QUESRATE || $qtype === QUESCHECK) {
-                $key = $qid . '_' . $responserow->choice_id;
+                $key = $qid . '_' . $responserow->choiceid;
                 $position = $questionpositions[$key];
                 if ($qtype === QUESRATE) {
                     $choicetxt = $responserow->rankvalue;
                     if ($rankaverages) {
-                        $averagerow[$position] = $averages[$qid][$responserow->choice_id];
+                        $averagerow[$position] = $averages[$qid][$responserow->choiceid];
                     }
                 } else {
-                    $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
+                    $content = $choicesbyqid[$qid][$responserow->choiceid]->content;
                     if (\mod_questionnaire\local\question\choice::content_is_other_choice($content)) {
                         // If this is an "other" column, put the text entered in the next position.
                         $row[$position + 1] = $responserow->response;
-                        $choicetxt = empty($responserow->choice_id) ? '0' : '1';
-                    } else if (!empty($responserow->choice_id)) {
+                        $choicetxt = empty($responserow->choiceid) ? '0' : '1';
+                    } else if (!empty($responserow->choiceid)) {
                         $choicetxt = '1';
                     } else {
                         $choicetxt = '0';
@@ -3853,13 +3856,13 @@ class questionnaire {
                         // Get position of choice.
                         foreach ($choices as $choice) {
                             $c++;
-                            if ($responserow->choice_id === $choice->cid) {
+                            if ($responserow->choiceid === $choice->cid) {
                                 break;
                             }
                         }
                     }
 
-                    $content = $choicesbyqid[$qid][$responserow->choice_id]->content;
+                    $content = $choicesbyqid[$qid][$responserow->choiceid]->content;
                     if (\mod_questionnaire\local\question\choice::content_is_other_choice($content)) {
                         // If this has an "other" text, use it.
                         $responsetxt = \mod_questionnaire\local\question\choice::content_other_choice_display($content);

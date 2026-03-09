@@ -414,7 +414,7 @@ abstract class question {
         $choiceval = $this->responsetype->transform_choiceid($choiceid);
         return $DB->record_exists(
             $this->response_table(),
-            ['response_id' => $rid, 'question_id' => $this->id, 'choice_id' => $choiceval]
+            ['responseid' => $rid, 'questionid' => $this->id, 'choiceid' => $choiceval]
         );
     }
 
@@ -645,7 +645,7 @@ abstract class question {
             $questionrecord->id = $this->id;
             $questionrecord->surveyid = $this->surveyid;
             $questionrecord->name = $this->name;
-            $questionrecord->type_id = $this->type_id;
+            $questionrecord->typeid = $this->type_id;
             $questionrecord->result_id = $this->result_id;
             $questionrecord->length = $this->length;
             $questionrecord->precise = $this->precise;
@@ -695,15 +695,15 @@ abstract class question {
         }
 
         // Make sure we add all necessary data.
-        if (!isset($questionrecord->type_id) || empty($questionrecord->type_id)) {
-            $questionrecord->type_id = $this->type_id;
+        if (!isset($questionrecord->typeid) || empty($questionrecord->typeid)) {
+            $questionrecord->typeid = $this->type_id;
         }
 
         $this->qid = $DB->insert_record('questionnaire_question', $questionrecord);
 
         if ($this->has_choices() && !empty($choicerecords)) {
             foreach ($choicerecords as $choicerecord) {
-                $choicerecord->question_id = $this->qid;
+                $choicerecord->questionid = $this->qid;
                 $this->add_choice($choicerecord);
             }
         }
@@ -725,7 +725,7 @@ abstract class question {
             foreach ($this->choices as $key => $choice) {
                 $choicerecord = new \stdClass();
                 $choicerecord->id = $key;
-                $choicerecord->question_id = $qid;
+                $choicerecord->questionid = $qid;
                 $choicerecord->content = $choice->content;
                 $choicerecord->value = $choice->value;
                 $retvalue &= $this->update_choice($choicerecord);
@@ -1072,8 +1072,8 @@ abstract class question {
         $mform->setType('qid', PARAM_INT);
         $mform->addElement('hidden', 'sid', 0);
         $mform->setType('sid', PARAM_INT);
-        $mform->addElement('hidden', 'type_id', $this->type_id);
-        $mform->setType('type_id', PARAM_INT);
+        $mform->addElement('hidden', 'typeid', $this->type_id);
+        $mform->setType('typeid', PARAM_INT);
         $mform->addElement('hidden', 'action', 'question');
         $mform->setType('action', PARAM_ALPHA);
 
@@ -1447,7 +1447,7 @@ abstract class question {
                 $formdata->content
             );
 
-            $fields = ['name', 'type_id', 'length', 'precise', 'required', 'content', 'extradata'];
+            $fields = ['name', 'typeid', 'length', 'precise', 'required', 'content', 'extradata'];
             $questionrecord = new \stdClass();
             $questionrecord->id = $formdata->qid;
             foreach ($fields as $f) {
@@ -1465,7 +1465,7 @@ abstract class question {
             // Create new question:
             // Need to update any image content after the question is created, so create then update the content.
             $formdata->surveyid = $formdata->sid;
-            $fields = ['surveyid', 'name', 'type_id', 'length', 'precise', 'required', 'position', 'extradata'];
+            $fields = ['surveyid', 'name', 'typeid', 'length', 'precise', 'required', 'position', 'extradata'];
             $questionrecord = new \stdClass();
             foreach ($fields as $f) {
                 if (isset($formdata->$f)) {

@@ -63,8 +63,8 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
 
-        $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
-        $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
+        $mform->addElement('select', 'respview', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
+        $mform->addHelpButton('respview', 'responseview', 'questionnaire');
 
         $notificationoptions = [
             0 => get_string('no'),

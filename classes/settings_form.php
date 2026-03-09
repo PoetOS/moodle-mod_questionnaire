@@ -73,22 +73,22 @@ class settings_form extends \moodleform {
 
         $mform->addElement('header', 'submithdr', get_string('submitoptions', 'questionnaire'));
 
-        $mform->addElement('text', 'thanks_page', get_string('url', 'questionnaire'), ['size' => '60']);
-        $mform->setType('thanks_page', PARAM_TEXT);
-        $mform->setDefault('thanks_page', $questionnaire->survey->thanks_page);
-        $mform->addHelpButton('thanks_page', 'url', 'questionnaire');
+        $mform->addElement('text', 'thankspage', get_string('url', 'questionnaire'), ['size' => '60']);
+        $mform->setType('thankspage', PARAM_TEXT);
+        $mform->setDefault('thankspage', $questionnaire->survey->thankspage);
+        $mform->addHelpButton('thankspage', 'url', 'questionnaire');
 
         $mform->addElement('static', 'confmes', get_string('confalts', 'questionnaire'));
         $mform->addHelpButton('confmes', 'confpage', 'questionnaire');
 
-        $mform->addElement('text', 'thank_head', get_string('headingtext', 'questionnaire'), ['size' => '30']);
-        $mform->setType('thank_head', PARAM_TEXT);
-        $mform->setDefault('thank_head', $questionnaire->survey->thank_head);
+        $mform->addElement('text', 'thankhead', get_string('headingtext', 'questionnaire'), ['size' => '30']);
+        $mform->setType('thankhead', PARAM_TEXT);
+        $mform->setDefault('thankhead', $questionnaire->survey->thankhead);
 
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
-        $mform->addElement('editor', 'thank_body', get_string('bodytext', 'questionnaire'), null, $editoroptions);
-        $mform->setType('thank_body', PARAM_RAW);
-        $mform->setDefault('thank_body', $questionnaire->survey->thank_body);
+        $mform->addElement('editor', 'thankbody', get_string('bodytext', 'questionnaire'), null, $editoroptions);
+        $mform->setType('thankbody', PARAM_RAW);
+        $mform->setDefault('thankbody', $questionnaire->survey->thankbody);
 
         $allowemailreporting = get_config('questionnaire', 'allowemailreporting');
         if (!$allowemailreporting) {

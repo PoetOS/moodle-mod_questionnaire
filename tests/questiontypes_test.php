@@ -203,7 +203,7 @@ final class questiontypes_test extends \advanced_testcase {
         $questionnaire = $generator->create_instance(['course' => $course->id]);
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
-        $questiondata['type_id'] = $qtype;
+        $questiondata['typeid'] = $qtype;
         $questiondata['surveyid'] = $questionnaire->sid;
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
@@ -212,7 +212,7 @@ final class questiontypes_test extends \advanced_testcase {
         $this->assertTrue($question->id > 0);
 
         // Question object retrieved from the database should have correct data.
-        $this->assertEquals($question->type_id, $qtype);
+        $this->assertEquals($question->type_id, $qtype); // Type_id is a PHP class property on question objects.
         foreach ($questiondata as $property => $value) {
             $this->assertEquals($question->$property, $value);
         }

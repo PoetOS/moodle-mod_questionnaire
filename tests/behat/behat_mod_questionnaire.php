@@ -240,7 +240,7 @@ class behat_mod_questionnaire extends behat_base {
                 "id",
                 "surveyid",
                 "name",
-                "type_id",
+                "typeid",
                 "result_id",
                 "length",
                 "precise",
@@ -312,7 +312,7 @@ class behat_mod_questionnaire extends behat_base {
         ];
 
         $choicedata = [
-            ["id", "question_id", "content", "value"],
+            ["id", "questionid", "content", "value"],
             ["1", "7", "1", null],
             ["2", "7", "2", null],
             ["3", "7", "3", null],
@@ -338,7 +338,7 @@ class behat_mod_questionnaire extends behat_base {
         ];
 
         $this->add_data($questiondata, 'questionnaire_question', 'questionmap');
-        $this->add_data($choicedata, 'questionnaire_quest_choice', 'choicemap', ['questionmap' => 'question_id']);
+        $this->add_data($choicedata, 'questionnaire_quest_choice', 'choicemap', ['questionmap' => 'questionid']);
     }
 
     /**
@@ -364,7 +364,7 @@ class behat_mod_questionnaire extends behat_base {
         $this->add_data($responses, 'questionnaire_response', 'responsemap');
 
         $responsebool = [
-            ["id", "response_id", "question_id", "choice_id"],
+            ["id", "responseid", "questionid", "choiceid"],
             ["", "1", "1", "y"],
             ["", "1", "4", "n"],
             ["", "2", "1", "y"],
@@ -384,11 +384,11 @@ class behat_mod_questionnaire extends behat_base {
             $responsebool,
             'questionnaire_response_bool',
             '',
-            ['responsemap' => 'response_id', 'questionmap' => 'question_id']
+            ['responsemap' => 'responseid', 'questionmap' => 'questionid']
         );
 
         $responsedate = [
-            ["id", "response_id", "question_id", "response"],
+            ["id", "responseid", "questionid", "response"],
             ["", "1", "8", "2014-12-19"],
             ["", "2", "8", "2015-12-02"],
             ["", "3", "8", "2015-12-04"],
@@ -400,11 +400,11 @@ class behat_mod_questionnaire extends behat_base {
             $responsedate,
             'questionnaire_response_date',
             '',
-            ['responsemap' => 'response_id', 'questionmap' => 'question_id']
+            ['responsemap' => 'responseid', 'questionmap' => 'questionid']
         );
 
         $responseother = [
-            ["id", "response_id", "question_id", "choice_id", "response"],
+            ["id", "responseid", "questionid", "choiceid", "response"],
             ["", "5", "7", "21", "Forty-four"],
             ["", "6", "12", "22", "Green"],
             ["", "7", "7", "21", "5"],
@@ -413,11 +413,11 @@ class behat_mod_questionnaire extends behat_base {
             $responseother,
             'questionnaire_response_other',
             '',
-            ['responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id']
+            ['responsemap' => 'responseid', 'questionmap' => 'questionid', 'choicemap' => 'choiceid']
         );
 
         $responserank = [
-            ["id", "response_id", "question_id", "choice_id", "rankvalue"],
+            ["id", "responseid", "questionid", "choiceid", "rankvalue"],
             ["", "1", "13", "16", "0"],
             ["", "1", "13", "17", "1"],
             ["", "1", "13", "18", "2"],
@@ -458,11 +458,11 @@ class behat_mod_questionnaire extends behat_base {
             $responserank,
             'questionnaire_response_rank',
             '',
-            ['responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id']
+            ['responsemap' => 'responseid', 'questionmap' => 'questionid', 'choicemap' => 'choiceid']
         );
 
         $respmultiple = [
-            ["id", "response_id", "question_id", "choice_id"],
+            ["id", "responseid", "questionid", "choiceid"],
             ["", "1", "7", "1"],
             ["", "1", "7", "3"],
             ["", "1", "7", "5"],
@@ -483,11 +483,11 @@ class behat_mod_questionnaire extends behat_base {
             $respmultiple,
             'questionnaire_resp_multiple',
             '',
-            ['responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id']
+            ['responsemap' => 'responseid', 'questionmap' => 'questionid', 'choicemap' => 'choiceid']
         );
 
         $respsingle = [
-            ["id", "response_id", "question_id", "choice_id"],
+            ["id", "responseid", "questionid", "choiceid"],
             ["", "1", "9", "7"],
             ["", "1", "12", "15"],
             ["", "2", "9", "7"],
@@ -505,7 +505,7 @@ class behat_mod_questionnaire extends behat_base {
             $respsingle,
             'questionnaire_resp_single',
             '',
-            ['responsemap' => 'response_id', 'questionmap' => 'question_id', 'choicemap' => 'choice_id']
+            ['responsemap' => 'responseid', 'questionmap' => 'questionid', 'choicemap' => 'choiceid']
         );
     }
 

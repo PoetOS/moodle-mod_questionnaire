@@ -1068,7 +1068,7 @@ class rate extends question {
                 }
 
                 // First get all existing rank responses for this question.
-                $responses = $DB->get_recordset('questionnaire_response_rank', ['question_id' => $question->id]);
+                $responses = $DB->get_recordset('questionnaire_response_rank', ['questionid' => $question->id]);
                 // Iterating over each response record ensures we won't change an existing record more than once.
                 foreach ($responses as $response) {
                     // Then, if the old value exists, set it to the new one.
@@ -1105,7 +1105,7 @@ class rate extends question {
             $qids = $DB->get_records_menu(
                 'questionnaire_question',
                 ['surveyid' => $surveyid,
-                'type_id' => QUESRATE],
+                'typeid' => QUESRATE],
                 '',
                 'id,surveyid'
             );
@@ -1123,14 +1123,14 @@ class rate extends question {
                 'SET rankvalue = (rankvalue + 1) ' .
                 'WHERE (rankvalue >= 0)';
             if ($surveyid !== null) {
-                $select .= ' AND (question_id ' . $qsql . ')';
+                $select .= ' AND (questionid ' . $qsql . ')';
             } else {
                 $qparams = [];
             }
             $DB->execute($select, $qparams);
         }
 
-        $args = ['type_id' => QUESRATE];
+        $args = ['typeid' => QUESRATE];
         if ($surveyid !== null) {
             $args['surveyid'] = $surveyid;
         }

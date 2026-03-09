@@ -293,7 +293,7 @@ function questionnaire_delete_survey($sid, $questionnaireid) {
     // Delete all question data for the survey.
     if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid], 'id')) {
         foreach ($questions as $question) {
-            $DB->delete_records('questionnaire_quest_choice', ['question_id' => $question->id]);
+            $DB->delete_records('questionnaire_quest_choice', ['questionid' => $question->id]);
             questionnaire_delete_dependencies($question->id);
         }
         $status = $status && $DB->delete_records('questionnaire_question', ['surveyid' => $sid]);
@@ -406,14 +406,14 @@ function questionnaire_delete_response($response, $questionnaire = '') {
     }
 
     // Delete all of the response data for a response.
-    $DB->delete_records('questionnaire_response_bool', ['response_id' => $rid]);
-    $DB->delete_records('questionnaire_response_date', ['response_id' => $rid]);
-    $DB->delete_records('questionnaire_resp_multiple', ['response_id' => $rid]);
-    $DB->delete_records('questionnaire_response_other', ['response_id' => $rid]);
-    $DB->delete_records('questionnaire_response_rank', ['response_id' => $rid]);
-    $DB->delete_records('questionnaire_resp_single', ['response_id' => $rid]);
-    $DB->delete_records('questionnaire_response_text', ['response_id' => $rid]);
-    $DB->delete_records('questionnaire_response_file', ['response_id' => $rid]);
+    $DB->delete_records('questionnaire_response_bool', ['responseid' => $rid]);
+    $DB->delete_records('questionnaire_response_date', ['responseid' => $rid]);
+    $DB->delete_records('questionnaire_resp_multiple', ['responseid' => $rid]);
+    $DB->delete_records('questionnaire_response_other', ['responseid' => $rid]);
+    $DB->delete_records('questionnaire_response_rank', ['responseid' => $rid]);
+    $DB->delete_records('questionnaire_resp_single', ['responseid' => $rid]);
+    $DB->delete_records('questionnaire_response_text', ['responseid' => $rid]);
+    $DB->delete_records('questionnaire_response_file', ['responseid' => $rid]);
 
     $status = $status && $DB->delete_records('questionnaire_response', ['id' => $rid]);
 
@@ -437,14 +437,14 @@ function questionnaire_delete_responses($qid) {
     global $DB;
 
     // Delete all of the response data for a question.
-    $DB->delete_records('questionnaire_response_bool', ['question_id' => $qid]);
-    $DB->delete_records('questionnaire_response_date', ['question_id' => $qid]);
-    $DB->delete_records('questionnaire_resp_multiple', ['question_id' => $qid]);
-    $DB->delete_records('questionnaire_response_other', ['question_id' => $qid]);
-    $DB->delete_records('questionnaire_response_rank', ['question_id' => $qid]);
-    $DB->delete_records('questionnaire_resp_single', ['question_id' => $qid]);
-    $DB->delete_records('questionnaire_response_text', ['question_id' => $qid]);
-    $DB->delete_records('questionnaire_response_file', ['question_id' => $qid]);
+    $DB->delete_records('questionnaire_response_bool', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_response_date', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_resp_multiple', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_response_other', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_response_rank', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_resp_single', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_response_text', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_response_file', ['questionid' => $qid]);
 
     return true;
 }
@@ -473,10 +473,10 @@ function questionnaire_delete_pagebreaks($sid) {
     global $DB;
     $DB->delete_records_select(
         'questionnaire_question',
-        'surveyid = :sid AND deleted IS NOT NULL AND type_id = :type_id',
+        'surveyid = :sid AND deleted IS NOT NULL AND typeid = :typeid',
         [
             'sid' => $sid,
-            'type_id' => QUESPAGEBREAK,
+            'typeid' => QUESPAGEBREAK,
         ]
     );
 }
@@ -757,11 +757,11 @@ function questionnaire_get_parent($question) {
     $dependquestion = $DB->get_record(
         'questionnaire_question',
         ['id' => $question->dependquestionid],
-        'id, position, name, type_id'
+        'id, position, name, typeid'
     );
     if (is_object($dependquestion)) {
         $qdependchoice = '';
-        switch ($dependquestion->type_id) {
+        switch ($dependquestion->typeid) {
             case QUESRADIO:
             case QUESDROP:
             case QUESCHECK:
@@ -790,7 +790,7 @@ function questionnaire_get_parent($question) {
         // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
         $parent[$qid]['qdependquestion'] = 'q' . $dependquestion->id;
         $parent[$qid]['qdependchoice'] = $qdependchoice;
-        $parent[$qid]['parenttype'] = $dependquestion->type_id;
+        $parent[$qid]['parenttype'] = $dependquestion->typeid;
         // Other fields to be used in Questions edit mode.
         $parent[$qid]['position'] = $question->position;
         $parent[$qid]['name'] = $question->name;
@@ -881,8 +881,8 @@ function questionnaire_check_page_breaks($questionnaire) {
     ) {
         foreach ($questions as $key => $qu) {
             $newqu = new stdClass();
-            $newqu->question_id = $key;
-            $newqu->type_id = $qu->type_id;
+            $newqu->questionid = $key;
+            $newqu->typeid = $qu->typeid;
             $newqu->qname = $qu->name;
             $newqu->qpos = $qu->position;
 
@@ -906,14 +906,14 @@ function questionnaire_check_page_breaks($questionnaire) {
         $prevtypeid = null;
         if ($i > 0) {
             $prevqu = $positions[$i - 1];
-            $prevtypeid = $prevqu['type_id'];
+            $prevtypeid = $prevqu['typeid'];
         }
-        if ($qu['type_id'] == QUESPAGEBREAK) {
+        if ($qu['typeid'] == QUESPAGEBREAK) {
             $questionnb--;
             // If more than one consecutive page breaks, remove extra one(s).
             // Remove that extra page break in 1st position.
             if ($prevtypeid == QUESPAGEBREAK || $i == $count - 1 || $qu['qpos'] == 1) {
-                $qid = $qu['question_id'];
+                $qid = $qu['questionid'];
                 $delpb++;
                 $msg .= get_string("checkbreaksremoved", "questionnaire", $delpb) . '<br />';
                 // Need to reload questions.
@@ -942,7 +942,7 @@ function questionnaire_check_page_breaks($questionnaire) {
             }
         }
         // Add pagebreak between question child and not dependent question that follows.
-        if ($qu['type_id'] != QUESPAGEBREAK) {
+        if ($qu['typeid'] != QUESPAGEBREAK) {
             if ($prevqu) {
                 $prevdependencies = $prevqu['dependencies'];
                 $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ?
@@ -993,7 +993,7 @@ function questionnaire_check_page_breaks($questionnaire) {
                     }
                     $question = new stdClass();
                     $question->surveyid = $questionnaire->survey->id;
-                    $question->type_id = QUESPAGEBREAK;
+                    $question->typeid = QUESPAGEBREAK;
                     $question->position = $pos;
                     $question->content = 'break';
 
@@ -1127,9 +1127,9 @@ function count_reponses_question(int $qid, int $qtype): int {
 
     $countresps = 0;
     if ($qtype != QUESSECTIONTEXT) {
-        $responsetable = $DB->get_field('questionnaire_question_type', 'response_table', ['typeid' => $qtype]);
+        $responsetable = $DB->get_field('questionnaire_question_type', 'responsetable', ['typeid' => $qtype]);
         if (!empty($responsetable)) {
-            $countresps = $DB->count_records('questionnaire_' . $responsetable, ['question_id' => $qid]);
+            $countresps = $DB->count_records('questionnaire_' . $responsetable, ['questionid' => $qid]);
         }
     }
 
@@ -1184,7 +1184,7 @@ function questionnaire_delete_old_responses() {
 
             // Delete related response data.
             foreach ($responsetables as $tablename) {
-                $DB->delete_records_list($tablename, 'response_id', $oldresponsesid);
+                $DB->delete_records_list($tablename, 'responseid', $oldresponsesid);
             }
 
             // Delete from the main response table.
