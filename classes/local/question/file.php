@@ -64,7 +64,7 @@ class file extends question {
      * @return object|string
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\responsetype\\file';
+        return '\\mod_questionnaire\\local\\responsetype\\file';
     }
 
     /**

@@ -30,7 +30,7 @@ class yesno extends question {
      * @return object The response object based off of questionnaire_response_base.
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\responsetype\\boolean';
+        return '\\mod_questionnaire\\local\\responsetype\\boolean';
     }
 
     /**
