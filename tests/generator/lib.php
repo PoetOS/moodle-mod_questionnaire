@@ -22,7 +22,7 @@ use mod_questionnaire\generator\question_response,
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php');
 
 /**
  * The mod_questionnaire data generator.

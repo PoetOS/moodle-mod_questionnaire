@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php');
 require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
 /**
