@@ -30,7 +30,7 @@ class date extends question {
      * @return string
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\responsetype\\date';
+        return '\\mod_questionnaire\\local\\responsetype\\date';
     }
 
     /**
