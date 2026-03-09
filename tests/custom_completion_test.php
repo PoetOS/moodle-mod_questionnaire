@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php');
 
 /**
  * Class for unit testing mod_questionnaire/custom_completion.
