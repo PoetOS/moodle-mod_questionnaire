@@ -306,14 +306,14 @@ class boolean extends responsetype {
         // NOTE - the actual use of "boolean" should probably change to not use "choice_id" at all, or use it as
         // numeric zero and one instead.
         $alias = 'qrb';
-        $extraselect = '0 AS choice_id, ' . $DB->sql_order_by_text('qrb.choice_id', 1000) . ' AS response, 0 AS rankvalue';
+        $extraselect = '0 AS choiceid, ' . $DB->sql_order_by_text('qrb.choiceid', 1000) . ' AS response, 0 AS rankvalue';
 
         return "
             SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'" . $this->question->helpname() . "'", $alias . '.id']) . " AS id,
-                   qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
+                   qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.questionid AS questionid,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {" . static::response_table() . "} $alias ON $alias.response_id = qr.id
+              JOIN {" . static::response_table() . "} $alias ON $alias.responseid = qr.id
         ";
     }
 }

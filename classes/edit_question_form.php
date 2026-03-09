@@ -47,7 +47,7 @@ class edit_question_form extends \moodleform {
         if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
             $question->required = $SESSION->questionnaire->required;
         }
-        if (!isset($question->type_id)) {
+        if (!isset($question->typeid)) {
             throw new \moodle_exception('undefinedquestiontype', 'mod_questionnaire');
         }
 

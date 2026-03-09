@@ -129,8 +129,7 @@ class questionnaire {
      * Load all active questions for this questionnaire, grouped by section.
      *
      * Questions returned by get_active_for_survey() are question_record persistents.
-     * The old question class constructor expects a stdClass with type_id (old column name),
-     * so we convert and add a compat shim before handing off.
+     * Convert each to a plain stdClass before passing to the question class constructor.
      *
      * @return void
      */
@@ -145,9 +144,7 @@ class questionnaire {
         $isbreak = false;
 
         foreach ($questionrecs as $questionrec) {
-            // Convert persistent to stdClass and add compat shim for old question constructor.
             $rec = $questionrec->to_record();
-            $rec->type_id = $rec->typeid;
 
             $typeid = $questionrec->get('typeid');
             $this->questions[$questionrec->get('id')] = question::question_builder($typeid, $rec);

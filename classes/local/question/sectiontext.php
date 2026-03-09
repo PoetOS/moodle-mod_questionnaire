@@ -78,7 +78,7 @@ class sectiontext extends question {
         $mobiledata = (object)[
             'id' => $this->id,
             'name' => $this->name,
-            'type_id' => $this->type_id,
+            'typeid' => $this->typeid,
             'length' => $this->length,
             'content' => format_text(
                 file_rewrite_pluginfile_urls(
