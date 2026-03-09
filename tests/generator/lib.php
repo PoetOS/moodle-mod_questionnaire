@@ -625,7 +625,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $choices = array_values($question->choices);
             }
 
-            switch ($question->type_id) {
+            switch ($question->typeid) {
                 case QUESTEXT:
                     $responses[] = new question_response($question->id, 'Test answer');
                     break;

@@ -81,9 +81,6 @@ class questionnaire {
             foreach ($properties as $property => $value) {
                 $this->$property = $value;
             }
-            // Compat aliases for Phase 1 DB column renames (new column → old PHP property name).
-            $this->resp_view = $this->respview ?? $this->resp_view ?? null;
-            $this->resp_eligible = $this->respeligible ?? $this->resp_eligible ?? null;
         }
 
         if (!empty($this->sid)) {
@@ -479,10 +476,10 @@ class questionnaire {
             if (!$question->dependency_fulfilled($rid, $this->questions)) {
                 continue;
             }
-            if ($question->type_id < QUESPAGEBREAK) {
+            if ($question->typeid < QUESPAGEBREAK) {
                 $i++;
             }
-            if ($question->type_id != QUESPAGEBREAK) {
+            if ($question->typeid != QUESPAGEBREAK) {
                 $this->page->add_to_page(
                     'responses',
                     $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf)
@@ -728,9 +725,9 @@ class questionnaire {
             // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
             if (
                 $this->capabilities->readallresponses &&
-                ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
             ) {
                 return true;
             }
@@ -752,9 +749,9 @@ class questionnaire {
             // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
             if (
                 $this->capabilities->readallresponses &&
-                ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
             ) {
                 return true;
             }
@@ -828,9 +825,9 @@ class questionnaire {
         // subject to viewing settings..
         return $grouplogic && $respslogic && $this->is_survey_owner() &&
             ($this->capabilities->readallresponses &&
-                ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                    ($this->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
     }
 
     /**
@@ -1067,7 +1064,7 @@ class questionnaire {
         foreach ($question->dependencies as $did => $dependency) {
             $dependquestion = $this->questions[$dependency->dependquestionid];
             $qdependchoice = '';
-            switch ($dependquestion->type_id) {
+            switch ($dependquestion->typeid) {
                 case QUESRADIO:
                 case QUESDROP:
                 case QUESCHECK:
@@ -1095,7 +1092,7 @@ class questionnaire {
             // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
             $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id;
             $question->dependencies[$did]->qdependchoice = $qdependchoice;
-            $question->dependencies[$did]->parenttype = $dependquestion->type_id;
+            $question->dependencies[$did]->parenttype = $dependquestion->typeid;
             // Other fields to be used in Questions edit mode.
             $question->dependencies[$did]->position = $question->position;
             $question->dependencies[$did]->name = $question->name;
@@ -1375,7 +1372,7 @@ class questionnaire {
         if ($section > 1) {
             for ($j = 2; $j <= $section; $j++) {
                 foreach ($this->questionsbysec[$j - 1] as $questionid) {
-                    if ($this->questions[$questionid]->type_id < QUESPAGEBREAK) {
+                    if ($this->questions[$questionid]->typeid < QUESPAGEBREAK) {
                         $i++;
                     }
                 }
@@ -2007,7 +2004,7 @@ class questionnaire {
         for ($j = 2; $j <= $section; $j++) {
             // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED.
             foreach ($this->questionsbysec[$j - 1] as $questionid) {
-                $tid = $this->questions[$questionid]->type_id;
+                $tid = $this->questions[$questionid]->typeid;
                 if ($tid < QUESPAGEBREAK) {
                     $i++;
                 }
@@ -2170,7 +2167,7 @@ class questionnaire {
         global $DB;
 
         $pos = $this->response_select_max_pos($rid);
-        $select = 'surveyid = ? AND type_id = ? AND position < ? AND deleted IS NULL';
+        $select = 'surveyid = ? AND typeid = ? AND position < ? AND deleted IS NULL';
         $params = [$this->sid, QUESPAGEBREAK, $pos];
         $max = $DB->count_records_select('questionnaire_question', $select, $params) + 1;
 
@@ -2435,7 +2432,7 @@ class questionnaire {
             $response->questionname = $question->position . '. ' . $question->name;
             $response->questiontext = $question->content;
             $response->answers = [];
-            if ($question->type_id == 8) {
+            if ($question->typeid == 8) {
                 $choices = [];
                 $cids = [];
                 foreach ($question->choices as $cid => $choice) {
@@ -3174,7 +3171,7 @@ class questionnaire {
         $anonymous = $this->respondenttype == 'anonymous';
 
         foreach ($this->questions as $question) {
-            if ($question->type_id == QUESPAGEBREAK) {
+            if ($question->typeid == QUESPAGEBREAK) {
                 continue;
             }
             if ($question->is_numbered()) {
@@ -3252,7 +3249,7 @@ class questionnaire {
         $uniquetables = [];
 
         foreach ($this->questions as $question) {
-            $type = $question->type_id;
+            $type = $question->typeid;
             $responsetable = $question->responsetable;
             // Build SQL for this question type if not already done.
             if (!$uniquebytable || !in_array($responsetable, $uniquetables)) {
@@ -3483,7 +3480,7 @@ class questionnaire {
                 $positioned[] = $row[$c];
             } else if (isset($questionsbyposition[$c])) {
                 $question = $questionsbyposition[$c];
-                $qtype = intval($question->type_id);
+                $qtype = intval($question->typeid);
                 if ($qtype === QUESCHECK) {
                     $positioned[] = '0';
                 } else {
@@ -3611,7 +3608,7 @@ class questionnaire {
             $qid = $question->id;
             $qpos = $question->position;
             $col = $question->name;
-            $type = $question->type_id;
+            $type = $question->typeid;
             if (in_array($type, $choicetypes)) {
                 /* single or multiple or rate */
                 if (!isset($choicesbyqid[$qid])) {
@@ -3778,7 +3775,7 @@ class questionnaire {
         $useridentityfields = [];
         foreach ($allresponsesrs as $responserow) {
             $rid = $responserow->rid;
-            $qid = $responserow->question_id;
+            $qid = $responserow->questionid;
 
             // It's possible for a response to exist for a deleted question. Ignore these.
             if (!isset($this->questions[$qid])) {
@@ -3801,7 +3798,7 @@ class questionnaire {
             }
 
             $question = $this->questions[$qid];
-            $qtype = intval($question->type_id);
+            $qtype = intval($question->typeid);
             if ($rankaverages) {
                 if ($qtype === QUESRATE) {
                     if (empty($averages[$qid])) {
@@ -3855,7 +3852,7 @@ class questionnaire {
                 if ($questionobj->has_choices()) {
                     // This is choice type question, so process as so.
                     $c = 0;
-                    if (in_array(intval($question->type_id), $choicetypes)) {
+                    if (in_array(intval($question->typeid), $choicetypes)) {
                         $choices = $choicesbyqid[$qid];
                         // Get position of choice.
                         foreach ($choices as $choice) {

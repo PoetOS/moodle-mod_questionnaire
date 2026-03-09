@@ -212,7 +212,7 @@ final class questiontypes_test extends \advanced_testcase {
         $this->assertTrue($question->id > 0);
 
         // Question object retrieved from the database should have correct data.
-        $this->assertEquals($question->type_id, $qtype); // Type_id is a PHP class property on question objects.
+        $this->assertEquals($question->typeid, $qtype);
         foreach ($questiondata as $property => $value) {
             $this->assertEquals($question->$property, $value);
         }

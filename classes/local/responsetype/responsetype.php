@@ -396,7 +396,7 @@ abstract class responsetype {
             ]
         ) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid,
-                   $alias.questionid AS question_id,
+                   $alias.questionid AS questionid,
                    $extraselect
               FROM {questionnaire_response} qr
               JOIN {" . $config->table . "} $alias

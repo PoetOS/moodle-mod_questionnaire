@@ -122,7 +122,7 @@ class numerical extends question {
         $choice->name = 'q' . $this->id;
         $choice->maxlength = $this->length;
         $choice->value = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
-        $choice->id = self::qtypename($this->type_id) . $this->id;
+        $choice->id = self::qtypename($this->typeid) . $this->id;
         $questiontags->qelements = new \stdClass();
         $questiontags->qelements->choice = $choice;
         return $questiontags;

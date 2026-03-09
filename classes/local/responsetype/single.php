@@ -400,7 +400,7 @@ class single extends responsetype {
         return "
             SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'" . $this->question->helpname() . "'", $alias . '.id']) . " AS id,
                    qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid,
-                   $alias.questionid AS question_id,
+                   $alias.questionid AS questionid,
                    $extraselect
               FROM {questionnaire_response} qr
               JOIN {" . static::response_table() . "} $alias ON $alias.responseid = qr.id

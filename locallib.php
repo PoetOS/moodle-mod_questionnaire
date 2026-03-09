@@ -1061,7 +1061,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
         $question = \mod_questionnaire\local\question\question::question_builder($qtype);
         $question->sid = $questionnaire->survey->id;
         $question->id = $questionnaire->cm->id;
-        $question->type_id = $qtype;
+        $question->typeid = $qtype;
         $question->type = '';
         $draftideditor = file_get_submitted_draft_itemid('question');
         $content = file_prepare_draft_area(
