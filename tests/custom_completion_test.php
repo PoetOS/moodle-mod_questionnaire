@@ -94,7 +94,7 @@ final class custom_completion_test extends \advanced_testcase {
         $questionnaire = $generator->create_instance(['course' => $course->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC,
             $rule => $available]);
 
-        $questiondata['type_id'] = 1;
+        $questiondata['typeid'] = 1;
         $questiondata['surveyid'] = $questionnaire->sid;
         $questiondata['name'] = 'Q1';
         $questiondata['content'] = 'Test content';

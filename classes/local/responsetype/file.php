@@ -138,8 +138,8 @@ class file extends responsetype {
         global $DB;
         // Check, if we have an old response file from a former attempt.
         $record = $DB->get_record(static::response_table(), [
-            'response_id' => $responseid,
-            'question_id' => $questionid,
+            'responseid' => $responseid,
+            'questionid' => $questionid,
         ]);
         if ($record) {
             // Old record found, then delete all referenced entries in the files table and then delete this entry.

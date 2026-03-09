@@ -94,8 +94,8 @@ final class lib_test extends \advanced_testcase {
         $questdata->introformat = FORMAT_HTML;
         $questdata->qtype = 1;
         $questdata->respondenttype = 'anonymous';
-        $questdata->resp_eligible = 'none';
-        $questdata->resp_view = 2;
+        $questdata->respeligible = 'none';
+        $questdata->respview = 2;
         $questdata->opendate = 99;
         $questdata->closedate = 50;
         $questdata->resume = 1;
@@ -137,8 +137,8 @@ final class lib_test extends \advanced_testcase {
         $qrow = $DB->get_record('questionnaire', ['id' => $qid]);
         $qrow->qtype = 1;
         $qrow->respondenttype = 'anonymous';
-        $qrow->resp_eligible = 'none';
-        $qrow->resp_view = 2;
+        $qrow->respeligible = 'none';
+        $qrow->respview = 2;
         $qrow->opendate = 99;
         $qrow->closedate = 50;
         $qrow->resume = 1;
@@ -160,8 +160,8 @@ final class lib_test extends \advanced_testcase {
         $this->assertNotEmpty($questrecord);
         $this->assertEquals($qrow->qtype, $questrecord->qtype);
         $this->assertEquals($qrow->respondenttype, $questrecord->respondenttype);
-        $this->assertEquals($qrow->resp_eligible, $questrecord->resp_eligible);
-        $this->assertEquals($qrow->resp_view, $questrecord->resp_view);
+        $this->assertEquals($qrow->respeligible, $questrecord->respeligible);
+        $this->assertEquals($qrow->respview, $questrecord->respview);
         $this->assertEquals($qrow->opendate, $questrecord->opendate);
         $this->assertEquals($qrow->closedate, $questrecord->closedate);
         $this->assertEquals($qrow->resume, $questrecord->resume);
@@ -210,7 +210,7 @@ final class lib_test extends \advanced_testcase {
         $this->assertEmpty($DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]));
         $this->assertEmpty($DB->get_records('questionnaire_question', ['surveyid' => $survey->id]));
         $this->assertEmpty($DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaire->id]));
-        $this->assertEmpty($DB->get_records('questionnaire_response_bool', ['response_id' => $response->id]));
+        $this->assertEmpty($DB->get_records('questionnaire_response_bool', ['responseid' => $response->id]));
         $this->assertEmpty($DB->get_records('event', ["modulename" => 'questionnaire', "instance" => $questionnaire->id]));
     }
 
@@ -361,11 +361,11 @@ final class lib_test extends \advanced_testcase {
 
         // Add three questions.
         $q1 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 1, 'deleted' => null, 'content' => 'Q1']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 1, 'deleted' => null, 'content' => 'Q1']);
         $q2 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 2, 'deleted' => null, 'content' => 'Q2']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 2, 'deleted' => null, 'content' => 'Q2']);
         $q3 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 3, 'deleted' => null, 'content' => 'Q3']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 3, 'deleted' => null, 'content' => 'Q3']);
 
         // Delete Q2 and Q3.
         $DB->set_field('questionnaire_question', 'deleted', 1234567890, ['id' => $q2]);

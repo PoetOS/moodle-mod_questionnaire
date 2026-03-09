@@ -69,7 +69,7 @@ class edit_question_form extends \moodleform {
         $errors = parent::validation($data, $files);
 
         // If this is a rate question.
-        if ($data['type_id'] == QUESRATE) {
+        if ($data['typeid'] == QUESRATE) {
             if ($data['length'] < 2) {
                 $errors["length"] = get_string('notenoughscaleitems', 'questionnaire');
             }
@@ -90,7 +90,7 @@ class edit_question_form extends \moodleform {
         }
 
         // If this is a slider question.
-        if ($data['type_id'] == QUESSLIDER) {
+        if ($data['typeid'] == QUESSLIDER) {
             if (
                 isset($data['minrange']) &&
                 isset($data['maxrange']) &&

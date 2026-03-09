@@ -84,8 +84,8 @@ class mod_questionnaire_generator extends testing_module_generator {
         $defaultquestionnairesettings = [
             'qtype' => 0,
             'respondenttype' => 'fullname',
-            'resp_eligible' => 'all',
-            'resp_view' => 0,
+            'respeligible' => 'all',
+            'respview' => 0,
             'opendate' => 0,
             'closedate' => 0,
             'resume' => 0,
@@ -156,16 +156,16 @@ class mod_questionnaire_generator extends testing_module_generator {
             throw new coding_exception('name must be present in phpunit_util::create_question() $record');
         }
 
-        if (!isset($record['type_id'])) {
+        if (!isset($record['typeid'])) {
             throw new coding_exception('typeid must be present in phpunit_util::create_question() $record');
         }
 
         if (!isset($record['content'])) {
-            $record['content'] = 'Random ' . $this->type_str($record['type_id']) . ' ' . uniqid();
+            $record['content'] = 'Random ' . $this->type_str($record['typeid']) . ' ' . uniqid();
         }
 
         // Get question type.
-        $typeid = $record['type_id'];
+        $typeid = $record['typeid'];
 
         if ($typeid === QUESRATE && !isset($record['length'])) {
             $record['length'] = 5;
@@ -185,7 +185,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         // Add the question.
         $record->id = $DB->insert_record('questionnaire_question', $record);
 
-        $question = \mod_questionnaire\local\question\question::question_builder($record->type_id, $record->id, $record);
+        $question = \mod_questionnaire\local\question\question::question_builder($record->typeid, $record->id, $record);
 
         // Add the question choices if required.
         if ($typeid !== QUESPAGEBREAK && $typeid !== QUESSECTIONTEXT) {
@@ -213,7 +213,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         $questionnaire = $this->create_instance(['course' => $course->id]);
         $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
         if ($qtype !== null) {
-            $questiondata['type_id'] = $qtype;
+            $questiondata['typeid'] = $qtype;
             $questiondata['surveyid'] = $questionnaire->sid;
             $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
             $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
@@ -333,7 +333,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 ];
             }
             $record = (object)[
-                'question_id' => $question->id,
+                'questionid' => $question->id,
                 'content' => $content->content,
                 'value' => $content->value,
             ];
@@ -455,7 +455,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         global $DB;
 
         $question = $DB->get_record('questionnaire_question', ['id' => $questionresponse->questionid]);
-        $qtype = intval($question->type_id);
+        $qtype = intval($question->typeid);
 
         if (is_array($questionresponse->response)) {
             foreach ($questionresponse->response as $choice) {
@@ -488,7 +488,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
                 // Lookup the choice id.
                 $comptext = $DB->sql_compare_text('content');
-                $select = 'WHERE question_id = ? AND ' . $comptext . ' = ?';
+                $select = 'WHERE questionid = ? AND ' . $comptext . ' = ?';
 
                 $params = [intval($question->id), $choiceval];
                 $rs = $DB->get_records_sql("SELECT * FROM {questionnaire_quest_choice} $select", $params, 0, 1);
@@ -503,9 +503,9 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $DB->insert_record(
                     'questionnaire_response_rank',
                     [
-                        'response_id' => $responseid,
-                        'question_id' => $questionresponse->questionid,
-                        'choice_id' => $choiceid,
+                        'responseid' => $responseid,
+                        'questionid' => $questionresponse->questionid,
+                        'choiceid' => $choiceid,
                         'rankvalue' => $questionresponse->response->rankvalue,
                     ]
                 );
@@ -518,9 +518,9 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $DB->insert_record(
                     $instable,
                     [
-                        'response_id' => $responseid,
-                        'question_id' => $questionresponse->questionid,
-                        'choice_id' => $choiceid,
+                        'responseid' => $responseid,
+                        'questionid' => $questionresponse->questionid,
+                        'choiceid' => $choiceid,
                     ]
                 );
             }
@@ -528,8 +528,8 @@ class mod_questionnaire_generator extends testing_module_generator {
             $DB->insert_record(
                 'questionnaire_response_text',
                 [
-                    'response_id' => $responseid,
-                    'question_id' => $questionresponse->questionid,
+                    'responseid' => $responseid,
+                    'questionid' => $questionresponse->questionid,
                     'response' => $questionresponse->response,
                 ]
             );
@@ -748,7 +748,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         [
                             'surveyid' => $questionnaire->sid,
                             'name' => $qdg->type_name($questiontype),
-                            'type_id' => QUESSECTIONTEXT,
+                            'typeid' => QUESSECTIONTEXT,
                         ]
                     );
                     // Create questions.
@@ -762,7 +762,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                             [
                                 'surveyid' => $questionnaire->sid,
                                 'name' => $qdg->type_name($questiontype) . ' ' . $qname++,
-                                'type_id' => $questiontype,
+                                'typeid' => $questiontype,
                             ],
                             $opts
                         );
@@ -773,7 +773,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         [
                             'surveyid' => $questionnaire->sid,
                             'name' => 'pagebreak ' . $qname++,
-                            'type_id' => QUESPAGEBREAK,
+                            'typeid' => QUESPAGEBREAK,
                         ]
                     );
                 }

@@ -109,9 +109,9 @@ function questionnaire_add_instance($questionnaire) {
             $sdata->subtitle = '';
             $sdata->info = '';
             $sdata->theme = ''; // Theme is deprecated.
-            $sdata->thanks_page = '';
-            $sdata->thank_head = '';
-            $sdata->thank_body = '';
+            $sdata->thankspage = '';
+            $sdata->thankhead = '';
+            $sdata->thankbody = '';
             $sdata->email = '';
             $sdata->feedbacknotes = '';
             $sdata->courseid = $course->id;

@@ -368,7 +368,7 @@ class single extends responsetype {
 
         $sql .= "
             AND qr.questionnaireid $qsql $showcompleteonly
-      LEFT JOIN {questionnaire_response_other} qro ON qro.response_id = qr.id AND qro.choice_id = qrs.choice_id
+      LEFT JOIN {questionnaire_response_other} qro ON qro.responseid = qr.id AND qro.choiceid = qrs.choiceid
       LEFT JOIN {user} u ON u.id = qr.userid
       $groupsql
         ";
@@ -395,14 +395,15 @@ class single extends responsetype {
 
         $userfields = $this->user_fields_sql();
         $alias = 'qrs';
-        $extraselect = 'qrs.choice_id, ' . $DB->sql_order_by_text('qro.response', 1000) . ' AS response, 0 AS rankvalue';
+        $extraselect = 'qrs.choiceid, ' . $DB->sql_order_by_text('qro.response', 1000) . ' AS response, 0 AS rankvalue';
 
         return "
             SELECT " . $DB->sql_concat_join("'_'", ['qr.id', "'" . $this->question->helpname() . "'", $alias . '.id']) . " AS id,
-                   qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid, $alias.question_id,
+                   qr.submitted, qr.complete, qr.grade, qr.userid, $userfields, qr.id AS rid,
+                   $alias.questionid AS question_id,
                    $extraselect
               FROM {questionnaire_response} qr
-              JOIN {" . static::response_table() . "} $alias ON $alias.response_id = qr.id
+              JOIN {" . static::response_table() . "} $alias ON $alias.responseid = qr.id
         ";
     }
 }
