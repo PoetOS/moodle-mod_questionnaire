@@ -208,7 +208,7 @@ abstract class question {
      * @return mixed
      */
     public static function question_builder($qtype, $qdata = null, $context = null) {
-        $qclassname = '\\mod_questionnaire\\question\\' . self::qtypename($qtype);
+        $qclassname = '\\mod_questionnaire\\local\\question\\' . self::qtypename($qtype);
         $qid = 0;
         if (!empty($qdata) && is_array($qdata)) {
             $qdata = (object)$qdata;
