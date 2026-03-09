@@ -55,8 +55,8 @@ function draw_chart(
     }
     $nblabels = count($labels);
     $charttitlefont = "Verdana";
-    $charttitlesize = 10;
-    $charttitlesize2 = 10;
+    $charttitlesize = 9;
+    $charttitlesize2 = 9;
     if ($PAGE->pagetype == 'mod-questionnaire-myreport') {
         $charttitle = get_string('yourresponse', 'questionnaire');
     } else {
