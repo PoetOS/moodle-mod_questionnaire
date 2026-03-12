@@ -172,7 +172,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         }
 
         if ($typeid !== QUESPAGEBREAK && $typeid !== QUESSECTIONTEXT) {
-            $qtype = $DB->get_record('questionnaire_question_type', ['id' => $typeid]);
+            $qtype = $DB->get_record('questionnaire_question_type', ['typeid' => $typeid]);
             if (!$qtype) {
                 throw new coding_exception('Could not find question type with id ' . $typeid);
             }

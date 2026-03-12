@@ -91,9 +91,9 @@ class boolean extends responsetype {
 
         if (!empty($response) && isset($response->answers[$this->question->id][0])) {
             $record = new \stdClass();
-            $record->response_id = $response->id;
-            $record->question_id = $this->question->id;
-            $record->choice_id = $response->answers[$this->question->id][0]->choiceid;
+            $record->responseid = $response->id;
+            $record->questionid = $this->question->id;
+            $record->choiceid = $response->answers[$this->question->id][0]->choiceid;
             return $DB->insert_record(static::response_table(), $record);
         } else {
             return false;
@@ -115,14 +115,14 @@ class boolean extends responsetype {
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
-            $rsql = ' AND response_id ' . $rsql;
+            $rsql = ' AND responseid ' . $rsql;
         }
         $params[] = '';
 
-        $sql = 'SELECT choice_id, COUNT(response_id) AS num ' .
+        $sql = 'SELECT choiceid, COUNT(responseid) AS num ' .
                'FROM {' . static::response_table() . '} ' .
-               'WHERE question_id= ? ' . $rsql . ' AND choice_id != ? ' .
-               'GROUP BY choice_id';
+               'WHERE questionid= ? ' . $rsql . ' AND choiceid != ? ' .
+               'GROUP BY choiceid';
         return $DB->get_records_sql($sql, $params);
     }
 
@@ -153,21 +153,21 @@ class boolean extends responsetype {
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
-            $rsql = ' AND response_id ' . $rsql;
+            $rsql = ' AND responseid ' . $rsql;
         }
         $params[] = 'y';
 
         $feedbackscores = false;
-        $sql = 'SELECT response_id, choice_id ' .
+        $sql = 'SELECT responseid, choiceid ' .
             'FROM {' . $this->response_table() . '} ' .
-            'WHERE question_id= ? ' . $rsql . ' ' .
-            'ORDER BY response_id ASC';
+            'WHERE questionid= ? ' . $rsql . ' ' .
+            'ORDER BY responseid ASC';
         if ($responses = $DB->get_recordset_sql($sql, $params)) {
             $feedbackscores = [];
             foreach ($responses as $rid => $response) {
                 $feedbackscores[$rid] = new stdClass();
                 $feedbackscores[$rid]->rid = $rid;
-                $feedbackscores[$rid]->score = ($response->choice_id == 'y') ? 1 : 0;
+                $feedbackscores[$rid]->score = ($response->choiceid == 'y') ? 1 : 0;
             }
         }
         return $feedbackscores;
@@ -209,7 +209,7 @@ class boolean extends responsetype {
         $numrespondents = 0;
         if ($rows = $this->get_results($rids, $anonymous)) {
             foreach ($rows as $row) {
-                $choice = $row->choice_id;
+                $choice = $row->choiceid;
                 $count = $row->num;
                 if ($choice == 'y') {
                     $choice = $stryes;
@@ -236,14 +236,14 @@ class boolean extends responsetype {
         global $DB;
 
         $values = [];
-        $sql = 'SELECT q.id, q.content, a.choice_id ' .
+        $sql = 'SELECT q.id, q.content, a.choiceid ' .
             'FROM {' . static::response_table() . '} a, {questionnaire_question} q ' .
-            'WHERE a.response_id= ? AND a.question_id=q.id ';
+            'WHERE a.responseid= ? AND a.questionid=q.id ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $qid => $row) {
-            $choice = $row->choice_id;
+            $choice = $row->choiceid;
             unset($row->id);
-            unset($row->choice_id);
+            unset($row->choiceid);
             $row = (array)$row;
             $newrow = [];
             foreach ($row as $key => $val) {
@@ -271,9 +271,9 @@ class boolean extends responsetype {
         global $DB;
 
         $answers = [];
-        $sql = 'SELECT id, response_id as responseid, question_id as questionid, choice_id as choiceid, choice_id as value ' .
+        $sql = 'SELECT id, responseid as responseid, questionid as questionid, choiceid as choiceid, choiceid as value ' .
             'FROM {' . static::response_table() . '} ' .
-            'WHERE response_id = ? ';
+            'WHERE responseid = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         foreach ($records as $record) {
             $record->choiceid = ($record->choiceid == 'y') ? 1 : 0;
@@ -301,9 +301,9 @@ class boolean extends responsetype {
         global $DB;
 
         $userfields = $this->user_fields_sql();
-        // Postgres requires all fields to be the same type. Boolean type returns a character value as "choice_id",
+        // Postgres requires all fields to be the same type. Boolean type returns a character value as "choiceid",
         // while all others are an integer. So put the boolean response in "response" field instead (CONTRIB-6436).
-        // NOTE - the actual use of "boolean" should probably change to not use "choice_id" at all, or use it as
+        // NOTE - the actual use of "boolean" should probably change to not use "choiceid" at all, or use it as
         // numeric zero and one instead.
         $alias = 'qrb';
         $extraselect = '0 AS choiceid, ' . $DB->sql_order_by_text('qrb.choiceid', 1000) . ' AS response, 0 AS rankvalue';
