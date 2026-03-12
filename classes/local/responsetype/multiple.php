@@ -110,10 +110,10 @@ class multiple extends single {
         $values = [];
         $sql = 'SELECT a.id, q.id as qid, q.content, c.content as ccontent, c.id as cid, o.response ' .
             'FROM {' . static::response_table() . '} a ' .
-            'INNER JOIN {questionnaire_question} q ON a.question_id = q.id ' .
-            'INNER JOIN {questionnaire_quest_choice} c ON a.choice_id = c.id ' .
-            'LEFT JOIN {questionnaire_response_other} o ON a.response_id = o.response_id AND c.id = o.choice_id ' .
-            'WHERE a.response_id = ? ';
+            'INNER JOIN {questionnaire_question} q ON a.questionid = q.id ' .
+            'INNER JOIN {questionnaire_quest_choice} c ON a.choiceid = c.id ' .
+            'LEFT JOIN {questionnaire_response_other} o ON a.responseid = o.responseid AND c.id = o.choiceid ' .
+            'WHERE a.responseid = ? ';
         $records = $DB->get_records_sql($sql, [$rid]);
         if (!empty($records)) {
             $qid = 0;

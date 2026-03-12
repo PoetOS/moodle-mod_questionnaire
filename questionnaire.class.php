@@ -3319,6 +3319,9 @@ class questionnaire {
             $allresponsessql .= $sql;
         }
 
+        if (empty($allresponsessql)) {
+            return [];
+        }
         $allresponsessql .= " ORDER BY usrid, id";
         $allresponses = $DB->get_recordset_sql($allresponsessql, $allresponsesparams);
         return $allresponses ?? [];

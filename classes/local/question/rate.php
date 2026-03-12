@@ -887,9 +887,9 @@ class rate extends question {
         $cnum = 0;
         foreach ($this->choices as $choiceid => $choice) {
             $choice->na = false;
-            $choice->choice_id = $choiceid;
+            $choice->choiceid = $choiceid;
             $choice->id = $choiceid;
-            $choice->question_id = $this->id;
+            $choice->questionid = $this->id;
 
             // Add a fieldkey for each choice.
             $choice->fieldkey = $this->mobile_fieldkey($choiceid);
@@ -958,7 +958,7 @@ class rate extends question {
             }
 
             if (!in_array($choiceid, $excludes)) {
-                $choice->choice_id = $choiceid;
+                $choice->choiceid = $choiceid;
                 if ($choice->value == null) {
                     $choice->value = '';
                 }

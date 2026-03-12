@@ -223,8 +223,8 @@ class date extends question {
         $choices = [];
         $choices[0] = new \stdClass();
         $choices[0]->id = 0;
-        $choices[0]->choice_id = 0;
-        $choices[0]->question_id = $this->id;
+        $choices[0]->choiceid = 0;
+        $choices[0]->questionid = $this->id;
         $choices[0]->content = '';
         $choices[0]->value = null;
         return $choices;
