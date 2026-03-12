@@ -195,21 +195,7 @@ class questionnaire {
      * @param int $userid
      */
     public function add_user_responses($userid = null) {
-        global $USER, $DB;
-
-        // Empty questionnaires cannot have responses.
-        if (empty($this->id)) {
-            return;
-        }
-
-        if ($userid === null) {
-            $userid = $USER->id;
-        }
-
-        $responses = $this->get_responses($userid);
-        foreach ($responses as $response) {
-            $this->responses[$response->id] = mod_questionnaire\local\responsetype\response\response::create_from_data($response);
-        }
+        $this->responsemanager()->add_user_responses($userid);
     }
 
     /**
@@ -218,15 +204,7 @@ class questionnaire {
      * @param int $responseid
      */
     public function add_response(int $responseid) {
-        global $DB;
-
-        // Empty questionnaires cannot have responses.
-        if (empty($this->id)) {
-            return;
-        }
-
-        $response = $DB->get_record('questionnaire_response', ['id' => $responseid]);
-        $this->responses[$response->id] = mod_questionnaire\local\responsetype\response\response::create_from_data($response);
+        $this->responsemanager()->add_response($responseid);
     }
 
     /**
@@ -235,7 +213,7 @@ class questionnaire {
      * @param stdClass $formdata
      */
     public function add_response_from_formdata(stdClass $formdata) {
-        $this->responses[0] = mod_questionnaire\local\responsetype\response\response::response_from_webform($formdata, $this->questions);
+        $this->responsemanager()->add_response_from_formdata($formdata);
     }
 
     /**
@@ -246,15 +224,7 @@ class questionnaire {
      * @return bool|\mod_questionnaire\local\responsetype\response\response
      */
     public function build_response_from_appdata(stdClass $appdata, $sec = 0) {
-        $questions = [];
-        if ($sec == 0) {
-            $questions = $this->questions;
-        } else {
-            foreach ($this->questionsbysec[$sec] as $questionid) {
-                $questions[$questionid] = $this->questions[$questionid];
-            }
-        }
-        return mod_questionnaire\local\responsetype\response\response::response_from_appdata($this->id, 0, $appdata, $questions);
+        return $this->responsemanager()->build_response_from_appdata($appdata, $sec);
     }
 
     /**
@@ -263,6 +233,17 @@ class questionnaire {
      */
     public function add_renderer(plugin_renderer_base $renderer) {
         $this->renderer = $renderer;
+    }
+
+    /**
+     * Return the response manager for this questionnaire instance (lazy-initialised).
+     * @return \mod_questionnaire\local\response\manager
+     */
+    public function responsemanager(): \mod_questionnaire\local\response\manager {
+        if (!isset($this->responsemanager)) {
+            $this->responsemanager = new \mod_questionnaire\local\response\manager($this);
+        }
+        return $this->responsemanager;
     }
 
     /**
@@ -360,9 +341,7 @@ class questionnaire {
      * @return bool|int
      */
     public function delete_insert_response($rid, $sec, $quser) {
-        $this->response_delete($rid, $sec);
-        $this->rid = $this->response_insert((object)['sec' => $sec, 'rid' => $rid], $quser);
-        return $this->rid;
+        return $this->responsemanager()->delete_insert_response($rid, $sec, $quser);
     }
 
     /**
@@ -371,34 +350,7 @@ class questionnaire {
      * @param int $quser
      */
     public function commit_submission_response($rid, $quser) {
-        $this->response_commit($rid);
-        // If it was a previous save, rid is in the form...
-        if (!empty($rid) && is_numeric($rid)) {
-            $rid = $rid;
-            // Otherwise its in this object.
-        } else {
-            $rid = $this->rid;
-        }
-
-        $this->update_grades($quser);
-
-        // Update completion state.
-        $completion = new \completion_info($this->course);
-        if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
-            $completion->update_state($this->cm, COMPLETION_COMPLETE);
-        }
-        // Log this submitted response.
-        $context = \context_module::instance($this->cm->id);
-        $anonymous = $this->respondenttype == 'anonymous';
-        $params = [
-            'context' => $context,
-            'courseid' => $this->course->id,
-            'relateduserid' => $quser,
-            'anonymous' => $anonymous,
-            'other' => ['questionnaireid' => $this->id],
-        ];
-        $event = \mod_questionnaire\event\attempt_submitted::create($params);
-        $event->trigger();
+        $this->responsemanager()->commit_submission_response($rid, $quser);
     }
 
     /**
@@ -406,7 +358,7 @@ class questionnaire {
      *
      * @param int $userid
      */
-    private function update_grades($userid) {
+    public function update_grades($userid) {
         if ($this->grade != 0) {
             $questionnaire = new \stdClass();
             $questionnaire->id = $this->id;
@@ -619,12 +571,7 @@ class questionnaire {
      * @return bool
      */
     public function user_has_saved_response($userid) {
-        global $DB;
-
-        return $DB->record_exists(
-            'questionnaire_response',
-            ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n']
-        );
+        return $this->responsemanager()->user_has_saved_response($userid);
     }
 
     /**
@@ -882,48 +829,7 @@ class questionnaire {
      * @return array
      */
     public function get_responses($userid = false, $groupid = 0) {
-        global $DB;
-
-        $params = [];
-        $groupsql = '';
-        $groupcnd = '';
-        if ($groupid != 0) {
-            $groupsql = 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
-            $groupcnd = ' AND gm.groupid = :groupid ';
-            $params['groupid'] = $groupid;
-        }
-
-        // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
-        // Public questionnaires can have responses to multiple questionnaire instances.
-        if ($this->survey_is_public_master()) {
-            $sql = 'SELECT r.* ' .
-                'FROM {questionnaire_response} r ' .
-                'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
-                'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
-                $groupsql .
-                'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
-            $params['surveyid'] = $this->sid;
-            $params['status'] = 'y';
-        } else {
-            $sql = 'SELECT r.* ' .
-                'FROM {questionnaire_response} r ' .
-                $groupsql .
-                'WHERE r.questionnaireid = :questionnaireid' . $groupcnd;
-            $params['questionnaireid'] = $this->id;
-        }
-        if ($userid) {
-            $sql .= ' AND r.userid = :userid';
-            $params['userid'] = $userid;
-        }
-
-        $status = optional_param('responsestats', '0', PARAM_ALPHANUM);
-        if ($status) {
-            $status = ($status === 'n') ? 'n' : 'y';
-            $sql .= ' AND r.complete = :status';
-            $params['status'] = $status;
-        }
-        $sql .= ' ORDER BY r.id';
-        return $DB->get_records_sql($sql, $params) ?? [];
+        return $this->responsemanager()->get_responses($userid, $groupid);
     }
 
     /**
@@ -1996,72 +1902,7 @@ class questionnaire {
      * @return string
      */
     private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
-        $missing = 0;
-        $strmissing = '';     // Missing questions.
-        $wrongformat = 0;
-        $strwrongformat = ''; // Wrongly formatted questions (Numeric, 5:Check Boxes, Date).
-        $i = 1;
-        for ($j = 2; $j <= $section; $j++) {
-            // ADDED A SIMPLE LOOP FOR MAKING SURE PAGE BREAKS (type 99) AND LABELS (type 100) ARE NOT ALLOWED.
-            foreach ($this->questionsbysec[$j - 1] as $questionid) {
-                $tid = $this->questions[$questionid]->typeid;
-                if ($tid < QUESPAGEBREAK) {
-                    $i++;
-                }
-            }
-        }
-        $qnum = $i - 1;
-
-        if (key_exists($section, $this->questionsbysec)) {
-            foreach ($this->questionsbysec[$section] as $questionid) {
-                if ($this->questions[$questionid]->is_numbered()) {
-                    $qnum++;
-                }
-                if (!$this->questions[$questionid]->response_complete($formdata)) {
-                    $missing++;
-                    $strnum = get_string('num', 'questionnaire') . $qnum . '. ';
-                    $strmissing .= $strnum;
-                    // Pop-up   notification at the point of the error.
-                    $strnoti = get_string('missingquestion', 'questionnaire') . $strnum;
-                    $this->questions[$questionid]->add_notification($strnoti);
-                }
-                if (!$this->questions[$questionid]->response_valid($formdata)) {
-                    $wrongformat++;
-                    $strwrongformat .= get_string('num', 'questionnaire') . $qnum . '. ';
-                }
-            }
-        }
-        $message = '';
-        $nonumbering = false;
-        // If no questions autonumbering do not display missing question(s) number(s).
-        if (!$this->questions_autonumbered()) {
-            $nonumbering = true;
-        }
-        if ($checkmissing && $missing) {
-            if ($nonumbering) {
-                $strmissing = '';
-            }
-            if ($missing == 1) {
-                $message = get_string('missingquestion', 'questionnaire') . $strmissing;
-            } else {
-                $message = get_string('missingquestions', 'questionnaire') . $strmissing;
-            }
-            if ($wrongformat) {
-                $message .= '<br />';
-            }
-        }
-        if ($checkwrongformat && $wrongformat) {
-            if ($nonumbering) {
-                $message .= get_string('wronganswers', 'questionnaire');
-            } else {
-                if ($wrongformat == 1) {
-                    $message .= get_string('wrongformat', 'questionnaire') . $strwrongformat;
-                } else {
-                    $message .= get_string('wrongformats', 'questionnaire') . $strwrongformat;
-                }
-            }
-        }
-        return ($message);
+        return $this->responsemanager()->response_check_format($section, $formdata, $checkmissing, $checkwrongformat);
     }
 
     /**
@@ -2070,53 +1911,7 @@ class questionnaire {
      * @param null|int $sec
      */
     private function response_delete($rid, $sec = null) {
-        global $DB;
-
-        if (empty($rid)) {
-            return;
-        }
-
-        if ($sec != null) {
-            if ($sec < 1) {
-                return;
-            }
-
-            // Skip logic.
-            $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
-            $sec = min($numsections, $sec);
-
-            /* get question_id's in this section */
-            $qids = [];
-            foreach ($this->questionsbysec[$sec] as $questionid) {
-                $qids[] = $questionid;
-            }
-            if (empty($qids)) {
-                return;
-            } else {
-                [$qsql, $params] = $DB->get_in_or_equal($qids);
-                $qsql = ' AND questionid ' . $qsql;
-            }
-        } else {
-            /* delete all */
-            $qsql = '';
-            $params = [];
-        }
-
-        /* delete values */
-        $select = 'responseid = \'' . $rid . '\' ' . $qsql;
-        foreach (
-            [
-            'response_bool',
-            'resp_single',
-            'resp_multiple',
-            'response_rank',
-            'response_text',
-            'response_other',
-            'response_date',
-            ] as $tbl
-        ) {
-            $DB->delete_records_select('questionnaire_' . $tbl, $select, $params);
-        }
+        $this->responsemanager()->response_delete($rid, $sec);
     }
 
     /**
@@ -2125,19 +1920,7 @@ class questionnaire {
      * @return bool
      */
     private function response_commit($rid) {
-        global $DB;
-
-        $record = new stdClass();
-        $record->id = $rid;
-        $record->complete = 'y';
-        $record->submitted = time();
-
-        if ($this->grade < 0) {
-            $record->grade = 1;  // Don't know what to do if its a scale...
-        } else {
-            $record->grade = $this->grade;
-        }
-        return $DB->update_record('questionnaire_response', $record);
+        return $this->responsemanager()->response_commit($rid);
     }
 
     /**
@@ -2411,8 +2194,7 @@ class questionnaire {
      * @throws coding_exception
      */
     public function get_structured_response($rid) {
-        $this->add_response($rid);
-        return $this->get_full_submission_for_export($rid);
+        return $this->responsemanager()->get_structured_response($rid);
     }
 
     /**
@@ -2421,67 +2203,7 @@ class questionnaire {
      * @return array
      */
     private function get_full_submission_for_export($rid) {
-        if (!isset($this->responses[$rid])) {
-            $this->add_response($rid);
-        }
-
-        $exportstructure = [];
-        foreach ($this->questions as $question) {
-            $rqid = 'q' . $question->id;
-            $response = new stdClass();
-            $response->questionname = $question->position . '. ' . $question->name;
-            $response->questiontext = $question->content;
-            $response->answers = [];
-            if ($question->typeid == 8) {
-                $choices = [];
-                $cids = [];
-                foreach ($question->choices as $cid => $choice) {
-                    if (!empty($choice->value) && (strpos($choice->content, '=') !== false)) {
-                        $choices[$choice->value] = substr($choice->content, (strpos($choice->content, '=') + 1));
-                    } else {
-                        $cids[$rqid . '_' . $cid] = $choice->content;
-                    }
-                }
-                if (isset($this->responses[$rid]->answers[$question->id])) {
-                    foreach ($cids as $rqid => $choice) {
-                        $cid = substr($rqid, (strpos($rqid, '_') + 1));
-                        if (isset($this->responses[$rid]->answers[$question->id][$cid])) {
-                            if (
-                                isset($question->choices[$cid]) &&
-                                isset($choices[$this->responses[$rid]->answers[$question->id][$cid]->value])
-                            ) {
-                                $rating = $choices[$this->responses[$rid]->answers[$question->id][$cid]->value];
-                            } else {
-                                $rating = $this->responses[$rid]->answers[$question->id][$cid]->value;
-                            }
-                            $response->answers[] = $question->choices[$cid]->content . ' = ' . $rating;
-                        }
-                    }
-                }
-            } else if ($question->has_choices()) {
-                $answertext = '';
-                if (isset($this->responses[$rid]->answers[$question->id])) {
-                    $i = 0;
-                    foreach ($this->responses[$rid]->answers[$question->id] as $answer) {
-                        if ($i > 0) {
-                            $answertext .= '; ';
-                        }
-                        if ($question->choices[$answer->choiceid]->is_other_choice()) {
-                            $answertext .= $answer->value;
-                        } else {
-                            $answertext .= $question->choices[$answer->choiceid]->content;
-                        }
-                        $i++;
-                    }
-                }
-                $response->answers[] = $answertext;
-            } else if (isset($this->responses[$rid]->answers[$question->id])) {
-                $response->answers[] = $this->responses[$rid]->answers[$question->id][0]->value;
-            }
-            $exportstructure[] = $response;
-        }
-
-        return $exportstructure;
+        return $this->responsemanager()->get_full_submission_for_export($rid);
     }
 
     /**
@@ -2590,46 +2312,7 @@ class questionnaire {
      * @return bool|int
      */
     public function response_insert($responsedata, $userid, $resume = false) {
-        global $DB;
-
-        $record = new stdClass();
-        $record->submitted = time();
-
-        if (empty($responsedata->rid)) {
-            // Create a uniqe id for this response.
-            $record->questionnaireid = $this->id;
-            $record->userid = $userid;
-            $responsedata->rid = $DB->insert_record('questionnaire_response', $record);
-            $responsedata->id = $responsedata->rid;
-        } else {
-            $record->id = $responsedata->rid;
-            $DB->update_record('questionnaire_response', $record);
-        }
-        if ($resume) {
-            // Log this saved response.
-            // Needed for the event logging.
-            $context = context_module::instance($this->cm->id);
-            $anonymous = $this->respondenttype == 'anonymous';
-            $params = [
-                'context' => $context,
-                'courseid' => $this->course->id,
-                'relateduserid' => $userid,
-                'anonymous' => $anonymous,
-                'other' => ['questionnaireid' => $this->id],
-            ];
-            $event = \mod_questionnaire\event\attempt_saved::create($params);
-            $event->trigger();
-        }
-
-        if (!isset($responsedata->sec)) {
-            $responsedata->sec = 1;
-        }
-        if (!empty($this->questionsbysec[$responsedata->sec])) {
-            foreach ($this->questionsbysec[$responsedata->sec] as $questionid) {
-                $this->questions[$questionid]->insert_response($responsedata);
-            }
-        }
-        return($responsedata->rid);
+        return $this->responsemanager()->response_insert($responsedata, $userid, $resume);
     }
 
     /**
@@ -2638,25 +2321,7 @@ class questionnaire {
      * @return array
      */
     private function response_select($rid) {
-        // Response_bool (yes/no).
-        $values = \mod_questionnaire\local\responsetype\boolean::response_select($rid);
-
-        // Response_single (radio button or dropdown).
-        $values += \mod_questionnaire\local\responsetype\single::response_select($rid);
-
-        // Response_multiple.
-        $values += \mod_questionnaire\local\responsetype\multiple::response_select($rid);
-
-        // Response_rank.
-        $values += \mod_questionnaire\local\responsetype\rank::response_select($rid);
-
-        // Response_text.
-        $values += \mod_questionnaire\local\responsetype\text::response_select($rid);
-
-        // Response_date.
-        $values += \mod_questionnaire\local\responsetype\date::response_select($rid);
-
-        return($values);
+        return $this->responsemanager()->response_select($rid);
     }
 
     /**
@@ -3300,35 +2965,7 @@ class questionnaire {
      * @return array
      */
     protected function get_survey_all_responses($rid = '', $userid = '', $groupid = false, $showincompletes = 0) {
-        global $DB;
-        $uniquetypes = $this->get_survey_questiontypes(true);
-        $allresponsessql = "";
-        $allresponsesparams = [];
-
-        // If a questionnaire is "public", and this is the master course, need to get responses from all instances.
-        if ($this->survey_is_public_master()) {
-            $qids = array_keys($DB->get_records('questionnaire', ['sid' => $this->sid], 'id') ?? []);
-        } else {
-            $qids = $this->id;
-        }
-
-        foreach ($uniquetypes as $type) {
-            $question = \mod_questionnaire\local\question\question::question_builder($type);
-            if (!isset($question->responsetype)) {
-                continue;
-            }
-            $allresponsessql .= $allresponsessql == '' ? '' : ' UNION ALL ';
-            [$sql, $params] = $question->responsetype->get_bulk_sql($qids, $rid, $userid, $groupid, $showincompletes);
-            $allresponsesparams = array_merge($allresponsesparams, $params);
-            $allresponsessql .= $sql;
-        }
-
-        if (empty($allresponsessql)) {
-            return [];
-        }
-        $allresponsessql .= " ORDER BY usrid, id";
-        $allresponses = $DB->get_recordset_sql($allresponsessql, $allresponsesparams);
-        return $allresponses ?? [];
+        return $this->responsemanager()->get_survey_all_responses($rid, $userid, $groupid, $showincompletes);
     }
 
     /**
