@@ -99,7 +99,7 @@ class single extends responsetype {
         global $DB;
 
         if (!$responsedata instanceof \mod_questionnaire\local\responsetype\response\response) {
-            $response = \mod_questionnaire\localesponsetypeesponseesponse::response_from_webform(
+            $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform(
                 $responsedata,
                 [$this->question]
             );
