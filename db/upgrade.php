@@ -1090,7 +1090,6 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2025041400.03, 'questionnaire');
     }
 
-
     if ($oldversion < 2025111100.01) {
         // Setup table for renaming fields.
         $table = new xmldb_table('questionnaire');

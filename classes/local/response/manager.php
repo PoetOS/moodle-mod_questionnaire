@@ -25,17 +25,18 @@ namespace mod_questionnaire\local\response;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class manager {
+    /** @var \questionnaire The questionnaire instance. */
+    private readonly \questionnaire $questionnaire;
 
     /**
      * Constructor.
      * @param \questionnaire $questionnaire
      */
-    public function __construct(private readonly \questionnaire $questionnaire) {
+    public function __construct(\questionnaire $questionnaire) {
+        $this->questionnaire = $questionnaire;
     }
 
-    // -------------------------------------------------------------------------
     // Response loading / factory methods.
-    // -------------------------------------------------------------------------
 
     /**
      * Load all response information for the given user into $questionnaire->responses.
@@ -114,9 +115,7 @@ class manager {
         );
     }
 
-    // -------------------------------------------------------------------------
     // Response querying.
-    // -------------------------------------------------------------------------
 
     /**
      * Get the requested responses for this questionnaire.
@@ -316,9 +315,7 @@ class manager {
         return $exportstructure;
     }
 
-    // -------------------------------------------------------------------------
     // Response saving / committing.
-    // -------------------------------------------------------------------------
 
     /**
      * Insert the provided response.
@@ -433,9 +430,7 @@ class manager {
         $event->trigger();
     }
 
-    // -------------------------------------------------------------------------
     // Response deletion.
-    // -------------------------------------------------------------------------
 
     /**
      * Delete the specified response's answer data.
@@ -488,9 +483,7 @@ class manager {
         }
     }
 
-    // -------------------------------------------------------------------------
     // Response validation.
-    // -------------------------------------------------------------------------
 
     /**
      * Check that the response is complete and correctly formatted.
@@ -566,9 +559,7 @@ class manager {
         return $message;
     }
 
-    // -------------------------------------------------------------------------
     // Functions migrated from locallib.php.
-    // -------------------------------------------------------------------------
 
     /**
      * Get all responses for the given user and questionnaire.
@@ -644,9 +635,7 @@ class manager {
         return true;
     }
 
-    // -------------------------------------------------------------------------
     // Private helpers.
-    // -------------------------------------------------------------------------
 
     /**
      * Return the unique question type IDs (and optionally deduplicated by response table)

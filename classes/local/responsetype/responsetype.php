@@ -45,7 +45,11 @@ abstract class responsetype {
      * @param int|null $responseid
      * @param array|null $choices
      */
-    public function __construct(\mod_questionnaire\local\question\question $question, ?int $responseid = null, ?array $choices = []) {
+    public function __construct(
+        \mod_questionnaire\local\question\question $question,
+        ?int $responseid = null,
+        ?array $choices = []
+    ) {
         $this->question = $question;
         $this->responseid = $responseid;
         $this->choices = $choices;

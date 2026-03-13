@@ -38,25 +38,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
-/**
- * Testable subclass of questionnaire that bypasses the constructor.
- *
- * Allows injecting questionnaire_record and survey_record directly so
- * business-logic methods can be unit tested without a real course module.
- */
-class questionnaire_testable extends questionnaire {
-    /**
-     * @param questionnaire_record $modulerecord
-     * @param survey_record $surveyrecord
-     */
-    public function __construct(questionnaire_record $modulerecord, survey_record $surveyrecord) {
-        $this->modulerecord = $modulerecord;
-        $this->surveyrecord = $surveyrecord;
-        $this->questions = [];
-        $this->questionsbysec = [];
-    }
-}
+require_once($CFG->dirroot . '/mod/questionnaire/tests/questionnaire_testable.php');
 
 /**
  * Unit tests for mod_questionnaire\questionnaire.
@@ -65,10 +47,7 @@ class questionnaire_testable extends questionnaire {
  * @covers \mod_questionnaire\questionnaire
  */
 final class questionnaire_test extends \advanced_testcase {
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
+    // Helpers.
 
     /**
      * Build a questionnaire_record persistent populated from an in-memory object
@@ -145,11 +124,11 @@ final class questionnaire_test extends \advanced_testcase {
         );
     }
 
-    // -------------------------------------------------------------------------
-    // is_active()
-    // -------------------------------------------------------------------------
+    // Tests for is_active().
 
     /**
+     * Asserts is_active() returns true when a survey is linked.
+     *
      * @covers \mod_questionnaire\questionnaire::is_active
      */
     public function test_is_active_when_survey_linked(): void {
@@ -157,17 +136,19 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts is_active() returns false when no survey is linked.
+     *
      * @covers \mod_questionnaire\questionnaire::is_active
      */
     public function test_is_active_when_no_survey(): void {
         $this->assertFalse($this->make_questionnaire(['sid' => 0])->is_active());
     }
 
-    // -------------------------------------------------------------------------
-    // is_open()
-    // -------------------------------------------------------------------------
+    // Tests for is_open().
 
     /**
+     * Asserts is_open() returns true when no open date is set.
+     *
      * @covers \mod_questionnaire\questionnaire::is_open
      */
     public function test_is_open_with_no_date(): void {
@@ -175,6 +156,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts is_open() returns true when the open date is in the past.
+     *
      * @covers \mod_questionnaire\questionnaire::is_open
      */
     public function test_is_open_with_past_open_date(): void {
@@ -182,17 +165,19 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts is_open() returns false when the open date is in the future.
+     *
      * @covers \mod_questionnaire\questionnaire::is_open
      */
     public function test_is_not_open_with_future_open_date(): void {
         $this->assertFalse($this->make_questionnaire(['opendate' => time() + 3600])->is_open());
     }
 
-    // -------------------------------------------------------------------------
-    // is_closed()
-    // -------------------------------------------------------------------------
+    // Tests for is_closed().
 
     /**
+     * Asserts is_closed() returns false when no close date is set.
+     *
      * @covers \mod_questionnaire\questionnaire::is_closed
      */
     public function test_is_not_closed_with_no_date(): void {
@@ -200,6 +185,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts is_closed() returns true when the close date is in the past.
+     *
      * @covers \mod_questionnaire\questionnaire::is_closed
      */
     public function test_is_closed_with_past_close_date(): void {
@@ -207,17 +194,19 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts is_closed() returns false when the close date is in the future.
+     *
      * @covers \mod_questionnaire\questionnaire::is_closed
      */
     public function test_is_not_closed_with_future_close_date(): void {
         $this->assertFalse($this->make_questionnaire(['closedate' => time() + 3600])->is_closed());
     }
 
-    // -------------------------------------------------------------------------
-    // is_anonymous()
-    // -------------------------------------------------------------------------
+    // Tests for is_anonymous().
 
     /**
+     * Asserts is_anonymous() returns true when respondent type is anonymous.
+     *
      * @covers \mod_questionnaire\questionnaire::is_anonymous
      */
     public function test_is_anonymous(): void {
@@ -225,17 +214,19 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts is_anonymous() returns false when respondent type is fullname.
+     *
      * @covers \mod_questionnaire\questionnaire::is_anonymous
      */
     public function test_is_not_anonymous(): void {
         $this->assertFalse($this->make_questionnaire(['respondenttype' => 'fullname'])->is_anonymous());
     }
 
-    // -------------------------------------------------------------------------
-    // survey_is_public() / survey_is_template()
-    // -------------------------------------------------------------------------
+    // Tests for survey_is_public() and survey_is_template().
 
     /**
+     * Asserts survey_is_public() returns correct value based on realm.
+     *
      * @covers \mod_questionnaire\questionnaire::survey_is_public
      */
     public function test_survey_is_public(): void {
@@ -245,6 +236,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts survey_is_template() returns correct value based on realm.
+     *
      * @covers \mod_questionnaire\questionnaire::survey_is_template
      */
     public function test_survey_is_template(): void {
@@ -253,11 +246,11 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertFalse($this->make_questionnaire([], ['realm' => 'private'])->survey_is_template());
     }
 
-    // -------------------------------------------------------------------------
-    // survey_is_public_master() / is_survey_owner()
-    // -------------------------------------------------------------------------
+    // Tests for survey_is_public_master() and is_survey_owner().
 
     /**
+     * Asserts survey_is_public_master() returns true when courses match.
+     *
      * @covers \mod_questionnaire\questionnaire::survey_is_public_master
      */
     public function test_survey_is_public_master_when_owning_course(): void {
@@ -266,6 +259,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts survey_is_public_master() returns false when courses differ.
+     *
      * @covers \mod_questionnaire\questionnaire::survey_is_public_master
      */
     public function test_survey_is_not_public_master_when_different_course(): void {
@@ -274,6 +269,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts survey_is_public_master() returns false when survey is private.
+     *
      * @covers \mod_questionnaire\questionnaire::survey_is_public_master
      */
     public function test_survey_is_not_public_master_when_private(): void {
@@ -282,6 +279,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts is_survey_owner() returns true when questionnaire and survey share course.
+     *
      * @covers \mod_questionnaire\questionnaire::is_survey_owner
      */
     public function test_is_survey_owner_when_same_course(): void {
@@ -290,6 +289,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts is_survey_owner() returns false when questionnaire and survey are in different courses.
+     *
      * @covers \mod_questionnaire\questionnaire::is_survey_owner
      */
     public function test_is_not_survey_owner_when_different_course(): void {
@@ -297,11 +298,11 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertFalse($q->is_survey_owner());
     }
 
-    // -------------------------------------------------------------------------
-    // user_time_for_new_attempt()
-    // -------------------------------------------------------------------------
+    // Tests for user_time_for_new_attempt().
 
     /**
+     * Asserts user_time_for_new_attempt() always returns true for unlimited questionnaires.
+     *
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_unlimited_always_allowed(): void {
@@ -311,6 +312,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_time_for_new_attempt() returns true when no prior responses exist.
+     *
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_with_no_previous_responses(): void {
@@ -321,6 +324,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_time_for_new_attempt() returns false for ONCE when a prior response exists.
+     *
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_once_blocked_by_existing_response(): void {
@@ -338,6 +343,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_time_for_new_attempt() returns false for DAILY when a same-day response exists.
+     *
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_daily_blocked_same_day(): void {
@@ -355,6 +362,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_time_for_new_attempt() returns true for DAILY when the prior response is from a previous day.
+     *
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_daily_allowed_previous_day(): void {
@@ -373,6 +382,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_time_for_new_attempt() returns false for WEEKLY when a same-week response exists.
+     *
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_weekly_blocked_same_week(): void {
@@ -396,6 +407,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_time_for_new_attempt() returns false for MONTHLY when a same-month response exists.
+     *
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_monthly_blocked_same_month(): void {
@@ -406,7 +419,8 @@ final class questionnaire_test extends \advanced_testcase {
         $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREMONTHLY]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
-            'submitted' => mktime(0, 0, 0, date('n'), 1, date('Y')), // first of this month
+            // First of this month.
+            'submitted' => mktime(0, 0, 0, date('n'), 1, date('Y')),
             'complete' => 'y', 'grade' => 0,
         ]);
 
@@ -414,6 +428,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_time_for_new_attempt() returns true for MONTHLY when the prior response is from a previous month.
+     *
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_monthly_allowed_previous_month(): void {
@@ -424,18 +440,19 @@ final class questionnaire_test extends \advanced_testcase {
         $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREMONTHLY]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
-            'submitted' => mktime(0, 0, 0, date('n') - 1, 1, date('Y')), // first of last month
+            // First of last month.
+            'submitted' => mktime(0, 0, 0, date('n') - 1, 1, date('Y')),
             'complete' => 'y', 'grade' => 0,
         ]);
 
         $this->assertTrue($q->user_time_for_new_attempt(1));
     }
 
-    // -------------------------------------------------------------------------
-    // user_has_saved_response()
-    // -------------------------------------------------------------------------
+    // Tests for user_has_saved_response().
 
     /**
+     * Asserts user_has_saved_response() returns false when no saved response exists.
+     *
      * @covers \mod_questionnaire\questionnaire::user_has_saved_response
      */
     public function test_user_has_no_saved_response(): void {
@@ -445,6 +462,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_has_saved_response() returns true when an incomplete response exists.
+     *
      * @covers \mod_questionnaire\questionnaire::user_has_saved_response
      */
     public function test_user_has_saved_response(): void {
@@ -479,11 +498,11 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertFalse($q->user_has_saved_response(1));
     }
 
-    // -------------------------------------------------------------------------
-    // user_access_messages() — cases that don't reach capability checks
-    // -------------------------------------------------------------------------
+    // Tests for user_access_messages() — cases that don't reach capability checks.
 
     /**
+     * Asserts user_access_messages() returns the template-not-viewable string for template surveys.
+     *
      * @covers \mod_questionnaire\questionnaire::user_access_messages
      */
     public function test_user_access_messages_template_not_viewable(): void {
@@ -495,6 +514,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_access_messages() includes the open date when the questionnaire is not yet open.
+     *
      * @covers \mod_questionnaire\questionnaire::user_access_messages
      */
     public function test_user_access_messages_not_open_yet(): void {
@@ -506,6 +527,8 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts user_access_messages() includes the close date when the questionnaire is closed.
+     *
      * @covers \mod_questionnaire\questionnaire::user_access_messages
      */
     public function test_user_access_messages_closed(): void {
@@ -516,19 +539,19 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertStringContainsString(userdate($closedate), $msg);
     }
 
-    // -------------------------------------------------------------------------
-    // TODO: tests requiring a real course module and context
-    // -------------------------------------------------------------------------
-    // The following methods need has_capability() and therefore a real CM:
-    //   user_is_eligible(), user_can_take(), can_read_own_responses(),
-    //   can_view_single_response(), can_delete_responses(), can_download_responses(),
-    //   can_manage_questionnaire(), can_edit_questions(),
-    //   can_view_all_responses(), can_view_all_responses_anytime(),
-    //   can_view_all_responses_with_restrictions(),
-    //   user_access_messages() when questionnaire is inactive (uses can_manage_questionnaire).
-    //
-    // These tests should be written once the generator is updated to use the
-    // current DB column names (respeligible, respview, etc.) and the add_instance
-    // pathway is working correctly with the refactored schema.
-    // -------------------------------------------------------------------------
+    /*
+     * TODO: tests requiring a real course module and context.
+     *
+     * The following methods need has_capability() and therefore a real CM:
+     * user_is_eligible(), user_can_take(), can_read_own_responses(),
+     * can_view_single_response(), can_delete_responses(), can_download_responses(),
+     * can_manage_questionnaire(), can_edit_questions(),
+     * can_view_all_responses(), can_view_all_responses_anytime(),
+     * can_view_all_responses_with_restrictions(),
+     * user_access_messages() when questionnaire is inactive (uses can_manage_questionnaire).
+     *
+     * These tests should be written once the generator is updated to use the
+     * current DB column names (respeligible, respview, etc.) and the add_instance
+     * pathway is working correctly with the refactored schema.
+     */
 }

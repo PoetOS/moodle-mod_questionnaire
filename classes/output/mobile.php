@@ -102,7 +102,8 @@ class mobile {
                         $data['rid'] = $rid;
                     }
                     $response = (isset($questionnaire->responses) && !empty($questionnaire->responses)) ?
-                        end($questionnaire->responses) : \mod_questionnaire\local\responsetype\response\response::create_from_data([]);
+                        end($questionnaire->responses) :
+                        \mod_questionnaire\local\responsetype\response\response::create_from_data([]);
                     $response->sec = $pagenum;
                     if (isset($result['warnings'])) {
                         if ($action == 'submit') {
