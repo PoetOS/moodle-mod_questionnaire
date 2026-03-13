@@ -73,7 +73,10 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_dropdown(): void {
         $this->create_test_question_with_choices(
-            QUESDROP, '\\mod_questionnaire\\local\\question\\drop', ['content' => 'Select one']);
+            QUESDROP,
+            '\\mod_questionnaire\\local\\question\\drop',
+            ['content' => 'Select one']
+        );
     }
 
     /**
@@ -132,7 +135,10 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_radiobuttons(): void {
         $this->create_test_question_with_choices(
-            QUESRADIO, '\\mod_questionnaire\\local\\question\\radio', ['content' => 'Choose one']);
+            QUESRADIO,
+            '\\mod_questionnaire\\local\\question\\radio',
+            ['content' => 'Choose one']
+        );
     }
 
     /**
@@ -144,7 +150,10 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_ratescale(): void {
         $this->create_test_question_with_choices(
-            QUESRATE, '\\mod_questionnaire\\local\\question\\rate', ['content' => 'Rate these']);
+            QUESRATE,
+            '\\mod_questionnaire\\local\\question\\rate',
+            ['content' => 'Rate these']
+        );
     }
 
     /**

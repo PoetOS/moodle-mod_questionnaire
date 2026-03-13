@@ -29,7 +29,6 @@ namespace mod_questionnaire\local\db;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dependency_record extends \core\persistent {
-
     /** @var string The table name. */
     public const TABLE = 'questionnaire_dependency';
 

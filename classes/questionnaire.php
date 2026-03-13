@@ -32,7 +32,6 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class questionnaire {
-
     /** @var questionnaire_record The module record instance. */
     protected questionnaire_record $modulerecord;
 
