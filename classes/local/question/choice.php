@@ -63,13 +63,11 @@ class choice {
      * @return choice
      */
     public static function create_from_id($id) {
-        global $DB;
-
-        if ($record = $DB->get_record(self::tablename(), ['id' => $id], 'id,questionid,content,value')) {
-            return new choice($id, $record->questionid, $record->content, $record->value);
-        } else {
-            return new choice();
+        $choicerec = \mod_questionnaire\local\db\choice_record::get_record(['id' => $id]);
+        if ($choicerec) {
+            return new choice($id, $choicerec->get('questionid'), $choicerec->get('content'), $choicerec->get('value'));
         }
+        return new choice();
     }
 
     /**
@@ -106,8 +104,12 @@ class choice {
      * @return bool
      */
     public static function delete_from_db_by_id($id) {
-        global $DB;
-        return $DB->delete_records(self::tablename(), ['id' => $id]);
+        $choicerec = \mod_questionnaire\local\db\choice_record::get_record(['id' => $id]);
+        if ($choicerec) {
+            $choicerec->delete();
+            return true;
+        }
+        return false;
     }
 
     /**

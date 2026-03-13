@@ -156,7 +156,8 @@ abstract class question {
         }
 
         if ($id) {
-            $question = $DB->get_record('questionnaire_question', ['id' => $id]);
+            $questionrec = \mod_questionnaire\local\db\question_record::get_record(['id' => $id]);
+            $question = $questionrec ? $questionrec->to_record() : null;
         }
 
         if (is_object($question)) {
@@ -252,11 +253,11 @@ abstract class question {
      * @throws \dml_exception
      */
     private function get_choices() {
-        global $DB;
-
-        if ($choices = $DB->get_records('questionnaire_quest_choice', ['questionid' => $this->id], 'id ASC')) {
-            foreach ($choices as $choice) {
-                $this->choices[$choice->id] = \mod_questionnaire\local\question\choice::create_from_data($choice);
+        $choicerecs = \mod_questionnaire\local\db\choice_record::get_for_question($this->id);
+        if ($choicerecs) {
+            foreach ($choicerecs as $choicerec) {
+                $this->choices[$choicerec->get('id')] =
+                    \mod_questionnaire\local\question\choice::create_from_data($choicerec->to_record());
             }
         } else {
             $this->choices = [];
@@ -291,23 +292,17 @@ abstract class question {
      * Load any dependencies.
      */
     private function get_dependencies() {
-        global $DB;
-
         $this->dependencies = [];
-        if (
-            $dependencies = $DB->get_records(
-                'questionnaire_dependency',
-                ['questionid' => $this->id, 'surveyid' => $this->surveyid],
-                'id ASC'
-            )
-        ) {
-            foreach ($dependencies as $dependency) {
-                $this->dependencies[$dependency->id] = new \stdClass();
-                $this->dependencies[$dependency->id]->dependquestionid = $dependency->dependquestionid;
-                $this->dependencies[$dependency->id]->dependchoiceid = $dependency->dependchoiceid;
-                $this->dependencies[$dependency->id]->dependlogic = $dependency->dependlogic;
-                $this->dependencies[$dependency->id]->dependandor = $dependency->dependandor;
-            }
+        $deprecs = \mod_questionnaire\local\db\dependency_record::get_records(
+            ['questionid' => $this->id, 'surveyid' => $this->surveyid]
+        );
+        foreach ($deprecs as $deprec) {
+            $did = $deprec->get('id');
+            $this->dependencies[$did] = new \stdClass();
+            $this->dependencies[$did]->dependquestionid = $deprec->get('dependquestionid');
+            $this->dependencies[$did]->dependchoiceid = $deprec->get('dependchoiceid');
+            $this->dependencies[$did]->dependlogic = $deprec->get('dependlogic');
+            $this->dependencies[$did]->dependandor = $deprec->get('dependandor');
         }
     }
 
@@ -699,7 +694,9 @@ abstract class question {
             $questionrecord->typeid = $this->typeid;
         }
 
-        $this->qid = $DB->insert_record('questionnaire_question', $questionrecord);
+        $questionpersistent = new \mod_questionnaire\local\db\question_record(0, $questionrecord);
+        $questionpersistent->save();
+        $this->qid = $questionpersistent->get('id');
 
         if ($this->has_choices() && !empty($choicerecords)) {
             foreach ($choicerecords as $choicerecord) {
@@ -740,8 +737,15 @@ abstract class question {
      * @return bool
      */
     public function update_choice($choicerecord) {
-        global $DB;
-        return $DB->update_record('questionnaire_quest_choice', $choicerecord);
+        $choicepersistent = \mod_questionnaire\local\db\choice_record::get_record(['id' => $choicerecord->id]);
+        if (!$choicepersistent) {
+            return false;
+        }
+        $choicepersistent->set('questionid', $choicerecord->questionid);
+        $choicepersistent->set('content', $choicerecord->content);
+        $choicepersistent->set('value', $choicerecord->value ?? null);
+        $choicepersistent->save();
+        return true;
     }
 
     /**
@@ -750,16 +754,16 @@ abstract class question {
      * @return bool
      */
     public function add_choice($choicerecord) {
-        global $DB;
-        $retvalue = true;
-        if ($cid = $DB->insert_record('questionnaire_quest_choice', $choicerecord)) {
+        $choicepersistent = new \mod_questionnaire\local\db\choice_record(0, $choicerecord);
+        $choicepersistent->save();
+        $cid = $choicepersistent->get('id');
+        if ($cid) {
             $this->choices[$cid] = new \stdClass();
             $this->choices[$cid]->content = $choicerecord->content;
-            $this->choices[$cid]->value = isset($choicerecord->value) ? $choicerecord->value : null;
-        } else {
-            $retvalue = false;
+            $this->choices[$cid]->value = $choicerecord->value ?? null;
+            return true;
         }
-        return $retvalue;
+        return false;
     }
 
     /**
@@ -797,8 +801,18 @@ abstract class question {
      * @return bool
      */
     public function update_dependency($dependencyrecord) {
-        global $DB;
-        return $DB->update_record('questionnaire_dependency', $dependencyrecord);
+        $deppersistent = \mod_questionnaire\local\db\dependency_record::get_record(['id' => $dependencyrecord->id]);
+        if (!$deppersistent) {
+            return false;
+        }
+        $deppersistent->set('questionid', $dependencyrecord->questionid);
+        $deppersistent->set('surveyid', $dependencyrecord->surveyid);
+        $deppersistent->set('dependquestionid', $dependencyrecord->dependquestionid);
+        $deppersistent->set('dependchoiceid', $dependencyrecord->dependchoiceid);
+        $deppersistent->set('dependlogic', $dependencyrecord->dependlogic);
+        $deppersistent->set('dependandor', $dependencyrecord->dependandor);
+        $deppersistent->save();
+        return true;
     }
 
     /**
@@ -807,19 +821,18 @@ abstract class question {
      * @return bool
      */
     public function add_dependency($dependencyrecord) {
-        global $DB;
-
-        $retvalue = true;
-        if ($did = $DB->insert_record('questionnaire_dependency', $dependencyrecord)) {
+        $deppersistent = new \mod_questionnaire\local\db\dependency_record(0, $dependencyrecord);
+        $deppersistent->save();
+        $did = $deppersistent->get('id');
+        if ($did) {
             $this->dependencies[$did] = new \stdClass();
             $this->dependencies[$did]->dependquestionid = $dependencyrecord->dependquestionid;
             $this->dependencies[$did]->dependchoiceid = $dependencyrecord->dependchoiceid;
             $this->dependencies[$did]->dependlogic = $dependencyrecord->dependlogic;
             $this->dependencies[$did]->dependandor = $dependencyrecord->dependandor;
-        } else {
-            $retvalue = false;
+            return true;
         }
-        return $retvalue;
+        return false;
     }
 
     /**
@@ -827,20 +840,18 @@ abstract class question {
      * @param int|\stdClass $dependency Either the integer id of the dependency, or the dependency record.
      */
     public function delete_dependency($dependency) {
-        global $DB;
-
-        $retvalue = true;
         if (is_int($dependency)) {
             $did = $dependency;
         } else {
             $did = $dependency->id;
         }
-        if ($DB->delete_records('questionnaire_dependency', ['id' => $did])) {
+        $deppersistent = \mod_questionnaire\local\db\dependency_record::get_record(['id' => $did]);
+        if ($deppersistent) {
+            $deppersistent->delete();
             unset($this->dependencies[$did]);
-        } else {
-            $retvalue = false;
+            return true;
         }
-        return $retvalue;
+        return false;
     }
 
     /**
