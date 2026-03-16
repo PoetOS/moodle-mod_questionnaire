@@ -145,11 +145,15 @@ class sectiontext extends question {
      *
      */
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
-        global $DB, $CFG, $PAGE;
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+        global $DB;
 
         // If !isset then normal behavior as sectiontext question.
         if (!isset($response->questionnaireid)) {
+            return '';
+        }
+
+        // If no questionnaire context was passed through the rendering chain, fall back to normal behavior.
+        if ($this->questionnaire === null) {
             return '';
         }
 
@@ -171,10 +175,7 @@ class sectiontext extends question {
             return '';
         }
 
-        [$cm, $course, $questionnaire] = questionnaire_get_standard_page_items(null, $response->questionnaireid);
-        $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
-        $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-        $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+        $questionnaire = $this->questionnaire;
 
         $compare = false;
         $allresponses = false;

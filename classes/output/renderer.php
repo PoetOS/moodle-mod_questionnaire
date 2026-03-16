@@ -228,9 +228,9 @@ class renderer extends \plugin_renderer_base {
      * @param array $dependants Array of all questions/choices depending on $question.
      * @return string The output for the page.
      */
-    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants = []) {
+    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants = [], $questionnaire = null) {
 
-        $pagetags = $question->question_output($response, $blankquestionnaire, $dependants, $qnum);
+        $pagetags = $question->question_output($response, $blankquestionnaire, $dependants, $qnum, $questionnaire);
 
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -258,8 +258,8 @@ class renderer extends \plugin_renderer_base {
      * @return string The output for the page.
      * @throws \moodle_exception
      */
-    public function response_output($question, $response, $qnum = null, $pdf = false) {
-        $pagetags = $question->response_output($response, $qnum);
+    public function response_output($question, $response, $qnum = null, $pdf = false, $questionnaire = null) {
+        $pagetags = $question->response_output($response, $qnum, $questionnaire);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -289,14 +289,14 @@ class renderer extends \plugin_renderer_base {
      * @param array $questions
      * @return string The output for the page.
      */
-    public function all_response_output($responses, $questions = null) {
+    public function all_response_output($responses, $questions = null, $questionnaire = null) {
         $output = '';
         if (is_string($responses)) {
             $output .= $responses;
         } else {
             $qnum = 1;
             foreach ($questions as $question) {
-                if (empty($pagetags = $question->questionstart_survey_display($qnum))) {
+                if (empty($pagetags = $question->questionstart_survey_display($qnum, null, $questionnaire))) {
                     continue;
                 }
                 foreach ($responses as $response) {
@@ -476,7 +476,7 @@ class renderer extends \plugin_renderer_base {
      * @return string
      */
     public function get_dependency_html($qid, $dependencies) {
-        $html = '';
+        $context = ['dependencies' => []];
         foreach ($dependencies as $dependency) {
             switch ($dependency->dependlogic) {
                 case 0:
@@ -488,23 +488,24 @@ class renderer extends \plugin_renderer_base {
                 default:
                     $logic = '';
             }
-
-            // TODO - Move the HTML generation to the renderer.
-            if ($dependency->dependandor == "and") {
-                $html .= '<div id="qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' .
-                    $dependency->dependchoiceid . '" class="qdepend">' . '<strong>' .
-                    get_string('dependquestion', 'questionnaire') . '</strong> : ' .
-                    get_string('position', 'questionnaire') . ' ' .
-                    $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
+            if ($dependency->dependandor == 'and') {
+                $divid = 'qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' . $dependency->dependchoiceid;
+                $divclass = 'qdepend';
             } else {
-                $html .= '<div id="qdepend_or_' . $qid . '_' . $dependency->dependquestionid . '_' .
-                    $dependency->dependchoiceid . '" class="qdepend-or">' . '<strong>' .
-                    get_string('dependquestion', 'questionnaire') . '</strong> : ' .
-                    get_string('position', 'questionnaire') . ' ' .
-                    $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
+                $divid = 'qdepend_or_' . $qid . '_' . $dependency->dependquestionid . '_' . $dependency->dependchoiceid;
+                $divclass = 'qdepend-or';
             }
+            $context['dependencies'][] = [
+                'divid' => $divid,
+                'divclass' => $divclass,
+                'dependquestion' => get_string('dependquestion', 'questionnaire'),
+                'position' => get_string('position', 'questionnaire'),
+                'parentposition' => $dependency->parentposition,
+                'parent' => $dependency->parent,
+                'logicstr' => $logic,
+            ];
         }
-        return $html;
+        return $this->output->render_from_template('mod_questionnaire/dependencylist', $context);
     }
 
     /**
