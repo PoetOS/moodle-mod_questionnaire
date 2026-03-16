@@ -434,7 +434,7 @@ class questionnaire {
             if ($question->typeid != QUESPAGEBREAK) {
                 $this->page->add_to_page(
                     'responses',
-                    $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf)
+                    $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf, $this)
                 );
             }
         }
@@ -450,7 +450,7 @@ class questionnaire {
         // then responses may have become empty, hence this test is necessary.
 
         if (!empty($this->responses)) {
-            $this->page->add_to_page('responses', $this->renderer->all_response_output($this->responses, $this->questions));
+            $this->page->add_to_page('responses', $this->renderer->all_response_output($this->responses, $this->questions, $this));
         } else {
             $this->page->add_to_page('responses', $this->renderer->all_response_output(get_string('noresponses', 'questionnaire')));
         }
@@ -1312,7 +1312,8 @@ class questionnaire {
                         (isset($this->responses[$formdata->rid]) ? $this->responses[$formdata->rid] : []),
                         $i,
                         $this->usehtmleditor,
-                        []
+                        [],
+                        $this
                     )
                 );
             }
@@ -1658,7 +1659,8 @@ class questionnaire {
                     $this->responses[0] ?? new \mod_questionnaire\local\responsetype\response\response(),
                     $i++,
                     null,
-                    $dependants
+                    $dependants,
+                    $this
                 );
                 $this->page->add_to_page('questions', $output);
                 $output = '';

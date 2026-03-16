@@ -133,6 +133,9 @@ abstract class question {
     /** @var array $notifications Array of extra messages for display purposes. */
     private $notifications = [];
 
+    /** @var \questionnaire|null The parent questionnaire object, set during rendering. */
+    protected $questionnaire = null;
+
     // Class Methods.
 
     /**
@@ -927,8 +930,9 @@ abstract class question {
      * @param int $qnum
      * @return \stdClass
      */
-    public function question_output($response, $blankquestionnaire, $dependants = [], $qnum = '') {
-        $pagetags = $this->questionstart_survey_display($qnum, $response);
+    public function question_output($response, $blankquestionnaire, $dependants = [], $qnum = '', $questionnaire = null) {
+        $this->questionnaire = $questionnaire;
+        $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire);
         $pagetags->qformelement = $this->question_survey_display($response, $dependants, $blankquestionnaire);
         return $pagetags;
     }
@@ -939,8 +943,8 @@ abstract class question {
      * @param string $qnum
      * @return \stdClass
      */
-    public function response_output($response, $qnum = '') {
-        $pagetags = $this->questionstart_survey_display($qnum, $response);
+    public function response_output($response, $qnum = '', $questionnaire = null) {
+        $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire);
         $pagetags->qformelement = $this->response_survey_display($response);
         return $pagetags;
     }
@@ -951,8 +955,8 @@ abstract class question {
      * @param \mod_questionnaire\local\responsetype\response\response $response
      * @return \stdClass
      */
-    public function questionstart_survey_display($qnum, $response = null) {
-        global $OUTPUT, $SESSION, $questionnaire, $PAGE;
+    public function questionstart_survey_display($qnum, $response = null, $questionnaire = null) {
+        global $OUTPUT, $SESSION, $PAGE;
 
         $pagetags = new \stdClass();
         $currenttab = $SESSION->questionnaire->current_tab;
@@ -960,7 +964,7 @@ abstract class question {
         $skippedclass = '';
         // If no questions autonumbering.
         $nonumbering = false;
-        if (!$questionnaire->questions_autonumbered()) {
+        if ($questionnaire !== null && !$questionnaire->questions_autonumbered()) {
             $qnum = '';
             $nonumbering = true;
         }
@@ -985,13 +989,15 @@ abstract class question {
         // also hide answers to questions that have not been answered.
         $displayclass = 'qn-container';
         if (
-            $pagetype == 'mod-questionnaire-preview' ||
-            ($nonumbering && ($currenttab == 'mybyresponse' || $currenttab == 'individualresp'))
+            $questionnaire !== null &&
+            (
+                $pagetype == 'mod-questionnaire-preview' ||
+                ($nonumbering && ($currenttab == 'mybyresponse' || $currenttab == 'individualresp'))
+            )
         ) {
             // This needs to be done to ensure all dependency data is loaded.
             // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
             $questionnaire->load_parents($this);
-            // Want this to come from the renderer, meaning we need $questionnaire.
             $pagetags->dependencylist = $questionnaire->renderer->get_dependency_html($this->id, $this->dependencies);
         }
 
