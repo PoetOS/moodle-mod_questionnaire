@@ -52,7 +52,6 @@ $idcounter = 0;
 
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-#[\AllowDynamicProperties]
 /**
  * Class for describing a question
  *
@@ -112,6 +111,27 @@ abstract class question {
 
     /** @var bool $isprint The isprint flag. */
     public $isprint = false;
+
+    /** @var int $typeid The question type id. */
+    public $typeid = 0;
+
+    /** @var \context|null $context The module context. */
+    public $context = null;
+
+    /** @var object|null $responsetype The response type handler for this question. */
+    public $responsetype = null;
+
+    /** @var int|null $qid The id assigned after inserting a new question record. */
+    public $qid = null;
+
+    /** @var mixed $resultid Legacy response result id. */
+    public $resultid = null;
+
+    /** @var mixed $dependquestion Legacy dependency question id. */
+    public $dependquestion = null;
+
+    /** @var mixed $dependchoice Legacy dependency choice id. */
+    public $dependchoice = null;
 
     /** @var array $qtypenames List of all question names. */
     private static $qtypenames = [
@@ -644,7 +664,7 @@ abstract class question {
             $questionrecord->surveyid = $this->surveyid;
             $questionrecord->name = $this->name;
             $questionrecord->typeid = $this->typeid;
-            $questionrecord->result_id = $this->result_id;
+            $questionrecord->result_id = $this->resultid;
             $questionrecord->length = $this->length;
             $questionrecord->precise = $this->precise;
             $questionrecord->position = $this->position;

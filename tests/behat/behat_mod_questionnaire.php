@@ -33,7 +33,6 @@ use Behat\Behat\Context\Step\Given,
     Behat\Gherkin\Node\PyStringNode,
     Behat\Mink\Exception\ExpectationException;
 
-#[\AllowDynamicProperties]
 /**
  * Questionnaire-related steps definitions.
  *

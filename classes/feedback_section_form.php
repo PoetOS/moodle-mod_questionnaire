@@ -21,7 +21,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
 
-#[\AllowDynamicProperties]
 /**
  * Print the form to add or edit a questionnaire-instance
  *
