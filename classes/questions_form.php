@@ -20,7 +20,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
-#[\AllowDynamicProperties]
 /**
  * The form definition class for questions.
  *
@@ -30,6 +29,9 @@ require_once($CFG->libdir . '/formslib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class questions_form extends \moodleform {
+    /** @var int|bool $moveq The id of the question being moved, or false. */
+    protected $moveq = false;
+
     /**
      * The constructor.
      * @param mixed $action

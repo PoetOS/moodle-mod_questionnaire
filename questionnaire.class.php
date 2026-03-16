@@ -20,7 +20,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-#[\AllowDynamicProperties]
 /**
  * Provided the main API functions for questionnaire.
  *
@@ -32,8 +31,93 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 class questionnaire {
     // Class Properties.
 
+    // Properties sourced from the questionnaire DB record.
+
+    /** @var int $id The activity instance id. */
+    public $id = 0;
+
+    /** @var int $course The course id this questionnaire belongs to. */
+    public $course = 0;
+
+    /** @var string $name The questionnaire name. */
+    public $name = '';
+
+    /** @var string $intro The introductory text. */
+    public $intro = '';
+
+    /** @var int $introformat The format of the intro field. */
+    public $introformat = FORMAT_HTML;
+
+    /** @var int $qtype The questionnaire type. */
+    public $qtype = 0;
+
+    /** @var string $respondenttype The respondent type (fullname, anonymous, etc). */
+    public $respondenttype = 'fullname';
+
+    /** @var string $respeligible Who is eligible to respond. */
+    public $respeligible = 'all';
+
+    /** @var int $respview Who can view responses. */
+    public $respview = 0;
+
+    /** @var int $notifications Notification setting. */
+    public $notifications = 0;
+
+    /** @var int $opendate The date the questionnaire opens (unix timestamp, 0 = always open). */
+    public $opendate = 0;
+
+    /** @var int $closedate The date the questionnaire closes (unix timestamp, 0 = never closes). */
+    public $closedate = 0;
+
+    /** @var int $resume Whether resuming a response is allowed. */
+    public $resume = 0;
+
+    /** @var int $navigate Whether navigation is enabled. */
+    public $navigate = 0;
+
+    /** @var int $grade The maximum grade. */
+    public $grade = 0;
+
+    /** @var int $sid The survey id this questionnaire uses. */
+    public $sid = 0;
+
+    /** @var int $timemodified Unix timestamp of last modification. */
+    public $timemodified = 0;
+
+    /** @var int $completionsubmit Whether submitting counts as completion. */
+    public $completionsubmit = 0;
+
+    /** @var int $autonum Auto-numbering setting. */
+    public $autonum = 3;
+
+    /** @var int $progressbar Whether to show a progress bar. */
+    public $progressbar = 0;
+
+    /** @var int $removeafter Days after which to remove responses. */
+    public $removeafter = 0;
+
+    // Properties set explicitly in the constructor.
+
+    /** @var \stdClass|null $survey The survey record loaded from questionnaire_survey. */
+    public $survey = null;
+
+    /** @var \stdClass|\course_modinfo $cm The course module record or info object. */
+    public $cm = null;
+
+    /** @var \context_module|null $context The module context. */
+    public $context = null;
+
+    /** @var \stdClass $capabilities The capabilities object for the current user. */
+    public $capabilities = null;
+
+    /** @var array $responses Loaded response data. */
+    public $responses = [];
+
+    /** @var array $questionsbysec Questions grouped by section (page). */
+    public $questionsbysec = [];
+
     /**
-     * @var \mod_questionnaire\local\question\question[] $quesitons
+     * @var \mod_questionnaire\local\question\question[] $questions
      */
     public $questions = [];
 
@@ -42,11 +126,14 @@ class questionnaire {
      */
     public $deletequestions = [];
 
-    /**
-     * The survey record.
-     * @var object $survey
-     */
-     // Todo var $survey; TODO.
+    /** @var \mod_questionnaire\local\response\manager|null $responsemanager Lazy-initialised response manager. */
+    protected $responsemanager = null;
+
+    /** @var int|null $rid The id of the most recently inserted/committed response. */
+    public $rid = null;
+
+    /** @var mixed $usehtmleditor Whether to use the HTML editor; set to null before survey display. */
+    public $usehtmleditor = null;
 
     /**
      * @var $renderer Contains the page renderer when loaded, or false if not.
