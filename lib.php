@@ -320,7 +320,9 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
 
     $result = new stdClass();
     $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
-        $questionnaire->id, $user->id, true
+        $questionnaire->id,
+        $user->id,
+        true
     );
     if ($responses) {
         $n = count($responses);
@@ -352,7 +354,9 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
-        $questionnaire->id, $user->id, false
+        $questionnaire->id,
+        $user->id,
+        false
     );
     if ($responses) {
         foreach ($responses as $response) {
@@ -1325,7 +1329,9 @@ function questionnaire_print_overview($courses, &$htmlarray) {
                 $str .= $OUTPUT->box(get_string('numattemptsmade', 'questionnaire', $attempts), 'info');
             } else {
                 $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
-                    $questionnaire->id, $USER->id, false
+                    $questionnaire->id,
+                    $USER->id,
+                    false
                 );
                 if ($responses) {
                     foreach ($responses as $response) {
