@@ -319,7 +319,10 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $result = new stdClass();
-    if ($responses = questionnaire_get_user_responses($questionnaire->id, $user->id, true)) {
+    $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
+        $questionnaire->id, $user->id, true
+    );
+    if ($responses) {
         $n = count($responses);
         if ($n == 1) {
             $result->info = $n . ' ' . get_string("response", "questionnaire");
@@ -348,7 +351,10 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-    if ($responses = questionnaire_get_user_responses($questionnaire->id, $user->id, false)) {
+    $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
+        $questionnaire->id, $user->id, false
+    );
+    if ($responses) {
         foreach ($responses as $response) {
             if ($response->complete == 'y') {
                 echo get_string('submitted', 'questionnaire') . ' ' . userdate($response->submitted) . '<br />';
@@ -1318,7 +1324,10 @@ function questionnaire_print_overview($courses, &$htmlarray) {
                 );
                 $str .= $OUTPUT->box(get_string('numattemptsmade', 'questionnaire', $attempts), 'info');
             } else {
-                if ($responses = questionnaire_get_user_responses($questionnaire->id, $USER->id, false)) {
+                $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
+                    $questionnaire->id, $USER->id, false
+                );
+                if ($responses) {
                     foreach ($responses as $response) {
                         if ($response->complete == 'y') {
                             $str .= $OUTPUT->box($strattempted, 'info');
@@ -1397,10 +1406,15 @@ function questionnaire_reset_userdata($data) {
                  ORDER BY qr.id";
             $resps = $DB->get_records_sql($sql, [$survey->id]);
             if (!empty($resps)) {
-                $questionnaire = $DB->get_record("questionnaire", ["sid" => $survey->id, "course" => $survey->courseid]);
-                $questionnaire->course = $DB->get_record("course", ["id" => $questionnaire->course]);
+                $questrecord = $DB->get_record(
+                    "questionnaire",
+                    ["sid" => $survey->id, "course" => $survey->courseid]
+                );
+                $questcourse = $DB->get_record("course", ["id" => $questrecord->course]);
+                $questcm = get_coursemodule_from_instance("questionnaire", $questrecord->id, $questcourse->id);
+                $questobj = new \questionnaire($questcourse, $questcm, 0, $questrecord);
                 foreach ($resps as $response) {
-                    questionnaire_delete_response($response, $questionnaire);
+                    $questobj->responsemanager()->delete_response($response);
                 }
             }
             // Remove this questionnaire's grades (and feedback) from gradebook (if any).

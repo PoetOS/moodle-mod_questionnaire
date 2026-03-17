@@ -559,6 +559,46 @@ class manager {
         return $message;
     }
 
+    // Static helpers — usable without a questionnaire instance.
+
+    /**
+     * Get all responses for a given questionnaire instance id and user, without needing an instance.
+     * @param int $instanceid The questionnaire.id value.
+     * @param int $userid
+     * @param bool $complete True = only complete responses, false = all responses.
+     * @return array
+     */
+    public static function get_user_responses_for_instance(int $instanceid, int $userid, bool $complete = true): array {
+        global $DB;
+        $andcomplete = $complete ? " AND complete = 'y' " : '';
+        return $DB->get_records_sql(
+            "SELECT * FROM {questionnaire_response}
+              WHERE questionnaireid = ?
+                AND userid = ?
+             " . $andcomplete . "
+             ORDER BY submitted ASC",
+            [$instanceid, $userid]
+        ) ?? [];
+    }
+
+    /**
+     * Delete all response data for a given question id, without needing a questionnaire instance.
+     * @param int $qid
+     * @return bool
+     */
+    public static function delete_responses_for_question(int $qid): bool {
+        global $DB;
+        $DB->delete_records('questionnaire_response_bool', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_response_date', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_resp_multiple', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_response_other', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_response_rank', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_resp_single', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_response_text', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_response_file', ['questionid' => $qid]);
+        return true;
+    }
+
     // Functions migrated from locallib.php.
 
     /**
