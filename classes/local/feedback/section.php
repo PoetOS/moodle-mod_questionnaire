@@ -46,6 +46,10 @@ class section {
     public $sectionfeedback = [];
     /** @var array */
     public $questions = [];
+    /** @var int Survey id set externally (e.g. in fbsections.php form data). */
+    public $sid = 0;
+    /** @var int Section id set externally (e.g. in fbsections.php form data). */
+    public $sectionid = 0;
 
     /** The table name. */
     const TABLE = 'questionnaire_fb_sections';

@@ -145,6 +145,12 @@ class questionnaire {
      */
     public $page = false;
 
+    /** @var string Localised plural module name set by page scripts (e.g. complete.php). */
+    public $strquestionnaires = '';
+
+    /** @var string Localised singular module name set by page scripts (e.g. complete.php). */
+    public $strquestionnaire = '';
+
     // Class Methods.
 
     /**
