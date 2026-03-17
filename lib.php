@@ -158,7 +158,7 @@ function questionnaire_add_instance($questionnaire) {
         return false;
     }
 
-    questionnaire_set_events($questionnaire);
+    \questionnaire::set_events($questionnaire);
 
     $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
     \core_completion\api::update_completion_date_event(
@@ -198,7 +198,7 @@ function questionnaire_update_instance($questionnaire) {
     // Get existing grade item.
     questionnaire_grade_item_update($questionnaire);
 
-    questionnaire_set_events($questionnaire);
+    \questionnaire::set_events($questionnaire);
 
     $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
     \core_completion\api::update_completion_date_event(
@@ -240,7 +240,7 @@ function questionnaire_delete_instance($id) {
     if ($survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid])) {
         // If this survey is owned by this course, delete all of the survey records and responses.
         if ($survey->courseid == $questionnaire->course) {
-            $result = $result && questionnaire_delete_survey($questionnaire->sid, $questionnaire->id);
+            $result = $result && \questionnaire::delete_survey($questionnaire->sid, $questionnaire->id);
         }
     }
 
