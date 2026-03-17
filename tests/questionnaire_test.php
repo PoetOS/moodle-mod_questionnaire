@@ -355,7 +355,8 @@ final class questionnaire_test extends \advanced_testcase {
         $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREDAILY]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
-            'submitted' => time() - 1800, 'complete' => 'y', 'grade' => 0,
+            'submitted' => mktime(0, 0, 0, (int)date('n'), (int)date('j'), (int)date('Y')),
+            'complete' => 'y', 'grade' => 0,
         ]);
 
         $this->assertFalse($q->user_time_for_new_attempt(1));
