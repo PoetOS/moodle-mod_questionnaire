@@ -28,6 +28,7 @@ use mod_questionnaire\edit_question_form;
 use mod_questionnaire\local\responsetype\response\response;
 use questionnaire;
 use html_writer;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -132,6 +133,21 @@ abstract class question {
 
     /** @var mixed $dependchoice Legacy dependency choice id. */
     public $dependchoice = null;
+
+    /** @var int|null $sid The survey id, set by locallib when building question edit forms. */
+    public $sid = null;
+
+    /** @var array $dependquestionsand Dependency question+choice ids for "and" logic (locallib form builder). */
+    public $dependquestionsand = [];
+
+    /** @var array $dependlogicand Dependency logic values for "and" conditions (locallib form builder). */
+    public $dependlogicand = [];
+
+    /** @var array $dependquestionsor Dependency question+choice ids for "or" logic (locallib form builder). */
+    public $dependquestionsor = [];
+
+    /** @var array $dependlogicor Dependency logic values for "or" conditions (locallib form builder). */
+    public $dependlogicor = [];
 
     /** @var array $qtypenames List of all question names. */
     private static $qtypenames = [
@@ -931,7 +947,7 @@ abstract class question {
      * @param bool $pdf
      * @return bool|string
      */
-    public function results_template($pdf = false) {
+    public function results_template(bool $pdf = false) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\responsetype\\responsetype')
@@ -950,7 +966,23 @@ abstract class question {
      * @param int $qnum
      * @return \stdClass
      */
-    public function question_output($response, $blankquestionnaire, $dependants = [], $qnum = '', $questionnaire = null) {
+    /**
+     * Get the output for question renderers / templates.
+     *
+     * @param \mod_questionnaire\local\responsetype\response\response|\stdClass $response The response object or form data.
+     * @param bool $blankquestionnaire Whether the questionnaire is blank.
+     * @param array $dependants Array of all questions/choices depending on this question.
+     * @param int|string $qnum The question number.
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @return \stdClass The output object for rendering.
+     */
+    public function question_output(
+        $response,
+        $blankquestionnaire,
+        $dependants = [],
+        $qnum = '',
+        $questionnaire = null
+    ): stdClass {
         $this->questionnaire = $questionnaire;
         $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire);
         $pagetags->qformelement = $this->question_survey_display($response, $dependants, $blankquestionnaire);
@@ -961,6 +993,7 @@ abstract class question {
      * Get the output for question renderers / templates.
      * @param \mod_questionnaire\local\responsetype\response\response $response
      * @param string $qnum
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
      * @return \stdClass
      */
     public function response_output($response, $qnum = '', $questionnaire = null) {
@@ -972,10 +1005,11 @@ abstract class question {
     /**
      * Get the output for the start of the questions in a survey.
      * @param int $qnum
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param response $response
+     * @param questionnaire|null $questionnaire The parent questionnaire object.
      * @return \stdClass
      */
-    public function questionstart_survey_display($qnum, $response = null, $questionnaire = null) {
+    public function questionstart_survey_display($qnum, $response = null, $questionnaire = null): stdClass {
         global $OUTPUT, $SESSION, $PAGE;
 
         $pagetags = new \stdClass();

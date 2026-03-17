@@ -1049,11 +1049,11 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
         if (isset($question->dependencies)) {
             foreach ($question->dependencies as $dependencies) {
                 if ($dependencies->dependandor === "and") {
-                    $question->dependquestions_and[] = $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
-                    $question->dependlogic_and[] = $dependencies->dependlogic;
+                    $question->dependquestionsand[] = $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
+                    $question->dependlogicand[] = $dependencies->dependlogic;
                 } else if ($dependencies->dependandor === "or") {
-                    $question->dependquestions_or[] = $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
-                    $question->dependlogic_or[] = $dependencies->dependlogic;
+                    $question->dependquestionsor[] = $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
+                    $question->dependlogicor[] = $dependencies->dependlogic;
                 }
             }
         }
