@@ -3195,6 +3195,109 @@ class questionnaire {
     }
 
     /**
+     * Create or update calendar events for a questionnaire instance.
+     * @param object $questionnaire stdClass with id, name, course, opendate, closedate fields
+     * @return void
+     */
+    public static function set_events($questionnaire) {
+        global $DB;
+        if ($events = $DB->get_records('event', ['modulename' => 'questionnaire', 'instance' => $questionnaire->id])) {
+            foreach ($events as $event) {
+                $event = calendar_event::load($event);
+                $event->delete();
+            }
+        }
+
+        // The open-event.
+        $event = new stdClass();
+        $event->description = $questionnaire->name;
+        $event->courseid = $questionnaire->course;
+        $event->groupid = 0;
+        $event->userid = 0;
+        $event->modulename = 'questionnaire';
+        $event->instance = $questionnaire->id;
+        $event->eventtype = 'open';
+        $event->type = CALENDAR_EVENT_TYPE_ACTION;
+        $event->timestart = $questionnaire->opendate;
+        $event->visible = instance_is_visible('questionnaire', $questionnaire);
+        $event->timeduration = ($questionnaire->closedate - $questionnaire->opendate);
+
+        if ($questionnaire->closedate && $questionnaire->opendate && ($event->timeduration <= QUESTIONNAIRE_MAX_EVENT_LENGTH)) {
+            // Single event for the whole questionnaire.
+            $event->name = $questionnaire->name;
+            $event->timesort = $questionnaire->opendate;
+            calendar_event::create($event);
+        } else {
+            // Separate start and end events.
+            $event->timeduration = 0;
+            if ($questionnaire->opendate) {
+                $event->name = $questionnaire->name .
+                    ' (' . get_string('questionnaireopens', 'questionnaire') . ')';
+                $event->timesort = $questionnaire->opendate;
+                calendar_event::create($event);
+                unset($event->id); // So we can use the same object for the close event.
+            }
+            if ($questionnaire->closedate) {
+                $event->name = $questionnaire->name .
+                    ' (' . get_string('questionnairecloses', 'questionnaire') . ')';
+                $event->timestart = $questionnaire->closedate;
+                $event->timesort = $questionnaire->closedate;
+                $event->eventtype = 'close';
+                calendar_event::create($event);
+            }
+        }
+    }
+
+    /**
+     * Delete a survey and all associated data.
+     * @param int $sid survey id
+     * @param int $questionnaireid questionnaire instance id
+     * @return bool
+     */
+    public static function delete_survey(int $sid, int $questionnaireid) {
+        global $DB;
+        $status = true;
+        // Delete all survey attempts and responses.
+        $rid = $DB->get_fieldset_select('questionnaire_response', 'id', 'questionnaireid = ?', [$questionnaireid]);
+        if (!empty($rid)) {
+            [$insql, $params] = $DB->get_in_or_equal($rid);
+            $DB->delete_records_select('questionnaire_response_bool', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_date', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_resp_multiple', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_other', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_rank', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_resp_single', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_text', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_file', "responseid $insql", $params);
+        }
+        $status = $status && $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaireid]);
+
+        // Delete all question data for the survey.
+        if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid], 'id')) {
+            foreach ($questions as $question) {
+                $DB->delete_records('questionnaire_quest_choice', ['questionid' => $question->id]);
+                $DB->delete_records('questionnaire_dependency', ['questionid' => $question->id]);
+                $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $question->id]);
+            }
+            $status = $status && $DB->delete_records('questionnaire_question', ['surveyid' => $sid]);
+            // Just to make sure.
+            $status = $status && $DB->delete_records('questionnaire_dependency', ['surveyid' => $sid]);
+        }
+
+        // Delete all feedback sections and feedback messages for the survey.
+        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid], 'id')) {
+            foreach ($fbsections as $fbsection) {
+                $DB->delete_records('questionnaire_feedback', ['sectionid' => $fbsection->id]);
+            }
+            $status = $status && $DB->delete_records('questionnaire_fb_sections', ['surveyid' => $sid]);
+        }
+
+        $status = $status && $DB->delete_records('questionnaire_survey', ['id' => $sid]);
+
+        return $status;
+    }
+
+    /**
      * Process individual row for csv output
      * @param array $row
      * @param stdClass $resprow resultset row
