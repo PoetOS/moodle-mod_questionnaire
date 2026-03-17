@@ -1530,7 +1530,7 @@ abstract class question {
             $this->update($questionrecord, false);
 
             if ($questionnaire->has_dependencies()) {
-                questionnaire_check_page_breaks($questionnaire);
+                $questionnaire->check_page_breaks();
             }
         } else {
             // Create new question:

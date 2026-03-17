@@ -3846,6 +3846,172 @@ class questionnaire {
     }
 
     /**
+     * Check that the needed page breaks are present to separate child questions.
+     * Adds missing breaks and removes duplicate/misplaced ones.
+     * @return false|string A status message, or false on failure.
+     */
+    public function check_page_breaks() {
+        global $DB;
+        $msg = '';
+        // Store the new page breaks ids.
+        $newpbids = [];
+        $delpb = 0;
+        $sid = $this->survey->id;
+        $positions = [];
+        if (
+            $questions = $DB->get_records_select(
+                'questionnaire_question',
+                'surveyid = :sid AND deleted IS NULL',
+                ['sid' => $sid],
+                'position'
+            )
+        ) {
+            foreach ($questions as $key => $qu) {
+                $newqu = new stdClass();
+                $newqu->questionid = $key;
+                $newqu->typeid = $qu->typeid;
+                $newqu->qname = $qu->name;
+                $newqu->qpos = $qu->position;
+
+                $dependencies = $DB->get_records(
+                    'questionnaire_dependency',
+                    ['questionid' => $key, 'surveyid' => $sid],
+                    'id ASC',
+                    'id, dependquestionid, dependchoiceid, dependlogic'
+                );
+                $newqu->dependencies = $dependencies ?? [];
+                $positions[] = (array)$newqu;
+            }
+        }
+        $count = count($positions);
+
+        for ($i = $count - 1; $i >= 0; $i--) {
+            $qu = $positions[$i];
+            $questionnb = $i;
+            $prevqu = null;
+            $prevtypeid = null;
+            if ($i > 0) {
+                $prevqu = $positions[$i - 1];
+                $prevtypeid = $prevqu['typeid'];
+            }
+            if ($qu['typeid'] == QUESPAGEBREAK) {
+                $questionnb--;
+                // If more than one consecutive page breaks, remove extra one(s).
+                // Remove that extra page break in 1st position.
+                if ($prevtypeid == QUESPAGEBREAK || $i == $count - 1 || $qu['qpos'] == 1) {
+                    $qid = $qu['questionid'];
+                    $delpb++;
+                    $msg .= get_string("checkbreaksremoved", "questionnaire", $delpb) . '<br />';
+                    // Need to reload questions.
+                    if (
+                        $questions = $DB->get_records_select(
+                            'questionnaire_question',
+                            'surveyid = :sid AND deleted IS NULL',
+                            ['sid' => $sid],
+                            'id'
+                        )
+                    ) {
+                        $DB->set_field('questionnaire_question', 'deleted', time(), ['id' => $qid, 'surveyid' => $sid]);
+                        $select = 'surveyid = :sid AND deleted IS NULL AND position > :pos';
+                        $records = $DB->get_records_select(
+                            'questionnaire_question',
+                            $select,
+                            ['sid' => $sid, 'pos' => $questions[$qid]->position],
+                            'position ASC'
+                        );
+                        if ($records) {
+                            foreach ($records as $record) {
+                                $DB->set_field(
+                                    'questionnaire_question',
+                                    'position',
+                                    $record->position - 1,
+                                    ['id' => $record->id]
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            // Add pagebreak between question child and not dependent question that follows.
+            if ($qu['typeid'] != QUESPAGEBREAK) {
+                if ($prevqu) {
+                    $prevdependencies = $prevqu['dependencies'];
+                    $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ?
+                        $qu['dependencies'] : $prevdependencies;
+                    $innerdependencies = count($qu['dependencies']) < count($prevdependencies) ?
+                        $qu['dependencies'] : $prevdependencies;
+
+                    $okeys = [];
+                    $ikeys = [];
+                    foreach ($outerdependencies as $okey => $outerdependency) {
+                        foreach ($innerdependencies as $ikey => $innerdependency) {
+                            if (
+                                $outerdependency->dependquestionid === $innerdependency->dependquestionid &&
+                                $outerdependency->dependchoiceid === $innerdependency->dependchoiceid &&
+                                $outerdependency->dependlogic === $innerdependency->dependlogic
+                            ) {
+                                $okeys[] = $okey;
+                                $ikeys[] = $ikey;
+                            }
+                        }
+                    }
+
+                    foreach ($okeys as $key) {
+                        if (key_exists($key, $outerdependencies)) {
+                            unset($outerdependencies[$key]);
+                        }
+                    }
+                    foreach ($ikeys as $key) {
+                        if (key_exists($key, $innerdependencies)) {
+                            unset($innerdependencies[$key]);
+                        }
+                    }
+
+                    $diffdependencies = count($outerdependencies) + count($innerdependencies);
+
+                    if (
+                        ($prevtypeid != QUESPAGEBREAK && $diffdependencies != 0) ||
+                        (!isset($qu['dependencies']) && isset($prevdependencies))
+                    ) {
+                        $sql = "SELECT MAX(position) as maxpos
+                                  FROM {questionnaire_question}
+                                 WHERE surveyid = :sid
+                                   AND deleted IS NULL";
+                        if ($record = $DB->get_record_sql($sql, ['sid' => $this->survey->id])) {
+                            $pos = $record->maxpos + 1;
+                        } else {
+                            $pos = 1;
+                        }
+                        $question = new stdClass();
+                        $question->surveyid = $this->survey->id;
+                        $question->typeid = QUESPAGEBREAK;
+                        $question->position = $pos;
+                        $question->content = 'break';
+
+                        if (!($newqid = $DB->insert_record('questionnaire_question', $question))) {
+                            return false;
+                        }
+                        $newpbids[] = $newqid;
+                        $refreshed = new questionnaire($this->course, $this->cm, $this->id, null);
+                        $refreshed->move_question($newqid, $qu['qpos']);
+                    }
+                }
+            }
+        }
+        if (empty($newpbids) && !$msg) {
+            $msg = get_string('checkbreaksok', 'questionnaire');
+        } else if ($newpbids) {
+            $msg .= get_string('checkbreaksadded', 'questionnaire') . '&nbsp;';
+            $newpbids = array_reverse($newpbids);
+            $refreshed = new questionnaire($this->course, $this->cm, $this->id, null);
+            foreach ($newpbids as $newpbid) {
+                $msg .= $refreshed->questions[$newpbid]->position . '&nbsp;';
+            }
+        }
+        return $msg;
+    }
+
+    /**
      * Render the response analysis page.
      * @param int $rid
      * @param array $resps

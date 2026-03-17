@@ -147,7 +147,7 @@ if ($delq) {
     questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
 
     if ($questionnairehasdependencies) {
-        $SESSION->questionnaire->validateresults = questionnaire_check_page_breaks($questionnaire);
+        $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
     }
     $reload = true;
 }
@@ -290,14 +290,14 @@ if ($action == 'main') {
                 $questionnaire->move_question($qformdata->moveq, $qpos);
             }
             if ($questionnairehasdependencies) {
-                $SESSION->questionnaire->validateresults = questionnaire_check_page_breaks($questionnaire);
+                $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
             }
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
             redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
             $reload = true;
         } else if (isset($qformdata->validate)) {
             // Validates page breaks for depend questions.
-            $SESSION->questionnaire->validateresults = questionnaire_check_page_breaks($questionnaire);
+            $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
             $reload = true;
         } else if (isset($qformdata->deletebutton)) {
             $action = QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY;
@@ -332,7 +332,7 @@ if ($action == 'main') {
             $qformdata->required = 'n';
         }
 
-        questionnaire_check_page_breaks($questionnaire);
+        $questionnaire->check_page_breaks();
         $SESSION->questionnaire->required = $qformdata->required;
         $SESSION->questionnaire->typeid = $qformdata->typeid;
         // Switch to main screen.
