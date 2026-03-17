@@ -1394,7 +1394,7 @@ function questionnaire_reset_userdata($data) {
     $status = [];
 
     if (!empty($data->reset_questionnaire)) {
-        $surveys = questionnaire_get_survey_list($data->courseid, '');
+        $surveys = \questionnaire::get_survey_list($data->courseid, '');
 
         // Delete responses.
         foreach ($surveys as $survey) {

@@ -38,7 +38,7 @@ class settings_form extends \moodleform {
 
         $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
 
-        $capabilities = questionnaire_load_capabilities($questionnaire->cm->id);
+        $capabilities = $questionnaire->capabilities;
         if (!$capabilities->createtemplates) {
             unset($questionnairerealms['template']);
         }
