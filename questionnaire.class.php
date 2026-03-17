@@ -189,7 +189,7 @@ class questionnaire {
 
         // Load the capabilities for this user and questionnaire, if not creating a new one.
         if (!empty($this->cm->id)) {
-            $this->capabilities = questionnaire_load_capabilities($this->cm->id);
+            $this->capabilities = $this->load_capabilities();
         }
 
         // Don't automatically add responses.
@@ -553,6 +553,32 @@ class questionnaire {
      */
     public function is_active() {
         return (!empty($this->survey));
+    }
+
+    /**
+     * Load and return the capabilities object for the current user in this questionnaire context.
+     * @return stdClass
+     */
+    public function load_capabilities() {
+        $context = $this->context ?? context_module::instance($this->cm->id);
+        $cb = new stdClass();
+        $cb->view = has_capability('mod/questionnaire:view', $context);
+        $cb->submit = has_capability('mod/questionnaire:submit', $context);
+        $cb->viewsingleresponse = has_capability('mod/questionnaire:viewsingleresponse', $context);
+        $cb->submissionnotification = has_capability('mod/questionnaire:submissionnotification', $context);
+        $cb->downloadresponses = has_capability('mod/questionnaire:downloadresponses', $context);
+        $cb->deleteresponses = has_capability('mod/questionnaire:deleteresponses', $context);
+        $cb->manage = has_capability('mod/questionnaire:manage', $context);
+        $cb->editquestions = has_capability('mod/questionnaire:editquestions', $context);
+        $cb->createtemplates = has_capability('mod/questionnaire:createtemplates', $context);
+        $cb->createpublic = has_capability('mod/questionnaire:createpublic', $context);
+        $cb->readownresponses = has_capability('mod/questionnaire:readownresponses', $context);
+        $cb->readallresponses = has_capability('mod/questionnaire:readallresponses', $context);
+        $cb->readallresponseanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
+        $cb->printblank = has_capability('mod/questionnaire:printblank', $context);
+        $cb->preview = has_capability('mod/questionnaire:preview', $context);
+        $cb->viewhiddenactivities = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
+        return $cb;
     }
 
     /**
@@ -3073,6 +3099,99 @@ class questionnaire {
      */
     public function survey_is_public_master() {
         return $this->survey_is_public() && ($this->course->id == $this->survey->courseid);
+    }
+
+    /**
+     * Return survey records for a given course and realm type.
+     * @param int $courseid
+     * @param string $type realm type: 'public', 'template', 'private', or '' for all
+     * @return array|false
+     */
+    public static function get_survey_list($courseid = 0, $type = '') {
+        global $DB;
+
+        if ($courseid == 0) {
+            if (isadmin()) {
+                $sql = "SELECT id,name,courseid,realm,status " .
+                       "{questionnaire_survey} " .
+                       "ORDER BY realm,name ";
+                $params = null;
+            } else {
+                return false;
+            }
+        } else {
+            if ($type == 'public') {
+                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
+                       "FROM {questionnaire} q " .
+                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
+                       "WHERE realm = ? " .
+                       "ORDER BY realm,name ";
+                $params = [$type];
+            } else if ($type == 'template') {
+                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
+                       "FROM {questionnaire} q " .
+                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
+                       "WHERE (realm = ?) " .
+                       "ORDER BY realm,name ";
+                $params = [$type];
+            } else if ($type == 'private') {
+                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname " .
+                    "FROM {questionnaire} q " .
+                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
+                    "WHERE s.courseid = ? and realm = ? " .
+                    "ORDER BY realm,name ";
+                $params = [$courseid, $type];
+            } else {
+                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname " .
+                       "FROM {questionnaire} q " .
+                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
+                       "WHERE s.courseid = ? " .
+                       "ORDER BY realm,name ";
+                $params = [$courseid];
+            }
+        }
+        return $DB->get_records_sql($sql, $params) ?? [];
+    }
+
+    /**
+     * Return a labelled list of surveys for a select element (used in mod_form).
+     * @param int $courseid
+     * @param string $type realm type
+     * @return array
+     */
+    public static function get_survey_select($courseid = 0, $type = '') {
+        global $OUTPUT, $DB;
+
+        $surveylist = [];
+
+        if ($surveys = self::get_survey_list($courseid, $type)) {
+            $strpreview = get_string('preview_questionnaire', 'questionnaire');
+            foreach ($surveys as $survey) {
+                $originalcourse = $DB->get_record('course', ['id' => $survey->courseid]);
+                if (!$originalcourse) {
+                    continue;
+                }
+
+                if (($type == 'public') && ($survey->courseid == $courseid)) {
+                    continue;
+                } else {
+                    $args = "sid={$survey->id}&popup=1";
+                    if (!empty($survey->qid)) {
+                        $args .= "&qid={$survey->qid}";
+                    }
+                    $link = new moodle_url("/mod/questionnaire/preview.php?{$args}");
+                    $action = new popup_action('click', $link);
+                    $label = $OUTPUT->action_link(
+                        $link,
+                        $survey->qname . ' [' . $originalcourse->fullname . ']',
+                        $action,
+                        ['title' => $strpreview]
+                    );
+                    $surveylist[$type . '-' . $survey->id] = $label;
+                }
+            }
+        }
+        return $surveylist;
     }
 
     /**
