@@ -174,27 +174,6 @@ function questionnaire_get_js_module() {
 }
 
 /**
- * Get all the questionnaire responses for a user.
- * @param int $questionnaireid
- * @param int $userid
- * @param bool $complete
- * @return array
- */
-function questionnaire_get_user_responses($questionnaireid, $userid, $complete = true) {
-    global $DB;
-    $andcomplete = '';
-    if ($complete) {
-        $andcomplete = " AND complete = 'y' ";
-    }
-    return $DB->get_records_sql("SELECT *
-        FROM {questionnaire_response}
-        WHERE questionnaireid = ?
-        AND userid = ?
-        " . $andcomplete . "
-        ORDER BY submitted ASC ", [$questionnaireid, $userid]) ?? [];
-}
-
-/**
  * get the capabilities for the questionnaire
  * @param int $cmid
  * @return object the available capabilities from current user
@@ -281,20 +260,26 @@ function questionnaire_delete_survey($sid, $questionnaireid) {
     global $DB;
     $status = true;
     // Delete all survey attempts and responses.
-    if ($responses = $DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaireid], 'id')) {
-        foreach ($responses as $response) {
-            $status = $status && questionnaire_delete_response($response);
-        }
+    $rid = $DB->get_fieldset_select('questionnaire_response', 'id', 'questionnaireid = ?', [$questionnaireid]);
+    if (!empty($rid)) {
+        [$insql, $params] = $DB->get_in_or_equal($rid);
+        $DB->delete_records_select('questionnaire_response_bool', "responseid $insql", $params);
+        $DB->delete_records_select('questionnaire_response_date', "responseid $insql", $params);
+        $DB->delete_records_select('questionnaire_resp_multiple', "responseid $insql", $params);
+        $DB->delete_records_select('questionnaire_response_other', "responseid $insql", $params);
+        $DB->delete_records_select('questionnaire_response_rank', "responseid $insql", $params);
+        $DB->delete_records_select('questionnaire_resp_single', "responseid $insql", $params);
+        $DB->delete_records_select('questionnaire_response_text', "responseid $insql", $params);
+        $DB->delete_records_select('questionnaire_response_file', "responseid $insql", $params);
     }
-
-    // There really shouldn't be any more, but just to make sure...
-    $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaireid]);
+    $status = $status && $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaireid]);
 
     // Delete all question data for the survey.
     if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid], 'id')) {
         foreach ($questions as $question) {
             $DB->delete_records('questionnaire_quest_choice', ['questionid' => $question->id]);
-            questionnaire_delete_dependencies($question->id);
+            $DB->delete_records('questionnaire_dependency', ['questionid' => $question->id]);
+            $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $question->id]);
         }
         $status = $status && $DB->delete_records('questionnaire_question', ['surveyid' => $sid]);
         // Just to make sure.
@@ -325,8 +310,10 @@ function questionnaire_delete_permanently_questions($qid, $sid) {
     global $DB;
     $select = 'id = :id AND surveyid = :sid AND deleted IS NOT NULL';
     $DB->delete_records_select('questionnaire_question', $select, ['id' => $qid, 'sid' => $sid]);
-    questionnaire_delete_responses($qid);
-    questionnaire_delete_dependencies($qid);
+    $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
+    \mod_questionnaire\local\response\manager::delete_responses_for_question($qid);
+    $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
 }
 
 /**
@@ -383,85 +370,6 @@ function questionnaire_restore_deleted_question($qid, $sid) {
  */
 function questionnaire_get_range_time_permanently() {
     return get_config('questionnaire_questiondeletion', 'duration');
-}
-
-/**
- * Delete the response.
- * @param stdClass $response
- * @param string $questionnaire
- * @return bool
- */
-function questionnaire_delete_response($response, $questionnaire = '') {
-    global $DB;
-    $status = true;
-    $cm = '';
-    $rid = $response->id;
-    // The questionnaire_delete_survey function does not send the questionnaire array.
-    if ($questionnaire != '') {
-        $cm = get_coursemodule_from_instance(
-            "questionnaire",
-            $questionnaire->id,
-            $questionnaire->course->id
-        );
-    }
-
-    // Delete all of the response data for a response.
-    $DB->delete_records('questionnaire_response_bool', ['responseid' => $rid]);
-    $DB->delete_records('questionnaire_response_date', ['responseid' => $rid]);
-    $DB->delete_records('questionnaire_resp_multiple', ['responseid' => $rid]);
-    $DB->delete_records('questionnaire_response_other', ['responseid' => $rid]);
-    $DB->delete_records('questionnaire_response_rank', ['responseid' => $rid]);
-    $DB->delete_records('questionnaire_resp_single', ['responseid' => $rid]);
-    $DB->delete_records('questionnaire_response_text', ['responseid' => $rid]);
-    $DB->delete_records('questionnaire_response_file', ['responseid' => $rid]);
-
-    $status = $status && $DB->delete_records('questionnaire_response', ['id' => $rid]);
-
-    if ($status && $cm) {
-        // Update completion state if necessary.
-        $completion = new completion_info($questionnaire->course);
-        if ($completion->is_enabled($cm) == COMPLETION_TRACKING_AUTOMATIC && $questionnaire->completionsubmit) {
-            $completion->update_state($cm, COMPLETION_INCOMPLETE, $response->userid);
-        }
-    }
-
-    return $status;
-}
-
-/**
- * Delete all responses for the questionnaire.
- * @param int $qid
- * @return bool
- */
-function questionnaire_delete_responses($qid) {
-    global $DB;
-
-    // Delete all of the response data for a question.
-    $DB->delete_records('questionnaire_response_bool', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_response_date', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_resp_multiple', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_response_other', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_response_rank', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_resp_single', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_response_text', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_response_file', ['questionid' => $qid]);
-
-    return true;
-}
-
-/**
- * Delete all dependencies for the questionnaire.
- * @param int $qid
- * @return bool
- */
-function questionnaire_delete_dependencies($qid) {
-    global $DB;
-
-    // Delete all dependencies for this question.
-    $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
-
-    return true;
 }
 
 /**

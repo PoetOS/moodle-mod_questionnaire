@@ -105,7 +105,8 @@ if ($delq) {
     }
 
     // Delete all dependency records for this question.
-    questionnaire_delete_dependencies($qid);
+    $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
+    $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
     // Delete all page break that references to question deleted.
     questionnaire_delete_pagebreaks($sid);
 
@@ -127,7 +128,7 @@ if ($delq) {
         $reload = true;
     } else {
         // Delete responses to that deleted question.
-        questionnaire_delete_responses($qid);
+        $questionnaire->responsemanager()->delete_responses($qid);
 
         // If no questions left in this questionnaire, remove all responses.
         if (

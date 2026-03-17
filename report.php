@@ -334,7 +334,7 @@ switch ($action) {
             throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
         }
 
-        if (questionnaire_delete_response($response, $questionnaire)) {
+        if ($questionnaire->responsemanager()->delete_response($response)) {
             if (!$DB->count_records('questionnaire_response', ['questionnaireid' => $questionnaire->id, 'complete' => 'y'])) {
                 $redirection = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $cm->id;
             } else {
@@ -425,7 +425,7 @@ switch ($action) {
 
         if (!empty($resps)) {
             foreach ($resps as $response) {
-                questionnaire_delete_response($response, $questionnaire);
+                $questionnaire->responsemanager()->delete_response($response);
             }
             if (!$questionnaire->count_submissions()) {
                 $redirection = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $cm->id;
