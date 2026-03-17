@@ -226,6 +226,7 @@ class renderer extends \plugin_renderer_base {
      * @param int $qnum The question number.
      * @param boolean $blankquestionnaire Used for printing a blank one.
      * @param array $dependants Array of all questions/choices depending on $question.
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
      * @return string The output for the page.
      */
     public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants = [], $questionnaire = null) {
@@ -255,6 +256,7 @@ class renderer extends \plugin_renderer_base {
      * @param \mod_questionnaire\local\responsetype\response\response $response The response object.
      * @param int $qnum The question number.
      * @param bool $pdf
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
      * @return string The output for the page.
      * @throws \moodle_exception
      */
@@ -287,6 +289,7 @@ class renderer extends \plugin_renderer_base {
      * Render all responses for a question.
      * @param array|string $responses
      * @param array $questions
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
      * @return string The output for the page.
      */
     public function all_response_output($responses, $questions = null, $questionnaire = null) {
