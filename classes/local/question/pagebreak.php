@@ -50,8 +50,8 @@ class pagebreak extends question {
      * @param \questionnaire|null $questionnaire
      * @return \stdClass
      */
-    public function questionstart_survey_display($qnum, $response = null, $questionnaire = null): stdClass {
-        return new stdClass();
+    public function questionstart_survey_display($qnum, $response = null, $questionnaire = null): \stdClass {
+        return new \stdClass();
     }
 
     /**
