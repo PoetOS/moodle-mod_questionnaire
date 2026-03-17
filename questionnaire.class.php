@@ -172,7 +172,9 @@ class questionnaire {
         if (is_object($questionnaire)) {
             $properties = get_object_vars($questionnaire);
             foreach ($properties as $property => $value) {
-                $this->$property = $value;
+                if (property_exists($this, $property)) {
+                    $this->$property = $value;
+                }
             }
         }
 
