@@ -42,6 +42,13 @@ use Behat\Behat\Context\Step\Given,
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_mod_questionnaire extends behat_base {
+    /** @var array Maps old question IDs to new IDs when importing test data. */
+    public $questionmap = [];
+    /** @var array Maps old choice IDs to new IDs when importing test data. */
+    public $choicemap = [];
+    /** @var array Maps old response IDs to new IDs when importing test data. */
+    public $responsemap = [];
+
     /**
      * Convert page names to URLs for steps like 'When I am on the "[page name]" page'.
      *
