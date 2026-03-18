@@ -151,6 +151,9 @@ class questionnaire {
     /** @var string Localised singular module name set by page scripts (e.g. complete.php). */
     public $strquestionnaire = '';
 
+    /** @var bool Whether the current user can view all groups; set by report.php / myreport.php. */
+    public $canviewallgroups = false;
+
     // Class Methods.
 
     /**
