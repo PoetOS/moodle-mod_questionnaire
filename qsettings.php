@@ -139,7 +139,7 @@ if ($settings = $settingsform->get_data()) {
     $sdata->email = $settings->email;
 
     $sdata->courseid = $settings->courseid;
-    if (!($sid = $questionnaire->survey_update($sdata))) {
+    if (!($sid = \mod_questionnaire\questionnaire::update_survey($questionnaire->survey->id, $sdata))) {
         throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
     } else {
         if ($submitbutton2) {

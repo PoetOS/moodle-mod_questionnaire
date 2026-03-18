@@ -718,4 +718,203 @@ class questionnaire {
     public function add_page($page): void {
         $this->page = $page;
     }
+
+    /**
+     * Create or update a questionnaire survey record.
+     *
+     * If $sid is 0 (or empty), a new survey record is inserted and its id is returned.
+     * If $sid is non-zero, the existing record is updated.
+     *
+     * @param int $sid  Survey id; 0 to create a new survey.
+     * @param stdClass $sdata  Survey data object.
+     * @return int|false  The survey id on success, false on failure.
+     */
+    public static function update_survey(int $sid, stdClass $sdata): int|false {
+        global $DB;
+
+        $fields = [
+            'name',
+            'realm',
+            'title',
+            'subtitle',
+            'email',
+            'theme',
+            'thankspage',
+            'thankhead',
+            'thankbody',
+            'feedbacknotes',
+            'info',
+            'feedbacksections',
+            'feedbackscores',
+            'charttype',
+        ];
+
+        if (empty($sid)) {
+            // Create a new survey.
+            // Theme field deprecated.
+            $record = new stdClass();
+            $record->id = 0;
+            $record->courseid = $sdata->courseid;
+            foreach ($fields as $f) {
+                if (isset($sdata->$f)) {
+                    $record->$f = $sdata->$f;
+                }
+            }
+            $newsid = $DB->insert_record('questionnaire_survey', $record);
+            if (!$newsid) {
+                return false;
+            }
+            return $newsid;
+        } else {
+            if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
+                return false;
+            }
+            if (!isset($sdata->charttype)) {
+                $sdata->charttype = '';
+            }
+
+            $name = $DB->get_field('questionnaire_survey', 'name', ['id' => $sid]);
+
+            // Trying to change survey name.
+            if (trim($name) != trim(stripslashes($sdata->name))) {
+                $count = $DB->count_records('questionnaire_survey', ['name' => $sdata->name]);
+                if ($count != 0) {
+                    return false;
+                }
+            }
+
+            // UPDATE the row in the DB with current values.
+            $surveyrecord = new stdClass();
+            $surveyrecord->id = $sid;
+            foreach ($fields as $f) {
+                if (isset($sdata->{$f})) {
+                    $surveyrecord->$f = trim($sdata->{$f});
+                }
+            }
+
+            $result = $DB->update_record('questionnaire_survey', $surveyrecord);
+            if (!$result) {
+                return false;
+            }
+            return $sid;
+        }
+    }
+
+    /**
+     * Create an editable copy of a survey, including all questions, choices, dependencies,
+     * and feedback sections.
+     *
+     * @param stdClass $survey     The survey record to copy (from questionnaire.class.php::$survey).
+     * @param array    $questions  The questions array (from questionnaire.class.php::$questions).
+     * @param int      $owner      The courseid that will own the new survey.
+     * @return int|false  The new survey id on success, false on failure.
+     */
+    public static function copy_survey(stdClass $survey, array $questions, int $owner): int|false {
+        global $DB;
+
+        // Clear the sid, clear the creation date, change the name, and clear the status.
+        $survey = clone $survey;
+
+        $oldsid = $survey->id;
+        unset($survey->id);
+        $survey->courseid = $owner;
+        // Make sure that the survey name is not larger than the field size (CONTRIB-2999). Leave room for extra chars.
+        $survey->name = \core_text::substr($survey->name, 0, 64 - 10);
+
+        $survey->name .= '_copy';
+        $survey->status = 0;
+
+        // Check for 'name' conflict, and resolve.
+        $i = 0;
+        $name = $survey->name;
+        while ($DB->count_records('questionnaire_survey', ['name' => $name]) > 0) {
+            $name = $survey->name . (++$i);
+        }
+        if ($i) {
+            $survey->name .= $i;
+        }
+
+        // Create new survey.
+        if (!($newsid = $DB->insert_record('questionnaire_survey', $survey))) {
+            return false;
+        }
+
+        // Make copies of all the questions.
+        $pos = 1;
+        // Skip logic: some changes needed here for dependencies down below.
+        $qidarray = [];
+        $cidarray = [];
+        foreach ($questions as $question) {
+            // Fix some fields first.
+            $oldid = $question->id;
+            unset($question->id);
+            $question->surveyid = $newsid;
+            $question->position = $pos++;
+
+            // Copy question to new survey.
+            if (!($newqid = $DB->insert_record('questionnaire_question', $question))) {
+                return false;
+            }
+            $qidarray[$oldid] = $newqid;
+            foreach ($question->choices as $key => $choice) {
+                $oldcid = $key;
+                $newchoice = (object) [
+                    'questionid' => $newqid,
+                    'content' => $choice->content,
+                    'value' => $choice->value,
+                ];
+                if (!$newcid = $DB->insert_record('questionnaire_quest_choice', $newchoice)) {
+                    return false;
+                }
+                $cidarray[$oldcid] = $newcid;
+            }
+        }
+
+        // Replicate all dependency data.
+        if ($dependquestions = $DB->get_records('questionnaire_dependency', ['surveyid' => $oldsid], 'questionid')) {
+            foreach ($dependquestions as $dquestion) {
+                $record = new stdClass();
+                $record->questionid = $qidarray[$dquestion->questionid];
+                $record->surveyid = $newsid;
+                $record->dependquestionid = $qidarray[$dquestion->dependquestionid];
+                // The response may not use choice id's (example boolean). If not, just copy the value.
+                $responsetype = $questions[$dquestion->dependquestionid]->responsetype;
+                if ($responsetype->transform_choiceid($dquestion->dependchoiceid) == $dquestion->dependchoiceid) {
+                    $record->dependchoiceid = $cidarray[$dquestion->dependchoiceid];
+                } else {
+                    $record->dependchoiceid = $dquestion->dependchoiceid;
+                }
+                $record->dependlogic = $dquestion->dependlogic;
+                $record->dependandor = $dquestion->dependandor;
+                $DB->insert_record('questionnaire_dependency', $record);
+            }
+        }
+
+        // Replicate any feedback data.
+        // TODO: Need to handle image attachments (same for other copies above).
+        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $oldsid], 'id')) {
+            foreach ($fbsections as $fbsid => $fbsection) {
+                $fbsection->surveyid = $newsid;
+                $scorecalculation = \mod_questionnaire\local\feedback\section::decode_scorecalculation(
+                    $fbsection->scorecalculation
+                );
+                $newscorecalculation = [];
+                foreach ($scorecalculation as $qid => $val) {
+                    $newscorecalculation[$qidarray[$qid]] = $val;
+                }
+                $fbsection->scorecalculation = serialize($newscorecalculation);
+                unset($fbsection->id);
+                $newfbsid = $DB->insert_record('questionnaire_fb_sections', $fbsection);
+                if ($feedbackrecs = $DB->get_records('questionnaire_feedback', ['sectionid' => $fbsid], 'id')) {
+                    foreach ($feedbackrecs as $feedbackrec) {
+                        $feedbackrec->sectionid = $newfbsid;
+                        unset($feedbackrec->id);
+                        $DB->insert_record('questionnaire_feedback', $feedbackrec);
+                    }
+                }
+            }
+        }
+
+        return $newsid;
+    }
 }
