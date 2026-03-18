@@ -96,6 +96,15 @@ class questionnaire {
     /** @var int $removeafter Days after which to remove responses. */
     public $removeafter = 0;
 
+    /** @var int $cmid The course module id; added by Moodle's generator framework. */
+    public $cmid = 0;
+
+    /** @var string $cmidnumber The course module id number; may be set externally. */
+    public $cmidnumber = '';
+
+    /** @var int $courseid The course id; may be set externally. */
+    public $courseid = 0;
+
     // Properties set explicitly in the constructor.
 
     /** @var \stdClass|null $survey The survey record loaded from questionnaire_survey. */
