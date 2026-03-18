@@ -127,7 +127,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         foreach ($record as $name => $value) {
             $survey->{$name} = $value;
         }
-        return $questionnaire->survey_update($survey);
+        return \mod_questionnaire\questionnaire::update_survey($questionnaire->survey->id, $survey);
     }
 
     /**

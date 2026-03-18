@@ -115,7 +115,7 @@ function questionnaire_add_instance($questionnaire) {
             $sdata->email = '';
             $sdata->feedbacknotes = '';
             $sdata->courseid = $course->id;
-            if (!($sid = $qobject->survey_update($sdata))) {
+            if (!($sid = \mod_questionnaire\questionnaire::update_survey(0, $sdata))) {
                 throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
             }
         } else {
@@ -130,7 +130,11 @@ function questionnaire_add_instance($questionnaire) {
             if ($copyrealm == 'public') {
                 $sid = $copyid;
             } else {
-                $sid = $qobject->sid = $qobject->survey_copy($course->id);
+                $sid = $qobject->sid = \mod_questionnaire\questionnaire::copy_survey(
+                    $qobject->survey,
+                    $qobject->questions,
+                    $course->id
+                );
                 // All new questionnaires should be created as "private".
                 // Even if they are *copies* of public or template questionnaires.
                 $DB->set_field('questionnaire_survey', 'realm', 'private', ['id' => $sid]);
