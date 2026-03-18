@@ -16,9 +16,13 @@
 
 namespace mod_questionnaire;
 
+use mod_questionnaire\local\db\choice_record;
+use mod_questionnaire\local\db\dependency_record;
+use mod_questionnaire\local\db\feedback_record;
+use mod_questionnaire\local\db\feedback_section_record;
+use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
-use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\question\question;
 use context_module;
 use stdClass;
@@ -730,8 +734,6 @@ class questionnaire {
      * @return int|false  The survey id on success, false on failure.
      */
     public static function update_survey(int $sid, stdClass $sdata): int|false {
-        global $DB;
-
         $fields = [
             'name',
             'realm',
@@ -752,19 +754,15 @@ class questionnaire {
         if (empty($sid)) {
             // Create a new survey.
             // Theme field deprecated.
-            $record = new stdClass();
-            $record->id = 0;
-            $record->courseid = $sdata->courseid;
+            $record = new survey_record();
+            $record->set('courseid', $sdata->courseid);
             foreach ($fields as $f) {
                 if (isset($sdata->$f)) {
-                    $record->$f = $sdata->$f;
+                    $record->set($f, $sdata->$f);
                 }
             }
-            $newsid = $DB->insert_record('questionnaire_survey', $record);
-            if (!$newsid) {
-                return false;
-            }
-            return $newsid;
+            $record->create();
+            return $record->get('id');
         } else {
             if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
                 return false;
@@ -773,29 +771,21 @@ class questionnaire {
                 $sdata->charttype = '';
             }
 
-            $name = $DB->get_field('questionnaire_survey', 'name', ['id' => $sid]);
+            $record = new survey_record($sid);
 
             // Trying to change survey name.
-            if (trim($name) != trim(stripslashes($sdata->name))) {
-                $count = $DB->count_records('questionnaire_survey', ['name' => $sdata->name]);
-                if ($count != 0) {
+            if (trim($record->get('name')) != trim(stripslashes($sdata->name))) {
+                if (survey_record::count_records(['name' => $sdata->name]) != 0) {
                     return false;
                 }
             }
 
-            // UPDATE the row in the DB with current values.
-            $surveyrecord = new stdClass();
-            $surveyrecord->id = $sid;
             foreach ($fields as $f) {
                 if (isset($sdata->{$f})) {
-                    $surveyrecord->$f = trim($sdata->{$f});
+                    $record->set($f, trim($sdata->{$f}));
                 }
             }
-
-            $result = $DB->update_record('questionnaire_survey', $surveyrecord);
-            if (!$result) {
-                return false;
-            }
+            $record->update();
             return $sid;
         }
     }
@@ -810,34 +800,30 @@ class questionnaire {
      * @return int|false  The new survey id on success, false on failure.
      */
     public static function copy_survey(stdClass $survey, array $questions, int $owner): int|false {
-        global $DB;
-
-        // Clear the sid, clear the creation date, change the name, and clear the status.
-        $survey = clone $survey;
-
         $oldsid = $survey->id;
-        unset($survey->id);
-        $survey->courseid = $owner;
-        // Make sure that the survey name is not larger than the field size (CONTRIB-2999). Leave room for extra chars.
-        $survey->name = \core_text::substr($survey->name, 0, 64 - 10);
 
-        $survey->name .= '_copy';
-        $survey->status = 0;
-
-        // Check for 'name' conflict, and resolve.
+        // Build the new survey name: truncate, append _copy, then resolve any conflicts.
+        $basename = \core_text::substr($survey->name, 0, 64 - 10) . '_copy';
+        $name = $basename;
         $i = 0;
-        $name = $survey->name;
-        while ($DB->count_records('questionnaire_survey', ['name' => $name]) > 0) {
-            $name = $survey->name . (++$i);
-        }
-        if ($i) {
-            $survey->name .= $i;
+        while (survey_record::count_records(['name' => $name]) > 0) {
+            $name = $basename . (++$i);
         }
 
-        // Create new survey.
-        if (!($newsid = $DB->insert_record('questionnaire_survey', $survey))) {
-            return false;
+        // Create new survey record, carrying over all content fields.
+        $newsurvey = new survey_record();
+        $newsurvey->set('courseid', $owner);
+        $newsurvey->set('name', $name);
+        $newsurvey->set('status', 0);
+        foreach (['realm', 'title', 'email', 'subtitle', 'info', 'theme',
+                  'thankspage', 'thankhead', 'thankbody', 'feedbacksections',
+                  'feedbacknotes', 'feedbackscores', 'charttype'] as $f) {
+            if (isset($survey->$f)) {
+                $newsurvey->set($f, $survey->$f);
+            }
         }
+        $newsurvey->create();
+        $newsid = $newsurvey->get('id');
 
         // Make copies of all the questions.
         $pos = 1;
@@ -845,73 +831,77 @@ class questionnaire {
         $qidarray = [];
         $cidarray = [];
         foreach ($questions as $question) {
-            // Fix some fields first.
             $oldid = $question->id;
-            unset($question->id);
-            $question->surveyid = $newsid;
-            $question->position = $pos++;
-
-            // Copy question to new survey.
-            if (!($newqid = $DB->insert_record('questionnaire_question', $question))) {
-                return false;
-            }
-            $qidarray[$oldid] = $newqid;
-            foreach ($question->choices as $key => $choice) {
-                $oldcid = $key;
-                $newchoice = (object) [
-                    'questionid' => $newqid,
-                    'content' => $choice->content,
-                    'value' => $choice->value,
-                ];
-                if (!$newcid = $DB->insert_record('questionnaire_quest_choice', $newchoice)) {
-                    return false;
+            $newq = new question_record();
+            $newq->set('surveyid', $newsid);
+            $newq->set('position', $pos++);
+            foreach (['name', 'typeid', 'resultid', 'length', 'precise',
+                      'content', 'required', 'deleted', 'extradata'] as $f) {
+                if (isset($question->$f)) {
+                    $newq->set($f, $question->$f);
                 }
-                $cidarray[$oldcid] = $newcid;
+            }
+            $newq->create();
+            $newqid = $newq->get('id');
+            $qidarray[$oldid] = $newqid;
+
+            foreach ($question->choices as $oldcid => $choice) {
+                $newchoice = new choice_record();
+                $newchoice->set('questionid', $newqid);
+                $newchoice->set('content', $choice->content);
+                $newchoice->set('value', $choice->value);
+                $newchoice->create();
+                $cidarray[$oldcid] = $newchoice->get('id');
             }
         }
 
         // Replicate all dependency data.
-        if ($dependquestions = $DB->get_records('questionnaire_dependency', ['surveyid' => $oldsid], 'questionid')) {
-            foreach ($dependquestions as $dquestion) {
-                $record = new stdClass();
-                $record->questionid = $qidarray[$dquestion->questionid];
-                $record->surveyid = $newsid;
-                $record->dependquestionid = $qidarray[$dquestion->dependquestionid];
-                // The response may not use choice id's (example boolean). If not, just copy the value.
-                $responsetype = $questions[$dquestion->dependquestionid]->responsetype;
-                if ($responsetype->transform_choiceid($dquestion->dependchoiceid) == $dquestion->dependchoiceid) {
-                    $record->dependchoiceid = $cidarray[$dquestion->dependchoiceid];
-                } else {
-                    $record->dependchoiceid = $dquestion->dependchoiceid;
-                }
-                $record->dependlogic = $dquestion->dependlogic;
-                $record->dependandor = $dquestion->dependandor;
-                $DB->insert_record('questionnaire_dependency', $record);
+        foreach (dependency_record::get_for_survey($oldsid) as $dep) {
+            $newdep = new dependency_record();
+            $newdep->set('questionid', $qidarray[$dep->get('questionid')]);
+            $newdep->set('surveyid', $newsid);
+            $newdep->set('dependquestionid', $qidarray[$dep->get('dependquestionid')]);
+            // The response may not use choice id's (example boolean). If not, just copy the value.
+            $responsetype = $questions[$dep->get('dependquestionid')]->responsetype;
+            $depchoiceid = $dep->get('dependchoiceid');
+            if ($responsetype->transform_choiceid($depchoiceid) == $depchoiceid) {
+                $newdep->set('dependchoiceid', $cidarray[$depchoiceid]);
+            } else {
+                $newdep->set('dependchoiceid', $depchoiceid);
             }
+            $newdep->set('dependlogic', $dep->get('dependlogic'));
+            $newdep->set('dependandor', $dep->get('dependandor'));
+            $newdep->create();
         }
 
-        // Replicate any feedback data.
-        // TODO: Need to handle image attachments (same for other copies above).
-        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $oldsid], 'id')) {
-            foreach ($fbsections as $fbsid => $fbsection) {
-                $fbsection->surveyid = $newsid;
-                $scorecalculation = \mod_questionnaire\local\feedback\section::decode_scorecalculation(
-                    $fbsection->scorecalculation
-                );
-                $newscorecalculation = [];
-                foreach ($scorecalculation as $qid => $val) {
-                    $newscorecalculation[$qidarray[$qid]] = $val;
-                }
-                $fbsection->scorecalculation = serialize($newscorecalculation);
-                unset($fbsection->id);
-                $newfbsid = $DB->insert_record('questionnaire_fb_sections', $fbsection);
-                if ($feedbackrecs = $DB->get_records('questionnaire_feedback', ['sectionid' => $fbsid], 'id')) {
-                    foreach ($feedbackrecs as $feedbackrec) {
-                        $feedbackrec->sectionid = $newfbsid;
-                        unset($feedbackrec->id);
-                        $DB->insert_record('questionnaire_feedback', $feedbackrec);
-                    }
-                }
+        // Replicate any feedback data. Note: image attachments are not yet copied.
+        foreach (feedback_section_record::get_for_survey($oldsid) as $oldfbs) {
+            $scorecalculation = \mod_questionnaire\local\feedback\section::decode_scorecalculation(
+                $oldfbs->get('scorecalculation')
+            );
+            $newscorecalculation = [];
+            foreach ($scorecalculation as $qid => $val) {
+                $newscorecalculation[$qidarray[$qid]] = $val;
+            }
+            $newfbs = new feedback_section_record();
+            $newfbs->set('surveyid', $newsid);
+            $newfbs->set('section', $oldfbs->get('section'));
+            $newfbs->set('sectionlabel', $oldfbs->get('sectionlabel'));
+            $newfbs->set('sectionheading', $oldfbs->get('sectionheading'));
+            $newfbs->set('sectionheadingformat', $oldfbs->get('sectionheadingformat'));
+            $newfbs->set('scorecalculation', serialize($newscorecalculation));
+            $newfbs->create();
+            $newfbsid = $newfbs->get('id');
+
+            foreach (feedback_record::get_for_section($oldfbs->get('id')) as $oldfbr) {
+                $newfbr = new feedback_record();
+                $newfbr->set('sectionid', $newfbsid);
+                $newfbr->set('feedbacklabel', $oldfbr->get('feedbacklabel'));
+                $newfbr->set('feedbacktext', $oldfbr->get('feedbacktext'));
+                $newfbr->set('feedbacktextformat', $oldfbr->get('feedbacktextformat'));
+                $newfbr->set('minscore', $oldfbr->get('minscore'));
+                $newfbr->set('maxscore', $oldfbr->get('maxscore'));
+                $newfbr->create();
             }
         }
 
