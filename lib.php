@@ -219,6 +219,7 @@ function questionnaire_update_instance($questionnaire) {
 function questionnaire_delete_instance($id) {
     global $DB, $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
+    require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
     if (! $questionnaire = $DB->get_record('questionnaire', ['id' => $id])) {
         return false;
@@ -1395,6 +1396,7 @@ function questionnaire_reset_userdata($data) {
     global $CFG, $DB;
     require_once($CFG->libdir . '/questionlib.php');
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
+    require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
     $componentstr = get_string('modulenameplural', 'questionnaire');
     $status = [];
