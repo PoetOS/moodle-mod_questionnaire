@@ -95,6 +95,7 @@ function questionnaire_add_instance($questionnaire) {
  */
 function questionnaire_update_instance($questionnaire) {
     // Grade item update is a Moodle gradebook API concern, kept in lib.php.
+    $questionnaire->id = $questionnaire->instance;
     questionnaire_grade_item_update($questionnaire);
     return \mod_questionnaire\questionnaire::update_instance($questionnaire);
 }
