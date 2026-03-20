@@ -72,8 +72,10 @@ final class csvexport_test extends \advanced_testcase {
         // The following line simply.
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
-            [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
-            $questionnaireinst = new \questionnaire($course, $cm, 0, $questionnaire);
+            global $CFG;
+            require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+            [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id(), 'questionnaire', $questionnaire->courseid());
+            $questionnaireinst = new \questionnaire($course, $cm, $questionnaire->id(), null, true);
 
             // Test for only complete responses.
             $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 0));
@@ -116,7 +118,7 @@ final class csvexport_test extends \advanced_testcase {
 
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $item) {
-            [$course, $cm] = get_course_and_cm_from_instance($item->id, 'questionnaire', $item->course);
+            [$course, $cm] = get_course_and_cm_from_instance($item->id(), 'questionnaire', $item->courseid());
 
             $this->do_test_csvexport_identity_fields($course, $cm, $user, $roleid, $profilefields, $item, false);
             $this->do_test_csvexport_identity_fields($course, $cm, $user, $roleid, $profilefields, $item, true);
@@ -143,7 +145,7 @@ final class csvexport_test extends \advanced_testcase {
         if ($anonymous) {
             // Make questionnaire anonymous.
             $row = new \stdClass();
-            $row->id = $item->id;
+            $row->id = $item->id();
             $row->respondenttype = 'anonymous';
             $DB->update_record('questionnaire', $row);
         }
@@ -153,7 +155,7 @@ final class csvexport_test extends \advanced_testcase {
         assign_capability('moodle/site:viewuseridentity', CAP_ALLOW, $roleid, $context);
 
         // Generate CSV output.
-        $questionnaire = new \questionnaire($course, $cm, $item->id);
+        $questionnaire = new \questionnaire($course, $cm, $item->id());
         $output = $questionnaire->generate_csv(0, '', '', 0, 0, 1);
 
         $this->assertNotNull($output);

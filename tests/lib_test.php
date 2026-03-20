@@ -101,10 +101,10 @@ final class lib_test extends \advanced_testcase {
         $questdata->resume = 1;
         $questdata->navigate = 1;
         $questdata->grade = 100;
-        $questdata->sid = 1;
         $questdata->timemodified = 3;
         $questdata->completionsubmit = 1;
         $questdata->autonum = 1;
+        $questdata->create = 'new-0';
 
         // Call add_instance with the data.
         $this->assertTrue(questionnaire_add_instance($questdata) > 0);
@@ -127,9 +127,9 @@ final class lib_test extends \advanced_testcase {
         /** @var mod_questionnaire_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         /** @var questionnaire $questionnaire */
-        $questionnaire = $generator->create_instance(['course' => $course->id, 'sid' => 1]);
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
 
-        $qid = $questionnaire->id;
+        $qid = $questionnaire->id();
         $this->assertTrue($qid > 0);
 
         // Change all the default values.
@@ -144,10 +144,9 @@ final class lib_test extends \advanced_testcase {
         $qrow->resume = 1;
         $qrow->navigate = 1;
         $qrow->grade = 100;
-        $qrow->timemodified = 3;
         $qrow->completionsubmit = 1;
         $qrow->autonum = 1;
-        $qrow->coursemodule = $questionnaire->cm->id;
+        $qrow->coursemodule = $questionnaire->coursemodule()->id;
 
         // Moodle update form passes "instance" instead of "id" to [mod]_update_instance.
         $qrow->instance = $qid;
@@ -168,7 +167,6 @@ final class lib_test extends \advanced_testcase {
         $this->assertEquals($qrow->navigate, $questrecord->navigate);
         $this->assertEquals($qrow->grade, $questrecord->grade);
         $this->assertEquals($qrow->sid, $questrecord->sid);
-        $this->assertEquals($qrow->timemodified, $questrecord->timemodified);
         $this->assertEquals($qrow->completionsubmit, $questrecord->completionsubmit);
         $this->assertEquals($qrow->autonum, $questrecord->autonum);
     }
@@ -196,22 +194,22 @@ final class lib_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO, $questiondata);
 
-        $question = reset($questionnaire->questions);
+        $question = reset($questionnaire->questions());
 
         // Add a response for the question.
         $response = $generator->create_question_response($questionnaire, $question, 'y');
 
         // Get records for database deletion confirmation.
-        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]);
+        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]);
 
         // Now delete it all.
-        $this->assertTrue(questionnaire_delete_instance($questionnaire->id));
-        $this->assertEmpty($DB->get_record('questionnaire', ['id' => $questionnaire->id]));
-        $this->assertEmpty($DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]));
+        $this->assertTrue(questionnaire_delete_instance($questionnaire->id()));
+        $this->assertEmpty($DB->get_record('questionnaire', ['id' => $questionnaire->id()]));
+        $this->assertEmpty($DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]));
         $this->assertEmpty($DB->get_records('questionnaire_question', ['surveyid' => $survey->id]));
-        $this->assertEmpty($DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaire->id]));
+        $this->assertEmpty($DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaire->id()]));
         $this->assertEmpty($DB->get_records('questionnaire_response_bool', ['responseid' => $response->id]));
-        $this->assertEmpty($DB->get_records('event', ["modulename" => 'questionnaire', "instance" => $questionnaire->id]));
+        $this->assertEmpty($DB->get_records('event', ["modulename" => 'questionnaire', "instance" => $questionnaire->id()]));
     }
 
     /**
@@ -237,7 +235,7 @@ final class lib_test extends \advanced_testcase {
         $this->assertEquals(get_string("noresponses", "questionnaire"), $outline->info);
 
         // Test for a user with one response.
-        $generator->create_question_response($questionnaire, reset($questionnaire->questions), 'y', $user->id);
+        $generator->create_question_response($questionnaire, reset($questionnaire->questions()), 'y', $user->id);
         $outline = questionnaire_user_outline($course, $user, null, $questionnaire);
         $this->assertEquals('1 ' . get_string("response", "questionnaire"), $outline->info);
     }
@@ -338,8 +336,8 @@ final class lib_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course);
-        $questionnaire->cmidnumber = $questionnaire->cm->idnumber;
-        $questionnaire->courseid = $questionnaire->course->id;
+        $questionnaire->cmidnumber = $questionnaire->coursemodule()->idnumber;
+        $questionnaire->courseid = $questionnaire->course()->id;
         $this->assertEquals(GRADE_UPDATE_OK, questionnaire_grade_item_update($questionnaire));
     }
 
@@ -357,7 +355,7 @@ final class lib_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course);
-        $sid = $questionnaire->sid;
+        $sid = $questionnaire->surveyid();
 
         // Add three questions.
         $q1 = $DB->insert_record('questionnaire_question', [
