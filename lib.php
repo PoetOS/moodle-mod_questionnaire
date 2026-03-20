@@ -209,7 +209,7 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
 
     $result = new stdClass();
     $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
-        $questionnaire->id,
+        ($questionnaire instanceof \mod_questionnaire\questionnaire) ? $questionnaire->id() : $questionnaire->id,
         $user->id,
         true
     );
@@ -243,7 +243,7 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
-        $questionnaire->id,
+        ($questionnaire instanceof \mod_questionnaire\questionnaire) ? $questionnaire->id() : $questionnaire->id,
         $user->id,
         false
     );
@@ -295,6 +295,7 @@ function questionnaire_grades($questionnaireid) {
  */
 function questionnaire_get_user_grades($questionnaire, $userid = 0) {
     global $DB;
+    $qid = ($questionnaire instanceof mod_questionnaire\questionnaire) ? $questionnaire->id() : $questionnaire->id;
     $params = [];
     $usersql = '';
     if (!empty($userid)) {
@@ -304,7 +305,7 @@ function questionnaire_get_user_grades($questionnaire, $userid = 0) {
 
     $sql = "SELECT r.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
             FROM {user} u, {questionnaire_response} r
-            WHERE u.id = r.userid AND r.questionnaireid = $questionnaire->id AND r.complete = 'y' $usersql";
+            WHERE u.id = r.userid AND r.questionnaireid = $qid AND r.complete = 'y' $usersql";
     return $DB->get_records_sql($sql, $params) ?? [];
 }
 
@@ -372,24 +373,34 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
         require_once($CFG->libdir . '/gradelib.php');
     }
 
-    if (!isset($questionnaire->courseid)) {
-        $questionnaire->courseid = $questionnaire->course;
-    }
-
-    if ($questionnaire->cmidnumber != '') {
-        $params = ['itemname' => $questionnaire->name, 'idnumber' => $questionnaire->cmidnumber];
+    if ($questionnaire instanceof mod_questionnaire\questionnaire) {
+        $qid = $questionnaire->id();
+        $qname = $questionnaire->name();
+        $qgrade = $questionnaire->grade();
+        $qcourseid = $questionnaire->courseid();
+        $qcmidnumber = $questionnaire->cmidnumber;
     } else {
-        $params = ['itemname' => $questionnaire->name];
+        $qid = $questionnaire->instance ?? $questionnaire->id;
+        $qname = $questionnaire->name;
+        $qgrade = $questionnaire->grade;
+        $qcourseid = $questionnaire->courseid ?? $questionnaire->course;
+        $qcmidnumber = $questionnaire->cmidnumber;
     }
 
-    if ($questionnaire->grade > 0) {
+    if ($qcmidnumber != '') {
+        $params = ['itemname' => $qname, 'idnumber' => $qcmidnumber];
+    } else {
+        $params = ['itemname' => $qname];
+    }
+
+    if ($qgrade > 0) {
         $params['gradetype'] = GRADE_TYPE_VALUE;
-        $params['grademax'] = $questionnaire->grade;
+        $params['grademax'] = $qgrade;
         $params['grademin'] = 0;
-    } else if ($questionnaire->grade < 0) {
+    } else if ($qgrade < 0) {
         $params['gradetype'] = GRADE_TYPE_SCALE;
-        $params['scaleid'] = -$questionnaire->grade;
-    } else if ($questionnaire->grade == 0) { // No Grade..be sure to delete the grade item if it exists.
+        $params['scaleid'] = -$qgrade;
+    } else if ($qgrade == 0) { // No Grade..be sure to delete the grade item if it exists.
         $grades = null;
         $params = ['deleted' => 1];
     } else {
@@ -403,10 +414,10 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
 
     return grade_update(
         'mod/questionnaire',
-        $questionnaire->courseid,
+        $qcourseid,
         'mod',
         'questionnaire',
-        $questionnaire->id,
+        $qid,
         0,
         $grades,
         $params

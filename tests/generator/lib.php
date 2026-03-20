@@ -49,7 +49,7 @@ class mod_questionnaire_generator extends testing_module_generator {
     protected $responsecount = 0;
 
     /**
-     * @var questionnaire[]
+     * @var \mod_questionnaire\questionnaire[]
      */
     protected $questionnaires = [];
 
@@ -76,7 +76,7 @@ class mod_questionnaire_generator extends testing_module_generator {
      * Create a questionnaire activity.
      * @param array $record Will be changed in this function.
      * @param array|null $options
-     * @return questionnaire
+     * @return \mod_questionnaire\questionnaire
      */
     public function create_instance($record = null, ?array $options = null) {
         $record = (object)(array)$record;
@@ -105,9 +105,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         }
 
         $instance = parent::create_instance($record, (array)$options);
-        $cm = get_coursemodule_from_instance('questionnaire', $instance->id);
-        $course = get_course($cm->course);
-        $questionnaire = new \questionnaire($course, $cm, 0, $instance, false);
+        $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($instance->id);
 
         $this->questionnaires[$instance->id] = $questionnaire;
 
@@ -116,29 +114,29 @@ class mod_questionnaire_generator extends testing_module_generator {
 
     /**
      * Create a survey instance with data from an existing questionnaire object.
-     * @param questionnaire $questionnaire
+     * @param \mod_questionnaire\questionnaire $questionnaire
      * @param array $record
      * @return bool|int
      */
     public function create_content($questionnaire, $record = []) {
         global $DB;
 
-        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid], '*', MUST_EXIST);
+        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()], '*', MUST_EXIST);
         foreach ($record as $name => $value) {
             $survey->{$name} = $value;
         }
-        return \mod_questionnaire\questionnaire::update_survey($questionnaire->survey->id, $survey);
+        return \mod_questionnaire\questionnaire::update_survey($questionnaire->surveyid(), $survey);
     }
 
     /**
      * Function to create a question.
      *
-     * @param questionnaire $questionnaire
+     * @param \mod_questionnaire\questionnaire $questionnaire
      * @param array|stdClass $record
      * @param array|stdClass $data - accompanying data for question - e.g. choices
      * @return \mod_questionnaire\local\question\question the question object
      */
-    public function create_question(questionnaire $questionnaire, $record = null, $data = null) {
+    public function create_question(\mod_questionnaire\questionnaire $questionnaire, $record = null, $data = null) {
         global $DB;
 
         // Increment the question count.
@@ -146,7 +144,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $record = (array)$record;
 
-        $record['position'] = count($questionnaire->questions);
+        $record['position'] = count($questionnaire->questions());
 
         if (!isset($record['surveyid'])) {
             throw new coding_exception('surveyid must be present in phpunit_util::create_question() $record');
@@ -207,52 +205,58 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param null|int $qtype
      * @param array $questiondata
      * @param null|array|stdClass $choicedata
-     * @return questionnaire
+     * @return \mod_questionnaire\questionnaire
      */
     public function create_test_questionnaire($course, $qtype = null, $questiondata = [], $choicedata = null) {
         $questionnaire = $this->create_instance(['course' => $course->id]);
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
         if ($qtype !== null) {
             $questiondata['typeid'] = $qtype;
-            $questiondata['surveyid'] = $questionnaire->sid;
+            $questiondata['surveyid'] = $questionnaire->surveyid();
             $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
             $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
             $this->create_question($questionnaire, $questiondata, $choicedata);
         }
-        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, true);
-        return $questionnaire;
+        return \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
     }
 
     /**
      * Create a reponse to the supplied question.
-     * @param questionnaire $questionnaire
+     * @param \mod_questionnaire\questionnaire $questionnaire
      * @param question $question
      * @param int|array $respval
      * @param int $userid
      * @param int $section
      * @return false|mixed|stdClass
      */
-    public function create_question_response($questionnaire, $question, $respval, $userid = 1, $section = 1) {
-        global $DB;
+    public function create_question_response(\mod_questionnaire\questionnaire $questionnaire, $question, $respval,
+            $userid = 1, $section = 1) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
         $currentrid = 0;
         if (!is_array($respval)) {
             $respval = ['q' . $question->id => $respval];
         }
-        $respdata = (object)(array_merge(['sec' => $section, 'rid' => $currentrid, 'a' => $questionnaire->id], $respval));
-        $responseid = $questionnaire->response_insert($respdata, $userid);
-        $this->response_commit($questionnaire, $responseid);
+        $respdata = (object)(array_merge(['sec' => $section, 'rid' => $currentrid, 'a' => $questionnaire->id()], $respval));
+
+        // response_insert and response_commit live on the legacy class; create a local instance for those calls.
+        // TODO: migrate response_insert/response_commit to new class in a future phase.
+        $oldquestionnaire = new \questionnaire($questionnaire->course(), $questionnaire->coursemodule(),
+            $questionnaire->id(), null, true);
+        $responseid = $oldquestionnaire->response_insert($respdata, $userid);
+        $this->response_commit($oldquestionnaire, $responseid);
         return $DB->get_record('questionnaire_response', ['id' => $responseid]);
     }
 
     /**
      * Need to create a method to access a private questionnaire method.
      * TO DO - may not need this with above "TO DO".
-     * @param questionnaire $questionnaire
+     * @param \questionnaire $questionnaire Legacy questionnaire instance.
      * @param int $responseid
      * @return mixed
      */
     private function response_commit($questionnaire, $responseid) {
-        $method = new ReflectionMethod('questionnaire', 'response_commit');
+        $method = new ReflectionMethod(\questionnaire::class, 'response_commit');
         $method->setAccessible(true);
         return $method->invoke($questionnaire, $responseid);
     }
@@ -670,7 +674,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                     break;
             }
         }
-        return $this->create_response($responses, ['questionnaireid' => $questionnaire->id, 'userid' => $userid], $complete);
+        return $this->create_response($responses, ['questionnaireid' => $questionnaire->id(), 'userid' => $userid], $complete);
     }
 
     /**
@@ -746,7 +750,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $qdg->create_question(
                         $questionnaire,
                         [
-                            'surveyid' => $questionnaire->sid,
+                            'surveyid' => $questionnaire->surveyid(),
                             'name' => $qdg->type_name($questiontype),
                             'typeid' => QUESSECTIONTEXT,
                         ]
@@ -760,7 +764,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                         $questions[] = $qdg->create_question(
                             $questionnaire,
                             [
-                                'surveyid' => $questionnaire->sid,
+                                'surveyid' => $questionnaire->surveyid(),
                                 'name' => $qdg->type_name($questiontype) . ' ' . $qname++,
                                 'typeid' => $questiontype,
                             ],
@@ -771,7 +775,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                     $qdg->create_question(
                         $questionnaire,
                         [
-                            'surveyid' => $questionnaire->sid,
+                            'surveyid' => $questionnaire->surveyid(),
                             'name' => 'pagebreak ' . $qname++,
                             'typeid' => QUESPAGEBREAK,
                         ]
