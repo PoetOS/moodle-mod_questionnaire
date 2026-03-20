@@ -95,7 +95,7 @@ final class custom_completion_test extends \advanced_testcase {
             $rule => $available]);
 
         $questiondata['typeid'] = 1;
-        $questiondata['surveyid'] = $questionnaire->sid;
+        $questiondata['surveyid'] = $questionnaire->surveyid();
         $questiondata['name'] = 'Q1';
         $questiondata['content'] = 'Test content';
         $question = $generator->create_question($questionnaire, $questiondata);
@@ -106,7 +106,7 @@ final class custom_completion_test extends \advanced_testcase {
         }
 
         $this->setUser($student);
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
+        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id());
         $cm = cm_info::create($cm);
 
         $customcompletion = new custom_completion($cm, (int)$student->id);

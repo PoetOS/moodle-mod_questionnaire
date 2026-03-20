@@ -118,6 +118,23 @@ class questionnaire_record extends \core\persistent {
     }
 
     /**
+     * Create a new questionnaire record from mod_form data.
+     *
+     * @param stdClass $formdata Form data from mod_form.
+     * @return self The created record.
+     */
+    public static function create_from_formdata(\stdClass $formdata): self {
+        return (new self(0, $formdata))->create();
+    }
+
+    /**
+     * Set timemodified before creating a new record.
+     */
+    protected function before_create(): void {
+        $this->raw_set('timemodified', time());
+    }
+
+    /**
      * Update timemodified before saving changes.
      */
     protected function before_update(): void {

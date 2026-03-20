@@ -213,10 +213,9 @@ final class questiontypes_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(['course' => $course->id]);
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
         $questiondata['typeid'] = $qtype;
-        $questiondata['surveyid'] = $questionnaire->sid;
+        $questiondata['surveyid'] = $questionnaire->surveyid();
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $question = $generator->create_question($questionnaire, $questiondata, $choicedata);
@@ -241,13 +240,14 @@ final class questiontypes_test extends \advanced_testcase {
         }
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, true);
+        $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
         $this->assertTrue($DB->record_exists('questionnaire_question', ['id' => $question->id]));
-        $this->assertEquals('array', gettype($questionnaire->questions));
-        $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
-        $this->assertEquals(1, count($questionnaire->questions));
-        if ($questionnaire->questions[$question->id]->has_choices()) {
-            $this->assertEquals(count($choicedata), count($questionnaire->questions[$question->id]->choices));
+        $questions = $questionnaire->questions();
+        $this->assertEquals('array', gettype($questions));
+        $this->assertTrue(array_key_exists($question->id, $questions));
+        $this->assertEquals(1, count($questions));
+        if ($questions[$question->id]->has_choices()) {
+            $this->assertEquals(count($choicedata), count($questions[$question->id]->choices));
         }
     }
 
