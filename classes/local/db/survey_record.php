@@ -115,4 +115,27 @@ class survey_record extends \core\persistent {
             ],
         ];
     }
+
+    /**
+     * Create a new survey record from survey data.
+     *
+     * @param stdClass $sdata Survey data object.
+     * @return self The created record.
+     */
+    public static function create_from_sdata(\stdClass $sdata): self {
+        return (new self(0, $sdata))->create();
+    }
+
+    /**
+     * Update an existing survey record from survey data.
+     *
+     * @param int $sid Survey id.
+     * @param stdClass $sdata Survey data object.
+     * @return self The updated record.
+     */
+    public static function update_from_sdata(int $sid, \stdClass $sdata): self {
+        $record = new self($sid, $sdata);
+        $record->update();
+        return $record;
+    }
 }

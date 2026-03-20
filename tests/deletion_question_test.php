@@ -100,7 +100,7 @@ final class deletion_question_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(['course' => $course->id]);
         $qdata['typeid'] = $qtype;
-        $qdata['surveyid'] = $questionnaire->sid;
+        $qdata['surveyid'] = $questionnaire->surveyid();
         $qdata['name'] = isset($qdata['name']) ? $qdata['name'] : 'Q1';
         $qdata['content'] = isset($qdata['content']) ? $qdata['content'] : 'Test content';
         $qdata['position'] = isset($qdata['position']) ? $qdata['position'] : 1;

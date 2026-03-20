@@ -65,6 +65,12 @@ class questionnaire {
     /** @var \templatable The templatable page to render. */
     public $page;
 
+    /** @var string Course-module idnumber, used by gradebook. Set by callers that need it. */
+    public string $cmidnumber = '';
+
+    /** @var int Course id, set by callers that need it directly on the object. */
+    public int $courseid = 0;
+
     /**
      * Construct from a questionnaire instance id, optionally with a pre-loaded persistent and cm.
      *
@@ -185,6 +191,15 @@ class questionnaire {
     }
 
     /**
+     * Get the intro text of the questionnaire.
+     *
+     * @return string
+     */
+    public function intro(): string {
+        return $this->modulerecord->get('intro');
+    }
+
+    /**
      * Get the course id of the questionnaire.
      *
      * @return int
@@ -266,12 +281,32 @@ class questionnaire {
     }
 
     /**
+     * Get the grade value for this questionnaire.
+     *
+     * @return int
+     */
+    public function grade(): int {
+        return $this->modulerecord->get('grade');
+    }
+
+    /**
      * Get all question objects for this questionnaire.
      *
      * @return question[]
      */
     public function questions(): array {
         return $this->questions;
+    }
+
+    /**
+     * Reload questions from the database into this instance.
+     *
+     * @return void
+     */
+    public function add_questions(): void {
+        $this->questions = [];
+        $this->questionsbysec = [];
+        $this->load_questions();
     }
 
     /**
@@ -724,70 +759,36 @@ class questionnaire {
     }
 
     /**
-     * Create or update a questionnaire survey record.
+     * Create a new questionnaire survey record.
      *
-     * If $sid is 0 (or empty), a new survey record is inserted and its id is returned.
-     * If $sid is non-zero, the existing record is updated.
+     * @param stdClass $sdata  Survey data object (must include courseid).
+     * @return int  The new survey id.
+     */
+    public static function add_survey(stdClass $sdata): int {
+        return survey_record::create_from_sdata($sdata)->get('id');
+    }
+
+    /**
+     * Update an existing questionnaire survey record.
      *
-     * @param int $sid  Survey id; 0 to create a new survey.
+     * @param int $sid  Survey id.
      * @param stdClass $sdata  Survey data object.
      * @return int|false  The survey id on success, false on failure.
      */
     public static function update_survey(int $sid, stdClass $sdata): int|false {
-        $fields = [
-            'name',
-            'realm',
-            'title',
-            'subtitle',
-            'email',
-            'theme',
-            'thankspage',
-            'thankhead',
-            'thankbody',
-            'feedbacknotes',
-            'info',
-            'feedbacksections',
-            'feedbackscores',
-            'charttype',
-        ];
+        if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
+            return false;
+        }
 
-        if (empty($sid)) {
-            // Create a new survey.
-            // Theme field deprecated.
-            $record = new survey_record();
-            $record->set('courseid', $sdata->courseid);
-            foreach ($fields as $f) {
-                if (isset($sdata->$f)) {
-                    $record->set($f, $sdata->$f);
-                }
-            }
-            $record->create();
-            return $record->get('id');
-        } else {
-            if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
+        // Trying to change survey name.
+        $existing = new survey_record($sid);
+        if (trim($existing->get('name')) != trim(stripslashes($sdata->name))) {
+            if (survey_record::count_records(['name' => $sdata->name]) != 0) {
                 return false;
             }
-            if (!isset($sdata->charttype)) {
-                $sdata->charttype = '';
-            }
-
-            $record = new survey_record($sid);
-
-            // Trying to change survey name.
-            if (trim($record->get('name')) != trim(stripslashes($sdata->name))) {
-                if (survey_record::count_records(['name' => $sdata->name]) != 0) {
-                    return false;
-                }
-            }
-
-            foreach ($fields as $f) {
-                if (isset($sdata->{$f})) {
-                    $record->set($f, trim($sdata->{$f}));
-                }
-            }
-            $record->update();
-            return $sid;
         }
+
+        return survey_record::update_from_sdata($sid, $sdata)->get('id');
     }
 
     /**
@@ -915,87 +916,75 @@ class questionnaire {
      * row, and fires calendar and completion events. Intended to be the single point of
      * delegation from lib.php's questionnaire_add_instance().
      *
-     * @param stdClass $questionnaire Form data from mod_form (coursemodule, course, name, …).
+     * @param stdClass $formdata Form data from mod_form (coursemodule, course, name, …).
      * @return int|false The new questionnaire instance id, or false on failure.
      */
-    public static function add_instance(stdClass $questionnaire): int|false {
-        if (empty($questionnaire->sid)) {
-            $course = get_course($questionnaire->course);
+    public static function add_instance(stdClass $formdata): int|false {
+        if (!empty($formdata->sid)) {
+            // Survey already identified (e.g. restore or duplicate of a public survey).
+            $sid = $formdata->sid;
+        } else if ($formdata->create == 'new-0') {
+            // Brand-new blank survey.
+            $sdata = new stdClass();
+            $sdata->name = $formdata->name;
+            $sdata->realm = 'private';
+            $sdata->title = $formdata->name;
+            $sdata->subtitle = '';
+            $sdata->info = '';
+            $sdata->theme = ''; // Theme field is deprecated.
+            $sdata->thankspage = '';
+            $sdata->thankhead = '';
+            $sdata->thankbody = '';
+            $sdata->email = '';
+            $sdata->feedbacknotes = '';
+            $sdata->courseid = $formdata->course;
+            $sid = self::add_survey($sdata);
+        } else {
+            $parts = explode('-', $formdata->create);
+            $copyrealm = $parts[0];
+            $copyid = (int) $parts[1];
 
-            if ($questionnaire->create == 'new-0') {
-                // Brand-new blank survey.
-                $sdata = new stdClass();
-                $sdata->name = $questionnaire->name;
-                $sdata->realm = 'private';
-                $sdata->title = $questionnaire->name;
-                $sdata->subtitle = '';
-                $sdata->info = '';
-                $sdata->theme = ''; // Theme field is deprecated.
-                $sdata->thankspage = '';
-                $sdata->thankhead = '';
-                $sdata->thankbody = '';
-                $sdata->email = '';
-                $sdata->feedbacknotes = '';
-                $sdata->courseid = $course->id;
-                $sid = self::update_survey(0, $sdata);
+            if ($copyrealm == 'public') {
+                // Reuse the existing public survey — no copy needed.
+                $sid = $copyid;
             } else {
-                $parts = explode('-', $questionnaire->create);
-                $copyrealm = $parts[0];
-                $copyid = (int) $parts[1];
+                // Copy the survey, its questions, choices, dependencies, and feedback.
+                $survey = (new survey_record($copyid))->to_record();
+                $questions = self::load_questions_for_survey($copyid);
+                $sid = self::copy_survey($survey, $questions, $formdata->course);
 
-                if ($copyrealm == 'public') {
-                    // Reuse the existing public survey — no copy needed.
-                    $sid = $copyid;
-                } else {
-                    // Copy the survey, its questions, choices, dependencies, and feedback.
-                    $survey = (new survey_record($copyid))->to_record();
-                    $questions = self::load_questions_for_survey($copyid);
-                    $sid = self::copy_survey($survey, $questions, $course->id);
+                // All new questionnaires should be private, even copies of public/template surveys.
+                $copied = new survey_record($sid);
+                $copied->set('realm', 'private');
+                $copied->update();
 
-                    // All new questionnaires should be private, even copies of public/template surveys.
-                    $copied = new survey_record($sid);
-                    $copied->set('realm', 'private');
-                    $copied->update();
-
-                    // Signal post-actions hook to copy file areas from the original.
-                    $questionnaire->copyid = $copyid;
-                }
+                // Signal post-actions hook to copy file areas from the original.
+                $formdata->copyid = $copyid;
             }
-
-            // Enable navigation if the survey has dependency (skip-logic) data.
-            if (dependency_record::count_records(['surveyid' => $sid]) > 0) {
-                $questionnaire->navigate = 1;
-            }
-            $questionnaire->sid = $sid;
         }
 
-        $questionnaire->resume = ($questionnaire->resume == '1') ? 1 : 0;
+        // Enable navigation if the survey has dependency (skip-logic) data.
+        if (dependency_record::count_records(['surveyid' => $sid]) > 0) {
+            $formdata->navigate = 1;
+        }
+        $formdata->sid = $sid;
+
+        $formdata->resume = ($formdata->resume == '1') ? 1 : 0;
 
         // Insert the questionnaire row.
-        $record = new questionnaire_record();
-        foreach (['course', 'name', 'intro', 'introformat', 'qtype', 'respondenttype',
-                  'respeligible', 'respview', 'notifications', 'opendate', 'closedate',
-                  'resume', 'navigate', 'grade', 'sid', 'completionsubmit',
-                  'autonum', 'progressbar', 'removeafter'] as $f) {
-            if (isset($questionnaire->$f)) {
-                $record->set($f, $questionnaire->$f);
-            }
-        }
-        $record->set('timemodified', time());
-        $record->create();
-        $questionnaire->id = $record->get('id');
+        $formdata->id = (questionnaire_record::create_from_formdata($formdata))->get('id');
 
-        self::set_events($questionnaire);
+        self::set_events($formdata);
 
-        $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
+        $completiontimeexpected = !empty($formdata->completionexpected) ? $formdata->completionexpected : null;
         \core_completion\api::update_completion_date_event(
-            $questionnaire->coursemodule,
+            $formdata->coursemodule,
             'questionnaire',
-            $questionnaire->id,
+            $formdata->id,
             $completiontimeexpected
         );
 
-        return $questionnaire->id;
+        return $formdata->id;
     }
 
     /**
