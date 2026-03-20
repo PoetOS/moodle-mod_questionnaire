@@ -907,4 +907,216 @@ class questionnaire {
 
         return $newsid;
     }
+
+    /**
+     * Create a new questionnaire activity instance.
+     *
+     * Resolves the survey (new blank / copy / existing public), inserts the questionnaire
+     * row, and fires calendar and completion events. Intended to be the single point of
+     * delegation from lib.php's questionnaire_add_instance().
+     *
+     * @param stdClass $questionnaire Form data from mod_form (coursemodule, course, name, …).
+     * @return int|false The new questionnaire instance id, or false on failure.
+     */
+    public static function add_instance(stdClass $questionnaire): int|false {
+        if (empty($questionnaire->sid)) {
+            $course = get_course($questionnaire->course);
+
+            if ($questionnaire->create == 'new-0') {
+                // Brand-new blank survey.
+                $sdata = new stdClass();
+                $sdata->name = $questionnaire->name;
+                $sdata->realm = 'private';
+                $sdata->title = $questionnaire->name;
+                $sdata->subtitle = '';
+                $sdata->info = '';
+                $sdata->theme = ''; // Theme field is deprecated.
+                $sdata->thankspage = '';
+                $sdata->thankhead = '';
+                $sdata->thankbody = '';
+                $sdata->email = '';
+                $sdata->feedbacknotes = '';
+                $sdata->courseid = $course->id;
+                $sid = self::update_survey(0, $sdata);
+            } else {
+                $parts = explode('-', $questionnaire->create);
+                $copyrealm = $parts[0];
+                $copyid = (int) $parts[1];
+
+                if ($copyrealm == 'public') {
+                    // Reuse the existing public survey — no copy needed.
+                    $sid = $copyid;
+                } else {
+                    // Copy the survey, its questions, choices, dependencies, and feedback.
+                    $survey = (new survey_record($copyid))->to_record();
+                    $questions = self::load_questions_for_survey($copyid);
+                    $sid = self::copy_survey($survey, $questions, $course->id);
+
+                    // All new questionnaires should be private, even copies of public/template surveys.
+                    $copied = new survey_record($sid);
+                    $copied->set('realm', 'private');
+                    $copied->update();
+
+                    // Signal post-actions hook to copy file areas from the original.
+                    $questionnaire->copyid = $copyid;
+                }
+            }
+
+            // Enable navigation if the survey has dependency (skip-logic) data.
+            if (dependency_record::count_records(['surveyid' => $sid]) > 0) {
+                $questionnaire->navigate = 1;
+            }
+            $questionnaire->sid = $sid;
+        }
+
+        $questionnaire->resume = ($questionnaire->resume == '1') ? 1 : 0;
+
+        // Insert the questionnaire row.
+        $record = new questionnaire_record();
+        foreach (['course', 'name', 'intro', 'introformat', 'qtype', 'respondenttype',
+                  'respeligible', 'respview', 'notifications', 'opendate', 'closedate',
+                  'resume', 'navigate', 'grade', 'sid', 'completionsubmit',
+                  'autonum', 'progressbar', 'removeafter'] as $f) {
+            if (isset($questionnaire->$f)) {
+                $record->set($f, $questionnaire->$f);
+            }
+        }
+        $record->set('timemodified', time());
+        $record->create();
+        $questionnaire->id = $record->get('id');
+
+        self::set_events($questionnaire);
+
+        $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
+        \core_completion\api::update_completion_date_event(
+            $questionnaire->coursemodule,
+            'questionnaire',
+            $questionnaire->id,
+            $completiontimeexpected
+        );
+
+        return $questionnaire->id;
+    }
+
+    /**
+     * Update an existing questionnaire activity instance.
+     *
+     * Updates the survey realm when provided, updates the questionnaire row, and fires
+     * calendar and completion events. Intended to be the single point of delegation from
+     * lib.php's questionnaire_update_instance().
+     *
+     * @param stdClass $questionnaire Form data from mod_form (instance, sid, realm, …).
+     * @return bool True on success.
+     */
+    public static function update_instance(stdClass $questionnaire): bool {
+        // Sync the survey realm when the form provides one.
+        if (!empty($questionnaire->sid) && !empty($questionnaire->realm)) {
+            $survey = new survey_record($questionnaire->sid);
+            $survey->set('realm', $questionnaire->realm);
+            $survey->update();
+        }
+
+        $questionnaire->id = $questionnaire->instance;
+        $questionnaire->resume = ($questionnaire->resume == '1') ? 1 : 0;
+
+        // Update the questionnaire row (before_update() sets timemodified automatically).
+        $record = new questionnaire_record($questionnaire->id);
+        foreach (['name', 'intro', 'introformat', 'qtype', 'respondenttype',
+                  'respeligible', 'respview', 'notifications', 'opendate', 'closedate',
+                  'resume', 'navigate', 'grade', 'sid', 'completionsubmit',
+                  'autonum', 'progressbar', 'removeafter'] as $f) {
+            if (isset($questionnaire->$f)) {
+                $record->set($f, $questionnaire->$f);
+            }
+        }
+        $record->update();
+
+        self::set_events($questionnaire);
+
+        $completiontimeexpected = !empty($questionnaire->completionexpected) ? $questionnaire->completionexpected : null;
+        \core_completion\api::update_completion_date_event(
+            $questionnaire->coursemodule,
+            'questionnaire',
+            $questionnaire->id,
+            $completiontimeexpected
+        );
+
+        return true;
+    }
+
+    /**
+     * Create or update calendar events for a questionnaire instance.
+     *
+     * Deletes any existing calendar events for the instance, then creates open and/or
+     * close events based on the questionnaire's opendate and closedate.
+     *
+     * @param stdClass $questionnaire Questionnaire instance record (needs id, course, name, opendate, closedate).
+     * @return void
+     */
+    public static function set_events(stdClass $questionnaire): void {
+        global $DB;
+
+        if ($events = $DB->get_records('event', ['modulename' => 'questionnaire', 'instance' => $questionnaire->id])) {
+            foreach ($events as $event) {
+                $event = \calendar_event::load($event);
+                $event->delete();
+            }
+        }
+
+        // The open-event.
+        $event = new stdClass();
+        $event->description = $questionnaire->name;
+        $event->courseid = $questionnaire->course;
+        $event->groupid = 0;
+        $event->userid = 0;
+        $event->modulename = 'questionnaire';
+        $event->instance = $questionnaire->id;
+        $event->eventtype = 'open';
+        $event->type = CALENDAR_EVENT_TYPE_ACTION;
+        $event->timestart = $questionnaire->opendate;
+        $event->visible = instance_is_visible('questionnaire', $questionnaire);
+        $event->timeduration = ($questionnaire->closedate - $questionnaire->opendate);
+
+        if ($questionnaire->closedate && $questionnaire->opendate
+                && ($event->timeduration <= QUESTIONNAIRE_MAX_EVENT_LENGTH)) {
+            // Single event for the whole questionnaire.
+            $event->name = $questionnaire->name;
+            $event->timesort = $questionnaire->opendate;
+            \calendar_event::create($event);
+        } else {
+            // Separate start and end events.
+            $event->timeduration = 0;
+            if ($questionnaire->opendate) {
+                $event->name = $questionnaire->name .
+                    ' (' . get_string('questionnaireopens', 'questionnaire') . ')';
+                $event->timesort = $questionnaire->opendate;
+                \calendar_event::create($event);
+                unset($event->id); // So we can use the same object for the close event.
+            }
+            if ($questionnaire->closedate) {
+                $event->name = $questionnaire->name .
+                    ' (' . get_string('questionnairecloses', 'questionnaire') . ')';
+                $event->timestart = $questionnaire->closedate;
+                $event->timesort = $questionnaire->closedate;
+                $event->eventtype = 'close';
+                \calendar_event::create($event);
+            }
+        }
+    }
+
+    /**
+     * Load all active questions for a survey, built as full question objects.
+     *
+     * Used by copy_survey() which needs responsetype access for dependency replication.
+     *
+     * @param int $sid Survey id.
+     * @return array Question objects indexed by question id.
+     */
+    private static function load_questions_for_survey(int $sid): array {
+        $questions = [];
+        foreach (question_record::get_active_for_survey($sid) as $qrec) {
+            $questions[$qrec->get('id')] = question::question_builder($qrec->get('typeid'), $qrec->to_record());
+        }
+        return $questions;
+    }
 }

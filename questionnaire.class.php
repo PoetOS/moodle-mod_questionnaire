@@ -3003,60 +3003,6 @@ class questionnaire {
     }
 
     /**
-     * Create or update calendar events for a questionnaire instance.
-     * @param object $questionnaire stdClass with id, name, course, opendate, closedate fields
-     * @return void
-     */
-    public static function set_events($questionnaire) {
-        global $DB;
-        if ($events = $DB->get_records('event', ['modulename' => 'questionnaire', 'instance' => $questionnaire->id])) {
-            foreach ($events as $event) {
-                $event = calendar_event::load($event);
-                $event->delete();
-            }
-        }
-
-        // The open-event.
-        $event = new stdClass();
-        $event->description = $questionnaire->name;
-        $event->courseid = $questionnaire->course;
-        $event->groupid = 0;
-        $event->userid = 0;
-        $event->modulename = 'questionnaire';
-        $event->instance = $questionnaire->id;
-        $event->eventtype = 'open';
-        $event->type = CALENDAR_EVENT_TYPE_ACTION;
-        $event->timestart = $questionnaire->opendate;
-        $event->visible = instance_is_visible('questionnaire', $questionnaire);
-        $event->timeduration = ($questionnaire->closedate - $questionnaire->opendate);
-
-        if ($questionnaire->closedate && $questionnaire->opendate && ($event->timeduration <= QUESTIONNAIRE_MAX_EVENT_LENGTH)) {
-            // Single event for the whole questionnaire.
-            $event->name = $questionnaire->name;
-            $event->timesort = $questionnaire->opendate;
-            calendar_event::create($event);
-        } else {
-            // Separate start and end events.
-            $event->timeduration = 0;
-            if ($questionnaire->opendate) {
-                $event->name = $questionnaire->name .
-                    ' (' . get_string('questionnaireopens', 'questionnaire') . ')';
-                $event->timesort = $questionnaire->opendate;
-                calendar_event::create($event);
-                unset($event->id); // So we can use the same object for the close event.
-            }
-            if ($questionnaire->closedate) {
-                $event->name = $questionnaire->name .
-                    ' (' . get_string('questionnairecloses', 'questionnaire') . ')';
-                $event->timestart = $questionnaire->closedate;
-                $event->timesort = $questionnaire->closedate;
-                $event->eventtype = 'close';
-                calendar_event::create($event);
-            }
-        }
-    }
-
-    /**
      * Delete a survey and all associated data.
      * @param int $sid survey id
      * @param int $questionnaireid questionnaire instance id
