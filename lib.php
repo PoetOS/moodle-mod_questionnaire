@@ -1150,106 +1150,6 @@ function questionnaire_print_recent_mod_activity($activity, $courseid, $detail, 
 }
 
 /**
- * Prints questionnaire summaries on 'My home' page
- *
- * Prints questionnaire name, due date and attempt information on
- * questionnaires that have a deadline that has not already passed
- * and it is available for taking.
- *
- * @param array $courses An array of course objects to get questionnaire instances from
- * @param array $htmlarray Store overview output array( course ID => 'questionnaire' => HTML output )
- * @return void
- */
-function questionnaire_print_overview($courses, &$htmlarray) {
-    global $USER, $CFG, $DB, $OUTPUT;
-
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
-    if (!$questionnaires = get_all_instances_in_courses('questionnaire', $courses)) {
-        return;
-    }
-
-    // Get Necessary Strings.
-    $strquestionnaire = get_string('modulename', 'questionnaire');
-    $strnotattempted = get_string('noattempts', 'questionnaire');
-    $strattempted = get_string('attempted', 'questionnaire');
-    $strsavedbutnotsubmitted = get_string('savedbutnotsubmitted', 'questionnaire');
-
-    $now = time();
-    foreach ($questionnaires as $questionnaire) {
-        // The questionnaire has a deadline.
-        if (
-            ($questionnaire->closedate != 0) &&
-            // And it is before the deadline has been met.
-            ($questionnaire->closedate >= $now) &&
-            // And the questionnaire is available.
-            (($questionnaire->opendate == 0) || ($questionnaire->opendate <= $now))
-        ) {
-            if (!$questionnaire->visible) {
-                $class = ' class="dimmed"';
-            } else {
-                $class = '';
-            }
-            $str = $OUTPUT->box(
-                "$strquestionnaire:
-                    <a$class href=\"$CFG->wwwroot/mod/questionnaire/view.php?id=$questionnaire->coursemodule\">" .
-                    format_string($questionnaire->name) . '</a>',
-                'name'
-            );
-
-            // Deadline.
-            $str .= $OUTPUT->box(get_string('closeson', 'questionnaire', userdate($questionnaire->closedate)), 'info');
-            $attempts = $DB->get_records(
-                'questionnaire_response',
-                ['questionnaireid' => $questionnaire->id, 'userid' => $USER->id, 'complete' => 'y']
-            );
-            $nbattempts = count($attempts);
-
-            // Do not display a questionnaire as due if it can only be sumbitted once and it has already been submitted!
-            if ($nbattempts != 0 && $questionnaire->qtype == QUESTIONNAIREONCE) {
-                continue;
-            }
-
-            // Attempt information.
-            if (has_capability('mod/questionnaire:manage', context_module::instance($questionnaire->coursemodule))) {
-                // Number of user attempts.
-                $attempts = $DB->count_records(
-                    'questionnaire_response',
-                    ['questionnaireid' => $questionnaire->id, 'complete' => 'y']
-                );
-                $str .= $OUTPUT->box(get_string('numattemptsmade', 'questionnaire', $attempts), 'info');
-            } else {
-                $responses = \mod_questionnaire\local\response\manager::get_user_responses_for_instance(
-                    $questionnaire->id,
-                    $USER->id,
-                    false
-                );
-                if ($responses) {
-                    foreach ($responses as $response) {
-                        if ($response->complete == 'y') {
-                            $str .= $OUTPUT->box($strattempted, 'info');
-                            break;
-                        } else {
-                            $str .= $OUTPUT->box($strsavedbutnotsubmitted, 'info');
-                        }
-                    }
-                } else {
-                    $str .= $OUTPUT->box($strnotattempted, 'info');
-                }
-            }
-            $str = $OUTPUT->box($str, 'questionnaire overview');
-
-            if (empty($htmlarray[$questionnaire->course]['questionnaire'])) {
-                $htmlarray[$questionnaire->course]['questionnaire'] = $str;
-            } else {
-                $htmlarray[$questionnaire->course]['questionnaire'] .= $str;
-            }
-        }
-    }
-}
-
-
-/**
  * Implementation of the function for printing the form elements that control
  * whether the course reset functionality affects the questionnaire.
  *
@@ -1336,32 +1236,6 @@ function questionnaire_reset_userdata($data) {
         ];
     }
     return $status;
-}
-
-/**
- * Obtains the automatic completion state for this questionnaire based on the condition
- * in questionnaire settings.
- *
- * @param object $cm Course-module
- * @param int $userid User ID
- * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
- * @return bool True if completed, false if not, $type if conditions not set.
- *
- */
-function questionnaire_get_completion_state($cm, $userid, $type) {
-    global $DB;
-
-    // Get questionnaire details.
-    $questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance], '*', MUST_EXIST);
-
-    // If completion option is enabled, evaluate it and return true/false.
-    if ($questionnaire->completionsubmit) {
-        $params = ['userid' => $userid, 'questionnaireid' => $questionnaire->id, 'complete' => 'y'];
-        return $DB->record_exists('questionnaire_response', $params);
-    } else {
-        // Completion option is not enabled so just return $type.
-        return $type;
-    }
 }
 
 /**
