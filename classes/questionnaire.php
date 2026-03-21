@@ -1740,7 +1740,7 @@ class questionnaire {
      */
     public static function coursemodule_edit_post_actions(object $data, object $course): object {
         global $DB;
-        require_once(dirname(__DIR__, 2) . '/questionnaire.class.php');
+        require_once(dirname(__DIR__) . '/questionnaire.class.php');
 
         if (!empty($data->copyid)) {
             $cm = (object)['id' => $data->coursemodule];
