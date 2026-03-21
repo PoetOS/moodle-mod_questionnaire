@@ -69,16 +69,6 @@ function questionnaire_get_extra_capabilities() {
 }
 
 /**
- * Implementation of get_instance.
- * @param int $questionnaireid
- * @return false|mixed|stdClass
- */
-function questionnaire_get_instance($questionnaireid) {
-    global $DB;
-    return $DB->get_record('questionnaire', ['id' => $questionnaireid]);
-}
-
-/**
  * Implementation of add_instance.
  * @param stdClass $questionnaire
  * @return bool|int
