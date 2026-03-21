@@ -44,10 +44,21 @@ class custom_completion extends activity_custom_completion {
      * @return int
      */
     public function get_state(string $rule): int {
+        global $DB;
+
         $this->validate_rule($rule);
         $userid = $this->userid;
         $cm = $this->cm;
-        $status = questionnaire_get_completion_state($cm, $userid, $rule);
+
+        $questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance], '*', MUST_EXIST);
+
+        if ($questionnaire->completionsubmit) {
+            $params = ['userid' => $userid, 'questionnaireid' => $questionnaire->id, 'complete' => 'y'];
+            $status = $DB->record_exists('questionnaire_response', $params);
+        } else {
+            $status = false;
+        }
+
         return $status ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
     }
 
