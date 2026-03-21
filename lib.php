@@ -96,35 +96,7 @@ function questionnaire_update_instance($questionnaire) {
  * @return bool
  */
 function questionnaire_delete_instance($id) {
-    global $DB, $CFG;
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-    require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-
-    if (! $questionnaire = $DB->get_record('questionnaire', ['id' => $id])) {
-        return false;
-    }
-
-    $result = true;
-
-    if ($events = $DB->get_records('event', ["modulename" => 'questionnaire', "instance" => $questionnaire->id])) {
-        foreach ($events as $event) {
-            $event = calendar_event::load($event);
-            $event->delete();
-        }
-    }
-
-    if (! $DB->delete_records('questionnaire', ['id' => $questionnaire->id])) {
-        $result = false;
-    }
-
-    if ($survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid])) {
-        // If this survey is owned by this course, delete all of the survey records and responses.
-        if ($survey->courseid == $questionnaire->course) {
-            $result = $result && \questionnaire::delete_survey($questionnaire->sid, $questionnaire->id);
-        }
-    }
-
-    return $result;
+    return \mod_questionnaire\questionnaire::delete_instance($id);
 }
 
 /**
@@ -1078,59 +1050,7 @@ function questionnaire_reset_course_form_defaults($course) {
  * @return array status array
  */
 function questionnaire_reset_userdata($data) {
-    global $CFG, $DB;
-    require_once($CFG->libdir . '/questionlib.php');
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-    require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-
-    $componentstr = get_string('modulenameplural', 'questionnaire');
-    $status = [];
-
-    if (!empty($data->reset_questionnaire)) {
-        $surveys = \questionnaire::get_survey_list($data->courseid, '');
-
-        // Delete responses.
-        foreach ($surveys as $survey) {
-            // Get all responses for this questionnaire.
-            $sql = "SELECT qr.id, qr.questionnaireid, qr.submitted, qr.userid, q.sid
-                 FROM {questionnaire} q
-                 INNER JOIN {questionnaire_response} qr ON q.id = qr.questionnaireid
-                 WHERE q.sid = ?
-                 ORDER BY qr.id";
-            $resps = $DB->get_records_sql($sql, [$survey->id]);
-            if (!empty($resps)) {
-                $questrecord = $DB->get_record(
-                    "questionnaire",
-                    ["sid" => $survey->id, "course" => $survey->courseid]
-                );
-                $questcourse = $DB->get_record("course", ["id" => $questrecord->course]);
-                $questcm = get_coursemodule_from_instance("questionnaire", $questrecord->id, $questcourse->id);
-                $questobj = new \questionnaire($questcourse, $questcm, 0, $questrecord);
-                foreach ($resps as $response) {
-                    $questobj->responsemanager()->delete_response($response);
-                }
-            }
-            // Remove this questionnaire's grades (and feedback) from gradebook (if any).
-            $select = "itemmodule = 'questionnaire' AND iteminstance = " . $survey->qid;
-            $fields = 'id';
-            if ($itemid = $DB->get_record_select('grade_items', $select, null, $fields)) {
-                $itemid = $itemid->id;
-                $DB->delete_records_select('grade_grades', 'itemid = ' . $itemid);
-            }
-        }
-        $status[] = [
-            'component' => $componentstr,
-            'item' => get_string('deletedallresp', 'questionnaire'),
-            'error' => false,
-        ];
-
-        $status[] = [
-            'component' => $componentstr,
-            'item' => get_string('gradesdeleted', 'questionnaire'),
-            'error' => false,
-        ];
-    }
-    return $status;
+    return \mod_questionnaire\questionnaire::reset_userdata($data);
 }
 
 /**
