@@ -228,8 +228,13 @@ class mod_questionnaire_generator extends testing_module_generator {
      * @param int $section
      * @return false|mixed|stdClass
      */
-    public function create_question_response(\mod_questionnaire\questionnaire $questionnaire, $question, $respval,
-            $userid = 1, $section = 1) {
+    public function create_question_response(
+        \mod_questionnaire\questionnaire $questionnaire,
+        $question,
+        $respval,
+        $userid = 1,
+        $section = 1
+    ) {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
@@ -239,10 +244,15 @@ class mod_questionnaire_generator extends testing_module_generator {
         }
         $respdata = (object)(array_merge(['sec' => $section, 'rid' => $currentrid, 'a' => $questionnaire->id()], $respval));
 
-        // response_insert and response_commit live on the legacy class; create a local instance for those calls.
+        // Response_insert and response_commit live on the legacy class; create a local instance for those calls.
         // TODO: migrate response_insert/response_commit to new class in a future phase.
-        $oldquestionnaire = new \questionnaire($questionnaire->course(), $questionnaire->coursemodule(),
-            $questionnaire->id(), null, true);
+        $oldquestionnaire = new \questionnaire(
+            $questionnaire->course(),
+            $questionnaire->coursemodule(),
+            $questionnaire->id(),
+            null,
+            true
+        );
         $responseid = $oldquestionnaire->response_insert($respdata, $userid);
         $this->response_commit($oldquestionnaire, $responseid);
         return $DB->get_record('questionnaire_response', ['id' => $responseid]);

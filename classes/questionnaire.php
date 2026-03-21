@@ -816,9 +816,11 @@ class questionnaire {
         $newsurvey->set('courseid', $owner);
         $newsurvey->set('name', $name);
         $newsurvey->set('status', 0);
-        foreach (['realm', 'title', 'email', 'subtitle', 'info', 'theme',
-                  'thankspage', 'thankhead', 'thankbody', 'feedbacksections',
-                  'feedbacknotes', 'feedbackscores', 'charttype'] as $f) {
+        foreach (
+            ['realm', 'title', 'email', 'subtitle', 'info', 'theme',
+            'thankspage', 'thankhead', 'thankbody', 'feedbacksections',
+            'feedbacknotes', 'feedbackscores', 'charttype'] as $f
+        ) {
             if (isset($survey->$f)) {
                 $newsurvey->set($f, $survey->$f);
             }
@@ -836,8 +838,10 @@ class questionnaire {
             $newq = new question_record();
             $newq->set('surveyid', $newsid);
             $newq->set('position', $pos++);
-            foreach (['name', 'typeid', 'resultid', 'length', 'precise',
-                      'content', 'required', 'deleted', 'extradata'] as $f) {
+            foreach (
+                ['name', 'typeid', 'resultid', 'length', 'precise',
+                'content', 'required', 'deleted', 'extradata'] as $f
+            ) {
                 if (isset($question->$f)) {
                     $newq->set($f, $question->$f);
                 }
@@ -1010,10 +1014,12 @@ class questionnaire {
 
         // Update the questionnaire row (before_update() sets timemodified automatically).
         $record = new questionnaire_record($questionnaire->id);
-        foreach (['name', 'intro', 'introformat', 'qtype', 'respondenttype',
-                  'respeligible', 'respview', 'notifications', 'opendate', 'closedate',
-                  'resume', 'navigate', 'grade', 'sid', 'completionsubmit',
-                  'autonum', 'progressbar', 'removeafter'] as $f) {
+        foreach (
+            ['name', 'intro', 'introformat', 'qtype', 'respondenttype',
+            'respeligible', 'respview', 'notifications', 'opendate', 'closedate',
+            'resume', 'navigate', 'grade', 'sid', 'completionsubmit',
+            'autonum', 'progressbar', 'removeafter'] as $f
+        ) {
             if (isset($questionnaire->$f)) {
                 $record->set($f, $questionnaire->$f);
             }
@@ -1066,8 +1072,10 @@ class questionnaire {
         $event->visible = instance_is_visible('questionnaire', $questionnaire);
         $event->timeduration = ($questionnaire->closedate - $questionnaire->opendate);
 
-        if ($questionnaire->closedate && $questionnaire->opendate
-                && ($event->timeduration <= QUESTIONNAIRE_MAX_EVENT_LENGTH)) {
+        if (
+            $questionnaire->closedate && $questionnaire->opendate
+            && ($event->timeduration <= QUESTIONNAIRE_MAX_EVENT_LENGTH)
+        ) {
             // Single event for the whole questionnaire.
             $event->name = $questionnaire->name;
             $event->timesort = $questionnaire->opendate;
