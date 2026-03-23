@@ -82,4 +82,18 @@ class response_record extends \core\persistent {
     public static function get_complete_for_user(int $questionnaireid, int $userid): array {
         return static::get_records(['questionnaireid' => $questionnaireid, 'userid' => $userid, 'complete' => 'y']);
     }
+
+    /**
+     * True if the given user has at least one complete response for the given questionnaire.
+     *
+     * @param int $questionnaireid
+     * @param int $userid
+     * @return bool
+     */
+    public static function user_has_complete_response(int $questionnaireid, int $userid): bool {
+        return static::record_exists_select(
+            'questionnaireid = :questionnaireid AND userid = :userid AND complete = :complete',
+            ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'complete' => 'y']
+        );
+    }
 }

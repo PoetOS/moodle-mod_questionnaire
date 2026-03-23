@@ -20,10 +20,9 @@ namespace mod_questionnaire\completion;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
-
 use coding_exception;
 use core_completion\activity_custom_completion;
+use mod_questionnaire\questionnaire;
 use moodle_exception;
 
 /**
@@ -44,21 +43,9 @@ class custom_completion extends activity_custom_completion {
      * @return int
      */
     public function get_state(string $rule): int {
-        global $DB;
-
         $this->validate_rule($rule);
-        $userid = $this->userid;
-        $cm = $this->cm;
-
-        $questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance], '*', MUST_EXIST);
-
-        if ($questionnaire->completionsubmit) {
-            $params = ['userid' => $userid, 'questionnaireid' => $questionnaire->id, 'complete' => 'y'];
-            $status = $DB->record_exists('questionnaire_response', $params);
-        } else {
-            $status = false;
-        }
-
+        $questionnaire = questionnaire::from_cm($this->cm);
+        $status = $questionnaire->completionsubmit() && $questionnaire->user_has_submitted($this->userid);
         return $status ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
     }
 

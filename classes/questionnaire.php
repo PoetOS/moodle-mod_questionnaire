@@ -349,6 +349,15 @@ class questionnaire {
     }
 
     /**
+     * True if the questionnaire is configured to require submission for completion.
+     *
+     * @return bool
+     */
+    public function completionsubmit(): bool {
+        return (bool) $this->modulerecord->get('completionsubmit');
+    }
+
+    /**
      * True if the questionnaire collects anonymous responses.
      *
      * @return bool
@@ -536,6 +545,16 @@ class questionnaire {
             'questionnaire_response',
             ['questionnaireid' => $this->id(), 'userid' => $userid, 'complete' => 'n']
         );
+    }
+
+    /**
+     * True if the given user has at least one complete (submitted) response for this questionnaire.
+     *
+     * @param int $userid
+     * @return bool
+     */
+    public function user_has_submitted(int $userid): bool {
+        return \mod_questionnaire\local\db\response_record::user_has_complete_response($this->id(), $userid);
     }
 
     /**
@@ -1794,7 +1813,9 @@ class questionnaire {
      * @return bool True on success.
      */
     public static function delete_instance(int $id): bool {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
+        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
         if (!$questionnaire = $DB->get_record('questionnaire', ['id' => $id])) {
             return false;

@@ -562,6 +562,19 @@ class manager {
     // Static helpers — usable without a questionnaire instance.
 
     /**
+     * True if the given user has at least one complete response for this questionnaire.
+     *
+     * @param int $userid
+     * @return bool
+     */
+    public function response_exists(int $userid): bool {
+        return \mod_questionnaire\local\db\response_record::user_has_complete_response(
+            $this->questionnaire->id,
+            $userid
+        );
+    }
+
+    /**
      * Get all responses for a given questionnaire instance id and user, without needing an instance.
      * @param int $instanceid The questionnaire.id value.
      * @param int $userid
