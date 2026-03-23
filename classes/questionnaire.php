@@ -550,6 +550,9 @@ class questionnaire {
     /**
      * True if the given user has at least one complete (submitted) response for this questionnaire.
      *
+     * TODO Phase 9: once the response manager holds the new questionnaire class, replace the direct
+     * response_record call here with (new \mod_questionnaire\local\response\manager($this))->response_exists($userid).
+     *
      * @param int $userid
      * @return bool
      */
