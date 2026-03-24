@@ -208,7 +208,7 @@ function questionnaire_delete_permanently_questions($qid, $sid) {
     $select = 'id = :id AND surveyid = :sid AND deleted IS NOT NULL';
     $DB->delete_records_select('questionnaire_question', $select, ['id' => $qid, 'sid' => $sid]);
     $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
-    \mod_questionnaire\local\response\manager::delete_responses_for_question($qid);
+    \mod_questionnaire\local\response\questionnaire_responses::delete_responses_for_question($qid);
     $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
     $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
 }
