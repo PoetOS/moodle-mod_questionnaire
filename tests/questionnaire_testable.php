@@ -43,4 +43,22 @@ class questionnaire_testable extends questionnaire {
         $this->questions = [];
         $this->questionsbysec = [];
     }
+
+    /**
+     * Inject question objects for unit tests (bypasses DB loading).
+     *
+     * @param array $questions Keyed by question id.
+     */
+    public function set_questions(array $questions): void {
+        $this->questions = $questions;
+    }
+
+    /**
+     * Inject the questions-by-section map for unit tests.
+     *
+     * @param array $questionsbysec Array of question object arrays, keyed by 1-based section number.
+     */
+    public function set_questions_by_sec(array $questionsbysec): void {
+        $this->questionsbysec = $questionsbysec;
+    }
 }

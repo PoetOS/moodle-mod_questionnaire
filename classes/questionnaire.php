@@ -340,6 +340,224 @@ class questionnaire {
     }
 
     /**
+     * Whether navigation (skip-logic) is enabled for this questionnaire.
+     *
+     * @return int 0 = disabled, 1 = enabled.
+     */
+    public function navigate(): int {
+        return (int) $this->modulerecord->get('navigate');
+    }
+
+    /**
+     * True if pages should be automatically numbered.
+     *
+     * @return bool
+     */
+    public function pages_autonumbered(): bool {
+        $autonum = $this->modulerecord->get('autonum');
+        return !empty($autonum) && ($autonum == 2 || $autonum == 3);
+    }
+
+    /**
+     * True if any question in this questionnaire has dependency (skip-logic) conditions.
+     *
+     * @return bool
+     */
+    public function has_dependencies(): bool {
+        if ($this->navigate() > 0 && !empty($this->questions)) {
+            foreach ($this->questions as $question) {
+                if ($question->has_dependencies()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the IDs of all questions that depend on the given question.
+     *
+     * @param int $questionid
+     * @return array
+     */
+    public function get_dependants(int $questionid): array {
+        $qu = [];
+        foreach ($this->questions as $question) {
+            if ($question->has_dependencies()) {
+                foreach ($question->dependencies as $dependency) {
+                    if (($dependency->dependquestionid == $questionid) && !in_array($question->id, $qu)) {
+                        $qu[] = $question->id;
+                    }
+                }
+            }
+        }
+        return $qu;
+    }
+
+    /**
+     * Get all direct and indirect dependants of a question.
+     *
+     * @param int $questionid
+     * @return stdClass Object with ->directs and ->indirects arrays.
+     */
+    public function get_all_dependants(int $questionid): stdClass {
+        $directids = $this->get_dependants($questionid);
+        $directs = [];
+        $indirects = [];
+        foreach ($directids as $directid) {
+            $this->load_parents($this->questions[$directid]);
+            $indirectids = $this->get_dependants($directid);
+            foreach ($this->questions[$directid]->dependencies as $dep) {
+                if ($dep->dependquestionid == $questionid) {
+                    $directs[$directid][] = $dep;
+                }
+            }
+            foreach ($indirectids as $indirectid) {
+                $this->load_parents($this->questions[$indirectid]);
+                foreach ($this->questions[$indirectid]->dependencies as $dep) {
+                    if ($dep->dependquestionid != $questionid) {
+                        $indirects[$indirectid][] = $dep;
+                    }
+                }
+            }
+        }
+        $alldependants = new stdClass();
+        $alldependants->directs = $directs;
+        $alldependants->indirects = $indirects;
+        return $alldependants;
+    }
+
+    /**
+     * Get all descendants and their choice conditions, keyed by parent question id.
+     *
+     * @return array
+     */
+    public function get_dependants_and_choices(): array {
+        $questions = array_reverse($this->questions, true);
+        $parents = [];
+        foreach ($questions as $question) {
+            foreach ($question->dependencies as $dependency) {
+                $child = new stdClass();
+                $child->choiceid = $dependency->dependchoiceid;
+                $child->logic = $dependency->dependlogic;
+                $child->andor = $dependency->dependandor;
+                $parents[$dependency->dependquestionid][$question->id][] = $child;
+            }
+        }
+        return $parents;
+    }
+
+    /**
+     * Load display info for each dependency of a question (parent name, choice label, etc.).
+     *
+     * @param question $question
+     * @return bool
+     */
+    public function load_parents(question $question): bool {
+        foreach ($question->dependencies as $did => $dependency) {
+            $dependquestion = $this->questions[$dependency->dependquestionid];
+            $qdependchoice = '';
+            switch ($dependquestion->typeid) {
+                case QUESRADIO:
+                case QUESDROP:
+                case QUESCHECK:
+                    $qdependchoice = $dependency->dependchoiceid;
+                    $dependchoice = $dependquestion->choices[$dependency->dependchoiceid]->content;
+                    $contents = \questionnaire_choice_values($dependchoice);
+                    if ($contents->modname) {
+                        $dependchoice = $contents->modname;
+                    }
+                    break;
+                case QUESYESNO:
+                    switch ($dependency->dependchoiceid) {
+                        case 0:
+                            $dependchoice = get_string('yes');
+                            $qdependchoice = 'y';
+                            break;
+                        case 1:
+                            $dependchoice = get_string('no');
+                            $qdependchoice = 'n';
+                            break;
+                        default:
+                            $dependchoice = '';
+                    }
+                    break;
+                default:
+                    $dependchoice = '';
+            }
+            $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id;
+            $question->dependencies[$did]->qdependchoice = $qdependchoice;
+            $question->dependencies[$did]->parenttype = $dependquestion->typeid;
+            $question->dependencies[$did]->position = $question->position;
+            $question->dependencies[$did]->name = $question->name;
+            $question->dependencies[$did]->content = $question->content;
+            $question->dependencies[$did]->parentposition = $dependquestion->position;
+            $question->dependencies[$did]->parent = format_string($dependquestion->name) . '->' . format_string($dependchoice);
+        }
+        return true;
+    }
+
+    /**
+     * True if there are any eligible (dependency-satisfied) questions on the given section.
+     *
+     * Note: $this->questionsbysec stores question objects (not IDs), unlike the legacy class.
+     *
+     * @param int $secnum 1-based section number.
+     * @param int $rid Response id (0 if no response yet).
+     * @return bool
+     */
+    public function eligible_questions_on_page(int $secnum, int $rid): bool {
+        foreach ($this->questionsbysec[$secnum] as $question) {
+            if ($question->dependency_fulfilled($rid, $this->questions)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return the next valid section number after $secnum, or false if none.
+     *
+     * @param int $secnum Current section number.
+     * @param int $rid Response id.
+     * @return int|bool
+     */
+    public function next_page(int $secnum, int $rid): int|bool {
+        $secnum++;
+        $numsections = !empty($this->questionsbysec) ? count($this->questionsbysec) : 0;
+        if ($this->has_dependencies()) {
+            while (!$this->eligible_questions_on_page($secnum, $rid)) {
+                $secnum++;
+                if ($secnum > $numsections) {
+                    $secnum = false;
+                    break;
+                }
+            }
+        }
+        return $secnum;
+    }
+
+    /**
+     * Return the previous valid section number before $secnum, or false if none.
+     *
+     * @param int $secnum Current section number.
+     * @param int $rid Response id.
+     * @return int|bool
+     */
+    public function prev_page(int $secnum, int $rid): int|bool {
+        $secnum--;
+        if ($this->has_dependencies()) {
+            while (($secnum > 0) && !$this->eligible_questions_on_page($secnum, $rid)) {
+                $secnum--;
+            }
+        }
+        if ($secnum === 0) {
+            $secnum = false;
+        }
+        return $secnum;
+    }
+
+    /**
      * True if the questionnaire has an associated survey (is active).
      *
      * @return bool
