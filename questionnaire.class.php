@@ -119,9 +119,6 @@ class questionnaire {
     /** @var \stdClass $capabilities The capabilities object for the current user. */
     public $capabilities = null;
 
-    /** @var array $responses Loaded response data. */
-    public $responses = [];
-
     /** @var array $questionsbysec Questions grouped by section (page). */
     public $questionsbysec = [];
 
@@ -135,8 +132,8 @@ class questionnaire {
      */
     public $deletequestions = [];
 
-    /** @var \mod_questionnaire\local\response\manager|null $responsemanager Lazy-initialised response manager. */
-    protected $responsemanager = null;
+    /** @var \mod_questionnaire\local\response\questionnaire_responses|null $responses Lazy-initialised response handler. */
+    protected $responses = null;
 
     /** @var int|null $rid The id of the most recently inserted/committed response. */
     public $rid = null;
@@ -212,8 +209,6 @@ class questionnaire {
             $this->capabilities = $this->load_capabilities();
         }
 
-        // Don't automatically add responses.
-        $this->responses = [];
     }
 
     /**
@@ -302,7 +297,7 @@ class questionnaire {
      * @param int $userid
      */
     public function add_user_responses($userid = null) {
-        $this->responsemanager()->add_user_responses($userid);
+        $this->responses()->add_user_responses($userid);
     }
 
     /**
@@ -311,7 +306,7 @@ class questionnaire {
      * @param int $responseid
      */
     public function add_response(int $responseid) {
-        $this->responsemanager()->add_response($responseid);
+        $this->responses()->add_response($responseid);
     }
 
     /**
@@ -320,7 +315,7 @@ class questionnaire {
      * @param stdClass $formdata
      */
     public function add_response_from_formdata(stdClass $formdata) {
-        $this->responsemanager()->add_response_from_formdata($formdata);
+        $this->responses()->add_response_from_formdata($formdata);
     }
 
     /**
@@ -331,7 +326,7 @@ class questionnaire {
      * @return bool|\mod_questionnaire\local\responsetype\response\response
      */
     public function build_response_from_appdata(stdClass $appdata, $sec = 0) {
-        return $this->responsemanager()->build_response_from_appdata($appdata, $sec);
+        return $this->responses()->build_response_from_appdata($appdata, $sec);
     }
 
     /**
@@ -343,14 +338,16 @@ class questionnaire {
     }
 
     /**
-     * Return the response manager for this questionnaire instance (lazy-initialised).
-     * @return \mod_questionnaire\local\response\manager
+     * Return the response handler for this questionnaire instance (lazy-initialised).
+     * @return \mod_questionnaire\local\response\questionnaire_responses
      */
-    public function responsemanager(): \mod_questionnaire\local\response\manager {
-        if (!isset($this->responsemanager)) {
-            $this->responsemanager = new \mod_questionnaire\local\response\manager($this);
+    public function responses(): \mod_questionnaire\local\response\questionnaire_responses {
+        if (!isset($this->responses)) {
+            $this->responses = new \mod_questionnaire\local\response\questionnaire_responses(
+                \mod_questionnaire\questionnaire::from_instanceid($this->id)
+            );
         }
-        return $this->responsemanager;
+        return $this->responses;
     }
 
     /**
@@ -448,7 +445,7 @@ class questionnaire {
      * @return bool|int
      */
     public function delete_insert_response($rid, $sec, $quser) {
-        return $this->responsemanager()->delete_insert_response($rid, $sec, $quser);
+        return $this->responses()->delete_insert_response($rid, $sec, $quser);
     }
 
     /**
@@ -457,7 +454,7 @@ class questionnaire {
      * @param int $quser
      */
     public function commit_submission_response($rid, $quser) {
-        $this->responsemanager()->commit_submission_response($rid, $quser);
+        $this->responses()->commit_submission_response($rid, $quser);
     }
 
     /**
@@ -541,7 +538,7 @@ class questionnaire {
             if ($question->typeid != QUESPAGEBREAK) {
                 $this->page->add_to_page(
                     'responses',
-                    $this->renderer->response_output($question, $this->responses[$rid], $i, $pdf, $this)
+                    $this->renderer->response_output($question, $this->responses()->get_response($rid), $i, $pdf, $this)
                 );
             }
         }
@@ -556,8 +553,9 @@ class questionnaire {
         // If a student's responses have been deleted by teacher while student was viewing the report,
         // then responses may have become empty, hence this test is necessary.
 
-        if (!empty($this->responses)) {
-            $this->page->add_to_page('responses', $this->renderer->all_response_output($this->responses, $this->questions, $this));
+        $loadedresponses = $this->responses()->get_loaded_responses();
+        if (!empty($loadedresponses)) {
+            $this->page->add_to_page('responses', $this->renderer->all_response_output($loadedresponses, $this->questions, $this));
         } else {
             $this->page->add_to_page('responses', $this->renderer->all_response_output(get_string('noresponses', 'questionnaire')));
         }
@@ -704,7 +702,7 @@ class questionnaire {
      * @return bool
      */
     public function user_has_saved_response($userid) {
-        return $this->responsemanager()->user_has_saved_response($userid);
+        return $this->responses()->user_has_saved_response($userid);
     }
 
     /**
@@ -962,7 +960,7 @@ class questionnaire {
      * @return array
      */
     public function get_responses($userid = false, $groupid = 0) {
-        return $this->responsemanager()->get_responses($userid, $groupid);
+        return $this->responses()->get_responses($userid, $groupid);
     }
 
     /**
@@ -1442,7 +1440,7 @@ class questionnaire {
                     'questions',
                     $this->renderer->question_output(
                         $this->questions[$questionid],
-                        (isset($this->responses[$formdata->rid]) ? $this->responses[$formdata->rid] : []),
+                        ($this->responses()->get_response($formdata->rid) ?? []),
                         $i,
                         $this->usehtmleditor,
                         [],
@@ -1789,7 +1787,7 @@ class questionnaire {
                 $this->questions[$questionid]->set_isprint($referer === 'print');
                 $output .= $this->renderer->question_output(
                     $this->questions[$questionid],
-                    $this->responses[0] ?? new \mod_questionnaire\local\responsetype\response\response(),
+                    ($this->responses()->get_response(0) ?? new \mod_questionnaire\local\responsetype\response\response()),
                     $i++,
                     null,
                     $dependants,
@@ -1825,7 +1823,9 @@ class questionnaire {
      * @return string
      */
     private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
-        return $this->responsemanager()->response_check_format($section, $formdata, $checkmissing, $checkwrongformat);
+        return $this->responses()->response_check_format(
+            $section, $formdata, $checkmissing, $checkwrongformat, $this->questions
+        );
     }
 
     /**
@@ -1834,7 +1834,7 @@ class questionnaire {
      * @param null|int $sec
      */
     private function response_delete($rid, $sec = null) {
-        $this->responsemanager()->response_delete($rid, $sec);
+        $this->responses()->response_delete($rid, $sec);
     }
 
     /**
@@ -1843,7 +1843,7 @@ class questionnaire {
      * @return bool
      */
     private function response_commit($rid) {
-        return $this->responsemanager()->response_commit($rid);
+        return $this->responses()->response_commit($rid);
     }
 
     /**
@@ -2117,7 +2117,7 @@ class questionnaire {
      * @throws coding_exception
      */
     public function get_structured_response($rid) {
-        return $this->responsemanager()->get_structured_response($rid);
+        return $this->responses()->get_structured_response($rid);
     }
 
     /**
@@ -2126,7 +2126,7 @@ class questionnaire {
      * @return array
      */
     private function get_full_submission_for_export($rid) {
-        return $this->responsemanager()->get_full_submission_for_export($rid);
+        return $this->responses()->get_full_submission_for_export($rid);
     }
 
     /**
@@ -2235,7 +2235,7 @@ class questionnaire {
      * @return bool|int
      */
     public function response_insert($responsedata, $userid, $resume = false) {
-        return $this->responsemanager()->response_insert($responsedata, $userid, $resume);
+        return $this->responses()->response_insert($responsedata, $userid, $resume);
     }
 
     /**
@@ -2244,7 +2244,7 @@ class questionnaire {
      * @return array
      */
     private function response_select($rid) {
-        return $this->responsemanager()->response_select($rid);
+        return $this->responses()->response_select($rid);
     }
 
     /**
@@ -2888,7 +2888,7 @@ class questionnaire {
      * @return array
      */
     protected function get_survey_all_responses($rid = '', $userid = '', $groupid = false, $showincompletes = 0) {
-        return $this->responsemanager()->get_survey_all_responses($rid, $userid, $groupid, $showincompletes);
+        return $this->responses()->get_survey_all_responses($rid, $userid, $groupid, $showincompletes);
     }
 
     /**

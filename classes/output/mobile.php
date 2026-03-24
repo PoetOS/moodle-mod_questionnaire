@@ -101,8 +101,9 @@ class mobile {
                         $questionnaire->add_response($rid);
                         $data['rid'] = $rid;
                     }
-                    $response = (isset($questionnaire->responses) && !empty($questionnaire->responses)) ?
-                        end($questionnaire->responses) :
+                    $loadedresponses = $questionnaire->responses()->get_loaded_responses();
+                    $response = !empty($loadedresponses) ?
+                        end($loadedresponses) :
                         \mod_questionnaire\local\responsetype\response\response::create_from_data([]);
                     $response->sec = $pagenum;
                     if (isset($result['warnings'])) {
@@ -156,7 +157,7 @@ class mobile {
                 // If reviewing a submission.
                 if ($questionnaire->capabilities->readownresponses && isset($args->submissionid) && !empty($args->submissionid)) {
                     $questionnaire->add_response($args->submissionid);
-                    $response = $questionnaire->responses[$args->submissionid];
+                    $response = $questionnaire->responses()->get_response($args->submissionid);
                     $qnum = 1;
                     $pagequestions = [];
                     foreach ($questionnaire->questions as $question) {
@@ -217,7 +218,7 @@ class mobile {
         if ($questionnaire->capabilities->readownresponses) {
             $questionnaire->add_user_responses();
             $submissions = [];
-            foreach ($questionnaire->responses as $response) {
+            foreach ($questionnaire->responses()->get_loaded_responses() as $response) {
                 $submissions[] = ['submissiondate' => userdate($response->submitted), 'submissionid' => $response->id];
             }
             if (!empty($submissions)) {

@@ -24,6 +24,7 @@ use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\response\questionnaire_responses;
 use context_module;
 use stdClass;
 
@@ -156,7 +157,7 @@ class questionnaire {
             $rec = $questionrec->to_record();
 
             $typeid = $questionrec->get('typeid');
-            $this->questions[$questionrec->get('id')] = question::question_builder($typeid, $rec);
+            $this->questions[$questionrec->get('id')] = question::question_builder($typeid, $rec, $this->context);
 
             if ($typeid != QUESPAGEBREAK) {
                 // PHP assigns objects by reference, so this adds the same object to questionsbysec.
@@ -317,6 +318,25 @@ class questionnaire {
      */
     public function questions_by_section(int $section = 1): array {
         return $this->questionsbysec[$section] ?? [];
+    }
+
+    /**
+     * Get all question arrays organised by section (keyed by 1-based section number).
+     *
+     * @return array
+     */
+    public function questions_by_section_all(): array {
+        return $this->questionsbysec;
+    }
+
+    /**
+     * True if questions should be automatically numbered.
+     *
+     * @return bool
+     */
+    public function questions_autonumbered(): bool {
+        $autonum = $this->modulerecord->get('autonum');
+        return !empty($autonum) && ($autonum == 1 || $autonum == 3);
     }
 
     /**
@@ -550,14 +570,11 @@ class questionnaire {
     /**
      * True if the given user has at least one complete (submitted) response for this questionnaire.
      *
-     * TODO Phase 9: once the response manager holds the new questionnaire class, replace the direct
-     * response_record call here with (new \mod_questionnaire\local\response\manager($this))->response_exists($userid).
-     *
      * @param int $userid
      * @return bool
      */
     public function user_has_submitted(int $userid): bool {
-        return \mod_questionnaire\local\db\response_record::user_has_complete_response($this->id(), $userid);
+        return (new questionnaire_responses($this))->response_exists($userid);
     }
 
     /**
@@ -1883,7 +1900,7 @@ class questionnaire {
                     $questcm = get_coursemodule_from_instance("questionnaire", $questrecord->id, $questcourse->id);
                     $questobj = new \questionnaire($questcourse, $questcm, 0, $questrecord);
                     foreach ($resps as $response) {
-                        $questobj->responsemanager()->delete_response($response);
+                        $questobj->responses()->delete_response($response);
                     }
                 }
                 // Remove this questionnaire's grades (and feedback) from gradebook (if any).

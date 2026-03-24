@@ -17,36 +17,42 @@
 namespace mod_questionnaire\local\response;
 
 /**
- * Response manager — centralises all response CRUD and query operations.
+ * Response handler for a specific questionnaire instance.
+ *
+ * Caches loaded responses, performs CRUD, validates response format,
+ * and queries the response data for the bound questionnaire.
  *
  * @package    mod_questionnaire
  * @copyright  2016 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class manager {
-    /** @var \questionnaire The questionnaire instance. */
-    private readonly \questionnaire $questionnaire;
+class questionnaire_responses {
+    /** @var \mod_questionnaire\questionnaire The questionnaire instance. */
+    private readonly \mod_questionnaire\questionnaire $questionnaire;
+
+    /** @var array Loaded response objects keyed by response id. */
+    private array $responses = [];
 
     /**
      * Constructor.
-     * @param \questionnaire $questionnaire
+     * @param \mod_questionnaire\questionnaire $questionnaire
      */
-    public function __construct(\questionnaire $questionnaire) {
+    public function __construct(\mod_questionnaire\questionnaire $questionnaire) {
         $this->questionnaire = $questionnaire;
     }
 
     // Response loading / factory methods.
 
     /**
-     * Load all response information for the given user into $questionnaire->responses.
+     * Load all response information for the given user.
      *
      * @param int|null $userid
      */
     public function add_user_responses($userid = null) {
         global $USER;
 
-        if (empty($this->questionnaire->id)) {
+        if (empty($this->questionnaire->id())) {
             return;
         }
 
@@ -56,25 +62,25 @@ class manager {
 
         $responses = $this->get_responses($userid);
         foreach ($responses as $response) {
-            $this->questionnaire->responses[$response->id] =
+            $this->responses[$response->id] =
                 \mod_questionnaire\local\responsetype\response\response::create_from_data($response);
         }
     }
 
     /**
-     * Load the specified response into $questionnaire->responses.
+     * Load the specified response.
      *
      * @param int $responseid
      */
     public function add_response(int $responseid) {
         global $DB;
 
-        if (empty($this->questionnaire->id)) {
+        if (empty($this->questionnaire->id())) {
             return;
         }
 
         $response = $DB->get_record('questionnaire_response', ['id' => $responseid]);
-        $this->questionnaire->responses[$response->id] =
+        $this->responses[$response->id] =
             \mod_questionnaire\local\responsetype\response\response::create_from_data($response);
     }
 
@@ -84,10 +90,10 @@ class manager {
      * @param \stdClass $formdata
      */
     public function add_response_from_formdata(\stdClass $formdata) {
-        $this->questionnaire->responses[0] =
+        $this->responses[0] =
             \mod_questionnaire\local\responsetype\response\response::response_from_webform(
                 $formdata,
-                $this->questionnaire->questions
+                $this->questionnaire->questions()
             );
     }
 
@@ -101,18 +107,37 @@ class manager {
     public function build_response_from_appdata(\stdClass $appdata, $sec = 0) {
         $questions = [];
         if ($sec == 0) {
-            $questions = $this->questionnaire->questions;
+            $questions = $this->questionnaire->questions();
         } else {
-            foreach ($this->questionnaire->questionsbysec[$sec] as $questionid) {
-                $questions[$questionid] = $this->questionnaire->questions[$questionid];
+            foreach ($this->questionnaire->questions_by_section_all()[$sec] as $question) {
+                $questions[$question->id] = $question;
             }
         }
         return \mod_questionnaire\local\responsetype\response\response::response_from_appdata(
-            $this->questionnaire->id,
+            $this->questionnaire->id(),
             0,
             $appdata,
             $questions
         );
+    }
+
+    // Response accessors.
+
+    /**
+     * Return a single loaded response object by response id, or null if not loaded.
+     * @param int $rid
+     * @return \mod_questionnaire\local\responsetype\response\response|null
+     */
+    public function get_response(int $rid) {
+        return $this->responses[$rid] ?? null;
+    }
+
+    /**
+     * Return all currently loaded response objects (keyed by response id).
+     * @return array
+     */
+    public function get_loaded_responses(): array {
+        return $this->responses;
     }
 
     // Response querying.
@@ -143,14 +168,14 @@ class manager {
                 'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
                 $groupsql .
                 'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
-            $params['surveyid'] = $this->questionnaire->sid;
+            $params['surveyid'] = $this->questionnaire->surveyid();
             $params['status'] = 'y';
         } else {
             $sql = 'SELECT r.* ' .
                 'FROM {questionnaire_response} r ' .
                 $groupsql .
                 'WHERE r.questionnaireid = :questionnaireid' . $groupcnd;
-            $params['questionnaireid'] = $this->questionnaire->id;
+            $params['questionnaireid'] = $this->questionnaire->id();
         }
         if ($userid) {
             $sql .= ' AND r.userid = :userid';
@@ -177,7 +202,7 @@ class manager {
 
         return $DB->record_exists(
             'questionnaire_response',
-            ['questionnaireid' => $this->questionnaire->id, 'userid' => $userid, 'complete' => 'n']
+            ['questionnaireid' => $this->questionnaire->id(), 'userid' => $userid, 'complete' => 'n']
         );
     }
 
@@ -197,9 +222,9 @@ class manager {
         $allresponsesparams = [];
 
         if ($this->questionnaire->survey_is_public_master()) {
-            $qids = array_keys($DB->get_records('questionnaire', ['sid' => $this->questionnaire->sid], 'id') ?? []);
+            $qids = array_keys($DB->get_records('questionnaire', ['sid' => $this->questionnaire->surveyid()], 'id') ?? []);
         } else {
-            $qids = $this->questionnaire->id;
+            $qids = $this->questionnaire->id();
         }
 
         foreach ($uniquetypes as $type) {
@@ -252,12 +277,12 @@ class manager {
      * @return array
      */
     public function get_full_submission_for_export($rid) {
-        if (!isset($this->questionnaire->responses[$rid])) {
+        if (!isset($this->responses[$rid])) {
             $this->add_response($rid);
         }
 
         $exportstructure = [];
-        foreach ($this->questionnaire->questions as $question) {
+        foreach ($this->questionnaire->questions() as $question) {
             $rqid = 'q' . $question->id;
             $response = new \stdClass();
             $response->questionname = $question->position . '. ' . $question->name;
@@ -273,17 +298,17 @@ class manager {
                         $cids[$rqid . '_' . $cid] = $choice->content;
                     }
                 }
-                if (isset($this->questionnaire->responses[$rid]->answers[$question->id])) {
+                if (isset($this->responses[$rid]->answers[$question->id])) {
                     foreach ($cids as $rqid => $choice) {
                         $cid = substr($rqid, (strpos($rqid, '_') + 1));
-                        if (isset($this->questionnaire->responses[$rid]->answers[$question->id][$cid])) {
+                        if (isset($this->responses[$rid]->answers[$question->id][$cid])) {
                             if (
                                 isset($question->choices[$cid]) &&
-                                isset($choices[$this->questionnaire->responses[$rid]->answers[$question->id][$cid]->value])
+                                isset($choices[$this->responses[$rid]->answers[$question->id][$cid]->value])
                             ) {
-                                $rating = $choices[$this->questionnaire->responses[$rid]->answers[$question->id][$cid]->value];
+                                $rating = $choices[$this->responses[$rid]->answers[$question->id][$cid]->value];
                             } else {
-                                $rating = $this->questionnaire->responses[$rid]->answers[$question->id][$cid]->value;
+                                $rating = $this->responses[$rid]->answers[$question->id][$cid]->value;
                             }
                             $response->answers[] = $question->choices[$cid]->content . ' = ' . $rating;
                         }
@@ -291,9 +316,9 @@ class manager {
                 }
             } else if ($question->has_choices()) {
                 $answertext = '';
-                if (isset($this->questionnaire->responses[$rid]->answers[$question->id])) {
+                if (isset($this->responses[$rid]->answers[$question->id])) {
                     $i = 0;
-                    foreach ($this->questionnaire->responses[$rid]->answers[$question->id] as $answer) {
+                    foreach ($this->responses[$rid]->answers[$question->id] as $answer) {
                         if ($i > 0) {
                             $answertext .= '; ';
                         }
@@ -306,8 +331,8 @@ class manager {
                     }
                 }
                 $response->answers[] = $answertext;
-            } else if (isset($this->questionnaire->responses[$rid]->answers[$question->id])) {
-                $response->answers[] = $this->questionnaire->responses[$rid]->answers[$question->id][0]->value;
+            } else if (isset($this->responses[$rid]->answers[$question->id])) {
+                $response->answers[] = $this->responses[$rid]->answers[$question->id][0]->value;
             }
             $exportstructure[] = $response;
         }
@@ -331,7 +356,7 @@ class manager {
         $record->submitted = time();
 
         if (empty($responsedata->rid)) {
-            $record->questionnaireid = $this->questionnaire->id;
+            $record->questionnaireid = $this->questionnaire->id();
             $record->userid = $userid;
             $responsedata->rid = $DB->insert_record('questionnaire_response', $record);
             $responsedata->id = $responsedata->rid;
@@ -340,14 +365,14 @@ class manager {
             $DB->update_record('questionnaire_response', $record);
         }
         if ($resume) {
-            $context = \context_module::instance($this->questionnaire->cm->id);
-            $anonymous = $this->questionnaire->respondenttype == 'anonymous';
+            $context = \context_module::instance($this->questionnaire->coursemodule()->id);
+            $anonymous = $this->questionnaire->is_anonymous();
             $params = [
                 'context' => $context,
-                'courseid' => $this->questionnaire->course->id,
+                'courseid' => $this->questionnaire->course()->id,
                 'relateduserid' => $userid,
                 'anonymous' => $anonymous,
-                'other' => ['questionnaireid' => $this->questionnaire->id],
+                'other' => ['questionnaireid' => $this->questionnaire->id()],
             ];
             $event = \mod_questionnaire\event\attempt_saved::create($params);
             $event->trigger();
@@ -356,9 +381,10 @@ class manager {
         if (!isset($responsedata->sec)) {
             $responsedata->sec = 1;
         }
-        if (!empty($this->questionnaire->questionsbysec[$responsedata->sec])) {
-            foreach ($this->questionnaire->questionsbysec[$responsedata->sec] as $questionid) {
-                $this->questionnaire->questions[$questionid]->insert_response($responsedata);
+        $questionsbysec = $this->questionnaire->questions_by_section_all();
+        if (!empty($questionsbysec[$responsedata->sec])) {
+            foreach ($questionsbysec[$responsedata->sec] as $question) {
+                $question->insert_response($responsedata);
             }
         }
         return $responsedata->rid;
@@ -377,10 +403,10 @@ class manager {
         $record->complete = 'y';
         $record->submitted = time();
 
-        if ($this->questionnaire->grade < 0) {
+        if ($this->questionnaire->grade() < 0) {
             $record->grade = 1;
         } else {
-            $record->grade = $this->questionnaire->grade;
+            $record->grade = $this->questionnaire->grade();
         }
         return $DB->update_record('questionnaire_response', $record);
     }
@@ -390,12 +416,11 @@ class manager {
      * @param int $rid
      * @param int $sec
      * @param int $quser
-     * @return bool|int
+     * @return int
      */
-    public function delete_insert_response($rid, $sec, $quser) {
+    public function delete_insert_response($rid, $sec, $quser): int {
         $this->response_delete($rid, $sec);
-        $this->questionnaire->rid = $this->response_insert((object)['sec' => $sec, 'rid' => $rid], $quser);
-        return $this->questionnaire->rid;
+        return $this->response_insert((object)['sec' => $sec, 'rid' => $rid], $quser);
     }
 
     /**
@@ -405,26 +430,21 @@ class manager {
      */
     public function commit_submission_response($rid, $quser) {
         $this->response_commit($rid);
-        if (!empty($rid) && is_numeric($rid)) {
-            $rid = $rid;
-        } else {
-            $rid = $this->questionnaire->rid;
-        }
 
-        $this->questionnaire->update_grades($quser);
+        \mod_questionnaire\questionnaire::update_grades($this->questionnaire, $quser);
 
-        $completion = new \completion_info($this->questionnaire->course);
-        if ($completion->is_enabled($this->questionnaire->cm) && $this->questionnaire->completionsubmit) {
-            $completion->update_state($this->questionnaire->cm, COMPLETION_COMPLETE);
+        $completion = new \completion_info($this->questionnaire->course());
+        if ($completion->is_enabled($this->questionnaire->coursemodule()) && $this->questionnaire->completionsubmit()) {
+            $completion->update_state($this->questionnaire->coursemodule(), COMPLETION_COMPLETE);
         }
-        $context = \context_module::instance($this->questionnaire->cm->id);
-        $anonymous = $this->questionnaire->respondenttype == 'anonymous';
+        $context = \context_module::instance($this->questionnaire->coursemodule()->id);
+        $anonymous = $this->questionnaire->is_anonymous();
         $params = [
             'context' => $context,
-            'courseid' => $this->questionnaire->course->id,
+            'courseid' => $this->questionnaire->course()->id,
             'relateduserid' => $quser,
             'anonymous' => $anonymous,
-            'other' => ['questionnaireid' => $this->questionnaire->id],
+            'other' => ['questionnaireid' => $this->questionnaire->id()],
         ];
         $event = \mod_questionnaire\event\attempt_submitted::create($params);
         $event->trigger();
@@ -449,12 +469,13 @@ class manager {
                 return;
             }
 
-            $numsections = isset($this->questionnaire->questionsbysec) ? count($this->questionnaire->questionsbysec) : 0;
+            $questionsbysec = $this->questionnaire->questions_by_section_all();
+            $numsections = count($questionsbysec);
             $sec = min($numsections, $sec);
 
             $qids = [];
-            foreach ($this->questionnaire->questionsbysec[$sec] as $questionid) {
-                $qids[] = $questionid;
+            foreach ($questionsbysec[$sec] as $question) {
+                $qids[] = $question->id;
             }
             if (empty($qids)) {
                 return;
@@ -491,37 +512,46 @@ class manager {
      * @param object $formdata
      * @param bool $checkmissing
      * @param bool $checkwrongformat
+     * @param array $notifyquestions Optional external question objects to receive notifications (keyed by question id).
+     *              When provided, notifications are added to these objects instead of the internal question objects.
      * @return string Error message, or empty string if valid.
      */
-    public function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
+    public function response_check_format(
+        $section,
+        $formdata,
+        $checkmissing = true,
+        $checkwrongformat = true,
+        array $notifyquestions = []
+    ) {
         $missing = 0;
         $strmissing = '';
         $wrongformat = 0;
         $strwrongformat = '';
         $i = 1;
+        $questionsbysec = $this->questionnaire->questions_by_section_all();
         for ($j = 2; $j <= $section; $j++) {
-            foreach ($this->questionnaire->questionsbysec[$j - 1] as $questionid) {
-                $tid = $this->questionnaire->questions[$questionid]->typeid;
-                if ($tid < QUESPAGEBREAK) {
+            foreach ($questionsbysec[$j - 1] as $question) {
+                if ($question->typeid < QUESPAGEBREAK) {
                     $i++;
                 }
             }
         }
         $qnum = $i - 1;
 
-        if (key_exists($section, $this->questionnaire->questionsbysec)) {
-            foreach ($this->questionnaire->questionsbysec[$section] as $questionid) {
-                if ($this->questionnaire->questions[$questionid]->is_numbered()) {
+        if (key_exists($section, $questionsbysec)) {
+            foreach ($questionsbysec[$section] as $question) {
+                if ($question->is_numbered()) {
                     $qnum++;
                 }
-                if (!$this->questionnaire->questions[$questionid]->response_complete($formdata)) {
+                if (!$question->response_complete($formdata)) {
                     $missing++;
                     $strnum = get_string('num', 'questionnaire') . $qnum . '. ';
                     $strmissing .= $strnum;
                     $strnoti = get_string('missingquestion', 'questionnaire') . $strnum;
-                    $this->questionnaire->questions[$questionid]->add_notification($strnoti);
+                    $notifytarget = $notifyquestions[$question->id] ?? $question;
+                    $notifytarget->add_notification($strnoti);
                 }
-                if (!$this->questionnaire->questions[$questionid]->response_valid($formdata)) {
+                if (!$question->response_valid($formdata)) {
                     $wrongformat++;
                     $strwrongformat .= get_string('num', 'questionnaire') . $qnum . '. ';
                 }
@@ -569,7 +599,7 @@ class manager {
      */
     public function response_exists(int $userid): bool {
         return \mod_questionnaire\local\db\response_record::user_has_complete_response(
-            $this->questionnaire->id,
+            $this->questionnaire->id(),
             $userid
         );
     }
@@ -631,7 +661,7 @@ class manager {
             WHERE questionnaireid = ?
             AND userid = ?
             " . $andcomplete . "
-            ORDER BY submitted ASC ", [$this->questionnaire->id, $userid]) ?? [];
+            ORDER BY submitted ASC ", [$this->questionnaire->id(), $userid]) ?? [];
     }
 
     /**
@@ -655,13 +685,14 @@ class manager {
 
         $status = $status && $DB->delete_records('questionnaire_response', ['id' => $rid]);
 
-        if ($status && !empty($this->questionnaire->cm)) {
-            $completion = new \completion_info($this->questionnaire->course);
+        if ($status) {
+            $cm = $this->questionnaire->coursemodule();
+            $completion = new \completion_info($this->questionnaire->course());
             if (
-                $completion->is_enabled($this->questionnaire->cm) == COMPLETION_TRACKING_AUTOMATIC &&
-                $this->questionnaire->completionsubmit
+                $completion->is_enabled($cm) == COMPLETION_TRACKING_AUTOMATIC &&
+                $this->questionnaire->completionsubmit()
             ) {
-                $completion->update_state($this->questionnaire->cm, COMPLETION_INCOMPLETE, $response->userid);
+                $completion->update_state($cm, COMPLETION_INCOMPLETE, $response->userid);
             }
         }
 
@@ -701,7 +732,7 @@ class manager {
         $uniquetypes = [];
         $uniquetables = [];
 
-        foreach ($this->questionnaire->questions as $question) {
+        foreach ($this->questionnaire->questions() as $question) {
             $type = $question->typeid;
             $responsetable = $question->responsetable;
             if (!$uniquebytable || !in_array($responsetable, $uniquetables)) {

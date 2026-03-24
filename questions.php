@@ -128,7 +128,7 @@ if ($delq) {
         $reload = true;
     } else {
         // Delete responses to that deleted question.
-        $questionnaire->responsemanager()->delete_responses($qid);
+        $questionnaire->responses()->delete_responses($qid);
 
         // If no questions left in this questionnaire, remove all responses.
         if (
