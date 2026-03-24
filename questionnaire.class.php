@@ -208,7 +208,6 @@ class questionnaire {
         if (!empty($this->cm->id)) {
             $this->capabilities = $this->load_capabilities();
         }
-
     }
 
     /**
@@ -1820,7 +1819,11 @@ class questionnaire {
      */
     private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
         return $this->responses()->response_check_format(
-            $section, $formdata, $checkmissing, $checkwrongformat, $this->questions
+            $section,
+            $formdata,
+            $checkmissing,
+            $checkwrongformat,
+            $this->questions
         );
     }
 

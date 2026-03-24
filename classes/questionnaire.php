@@ -1141,7 +1141,7 @@ class questionnaire {
     }
 
     // -------------------------------------------------------------------------
-    // Navigation / display / hook methods (delegated from lib.php)
+    // Navigation / display / hook methods (delegated from lib.php).
     // -------------------------------------------------------------------------
 
     /**
@@ -1823,7 +1823,7 @@ class questionnaire {
     }
 
     // -------------------------------------------------------------------------
-    // Instance lifecycle methods (delegated from lib.php)
+    // Instance lifecycle methods (delegated from lib.php).
     // -------------------------------------------------------------------------
 
     /**
@@ -1927,7 +1927,7 @@ class questionnaire {
     }
 
     // -------------------------------------------------------------------------
-    // Gradebook methods (delegated from lib.php)
+    // Gradebook methods (delegated from lib.php).
     // -------------------------------------------------------------------------
 
     /**
@@ -2070,7 +2070,7 @@ class questionnaire {
     }
 
     // -------------------------------------------------------------------------
-    // Private helpers
+    // Private helpers.
     // -------------------------------------------------------------------------
 
     /**
