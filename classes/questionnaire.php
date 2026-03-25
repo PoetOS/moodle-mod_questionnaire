@@ -16,15 +16,12 @@
 
 namespace mod_questionnaire;
 
-use mod_questionnaire\local\db\choice_record;
 use mod_questionnaire\local\db\dependency_record;
-use mod_questionnaire\local\db\feedback_record;
-use mod_questionnaire\local\db\feedback_section_record;
-use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\response\questionnaire_responses;
+use mod_questionnaire\survey;
 use context_module;
 use stdClass;
 
@@ -40,23 +37,17 @@ class questionnaire {
     /** @var questionnaire_record The module record instance. */
     protected questionnaire_record $modulerecord;
 
-    /** @var survey_record The survey record instance. */
-    protected survey_record $surveyrecord;
+    /** @var survey The survey domain object for this questionnaire. */
+    protected survey $survey;
 
-    /** @var stdClass The course_modules record for this questionnaire. */
-    protected stdClass $coursemodule;
+    /** @var stdClass|\cm_info The course_modules record for this questionnaire. */
+    protected stdClass|\cm_info $coursemodule;
 
     /** @var context_module The context for this questionnaire. */
     protected context_module $context;
 
     /** @var stdClass The course record for this questionnaire. */
     protected stdClass $course;
-
-    /** @var question[] The list of question objects indexed by question id. */
-    protected array $questions = [];
-
-    /** @var question[][] Question objects organised by section number (1-based). */
-    protected array $questionsbysec = [];
 
     // PROPERTIES TO BE REPLACED AND REFACTORED LATER.
 
@@ -77,9 +68,9 @@ class questionnaire {
      *
      * @param int $mid Instance id (questionnaire.id).
      * @param questionnaire_record|null $modulerecord Pre-loaded persistent — omit to load from DB.
-     * @param stdClass|null $coursemodule Pre-loaded course_modules row — omit to look up.
+     * @param stdClass|\cm_info|null $coursemodule Pre-loaded course_modules row — omit to look up.
      */
-    public function __construct(int $mid = 0, ?questionnaire_record $modulerecord = null, ?stdClass $coursemodule = null) {
+    public function __construct(int $mid = 0, ?questionnaire_record $modulerecord = null, stdClass|\cm_info|null $coursemodule = null) {
         if (!empty($mid)) {
             $this->modulerecord = new questionnaire_record($mid);
         } else if (!empty($modulerecord)) {
@@ -88,18 +79,15 @@ class questionnaire {
             throw new \coding_exception('Either mid or modulerecord must be provided to construct a questionnaire object.');
         }
 
-        $sid = $this->modulerecord->get('sid');
-        if (!empty($sid)) {
-            $this->surveyrecord = new survey_record($sid);
-        } else {
-            $this->surveyrecord = new survey_record();
-        }
-
         $this->coursemodule = $coursemodule ??
             get_coursemodule_from_instance('questionnaire', $this->modulerecord->get('id'), 0, false, MUST_EXIST);
         $this->context = context_module::instance($this->coursemodule->id);
         $this->course = get_course($this->modulerecord->get('course'));
-        $this->load_questions();
+        $sid = $this->modulerecord->get('sid');
+        $this->survey = new survey(
+            !empty($sid) ? new survey_record($sid) : new survey_record(),
+            $this->context
+        );
     }
 
     /**
@@ -109,7 +97,7 @@ class questionnaire {
      * @param stdClass|null $cm Optional pre-loaded course_modules row.
      * @return self
      */
-    public static function from_instanceid(int $instanceid, ?stdClass $cm = null): self {
+    public static function from_instanceid(int $instanceid, stdClass|\cm_info|null $cm = null): self {
         return new self($instanceid, null, $cm);
     }
 
@@ -117,10 +105,10 @@ class questionnaire {
      * Return a questionnaire instance from a course module id.
      *
      * @param int $cmid course_modules.id
-     * @param stdClass|null $cm Optional pre-loaded course_modules row.
+     * @param stdClass|\cm_info|null $cm Optional pre-loaded course_modules row.
      * @return self
      */
-    public static function from_cmid(int $cmid, ?stdClass $cm = null): self {
+    public static function from_cmid(int $cmid, stdClass|\cm_info|null $cm = null): self {
         $cm = $cm ?? get_coursemodule_from_id('questionnaire', $cmid, 0, false, MUST_EXIST);
         return new self($cm->instance, null, $cm);
     }
@@ -128,49 +116,11 @@ class questionnaire {
     /**
      * Return a questionnaire instance from a course_modules object.
      *
-     * @param stdClass $cm course_modules row.
+     * @param stdClass|\cm_info $cm course_modules row or cm_info object.
      * @return self
      */
-    public static function from_cm(stdClass $cm): self {
+    public static function from_cm(stdClass|\cm_info $cm): self {
         return new self($cm->instance, null, $cm);
-    }
-
-    /**
-     * Load all active questions for this questionnaire, grouped by section.
-     *
-     * Questions returned by get_active_for_survey() are question_record persistents.
-     * Convert each to a plain stdClass before passing to the question class constructor.
-     *
-     * @return void
-     */
-    protected function load_questions(): void {
-        $sid = $this->surveyrecord->get('id');
-        if (empty($sid)) {
-            return;
-        }
-
-        $questionrecs = question_record::get_active_for_survey($sid);
-        $sec = 1;
-        $isbreak = false;
-
-        foreach ($questionrecs as $questionrec) {
-            $rec = $questionrec->to_record();
-
-            $typeid = $questionrec->get('typeid');
-            $this->questions[$questionrec->get('id')] = question::question_builder($typeid, $rec, $this->context);
-
-            if ($typeid != QUESPAGEBREAK) {
-                // PHP assigns objects by reference, so this adds the same object to questionsbysec.
-                $this->questionsbysec[$sec][] = $this->questions[$questionrec->get('id')];
-                $isbreak = false;
-            } else {
-                // No section break as first position, no two consecutive breaks.
-                if (($questionrec->get('position') != 1) && ($isbreak == false)) {
-                    $sec++;
-                    $isbreak = true;
-                }
-            }
-        }
     }
 
     /**
@@ -246,12 +196,21 @@ class questionnaire {
     }
 
     /**
+     * Get the survey domain object for this questionnaire.
+     *
+     * @return survey
+     */
+    public function survey(): survey {
+        return $this->survey;
+    }
+
+    /**
      * Get the survey id linked to this questionnaire.
      *
      * @return int
      */
     public function surveyid(): int {
-        return $this->surveyrecord->get('id');
+        return $this->survey->id();
     }
 
     /**
@@ -260,7 +219,7 @@ class questionnaire {
      * @return string
      */
     public function surveytitle(): string {
-        return $this->surveyrecord->get('title') ?? '';
+        return $this->survey->title();
     }
 
     /**
@@ -269,7 +228,7 @@ class questionnaire {
      * @return string
      */
     public function surveysubtitle(): string {
-        return $this->surveyrecord->get('subtitle') ?? '';
+        return $this->survey->subtitle();
     }
 
     /**
@@ -278,7 +237,7 @@ class questionnaire {
      * @return string
      */
     public function surveyinfo(): string {
-        return $this->surveyrecord->get('info') ?? '';
+        return $this->survey->info();
     }
 
     /**
@@ -296,7 +255,7 @@ class questionnaire {
      * @return question[]
      */
     public function questions(): array {
-        return $this->questions;
+        return $this->survey->questions();
     }
 
     /**
@@ -305,9 +264,7 @@ class questionnaire {
      * @return void
      */
     public function add_questions(): void {
-        $this->questions = [];
-        $this->questionsbysec = [];
-        $this->load_questions();
+        $this->survey->add_questions();
     }
 
     /**
@@ -317,7 +274,7 @@ class questionnaire {
      * @return question[]
      */
     public function questions_by_section(int $section = 1): array {
-        return $this->questionsbysec[$section] ?? [];
+        return $this->survey->questions_by_section($section);
     }
 
     /**
@@ -326,7 +283,7 @@ class questionnaire {
      * @return array
      */
     public function questions_by_section_all(): array {
-        return $this->questionsbysec;
+        return $this->survey->questions_by_section_all();
     }
 
     /**
@@ -364,14 +321,7 @@ class questionnaire {
      * @return bool
      */
     public function has_dependencies(): bool {
-        if ($this->navigate() > 0 && !empty($this->questions)) {
-            foreach ($this->questions as $question) {
-                if ($question->has_dependencies()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return $this->navigate() > 0 && $this->survey->has_questions_with_dependencies();
     }
 
     /**
@@ -381,17 +331,7 @@ class questionnaire {
      * @return array
      */
     public function get_dependants(int $questionid): array {
-        $qu = [];
-        foreach ($this->questions as $question) {
-            if ($question->has_dependencies()) {
-                foreach ($question->dependencies as $dependency) {
-                    if (($dependency->dependquestionid == $questionid) && !in_array($question->id, $qu)) {
-                        $qu[] = $question->id;
-                    }
-                }
-            }
-        }
-        return $qu;
+        return $this->survey->get_dependants($questionid);
     }
 
     /**
@@ -401,30 +341,7 @@ class questionnaire {
      * @return stdClass Object with ->directs and ->indirects arrays.
      */
     public function get_all_dependants(int $questionid): stdClass {
-        $directids = $this->get_dependants($questionid);
-        $directs = [];
-        $indirects = [];
-        foreach ($directids as $directid) {
-            $this->load_parents($this->questions[$directid]);
-            $indirectids = $this->get_dependants($directid);
-            foreach ($this->questions[$directid]->dependencies as $dep) {
-                if ($dep->dependquestionid == $questionid) {
-                    $directs[$directid][] = $dep;
-                }
-            }
-            foreach ($indirectids as $indirectid) {
-                $this->load_parents($this->questions[$indirectid]);
-                foreach ($this->questions[$indirectid]->dependencies as $dep) {
-                    if ($dep->dependquestionid != $questionid) {
-                        $indirects[$indirectid][] = $dep;
-                    }
-                }
-            }
-        }
-        $alldependants = new stdClass();
-        $alldependants->directs = $directs;
-        $alldependants->indirects = $indirects;
-        return $alldependants;
+        return $this->survey->get_all_dependants($questionid);
     }
 
     /**
@@ -433,18 +350,7 @@ class questionnaire {
      * @return array
      */
     public function get_dependants_and_choices(): array {
-        $questions = array_reverse($this->questions, true);
-        $parents = [];
-        foreach ($questions as $question) {
-            foreach ($question->dependencies as $dependency) {
-                $child = new stdClass();
-                $child->choiceid = $dependency->dependchoiceid;
-                $child->logic = $dependency->dependlogic;
-                $child->andor = $dependency->dependandor;
-                $parents[$dependency->dependquestionid][$question->id][] = $child;
-            }
-        }
-        return $parents;
+        return $this->survey->get_dependants_and_choices();
     }
 
     /**
@@ -454,65 +360,18 @@ class questionnaire {
      * @return bool
      */
     public function load_parents(question $question): bool {
-        foreach ($question->dependencies as $did => $dependency) {
-            $dependquestion = $this->questions[$dependency->dependquestionid];
-            $qdependchoice = '';
-            switch ($dependquestion->typeid) {
-                case QUESRADIO:
-                case QUESDROP:
-                case QUESCHECK:
-                    $qdependchoice = $dependency->dependchoiceid;
-                    $dependchoice = $dependquestion->choices[$dependency->dependchoiceid]->content;
-                    $contents = \questionnaire_choice_values($dependchoice);
-                    if ($contents->modname) {
-                        $dependchoice = $contents->modname;
-                    }
-                    break;
-                case QUESYESNO:
-                    switch ($dependency->dependchoiceid) {
-                        case 0:
-                            $dependchoice = get_string('yes');
-                            $qdependchoice = 'y';
-                            break;
-                        case 1:
-                            $dependchoice = get_string('no');
-                            $qdependchoice = 'n';
-                            break;
-                        default:
-                            $dependchoice = '';
-                    }
-                    break;
-                default:
-                    $dependchoice = '';
-            }
-            $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id;
-            $question->dependencies[$did]->qdependchoice = $qdependchoice;
-            $question->dependencies[$did]->parenttype = $dependquestion->typeid;
-            $question->dependencies[$did]->position = $question->position;
-            $question->dependencies[$did]->name = $question->name;
-            $question->dependencies[$did]->content = $question->content;
-            $question->dependencies[$did]->parentposition = $dependquestion->position;
-            $question->dependencies[$did]->parent = format_string($dependquestion->name) . '->' . format_string($dependchoice);
-        }
-        return true;
+        return $this->survey->load_parents($question);
     }
 
     /**
      * True if there are any eligible (dependency-satisfied) questions on the given section.
-     *
-     * Note: $this->questionsbysec stores question objects (not IDs), unlike the legacy class.
      *
      * @param int $secnum 1-based section number.
      * @param int $rid Response id (0 if no response yet).
      * @return bool
      */
     public function eligible_questions_on_page(int $secnum, int $rid): bool {
-        foreach ($this->questionsbysec[$secnum] as $question) {
-            if ($question->dependency_fulfilled($rid, $this->questions)) {
-                return true;
-            }
-        }
-        return false;
+        return $this->survey->eligible_questions_on_page($secnum, $rid);
     }
 
     /**
@@ -523,18 +382,7 @@ class questionnaire {
      * @return int|bool
      */
     public function next_page(int $secnum, int $rid): int|bool {
-        $secnum++;
-        $numsections = !empty($this->questionsbysec) ? count($this->questionsbysec) : 0;
-        if ($this->has_dependencies()) {
-            while (!$this->eligible_questions_on_page($secnum, $rid)) {
-                $secnum++;
-                if ($secnum > $numsections) {
-                    $secnum = false;
-                    break;
-                }
-            }
-        }
-        return $secnum;
+        return $this->survey->next_page($secnum, $rid, $this->has_dependencies());
     }
 
     /**
@@ -545,16 +393,7 @@ class questionnaire {
      * @return int|bool
      */
     public function prev_page(int $secnum, int $rid): int|bool {
-        $secnum--;
-        if ($this->has_dependencies()) {
-            while (($secnum > 0) && !$this->eligible_questions_on_page($secnum, $rid)) {
-                $secnum--;
-            }
-        }
-        if ($secnum === 0) {
-            $secnum = false;
-        }
-        return $secnum;
+        return $this->survey->prev_page($secnum, $rid, $this->has_dependencies());
     }
 
     /**
@@ -610,7 +449,7 @@ class questionnaire {
      * @return bool
      */
     public function survey_is_public(): bool {
-        return $this->surveyrecord->get('realm') == 'public';
+        return $this->survey->is_public();
     }
 
     /**
@@ -619,7 +458,7 @@ class questionnaire {
      * @return bool
      */
     public function survey_is_template(): bool {
-        return $this->surveyrecord->get('realm') == 'template';
+        return $this->survey->is_template();
     }
 
     /**
@@ -628,8 +467,7 @@ class questionnaire {
      * @return bool
      */
     public function survey_is_public_master(): bool {
-        return $this->survey_is_public() &&
-            ($this->modulerecord->get('course') == $this->surveyrecord->get('courseid'));
+        return $this->survey->is_public_master($this->courseid());
     }
 
     /**
@@ -638,7 +476,7 @@ class questionnaire {
      * @return bool
      */
     public function is_survey_owner(): bool {
-        return $this->courseid() == $this->surveyrecord->get('courseid');
+        return $this->survey->is_owned_by_course($this->courseid());
     }
 
     /**
@@ -821,7 +659,7 @@ class questionnaire {
                 'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
                 $groupsql .
                 'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
-            $params['surveyid'] = $this->surveyrecord->get('id');
+            $params['surveyid'] = $this->survey->id();
             $params['status'] = 'y';
         } else {
             $sql = 'SELECT COUNT(r.id) ' .
@@ -1022,7 +860,7 @@ class questionnaire {
      * @return int  The new survey id.
      */
     public static function add_survey(stdClass $sdata): int {
-        return survey_record::create_from_sdata($sdata)->get('id');
+        return survey::add_survey($sdata);
     }
 
     /**
@@ -1033,141 +871,20 @@ class questionnaire {
      * @return int|false  The survey id on success, false on failure.
      */
     public static function update_survey(int $sid, stdClass $sdata): int|false {
-        if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
-            return false;
-        }
-
-        // Trying to change survey name.
-        $existing = new survey_record($sid);
-        if (trim($existing->get('name')) != trim(stripslashes($sdata->name))) {
-            if (survey_record::count_records(['name' => $sdata->name]) != 0) {
-                return false;
-            }
-        }
-
-        return survey_record::update_from_sdata($sid, $sdata)->get('id');
+        return survey::update_survey($sid, $sdata);
     }
 
     /**
      * Create an editable copy of a survey, including all questions, choices, dependencies,
      * and feedback sections.
      *
-     * @param stdClass $survey     The survey record to copy (from questionnaire.class.php::$survey).
-     * @param array    $questions  The questions array (from questionnaire.class.php::$questions).
-     * @param int      $owner      The courseid that will own the new survey.
+     * @param stdClass $surveydata  The survey record to copy.
+     * @param array    $questions   The questions array.
+     * @param int      $owner       The courseid that will own the new survey.
      * @return int|false  The new survey id on success, false on failure.
      */
-    public static function copy_survey(stdClass $survey, array $questions, int $owner): int|false {
-        $oldsid = $survey->id;
-
-        // Build the new survey name: truncate, append _copy, then resolve any conflicts.
-        $basename = \core_text::substr($survey->name, 0, 64 - 10) . '_copy';
-        $name = $basename;
-        $i = 0;
-        while (survey_record::count_records(['name' => $name]) > 0) {
-            $name = $basename . (++$i);
-        }
-
-        // Create new survey record, carrying over all content fields.
-        $newsurvey = new survey_record();
-        $newsurvey->set('courseid', $owner);
-        $newsurvey->set('name', $name);
-        $newsurvey->set('status', 0);
-        foreach (
-            ['realm', 'title', 'email', 'subtitle', 'info', 'theme',
-            'thankspage', 'thankhead', 'thankbody', 'feedbacksections',
-            'feedbacknotes', 'feedbackscores', 'charttype'] as $f
-        ) {
-            if (isset($survey->$f)) {
-                $newsurvey->set($f, $survey->$f);
-            }
-        }
-        $newsurvey->create();
-        $newsid = $newsurvey->get('id');
-
-        // Make copies of all the questions.
-        $pos = 1;
-        // Skip logic: some changes needed here for dependencies down below.
-        $qidarray = [];
-        $cidarray = [];
-        foreach ($questions as $question) {
-            $oldid = $question->id;
-            $newq = new question_record();
-            $newq->set('surveyid', $newsid);
-            $newq->set('position', $pos++);
-            foreach (
-                ['name', 'typeid', 'resultid', 'length', 'precise',
-                'content', 'required', 'deleted', 'extradata'] as $f
-            ) {
-                if (isset($question->$f)) {
-                    $newq->set($f, $question->$f);
-                }
-            }
-            $newq->create();
-            $newqid = $newq->get('id');
-            $qidarray[$oldid] = $newqid;
-
-            foreach ($question->choices as $oldcid => $choice) {
-                $newchoice = new choice_record();
-                $newchoice->set('questionid', $newqid);
-                $newchoice->set('content', $choice->content);
-                $newchoice->set('value', $choice->value);
-                $newchoice->create();
-                $cidarray[$oldcid] = $newchoice->get('id');
-            }
-        }
-
-        // Replicate all dependency data.
-        foreach (dependency_record::get_for_survey($oldsid) as $dep) {
-            $newdep = new dependency_record();
-            $newdep->set('questionid', $qidarray[$dep->get('questionid')]);
-            $newdep->set('surveyid', $newsid);
-            $newdep->set('dependquestionid', $qidarray[$dep->get('dependquestionid')]);
-            // The response may not use choice id's (example boolean). If not, just copy the value.
-            $responsetype = $questions[$dep->get('dependquestionid')]->responsetype;
-            $depchoiceid = $dep->get('dependchoiceid');
-            if ($responsetype->transform_choiceid($depchoiceid) == $depchoiceid) {
-                $newdep->set('dependchoiceid', $cidarray[$depchoiceid]);
-            } else {
-                $newdep->set('dependchoiceid', $depchoiceid);
-            }
-            $newdep->set('dependlogic', $dep->get('dependlogic'));
-            $newdep->set('dependandor', $dep->get('dependandor'));
-            $newdep->create();
-        }
-
-        // Replicate any feedback data. Note: image attachments are not yet copied.
-        foreach (feedback_section_record::get_for_survey($oldsid) as $oldfbs) {
-            $scorecalculation = \mod_questionnaire\local\feedback\section::decode_scorecalculation(
-                $oldfbs->get('scorecalculation')
-            );
-            $newscorecalculation = [];
-            foreach ($scorecalculation as $qid => $val) {
-                $newscorecalculation[$qidarray[$qid]] = $val;
-            }
-            $newfbs = new feedback_section_record();
-            $newfbs->set('surveyid', $newsid);
-            $newfbs->set('section', $oldfbs->get('section'));
-            $newfbs->set('sectionlabel', $oldfbs->get('sectionlabel'));
-            $newfbs->set('sectionheading', $oldfbs->get('sectionheading'));
-            $newfbs->set('sectionheadingformat', $oldfbs->get('sectionheadingformat'));
-            $newfbs->set('scorecalculation', serialize($newscorecalculation));
-            $newfbs->create();
-            $newfbsid = $newfbs->get('id');
-
-            foreach (feedback_record::get_for_section($oldfbs->get('id')) as $oldfbr) {
-                $newfbr = new feedback_record();
-                $newfbr->set('sectionid', $newfbsid);
-                $newfbr->set('feedbacklabel', $oldfbr->get('feedbacklabel'));
-                $newfbr->set('feedbacktext', $oldfbr->get('feedbacktext'));
-                $newfbr->set('feedbacktextformat', $oldfbr->get('feedbacktextformat'));
-                $newfbr->set('minscore', $oldfbr->get('minscore'));
-                $newfbr->set('maxscore', $oldfbr->get('maxscore'));
-                $newfbr->create();
-            }
-        }
-
-        return $newsid;
+    public static function copy_survey(stdClass $surveydata, array $questions, int $owner): int|false {
+        return survey::copy_survey($surveydata, $questions, $owner);
     }
 
     /**
@@ -1211,7 +928,7 @@ class questionnaire {
             } else {
                 // Copy the survey, its questions, choices, dependencies, and feedback.
                 $survey = (new survey_record($copyid))->to_record();
-                $questions = self::load_questions_for_survey($copyid);
+                $questions = survey::load_questions_for_survey($copyid);
                 $sid = self::copy_survey($survey, $questions, $formdata->course);
 
                 // All new questionnaires should be private, even copies of public/template surveys.
@@ -2347,7 +2064,7 @@ class questionnaire {
      * @return int|bool|string Next section number, false if no next page, or error message string.
      */
     public function next_page_action($response, int $userid): int|bool|string {
-        $msg = $this->responses()->response_check_format($response->sec, $response, true, true, $this->questions);
+        $msg = $this->responses()->response_check_format($response->sec, $response, true, true, $this->survey->questions());
         if (empty($msg)) {
             $response->rid = $this->existing_response_action($response, $userid);
             return $this->next_page($response->sec, $response->rid);
@@ -2428,53 +2145,7 @@ class questionnaire {
      * @return array Keys are area names; values are either a single id or an array of ids.
      */
     public function get_all_file_areas(): array {
-        global $DB;
-        $sid = $this->surveyid();
-        $areas = [];
-        $areas['info'] = $sid;
-        $areas['thankbody'] = $sid;
-        if (empty($this->questions)) {
-            $this->add_questions();
-        }
-        $areas['question'] = [];
-        foreach ($this->questions as $question) {
-            $areas['question'][] = $question->id;
-        }
-        $areas['feedbacknotes'] = $sid;
-        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid]);
-        if (!empty($fbsections)) {
-            $areas['sectionheading'] = [];
-            foreach ($fbsections as $section) {
-                $areas['sectionheading'][] = $section->id;
-                $feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $section->id]);
-                if (!empty($feedbacks)) {
-                    $areas['feedback'] = [];
-                    foreach ($feedbacks as $feedback) {
-                        $areas['feedback'][] = $feedback->id;
-                    }
-                }
-            }
-        }
-        return $areas;
+        return $this->survey->get_all_file_areas();
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers.
-    // -------------------------------------------------------------------------
-
-    /**
-     * Load all active questions for a survey, built as full question objects.
-     *
-     * Used by copy_survey() which needs responsetype access for dependency replication.
-     *
-     * @param int $sid Survey id.
-     * @return array Question objects indexed by question id.
-     */
-    private static function load_questions_for_survey(int $sid): array {
-        $questions = [];
-        foreach (question_record::get_active_for_survey($sid) as $qrec) {
-            $questions[$qrec->get('id')] = question::question_builder($qrec->get('typeid'), $qrec->to_record());
-        }
-        return $questions;
-    }
 }
