@@ -70,7 +70,11 @@ class questionnaire {
      * @param questionnaire_record|null $modulerecord Pre-loaded persistent — omit to load from DB.
      * @param stdClass|\cm_info|null $coursemodule Pre-loaded course_modules row — omit to look up.
      */
-    public function __construct(int $mid = 0, ?questionnaire_record $modulerecord = null, stdClass|\cm_info|null $coursemodule = null) {
+    public function __construct(
+        int $mid = 0,
+        ?questionnaire_record $modulerecord = null,
+        stdClass|\cm_info|null $coursemodule = null
+    ) {
         if (!empty($mid)) {
             $this->modulerecord = new questionnaire_record($mid);
         } else if (!empty($modulerecord)) {
@@ -94,7 +98,7 @@ class questionnaire {
      * Return a questionnaire instance from an activity instance id.
      *
      * @param int $instanceid questionnaire.id
-     * @param stdClass|null $cm Optional pre-loaded course_modules row.
+     * @param stdClass|\cm_info|null $cm Optional pre-loaded course_modules row.
      * @return self
      */
     public static function from_instanceid(int $instanceid, stdClass|\cm_info|null $cm = null): self {
@@ -1075,9 +1079,7 @@ class questionnaire {
         }
     }
 
-    // -------------------------------------------------------------------------
     // Navigation / display / hook methods (delegated from lib.php).
-    // -------------------------------------------------------------------------
 
     /**
      * Adds module specific settings to the settings block.
@@ -1757,9 +1759,7 @@ class questionnaire {
         return $data;
     }
 
-    // -------------------------------------------------------------------------
     // Instance lifecycle methods (delegated from lib.php).
-    // -------------------------------------------------------------------------
 
     /**
      * Delete a questionnaire instance and its survey data (if survey owned by this course).
@@ -1861,9 +1861,7 @@ class questionnaire {
         return $status;
     }
 
-    // -------------------------------------------------------------------------
     // Gradebook methods (delegated from lib.php).
-    // -------------------------------------------------------------------------
 
     /**
      * Return grade for given user or all users.
@@ -2004,9 +2002,7 @@ class questionnaire {
         }
     }
 
-    // -------------------------------------------------------------------------
     // Response-flow and utility methods.
-    // -------------------------------------------------------------------------
 
     /**
      * Return a new questionnaire_responses handler for this questionnaire.
@@ -2098,7 +2094,12 @@ class questionnaire {
         $potentialusers = get_enrolled_users(
             $this->context,
             'mod/questionnaire:submissionnotification',
-            null, 'u.*', null, null, null, true
+            null,
+            'u.*',
+            null,
+            null,
+            null,
+            true
         );
 
         $notifiableusers = [];
@@ -2147,5 +2148,4 @@ class questionnaire {
     public function get_all_file_areas(): array {
         return $this->survey->get_all_file_areas();
     }
-
 }

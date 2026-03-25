@@ -942,7 +942,7 @@ final class questionnaire_test extends \advanced_testcase {
         $q = $this->make_questionnaire(['id' => 44441, 'navigate' => 0]);
         $q->set_questions_by_sec([1 => []]);
         $result = $q->next_page_action((object)['rid' => 0, 'sec' => 1], 1);
-        // next_page(1, rid) with no dependencies just increments: returns 2.
+        // With no dependencies, next_page(1, 0) increments to 2.
         $this->assertSame(2, $result);
     }
 
@@ -958,7 +958,7 @@ final class questionnaire_test extends \advanced_testcase {
         $q = $this->make_questionnaire(['id' => 44442, 'navigate' => 0]);
         $q->set_questions_by_sec([1 => [], 2 => []]);
         $result = $q->previous_page_action((object)['rid' => 0, 'sec' => 2], 1);
-        // prev_page(2, rid) with no dependencies: 2 - 1 = 1.
+        // With no dependencies, prev_page(2, 0) returns 1.
         $this->assertSame(1, $result);
     }
 
@@ -972,7 +972,7 @@ final class questionnaire_test extends \advanced_testcase {
         $q = $this->make_questionnaire(['id' => 44443, 'navigate' => 0]);
         $q->set_questions_by_sec([1 => []]);
         $result = $q->previous_page_action((object)['rid' => 0, 'sec' => 1], 1);
-        // prev_page(1, rid): 1 - 1 = 0 → returns false.
+        // Prev_page(1, 0) decrements to 0, which returns false.
         $this->assertFalse($result);
     }
 
@@ -1048,25 +1048,45 @@ final class questionnaire_test extends \advanced_testcase {
      * @return object
      */
     private function make_stub_question(int $id, array $dependencies): object {
-        return new class($id, $dependencies) {
+        return new class ($id, $dependencies) {
+            /** @var int */
             public int $id;
+            /** @var array */
             public array $dependencies;
+            /** @var int */
             public int $position = 0;
+            /** @var string */
             public string $name = '';
+            /** @var string */
             public string $content = '';
+            /** @var int */
             public int $typeid = 0;
 
+            /**
+             * Constructor.
+             * @param int $id
+             * @param array $dependencies
+             */
             public function __construct(int $id, array $dependencies) {
                 $this->id = $id;
                 $this->dependencies = $dependencies;
             }
 
+            /**
+             * True if dependencies are non-empty.
+             * @return bool
+             */
             public function has_dependencies(): bool {
                 return !empty($this->dependencies);
             }
 
+            /**
+             * Always fulfilled when no dependencies are set (used in navigation tests).
+             * @param mixed $rid
+             * @param mixed $questions
+             * @return bool
+             */
             public function dependency_fulfilled($rid, $questions): bool {
-                // For navigation tests: questions with no dependencies are always fulfilled.
                 return !$this->has_dependencies();
             }
         };

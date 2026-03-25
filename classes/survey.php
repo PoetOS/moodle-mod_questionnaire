@@ -65,9 +65,7 @@ class survey {
         }
     }
 
-    // -------------------------------------------------------------------------
     // Survey record accessors.
-    // -------------------------------------------------------------------------
 
     /**
      * Get the survey id.
@@ -170,9 +168,7 @@ class survey {
         return $this->owning_courseid() == $courseid;
     }
 
-    // -------------------------------------------------------------------------
     // Question loading and access.
-    // -------------------------------------------------------------------------
 
     /**
      * Load all active questions for this survey, grouped by section.
@@ -260,9 +256,7 @@ class survey {
         return false;
     }
 
-    // -------------------------------------------------------------------------
     // Dependency inspection.
-    // -------------------------------------------------------------------------
 
     /**
      * Get the IDs of all questions that depend on the given question.
@@ -387,9 +381,7 @@ class survey {
         return true;
     }
 
-    // -------------------------------------------------------------------------
     // Page navigation.
-    // -------------------------------------------------------------------------
 
     /**
      * True if there are any eligible (dependency-satisfied) questions on the given section.
@@ -451,9 +443,7 @@ class survey {
         return $secnum;
     }
 
-    // -------------------------------------------------------------------------
     // File areas.
-    // -------------------------------------------------------------------------
 
     /**
      * Return an array describing all file areas used by this survey.
@@ -491,9 +481,7 @@ class survey {
         return $areas;
     }
 
-    // -------------------------------------------------------------------------
     // Survey CRUD (static).
-    // -------------------------------------------------------------------------
 
     /**
      * Create a new survey record.
@@ -642,9 +630,7 @@ class survey {
         return $newsid;
     }
 
-    // -------------------------------------------------------------------------
     // Private helpers.
-    // -------------------------------------------------------------------------
 
     /**
      * Load all active questions for a survey, built as full question objects.
