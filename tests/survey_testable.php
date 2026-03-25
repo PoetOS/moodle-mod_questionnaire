@@ -16,13 +16,12 @@
 
 namespace mod_questionnaire;
 
-use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 
 /**
- * Testable subclass of questionnaire that bypasses the real constructor.
+ * Testable subclass of survey that bypasses the real constructor.
  *
- * Allows injecting questionnaire_record and survey_record directly so
+ * Allows injecting a survey_record and question arrays directly so
  * business-logic methods can be unit tested without a real course module.
  *
  * @package    mod_questionnaire
@@ -30,17 +29,17 @@ use mod_questionnaire\local\db\survey_record;
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class questionnaire_testable extends questionnaire {
+class survey_testable extends survey {
     /**
-     * Construct with injected records, bypassing the real questionnaire constructor.
+     * Construct with injected record, bypassing the real survey constructor.
      *
-     * @param questionnaire_record $modulerecord
      * @param survey_record $surveyrecord
      */
-    public function __construct(questionnaire_record $modulerecord, survey_record $surveyrecord) {
-        require_once(__DIR__ . '/survey_testable.php');
-        $this->modulerecord = $modulerecord;
-        $this->survey = new survey_testable($surveyrecord);
+    public function __construct(survey_record $surveyrecord) {
+        $this->surveyrecord = $surveyrecord;
+        $this->context = null;
+        $this->questions = [];
+        $this->questionsbysec = [];
     }
 
     /**
@@ -49,7 +48,7 @@ class questionnaire_testable extends questionnaire {
      * @param array $questions Keyed by question id.
      */
     public function set_questions(array $questions): void {
-        $this->survey->set_questions($questions);
+        $this->questions = $questions;
     }
 
     /**
@@ -58,6 +57,6 @@ class questionnaire_testable extends questionnaire {
      * @param array $questionsbysec Array of question object arrays, keyed by 1-based section number.
      */
     public function set_questions_by_sec(array $questionsbysec): void {
-        $this->survey->set_questions_by_sec($questionsbysec);
+        $this->questionsbysec = $questionsbysec;
     }
 }
