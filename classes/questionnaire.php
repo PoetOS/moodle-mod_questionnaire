@@ -2288,6 +2288,177 @@ class questionnaire {
     }
 
     // -------------------------------------------------------------------------
+    // Response-flow and utility methods.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Return a new questionnaire_responses handler for this questionnaire.
+     *
+     * @return questionnaire_responses
+     */
+    public function responses(): questionnaire_responses {
+        return new questionnaire_responses($this);
+    }
+
+    /**
+     * Return all responses for this questionnaire, optionally filtered by user or group.
+     *
+     * @param int|false $userid  Limit to this user, or false for all users.
+     * @param int $groupid       Limit to this group (0 = no filter).
+     * @return array
+     */
+    public function get_responses($userid = false, int $groupid = 0): array {
+        return $this->responses()->get_responses($userid, $groupid);
+    }
+
+    /**
+     * Return the most recent incomplete response id for the given user, or 0 if none.
+     *
+     * @param int $userid
+     * @return int
+     */
+    public function get_latest_responseid(int $userid): int {
+        global $DB;
+        $params = ['questionnaireid' => $this->id(), 'userid' => $userid, 'complete' => 'n'];
+        if ($records = $DB->get_records('questionnaire_response', $params, 'submitted DESC', 'id,questionnaireid', 0, 1)) {
+            return (int) reset($records)->id;
+        }
+        return 0;
+    }
+
+    /**
+     * Delete the current response section and insert a fresh one; return the new response id.
+     *
+     * @param stdClass $response Response data object (must have ->rid and ->sec).
+     * @param int $userid
+     * @return int New response id.
+     */
+    public function existing_response_action($response, int $userid): int {
+        $responses = $this->responses();
+        $responses->response_delete($response->rid, $response->sec);
+        return $responses->response_insert($response, $userid);
+    }
+
+    /**
+     * Validate and save the current page, then return the next page number (or an error string).
+     *
+     * @param stdClass $response Response data object.
+     * @param int $userid
+     * @return int|bool|string Next section number, false if no next page, or error message string.
+     */
+    public function next_page_action($response, int $userid): int|bool|string {
+        $msg = $this->responses()->response_check_format($response->sec, $response, true, true, $this->questions);
+        if (empty($msg)) {
+            $response->rid = $this->existing_response_action($response, $userid);
+            return $this->next_page($response->sec, $response->rid);
+        }
+        return $msg;
+    }
+
+    /**
+     * Save the current page and return the previous page number.
+     *
+     * @param stdClass $response Response data object.
+     * @param int $userid
+     * @return int|bool Previous section number, or false if none.
+     */
+    public function previous_page_action($response, int $userid): int|bool {
+        $response->rid = $this->existing_response_action($response, $userid);
+        return $this->prev_page($response->sec, $response->rid);
+    }
+
+    /**
+     * Return users who should be notified of a new submission by $userid.
+     *
+     * In SEPARATEGROUPS mode only users who share a group with $userid are notified.
+     * Users with no group are notified only if the submitter also has no group.
+     *
+     * @param int $userid Submitting user id.
+     * @return array Indexed by user id.
+     */
+    public function get_notifiable_users(int $userid): array {
+        // Potential users should be active users only.
+        $potentialusers = get_enrolled_users(
+            $this->context,
+            'mod/questionnaire:submissionnotification',
+            null, 'u.*', null, null, null, true
+        );
+
+        $notifiableusers = [];
+        if (groups_get_activity_groupmode($this->coursemodule) == SEPARATEGROUPS) {
+            if ($groups = groups_get_all_groups($this->course()->id, $userid, $this->coursemodule->groupingid)) {
+                foreach ($groups as $group) {
+                    foreach ($potentialusers as $potentialuser) {
+                        if ($potentialuser->id == $userid) {
+                            // Do not send self.
+                            continue;
+                        }
+                        if (groups_is_member($group->id, $potentialuser->id)) {
+                            $notifiableusers[$potentialuser->id] = $potentialuser;
+                        }
+                    }
+                }
+            } else {
+                // User not in group, try to find graders without group.
+                foreach ($potentialusers as $potentialuser) {
+                    if ($potentialuser->id == $userid) {
+                        // Do not send self.
+                        continue;
+                    }
+                    if (!groups_has_membership($this->coursemodule, $potentialuser->id)) {
+                        $notifiableusers[$potentialuser->id] = $potentialuser;
+                    }
+                }
+            }
+        } else {
+            foreach ($potentialusers as $potentialuser) {
+                if ($potentialuser->id == $userid) {
+                    // Do not send self.
+                    continue;
+                }
+                $notifiableusers[$potentialuser->id] = $potentialuser;
+            }
+        }
+        return $notifiableusers;
+    }
+
+    /**
+     * Return an array describing all file areas used by this questionnaire's survey.
+     *
+     * @return array Keys are area names; values are either a single id or an array of ids.
+     */
+    public function get_all_file_areas(): array {
+        global $DB;
+        $sid = $this->surveyid();
+        $areas = [];
+        $areas['info'] = $sid;
+        $areas['thankbody'] = $sid;
+        if (empty($this->questions)) {
+            $this->add_questions();
+        }
+        $areas['question'] = [];
+        foreach ($this->questions as $question) {
+            $areas['question'][] = $question->id;
+        }
+        $areas['feedbacknotes'] = $sid;
+        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid]);
+        if (!empty($fbsections)) {
+            $areas['sectionheading'] = [];
+            foreach ($fbsections as $section) {
+                $areas['sectionheading'][] = $section->id;
+                $feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $section->id]);
+                if (!empty($feedbacks)) {
+                    $areas['feedback'] = [];
+                    foreach ($feedbacks as $feedback) {
+                        $areas['feedback'][] = $feedback->id;
+                    }
+                }
+            }
+        }
+        return $areas;
+    }
+
+    // -------------------------------------------------------------------------
     // Private helpers.
     // -------------------------------------------------------------------------
 

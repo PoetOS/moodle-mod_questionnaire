@@ -32,6 +32,7 @@ namespace mod_questionnaire;
 
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
+use mod_questionnaire\local\response\questionnaire_responses;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -761,6 +762,277 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertEquals(1, $q->prev_page(2, 0));
         // Section 1 → decrements to 0 → returns false.
         $this->assertFalse($q->prev_page(1, 0));
+    }
+
+    // Tests for responses().
+
+    /**
+     * Asserts responses() returns a questionnaire_responses instance.
+     *
+     * @covers \mod_questionnaire\questionnaire::responses
+     */
+    public function test_responses_returns_correct_type(): void {
+        $this->assertInstanceOf(questionnaire_responses::class, $this->make_questionnaire()->responses());
+    }
+
+    // Tests for get_responses().
+
+    /**
+     * Asserts get_responses() returns an empty array when no responses exist.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_responses
+     */
+    public function test_get_responses_empty_when_none(): void {
+        $this->resetAfterTest();
+        $this->assertSame([], $this->make_questionnaire(['id' => 77771])->get_responses());
+    }
+
+    /**
+     * Asserts get_responses() returns all responses for the questionnaire.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_responses
+     */
+    public function test_get_responses_returns_records(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 77772;
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+        ]);
+        $this->assertCount(1, $this->make_questionnaire(['id' => $qid])->get_responses());
+    }
+
+    /**
+     * Asserts get_responses() filters by userid when one is specified.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_responses
+     */
+    public function test_get_responses_filtered_by_userid(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 77773;
+        $q = $this->make_questionnaire(['id' => $qid]);
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+        ]);
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 2,
+            'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+        ]);
+        $this->assertCount(1, $q->get_responses(1));
+        $this->assertCount(1, $q->get_responses(2));
+        $this->assertCount(2, $q->get_responses(false));
+    }
+
+    // Tests for get_latest_responseid().
+
+    /**
+     * Asserts get_latest_responseid() returns 0 when no responses exist.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_latest_responseid
+     */
+    public function test_get_latest_responseid_returns_zero_when_none(): void {
+        $this->resetAfterTest();
+        $this->assertSame(0, $this->make_questionnaire(['id' => 66661])->get_latest_responseid(1));
+    }
+
+    /**
+     * Asserts get_latest_responseid() returns the id of the user's incomplete response.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_latest_responseid
+     */
+    public function test_get_latest_responseid_returns_id_of_incomplete(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 66662;
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $this->assertSame((int)$rid, $this->make_questionnaire(['id' => $qid])->get_latest_responseid(1));
+    }
+
+    /**
+     * Asserts get_latest_responseid() returns 0 when only complete responses exist.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_latest_responseid
+     */
+    public function test_get_latest_responseid_ignores_complete_responses(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 66663;
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+        ]);
+        $this->assertSame(0, $this->make_questionnaire(['id' => $qid])->get_latest_responseid(1));
+    }
+
+    /**
+     * Asserts get_latest_responseid() returns the most recently submitted incomplete response.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_latest_responseid
+     */
+    public function test_get_latest_responseid_returns_most_recent(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 66664;
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => time() - 7200, 'complete' => 'n', 'grade' => 0,
+        ]);
+        $latestid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => time() - 3600, 'complete' => 'n', 'grade' => 0,
+        ]);
+        $this->assertSame((int)$latestid, $this->make_questionnaire(['id' => $qid])->get_latest_responseid(1));
+    }
+
+    // Tests for existing_response_action().
+
+    /**
+     * Asserts existing_response_action() inserts a new DB record when rid is 0.
+     *
+     * @covers \mod_questionnaire\questionnaire::existing_response_action
+     */
+    public function test_existing_response_action_inserts_when_rid_zero(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 55551;
+        $q = $this->make_questionnaire(['id' => $qid]);
+        $q->set_questions_by_sec([1 => []]);
+        $newrid = $q->existing_response_action((object)['rid' => 0, 'sec' => 1], 1);
+        $this->assertGreaterThan(0, $newrid);
+        $this->assertTrue($DB->record_exists('questionnaire_response', ['id' => $newrid, 'questionnaireid' => $qid]));
+    }
+
+    /**
+     * Asserts existing_response_action() updates the submitted time on an existing record.
+     *
+     * @covers \mod_questionnaire\questionnaire::existing_response_action
+     */
+    public function test_existing_response_action_updates_existing_record(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 55552;
+        $q = $this->make_questionnaire(['id' => $qid]);
+        $q->set_questions_by_sec([1 => []]);
+        $originaltime = time() - 3600;
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => $originaltime, 'complete' => 'n', 'grade' => 0,
+        ]);
+        $returnedrid = $q->existing_response_action((object)['rid' => $rid, 'sec' => 1], 1);
+        $this->assertSame((int)$rid, (int)$returnedrid);
+        $this->assertGreaterThan($originaltime, $DB->get_field('questionnaire_response', 'submitted', ['id' => $rid]));
+    }
+
+    // Tests for next_page_action().
+
+    /**
+     * Asserts next_page_action() returns the next section number when the response is valid.
+     *
+     * @covers \mod_questionnaire\questionnaire::next_page_action
+     */
+    public function test_next_page_action_returns_next_section_when_valid(): void {
+        $this->resetAfterTest();
+        // With no questions, response_check_format returns '' so the action proceeds.
+        $q = $this->make_questionnaire(['id' => 44441, 'navigate' => 0]);
+        $q->set_questions_by_sec([1 => []]);
+        $result = $q->next_page_action((object)['rid' => 0, 'sec' => 1], 1);
+        // next_page(1, rid) with no dependencies just increments: returns 2.
+        $this->assertSame(2, $result);
+    }
+
+    // Tests for previous_page_action().
+
+    /**
+     * Asserts previous_page_action() saves the response and returns the previous section number.
+     *
+     * @covers \mod_questionnaire\questionnaire::previous_page_action
+     */
+    public function test_previous_page_action_returns_previous_section(): void {
+        $this->resetAfterTest();
+        $q = $this->make_questionnaire(['id' => 44442, 'navigate' => 0]);
+        $q->set_questions_by_sec([1 => [], 2 => []]);
+        $result = $q->previous_page_action((object)['rid' => 0, 'sec' => 2], 1);
+        // prev_page(2, rid) with no dependencies: 2 - 1 = 1.
+        $this->assertSame(1, $result);
+    }
+
+    /**
+     * Asserts previous_page_action() returns false when already on the first section.
+     *
+     * @covers \mod_questionnaire\questionnaire::previous_page_action
+     */
+    public function test_previous_page_action_returns_false_on_first_section(): void {
+        $this->resetAfterTest();
+        $q = $this->make_questionnaire(['id' => 44443, 'navigate' => 0]);
+        $q->set_questions_by_sec([1 => []]);
+        $result = $q->previous_page_action((object)['rid' => 0, 'sec' => 1], 1);
+        // prev_page(1, rid): 1 - 1 = 0 → returns false.
+        $this->assertFalse($result);
+    }
+
+    /*
+     * TODO: tests for get_notifiable_users().
+     *
+     * get_notifiable_users() requires get_enrolled_users() and groups_get_activity_groupmode(),
+     * which need a real course module and context. These tests should be added once the
+     * generator creates instances through the full add_instance pathway.
+     */
+
+    // Tests for get_all_file_areas().
+
+    /**
+     * Asserts get_all_file_areas() returns the basic area keys when no feedback sections exist.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_all_file_areas
+     */
+    public function test_get_all_file_areas_basic(): void {
+        $this->resetAfterTest();
+        $sid = 1;
+        $q = $this->make_questionnaire([], ['id' => $sid]);
+        $stub = $this->make_stub_question(10, []);
+        $q->set_questions([10 => $stub]);
+        $areas = $q->get_all_file_areas();
+        $this->assertSame($sid, $areas['info']);
+        $this->assertSame($sid, $areas['thankbody']);
+        $this->assertSame($sid, $areas['feedbacknotes']);
+        $this->assertContains(10, $areas['question']);
+        $this->assertArrayNotHasKey('sectionheading', $areas);
+        $this->assertArrayNotHasKey('feedback', $areas);
+    }
+
+    /**
+     * Asserts get_all_file_areas() includes sectionheading and feedback areas when fb_sections exist.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_all_file_areas
+     */
+    public function test_get_all_file_areas_with_feedback_sections(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $sid = 12345;
+        $q = $this->make_questionnaire([], ['id' => $sid]);
+        $stub = $this->make_stub_question(10, []);
+        $q->set_questions([10 => $stub]);
+
+        $sectionid = $DB->insert_record('questionnaire_fb_sections', (object)[
+            'surveyid' => $sid, 'section' => 1, 'scorecalculation' => null,
+            'sectionlabel' => 'S1', 'sectionheading' => '', 'sectionheadingformat' => FORMAT_HTML,
+        ]);
+        $feedbackid = $DB->insert_record('questionnaire_feedback', (object)[
+            'sectionid' => $sectionid, 'feedbacklabel' => '', 'feedbacktext' => '',
+            'feedbacktextformat' => FORMAT_HTML, 'minscore' => 0, 'maxscore' => 100,
+        ]);
+
+        $areas = $q->get_all_file_areas();
+        $this->assertArrayHasKey('sectionheading', $areas);
+        $this->assertContains((string)$sectionid, $areas['sectionheading']);
+        $this->assertArrayHasKey('feedback', $areas);
+        $this->assertContains((string)$feedbackid, $areas['feedback']);
     }
 
     // Helpers for dependency tests.
