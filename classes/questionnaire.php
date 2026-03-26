@@ -21,6 +21,7 @@ use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\response\questionnaire_responses;
+use mod_questionnaire\response;
 use mod_questionnaire\survey;
 use context_module;
 use stdClass;
@@ -2031,12 +2032,7 @@ class questionnaire {
      * @return int
      */
     public function get_latest_responseid(int $userid): int {
-        global $DB;
-        $params = ['questionnaireid' => $this->id(), 'userid' => $userid, 'complete' => 'n'];
-        if ($records = $DB->get_records('questionnaire_response', $params, 'submitted DESC', 'id,questionnaireid', 0, 1)) {
-            return (int) reset($records)->id;
-        }
-        return 0;
+        return response::latest_incomplete($this->id(), $userid)?->id() ?? 0;
     }
 
     /**
