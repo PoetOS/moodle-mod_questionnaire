@@ -27,7 +27,9 @@
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\viewpage;
 
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
@@ -39,7 +41,7 @@ $a = optional_param('a', null, PARAM_INT);      // Or questionnaire ID.
 
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 
-[$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($id, $a);
+[$cm, $course] = questionnaire_get_standard_page_items($id, $a);
 
 // Check login and get context.
 require_course_login($course, true, $cm);
@@ -57,33 +59,34 @@ if (isset($sid)) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+
+$questionnaire = questionnaire::from_cm($cm);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\viewpage());
+$questionnaire->add_page(new viewpage());
 
-$PAGE->set_title(format_string($questionnaire->name));
+$PAGE->set_title(format_string($questionnaire->name()));
 $PAGE->set_heading(format_string($course->fullname));
 
 echo $questionnaire->renderer->header();
 // No need to print out intro or name in Moodle 4 and above.
 
-$cm = $questionnaire->cm;
+$cm = $questionnaire->coursemodule();
 $currentgroupid = groups_get_activity_group($cm);
 if (!groups_is_member($currentgroupid, $USER->id)) {
     $currentgroupid = 0;
 }
 
 $message = $questionnaire->user_access_messages($USER->id);
-if ($message !== false) {
+if ($message !== null) {
     $questionnaire->page->add_to_page('message', $message);
 } else if ($questionnaire->user_can_take($USER->id)) {
-    if ($questionnaire->questions) { // Sanity check.
+    if ($questionnaire->questions()) { // Sanity check.
         if (!$questionnaire->user_has_saved_response($USER->id)) {
             $questionnaire->page->add_to_page(
                 'complete',
                 '<a href="' . $CFG->wwwroot .
-                    htmlspecialchars('/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->cm->id) .
+                    htmlspecialchars('/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->coursemodule()->id) .
                     '" class="btn btn-primary">' . get_string('answerquestions', 'questionnaire') . '</a>'
             );
         } else {
@@ -92,7 +95,7 @@ if ($message !== false) {
                 'complete',
                 '<a href="' .
                     $CFG->wwwroot . htmlspecialchars(
-                        '/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->cm->id . '&resume=1'
+                        '/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->coursemodule()->id . '&resume=1'
                     ) .
                     '" title="' . $resumesurvey . '" class="btn btn-primary">' . $resumesurvey . '</a>'
             );
@@ -102,17 +105,17 @@ if ($message !== false) {
     }
 }
 
-if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
+if ($questionnaire->can_edit_questions() && !$questionnaire->questions() && $questionnaire->is_active()) {
     $questionnaire->page->add_to_page(
         'complete',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' .
-            'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' .
+            'id=' . $questionnaire->coursemodule()->id) . '" class="btn btn-primary">' .
             get_string('addquestions', 'questionnaire') . '</a>'
     );
 }
 
 // Time zone message (if required).
-if (!$message && $questionnaire->is_open() && !$questionnaire->is_closed()) {
+if ($message === null && $questionnaire->is_open() && !$questionnaire->is_closed()) {
     $info = $questionnaire->view_information();
     $questionnaire->page->add_to_page('info', $questionnaire->access_messages($info));
 }
@@ -127,23 +130,21 @@ if (isguestuser()) {
 }
 
 // Log this course module view.
-// Needed for the event logging.
-$context = context_module::instance($questionnaire->cm->id);
-$anonymous = $questionnaire->respondenttype == 'anonymous';
+$anonymous = $questionnaire->is_anonymous();
 
 $event = \mod_questionnaire\event\course_module_viewed::create(
     [
-        'objectid' => $questionnaire->id,
+        'objectid' => $questionnaire->id(),
         'anonymous' => $anonymous,
-        'context' => $context,
+        'context' => context_module::instance($questionnaire->coursemodule()->id),
     ]
 );
 $event->trigger();
 
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
-if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
-    $argstr = 'instance=' . $questionnaire->id . '&user=' . $USER->id;
+if ($questionnaire->can_read_own_responses() && ($usernumresp > 0)) {
+    $argstr = 'instance=' . $questionnaire->id() . '&user=' . $USER->id;
     if ($usernumresp > 1) {
         $titletext = get_string('viewyourresponses', 'questionnaire', $usernumresp);
     } else {
@@ -158,7 +159,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
 }
 
 if ($questionnaire->can_view_all_responses($usernumresp)) {
-    $argstr = 'instance=' . $questionnaire->id . '&group=' . $currentgroupid;
+    $argstr = 'instance=' . $questionnaire->id() . '&group=' . $currentgroupid;
     $questionnaire->page->add_to_page(
         'allresponses',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr) .

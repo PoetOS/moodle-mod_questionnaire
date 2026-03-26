@@ -65,6 +65,22 @@ class survey {
         }
     }
 
+    // Factories.
+
+    /**
+     * Return a survey loaded from the given survey id, or an empty survey if the record does not exist.
+     *
+     * @param int $sid
+     * @param context_module|null $context
+     * @return self
+     */
+    public static function from_sid(int $sid, ?context_module $context = null): self {
+        if (!empty($sid) && survey_record::record_exists($sid)) {
+            return new self(new survey_record($sid), $context);
+        }
+        return new self(new survey_record(), $context);
+    }
+
     // Survey record accessors.
 
     /**
