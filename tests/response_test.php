@@ -28,11 +28,8 @@ use mod_questionnaire\local\db\response_record;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \mod_questionnaire\response
  */
-class response_test extends advanced_testcase {
-
-    // -----------------------------------------------------------------------
+final class response_test extends advanced_testcase {
     // Helpers.
-    // -----------------------------------------------------------------------
 
     /**
      * Insert a raw questionnaire_response row and return its id.
@@ -59,9 +56,7 @@ class response_test extends advanced_testcase {
         ]);
     }
 
-    // -----------------------------------------------------------------------
-    // response::create() tests.
-    // -----------------------------------------------------------------------
+    // Tests for response::create().
 
     /**
      * Test that create() inserts a header row and returns a response with the correct ids.
@@ -93,9 +88,7 @@ class response_test extends advanced_testcase {
         $this->assertLessThanOrEqual($after, $r->submitted_at());
     }
 
-    // -----------------------------------------------------------------------
-    // response::latest_incomplete() tests.
-    // -----------------------------------------------------------------------
+    // Tests for response::latest_incomplete().
 
     /**
      * Test that latest_incomplete() returns null when no incomplete response exists.
@@ -158,9 +151,7 @@ class response_test extends advanced_testcase {
         $this->assertNull(response::latest_incomplete(502, 10));
     }
 
-    // -----------------------------------------------------------------------
     // Accessor tests.
-    // -----------------------------------------------------------------------
 
     /**
      * Test that is_complete() returns false for an incomplete response.
@@ -186,9 +177,7 @@ class response_test extends advanced_testcase {
         $this->assertTrue($r->is_complete());
     }
 
-    // -----------------------------------------------------------------------
-    // touch() tests.
-    // -----------------------------------------------------------------------
+    // Tests for touch().
 
     /**
      * Test that touch() updates the submitted timestamp in the database.
@@ -209,9 +198,7 @@ class response_test extends advanced_testcase {
         $this->assertLessThanOrEqual($after, $stored);
     }
 
-    // -----------------------------------------------------------------------
-    // commit() tests.
-    // -----------------------------------------------------------------------
+    // Tests for commit().
 
     /**
      * Test that commit() marks the response as complete in the database.
