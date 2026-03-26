@@ -89,10 +89,7 @@ class questionnaire {
         $this->context = context_module::instance($this->coursemodule->id);
         $this->course = get_course($this->modulerecord->get('course'));
         $sid = $this->modulerecord->get('sid');
-        $this->survey = new survey(
-            !empty($sid) ? new survey_record($sid) : new survey_record(),
-            $this->context
-        );
+        $this->survey = survey::from_sid((int) $sid, $this->context);
     }
 
     /**
@@ -407,7 +404,7 @@ class questionnaire {
      * @return bool
      */
     public function is_active(): bool {
-        return !empty($this->modulerecord->get('sid'));
+        return $this->survey->id() > 0;
     }
 
     /**
@@ -740,7 +737,7 @@ class questionnaire {
     ): bool {
         $respview = $this->modulerecord->get('respview');
         return $grouplogic && $respslogic && $this->is_survey_owner() &&
-            has_capability('moodle/site:readallresponses', $this->context) &&
+            has_capability('mod/questionnaire:readallresponses', $this->context) &&
             ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp));
@@ -786,6 +783,20 @@ class questionnaire {
         }
 
         return $messages;
+    }
+
+    /**
+     * Render an array of info messages as HTML paragraphs.
+     *
+     * @param array $messages
+     * @return string
+     */
+    public function access_messages(array $messages): string {
+        $output = '';
+        foreach ($messages as $message) {
+            $output .= \html_writer::tag('p', $message) . "\n";
+        }
+        return $output;
     }
 
     /**

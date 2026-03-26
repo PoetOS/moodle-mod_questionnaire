@@ -117,6 +117,16 @@ class survey_record extends \core\persistent {
     }
 
     /**
+     * Return true if a survey record with the given id exists in the database.
+     *
+     * @param int $id
+     * @return bool
+     */
+    public static function record_exists($id): bool {
+        return static::record_exists_select('id = ?', [$id]);
+    }
+
+    /**
      * Create a new survey record from survey data.
      *
      * @param stdClass $sdata Survey data object.
