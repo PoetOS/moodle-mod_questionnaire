@@ -119,6 +119,9 @@ final class questionnaire_test extends \advanced_testcase {
      * @return questionnaire_testable
      */
     private function make_questionnaire(array $modulefields = [], array $surveyfields = []): questionnaire_testable {
+        if (!array_key_exists('id', $surveyfields)) {
+            $surveyfields['id'] = $modulefields['sid'] ?? 1;
+        }
         return new questionnaire_testable(
             $this->make_module_record($modulefields),
             $this->make_survey_record($surveyfields)
