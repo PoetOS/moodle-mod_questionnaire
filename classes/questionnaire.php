@@ -58,6 +58,9 @@ class questionnaire {
     /** @var \templatable The templatable page to render. */
     public $page;
 
+    /** @var \questionnaire|null Lazy-loaded legacy instance used by rendering shims. */
+    private $legacyinstance = null;
+
     /** @var string Course-module idnumber, used by gradebook. Set by callers that need it. */
     public string $cmidnumber = '';
 
@@ -2154,5 +2157,113 @@ class questionnaire {
      */
     public function get_all_file_areas(): array {
         return $this->survey->get_all_file_areas();
+    }
+
+    // Completion flow methods.
+    // TODO: The print_survey(), submission_notify(), response_goto_thankyou(), and legacy() methods
+    // below are temporary shims that delegate to the legacy questionnaire class. They exist only
+    // until print_survey() and the surrounding rendering layer are refactored as part of the
+    // rendering overhaul. Once that work is done, the legacy() helper and all three shims are
+    // removed and questionnaire.class.php is no longer instantiated from this class.
+
+    /**
+     * Render the questionnaire completion page and handle form submission.
+     *
+     * Displays the survey form via the legacy print_survey() shim, then on a valid
+     * "Submit Survey" POST commits the response, notifies subscribers, and redirects
+     * to the thank-you screen.
+     *
+     * @return void
+     */
+    public function view(): void {
+        global $CFG, $USER, $PAGE;
+
+        $PAGE->set_title(format_string($this->name()));
+        $PAGE->set_heading(format_string($this->course()->fullname));
+        $message = $this->user_access_messages($USER->id, true);
+        if ($message !== null) {
+            $this->page->add_to_page('notifications', $message);
+        } else {
+            $quser = $USER->id;
+            $msg = $this->print_survey($quser, $USER->id);
+
+            $viewform = data_submitted($CFG->wwwroot . "/mod/questionnaire/complete.php");
+            if ($viewform && confirm_sesskey() &&
+                isset($viewform->submit) && isset($viewform->submittype) &&
+                ($viewform->submittype == "Submit Survey") && empty($msg)
+            ) {
+                if (!empty($viewform->rid)) {
+                    $viewform->rid = (int)$viewform->rid;
+                }
+                if (!empty($viewform->sec)) {
+                    $viewform->sec = (int)$viewform->sec;
+                }
+                $rid = $this->existing_response_action($viewform, $quser);
+                $this->responses()->commit_submission_response($rid, $quser);
+                $this->submission_notify($rid);
+                $this->response_goto_thankyou();
+            }
+        }
+    }
+
+    /**
+     * Render the survey page(s) for completion.
+     *
+     * Shim — delegates to the legacy questionnaire class until print_survey() is
+     * refactored as part of the rendering overhaul.
+     *
+     * @param int $quser
+     * @param int|false $userid
+     * @return string Error message string, or empty string on success.
+     */
+    public function print_survey(int $quser, $userid = false): ?string {
+        return $this->legacy()->print_survey($quser, $userid);
+    }
+
+    /**
+     * Notify subscribers that a response has been submitted.
+     *
+     * Shim — delegates to the legacy questionnaire class until submission
+     * notifications are refactored.
+     *
+     * @param int $rid The response id.
+     * @return bool
+     */
+    public function submission_notify(int $rid): bool {
+        return $this->legacy()->submission_notify($rid);
+    }
+
+    /**
+     * Redirect or render the thank-you screen after a submission.
+     *
+     * Shim — delegates to the legacy questionnaire class until the rendering
+     * overhaul covers the thank-you flow.
+     *
+     * @return void
+     */
+    public function response_goto_thankyou(): void {
+        $this->legacy()->page = $this->page;
+        $this->legacy()->response_goto_thankyou();
+    }
+
+    /**
+     * Return a lazy-loaded legacy questionnaire instance sharing this object's renderer and page.
+     *
+     * Used only by rendering shims until the legacy class is fully replaced.
+     *
+     * @return \questionnaire
+     */
+    private function legacy(): \questionnaire {
+        global $CFG, $DB;
+        if (!isset($this->legacyinstance)) {
+            require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+            $record = $DB->get_record('questionnaire', ['id' => $this->id()], '*', MUST_EXIST);
+            $course = $this->course();
+            $cm = $this->coursemodule();
+            $this->legacyinstance = new \questionnaire($course, $cm, 0, $record);
+            $this->legacyinstance->renderer = $this->renderer;
+            $this->legacyinstance->page = $this->page;
+        }
+        return $this->legacyinstance;
     }
 }

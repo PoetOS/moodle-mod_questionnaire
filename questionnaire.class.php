@@ -1921,7 +1921,7 @@ class questionnaire {
      * @return boolean Operation success.
      *
      */
-    private function submission_notify($rid) {
+    public function submission_notify($rid) {
         global $DB;
 
         $success = true;
@@ -2249,7 +2249,7 @@ class questionnaire {
     /**
      * Redirect to the appropriate finish page.
      */
-    private function response_goto_thankyou() {
+    public function response_goto_thankyou() {
         global $CFG, $USER, $DB;
 
         $select = 'id = ' . $this->survey->id;

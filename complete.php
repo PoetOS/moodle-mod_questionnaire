@@ -25,8 +25,11 @@
  */
 
 require_once("../../config.php");
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\completepage;
 
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
@@ -39,7 +42,7 @@ $a = optional_param('a', null, PARAM_INT);      // Questionnaire ID.
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 $resume = optional_param('resume', null, PARAM_INT);    // Is this attempt a resume of a saved attempt?
 
-[$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($id, $a);
+[$cm, $course] = questionnaire_get_standard_page_items($id, $a);
 
 // Check login and get context.
 require_course_login($course, true, $cm);
@@ -55,26 +58,23 @@ if (isset($id)) {
 
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+
+$questionnaire = questionnaire::from_cm($cm);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\completepage());
-
-$questionnaire->strquestionnaires = get_string("modulenameplural", "questionnaire");
-$questionnaire->strquestionnaire = get_string("modulename", "questionnaire");
+$questionnaire->add_page(new completepage());
 
 // Mark as viewed.
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
 if ($resume) {
-    $context = context_module::instance($questionnaire->cm->id);
-    $anonymous = $questionnaire->respondenttype == 'anonymous';
+    $anonymous = $questionnaire->is_anonymous();
 
     $event = \mod_questionnaire\event\attempt_resumed::create([
-        'objectid' => $questionnaire->id,
+        'objectid' => $questionnaire->id(),
         'anonymous' => $anonymous,
-        'context' => $context,
+        'context' => context_module::instance($questionnaire->coursemodule()->id),
     ]);
     $event->trigger();
 }
