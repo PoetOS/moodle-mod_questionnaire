@@ -129,6 +129,53 @@ class survey {
     }
 
     /**
+     * Get the thank-you redirect URL for this survey.
+     *
+     * @return string
+     */
+    public function thankspage(): string {
+        return $this->surveyrecord->get('thankspage') ?? '';
+    }
+
+    /**
+     * Get the thank-you heading text for this survey.
+     *
+     * @return string
+     */
+    public function thankhead(): string {
+        return $this->surveyrecord->get('thankhead') ?? '';
+    }
+
+    /**
+     * Get the thank-you body text for this survey.
+     *
+     * @return string
+     */
+    public function thankbody(): string {
+        return $this->surveyrecord->get('thankbody') ?? '';
+    }
+
+    /**
+     * Get the notification email address for this survey.
+     *
+     * @return string
+     */
+    public function email(): string {
+        return $this->surveyrecord->get('email') ?? '';
+    }
+
+    /**
+     * Return the survey record as a plain stdClass object.
+     *
+     * Useful when legacy APIs or forms expect a raw object rather than the domain class.
+     *
+     * @return stdClass
+     */
+    public function to_stdclass(): stdClass {
+        return $this->surveyrecord->to_record();
+    }
+
+    /**
      * Get the survey realm (private / public / template).
      *
      * @return string

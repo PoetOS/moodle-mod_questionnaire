@@ -23,7 +23,10 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\qsettingspage;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
@@ -38,10 +41,6 @@ if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
 }
 
-if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
-
 // Needed here for forced language courses.
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
@@ -52,21 +51,22 @@ $PAGE->set_context($context);
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+
+$questionnaire = questionnaire::from_cm($cm);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\qsettingspage());
+$questionnaire->add_page(new qsettingspage());
 
 $SESSION->questionnaire->current_tab = 'settings';
 
-if (!$questionnaire->capabilities->manage) {
+if (!$questionnaire->can_manage_questionnaire()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
 $settingsform = new \mod_questionnaire\settings_form('qsettings.php');
-$sdata = clone($questionnaire->survey);
-$sdata->sid = $questionnaire->survey->id;
+$sdata = $questionnaire->survey()->to_stdclass();
+$sdata->sid = $questionnaire->surveyid();
 $sdata->id = $cm->id;
 
 $draftideditor = file_get_submitted_draft_itemid('info');
@@ -77,7 +77,7 @@ $currentinfo = file_prepare_draft_area(
     'info',
     $sdata->sid,
     ['subdirs' => true],
-    $questionnaire->survey->info
+    $questionnaire->survey()->info()
 );
 $sdata->info = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
@@ -89,14 +89,14 @@ $currentinfo = file_prepare_draft_area(
     'thankbody',
     $sdata->sid,
     ['subdirs' => true],
-    $questionnaire->survey->thankbody
+    $questionnaire->survey()->thankbody()
 );
 $sdata->thankbody = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
 $settingsform->set_data($sdata);
 
 if ($settingsform->is_cancelled()) {
-    redirect($CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $questionnaire->cm->id, '');
+    redirect($CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $questionnaire->coursemodule()->id, '');
 }
 
 if ($settings = $settingsform->get_data()) {
@@ -139,13 +139,13 @@ if ($settings = $settingsform->get_data()) {
     $sdata->email = $settings->email;
 
     $sdata->courseid = $settings->courseid;
-    if (!($sid = \mod_questionnaire\questionnaire::update_survey($questionnaire->survey->id, $sdata))) {
+    if (!($sid = questionnaire::update_survey($questionnaire->surveyid(), $sdata))) {
         throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
     } else {
         if ($submitbutton2) {
             $redirecturl = course_get_url($cm->course);
         } else {
-            $redirecturl = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $questionnaire->cm->id;
+            $redirecturl = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $questionnaire->coursemodule()->id;
         }
 
         // Save current advanced settings only.

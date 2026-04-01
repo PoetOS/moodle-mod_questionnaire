@@ -572,6 +572,64 @@ class questionnaire {
         return (!empty($this->survey));
     }
 
+    // Forwarding methods — mirror the new classes/questionnaire.php API so that shared includes
+    // (tabs.php etc.) work with both the legacy class and the new domain class during migration.
+
+    /** @return int */
+    public function id() {
+        return $this->id;
+    }
+
+    /** @return \stdClass|\cm_info */
+    public function coursemodule() {
+        return $this->cm;
+    }
+
+    /** @return array */
+    public function questions() {
+        return $this->questions;
+    }
+
+    /** @return int */
+    public function surveyid() {
+        return $this->sid;
+    }
+
+    /** @return bool */
+    public function can_manage_questionnaire() {
+        return (bool)$this->capabilities->manage;
+    }
+
+    /** @return bool */
+    public function can_edit_questions() {
+        return (bool)$this->capabilities->editquestions;
+    }
+
+    /** @return bool */
+    public function can_preview() {
+        return (bool)$this->capabilities->preview;
+    }
+
+    /** @return bool */
+    public function can_read_own_responses() {
+        return (bool)$this->capabilities->readownresponses;
+    }
+
+    /** @return bool */
+    public function can_download_responses() {
+        return (bool)$this->capabilities->downloadresponses;
+    }
+
+    /** @return bool */
+    public function can_view_single_response() {
+        return (bool)$this->capabilities->viewsingleresponse;
+    }
+
+    /** @return bool */
+    public function can_delete_responses() {
+        return (bool)$this->capabilities->deleteresponses;
+    }
+
     /**
      * Load and return the capabilities object for the current user in this questionnaire context.
      * @return stdClass

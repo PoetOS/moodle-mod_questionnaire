@@ -39,35 +39,35 @@ $currenttab = $SESSION->questionnaire->current_tab;
 // viewing all responses...except in the course where that PUBLIC questionnaire was originally created.
 
 $owner = $questionnaire->is_survey_owner();
-if ($questionnaire->capabilities->manage  && $owner) {
+if ($questionnaire->can_manage_questionnaire() && $owner) {
     $row[] = new tabobject(
         'settings',
-        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/qsettings.php?' . 'id=' . $questionnaire->cm->id),
+        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/qsettings.php?' . 'id=' . $questionnaire->coursemodule()->id),
         get_string('advancedsettings')
     );
 }
 
-if ($questionnaire->capabilities->editquestions && $owner) {
+if ($questionnaire->can_edit_questions() && $owner) {
     $row[] = new tabobject(
         'questions',
-        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' . 'id=' . $questionnaire->cm->id),
+        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' . 'id=' . $questionnaire->coursemodule()->id),
         get_string('questions', 'questionnaire')
     );
 }
 
-if ($questionnaire->capabilities->editquestions && $owner) {
+if ($questionnaire->can_edit_questions() && $owner) {
     $row[] = new tabobject(
         'feedback',
-        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/feedback.php?' . 'id=' . $questionnaire->cm->id),
+        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/feedback.php?' . 'id=' . $questionnaire->coursemodule()->id),
         get_string('feedback')
     );
 }
 
-if ($questionnaire->capabilities->preview && $owner) {
-    if (!empty($questionnaire->questions)) {
+if ($questionnaire->can_preview() && $owner) {
+    if (!empty($questionnaire->questions())) {
         $row[] = new tabobject(
             'preview',
-            $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/preview.php?' . 'id=' . $questionnaire->cm->id),
+            $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/preview.php?' . 'id=' . $questionnaire->coursemodule()->id),
             get_string('preview_label', 'questionnaire')
         );
     }
@@ -75,8 +75,8 @@ if ($questionnaire->capabilities->preview && $owner) {
 
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
-if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
-    $argstr = 'instance=' . $questionnaire->id . '&user=' . $USER->id . '&group=' . $currentgroupid;
+if ($questionnaire->can_read_own_responses() && ($usernumresp > 0)) {
+    $argstr = 'instance=' . $questionnaire->id() . '&user=' . $USER->id . '&group=' . $currentgroupid;
     if ($usernumresp == 1) {
         $argstr .= '&byresponse=1&action=vresp';
         $yourrespstring = get_string('yourresponse', 'questionnaire');
@@ -111,7 +111,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
             $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr2),
             get_string('myresponses', 'questionnaire')
         );
-        if ($questionnaire->capabilities->downloadresponses) {
+        if ($questionnaire->can_download_responses()) {
             $argstr2 = $argstr . '&action=dwnpg';
             $link = $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2);
             $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
@@ -142,7 +142,7 @@ $grouplogic = $canviewallgroups || $canviewgroups;
 $resplogic = ($numresp > 0) && ($numselectedresps > 0);
 
 if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
-    $argstr = 'instance=' . $questionnaire->id;
+    $argstr = 'instance=' . $questionnaire->id();
     $row[] = new tabobject(
         'allreport',
         $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr . '&action=vall'),
@@ -178,7 +178,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
             $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
             get_string('summary', 'questionnaire')
         );
-        if ($questionnaire->capabilities->viewsingleresponse) {
+        if ($questionnaire->can_view_single_response()) {
             $argstr2 = $argstr . '&byresponse=1&action=vresp&group=' . $currentgroupid;
             $row2[] = new tabobject(
                 'vrespsummary',
@@ -219,7 +219,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
                 get_string('order_descending', 'questionnaire')
             );
         }
-        if ($questionnaire->capabilities->deleteresponses) {
+        if ($questionnaire->can_delete_responses()) {
             $argstr2 = $argstr . '&action=delallresp&group=' . $currentgroupid;
             $row3[] = new tabobject(
                 'deleteall',
@@ -228,7 +228,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
             );
         }
 
-        if ($questionnaire->capabilities->downloadresponses) {
+        if ($questionnaire->can_download_responses()) {
             $argstr2 = $argstr . '&action=dwnpg&group=' . $currentgroupid;
             $link = $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2);
             $row3[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
@@ -240,7 +240,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
         if ($currenttab != 'deleteresp') {
             $activated[] = 'vresp';
         }
-        if ($questionnaire->capabilities->deleteresponses) {
+        if ($questionnaire->can_delete_responses()) {
             $argstr2 = $argstr . '&action=dresp&rid=' . $rid . '&individualresponse=1';
             $row2[] = new tabobject(
                 'deleteresp',
@@ -250,7 +250,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
         }
     }
 } else if ($questionnaire->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $resplogic)) {
-    $argstr = 'instance=' . $questionnaire->id . '&sid=' . $questionnaire->sid;
+    $argstr = 'instance=' . $questionnaire->id() . '&sid=' . $questionnaire->surveyid();
     $row[] = new tabobject(
         'allreport',
         $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr . '&action=vall&group=' . $currentgroupid),
@@ -287,7 +287,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
             $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
             get_string('order_descending', 'questionnaire')
         );
-        if ($questionnaire->capabilities->deleteresponses) {
+        if ($questionnaire->can_delete_responses()) {
             $argstr2 = $argstr . '&action=delallresp';
             $row2[] = new tabobject(
                 'deleteall',
@@ -296,7 +296,7 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
             );
         }
 
-        if ($questionnaire->capabilities->downloadresponses) {
+        if ($questionnaire->can_download_responses()) {
             $argstr2 = $argstr . '&action=dwnpg';
             $link = htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2);
             $row2[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
@@ -307,8 +307,11 @@ if ($questionnaire->can_view_all_responses_anytime($grouplogic, $resplogic)) {
     }
 }
 
-if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
-    $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', ['id' => $questionnaire->cm->id]);
+if ($questionnaire->can_view_single_response() && ($canviewallgroups || $canviewgroups)) {
+    $nonrespondenturl = new moodle_url(
+        '/mod/questionnaire/show_nonrespondents.php',
+        ['id' => $questionnaire->coursemodule()->id]
+    );
     $row[] = new tabobject(
         'nonrespondents',
         $nonrespondenturl->out(),
