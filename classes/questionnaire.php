@@ -2203,10 +2203,8 @@ class questionnaire {
      * @return void
      */
     public function view(): void {
-        global $CFG, $USER, $PAGE;
+        global $USER;
 
-        $PAGE->set_title(format_string($this->name()));
-        $PAGE->set_heading(format_string($this->course()->fullname));
         $message = $this->user_access_messages($USER->id, true);
         if ($message !== null) {
             $this->page->add_to_page('notifications', $message);
@@ -2214,7 +2212,7 @@ class questionnaire {
             $quser = $USER->id;
             $msg = $this->print_survey($quser, $USER->id);
 
-            $viewform = data_submitted($CFG->wwwroot . "/mod/questionnaire/complete.php");
+            $viewform = data_submitted();
             if (
                 $viewform && confirm_sesskey() &&
                 isset($viewform->submit) && isset($viewform->submittype) &&
