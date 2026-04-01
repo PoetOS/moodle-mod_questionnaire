@@ -2215,7 +2215,8 @@ class questionnaire {
             $msg = $this->print_survey($quser, $USER->id);
 
             $viewform = data_submitted($CFG->wwwroot . "/mod/questionnaire/complete.php");
-            if ($viewform && confirm_sesskey() &&
+            if (
+                $viewform && confirm_sesskey() &&
                 isset($viewform->submit) && isset($viewform->submittype) &&
                 ($viewform->submittype == "Submit Survey") && empty($msg)
             ) {
