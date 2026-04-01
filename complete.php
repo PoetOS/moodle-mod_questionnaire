@@ -38,18 +38,19 @@ $SESSION->questionnaire->current_tab = 'view';
 
 $id = optional_param('id', null, PARAM_INT);    // Course Module ID.
 $a = optional_param('a', null, PARAM_INT);      // Questionnaire ID.
-
-$sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 $resume = optional_param('resume', null, PARAM_INT);    // Is this attempt a resume of a saved attempt?
 
-[$cm, $course] = questionnaire_get_standard_page_items($id, $a);
+if (!empty($id)) {
+    $questionnaire = questionnaire::from_cmid($id);
+} else {
+    $questionnaire = questionnaire::from_instanceid($a);
+}
 
 // Check login and get context.
-require_course_login($course, true, $cm);
-$context = context_module::instance($cm->id);
-require_capability('mod/questionnaire:view', $context);
+require_course_login($questionnaire->course(), true, $questionnaire->coursemodule());
+require_capability('mod/questionnaire:view', $questionnaire->context());
 
-$url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/complete.php');
+$url = new moodle_url('/mod/questionnaire/complete.php');
 if (isset($id)) {
     $url->param('id', $id);
 } else {
@@ -57,16 +58,17 @@ if (isset($id)) {
 }
 
 $PAGE->set_url($url);
-$PAGE->set_context($context);
+$PAGE->set_context($questionnaire->context());
+$PAGE->set_title(format_string($questionnaire->name()));
+$PAGE->set_heading(format_string($questionnaire->course()->fullname));
 
-$questionnaire = questionnaire::from_cm($cm);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new completepage());
 
 // Mark as viewed.
-$completion = new completion_info($course);
-$completion->set_module_viewed($cm);
+$completion = new completion_info($questionnaire->course());
+$completion->set_module_viewed($questionnaire->coursemodule());
 
 if ($resume) {
     $anonymous = $questionnaire->is_anonymous();
@@ -85,4 +87,4 @@ $questionnaire->view();
 // Output the page.
 echo $questionnaire->renderer->header();
 echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($course);
+echo $questionnaire->renderer->footer($questionnaire->course());
