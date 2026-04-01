@@ -556,6 +556,33 @@ class questionnaire {
     }
 
     /**
+     * True if the current user can preview this questionnaire.
+     *
+     * @return bool
+     */
+    public function can_preview(): bool {
+        return has_capability('mod/questionnaire:preview', $this->context);
+    }
+
+    /**
+     * True if the current user can create template surveys.
+     *
+     * @return bool
+     */
+    public function can_create_templates(): bool {
+        return has_capability('mod/questionnaire:createtemplates', $this->context);
+    }
+
+    /**
+     * True if the current user can create public surveys.
+     *
+     * @return bool
+     */
+    public function can_create_public(): bool {
+        return has_capability('mod/questionnaire:createpublic', $this->context);
+    }
+
+    /**
      * True if the specified user is allowed to take this questionnaire right now.
      *
      * @param int $userid
