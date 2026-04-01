@@ -571,57 +571,101 @@ class questionnaire {
     // Forwarding methods — mirror the new classes/questionnaire.php API so that shared includes
     // (tabs.php etc.) work with both the legacy class and the new domain class during migration.
 
-    /** @return int */
+    /**
+     * Return the questionnaire instance ID.
+     *
+     * @return int
+     */
     public function id() {
         return $this->id;
     }
 
-    /** @return \stdClass|\cm_info */
+    /**
+     * Return the course-module object for this questionnaire.
+     *
+     * @return \stdClass|\cm_info
+     */
     public function coursemodule() {
         return $this->cm;
     }
 
-    /** @return array */
+    /**
+     * Return the loaded question objects for this questionnaire.
+     *
+     * @return array
+     */
     public function questions() {
         return $this->questions;
     }
 
-    /** @return int */
+    /**
+     * Return the survey ID associated with this questionnaire.
+     *
+     * @return int
+     */
     public function surveyid() {
         return $this->sid;
     }
 
-    /** @return bool */
+    /**
+     * True if the current user can manage this questionnaire.
+     *
+     * @return bool
+     */
     public function can_manage_questionnaire() {
         return (bool)$this->capabilities->manage;
     }
 
-    /** @return bool */
+    /**
+     * True if the current user can edit questions.
+     *
+     * @return bool
+     */
     public function can_edit_questions() {
         return (bool)$this->capabilities->editquestions;
     }
 
-    /** @return bool */
+    /**
+     * True if the current user can preview this questionnaire.
+     *
+     * @return bool
+     */
     public function can_preview() {
         return (bool)$this->capabilities->preview;
     }
 
-    /** @return bool */
+    /**
+     * True if the current user can read their own responses.
+     *
+     * @return bool
+     */
     public function can_read_own_responses() {
         return (bool)$this->capabilities->readownresponses;
     }
 
-    /** @return bool */
+    /**
+     * True if the current user can download responses.
+     *
+     * @return bool
+     */
     public function can_download_responses() {
         return (bool)$this->capabilities->downloadresponses;
     }
 
-    /** @return bool */
+    /**
+     * True if the current user can view a single response.
+     *
+     * @return bool
+     */
     public function can_view_single_response() {
         return (bool)$this->capabilities->viewsingleresponse;
     }
 
-    /** @return bool */
+    /**
+     * True if the current user can delete responses.
+     *
+     * @return bool
+     */
     public function can_delete_responses() {
         return (bool)$this->capabilities->deleteresponses;
     }
