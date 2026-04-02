@@ -25,8 +25,10 @@
 
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->libdir . '/tablelib.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\nonrespondentspage;
 
 // Get the params.
 $id = required_param('id', PARAM_INT);
@@ -48,25 +50,10 @@ if (!isset($SESSION->questionnaire)) {
 
 $SESSION->questionnaire->current_tab = 'nonrespondents';
 
-// Get the objects.
-
-if ($id) {
-    if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-    }
-
-    if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
-        throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-    }
-
-    if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
-        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-    }
-}
-
-if (!$context = context_module::instance($cm->id)) {
-    throw new \moodle_exception('badcontext', 'mod_questionnaire');
-}
+$questionnaire = questionnaire::from_cmid($id);
+$course = $questionnaire->course();
+$cm = $questionnaire->coursemodule();
+$context = $questionnaire->context();
 
 // We need the coursecontext to allow sending of mass mails.
 if (!$coursecontext = context_course::instance($course->id)) {
@@ -78,15 +65,13 @@ require_course_login($course, true, $cm);
 $url = new moodle_url('/mod/questionnaire/show_nonrespondents.php', ['id' => $cm->id]);
 $PAGE->set_url($url);
 
-$questionnaire = new questionnaire($course, $cm, $sid, $questionnaire);
-
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\nonrespondentspage());
+$questionnaire->add_page(new nonrespondentspage());
 
-$resume = $questionnaire->resume;
-$fullname = $questionnaire->respondenttype == 'fullname';
-$sid = $questionnaire->sid;
+$resume = $questionnaire->resume();
+$fullname = $questionnaire->respondenttype() == 'fullname';
+$sid = $questionnaire->surveyid();
 
 if (($formdata = data_submitted()) && !confirm_sesskey()) {
     throw new \moodle_exception('invalidsesskey', 'mod_questionnaire');
@@ -101,7 +86,7 @@ if (!$fullname) {
     if ($resume) {
         $countstarted = 0;
         $countnotstarted = 0;
-        $params = ['questionnaireid' => $questionnaire->id, 'complete' => 'n'];
+        $params = ['questionnaireid' => $questionnaire->id(), 'complete' => 'n'];
         if ($startedusers = $DB->get_records('questionnaire_response', $params, '', 'userid')) {
             $startedusers = array_keys($startedusers);
             $countstarted = count($startedusers);
@@ -139,7 +124,7 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
     $link1 = $CFG->wwwroot . '/mod/questionnaire/view.php?id= ' . $cm->id;
 
     $htmlmessage .= '<div class="navbar">' .
-    '<a target="_blank" href="' . $link1 . '">' . format_string($questionnaire->name, true) . '</a>' .
+    '<a target="_blank" href="' . $link1 . '">' . format_string($questionnaire->name(), true) . '</a>' .
     '</div>';
 
     $htmlmessage .= $message;
@@ -179,7 +164,7 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
 // Print the page header.
 $PAGE->navbar->add(get_string('show_nonrespondents', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
-$PAGE->set_title(format_string($questionnaire->name));
+$PAGE->set_title(format_string($questionnaire->name()));
 echo $questionnaire->renderer->header();
 
 require('tabs.php');
@@ -378,7 +363,7 @@ if (!$nonrespondents) {
                     if (
                         $DB->record_exists(
                             'questionnaire_response',
-                            ['questionnaireid' => $questionnaire->id, 'userid' => $nonrespondent, 'complete' => 'n']
+                            ['questionnaireid' => $questionnaire->id(), 'userid' => $nonrespondent, 'complete' => 'n']
                         )
                     ) {
                         $data[] = get_string('started', 'questionnaire');
@@ -571,14 +556,13 @@ echo $questionnaire->renderer->render($questionnaire->page);
 echo $questionnaire->renderer->footer();
 
 // Log this questionnaire show non-respondents action.
-$context = context_module::instance($questionnaire->cm->id);
-$anonymous = $questionnaire->respondenttype == 'anonymous';
+$anonymous = $questionnaire->respondenttype() == 'anonymous';
 
 $event = \mod_questionnaire\event\non_respondents_viewed::create(
     [
-        'objectid' => $questionnaire->id,
+        'objectid' => $questionnaire->id(),
         'anonymous' => $anonymous,
-        'context' => $context,
+        'context' => $questionnaire->context(),
     ]
 );
 $event->trigger();

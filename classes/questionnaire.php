@@ -264,6 +264,15 @@ class questionnaire {
     }
 
     /**
+     * Return true if this questionnaire allows resuming a saved response.
+     *
+     * @return bool
+     */
+    public function resume(): bool {
+        return (bool) $this->modulerecord->get('resume');
+    }
+
+    /**
      * Get all question objects for this questionnaire.
      *
      * @return question[]
