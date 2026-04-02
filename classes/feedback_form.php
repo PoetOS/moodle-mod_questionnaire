@@ -46,7 +46,7 @@ class feedback_form extends \moodleform {
         $feedbackoptions[2] = get_string('feedbacksections', 'questionnaire');
 
         $mform->addElement('select', 'feedbacksections', get_string('feedbackoptions', 'questionnaire'), $feedbackoptions);
-        $mform->setDefault('feedbacksections', $questionnaire->survey->feedbacksections);
+        $mform->setDefault('feedbacksections', $questionnaire->survey()->feedbacksections());
         $mform->addHelpButton('feedbacksections', 'feedbackoptions', 'questionnaire');
 
         $options = ['0' => get_string('no'), '1' => get_string('yes')];
@@ -66,8 +66,8 @@ class feedback_form extends \moodleform {
                 get_string('feedbackglobal', 'questionnaire') . ')',
                 $charttypes
             );
-            if ($questionnaire->survey->feedbacksections == 1) {
-                $mform->setDefault('chart_type_global', $questionnaire->survey->chart_type);
+            if ($questionnaire->survey()->feedbacksections() == 1) {
+                $mform->setDefault('chart_type_global', $questionnaire->survey()->charttype());
             }
             $mform->disabledIf('chart_type_global', 'feedbacksections', 'eq', 0);
             $mform->disabledIf('chart_type_global', 'feedbacksections', 'neq', 1);
@@ -83,8 +83,8 @@ class feedback_form extends \moodleform {
                 get_string('feedbackbysection', 'questionnaire') . ')',
                 $charttypes
             );
-            if ($questionnaire->survey->feedbacksections > 1) {
-                $mform->setDefault('chart_type_two_sections', $questionnaire->survey->chart_type);
+            if ($questionnaire->survey()->feedbacksections() > 1) {
+                $mform->setDefault('chart_type_two_sections', $questionnaire->survey()->charttype());
             }
             $mform->disabledIf('chart_type_two_sections', 'feedbacksections', 'neq', 2);
 
@@ -100,8 +100,8 @@ class feedback_form extends \moodleform {
                 get_string('feedbackbysection', 'questionnaire') . ')',
                 $charttypes
             );
-            if ($questionnaire->survey->feedbacksections > 1) {
-                $mform->setDefault('chart_type_sections', $questionnaire->survey->chart_type);
+            if ($questionnaire->survey()->feedbacksections() > 1) {
+                $mform->setDefault('chart_type_sections', $questionnaire->survey()->charttype());
             }
             $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 0);
             $mform->disabledIf('chart_type_sections', 'feedbacksections', 'eq', 1);
@@ -119,7 +119,7 @@ class feedback_form extends \moodleform {
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
         $mform->addElement('editor', 'feedbacknotes', get_string('feedbacknotes', 'questionnaire'), null, $editoroptions);
         $mform->setType('feedbacknotes', PARAM_RAW);
-        $mform->setDefault('feedbacknotes', $questionnaire->survey->feedbacknotes);
+        $mform->setDefault('feedbacknotes', $questionnaire->survey()->feedbacknotes());
         $mform->addHelpButton('feedbacknotes', 'feedbacknotes', 'questionnaire');
 
         $mform->addElement('hidden', 'id', 0);

@@ -165,6 +165,33 @@ class survey {
     }
 
     /**
+     * Get the feedback notes for this survey.
+     *
+     * @return string
+     */
+    public function feedbacknotes(): string {
+        return $this->surveyrecord->get('feedbacknotes') ?? '';
+    }
+
+    /**
+     * Get the number of feedback sections configured for this survey.
+     *
+     * @return int
+     */
+    public function feedbacksections(): int {
+        return (int) $this->surveyrecord->get('feedbacksections');
+    }
+
+    /**
+     * Get the chart type configured for feedback display.
+     *
+     * @return string
+     */
+    public function charttype(): string {
+        return $this->surveyrecord->get('charttype') ?? '';
+    }
+
+    /**
      * Return the survey record as a plain stdClass object.
      *
      * Useful when legacy APIs or forms expect a raw object rather than the domain class.
