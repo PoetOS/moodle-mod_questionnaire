@@ -282,6 +282,57 @@ class questionnaire {
     }
 
     /**
+     * Return the soft-deleted questions for this questionnaire's survey.
+     *
+     * @return question[] Keyed by question id.
+     */
+    public function get_delete_questions(): array {
+        global $DB;
+        $sql = "SELECT *
+                  FROM {questionnaire_question}
+                 WHERE deleted IS NOT NULL
+                   AND surveyid = ? AND typeid != ?
+              ORDER BY deleted DESC";
+        $deletequestions = [];
+        if ($records = $DB->get_records_sql($sql, [$this->surveyid(), QUESPAGEBREAK])) {
+            foreach ($records as $record) {
+                $deletequestions[$record->id] = \mod_questionnaire\local\question\question::question_builder(
+                    $record->typeid,
+                    $record,
+                    $this->context
+                );
+            }
+        }
+        return $deletequestions;
+    }
+
+    /**
+     * Move a question to a new position, re-numbering surrounding questions.
+     *
+     * Shim — delegates to the legacy questionnaire class until question ordering
+     * is refactored onto the new domain objects.
+     *
+     * @param int $moveqid    Id of the question to move.
+     * @param int $movetopos  Target position (1-based).
+     * @return bool
+     */
+    public function move_question(int $moveqid, int $movetopos): bool {
+        return $this->legacy()->move_question($moveqid, $movetopos);
+    }
+
+    /**
+     * Validate that page breaks are correctly placed for dependent questions.
+     *
+     * Shim — delegates to the legacy questionnaire class until page-break logic
+     * is refactored.
+     *
+     * @return false|string Status message, or false on failure.
+     */
+    public function check_page_breaks() {
+        return $this->legacy()->check_page_breaks();
+    }
+
+    /**
      * Reload questions from the database into this instance.
      *
      * @return void
