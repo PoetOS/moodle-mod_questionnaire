@@ -2300,6 +2300,125 @@ class questionnaire {
     }
 
     /**
+     * Return true if the current user has site-level access to all groups.
+     *
+     * @return bool
+     */
+    public function can_view_all_groups(): bool {
+        return has_capability('moodle/site:accessallgroups', $this->context);
+    }
+
+    /**
+     * Render the aggregate survey results for a set of response ids.
+     *
+     * Shim — delegates to the legacy questionnaire class until the results
+     * rendering is refactored.
+     *
+     * @param array|string $rids Response ids to summarise.
+     * @param int|false $uid  Restrict to this user id, or false for all.
+     * @param bool $pdf       True if rendering for PDF output.
+     * @param string $currentgroupid  Current group id string.
+     * @param string $sort    Sort order string.
+     * @return void
+     */
+    public function survey_results(
+        $rids = '',
+        $uid = false,
+        bool $pdf = false,
+        string $currentgroupid = '',
+        string $sort = ''
+    ): void {
+        $legacy = $this->legacy();
+        $legacy->page = $this->page;
+        $legacy->survey_results($rids, $uid, $pdf, $currentgroupid, $sort);
+    }
+
+    /**
+     * Load all responses for the given user into the legacy instance's response store.
+     *
+     * Shim — delegates to the legacy questionnaire class until response loading
+     * is refactored onto the new domain objects.
+     *
+     * @param int|null $userid Load responses for this user, or null for all users.
+     * @return void
+     */
+    public function add_user_responses(?int $userid = null): void {
+        $this->legacy()->add_user_responses($userid);
+    }
+
+    /**
+     * Render all loaded responses for display.
+     *
+     * Shim — delegates to the legacy questionnaire class until the results
+     * rendering is refactored.
+     *
+     * @return void
+     */
+    public function view_all_responses(): void {
+        $legacy = $this->legacy();
+        $legacy->page = $this->page;
+        $legacy->view_all_responses();
+    }
+
+    /**
+     * Render the student response navigation bar for myreport/report pages.
+     *
+     * Shim — delegates to the legacy questionnaire class until the navigation
+     * rendering is refactored.
+     *
+     * @param int $currrid      Currently displayed response id.
+     * @param int $userid       User whose responses are being navigated.
+     * @param int $instance     Questionnaire instance id (for URL construction).
+     * @param array $resps      All responses to navigate across.
+     * @param string $reporttype 'myreport' or 'report'.
+     * @param string $sid       Survey id (used in report mode URLs).
+     * @return void
+     */
+    public function survey_results_navbar_student(
+        int $currrid,
+        int $userid,
+        int $instance,
+        array $resps,
+        string $reporttype = 'myreport',
+        string $sid = ''
+    ): void {
+        $legacy = $this->legacy();
+        $legacy->page = $this->page;
+        $legacy->survey_results_navbar_student($currrid, $userid, $instance, $resps, $reporttype, $sid);
+    }
+
+    /**
+     * Render a single saved response, optionally with feedback/comparison data.
+     *
+     * Shim — delegates to the legacy questionnaire class until the response
+     * display is refactored.
+     *
+     * @param int $rid             Response id to display.
+     * @param string $referer      'print' suppresses feedback rendering.
+     * @param array|string $resps  Responses used for comparison/feedback.
+     * @param bool $compare        True if showing group-comparison feedback.
+     * @param bool $isgroupmember  True if the viewer is in the comparison group.
+     * @param bool $allresponses   True when all responses are included.
+     * @param int $currentgroupid  Active group id (0 = all participants).
+     * @param string $outputtarget 'html' or 'pdf'.
+     * @return void
+     */
+    public function view_response(
+        int $rid,
+        string $referer = '',
+        $resps = '',
+        bool $compare = false,
+        bool $isgroupmember = false,
+        bool $allresponses = false,
+        int $currentgroupid = 0,
+        string $outputtarget = 'html'
+    ): void {
+        $legacy = $this->legacy();
+        $legacy->page = $this->page;
+        $legacy->view_response($rid, $referer, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid, $outputtarget);
+    }
+
+    /**
      * Return a lazy-loaded legacy questionnaire instance sharing this object's renderer and page.
      *
      * Used only by rendering shims until the legacy class is fully replaced.

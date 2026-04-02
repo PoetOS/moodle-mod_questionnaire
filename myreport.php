@@ -24,7 +24,9 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\reportpage;
 
 $instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $userid = optional_param('user', $USER->id, PARAM_INT);
@@ -33,23 +35,17 @@ $byresponse = optional_param('byresponse', 0, PARAM_INT);
 $action = optional_param('action', 'summary', PARAM_ALPHA);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
-if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $instance])) {
-    throw new \moodle_exception('incorrectquestionnaire', 'mod_questionnaire');
-}
-if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
-    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-}
-if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
+$questionnaire = questionnaire::from_instanceid($instance);
+$course = $questionnaire->course();
+$cm = $questionnaire->coursemodule();
 
 require_course_login($course, true, $cm);
-$context = context_module::instance($cm->id);
-$questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
+
 // Should never happen, unless called directly by a snoop...
-if (!has_capability('mod/questionnaire:readownresponses', $context) || $userid != $USER->id) {
+if (!$questionnaire->can_read_own_responses() || $userid != $USER->id) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
+
 $url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/myreport.php', ['instance' => $instance]);
 if (isset($userid)) {
     $url->param('userid', $userid);
@@ -57,27 +53,24 @@ if (isset($userid)) {
 if (isset($byresponse)) {
     $url->param('byresponse', $byresponse);
 }
-
 if (isset($currentgroupid)) {
     $url->param('group', $currentgroupid);
 }
-
 if (isset($action)) {
     $url->param('action', $action);
 }
 
 $PAGE->set_url($url);
-$PAGE->set_context($context);
+$PAGE->set_context($questionnaire->context());
 $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+$questionnaire->add_page(new reportpage());
 
-$sid = $questionnaire->survey->id;
-$courseid = $course->id;
+$sid = $questionnaire->surveyid();
+$courseid = $questionnaire->courseid();
 
 // Tab setup.
 if (!isset($SESSION->questionnaire)) {
@@ -87,7 +80,7 @@ $SESSION->questionnaire->current_tab = 'myreport';
 
 switch ($action) {
     case 'summary':
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'mysummary';
@@ -115,7 +108,7 @@ switch ($action) {
         break;
 
     case 'vall':
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'myvall';
@@ -136,13 +129,13 @@ switch ($action) {
         break;
 
     case 'vresp':
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'mybyresponse';
         $usergraph = get_config('questionnaire', 'usergraph');
         if ($usergraph) {
-            $charttype = $questionnaire->survey->chart_type;
+            $charttype = $questionnaire->survey()->charttype();
             if ($charttype) {
                 $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
 
@@ -188,7 +181,7 @@ switch ($action) {
             if ($groupmode == 1) {
                 $questionnairegroups = groups_get_all_groups($course->id, $userid);
             }
-            if ($groupmode == 2 || $questionnaire->canviewallgroups) {
+            if ($groupmode == 2 || $questionnaire->can_view_all_groups()) {
                 $questionnairegroups = groups_get_all_groups($course->id);
             }
 
@@ -201,7 +194,7 @@ switch ($action) {
                 if ($groupscount === 0 && $groupmode == 1) {
                     $currentgroupid = 0;
                 }
-                if ($groupmode == 1 && !$questionnaire->canviewallgroups && $currentgroupid == 0) {
+                if ($groupmode == 1 && !$questionnaire->can_view_all_groups() && $currentgroupid == 0) {
                     $currentgroupid = $firstgroupid;
                 }
                 // If currentgroup is All Participants, current user is of course member of that "group"!
@@ -213,7 +206,7 @@ switch ($action) {
             } else {
                 // Groupmode = separate groups but user is not member of any group
                 // and does not have moodle/site:accessallgroups capability -> refuse view responses.
-                if (!$questionnaire->canviewallgroups) {
+                if (!$questionnaire->can_view_all_groups()) {
                     $currentgroupid = 0;
                 }
             }
@@ -266,7 +259,7 @@ switch ($action) {
             $resps = $respsallparticipants;
         }
         $compare = true;
-        $questionnaire->view_response($rid, null, $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
+        $questionnaire->view_response($rid, '', $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
         // Finish the page.
         echo $questionnaire->renderer->render($questionnaire->page);
         echo $questionnaire->renderer->footer($course);
