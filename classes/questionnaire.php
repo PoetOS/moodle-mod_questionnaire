@@ -556,6 +556,15 @@ class questionnaire {
     }
 
     /**
+     * True if the current user can view this questionnaire.
+     *
+     * @return bool
+     */
+    public function can_view(): bool {
+        return has_capability('mod/questionnaire:view', $this->context);
+    }
+
+    /**
      * True if the current user can preview this questionnaire.
      *
      * @return bool
@@ -2244,6 +2253,24 @@ class questionnaire {
      */
     public function print_survey(int $quser, $userid = false): ?string {
         return $this->legacy()->print_survey($quser, $userid);
+    }
+
+    /**
+     * Render the survey for printing or preview display.
+     *
+     * Shim — delegates to the legacy questionnaire class until the print/preview
+     * rendering is refactored.
+     *
+     * @param int $courseid
+     * @param string $message
+     * @param string $referer
+     * @param int $rid
+     * @param bool $blankquestionnaire
+     * @return false|void
+     */
+    public function survey_print_render($courseid, $message = '', $referer = '', $rid = 0, $blankquestionnaire = false) {
+        $this->legacy()->page = $this->page;
+        return $this->legacy()->survey_print_render($courseid, $message, $referer, $rid, $blankquestionnaire);
     }
 
     /**

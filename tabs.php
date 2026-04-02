@@ -133,11 +133,11 @@ if (isset($SESSION->questionnaire->numselectedresps)) {
 // If questionnaire is set to separate groups, prevent user who is not member of any group
 // to view All responses.
 $canviewgroups = true;
-$groupmode = groups_get_activity_groupmode($cm, $course);
+$groupmode = groups_get_activity_groupmode($questionnaire->coursemodule(), $questionnaire->course());
 if ($groupmode == 1) {
-    $canviewgroups = groups_has_membership($cm, $USER->id);
+    $canviewgroups = groups_has_membership($questionnaire->coursemodule(), $USER->id);
 }
-$canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
+$canviewallgroups = has_capability('moodle/site:accessallgroups', $questionnaire->context());
 $grouplogic = $canviewallgroups || $canviewgroups;
 $resplogic = ($numresp > 0) && ($numselectedresps > 0);
 

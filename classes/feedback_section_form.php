@@ -46,9 +46,9 @@ class feedback_section_form extends \moodleform {
         $feedbacksection = $this->_customdata->feedbacksection;
         $validquestions = $this->_customdata->validquestions;
         $survey = $this->_customdata->survey;
-        $feedbacksections = $questionnaire->survey->feedbacksections;
+        $feedbacksections = $questionnaire->survey()->feedbacksections();
         $this->feedbacks = $feedbacksection->sectionfeedback;
-        $this->context = $questionnaire->context;
+        $this->context = $questionnaire->context();
         $mform    =& $this->_form;
 
         if ($survey->feedbacksections > 1) {
@@ -105,10 +105,10 @@ class feedback_section_form extends \moodleform {
             $editoroptions
         );
         $mform->setType('sectionheading', PARAM_RAW);
-        $mform->setDefault('feedbacknotes', $questionnaire->survey->feedbacknotes);
+        $mform->setDefault('feedbacknotes', $questionnaire->survey()->feedbacknotes());
         $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
 
-        if ($questionnaire->survey->feedbacksections > 0) {
+        if ($questionnaire->survey()->feedbacksections() > 0) {
             // Sections.
             if ($survey->feedbacksections > 1) {
                 $mform->addElement(
@@ -138,7 +138,7 @@ class feedback_section_form extends \moodleform {
                         unset($rextra['style']);
                         $questionactions[] = $mform->createElement('image', 'confirmremovequestion[' . $qid . ']', $rsrc, $rextra);
 
-                        $mform->addGroup($questionactions, '', $questionnaire->questions[$qid]->name);
+                        $mform->addGroup($questionactions, '', $questionnaire->questions()[$qid]->name);
                         $counter++;
                     }
                 }
@@ -172,7 +172,7 @@ class feedback_section_form extends \moodleform {
             'feedbacktext',
             get_string('feedback', 'questionnaire'),
             null,
-            ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context]
+            ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context()]
         );
         $repeatarray[] = $mform->createElement(
             'text',
@@ -204,7 +204,7 @@ class feedback_section_form extends \moodleform {
                 "feedbacktext[$nextel]",
                 get_string('feedback', 'questionnaire'),
                 null,
-                ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context]
+                ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context()]
             ),
             'boundary_add_fields'
         );
