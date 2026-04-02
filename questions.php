@@ -23,8 +23,11 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php'); // Needed for question type constants.
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\questionspage;
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
@@ -36,20 +39,12 @@ $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 $delpermanentlyq = optional_param('delpermanentlyq', 0, PARAM_INT); // Question id to delete.
 $restoreq = optional_param(QUESTIONNAIRE_RESTORE_PARAM, 0, PARAM_INT); // Question id to restore question.
 
-if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
-
-if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
-    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-}
-
-if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
+$questionnaire = questionnaire::from_cmid($id);
+$course = $questionnaire->course();
+$cm = $questionnaire->coursemodule();
 
 require_course_login($course, true, $cm);
-$context = context_module::instance($cm->id);
+$context = $questionnaire->context();
 
 $url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/questions.php');
 $url->param('id', $id);
@@ -60,14 +55,14 @@ if ($qid) {
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
-$questionnaire->get_delete_questions();
+$deletequestions = $questionnaire->get_delete_questions();
+$questions = $questionnaire->questions();
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\questionspage());
+$questionnaire->add_page(new questionspage());
 
-if (!$questionnaire->capabilities->editquestions) {
+if (!$questionnaire->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
@@ -78,23 +73,23 @@ if (!isset($SESSION->questionnaire)) {
 }
 $SESSION->questionnaire->current_tab = 'questions';
 $reload = false;
-$sid = $questionnaire->survey->id;
+$sid = $questionnaire->surveyid();
 // Process form data.
 
 // Delete question button has been pressed in questions_form AND deletion has been confirmed on the confirmation page.
 if ($delq) {
     $qid = $delq;
-    $sid = $questionnaire->survey->id;
-    $questionnaireid = $questionnaire->id;
+    $sid = $questionnaire->surveyid();
+    $questionnaireid = $questionnaire->id();
 
     // Need to reload questions before setting deleted question to 'y'.
-    $questions = $DB->get_records_select(
+    $dbquestions = $DB->get_records_select(
         'questionnaire_question',
         'surveyid = :sid AND deleted IS NULL',
         ['sid' => $sid],
         'id'
     );
-    if (isset($questions[$qid]) && $questions[$qid]->typeid == QUESPAGEBREAK) {
+    if (isset($dbquestions[$qid]) && $dbquestions[$qid]->typeid == QUESPAGEBREAK) {
         $DB->delete_records('questionnaire_question', ['id' => $qid]);
     } else {
         $updatesql = "UPDATE {questionnaire_question}
@@ -111,10 +106,10 @@ if ($delq) {
     questionnaire_delete_pagebreaks($sid);
 
     // Just in case the page is refreshed (F5) after a question has been deleted.
-    if (isset($questions[$qid])) {
-        $select = 'surveyid = ' . $sid . ' AND deleted IS NULL AND position > ' . $questions[$qid]->position;
+    if (isset($dbquestions[$qid])) {
+        $select = 'surveyid = ' . $sid . ' AND deleted IS NULL AND position > ' . $dbquestions[$qid]->position;
     } else {
-        redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
+        redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $cm->id);
     }
 
     if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
@@ -124,7 +119,7 @@ if ($delq) {
     }
     // Delete section breaks without asking for confirmation.
     // No need to delete responses to those "question types" which are not real questions.
-    if (!$questionnaire->questions[$qid]->supports_responses()) {
+    if (!$questions[$qid]->supports_responses()) {
         $reload = true;
     } else {
         // Delete responses to that deleted question.
@@ -143,8 +138,8 @@ if ($delq) {
     }
 
     // Log question deleted event.
-    $questiontype = \mod_questionnaire\local\question\question::qtypename($questionnaire->questions[$qid]->typeid);
-    questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
+    $questiontype = \mod_questionnaire\local\question\question::qtypename($questions[$qid]->typeid);
+    questionnaire_observe_event_delete($cm->id, $questiontype, $questionnaire->courseid());
 
     if ($questionnairehasdependencies) {
         $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
@@ -155,13 +150,13 @@ if ($delq) {
 // Delete question permanently.
 if ($delpermanentlyq) {
     $qid = $delpermanentlyq;
-    $sid = $questionnaire->survey->id;
+    $sid = $questionnaire->surveyid();
     questionnaire_delete_permanently_questions($qid, $sid);
-    $deletedquestion = $questionnaire->deletequestions[$qid] ?? null;
+    $deletedquestion = $deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
         $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid);
-        questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
-        $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id]);
+        questionnaire_observe_event_delete($cm->id, $questiontype, $questionnaire->courseid());
+        $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
         $PAGE->set_url($url->out(false));
         $reload = true;
     }
@@ -170,23 +165,23 @@ if ($delpermanentlyq) {
 // Restore question.
 if ($restoreq) {
     $qid = $restoreq;
-    $qdeleted = isset($questionnaire->deletequestions[$qid]) ? $questionnaire->deletequestions[$qid] : false;
+    $qdeleted = $deletequestions[$qid] ?? false;
     if ($qid && $qdeleted) {
         questionnaire_restore_deleted_question($qid, $qdeleted->surveyid);
     }
-    $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id]);
+    $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
     $PAGE->set_url($url->out(false));
     $reload = true;
 }
 
 if ($action == 'main') {
     $questionsform = new \mod_questionnaire\questions_form('questions.php', $moveq);
-    $sdata = clone($questionnaire->survey);
-    $sdata->sid = $questionnaire->survey->id;
+    $sdata = $questionnaire->survey()->to_stdclass();
+    $sdata->sid = $questionnaire->surveyid();
     $sdata->id = $cm->id;
-    if (!empty($questionnaire->questions)) {
+    if (!empty($questions)) {
         $pos = 1;
-        foreach ($questionnaire->questions as $qidx => $question) {
+        foreach ($questions as $qidx => $question) {
             $sdata->{'pos_' . $qidx} = $pos;
             $pos++;
         }
@@ -195,7 +190,7 @@ if ($action == 'main') {
     if ($questionsform->is_cancelled()) {
         // Switch to main screen.
         $action = 'main';
-        redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
+        redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $cm->id);
         $reload = true;
     }
     if ($qformdata = $questionsform->get_data()) {
@@ -224,11 +219,11 @@ if ($action == 'main') {
             // Need to use the key, since IE returns the image position as the value rather than the specified
             // value in the <input> tag.
             $qid = key($qformdata->removebutton);
-            $qtype = $questionnaire->questions[$qid]->typeid;
+            $qtype = $questions[$qid]->typeid;
 
             // Delete section breaks without asking for confirmation.
             if ($qtype == QUESPAGEBREAK) {
-                redirect(new \moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id, 'delq' => $qid]));
+                redirect(new \moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id, 'delq' => $qid]));
             }
 
             $action = "confirmdelquestion";
@@ -252,10 +247,10 @@ if ($action == 'main') {
             // value in the <input> tag.
 
             $qid = key($qformdata->requiredbutton);
-            if ($questionnaire->questions[$qid]->required()) {
-                $questionnaire->questions[$qid]->set_required(false);
+            if ($questions[$qid]->required()) {
+                $questions[$qid]->set_required(false);
             } else {
-                $questionnaire->questions[$qid]->set_required(true);
+                $questions[$qid]->set_required(true);
             }
 
             $reload = true;
@@ -277,7 +272,7 @@ if ($action == 'main') {
             }
         } else if (isset($qformdata->movebutton)) {
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
-            redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id .
+            redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $cm->id .
                 '&moveq=' . key($qformdata->movebutton));
             $reload = true;
         } else if (isset($qformdata->moveherebutton)) {
@@ -293,7 +288,7 @@ if ($action == 'main') {
                 $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
             }
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
-            redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
+            redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $cm->id);
             $reload = true;
         } else if (isset($qformdata->validate)) {
             // Validates page breaks for depend questions.
@@ -306,7 +301,7 @@ if ($action == 'main') {
             redirect(
                 new moodle_url(
                     '/mod/questionnaire/questions.php',
-                    ['id' => $questionnaire->cm->id, QUESTIONNAIRE_RESTORE_PARAM => $qid]
+                    ['id' => $cm->id, QUESTIONNAIRE_RESTORE_PARAM => $qid]
                 )
             );
         }
@@ -342,11 +337,10 @@ if ($action == 'main') {
 
     // Log question created event.
     if (isset($qformdata)) {
-        $context = context_module::instance($questionnaire->cm->id);
         $questiontype = \mod_questionnaire\local\question\question::qtypename($qformdata->typeid);
         $params = [
             'context' => $context,
-            'courseid' => $questionnaire->course->id,
+            'courseid' => $questionnaire->courseid(),
             'other' => ['questiontype' => $questiontype],
         ];
         $event = \mod_questionnaire\event\question_created::create($params);
@@ -359,19 +353,20 @@ if ($action == 'main') {
 // Reload the form data if called for...
 if ($reload) {
     unset($questionsform);
-    $questionnaire = new questionnaire($course, $cm, $questionnaire->id, null);
-    $questionnaire->get_delete_questions();
+    $questionnaire = questionnaire::from_cmid($id);
+    $deletequestions = $questionnaire->get_delete_questions();
+    $questions = $questionnaire->questions();
     // Add renderer and page objects to the questionnaire object for display use.
     $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-    $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
+    $questionnaire->add_page(new questionspage());
     if ($action == 'main') {
         $questionsform = new \mod_questionnaire\questions_form('questions.php', $moveq);
-        $sdata = clone($questionnaire->survey);
-        $sdata->sid = $questionnaire->survey->id;
+        $sdata = $questionnaire->survey()->to_stdclass();
+        $sdata->sid = $questionnaire->surveyid();
         $sdata->id = $cm->id;
-        if (!empty($questionnaire->questions)) {
+        if (!empty($questions)) {
             $pos = 1;
-            foreach ($questionnaire->questions as $qidx => $question) {
+            foreach ($questions as $qidx => $question) {
                 $sdata->{'pos_' . $qidx} = $pos;
                 $pos++;
             }
@@ -403,7 +398,7 @@ require('tabs.php');
 
 if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $qid = key($qformdata->removebutton);
-    $question = $questionnaire->questions[$qid];
+    $question = $questions[$qid];
     $qtype = $question->typeid;
 
     $countresps = count_reponses_question($qid, $qtype);
@@ -412,7 +407,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
 
     // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
 
-    if ($question->content == '<p>  </p>') {
+    if ($question->content == '<p>  </p>') {
         $question->content = '';
     }
 
@@ -430,7 +425,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     }
     $msg .= '</div>';
     $msg .= '<div class = "qn-container">' . $num . ' ' . $pos . '<div class="qn-question">' . $question->content . '</div></div>';
-    $args = "id={$questionnaire->cm->id}";
+    $args = "id={$cm->id}";
     $urlno = new moodle_url("/mod/questionnaire/questions.php?{$args}");
     $args .= "&delq={$qid}";
     $urlyes = new moodle_url("/mod/questionnaire/questions.php?{$args}");
@@ -451,12 +446,12 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
 } else if ($action === QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY) {
     $qid = key($qformdata->deletebutton);
-    $qtype = $questionnaire->deletequestions[$qid]->typeid;
-    $questiondelete = $questionnaire->deletequestions[$qid];
+    $qtype = $deletequestions[$qid]->typeid;
+    $questiondelete = $deletequestions[$qid];
     $countresps = count_reponses_question($qid, $qtype);
 
-    $urlno = new moodle_url("/mod/questionnaire/questions.php", ['id' => $questionnaire->cm->id]);
-    $urlyes = new moodle_url("/mod/questionnaire/questions.php", ['id' => $questionnaire->cm->id, "delpermanentlyq" => $qid]);
+    $urlno = new moodle_url("/mod/questionnaire/questions.php", ['id' => $cm->id]);
+    $urlyes = new moodle_url("/mod/questionnaire/questions.php", ['id' => $cm->id, "delpermanentlyq" => $qid]);
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
     $msg = '<div class="warning centerpara"><p>' . get_string('confirmdelpermanentlyq', 'questionnaire') . '</p>';

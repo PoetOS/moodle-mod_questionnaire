@@ -516,12 +516,14 @@ function questionnaire_get_child_positions($questions) {
  * @return mixed|\mod_questionnaire\local\question\question
  */
 function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
-    $context = context_module::instance($questionnaire->cm->id);
+    $cmid = $questionnaire->coursemodule()->id;
+    $context = context_module::instance($cmid);
     if ($qid != 0) {
-        $question = clone($questionnaire->questions[$qid]);
+        $questions = $questionnaire->questions();
+        $question = clone($questions[$qid]);
         $question->qid = $question->id;
-        $question->sid = $questionnaire->survey->id;
-        $question->id = $questionnaire->cm->id;
+        $question->sid = $questionnaire->surveyid();
+        $question->id = $cmid;
         $draftideditor = file_get_submitted_draft_itemid('question');
         $content = file_prepare_draft_area(
             $draftideditor,
@@ -547,8 +549,8 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
         }
     } else {
         $question = \mod_questionnaire\local\question\question::question_builder($qtype);
-        $question->sid = $questionnaire->survey->id;
-        $question->id = $questionnaire->cm->id;
+        $question->sid = $questionnaire->surveyid();
+        $question->id = $cmid;
         $question->typeid = $qtype;
         $question->type = '';
         $draftideditor = file_get_submitted_draft_itemid('question');
