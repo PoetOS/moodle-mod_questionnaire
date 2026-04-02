@@ -138,7 +138,9 @@ if ($settings = $feedbackform->get_data()) {
     // Handle the edit feedback sections action.
     if (isset($settings->buttongroup['feedbackeditbutton'])) {
         // Create a single section for Global Feedback if not existent.
-        if (!($firstsection = $DB->get_field('questionnaire_fb_sections', 'MIN(section)', ['surveyid' => $questionnaire->surveyid()]))) {
+        if (!($firstsection = $DB->get_field(
+            'questionnaire_fb_sections', 'MIN(section)', ['surveyid' => $questionnaire->surveyid()]
+        ))) {
             $firstsection = 0;
         }
         if (($sdata->feedbacksections > 0) && ($firstsection == 0)) {
@@ -149,7 +151,10 @@ if ($settings = $feedbackform->get_data()) {
             }
             $feedbacksection = mod_questionnaire\local\feedback\section::new_section($questionnaire->surveyid(), $sectionlabel);
         }
-        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $questionnaire->coursemodule()->id, 'section' => $firstsection]));
+        redirect(new moodle_url(
+            '/mod/questionnaire/fbsections.php',
+            ['id' => $questionnaire->coursemodule()->id, 'section' => $firstsection]
+        ));
     }
 }
 

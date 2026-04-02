@@ -152,12 +152,16 @@ if ($settings = $feedbackform->get_data()) {
         }
     } else if (isset($settings->addnewsection)) {
         $newsection = mod_questionnaire\local\feedback\section::new_section($surveyid, $settings->newsectionlabel);
-        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $newsection->id]));
+        redirect(new moodle_url(
+            '/mod/questionnaire/fbsections.php',
+            ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $newsection->id]
+        ));
     } else if (isset($fullform->confirmdeletesection)) {
         redirect(
             new moodle_url(
                 '/mod/questionnaire/fbsections.php',
-                ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $feedbacksection->id, 'action' => 'confirmdeletesection']
+                ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $feedbacksection->id,
+                    'action' => 'confirmdeletesection']
             )
         );
     } else if (isset($fullform->confirmremovequestion)) {
@@ -165,7 +169,8 @@ if ($settings = $feedbackform->get_data()) {
         redirect(
             new moodle_url(
                 '/mod/questionnaire/fbsections.php',
-                ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $settings->sectionid, 'action' => 'confirmremovequestion', 'qid' => $qid]
+                ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $settings->sectionid,
+                    'action' => 'confirmremovequestion', 'qid' => $qid]
             )
         );
     } else if (isset($settings->addquestion)) {
