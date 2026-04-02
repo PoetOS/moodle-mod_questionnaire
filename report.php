@@ -25,7 +25,11 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\reportpage;
+use mod_questionnaire\output\reportpagepdf;
+use mod_questionnaire\output\responsepagepdf;
 
 $instance = optional_param('instance', false, PARAM_INT);   // Questionnaire ID.
 $action = optional_param('action', 'vall', PARAM_ALPHA);
@@ -61,41 +65,32 @@ if ($instance === false) {
 $SESSION->instance = $instance;
 $usergraph = get_config('questionnaire', 'usergraph');
 
-if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $instance])) {
-    throw new \moodle_exception('incorrectquestionnaire', 'mod_questionnaire');
-}
-if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
-    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-}
-if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
+$questionnaire = questionnaire::from_instanceid($instance);
+$course = $questionnaire->course();
+$cm = $questionnaire->coursemodule();
 
 require_course_login($course, true, $cm);
-
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 if ($outputtarget == 'pdf') {
     if ($action == 'vresp') {
-        $questionnaire->add_page(new \mod_questionnaire\output\responsepagepdf());
+        $questionnaire->add_page(new responsepagepdf());
     } else {
-        $questionnaire->add_page(new \mod_questionnaire\output\reportpagepdf());
+        $questionnaire->add_page(new reportpagepdf());
     }
 } else { // Default to HTML.
-    $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+    $questionnaire->add_page(new reportpage());
 }
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
-$context = context_module::instance($cm->id);
+$context = $questionnaire->context();
 if (!$questionnaire->can_view_all_responses(null, true) && !$individualresponse) {
     // Should never happen, unless called directly by a snoop...
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
-$sid = $questionnaire->survey->id;
+$sid = $questionnaire->surveyid();
 
 $url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/report.php');
 if ($instance) {
@@ -153,7 +148,7 @@ if ($groupmode > 0) {
     if ($groupmode == 1) {
         $questionnairegroups = groups_get_all_groups($course->id, $userid);
     }
-    if ($groupmode == 2 || $questionnaire->canviewallgroups) {
+    if ($groupmode == 2 || $questionnaire->can_view_all_groups()) {
         $questionnairegroups = groups_get_all_groups($course->id);
     }
 
@@ -166,13 +161,13 @@ if ($groupmode > 0) {
         if ($groupscount === 0 && $groupmode == 1) {
             $currentgroupid = 0;
         }
-        if ($groupmode == 1 && !$questionnaire->canviewallgroups && $currentgroupid == 0) {
+        if ($groupmode == 1 && !$questionnaire->can_view_all_groups() && $currentgroupid == 0) {
             $currentgroupid = $firstgroupid;
         }
     } else {
         // Groupmode = separate groups but user is not member of any group
         // and does not have moodle/site:accessallgroups capability -> refuse view responses.
-        if (!$questionnaire->canviewallgroups) {
+        if (!$questionnaire->can_view_all_groups()) {
             $currentgroupid = 0;
         }
     }
@@ -184,7 +179,7 @@ if ($groupmode > 0) {
     }
 }
 if ($usergraph) {
-    $charttype = $questionnaire->survey->chart_type;
+    $charttype = $questionnaire->survey()->charttype();
     if ($charttype) {
         $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
 
@@ -220,9 +215,9 @@ switch ($action) {
     case 'dresp':  // Delete individual response? Ask for confirmation.
         require_capability('mod/questionnaire:deleteresponses', $context);
 
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($questionnaire->survey->courseid != $course->id) {
+        } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
@@ -251,7 +246,7 @@ switch ($action) {
         include('tabs.php');
 
         $timesubmitted = '<br />' . get_string('submitted', 'questionnaire') . '&nbsp;' . userdate($resp->submitted);
-        if ($questionnaire->respondenttype == 'anonymous') {
+        if ($questionnaire->respondenttype() == 'anonymous') {
             $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
             $timesubmitted = '';
         }
@@ -324,9 +319,9 @@ switch ($action) {
     case 'dvresp': // Delete single response. Do it!
         require_capability('mod/questionnaire:deleteresponses', $context);
 
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($questionnaire->survey->courseid != $course->id) {
+        } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
@@ -335,7 +330,7 @@ switch ($action) {
         }
 
         if ($questionnaire->responses()->delete_response($response)) {
-            if (!$DB->count_records('questionnaire_response', ['questionnaireid' => $questionnaire->id, 'complete' => 'y'])) {
+            if (!$DB->count_records('questionnaire_response', ['questionnaireid' => $questionnaire->id(), 'complete' => 'y'])) {
                 $redirection = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $cm->id;
             } else {
                 $redirection = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;instance=' .
@@ -344,9 +339,9 @@ switch ($action) {
 
             // Log this questionnaire delete single response action.
             $params = [
-                'objectid' => $questionnaire->survey->id,
-                'context' => $questionnaire->context,
-                'courseid' => $questionnaire->course->id,
+                'objectid' => $questionnaire->surveyid(),
+                'context' => $questionnaire->context(),
+                'courseid' => $questionnaire->courseid(),
                 'relateduserid' => $response->userid,
             ];
             $event = \mod_questionnaire\event\response_deleted::create($params);
@@ -354,7 +349,7 @@ switch ($action) {
 
             redirect($redirection);
         } else {
-            if ($questionnaire->respondenttype == 'anonymous') {
+            if ($questionnaire->respondenttype() == 'anonymous') {
                 $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
             } else if (!empty($response->userid)) {
                 if ($user = $DB->get_record('user', ['id' => $response->userid])) {
@@ -383,9 +378,9 @@ switch ($action) {
     case 'dvallresp': // Delete all responses in questionnaire (or group). Do it!
         require_capability('mod/questionnaire:deleteresponses', $context);
 
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($questionnaire->survey->courseid != $course->id) {
+        } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         }
 
@@ -435,11 +430,10 @@ switch ($action) {
             }
 
             // Log this questionnaire delete all responses action.
-            $context = context_module::instance($questionnaire->cm->id);
-            $anonymous = $questionnaire->respondenttype == 'anonymous';
+            $anonymous = $questionnaire->respondenttype() == 'anonymous';
 
             $event = \mod_questionnaire\event\all_responses_deleted::create([
-                'objectid' => $questionnaire->id,
+                'objectid' => $questionnaire->id(),
                 'anonymous' => $anonymous,
                 'context' => $context,
             ]);
@@ -515,8 +509,8 @@ switch ($action) {
 
         // Log saved as text action.
         $params = [
-            'objectid' => $questionnaire->id,
-            'context' => $questionnaire->context,
+            'objectid' => $questionnaire->id(),
+            'context' => $questionnaire->context(),
             'courseid' => $course->id,
             'other' => ['action' => $action, 'instance' => $instance, 'currentgroupid' => $currentgroupid],
         ];
@@ -529,7 +523,7 @@ switch ($action) {
     case 'dfs':
         require_capability('mod/questionnaire:downloadresponses', $context);
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
-        $name = clean_param($questionnaire->name, PARAM_FILE);
+        $name = clean_param($questionnaire->name(), PARAM_FILE);
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
 
         $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
@@ -588,7 +582,9 @@ switch ($action) {
     case 'vallarsort':   // View all responses sorted in descending order.
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        if (!$questionnaire->capabilities->readallresponses && !$questionnaire->capabilities->readallresponseanytime) {
+        $canviewallresponses = has_capability('mod/questionnaire:readallresponses', $context);
+        $canviewallresponsesanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
+        if (!$canviewallresponses && !$canviewallresponsesanytime) {
             echo $questionnaire->renderer->header();
             // Should never happen, unless called directly by a snoop.
             throw new \moodle_exception('nopermissions', 'mod_questionnaire');
@@ -680,7 +676,7 @@ switch ($action) {
         }
 
         $params = [
-            'objectid' => $questionnaire->id,
+            'objectid' => $questionnaire->id(),
             'context' => $context,
             'courseid' => $course->id,
             'other' => ['action' => $action, 'instance' => $instance, 'groupid' => $currentgroupid],
@@ -704,7 +700,7 @@ switch ($action) {
             // not an array.
             $errorreporting = error_reporting(0);
             $pdf->writeHTML($html);
-            @$pdf->Output(clean_param($questionnaire->name, PARAM_FILE) . '.pdf', 'D');
+            @$pdf->Output(clean_param($questionnaire->name(), PARAM_FILE) . '.pdf', 'D');
             error_reporting($errorreporting);
         } else { // Default to HTML.
             $event = \mod_questionnaire\event\all_responses_viewed::create($params);
@@ -767,15 +763,15 @@ switch ($action) {
 
     case 'vresp': // View by response.
     default:
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($questionnaire->survey->courseid != $course->id) {
+        } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         }
         $ruser = false;
         $noresponses = false;
         if ($usergraph) {
-            $charttype = $questionnaire->survey->chart_type;
+            $charttype = $questionnaire->survey()->charttype();
             if ($charttype) {
                 $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
 
@@ -859,7 +855,7 @@ switch ($action) {
             // not an array.
             $errorreporting = error_reporting(0);
             $pdf->writeHTML($html);
-            @$pdf->Output(clean_param($questionnaire->name, PARAM_FILE), 'D');
+            @$pdf->Output(clean_param($questionnaire->name(), PARAM_FILE), 'D');
             error_reporting($errorreporting);
         } else { // Default to HTML.
             if ($noresponses) {
