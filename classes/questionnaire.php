@@ -255,6 +255,15 @@ class questionnaire {
     }
 
     /**
+     * Get the respondent type setting for this questionnaire (e.g. 'fullname', 'anonymous').
+     *
+     * @return string
+     */
+    public function respondenttype(): string {
+        return $this->modulerecord->get('respondenttype') ?? 'fullname';
+    }
+
+    /**
      * Get all question objects for this questionnaire.
      *
      * @return question[]
@@ -2416,6 +2425,84 @@ class questionnaire {
         $legacy = $this->legacy();
         $legacy->page = $this->page;
         $legacy->view_response($rid, $referer, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid, $outputtarget);
+    }
+
+    /**
+     * Render the alphabetical response navigation bar for the report page.
+     *
+     * Shim — delegates to the legacy questionnaire class until the navigation
+     * rendering is refactored.
+     *
+     * @param int $currrid       Currently displayed response id.
+     * @param int $currentgroupid Active group id.
+     * @param stdClass $cm       Course module object.
+     * @param bool $byresponse   True when navigating by individual response.
+     * @return void
+     */
+    public function survey_results_navbar_alpha(int $currrid, int $currentgroupid, stdClass $cm, bool $byresponse): void {
+        $legacy = $this->legacy();
+        $legacy->page = $this->page;
+        $legacy->survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse);
+    }
+
+    /**
+     * Analyse responses and return any feedback messages.
+     *
+     * Shim — delegates to the legacy questionnaire class until response analysis
+     * is refactored.
+     *
+     * @param int $rid            Response id (0 for all).
+     * @param array|string $resps Responses to analyse.
+     * @param bool $compare       True when comparing with group.
+     * @param bool $isgroupmember True when viewer is a group member.
+     * @param bool $allresponses  True when all responses are included.
+     * @param int $currentgroupid Active group id.
+     * @return array Feedback message strings.
+     */
+    public function response_analysis(
+        int $rid,
+        $resps,
+        bool $compare,
+        bool $isgroupmember,
+        bool $allresponses,
+        int $currentgroupid
+    ): array {
+        return $this->legacy()->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
+    }
+
+    /**
+     * Generate CSV export data for all (or filtered) responses.
+     *
+     * Shim — delegates to the legacy questionnaire class until CSV generation
+     * is refactored.
+     *
+     * @param int $currentgroupid Group id filter (0 = all).
+     * @param string $rid         Response id filter ('' = all).
+     * @param int|string $userid  User id filter ('' = all).
+     * @param int|null $choicecodes Include choice codes column.
+     * @param int $choicetext     Include choice text column.
+     * @param int $showincompletes Include incomplete responses.
+     * @param int $rankaverages   Include rank averages.
+     * @return array Rows of CSV data (row 0 = column headers).
+     */
+    public function generate_csv(
+        int $currentgroupid = 0,
+        string $rid = '',
+        $userid = '',
+        ?int $choicecodes = null,
+        int $choicetext = 1,
+        int $showincompletes = 0,
+        int $rankaverages = 0
+    ): array {
+        return $this->legacy()->generate_csv(
+            $currentgroupid,
+            $rid,
+            $userid,
+            $choicecodes,
+            $choicetext,
+            $showincompletes,
+            $rankaverages
+        );
     }
 
     /**
