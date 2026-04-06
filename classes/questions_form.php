@@ -49,7 +49,7 @@ class questions_form extends \moodleform {
         global $CFG, $questionnaire, $SESSION;
         global $DB;
 
-        $sid = $questionnaire->survey->id;
+        $sid = $questionnaire->surveyid();
         $mform    =& $this->_form;
         $qidrestore = optional_param(QUESTIONNAIRE_RESTORE_PARAM, 0, PARAM_INT);
 
@@ -61,11 +61,9 @@ class questions_form extends \moodleform {
         $strmovehere = get_string('movehere');
         $strposition = get_string('position', 'questionnaire');
 
-        if (!isset($questionnaire->questions)) {
-            $questionnaire->questions = [];
-        }
+        $questions = $questionnaire->questions();
         if ($this->moveq) {
-            $moveqposition = $questionnaire->questions[$this->moveq]->position;
+            $moveqposition = $questions[$this->moveq]->position;
         }
 
         $pos = 0;
@@ -76,7 +74,7 @@ class questions_form extends \moodleform {
         // Get the names of each question type in the appropriate language.
         foreach ($qtypes as $key => $qtype) {
             // Do not allow "Page Break" to be selected as first element of a Questionnaire.
-            if (empty($questionnaire->questions) && ($qtype == 'Page Break')) {
+            if (empty($questions) && ($qtype == 'Page Break')) {
                 unset($qtypes[$key]);
             } else {
                 $qtypes[$key] = questionnaire_get_type($key);
@@ -113,8 +111,8 @@ class questions_form extends \moodleform {
         // we must get now the parent and child positions.
 
         if ($questionnairehasdependencies) {
-            $parentpositions = questionnaire_get_parent_positions($questionnaire->questions);
-            $childpositions = questionnaire_get_child_positions($questionnaire->questions);
+            $parentpositions = questionnaire_get_parent_positions($questions);
+            $childpositions = questionnaire_get_child_positions($questions);
         }
 
         $mform->addElement('header', 'manageq', get_string('managequestions', 'questionnaire'));
@@ -122,7 +120,7 @@ class questions_form extends \moodleform {
 
         $mform->addElement('html', '<div class="qcontainer">');
 
-        foreach ($questionnaire->questions as $question) {
+        foreach ($questions as $question) {
             $manageqgroup = [];
 
             $qid = $question->id;
@@ -154,7 +152,7 @@ class questions_form extends \moodleform {
                         );
                     }
                 }
-                redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->cm->id);
+                redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $questionnaire->coursemodule()->id);
             }
 
             if ($question->is_numbered()) {
@@ -448,11 +446,12 @@ class questions_form extends \moodleform {
         $mform->addElement('header', 'deletionq', get_string('deletionquetions', 'questionnaire'));
         $mform->addHelpButton('deletionq', 'deletionquetions', 'questionnaire');
         $mform->addElement('html', '<div class="qcontainer">');
-        if (isset($questionnaire->deletequestions)) {
+        $deletequestions = $questionnaire->get_delete_questions();
+        if (!empty($deletequestions)) {
             $restoreimg = $questionnaire->renderer->image_url('i/up');
             $deleteimg = $questionnaire->renderer->image_url('t/delete');
             $rangetimecrontask = questionnaire_get_range_time_permanently();
-            foreach ($questionnaire->deletequestions as $deletequestion) {
+            foreach ($deletequestions as $deletequestion) {
                 $delquestiongroup = [];
                 // Preparing deleted time to display time permanently question.
                 $timedeleted = $deletequestion->deleted ?? "";
