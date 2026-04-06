@@ -18,6 +18,7 @@ use mod_questionnaire\local\feedback\section;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 /**

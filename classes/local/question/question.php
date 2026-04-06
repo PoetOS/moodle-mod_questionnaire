@@ -26,7 +26,7 @@
 namespace mod_questionnaire\local\question;
 use mod_questionnaire\edit_question_form;
 use mod_questionnaire\local\responsetype\response\response;
-use questionnaire;
+use mod_questionnaire\questionnaire;
 use html_writer;
 use stdClass;
 
@@ -1129,8 +1129,8 @@ abstract class question {
         $this->form_extradata($mform);
 
         // Added for advanced dependencies, parameter $editformobject is needed to use repeat_elements.
-        if ($questionnaire->navigate > 0) {
-            $this->form_dependencies($form, $questionnaire->questions);
+        if ($questionnaire->navigate() > 0) {
+            $this->form_dependencies($form, $questionnaire->questions());
         }
 
         // Exclude the save/cancel buttons from any collapsing sections.
@@ -1510,7 +1510,7 @@ abstract class question {
             $formdata->content = $formdata->content['text'];
             $formdata->content = file_save_draft_area_files(
                 $formdata->itemid,
-                $questionnaire->context->id,
+                $questionnaire->context()->id,
                 'mod_questionnaire',
                 'question',
                 $formdata->qid,
@@ -1553,7 +1553,7 @@ abstract class question {
             $formdata->content = $formdata->content['text'];
             $content = file_save_draft_area_files(
                 $formdata->itemid,
-                $questionnaire->context->id,
+                $questionnaire->context()->id,
                 'mod_questionnaire',
                 'question',
                 $this->qid,
