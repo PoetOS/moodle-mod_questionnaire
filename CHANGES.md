@@ -1,5 +1,22 @@
 # Release Notes #
 
+## Release 5.0.2 (Build - 2026040400) ##
+### New Features: ###
+* [PR677](https://github.com/PoetOS/moodle-mod_questionnaire/pull/677): New recycle bin for deleted questions.
+* [PR681](https://github.com/PoetOS/moodle-mod_questionnaire/pull/681): Addition of new file type question.
+
+### Improvements: ###
+* [PR675](https://github.com/PoetOS/moodle-mod_questionnaire/pull/675): Added group selector to by response report.
+* [PR651](https://github.com/PoetOS/moodle-mod_questionnaire/pull/651): Remove intermittent warnings when questionnaire started.
+* [PR657](https://github.com/PoetOS/moodle-mod_questionnaire/pull/657): Style the summary view page print button.
+* [PR660](https://github.com/PoetOS/moodle-mod_questionnaire/pull/660): Replace deprecated error functions.
+* [PR667](https://github.com/PoetOS/moodle-mod_questionnaire/pull/667): Improve table border appearance.
+* [PR669](https://github.com/PoetOS/moodle-mod_questionnaire/pull/669): Add "Activities" course navigation item.
+
+### Bug Fixes: ###
+* [PR648](https://github.com/PoetOS/moodle-mod_questionnaire/pull/648): Fix install structure to pass core unit tests.
+* [PR680](https://github.com/PoetOS/moodle-mod_questionnaire/pull/680): Make SQL statement compatible to Microsoft SQL Server.
+
 ## Release 5.0.1 (Build - 2025110900) ##
 * Initial release for Moodle 5.0 forward.
 
