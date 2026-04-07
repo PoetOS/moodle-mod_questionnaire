@@ -2397,9 +2397,16 @@ class questionnaire {
         string $currentgroupid = '',
         string $sort = ''
     ): void {
+        global $questionnaire;
         $legacy = $this->legacy();
         $legacy->page = $this->page;
-        $legacy->survey_results($rids, $uid, $pdf, $currentgroupid, $sort);
+        $prev = $questionnaire;
+        $questionnaire = $legacy;
+        try {
+            $legacy->survey_results($rids, $uid, $pdf, $currentgroupid, $sort);
+        } finally {
+            $questionnaire = $prev;
+        }
     }
 
     /**
@@ -2526,7 +2533,7 @@ class questionnaire {
         bool $isgroupmember,
         bool $allresponses,
         int $currentgroupid
-    ): array {
+    ) {
         return $this->legacy()->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
     }
 
