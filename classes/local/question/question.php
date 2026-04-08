@@ -25,6 +25,8 @@
 
 namespace mod_questionnaire\local\question;
 use mod_questionnaire\edit_question_form;
+use mod_questionnaire\local\db\question_record;
+use mod_questionnaire\local\question_type;
 use mod_questionnaire\local\responsetype\response\response;
 use mod_questionnaire\questionnaire;
 use html_writer;
@@ -62,17 +64,35 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
  */
 abstract class question {
     // Class Properties.
-    /** @var int $id The database id of this question. */
-    public $id = 0;
 
-    /** @var int $surveyid The database id of the survey this question belongs to. */
-    public $surveyid = 0;
+    /**
+     * Backing persistent record for all DB columns (surveyid, name, typeid, length,
+     * precise, position, content, required, deleted, extradata, resultid).
+     * Null only briefly before the constructor initialises it; set to a new empty
+     * record in __set so that subclass pre-constructor default assignments are buffered.
+     *
+     * @var question_record|null
+     */
+    protected ?question_record $record = null;
 
-    /** @var string $name The name of this question. */
-    public $name = '';
+    /**
+     * The question_type for this question (loaded from questionnaire_question_type table).
+     * Provides $type (name string), $haschoices and $responsetable.
+     *
+     * @var question_type|null
+     */
+    protected ?question_type $questiontype = null;
 
-    /** @var string $type The name of the question type. */
-    public $type = '';
+    /**
+     * TEMPORARY: Buffer for DB-column values assigned by subclass constructors before
+     * parent::__construct() has had a chance to initialise $this->record.
+     * (text, numerical, rate set length/precise before calling parent.)
+     * Applied to the record for new questions only; ignored when loading from DB.
+     * Will be removed in Phase 22f once all subclass constructors use initialize_defaults().
+     *
+     * @var array
+     */
+    private array $preinit = [];
 
     /** @var array $choices Array holding any choices for this question. */
     public $choices = [];
@@ -80,41 +100,14 @@ abstract class question {
     /** @var array $dependencies Array holding any dependencies for this question. */
     public $dependencies = [];
 
-    /** @var string $responsetable The table name for responses. */
-    public $responsetable = '';
-
-    /** @var int $length The length field. */
-    public $length = 0;
-
-    /** @var int $precise The precision field. */
-    public $precise = 0;
-
-    /** @var int $position Position in the questionnaire */
-    public $position = 0;
-
-    /** @var string $content The question's content. */
-    public $content = '';
-
     /** @var string $qlegend The question's legend. */
     public $qlegend = '';
 
     /** @var string $allchoices The list of all question's choices. */
     public $allchoices = '';
 
-    /** @var bool $required The required flag. */
-    public $required = 'n';
-
-    /** @var int $deleted The deleted flag. */
-    public $deleted = null;
-
-    /** @var mixed $extradata Any custom data for the question type. */
-    public $extradata = '';
-
     /** @var bool $isprint The isprint flag. */
     public $isprint = false;
-
-    /** @var int $typeid The question type id. */
-    public $typeid = 0;
 
     /** @var \context|null $context The module context. */
     public $context = null;
@@ -125,7 +118,7 @@ abstract class question {
     /** @var int|null $qid The id assigned after inserting a new question record. */
     public $qid = null;
 
-    /** @var mixed $resultid Legacy response result id. */
+    /** @var mixed $resultid Legacy response result id (not loaded from DB; set transiently). */
     public $resultid = null;
 
     /** @var mixed $dependquestion Legacy dependency question id. */
@@ -149,23 +142,6 @@ abstract class question {
     /** @var array $dependlogicor Dependency logic values for "or" conditions (locallib form builder). */
     public $dependlogicor = [];
 
-    /** @var array $qtypenames List of all question names. */
-    private static $qtypenames = [
-        QUESYESNO => 'yesno',
-        QUESTEXT => 'text',
-        QUESESSAY => 'essay',
-        QUESRADIO => 'radio',
-        QUESCHECK => 'check',
-        QUESDROP => 'drop',
-        QUESRATE => 'rate',
-        QUESDATE => 'date',
-        QUESFILE => 'file',
-        QUESNUMERIC => 'numerical',
-        QUESPAGEBREAK => 'pagebreak',
-        QUESSECTIONTEXT => 'sectiontext',
-        QUESSLIDER => 'slider',
-    ];
-
     /** @var array $notifications Array of extra messages for display purposes. */
     private $notifications = [];
 
@@ -182,57 +158,146 @@ abstract class question {
      * @param array $params
      */
     public function __construct($id = 0, $question = null, $context = null, $params = []) {
-        global $DB;
-        static $qtypes = null;
-
-        if ($qtypes === null) {
-            $qtypes = $DB->get_records(
-                'questionnaire_question_type',
-                [],
-                'typeid',
-                'typeid, type, haschoices, responsetable'
-            ) ?? [];
-        }
-
+        // Determine which DB-backed properties were pre-set by a subclass constructor
+        // before this parent constructor was called (e.g. text sets length=20, rate sets
+        // length=5).  Those are held in $this->preinit (see __set) and applied below only
+        // when constructing a brand-new question with no stored data.
         if ($id) {
-            $questionrec = \mod_questionnaire\local\db\question_record::get_record(['id' => $id]);
-            $question = $questionrec ? $questionrec->to_record() : null;
-        }
-
-        if (is_object($question)) {
-            $this->id = $question->id;
-            $this->surveyid = $question->surveyid;
-            $this->name = $question->name;
-            $this->length = $question->length;
-            $this->precise = $question->precise;
-            $this->position = $question->position;
-            $this->content = $question->content;
-            $this->required = $question->required;
-            $this->deleted = $question->deleted;
-            $this->extradata = $question->extradata;
-
-            $this->typeid = $question->typeid ?? 0;
-            $this->type = $qtypes[$this->typeid]->type;
-            $this->responsetable = $qtypes[$this->typeid]->responsetable;
-
-            if (!empty($question->choices)) {
-                $this->choices = $question->choices;
-            } else if ($qtypes[$this->typeid]->haschoices == 'y') {
-                $this->get_choices();
+            // Load existing question from the database.
+            $loaded = question_record::get_record(['id' => $id]);
+            $this->record = $loaded ?: new question_record();
+        } else if (is_object($question)) {
+            // Construct from a supplied stdClass (e.g. passed in from a list query).
+            $this->record = new question_record(0, $question);
+        } else {
+            // Brand-new question; start with an empty record and apply any subclass
+            // defaults that were buffered in $this->preinit before this constructor ran.
+            $this->record = new question_record();
+            foreach ($this->preinit as $field => $default) {
+                $this->record->set($field, $default);
             }
-            // Added for dependencies.
-            $this->get_dependencies();
         }
-        $this->context = $context;
+        $this->preinit = [];
 
+        // Apply caller-supplied overrides ($params keys map to DB columns or other props).
         foreach ($params as $property => $value) {
             $this->$property = $value;
         }
+
+        // Resolve the question_type (cached per typeid for the request lifetime).
+        $typeid = $this->record->get('typeid');
+        if ($typeid) {
+            $this->questiontype = question_type::from_typeid($typeid);
+        }
+
+        // Load choices and dependencies when there is a persisted record to query.
+        if ($id || is_object($question)) {
+            if (!empty($question->choices)) {
+                $this->choices = $question->choices;
+            } else if ($this->questiontype && $this->questiontype->haschoices === 'y') {
+                $this->get_choices();
+            }
+            $this->get_dependencies();
+        }
+
+        $this->context = $context;
 
         if ($respclass = $this->responseclass()) {
             $this->responsetype = new $respclass($this);
         }
     }
+
+    // -------------------------------------------------------------------------
+    // TEMPORARY magic property accessors — Phase 22c
+    //
+    // These __get / __set / __isset methods provide backward compatibility while
+    // the plugin's code base is migrated to use $this->record->get()/$record->set()
+    // or named accessor methods.  They will be removed in Phase 22f once all
+    // callers have been updated to the new API.
+    // -------------------------------------------------------------------------
+
+    /**
+     * TEMPORARY: Proxy read access to DB-backed properties and derived type fields.
+     *
+     * Handles: id, surveyid, name, typeid, length, precise, position, content,
+     *          required, deleted, extradata  (all from $this->record)
+     *          type, responsetable            (derived from $this->questiontype)
+     *
+     * Will be removed in Phase 22f.
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get(string $name): mixed {
+        $dbfields = ['surveyid', 'name', 'typeid', 'length', 'precise',
+                     'position', 'content', 'required', 'deleted', 'extradata'];
+        if ($name === 'id') {
+            return $this->record ? $this->record->get('id') : 0;
+        }
+        if (in_array($name, $dbfields, true)) {
+            return $this->record ? $this->record->get($name) : null;
+        }
+        if ($name === 'type') {
+            return $this->questiontype ? $this->questiontype->type : '';
+        }
+        if ($name === 'responsetable') {
+            return $this->questiontype ? $this->questiontype->responsetable : null;
+        }
+        return null;
+    }
+
+    /**
+     * TEMPORARY: Proxy write access to DB-backed properties.
+     *
+     * For values set before $this->record is initialised (subclass constructors
+     * that set length/precise before calling parent::__construct), the value is
+     * buffered in $this->preinit and applied to the record later in __construct.
+     *
+     * Will be removed in Phase 22f.
+     *
+     * @param string $name
+     * @param mixed  $value
+     * @return void
+     */
+    public function __set(string $name, mixed $value): void {
+        $dbfields = ['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
+                     'position', 'content', 'required', 'deleted', 'extradata'];
+        if (in_array($name, $dbfields, true)) {
+            if ($this->record === null) {
+                // Record not yet created — buffer for later (see constructor preinit logic).
+                $this->preinit[$name] = $value;
+            } else {
+                if ($name === 'id') {
+                    $this->record->set_id((int)$value);
+                } else {
+                    $this->record->set($name, $value);
+                }
+            }
+            return;
+        }
+        // For non-DB properties that are not declared on the class, emit a notice
+        // rather than silently swallowing the assignment.
+        trigger_error("Setting undefined property question::\${$name}", E_USER_NOTICE);
+    }
+
+    /**
+     * TEMPORARY: Allow isset() checks on proxied DB-backed properties.
+     *
+     * Will be removed in Phase 22f.
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function __isset(string $name): bool {
+        $proxied = ['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
+                    'position', 'content', 'required', 'deleted', 'extradata',
+                    'type', 'responsetable'];
+        return in_array($name, $proxied, true);
+    }
+
+    // -------------------------------------------------------------------------
+    // End TEMPORARY magic property accessors
+    // -------------------------------------------------------------------------
 
     /**
      * Short name for this question type - no spaces, etc..
@@ -264,11 +329,7 @@ abstract class question {
      * @return string
      */
     public static function qtypename($qtype) {
-        if (array_key_exists($qtype, self::$qtypenames)) {
-            return self::$qtypenames[$qtype];
-        } else {
-            return('');
-        }
+        return question_type::qtypename((int)$qtype);
     }
 
     /**
@@ -276,7 +337,7 @@ abstract class question {
      * @return array
      */
     public static function qtypenames() {
-        return self::$qtypenames;
+        return question_type::qtypenames();
     }
 
     /**

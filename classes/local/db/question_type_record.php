@@ -68,4 +68,15 @@ class question_type_record extends \core\persistent {
         $records = static::get_records(['typeid' => $typeid]);
         return !empty($records) ? reset($records) : false;
     }
+
+    /**
+     * Return the question type record for a given typeid, or null if not found.
+     *
+     * @param int $typeid
+     * @return question_type_record|null
+     */
+    public static function from_typeid(int $typeid): ?self {
+        $records = static::get_records(['typeid' => $typeid]);
+        return !empty($records) ? reset($records) : null;
+    }
 }
