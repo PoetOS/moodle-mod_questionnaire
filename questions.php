@@ -309,7 +309,7 @@ if ($action == 'main') {
 } else if ($action == 'question') {
     $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
     $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
-    $questionsform->set_data($question);
+    $questionsform->set_data($question->form_data());
     if ($questionsform->is_cancelled()) {
         // Switch to main screen.
         $action = 'main';
@@ -347,7 +347,7 @@ if ($action == 'main') {
         $event->trigger();
     }
 
-    $questionsform->set_data($question);
+    $questionsform->set_data($question->form_data());
 }
 
 // Reload the form data if called for...
@@ -375,7 +375,7 @@ if ($reload) {
     } else if ($action == 'question') {
         $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
         $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
-        $questionsform->set_data($question);
+        $questionsform->set_data($question->form_data());
     }
 }
 

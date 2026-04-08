@@ -3826,12 +3826,16 @@ class questionnaire {
                     $index++;
                 }
                 if ($question->id == $movequestion->id) {
-                    $movequestion->position = $movetopos;
-                    $DB->update_record("questionnaire_question", $movequestion);
+                    $rec = new stdClass();
+                    $rec->id = $movequestion->id;
+                    $rec->position = $movetopos;
+                    $DB->update_record("questionnaire_question", $rec);
                     continue;
                 }
-                $question->position = $index;
-                $DB->update_record("questionnaire_question", $question);
+                $rec = new stdClass();
+                $rec->id = $question->id;
+                $rec->position = $index;
+                $DB->update_record("questionnaire_question", $rec);
                 $index++;
             }
             return true;
