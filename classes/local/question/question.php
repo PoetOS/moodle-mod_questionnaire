@@ -148,6 +148,20 @@ abstract class question {
     /** @var \questionnaire|null The parent questionnaire object, set during rendering. */
     protected $questionnaire = null;
 
+    /**
+     * TEMPORARY: Editor-format content array set by locallib for new/edited questions.
+     * When content is assigned as ['text'=>..., 'format'=>..., 'itemid'=>...] (Moodle
+     * editor array), it cannot be stored in the persistent record because Moodle 5's
+     * persistent::get() runs clean_param() on read and rejects arrays. This property
+     * holds the array form; __get('content') returns it when set, falling back to the
+     * DB string otherwise. Cleared when the record is saved.
+     *
+     * Will be removed in Phase 22f.
+     *
+     * @var array|null
+     */
+    public $contenteditordata = null;
+
     // Class Methods.
 
     /**
@@ -231,6 +245,10 @@ abstract class question {
         if ($name === 'id') {
             return $this->record ? $this->record->get('id') : 0;
         }
+        if ($name === 'content') {
+            // Editor-format array takes precedence over the DB string value.
+            return $this->contenteditordata ?? ($this->record ? $this->record->get('content') : null);
+        }
         if (in_array($name, $dbfields, true)) {
             return $this->record ? $this->record->get($name) : null;
         }
@@ -260,6 +278,13 @@ abstract class question {
         $dbfields = ['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
                      'position', 'content', 'required', 'deleted', 'extradata'];
         if (in_array($name, $dbfields, true)) {
+            if ($name === 'content' && is_array($value)) {
+                // Editor-format array ['text'=>..., 'format'=>..., 'itemid'=>...].
+                // Moodle 5's persistent::get() runs clean_param() on read and rejects
+                // arrays, so store editor data in a separate property rather than the record.
+                $this->contenteditordata = $value;
+                return;
+            }
             if ($this->record === null) {
                 // Record not yet created — buffer for later (see constructor preinit logic).
                 $this->preinit[$name] = $value;
@@ -300,6 +325,37 @@ abstract class question {
     }
 
     // End TEMPORARY magic property accessors.
+
+    /**
+     * Return a plain stdClass containing all form-relevant question properties.
+     *
+     * PHP's (array) cast excludes magic __get properties, so moodleform::set_data()
+     * cannot populate hidden fields (id, typeid, etc.) from a question object directly.
+     * This method materialises both the DB-backed magic fields and the declared public
+     * fields into a single flat stdClass that set_data() can work with.
+     *
+     * @return \stdClass
+     */
+    public function form_data(): \stdClass {
+        $data = new \stdClass();
+        // DB-backed fields proxied via __get — not present in (array)$this.
+        foreach (['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
+                  'position', 'content', 'required', 'deleted', 'extradata'] as $field) {
+            $data->$field = $this->$field;
+        }
+        // Declared public properties used by the edit-question form.
+        $data->qid = $this->qid;
+        $data->sid = $this->sid;
+        $data->choices = $this->choices;
+        $data->allchoices = $this->allchoices;
+        $data->dependquestion = $this->dependquestion;
+        $data->dependchoice = $this->dependchoice;
+        $data->dependquestionsand = $this->dependquestionsand;
+        $data->dependlogicand = $this->dependlogicand;
+        $data->dependquestionsor = $this->dependquestionsor;
+        $data->dependlogicor = $this->dependlogicor;
+        return $data;
+    }
 
     /**
      * Short name for this question type - no spaces, etc..
