@@ -16,7 +16,6 @@
 
 namespace mod_questionnaire\local\responsetype;
 
-use Composer\Package\Package;
 use mod_questionnaire\db\bulk_sql_config;
 
 /**
@@ -113,8 +112,6 @@ class rank extends responsetype {
      * @return int|bool - on error the subtype should call set_error and return false.
      */
     public function insert_response($responsedata) {
-        global $DB;
-
         if (!$responsedata instanceof \mod_questionnaire\local\responsetype\response\response) {
             $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform(
                 $responsedata,
@@ -129,19 +126,22 @@ class rank extends responsetype {
         if (isset($response->answers[$this->question->id])) {
             foreach ($response->answers[$this->question->id] as $answer) {
                 // Record the choice selection.
-                $record = new \stdClass();
-                $record->responseid = $response->id;
-                $record->questionid = $this->question->id;
-                $record->choiceid = $answer->choiceid;
-                $record->rankvalue = $answer->value;
-                $resid = $DB->insert_record(static::response_table(), $record);
+                $rec = new \mod_questionnaire\local\db\response_rank_record();
+                $rec->set('responseid', $response->id);
+                $rec->set('questionid', $this->question->id);
+                $rec->set('choiceid', $answer->choiceid);
+                $rec->set('rankvalue', $answer->value);
+                $rec->create();
+                $resid = $rec->get('id');
+                // The "other" text is read directly from $responsedata here (not from the
+                // parsed $response->answers) — pre-existing inconsistency, not fixed in Phase 23.
                 if (isset($responsedata->{$answer->choiceid . '_qother'})) {
-                    $otherrecord = new \stdClass();
-                    $otherrecord->responseid = $response->id;
-                    $otherrecord->questionid = $this->question->id;
-                    $otherrecord->choiceid = $answer->choiceid;
-                    $otherrecord->response = $responsedata->{$answer->choiceid . '_qother'};
-                    $DB->insert_record('questionnaire_response_other', $otherrecord);
+                    $otherrec = new \mod_questionnaire\local\db\response_other_record();
+                    $otherrec->set('responseid', $response->id);
+                    $otherrec->set('questionid', $this->question->id);
+                    $otherrec->set('choiceid', $answer->choiceid);
+                    $otherrec->set('response', $responsedata->{$answer->choiceid . '_qother'});
+                    $otherrec->create();
                 }
             }
         }

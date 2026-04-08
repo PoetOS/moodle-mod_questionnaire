@@ -26,11 +26,20 @@ namespace mod_questionnaire\local\responsetype;
  */
 class multiple extends single {
     /**
-     * The only differences between multuple and single responses are the
+     * The only differences between multiple and single responses are the
      * response table and the insert logic.
      */
     public static function response_table() {
         return 'questionnaire_resp_multiple';
+    }
+
+    /**
+     * Return the primary response record class for multiple-choice responses.
+     *
+     * @return \core\persistent
+     */
+    protected function make_primary_record(): \core\persistent {
+        return new \mod_questionnaire\local\db\response_multiple_record();
     }
 
     /**

@@ -90,14 +90,22 @@ class single extends responsetype {
     }
 
     /**
+     * Create and return the primary response record for this type.
+     * Overridden by multiple to return a response_multiple_record instead.
+     *
+     * @return \core\persistent
+     */
+    protected function make_primary_record(): \core\persistent {
+        return new \mod_questionnaire\local\db\response_single_record();
+    }
+
+    /**
      * Insert a provided response to the question.
      *
      * @param object $responsedata All of the responsedata as an object.
      * @return int|bool - on error the subtype should call set_error and return false.
      */
     public function insert_response($responsedata) {
-        global $DB;
-
         if (!$responsedata instanceof \mod_questionnaire\local\responsetype\response\response) {
             $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform(
                 $responsedata,
@@ -116,19 +124,20 @@ class single extends responsetype {
                         if (empty($answer->value) || preg_match("/^[\s]*$/", $answer->value)) {
                             continue;
                         }
-                        $record = new \stdClass();
-                        $record->responseid = $response->id;
-                        $record->questionid = $this->question->id;
-                        $record->choiceid = $answer->choiceid;
-                        $record->response = clean_text($answer->value);
-                        $DB->insert_record('questionnaire_response_other', $record);
+                        $otherrec = new \mod_questionnaire\local\db\response_other_record();
+                        $otherrec->set('responseid', $response->id);
+                        $otherrec->set('questionid', $this->question->id);
+                        $otherrec->set('choiceid', $answer->choiceid);
+                        $otherrec->set('response', clean_text($answer->value));
+                        $otherrec->create();
                     }
                     // Record the choice selection.
-                    $record = new \stdClass();
-                    $record->responseid = $response->id;
-                    $record->questionid = $this->question->id;
-                    $record->choiceid = $answer->choiceid;
-                    $resid = $DB->insert_record(static::response_table(), $record);
+                    $rec = $this->make_primary_record();
+                    $rec->set('responseid', $response->id);
+                    $rec->set('questionid', $this->question->id);
+                    $rec->set('choiceid', $answer->choiceid);
+                    $rec->create();
+                    $resid = $rec->get('id');
                 }
             }
         }

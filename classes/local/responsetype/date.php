@@ -78,8 +78,6 @@ class date extends responsetype {
      * @return int|bool - on error the subtype should call set_error and return false.
      */
     public function insert_response($responsedata) {
-        global $DB;
-
         if (!$responsedata instanceof \mod_questionnaire\local\responsetype\response\response) {
             $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform(
                 $responsedata,
@@ -95,14 +93,14 @@ class date extends responsetype {
                 return false;
             }
             // Now use ISO date formatting.
-            $record = new \stdClass();
-            $record->responseid = $response->id;
-            $record->questionid = $this->question->id;
-            $record->response = $thisdate;
-            return $DB->insert_record(self::response_table(), $record);
-        } else {
-            return false;
+            $rec = new \mod_questionnaire\local\db\response_date_record();
+            $rec->set('responseid', $response->id);
+            $rec->set('questionid', $this->question->id);
+            $rec->set('response', $thisdate);
+            $rec->create();
+            return $rec->get('id');
         }
+        return false;
     }
 
     /**
