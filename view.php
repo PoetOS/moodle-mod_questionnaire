@@ -36,41 +36,49 @@ if (!isset($SESSION->questionnaire)) {
 }
 $SESSION->questionnaire->current_tab = 'view';
 
-$id = optional_param('id', null, PARAM_INT);    // Course Module ID.
-$a = optional_param('a', null, PARAM_INT);      // Or questionnaire ID.
-
+$cmid = optional_param('id', null, PARAM_INT);    // Course Module ID.
+$qid = optional_param('a', null, PARAM_INT);      // Or questionnaire ID.
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
-
-[$cm, $course] = questionnaire_get_standard_page_items($id, $a);
+if (!empty($cmid)) {
+    $questionnaire = questionnaire::from_cmid($cmid);
+} else {
+    $questionnaire = questionnaire::from_instanceid($qid);
+}
 
 // Check login and get context.
-require_course_login($course, true, $cm);
-$context = context_module::instance($cm->id);
+require_course_login($questionnaire->courseid(), true, $questionnaire->coursemodule());
 
 $url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/view.php');
-if (isset($id)) {
-    $url->param('id', $id);
+if (isset($cmid)) {
+    $url->param('id', $cmid);
 } else {
-    $url->param('a', $a);
+    $url->param('a', $qid);
 }
 if (isset($sid)) {
     $url->param('sid', $sid);
 }
 
-$PAGE->set_url($url);
-$PAGE->set_context($context);
+// Log this course module view.
+$anonymous = $questionnaire->is_anonymous();
+$event = \mod_questionnaire\event\course_module_viewed::create(
+    [
+        'objectid' => $questionnaire->id(),
+        'anonymous' => $anonymous,
+        'context' => $questionnaire->context(),
+    ]
+);
+$event->trigger();
 
-$questionnaire = questionnaire::from_cm($cm);
+$PAGE->set_url($url);
+$PAGE->set_context($questionnaire->context());
+$PAGE->set_title(format_string($questionnaire->name()));
+$PAGE->set_heading(format_string($questionnaire->course()->fullname));
+
 // Add renderer and page objects to the questionnaire object for display use.
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new viewpage());
 
-$PAGE->set_title(format_string($questionnaire->name()));
-$PAGE->set_heading(format_string($course->fullname));
-
-echo $questionnaire->renderer->header();
 // No need to print out intro or name in Moodle 4 and above.
-
 $cm = $questionnaire->coursemodule();
 $currentgroupid = groups_get_activity_group($cm);
 if (!groups_is_member($currentgroupid, $USER->id)) {
@@ -129,18 +137,6 @@ if (isguestuser()) {
     );
 }
 
-// Log this course module view.
-$anonymous = $questionnaire->is_anonymous();
-
-$event = \mod_questionnaire\event\course_module_viewed::create(
-    [
-        'objectid' => $questionnaire->id(),
-        'anonymous' => $anonymous,
-        'context' => context_module::instance($questionnaire->coursemodule()->id),
-    ]
-);
-$event->trigger();
-
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
 if ($questionnaire->can_read_own_responses() && ($usernumresp > 0)) {
@@ -167,5 +163,6 @@ if ($questionnaire->can_view_all_responses($usernumresp)) {
     );
 }
 
+echo $questionnaire->renderer->header();
 echo $questionnaire->renderer->render($questionnaire->page);
 echo $questionnaire->renderer->footer();

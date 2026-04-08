@@ -255,8 +255,6 @@ class questionnaire {
      * @param bool $sid
      */
     public function add_questions($sid = 0) {
-        global $DB;
-
         if ($sid === 0) {
             $sid = $this->sid;
         }
@@ -266,23 +264,25 @@ class questionnaire {
             $this->questionsbysec = [];
         }
 
-        $select = 'surveyid = ? AND deleted IS NULL';
-        if ($records = $DB->get_records_select('questionnaire_question', $select, [$sid], 'position')) {
+        $records = \mod_questionnaire\local\db\question_record::get_active_for_survey($sid);
+        if ($records) {
             $sec = 1;
             $isbreak = false;
-            foreach ($records as $record) {
-                $this->questions[$record->id] = \mod_questionnaire\local\question\question::question_builder(
-                    $record->typeid,
-                    $record,
+            foreach ($records as $rec) {
+                $typeid = $rec->get('typeid');
+                $qid = $rec->get('id');
+                $this->questions[$qid] = \mod_questionnaire\local\question\question::question_builder(
+                    $typeid,
+                    $rec->to_record(),
                     $this->context
                 );
 
-                if ($record->typeid != QUESPAGEBREAK) {
-                    $this->questionsbysec[$sec][] = $record->id;
+                if ($typeid != QUESPAGEBREAK) {
+                    $this->questionsbysec[$sec][] = $qid;
                     $isbreak = false;
                 } else {
                     // Sanity check: no section break allowed as first position, no 2 consecutive section breaks.
-                    if ($record->position != 1 && $isbreak == false) {
+                    if ($rec->get('position') != 1 && $isbreak == false) {
                         $sec++;
                         $isbreak = true;
                     }
