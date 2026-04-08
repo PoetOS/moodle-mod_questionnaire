@@ -207,14 +207,11 @@ abstract class question {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // TEMPORARY magic property accessors — Phase 22c
-    //
+    // TEMPORARY magic property accessors (Phase 22c).
     // These __get / __set / __isset methods provide backward compatibility while
     // the plugin's code base is migrated to use $this->record->get()/$record->set()
-    // or named accessor methods.  They will be removed in Phase 22f once all
+    // or named accessor methods. They will be removed in Phase 22f once all
     // callers have been updated to the new API.
-    // -------------------------------------------------------------------------
 
     /**
      * TEMPORARY: Proxy read access to DB-backed properties and derived type fields.
@@ -266,13 +263,20 @@ abstract class question {
             if ($this->record === null) {
                 // Record not yet created — buffer for later (see constructor preinit logic).
                 $this->preinit[$name] = $value;
+            } else if ($name === 'id') {
+                // Use from_record() to set the id; set_id() is not reliably public
+                // across all Moodle versions.
+                $stub = new \stdClass();
+                $stub->id = (int)$value;
+                $this->record->from_record($stub);
             } else {
-                if ($name === 'id') {
-                    $this->record->set_id((int)$value);
-                } else {
-                    $this->record->set($name, $value);
-                }
+                $this->record->set($name, $value);
             }
+            return;
+        }
+        // 'type' and 'responsetable' are derived from $this->questiontype and cannot
+        // be set independently. Silently ignore writes to preserve backward compat.
+        if ($name === 'type' || $name === 'responsetable') {
             return;
         }
         // For non-DB properties that are not declared on the class, emit a notice
@@ -295,9 +299,7 @@ abstract class question {
         return in_array($name, $proxied, true);
     }
 
-    // -------------------------------------------------------------------------
-    // End TEMPORARY magic property accessors
-    // -------------------------------------------------------------------------
+    // End TEMPORARY magic property accessors.
 
     /**
      * Short name for this question type - no spaces, etc..

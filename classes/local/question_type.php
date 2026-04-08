@@ -31,7 +31,6 @@ use mod_questionnaire\local\db\question_type_record;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class question_type {
-
     /** @var int Define choose question type. */
     const QUESCHOOSE = 0;
     /** @var int Define Yes/No question type. */
