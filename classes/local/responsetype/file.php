@@ -136,22 +136,20 @@ class file extends responsetype {
      */
     public static function delete_old_response(int $questionid, int $responseid) {
         global $DB;
-        // Check, if we have an old response file from a former attempt.
-        $record = $DB->get_record(static::response_table(), [
+        // Check if we have an old response file from a former attempt.
+        $existing = \mod_questionnaire\local\db\response_file_record::get_records([
             'responseid' => $responseid,
             'questionid' => $questionid,
         ]);
-        if ($record) {
-            // Old record found, then delete all referenced entries in the files table and then delete this entry.
-            $DB->delete_records(
-                'files',
-                [
-                    'component' => 'mod_questionnaire',
-                    'filearea' => 'response_file',
-                    'itemid' => $record->id,
-                ]
-            );
-            $DB->delete_records(self::response_table(), ['id' => $record->id]);
+        foreach ($existing as $rec) {
+            // Delete all referenced entries in the {files} table, then the response row.
+            // The {files} table is a Moodle core table — must remain a raw DB call.
+            $DB->delete_records('files', [
+                'component' => 'mod_questionnaire',
+                'filearea'  => 'response_file',
+                'itemid'    => $rec->get('id'),
+            ]);
+            $rec->delete();
         }
     }
 
@@ -175,30 +173,31 @@ class file extends responsetype {
         }
 
         if (!empty($response) && isset($response->answers[$this->question->id][0])) {
-            $record = new \stdClass();
-            $record->responseid = $response->id;
-            $record->questionid = $this->question->id;
-            $record->fileid = intval(clean_text($response->answers[$this->question->id][0]->value));
+            $fileid = intval(clean_text($response->answers[$this->question->id][0]->value));
 
             // Delete any previous attempts.
             self::delete_old_response((int)$this->question->id, (int)$response->id);
 
-            // When saving the draft file, the itemid was the same as the draftitemid. This must now be
-            // corrected to the primary key that is questionaire_response_file.id to have a correct reference.
-            $recordid = $DB->insert_record(static::response_table(), $record);
+            $rec = new \mod_questionnaire\local\db\response_file_record();
+            $rec->set('responseid', $response->id);
+            $rec->set('questionid', $this->question->id);
+            $rec->set('fileid', $fileid);
+            $rec->create();
+            $recordid = $rec->get('id');
+
             if ($recordid) {
-                $olditem = $DB->get_record('files', ['id' => $record->fileid], 'itemid');
+                // When saving the draft file, the itemid was the same as the draftitemid. This must now
+                // be corrected to the primary key of questionnaire_response_file.id for a correct reference.
+                // The {files} table is Moodle core — these operations must remain raw DB calls.
+                $olditem = $DB->get_record('files', ['id' => $fileid], 'itemid');
                 if (!$olditem) {
                     return false;
                 }
-                $siblings = $DB->get_records(
-                    'files',
-                    [
-                        'component' => 'mod_questionnaire',
-                        'filearea' => 'response_file',
-                        'itemid' => $olditem->itemid,
-                    ]
-                );
+                $siblings = $DB->get_records('files', [
+                    'component' => 'mod_questionnaire',
+                    'filearea'  => 'response_file',
+                    'itemid'    => $olditem->itemid,
+                ]);
                 foreach ($siblings as $sibling) {
                     if (!self::fix_file_itemid($recordid, $sibling)) {
                         return false;

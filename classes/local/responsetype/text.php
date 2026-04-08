@@ -63,8 +63,6 @@ class text extends responsetype {
      * @return int|bool - on error the subtype should call set_error and return false.
      */
     public function insert_response($responsedata) {
-        global $DB;
-
         if (!$responsedata instanceof \mod_questionnaire\local\responsetype\response\response) {
             $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform(
                 $responsedata,
@@ -75,14 +73,14 @@ class text extends responsetype {
         }
 
         if (!empty($response) && isset($response->answers[$this->question->id][0])) {
-            $record = new \stdClass();
-            $record->responseid = $response->id;
-            $record->questionid = $this->question->id;
-            $record->response = clean_text($response->answers[$this->question->id][0]->value);
-            return $DB->insert_record(static::response_table(), $record);
-        } else {
-            return false;
+            $rec = new \mod_questionnaire\local\db\response_text_record();
+            $rec->set('responseid', $response->id);
+            $rec->set('questionid', $this->question->id);
+            $rec->set('response', clean_text($response->answers[$this->question->id][0]->value));
+            $rec->create();
+            return $rec->get('id');
         }
+        return false;
     }
 
     /**
