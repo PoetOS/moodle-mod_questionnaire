@@ -299,7 +299,7 @@ abstract class question {
             }
             return;
         }
-        // 'type' and 'responsetable' are derived from $this->questiontype and cannot
+        // The 'type' and 'responsetable' fields are derived from $this->questiontype and cannot
         // be set independently. Silently ignore writes to preserve backward compat.
         if ($name === 'type' || $name === 'responsetable') {
             return;
@@ -339,8 +339,9 @@ abstract class question {
     public function form_data(): \stdClass {
         $data = new \stdClass();
         // DB-backed fields proxied via __get — not present in (array)$this.
-        foreach (['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
-                  'position', 'content', 'required', 'deleted', 'extradata'] as $field) {
+        $dbfields = ['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
+            'position', 'content', 'required', 'deleted', 'extradata'];
+        foreach ($dbfields as $field) {
             $data->$field = $this->$field;
         }
         // Declared public properties used by the edit-question form.
