@@ -21,7 +21,7 @@ use mod_questionnaire\local\db\response_record;
 /**
  * The response domain object — a single user's submission to a questionnaire instance.
  *
- * Merges the former mod_questionnaire\local\responsetype\response\response (a plain DTO
+ * Merges the former mod_questionnaire\local\response\response\response (a plain DTO
  * used throughout the processing pipeline) with the former mod_questionnaire\response
  * (a persistent-backed domain object). The unified class is persistent-backed and
  * carries the full interface of both predecessors.
@@ -337,12 +337,12 @@ class response {
      */
     public function add_questions_answers(): void {
         $this->answers = [];
-        $this->answers += \mod_questionnaire\local\responsetype\multiple::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\responsetype\single::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\responsetype\rank::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\responsetype\boolean::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\responsetype\date::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\responsetype\text::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\responsetype\file::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\local\response\multiple::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\local\response\single::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\local\response\rank::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\local\response\boolean::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\local\response\date::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\local\response\text::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\local\response\file::response_answers_by_question($this->id);
     }
 }

@@ -30,7 +30,7 @@ class check extends question {
      * @return string
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\local\\responsetype\\multiple';
+        return '\\mod_questionnaire\\local\\response\\multiple';
     }
 
     /**
@@ -170,7 +170,7 @@ class check extends question {
         $resptags->choices = [];
 
         if (!isset($response->answers[$this->id])) {
-            $response->answers[$this->id][] = new \mod_questionnaire\local\responsetype\answer\answer();
+            $response->answers[$this->id][] = new \mod_questionnaire\local\response\answer\answer();
         }
 
         foreach ($this->choices as $id => $choice) {

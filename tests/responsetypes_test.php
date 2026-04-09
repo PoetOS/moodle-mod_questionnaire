@@ -431,7 +431,7 @@ final class responsetypes_test extends \advanced_testcase {
     /**
      * Tests that an old boolean response is deleted correctly.
      *
-     * @covers \mod_questionnaire\local\responsetype\boolean
+     * @covers \mod_questionnaire\local\response\boolean
      */
     public function test_create_old_response_boolean(): void {
         global $DB;

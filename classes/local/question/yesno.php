@@ -30,7 +30,7 @@ class yesno extends question {
      * @return object The response object based off of questionnaire_response_base.
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\local\\responsetype\\boolean';
+        return '\\mod_questionnaire\\local\\response\\boolean';
     }
 
     /**
@@ -197,7 +197,7 @@ class yesno extends question {
         $resptags->stryes = get_string('yes');
         $resptags->strno = get_string('no');
         if (!isset($response->answers[$this->id])) {
-            $response->answers[$this->id][] = new \mod_questionnaire\local\responsetype\answer\answer();
+            $response->answers[$this->id][] = new \mod_questionnaire\local\response\answer\answer();
         }
         $answer = reset($response->answers[$this->id]);
         if ($answer->value == 'y') {

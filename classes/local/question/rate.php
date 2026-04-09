@@ -52,7 +52,7 @@ class rate extends question {
      * @return object The response object based off of questionnaire_response_base.
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\local\\responsetype\\rank';
+        return '\\mod_questionnaire\\local\\response\\rank';
     }
 
     /**
@@ -455,7 +455,7 @@ class rate extends question {
         $resptags->rows = [];
 
         if (!isset($response->answers[$this->id])) {
-            $response->answers[$this->id][] = new \mod_questionnaire\local\responsetype\answer\answer();
+            $response->answers[$this->id][] = new \mod_questionnaire\local\response\answer\answer();
         }
         // Check if rate question has one line only to display full width columns of choices.
         $nocontent = false;

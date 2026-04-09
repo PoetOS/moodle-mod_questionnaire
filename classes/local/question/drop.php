@@ -33,7 +33,7 @@ class drop extends question {
      * @return string The response object based off of questionnaire_response_base.
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\local\\responsetype\\single';
+        return '\\mod_questionnaire\\local\\response\\single';
     }
 
     /**
@@ -137,7 +137,7 @@ class drop extends question {
         $resptags->options[] = (object)['value' => '', 'label' => get_string('choosedots')];
 
         if (!isset($response->answers[$this->id])) {
-            $response->answers[$this->id][] = new \mod_questionnaire\local\responsetype\answer\answer();
+            $response->answers[$this->id][] = new \mod_questionnaire\local\response\answer\answer();
         }
 
         foreach ($this->choices as $id => $choice) {

@@ -44,7 +44,7 @@ class numerical extends question {
      *
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\local\\responsetype\\numericaltext';
+        return '\\mod_questionnaire\\local\\response\\numericaltext';
     }
 
     /**

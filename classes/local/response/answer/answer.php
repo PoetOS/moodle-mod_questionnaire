@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\local\responsetype\answer;
+namespace mod_questionnaire\local\response\answer;
 
 /**
  * This defines a structured class to hold question answers.

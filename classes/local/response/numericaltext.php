@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\local\responsetype;
+namespace mod_questionnaire\local\response;
 
 /**
  * Class for numerical text response types.
@@ -30,7 +30,7 @@ class numericaltext extends text {
      *
      * @param \stdClass $responsedata All of the responsedata as an object.
      * @param \mod_questionnaire\local\question\question $question
-     * @return array \mod_questionnaire\local\responsetype\answer\answer An array of answer objects.
+     * @return array \mod_questionnaire\local\response\answer\answer An array of answer objects.
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
