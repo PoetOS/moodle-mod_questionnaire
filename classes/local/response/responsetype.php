@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\local\responsetype;
+namespace mod_questionnaire\local\response;
 
 use html_writer;
 use html_table;
@@ -36,7 +36,7 @@ abstract class responsetype {
     /** @var int $responseid The id of the response this is for. */
     public $responseid;
 
-    /** @var array $choices An array of \mod_questionnaire\local\responsetype\choice objects. */
+    /** @var array $choices An array of \mod_questionnaire\local\response\choice objects. */
     public $choices;
 
     /**
@@ -80,7 +80,7 @@ abstract class responsetype {
      *
      * @param \stdClass $responsedata All of the responsedata as an object.
      * @param \mod_questionnaire\local\question\question $question
-     * @return array \mod_questionnaire\local\responsetype\answer\answer An array of answer objects.
+     * @return array \mod_questionnaire\local\response\answer\answer An array of answer objects.
      */
     abstract public static function answers_from_webform($responsedata, $question);
 
@@ -265,7 +265,7 @@ abstract class responsetype {
      *
      * @param \stdClass $responsedata All of the responsedata as an object.
      * @param \mod_questionnaire\local\question\question $question
-     * @return array \mod_questionnaire\local\responsetype\answer\answer An array of answer objects.
+     * @return array \mod_questionnaire\local\response\answer\answer An array of answer objects.
      */
     public static function answers_from_appdata($responsedata, $question) {
         // In most cases this can be a direct call to answers_from_webform with the one modification below. Override when this will

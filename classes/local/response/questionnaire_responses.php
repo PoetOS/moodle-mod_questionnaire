@@ -252,12 +252,12 @@ class questionnaire_responses {
      * @return array
      */
     public function response_select($rid) {
-        $values = \mod_questionnaire\local\responsetype\boolean::response_select($rid);
-        $values += \mod_questionnaire\local\responsetype\single::response_select($rid);
-        $values += \mod_questionnaire\local\responsetype\multiple::response_select($rid);
-        $values += \mod_questionnaire\local\responsetype\rank::response_select($rid);
-        $values += \mod_questionnaire\local\responsetype\text::response_select($rid);
-        $values += \mod_questionnaire\local\responsetype\date::response_select($rid);
+        $values = \mod_questionnaire\local\response\boolean::response_select($rid);
+        $values += \mod_questionnaire\local\response\single::response_select($rid);
+        $values += \mod_questionnaire\local\response\multiple::response_select($rid);
+        $values += \mod_questionnaire\local\response\rank::response_select($rid);
+        $values += \mod_questionnaire\local\response\text::response_select($rid);
+        $values += \mod_questionnaire\local\response\date::response_select($rid);
         return $values;
     }
 

@@ -30,7 +30,7 @@ class slider extends question {
      * @return string
      */
     protected function responseclass() {
-        return '\\mod_questionnaire\\local\\responsetype\\slider';
+        return '\\mod_questionnaire\\local\\response\\slider';
     }
 
     /**
