@@ -125,7 +125,7 @@ class single extends responsetype {
                             continue;
                         }
                         $otherrec = new \mod_questionnaire\local\db\response_other_record();
-                        $otherrec->set('responseid', $response->id);
+                        $otherrec->set('responseid', $response->id());
                         $otherrec->set('questionid', $this->question->id);
                         $otherrec->set('choiceid', $answer->choiceid);
                         $otherrec->set('response', clean_text($answer->value));
@@ -133,7 +133,7 @@ class single extends responsetype {
                     }
                     // Record the choice selection.
                     $rec = $this->make_primary_record();
-                    $rec->set('responseid', $response->id);
+                    $rec->set('responseid', $response->id());
                     $rec->set('questionid', $this->question->id);
                     $rec->set('choiceid', $answer->choiceid);
                     $rec->create();

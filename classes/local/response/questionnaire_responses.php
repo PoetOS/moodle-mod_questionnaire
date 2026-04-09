@@ -101,9 +101,10 @@ class questionnaire_responses {
      *
      * @param \stdClass $appdata
      * @param int $sec
+     * @param int $responseid The existing response id (0 for a new response).
      * @return bool|\mod_questionnaire\local\response\response
      */
-    public function build_response_from_appdata(\stdClass $appdata, $sec = 0) {
+    public function build_response_from_appdata(\stdClass $appdata, $sec = 0, int $responseid = 0) {
         $questions = [];
         if ($sec == 0) {
             $questions = $this->questionnaire->questions();
@@ -114,7 +115,7 @@ class questionnaire_responses {
         }
         return \mod_questionnaire\local\response\response::response_from_appdata(
             $this->questionnaire->id(),
-            0,
+            $responseid,
             $appdata,
             $questions
         );

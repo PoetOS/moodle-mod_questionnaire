@@ -1077,7 +1077,7 @@ class rate extends question {
                             'questionnaire_response_rank',
                             'rankvalue',
                             $newvalues[$response->rankvalue],
-                            ['id' => $response->id]
+                            ['id' => $response->id()]
                         );
                     }
                 }

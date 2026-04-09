@@ -94,7 +94,7 @@ class date extends responsetype {
             }
             // Now use ISO date formatting.
             $rec = new \mod_questionnaire\local\db\response_date_record();
-            $rec->set('responseid', $response->id);
+            $rec->set('responseid', $response->id());
             $rec->set('questionid', $this->question->id);
             $rec->set('response', $thisdate);
             $rec->create();

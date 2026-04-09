@@ -21,10 +21,10 @@ use mod_questionnaire\local\db\response_record;
 /**
  * The response domain object — a single user's submission to a questionnaire instance.
  *
- * Merges the former mod_questionnaire\local\response\response\response (a plain DTO
- * used throughout the processing pipeline) with the former mod_questionnaire\response
- * (a persistent-backed domain object). The unified class is persistent-backed and
- * carries the full interface of both predecessors.
+ * Persistent-backed domain object representing a questionnaire_response row.
+ * Provides typed accessors (id(), userid(), questionnaireid(), is_complete(),
+ * submitted_at(), grade()) and operations (create(), touch(), commit(),
+ * add_questions_answers()) for the full response lifecycle.
  *
  * @package mod_questionnaire
  * @copyright 2025 onward Mike Churchward (mike.churchward@poetopensource.org)
@@ -42,65 +42,6 @@ class response {
      * @var array
      */
     public array $answers = [];
-
-    // TEMPORARY magic property accessors (Phase 24).
-    // These __get / __set / __isset methods allow callers that use plain property
-    // access ($response->id, $response->complete, etc.) to continue working while
-    // the codebase is migrated to the typed accessor methods. They will be removed
-    // in a future phase once all callers use the named accessor API.
-
-    /**
-     * TEMPORARY: Proxy read access to DB-backed response fields.
-     *
-     * Handles: id, questionnaireid, userid, submitted, complete, grade.
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function __get(string $name): mixed {
-        $dbfields = ['questionnaireid', 'userid', 'submitted', 'complete', 'grade'];
-        if ($name === 'id') {
-            return $this->record->get('id');
-        }
-        if (in_array($name, $dbfields, true)) {
-            return $this->record->get($name);
-        }
-        return null;
-    }
-
-    /**
-     * TEMPORARY: Proxy write access to DB-backed response fields.
-     *
-     * @param string $name
-     * @param mixed  $value
-     * @return void
-     */
-    public function __set(string $name, mixed $value): void {
-        $dbfields = ['questionnaireid', 'userid', 'submitted', 'complete', 'grade'];
-        if ($name === 'id') {
-            $stub = new \stdClass();
-            $stub->id = (int)$value;
-            $this->record->from_record($stub);
-            return;
-        }
-        if (in_array($name, $dbfields, true)) {
-            $this->record->set($name, $value);
-            return;
-        }
-    }
-
-    /**
-     * TEMPORARY: Allow isset() checks on proxied DB-backed response fields.
-     *
-     * @param string $name
-     * @return bool
-     */
-    public function __isset(string $name): bool {
-        $proxied = ['id', 'questionnaireid', 'userid', 'submitted', 'complete', 'grade'];
-        return in_array($name, $proxied, true);
-    }
-
-    // End TEMPORARY magic property accessors.
 
     /**
      * Construct from a response_record.
@@ -337,12 +278,12 @@ class response {
      */
     public function add_questions_answers(): void {
         $this->answers = [];
-        $this->answers += \mod_questionnaire\local\response\multiple::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\response\single::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\response\rank::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\response\boolean::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\response\date::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\response\text::response_answers_by_question($this->id);
-        $this->answers += \mod_questionnaire\local\response\file::response_answers_by_question($this->id);
+        $this->answers += \mod_questionnaire\local\response\multiple::response_answers_by_question($this->id());
+        $this->answers += \mod_questionnaire\local\response\single::response_answers_by_question($this->id());
+        $this->answers += \mod_questionnaire\local\response\rank::response_answers_by_question($this->id());
+        $this->answers += \mod_questionnaire\local\response\boolean::response_answers_by_question($this->id());
+        $this->answers += \mod_questionnaire\local\response\date::response_answers_by_question($this->id());
+        $this->answers += \mod_questionnaire\local\response\text::response_answers_by_question($this->id());
+        $this->answers += \mod_questionnaire\local\response\file::response_answers_by_question($this->id());
     }
 }

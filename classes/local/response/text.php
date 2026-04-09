@@ -74,7 +74,7 @@ class text extends responsetype {
 
         if (!empty($response) && isset($response->answers[$this->question->id][0])) {
             $rec = new \mod_questionnaire\local\db\response_text_record();
-            $rec->set('responseid', $response->id);
+            $rec->set('responseid', $response->id());
             $rec->set('questionid', $this->question->id);
             $rec->set('response', clean_text($response->answers[$this->question->id][0]->value));
             $rec->create();

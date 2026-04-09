@@ -147,8 +147,8 @@ class sectiontext extends question {
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         global $DB;
 
-        // If !isset then normal behavior as sectiontext question.
-        if (!isset($response->questionnaireid)) {
+        // If not a response domain object, normal behavior as sectiontext question.
+        if (!($response instanceof \mod_questionnaire\local\response\response)) {
             return '';
         }
 
@@ -181,7 +181,7 @@ class sectiontext extends question {
         $allresponses = false;
         $currentgroupid = 0;
         $isgroupmember = false;
-        $rid = (isset($response->id) && !empty($response->id)) ? $response->id : 0;
+        $rid = $response->id();
         $resps = [$rid => null];
         // For $filteredsections -> get the feedback messages only for this sections!
         $feedbackmessages = $questionnaire->response_analysis(

@@ -219,7 +219,7 @@ class mobile {
             $questionnaire->add_user_responses();
             $submissions = [];
             foreach ($questionnaire->responses()->get_loaded_responses() as $response) {
-                $submissions[] = ['submissiondate' => userdate($response->submitted), 'submissionid' => $response->id];
+                $submissions[] = ['submissiondate' => userdate($response->submitted_at()), 'submissionid' => $response->id()];
             }
             if (!empty($submissions)) {
                 $data['submissions'] = $submissions;
