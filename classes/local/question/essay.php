@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\local\question;
 use html_writer;
-use mod_questionnaire\local\responsetype\response\response;
+use mod_questionnaire\local\response\response;
 
 /**
  * This file contains the parent class for essay question types.

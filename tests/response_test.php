@@ -14,19 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\response;
 
 use advanced_testcase;
 use mod_questionnaire\local\db\response_record;
 
 /**
- * Unit tests for mod_questionnaire\response.
+ * Unit tests for mod_questionnaire\local\response\response.
  *
  * @package    mod_questionnaire
  * @copyright  2025 Mike Churchward (mike.churchward@poetopensource.org)
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_questionnaire\response
+ * @covers     \mod_questionnaire\local\response\response
  */
 final class response_test extends advanced_testcase {
     // Helpers.

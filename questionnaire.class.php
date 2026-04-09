@@ -323,7 +323,7 @@ class questionnaire {
      *
      * @param stdClass $appdata
      * @param int $sec
-     * @return bool|\mod_questionnaire\local\responsetype\response\response
+     * @return bool|\mod_questionnaire\local\response\response
      */
     public function build_response_from_appdata(stdClass $appdata, $sec = 0) {
         return $this->responses()->build_response_from_appdata($appdata, $sec);
@@ -1308,7 +1308,7 @@ class questionnaire {
 
     /**
      * Return the correct action to a next page request.
-     * @param mod_questionnaire\local\responsetype\response\response $response
+     * @param mod_questionnaire\local\response\response $response
      * @param int $userid
      * @return bool|int|string
      */
@@ -1324,7 +1324,7 @@ class questionnaire {
 
     /**
      * Return the correct action to a previous page request.
-     * @param mod_questionnaire\local\responsetype\response\response $response
+     * @param mod_questionnaire\local\response\response $response
      * @param int $userid
      * @return bool|int
      */
@@ -1335,7 +1335,7 @@ class questionnaire {
 
     /**
      * Handle updating an existing response.
-     * @param mod_questionnaire\local\responsetype\response\response $response
+     * @param mod_questionnaire\local\response\response $response
      * @param int $userid
      * @return bool|int
      */
@@ -1912,7 +1912,7 @@ class questionnaire {
                 $this->questions[$questionid]->set_isprint($referer === 'print');
                 $output .= $this->renderer->question_output(
                     $this->questions[$questionid],
-                    ($this->responses()->get_response(0) ?? new \mod_questionnaire\local\responsetype\response\response()),
+                    ($this->responses()->get_response(0) ?? new \mod_questionnaire\local\response\response()),
                     $i++,
                     null,
                     $dependants,

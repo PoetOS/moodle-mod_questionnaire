@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\generator;
 
-use mod_questionnaire\local\responsetype\response\response;
+use mod_questionnaire\local\response\response;
 
 /**
  * Question response class

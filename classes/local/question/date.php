@@ -59,7 +59,7 @@ class date extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @param array $descendantsdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
@@ -90,7 +90,7 @@ class date extends question {
 
     /**
      * Return the context tags for the check response template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @return object The check question response context tags.
      */
     protected function response_survey_display($response) {
@@ -110,7 +110,7 @@ class date extends question {
      */
     public function response_valid($responsedata) {
         $responseval = false;
-        if (is_a($responsedata, 'mod_questionnaire\local\responsetype\response\response')) {
+        if (is_a($responsedata, 'mod_questionnaire\local\response\response')) {
             // If $responsedata is a response object, look through the answers.
             if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
                 $answer = $responsedata->answers[$this->id][0];

@@ -156,15 +156,15 @@ class file extends responsetype {
     /**
      * Insert a provided response to the question.
      *
-     * @param \mod_questionnaire\local\responsetype\response\response|\stdClass $responsedata
+     * @param \mod_questionnaire\local\response\response|\stdClass $responsedata
      * @return bool|int
      * @throws \dml_exception
      */
     public function insert_response($responsedata) {
         global $DB;
 
-        if (!$responsedata instanceof \mod_questionnaire\local\responsetype\response\response) {
-            $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform(
+        if (!$responsedata instanceof \mod_questionnaire\local\response\response) {
+            $response = \mod_questionnaire\local\response\response::response_from_webform(
                 $responsedata,
                 [$this->question]
             );
