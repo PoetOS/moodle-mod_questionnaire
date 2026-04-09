@@ -176,10 +176,10 @@ class file extends responsetype {
             $fileid = intval(clean_text($response->answers[$this->question->id][0]->value));
 
             // Delete any previous attempts.
-            self::delete_old_response((int)$this->question->id, (int)$response->id);
+            self::delete_old_response((int)$this->question->id, (int)$response->id());
 
             $rec = new \mod_questionnaire\local\db\response_file_record();
-            $rec->set('responseid', $response->id);
+            $rec->set('responseid', $response->id());
             $rec->set('questionid', $this->question->id);
             $rec->set('fileid', $fileid);
             $rec->create();

@@ -127,7 +127,7 @@ class rank extends responsetype {
             foreach ($response->answers[$this->question->id] as $answer) {
                 // Record the choice selection.
                 $rec = new \mod_questionnaire\local\db\response_rank_record();
-                $rec->set('responseid', $response->id);
+                $rec->set('responseid', $response->id());
                 $rec->set('questionid', $this->question->id);
                 $rec->set('choiceid', $answer->choiceid);
                 $rec->set('rankvalue', $answer->value);
@@ -137,7 +137,7 @@ class rank extends responsetype {
                 // parsed $response->answers) — pre-existing inconsistency, not fixed in Phase 23.
                 if (isset($responsedata->{$answer->choiceid . '_qother'})) {
                     $otherrec = new \mod_questionnaire\local\db\response_other_record();
-                    $otherrec->set('responseid', $response->id);
+                    $otherrec->set('responseid', $response->id());
                     $otherrec->set('questionid', $this->question->id);
                     $otherrec->set('choiceid', $answer->choiceid);
                     $otherrec->set('response', $responsedata->{$answer->choiceid . '_qother'});

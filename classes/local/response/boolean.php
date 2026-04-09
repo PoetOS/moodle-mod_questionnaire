@@ -92,7 +92,7 @@ class boolean extends responsetype {
 
         if (!empty($response) && isset($response->answers[$this->question->id][0])) {
             $rec = new \mod_questionnaire\local\db\response_bool_record();
-            $rec->set('responseid', $response->id);
+            $rec->set('responseid', $response->id());
             $rec->set('questionid', $this->question->id);
             $rec->set('choiceid', $response->answers[$this->question->id][0]->choiceid);
             $rec->create();

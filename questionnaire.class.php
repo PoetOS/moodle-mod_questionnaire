@@ -325,8 +325,8 @@ class questionnaire {
      * @param int $sec
      * @return bool|\mod_questionnaire\local\response\response
      */
-    public function build_response_from_appdata(stdClass $appdata, $sec = 0) {
-        return $this->responses()->build_response_from_appdata($appdata, $sec);
+    public function build_response_from_appdata(stdClass $appdata, $sec = 0, int $responseid = 0) {
+        return $this->responses()->build_response_from_appdata($appdata, $sec, $responseid);
     }
 
     /**
@@ -4442,10 +4442,9 @@ class questionnaire {
         global $DB, $CFG; // Do not delete "$CFG".
 
         $ret = [];
-        $response = $this->build_response_from_appdata((object)$responses, $sec);
+        $response = $this->build_response_from_appdata((object)$responses, $sec, $rid);
         $response->sec = $sec;
         $response->rid = $rid;
-        $response->id = $rid;
 
         if ($action == 'nextpage') {
             $result = $this->next_page_action($response, $userid);
