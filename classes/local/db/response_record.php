@@ -96,4 +96,22 @@ class response_record extends \core\persistent {
             ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'complete' => 'y']
         );
     }
+
+    /**
+     * Return the most recent incomplete response record for the given questionnaire and user, or null.
+     *
+     * @param int $questionnaireid
+     * @param int $userid
+     * @return response_record|null
+     */
+    public static function get_latest_incomplete(int $questionnaireid, int $userid): ?self {
+        $records = static::get_records(
+            ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'complete' => 'n'],
+            'submitted',
+            'DESC',
+            0,
+            1
+        );
+        return empty($records) ? null : reset($records);
+    }
 }
