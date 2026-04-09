@@ -73,15 +73,14 @@ class questionnaire_responses {
      * @param int $responseid
      */
     public function add_response(int $responseid) {
-        global $DB;
-
         if (empty($this->questionnaire->id())) {
             return;
         }
 
-        $response = $DB->get_record('questionnaire_response', ['id' => $responseid]);
-        $this->responses[$response->id] =
-            \mod_questionnaire\local\response\response::create_from_data($response);
+        $this->responses[$responseid] = new \mod_questionnaire\local\response\response(
+            new \mod_questionnaire\local\db\response_record($responseid),
+            true
+        );
     }
 
     /**
@@ -350,19 +349,15 @@ class questionnaire_responses {
      * @return bool|int
      */
     public function response_insert($responsedata, $userid, $resume = false) {
-        global $DB;
-
-        $record = new \stdClass();
-        $record->submitted = time();
-
         if (empty($responsedata->rid)) {
-            $record->questionnaireid = $this->questionnaire->id();
-            $record->userid = $userid;
-            $responsedata->rid = $DB->insert_record('questionnaire_response', $record);
+            $response = \mod_questionnaire\local\response\response::create($this->questionnaire->id(), $userid);
+            $responsedata->rid = $response->id();
             $responsedata->id = $responsedata->rid;
         } else {
-            $record->id = $responsedata->rid;
-            $DB->update_record('questionnaire_response', $record);
+            $response = new \mod_questionnaire\local\response\response(
+                new \mod_questionnaire\local\db\response_record($responsedata->rid)
+            );
+            $response->touch();
         }
         if ($resume) {
             $context = \context_module::instance($this->questionnaire->coursemodule()->id);
@@ -396,19 +391,12 @@ class questionnaire_responses {
      * @return bool
      */
     public function response_commit($rid) {
-        global $DB;
-
-        $record = new \stdClass();
-        $record->id = $rid;
-        $record->complete = 'y';
-        $record->submitted = time();
-
-        if ($this->questionnaire->grade() < 0) {
-            $record->grade = 1;
-        } else {
-            $record->grade = $this->questionnaire->grade();
-        }
-        return $DB->update_record('questionnaire_response', $record);
+        $grade = $this->questionnaire->grade() < 0 ? 1 : $this->questionnaire->grade();
+        $response = new \mod_questionnaire\local\response\response(
+            new \mod_questionnaire\local\db\response_record($rid)
+        );
+        $response->commit($grade);
+        return true;
     }
 
     /**
