@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\output;
 
-use mod_questionnaire\local\responsetype\response\response;
+use mod_questionnaire\local\response\response;
 
 /**
  * Mobile output class for mod_questionnaire.
@@ -104,7 +104,7 @@ class mobile {
                     $loadedresponses = $questionnaire->responses()->get_loaded_responses();
                     $response = !empty($loadedresponses) ?
                         end($loadedresponses) :
-                        \mod_questionnaire\local\responsetype\response\response::create_from_data([]);
+                        \mod_questionnaire\local\response\response::create_from_data([]);
                     $response->sec = $pagenum;
                     if (isset($result['warnings'])) {
                         if ($action == 'submit') {

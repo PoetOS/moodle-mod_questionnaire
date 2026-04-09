@@ -21,7 +21,7 @@ use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\response\questionnaire_responses;
-use mod_questionnaire\response;
+use mod_questionnaire\local\response\response;
 use mod_questionnaire\survey;
 use context_module;
 use stdClass;

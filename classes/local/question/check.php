@@ -74,7 +74,7 @@ class check extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return \stdClass The check question context tags.
@@ -160,7 +160,7 @@ class check extends question {
 
     /**
      * Return the context tags for the check response template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @return \stdClass The check question response context tags.
      */
     protected function response_survey_display($response) {
@@ -239,7 +239,7 @@ class check extends question {
     public function response_valid($responsedata) {
         $nbrespchoices = 0;
         $valid = true;
-        if (is_a($responsedata, 'mod_questionnaire\local\responsetype\response\response')) {
+        if (is_a($responsedata, 'mod_questionnaire\local\response\response')) {
             // If $responsedata is a response object, look through the answers.
             if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
                 foreach ($responsedata->answers[$this->id] as $answer) {

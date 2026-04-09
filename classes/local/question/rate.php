@@ -192,7 +192,7 @@ class rate extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @param string $descendantsdata
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
@@ -443,7 +443,7 @@ class rate extends question {
 
     /**
      * Return the context tags for the rate response template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @return \stdClass The rate question response context tags.
      * @throws \coding_exception
      */
@@ -596,8 +596,8 @@ class rate extends question {
      *
      */
     public function response_complete($responsedata) {
-        if (!is_a($responsedata, 'mod_questionnaire\local\responsetype\response\response')) {
-            $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform($responsedata, [$this]);
+        if (!is_a($responsedata, 'mod_questionnaire\local\response\response')) {
+            $response = \mod_questionnaire\local\response\response::response_from_webform($responsedata, [$this]);
         } else {
             $response = $responsedata;
         }
@@ -646,8 +646,8 @@ class rate extends question {
      */
     public function response_valid($responsedata) {
         // Work with a response object.
-        if (!is_a($responsedata, 'mod_questionnaire\local\responsetype\response\response')) {
-            $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform($responsedata, [$this]);
+        if (!is_a($responsedata, 'mod_questionnaire\local\response\response')) {
+            $response = \mod_questionnaire\local\response\response::response_from_webform($responsedata, [$this]);
         } else {
             $response = $responsedata;
         }

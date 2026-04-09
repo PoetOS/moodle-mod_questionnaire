@@ -63,8 +63,8 @@ class text extends responsetype {
      * @return int|bool - on error the subtype should call set_error and return false.
      */
     public function insert_response($responsedata) {
-        if (!$responsedata instanceof \mod_questionnaire\local\responsetype\response\response) {
-            $response = \mod_questionnaire\local\responsetype\response\response::response_from_webform(
+        if (!$responsedata instanceof \mod_questionnaire\local\response\response) {
+            $response = \mod_questionnaire\local\response\response::response_from_webform(
                 $responsedata,
                 [$this->question]
             );

@@ -462,7 +462,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
     /**
      * Add the response choice.
-     * @param \mod_questionnaire\local\responsetype\response\response $questionresponse
+     * @param \mod_questionnaire\local\response\response $questionresponse
      * @param int $responseid
      */
     protected function add_response_choice($questionresponse, $responseid) {

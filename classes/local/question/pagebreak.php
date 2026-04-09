@@ -46,7 +46,7 @@ class pagebreak extends question {
     /**
      * Get the output for the start of the questions in a survey.
      * @param int $qnum
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @param \questionnaire|null $questionnaire
      * @return \stdClass
      */

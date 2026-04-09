@@ -17,7 +17,7 @@
 namespace mod_questionnaire\local\question;
 use html_writer;
 use mod_questionnaire\local\question\choice;
-use mod_questionnaire\local\responsetype\response\response;
+use mod_questionnaire\local\response\response;
 
 /**
  * This file contains the parent class for drop question types.
@@ -85,7 +85,7 @@ class drop extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.
@@ -123,7 +123,7 @@ class drop extends question {
 
     /**
      * Return the context tags for the drop response template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @return \stdClass The check question response context tags.
      */
     protected function response_survey_display($response) {

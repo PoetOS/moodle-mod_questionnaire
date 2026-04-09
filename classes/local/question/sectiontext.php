@@ -138,7 +138,7 @@ class sectiontext extends question {
 
     /**
      * Return the context tags for the check question template.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @param array $descendantsdata Array of all questions/choices depending on this question.
      * @param boolean $blankquestionnaire
      * @return object The check question context tags.

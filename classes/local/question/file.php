@@ -17,7 +17,7 @@
 namespace mod_questionnaire\local\question;
 use core_media_manager;
 use form_filemanager;
-use mod_questionnaire\local\responsetype\response\response;
+use mod_questionnaire\local\response\response;
 use moodle_url;
 use MoodleQuickForm;
 
@@ -117,7 +117,7 @@ class file extends question {
         $answered = false;
         // If $responsedata is a response object, look through the answers.
         if (
-            is_a($responsedata, 'mod_questionnaire\local\responsetype\response\response') &&
+            is_a($responsedata, 'mod_questionnaire\local\response\response') &&
             isset($responsedata->answers[$this->id]) &&
             !empty($responsedata->answers[$this->id])
         ) {

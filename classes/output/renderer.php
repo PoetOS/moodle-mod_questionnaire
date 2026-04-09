@@ -222,7 +222,7 @@ class renderer extends \plugin_renderer_base {
     /**
      * Render a question for a survey.
      * @param \mod_questionnaire\local\question\question $question The question object.
-     * @param \mod_questionnaire\local\responsetype\response\response $response Any current response data.
+     * @param \mod_questionnaire\local\response\response $response Any current response data.
      * @param int $qnum The question number.
      * @param boolean $blankquestionnaire Used for printing a blank one.
      * @param array $dependants Array of all questions/choices depending on $question.
@@ -253,7 +253,7 @@ class renderer extends \plugin_renderer_base {
     /**
      * Render a question response.
      * @param \mod_questionnaire\local\question\question $question The question object.
-     * @param \mod_questionnaire\local\responsetype\response\response $response The response object.
+     * @param \mod_questionnaire\local\response\response $response The response object.
      * @param int $qnum The question number.
      * @param bool $pdf
      * @param \questionnaire|null $questionnaire The parent questionnaire object.

@@ -63,7 +63,7 @@ class questionnaire_responses {
         $responses = $this->get_responses($userid);
         foreach ($responses as $response) {
             $this->responses[$response->id] =
-                \mod_questionnaire\local\responsetype\response\response::create_from_data($response);
+                \mod_questionnaire\local\response\response::create_from_data($response);
         }
     }
 
@@ -81,7 +81,7 @@ class questionnaire_responses {
 
         $response = $DB->get_record('questionnaire_response', ['id' => $responseid]);
         $this->responses[$response->id] =
-            \mod_questionnaire\local\responsetype\response\response::create_from_data($response);
+            \mod_questionnaire\local\response\response::create_from_data($response);
     }
 
     /**
@@ -91,7 +91,7 @@ class questionnaire_responses {
      */
     public function add_response_from_formdata(\stdClass $formdata) {
         $this->responses[0] =
-            \mod_questionnaire\local\responsetype\response\response::response_from_webform(
+            \mod_questionnaire\local\response\response::response_from_webform(
                 $formdata,
                 $this->questionnaire->questions()
             );
@@ -102,7 +102,7 @@ class questionnaire_responses {
      *
      * @param \stdClass $appdata
      * @param int $sec
-     * @return bool|\mod_questionnaire\local\responsetype\response\response
+     * @return bool|\mod_questionnaire\local\response\response
      */
     public function build_response_from_appdata(\stdClass $appdata, $sec = 0) {
         $questions = [];
@@ -113,7 +113,7 @@ class questionnaire_responses {
                 $questions[$question->id] = $question;
             }
         }
-        return \mod_questionnaire\local\responsetype\response\response::response_from_appdata(
+        return \mod_questionnaire\local\response\response::response_from_appdata(
             $this->questionnaire->id(),
             0,
             $appdata,
@@ -126,7 +126,7 @@ class questionnaire_responses {
     /**
      * Return a single loaded response object by response id, or null if not loaded.
      * @param int $rid
-     * @return \mod_questionnaire\local\responsetype\response\response|null
+     * @return \mod_questionnaire\local\response\response|null
      */
     public function get_response(int $rid) {
         return $this->responses[$rid] ?? null;

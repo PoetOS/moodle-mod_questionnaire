@@ -27,7 +27,7 @@ namespace mod_questionnaire\local\question;
 use mod_questionnaire\edit_question_form;
 use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\question_type;
-use mod_questionnaire\local\responsetype\response\response;
+use mod_questionnaire\local\response\response;
 use mod_questionnaire\questionnaire;
 use html_writer;
 use stdClass;
@@ -755,7 +755,7 @@ abstract class question {
      * @return bool
      */
     public function response_complete($responsedata) {
-        if (is_a($responsedata, 'mod_questionnaire\local\responsetype\response\response')) {
+        if (is_a($responsedata, 'mod_questionnaire\local\response\response')) {
             // If $responsedata is a response object, look through the answers.
             if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
                 $answer = $responsedata->answers[$this->id][0];
@@ -1080,7 +1080,7 @@ abstract class question {
 
     /**
      * Get the output for question renderers / templates.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @param boolean $blankquestionnaire
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param int $qnum
@@ -1089,7 +1089,7 @@ abstract class question {
     /**
      * Get the output for question renderers / templates.
      *
-     * @param \mod_questionnaire\local\responsetype\response\response|\stdClass $response The response object or form data.
+     * @param \mod_questionnaire\local\response\response|\stdClass $response The response object or form data.
      * @param bool $blankquestionnaire Whether the questionnaire is blank.
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param int|string $qnum The question number.
@@ -1111,7 +1111,7 @@ abstract class question {
 
     /**
      * Get the output for question renderers / templates.
-     * @param \mod_questionnaire\local\responsetype\response\response $response
+     * @param \mod_questionnaire\local\response\response $response
      * @param string $qnum
      * @param \questionnaire|null $questionnaire The parent questionnaire object.
      * @return \stdClass
@@ -1144,7 +1144,7 @@ abstract class question {
         }
 
         // For now, check what the response type is until we've got it all refactored.
-        if ($response instanceof \mod_questionnaire\local\responsetype\response\response) {
+        if ($response instanceof \mod_questionnaire\local\response\response) {
             $skippedquestion = !isset($response->answers[$this->id]);
         } else {
             $skippedquestion = !empty($response) && !isset($response->{'q' . $this->id});
