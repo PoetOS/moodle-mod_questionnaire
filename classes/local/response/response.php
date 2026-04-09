@@ -221,18 +221,15 @@ class response {
     /**
      * Return the most recent incomplete response for the given user and questionnaire, or null if none.
      *
+     * Delegates to response_record::get_latest_incomplete().
+     *
      * @param int $questionnaireid
      * @param int $userid
      * @return self|null
      */
     public static function latest_incomplete(int $questionnaireid, int $userid): ?self {
-        global $DB;
-        $params = ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'complete' => 'n'];
-        $records = $DB->get_records('questionnaire_response', $params, 'submitted DESC', 'id', 0, 1);
-        if (empty($records)) {
-            return null;
-        }
-        return new self(new response_record((int) reset($records)->id));
+        $record = response_record::get_latest_incomplete($questionnaireid, $userid);
+        return $record === null ? null : new self($record);
     }
 
     /**
