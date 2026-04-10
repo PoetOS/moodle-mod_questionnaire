@@ -1084,6 +1084,14 @@ final class questionnaire_test extends \advanced_testcase {
             }
 
             /**
+             * Return the question id.
+             * @return int
+             */
+            public function id(): int {
+                return $this->id;
+            }
+
+            /**
              * Always fulfilled when no dependencies are set (used in navigation tests).
              * @param mixed $rid
              * @param mixed $questions

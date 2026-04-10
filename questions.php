@@ -154,7 +154,7 @@ if ($delpermanentlyq) {
     questionnaire_delete_permanently_questions($qid, $sid);
     $deletedquestion = $deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
-        $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid);
+        $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid());
         questionnaire_observe_event_delete($cm->id, $questiontype, $questionnaire->courseid());
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
         $PAGE->set_url($url->out(false));
@@ -167,7 +167,7 @@ if ($restoreq) {
     $qid = $restoreq;
     $qdeleted = $deletequestions[$qid] ?? false;
     if ($qid && $qdeleted) {
-        questionnaire_restore_deleted_question($qid, $qdeleted->surveyid);
+        questionnaire_restore_deleted_question($qid, $qdeleted->surveyid());
     }
     $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
     $PAGE->set_url($url->out(false));
@@ -382,9 +382,9 @@ if ($reload) {
 // Print the page header.
 if ($action == 'question') {
     if (isset($question->qid)) {
-        $streditquestion = get_string('editquestion', 'questionnaire', questionnaire_get_type($question->typeid));
+        $streditquestion = get_string('editquestion', 'questionnaire', questionnaire_get_type($question->typeid()));
     } else {
-        $streditquestion = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($question->typeid));
+        $streditquestion = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($question->typeid()));
     }
 } else {
     $streditquestion = get_string('managequestions', 'questionnaire');
@@ -399,32 +399,32 @@ require('tabs.php');
 if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $qid = key($qformdata->removebutton);
     $question = $questions[$qid];
-    $qtype = $question->typeid;
+    $qtype = $question->typeid();
 
     $countresps = count_reponses_question($qid, $qtype);
 
     // Needed to print potential media in question text.
 
     // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
-
-    if ($question->content == '<p>  </p>') {
-        $question->content = '';
+    $displaycontent = $question->content();
+    if ($displaycontent == '<p>  </p>') {
+        $displaycontent = '';
     }
 
     $qname = '';
-    if ($question->name) {
-        $qname = ' (' . $question->name . ')';
+    if ($question->name()) {
+        $qname = ' (' . $question->name() . ')';
     }
 
     $num = get_string('position', 'questionnaire');
-    $pos = $question->position . $qname;
+    $pos = $question->position() . $qname;
 
     $msg = '<div class="warning centerpara"><p>' . get_string('confirmdelquestion', 'questionnaire', $pos) . '</p>';
     if ($countresps !== 0) {
         $msg .= '<p>' . get_string('confirmdelquestionresps', 'questionnaire', $countresps) . '</p>';
     }
     $msg .= '</div>';
-    $msg .= '<div class = "qn-container">' . $num . ' ' . $pos . '<div class="qn-question">' . $question->content . '</div></div>';
+    $msg .= '<div class = "qn-container">' . $num . ' ' . $pos . '<div class="qn-question">' . $displaycontent . '</div></div>';
     $args = "id={$cm->id}";
     $urlno = new moodle_url("/mod/questionnaire/questions.php?{$args}");
     $args .= "&delq={$qid}";
@@ -446,7 +446,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
 } else if ($action === QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY) {
     $qid = key($qformdata->deletebutton);
-    $qtype = $deletequestions[$qid]->typeid;
+    $qtype = $deletequestions[$qid]->typeid();
     $questiondelete = $deletequestions[$qid];
     $countresps = count_reponses_question($qid, $qtype);
 
@@ -459,8 +459,8 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
         $msg .= '<p>' . get_string('confirmdelquestionresps', 'questionnaire', $countresps) . '</p>';
     }
     $msg .= '</div>';
-    $msg .= '<div class = "qn-container">NA (' . $questiondelete->name . ')
-             <div class="qn-question">' . $questiondelete->content . '</div></div>';
+    $msg .= '<div class = "qn-container">NA (' . $questiondelete->name() . ')
+             <div class="qn-question">' . $questiondelete->content() . '</div></div>';
 
     $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
 } else {

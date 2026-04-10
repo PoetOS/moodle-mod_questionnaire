@@ -532,10 +532,10 @@ class questionnaire {
             if (!$question->dependency_fulfilled($rid, $this->questions)) {
                 continue;
             }
-            if ($question->typeid < QUESPAGEBREAK) {
+            if ($question->typeid() < QUESPAGEBREAK) {
                 $i++;
             }
-            if ($question->typeid != QUESPAGEBREAK) {
+            if ($question->typeid() != QUESPAGEBREAK) {
                 $this->page->add_to_page(
                     'responses',
                     $this->renderer->response_output($question, $this->responses()->get_response($rid), $i, $pdf, $this)
@@ -1177,8 +1177,8 @@ class questionnaire {
         foreach ($this->questions as $question) {
             if ($question->has_dependencies()) {
                 foreach ($question->dependencies as $dependency) {
-                    if (($dependency->dependquestionid == $questionid) && !in_array($question->id, $qu)) {
-                        $qu[] = $question->id;
+                    if (($dependency->dependquestionid == $questionid) && !in_array($question->id(), $qu)) {
+                        $qu[] = $question->id();
                     }
                 }
             }
@@ -1215,7 +1215,7 @@ class questionnaire {
                 $child->choiceid = $dependency->dependchoiceid;
                 $child->logic = $dependency->dependlogic;
                 $child->andor = $dependency->dependandor;
-                $parents[$dependency->dependquestionid][$question->id][] = $child;
+                $parents[$dependency->dependquestionid][$question->id()][] = $child;
             }
         }
         return($parents);
@@ -1230,7 +1230,7 @@ class questionnaire {
         foreach ($question->dependencies as $did => $dependency) {
             $dependquestion = $this->questions[$dependency->dependquestionid];
             $qdependchoice = '';
-            switch ($dependquestion->typeid) {
+            switch ($dependquestion->typeid()) {
                 case QUESRADIO:
                 case QUESDROP:
                 case QUESCHECK:
@@ -1256,15 +1256,15 @@ class questionnaire {
                     break;
             }
             // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
-            $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id;
+            $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id();
             $question->dependencies[$did]->qdependchoice = $qdependchoice;
-            $question->dependencies[$did]->parenttype = $dependquestion->typeid;
+            $question->dependencies[$did]->parenttype = $dependquestion->typeid();
             // Other fields to be used in Questions edit mode.
-            $question->dependencies[$did]->position = $question->position;
-            $question->dependencies[$did]->name = $question->name;
-            $question->dependencies[$did]->content = $question->content;
-            $question->dependencies[$did]->parentposition = $dependquestion->position;
-            $question->dependencies[$did]->parent = format_string($dependquestion->name) . '->' . format_string($dependchoice);
+            $question->dependencies[$did]->position = $question->position();
+            $question->dependencies[$did]->name = $question->name();
+            $question->dependencies[$did]->content = $question->content();
+            $question->dependencies[$did]->parentposition = $dependquestion->position();
+            $question->dependencies[$did]->parent = format_string($dependquestion->name()) . '->' . format_string($dependchoice);
         }
         return true;
     }
@@ -2892,7 +2892,7 @@ class questionnaire {
         $anonymous = $this->respondenttype == 'anonymous';
 
         foreach ($this->questions as $question) {
-            if ($question->typeid == QUESPAGEBREAK) {
+            if ($question->typeid() == QUESPAGEBREAK) {
                 continue;
             }
             if ($question->is_numbered()) {
@@ -2908,8 +2908,9 @@ class questionnaire {
                 $this->page->add_to_page('responses', $this->renderer->container_start('qn-content'));
             }
             // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
-            if ($question->content == '<p>  </p>') {
-                $question->content = '';
+            $displaycontent = $question->content();
+            if ($displaycontent == '<p>  </p>') {
+                $displaycontent = '';
             }
             if ($pdf) {
                 $response = new stdClass();
@@ -2918,12 +2919,12 @@ class questionnaire {
                 }
                 $response->qcontent = format_text(
                     file_rewrite_pluginfile_urls(
-                        $question->content,
+                        $displaycontent,
                         'pluginfile.php',
                         $question->context->id,
                         'mod_questionnaire',
                         'question',
-                        $question->id
+                        $question->id()
                     ),
                     FORMAT_HTML,
                     ['noclean' => true]
@@ -2936,12 +2937,12 @@ class questionnaire {
                     $this->renderer->container(
                         format_text(
                             file_rewrite_pluginfile_urls(
-                                $question->content,
+                                $displaycontent,
                                 'pluginfile.php',
                                 $question->context->id,
                                 'mod_questionnaire',
                                 'question',
-                                $question->id
+                                $question->id()
                             ),
                             FORMAT_HTML,
                             ['noclean' => true]
@@ -2970,7 +2971,7 @@ class questionnaire {
         $uniquetables = [];
 
         foreach ($this->questions as $question) {
-            $type = $question->typeid;
+            $type = $question->typeid();
             $responsetable = $question->responsetable;
             // Build SQL for this question type if not already done.
             if (!$uniquebytable || !in_array($responsetable, $uniquetables)) {
@@ -3318,7 +3319,7 @@ class questionnaire {
                 $positioned[] = $row[$c];
             } else if (isset($questionsbyposition[$c])) {
                 $question = $questionsbyposition[$c];
-                $qtype = intval($question->typeid);
+                $qtype = intval($question->typeid());
                 if ($qtype === QUESCHECK) {
                     $positioned[] = '0';
                 } else {
@@ -3443,10 +3444,10 @@ class questionnaire {
                 continue;
             }
             // Establish the table's field names.
-            $qid = $question->id;
-            $qpos = $question->position;
-            $col = $question->name;
-            $type = $question->typeid;
+            $qid = $question->id();
+            $qpos = $question->position();
+            $col = $question->name();
+            $type = $question->typeid();
             if (in_array($type, $choicetypes)) {
                 /* single or multiple or rate */
                 if (!isset($choicesbyqid[$qid])) {
@@ -3636,7 +3637,7 @@ class questionnaire {
             }
 
             $question = $this->questions[$qid];
-            $qtype = intval($question->typeid);
+            $qtype = intval($question->typeid());
             if ($rankaverages) {
                 if ($qtype === QUESRATE) {
                     if (empty($averages[$qid])) {
@@ -3690,7 +3691,7 @@ class questionnaire {
                 if ($questionobj->has_choices()) {
                     // This is choice type question, so process as so.
                     $c = 0;
-                    if (in_array(intval($question->typeid), $choicetypes)) {
+                    if (in_array(intval($question->typeid()), $choicetypes)) {
                         $choices = $choicesbyqid[$qid];
                         // Get position of choice.
                         foreach ($choices as $choice) {
@@ -3825,15 +3826,15 @@ class questionnaire {
                 if ($index == $movetopos) {
                     $index++;
                 }
-                if ($question->id == $movequestion->id) {
+                if ($question->id() == $movequestion->id()) {
                     $rec = new stdClass();
-                    $rec->id = $movequestion->id;
+                    $rec->id = $movequestion->id();
                     $rec->position = $movetopos;
                     $DB->update_record("questionnaire_question", $rec);
                     continue;
                 }
                 $rec = new stdClass();
-                $rec->id = $question->id;
+                $rec->id = $question->id();
                 $rec->position = $index;
                 $DB->update_record("questionnaire_question", $rec);
                 $index++;
@@ -4091,7 +4092,7 @@ class questionnaire {
         $qmax = [];
         $maxtotalscore = 0;
         foreach ($this->questions as $question) {
-            $qid = $question->id;
+            $qid = $question->id();
             if ($question->valid_feedback()) {
                 $qmax[$qid] = $question->get_feedback_maxscore();
                 $maxtotalscore += $qmax[$qid];
@@ -4494,7 +4495,7 @@ class questionnaire {
         }
         $areas['question'] = [];
         foreach ($this->questions as $question) {
-            $areas['question'][] = $question->id;
+            $areas['question'][] = $question->id();
         }
 
         // Add feedback areas.

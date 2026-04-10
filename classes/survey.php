@@ -359,8 +359,8 @@ class survey {
         foreach ($this->questions as $question) {
             if ($question->has_dependencies()) {
                 foreach ($question->dependencies as $dependency) {
-                    if (($dependency->dependquestionid == $questionid) && !in_array($question->id, $qu)) {
-                        $qu[] = $question->id;
+                    if (($dependency->dependquestionid == $questionid) && !in_array($question->id(), $qu)) {
+                        $qu[] = $question->id();
                     }
                 }
             }
@@ -415,7 +415,7 @@ class survey {
                 $child->choiceid = $dependency->dependchoiceid;
                 $child->logic = $dependency->dependlogic;
                 $child->andor = $dependency->dependandor;
-                $parents[$dependency->dependquestionid][$question->id][] = $child;
+                $parents[$dependency->dependquestionid][$question->id()][] = $child;
             }
         }
         return $parents;
@@ -431,7 +431,7 @@ class survey {
         foreach ($question->dependencies as $did => $dependency) {
             $dependquestion = $this->questions[$dependency->dependquestionid];
             $qdependchoice = '';
-            switch ($dependquestion->typeid) {
+            switch ($dependquestion->typeid()) {
                 case QUESRADIO:
                 case QUESDROP:
                 case QUESCHECK:
@@ -459,14 +459,14 @@ class survey {
                 default:
                     $dependchoice = '';
             }
-            $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id;
+            $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id();
             $question->dependencies[$did]->qdependchoice = $qdependchoice;
-            $question->dependencies[$did]->parenttype = $dependquestion->typeid;
-            $question->dependencies[$did]->position = $question->position;
-            $question->dependencies[$did]->name = $question->name;
-            $question->dependencies[$did]->content = $question->content;
-            $question->dependencies[$did]->parentposition = $dependquestion->position;
-            $question->dependencies[$did]->parent = format_string($dependquestion->name) . '->' . format_string($dependchoice);
+            $question->dependencies[$did]->parenttype = $dependquestion->typeid();
+            $question->dependencies[$did]->position = $question->position();
+            $question->dependencies[$did]->name = $question->name();
+            $question->dependencies[$did]->content = $question->content();
+            $question->dependencies[$did]->parentposition = $dependquestion->position();
+            $question->dependencies[$did]->parent = format_string($dependquestion->name()) . '->' . format_string($dependchoice);
         }
         return true;
     }
@@ -551,7 +551,7 @@ class survey {
         }
         $areas['question'] = [];
         foreach ($this->questions as $question) {
-            $areas['question'][] = $question->id;
+            $areas['question'][] = $question->id();
         }
         $areas['feedbacknotes'] = $sid;
         $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid]);
@@ -644,7 +644,7 @@ class survey {
         $qidarray = [];
         $cidarray = [];
         foreach ($questions as $question) {
-            $oldid = $question->id;
+            $oldid = $question->id();
             $newq = new question_record();
             $newq->set('surveyid', $newsid);
             $newq->set('position', $pos++);

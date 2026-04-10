@@ -220,10 +220,10 @@ final class questiontypes_test extends \advanced_testcase {
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $question = $generator->create_question($questionnaire, $questiondata, $choicedata);
         $this->assertInstanceOf($questionclass, $question);
-        $this->assertTrue($question->id > 0);
+        $this->assertTrue($question->id() > 0);
 
         // Question object retrieved from the database should have correct data.
-        $this->assertEquals($question->typeid, $qtype);
+        $this->assertEquals($question->typeid(), $qtype);
         foreach ($questiondata as $property => $value) {
             $this->assertEquals($question->$property, $value);
         }
@@ -241,12 +241,12 @@ final class questiontypes_test extends \advanced_testcase {
 
         // Questionnaire object should now have question record(s).
         $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
-        $this->assertTrue($DB->record_exists('questionnaire_question', ['id' => $question->id]));
+        $this->assertTrue($DB->record_exists('questionnaire_question', ['id' => $question->id()]));
         $questions = $questionnaire->questions();
         $this->assertEquals('array', gettype($questions));
-        $this->assertTrue(array_key_exists($question->id, $questions));
+        $this->assertTrue(array_key_exists($question->id(), $questions));
         $this->assertEquals(1, count($questions));
-        if ($questions[$question->id]->has_choices()) {
+        if ($questions[$question->id()]->has_choices()) {
             $this->assertEquals(count($choicedata), count($questions[$question->id]->choices));
         }
     }

@@ -70,7 +70,7 @@ final class responsetypes_test extends \advanced_testcase {
         $booleanresponses = $DB->get_records('questionnaire_response_bool', ['responseid' => $response->id]);
         $this->assertEquals(1, count($booleanresponses));
         $booleanresponse = reset($booleanresponses);
-        $this->assertEquals($question->id, $booleanresponse->questionid);
+        $this->assertEquals($question->id(), $booleanresponse->questionid);
         $this->assertEquals('y', $booleanresponse->choiceid);
     }
 
@@ -105,7 +105,7 @@ final class responsetypes_test extends \advanced_testcase {
         $textresponses = $DB->get_records('questionnaire_response_text', ['responseid' => $response->id]);
         $this->assertEquals(1, count($textresponses));
         $textresponse = reset($textresponses);
-        $this->assertEquals($question->id, $textresponse->questionid);
+        $this->assertEquals($question->id(), $textresponse->questionid);
         $this->assertEquals('This is my essay.', $textresponse->response);
     }
 
@@ -140,7 +140,7 @@ final class responsetypes_test extends \advanced_testcase {
         $textresponses = $DB->get_records('questionnaire_response_text', ['responseid' => $response->id]);
         $this->assertEquals(1, count($textresponses));
         $textresponse = reset($textresponses);
-        $this->assertEquals($question->id, $textresponse->questionid);
+        $this->assertEquals($question->id(), $textresponse->questionid);
         $this->assertEquals(5, $textresponse->response);
     }
 
@@ -175,7 +175,7 @@ final class responsetypes_test extends \advanced_testcase {
         $dateresponses = $DB->get_records('questionnaire_response_date', ['responseid' => $response->id]);
         $this->assertEquals(1, count($dateresponses));
         $dateresponse = reset($dateresponses);
-        $this->assertEquals($question->id, $dateresponse->questionid);
+        $this->assertEquals($question->id(), $dateresponse->questionid);
         // The date is always stored in the database in the same way.
         $this->assertEquals('2015-01-27', $dateresponse->response);
     }
@@ -224,7 +224,7 @@ final class responsetypes_test extends \advanced_testcase {
         $singresponses = $DB->get_records('questionnaire_resp_single', ['responseid' => $response->id]);
         $this->assertEquals(1, count($singresponses));
         $singresponse = reset($singresponses);
-        $this->assertEquals($question->id, $singresponse->questionid);
+        $this->assertEquals($question->id(), $singresponse->questionid);
         $this->assertEquals($val, $singresponse->choiceid);
 
         // Create another response using the '!other' choice.
@@ -233,8 +233,8 @@ final class responsetypes_test extends \advanced_testcase {
                 $val = $cid;
             }
         }
-        $vals = ['q' . $question->id => $val,
-                 'q' . $question->id . \mod_questionnaire\local\question\choice::id_other_choice_name($val) => 'Forty-four'];
+        $vals = ['q' . $question->id() => $val,
+                 'q' . $question->id() . \mod_questionnaire\local\question\choice::id_other_choice_name($val) => 'Forty-four'];
         $userid = 2;
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
@@ -245,13 +245,13 @@ final class responsetypes_test extends \advanced_testcase {
         $singresponses = $DB->get_records('questionnaire_resp_single', ['responseid' => $response->id]);
         $this->assertEquals(1, count($singresponses));
         $singresponse = reset($singresponses);
-        $this->assertEquals($question->id, $singresponse->questionid);
+        $this->assertEquals($question->id(), $singresponse->questionid);
         $this->assertEquals($val, $singresponse->choiceid);
 
         // Retrieve the 'other' response data.
         $otherresponses = $DB->get_records(
             'questionnaire_response_other',
-            ['responseid' => $response->id, 'questionid' => $question->id]
+            ['responseid' => $response->id, 'questionid' => $question->id()]
         );
         $this->assertEquals(1, count($otherresponses));
         $otherresponse = reset($otherresponses);
@@ -297,7 +297,7 @@ final class responsetypes_test extends \advanced_testcase {
                 $ocid = $cid;
             }
         }
-        $vals = ['q' . $question->id => $val];
+        $vals = ['q' . $question->id() => $val];
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
@@ -307,16 +307,16 @@ final class responsetypes_test extends \advanced_testcase {
         $multresponses = $DB->get_records('questionnaire_resp_multiple', ['responseid' => $response->id]);
         $this->assertEquals(3, count($multresponses));
         $multresponse = reset($multresponses);
-        $this->assertEquals($question->id, $multresponse->questionid);
+        $this->assertEquals($question->id(), $multresponse->questionid);
         $this->assertEquals(reset($val), $multresponse->choiceid);
         $multresponse = next($multresponses);
-        $this->assertEquals($question->id, $multresponse->questionid);
+        $this->assertEquals($question->id(), $multresponse->questionid);
         $this->assertEquals(next($val), $multresponse->choiceid);
 
         // Retrieve the specific other response.
         $otherresponses = $DB->get_records(
             'questionnaire_response_other',
-            ['responseid' => $response->id, 'questionid' => $question->id]
+            ['responseid' => $response->id, 'questionid' => $question->id()]
         );
         $this->assertEquals(1, count($otherresponses));
         $otherresponse = reset($otherresponses);
@@ -357,7 +357,7 @@ final class responsetypes_test extends \advanced_testcase {
         $i = 1;
         foreach ($question->choices as $cid => $choice) {
             $vals[$cid] = $i;
-            $vals['q' . $question->id . '_' . $cid] = $i++;
+            $vals['q' . $question->id() . '_' . $cid] = $i++;
         }
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
@@ -368,7 +368,7 @@ final class responsetypes_test extends \advanced_testcase {
         $multresponses = $DB->get_records('questionnaire_response_rank', ['responseid' => $response->id]);
         $this->assertEquals(3, count($multresponses));
         foreach ($multresponses as $multresponse) {
-            $this->assertEquals($question->id, $multresponse->questionid);
+            $this->assertEquals($question->id(), $multresponse->questionid);
             $this->assertEquals($vals[$multresponse->choiceid], $multresponse->rankvalue);
         }
     }

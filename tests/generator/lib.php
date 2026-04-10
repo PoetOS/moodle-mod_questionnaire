@@ -239,7 +239,7 @@ class mod_questionnaire_generator extends testing_module_generator {
 
         $currentrid = 0;
         if (!is_array($respval)) {
-            $respval = ['q' . $question->id => $respval];
+            $respval = ['q' . $question->id() => $respval];
         }
         $respdata = (object)(array_merge(['sec' => $section, 'rid' => $currentrid, 'a' => $questionnaire->id()], $respval));
 
@@ -325,7 +325,7 @@ class mod_questionnaire_generator extends testing_module_generator {
                 ];
             }
             $record = (object)[
-                'questionid' => $question->id,
+                'questionid' => $question->id(),
                 'content' => $content->content,
                 'value' => $content->value,
             ];
@@ -617,27 +617,27 @@ class mod_questionnaire_generator extends testing_module_generator {
                 $choices = array_values($question->choices);
             }
 
-            switch ($question->typeid) {
+            switch ($question->typeid()) {
                 case QUESTEXT:
-                    $responses[] = new question_response($question->id, 'Test answer');
+                    $responses[] = new question_response($question->id(), 'Test answer');
                     break;
                 case QUESESSAY:
                     $resptext = '<h1>Some header text</h1><p>Some paragraph text</p>';
-                    $responses[] = new question_response($question->id, $resptext);
+                    $responses[] = new question_response($question->id(), $resptext);
                     break;
                 case QUESNUMERIC:
-                    $responses[] = new question_response($question->id, 83);
+                    $responses[] = new question_response($question->id(), 83);
                     break;
                 case QUESDATE:
                     $date = mktime(0, 0, 0, 12, 28, 2017);
                     $dateformat = get_string('strfdate', 'questionnaire');
                     $datestr = userdate($date, $dateformat, '1', false);
-                    $responses[] = new question_response($question->id, $datestr);
+                    $responses[] = new question_response($question->id(), $datestr);
                     break;
                 case QUESRADIO:
                 case QUESDROP:
                     $optidx = count($choices) - 1;
-                    $responses[] = new question_response($question->id, $choices[$optidx]);
+                    $responses[] = new question_response($question->id(), $choices[$optidx]);
                     break;
                 case QUESCHECK:
                     $answers = [];
@@ -648,17 +648,17 @@ class mod_questionnaire_generator extends testing_module_generator {
 
                     $answers = array_unique($answers);
 
-                    $responses[] = new question_response($question->id, $answers);
+                    $responses[] = new question_response($question->id(), $answers);
                     break;
                 case QUESRATE:
                     $answers = [];
                     for ($a = 0; $a < count($choices) - 1; $a++) {
                         $answers[] = new question_response_rank($choices[$a], (($a % 5) + 1));
                     }
-                    $responses[] = new question_response($question->id, $answers);
+                    $responses[] = new question_response($question->id(), $answers);
                     break;
                 case QUESSLIDER:
-                    $responses[] = new question_response($question->id, 5);
+                    $responses[] = new question_response($question->id(), 5);
                     break;
             }
         }
