@@ -46,11 +46,11 @@ class date extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
+        if (isset($responsedata->{'q' . $question->id()}) && !empty($responsedata->{'q' . $question->id()})) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
-            $record->value = $responsedata->{'q' . $question->id};
+            $record->questionid = $question->id();
+            $record->value = $responsedata->{'q' . $question->id()};
             $answers[] = answer\answer::create_from_data($record);
         }
         return $answers;
@@ -64,9 +64,9 @@ class date extends responsetype {
      * @return array \mod_questionnaire\local\response\answer\answer An array of answer objects.
      */
     public static function answers_from_appdata($responsedata, $question) {
-        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
+        if (isset($responsedata->{'q' . $question->id()}) && !empty($responsedata->{'q' . $question->id()})) {
             // The app can send the date including time (e.g. 2021-06-28T09:03:46.613+02:00), get only the date.
-            $responsedata->{'q' . $question->id} = substr($responsedata->{'q' . $question->id}[0], 0, 10);
+            $responsedata->{'q' . $question->id()} = substr($responsedata->{'q' . $question->id()}[0], 0, 10);
         }
         return static::answers_from_webform($responsedata, $question);
     }
@@ -87,15 +87,15 @@ class date extends responsetype {
             $response = $responsedata;
         }
 
-        if (!empty($response) && isset($response->answers[$this->question->id][0])) {
-            $thisdate = $response->answers[$this->question->id][0]->value;
+        if (!empty($response) && isset($response->answers[$this->question->id()][0])) {
+            $thisdate = $response->answers[$this->question->id()][0]->value;
             if (!$this->question->check_date_format($thisdate)) {
                 return false;
             }
             // Now use ISO date formatting.
             $rec = new \mod_questionnaire\local\db\response_date_record();
             $rec->set('responseid', $response->id());
-            $rec->set('questionid', $this->question->id);
+            $rec->set('questionid', $this->question->id());
             $rec->set('response', $thisdate);
             $rec->create();
             return $rec->get('id');
@@ -114,7 +114,7 @@ class date extends responsetype {
         global $DB;
 
         $rsql = '';
-        $params = [$this->question->id];
+        $params = [$this->question->id()];
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);

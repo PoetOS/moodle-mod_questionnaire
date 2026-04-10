@@ -49,12 +49,12 @@ class boolean extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
+        if (isset($responsedata->{'q' . $question->id()}) && !empty($responsedata->{'q' . $question->id()})) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
-            $record->choiceid = $responsedata->{'q' . $question->id};
-            $record->value = $responsedata->{'q' . $question->id};
+            $record->questionid = $question->id();
+            $record->choiceid = $responsedata->{'q' . $question->id()};
+            $record->value = $responsedata->{'q' . $question->id()};
             $answers[] = answer\answer::create_from_data($record);
         }
         return $answers;
@@ -68,8 +68,8 @@ class boolean extends responsetype {
      * @return array \mod_questionnaire\local\response\answer\answer An array of answer objects.
      */
     public static function answers_from_appdata($responsedata, $question) {
-        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
-            $responsedata->{'q' . $question->id} = ($responsedata->{'q' . $question->id}[0] == 1) ? 'y' : 'n';
+        if (isset($responsedata->{'q' . $question->id()}) && !empty($responsedata->{'q' . $question->id()})) {
+            $responsedata->{'q' . $question->id()} = ($responsedata->{'q' . $question->id()}[0] == 1) ? 'y' : 'n';
         }
         return static::answers_from_webform($responsedata, $question);
     }
@@ -90,11 +90,11 @@ class boolean extends responsetype {
             $response = $responsedata;
         }
 
-        if (!empty($response) && isset($response->answers[$this->question->id][0])) {
+        if (!empty($response) && isset($response->answers[$this->question->id()][0])) {
             $rec = new \mod_questionnaire\local\db\response_bool_record();
             $rec->set('responseid', $response->id());
-            $rec->set('questionid', $this->question->id);
-            $rec->set('choiceid', $response->answers[$this->question->id][0]->choiceid);
+            $rec->set('questionid', $this->question->id());
+            $rec->set('choiceid', $response->answers[$this->question->id()][0]->choiceid);
             $rec->create();
             return $rec->get('id');
         }
@@ -112,7 +112,7 @@ class boolean extends responsetype {
         global $DB;
 
         $rsql = '';
-        $params = [$this->question->id];
+        $params = [$this->question->id()];
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
@@ -150,7 +150,7 @@ class boolean extends responsetype {
         global $DB;
 
         $rsql = '';
-        $params = [$this->question->id];
+        $params = [$this->question->id()];
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);

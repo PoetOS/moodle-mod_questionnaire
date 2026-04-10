@@ -326,6 +326,88 @@ abstract class question {
 
     // End TEMPORARY magic property accessors.
 
+    // Named accessors for DB-backed fields.
+
+    /**
+     * Get the question id.
+     * @return int
+     */
+    public function id(): int {
+        return $this->record ? (int)$this->record->get('id') : 0;
+    }
+
+    /**
+     * Get the survey id this question belongs to.
+     * @return int
+     */
+    public function surveyid(): int {
+        return $this->record ? (int)$this->record->get('surveyid') : 0;
+    }
+
+    /**
+     * Get the question name.
+     * @return string
+     */
+    public function name(): string {
+        return $this->record ? (string)$this->record->get('name') : '';
+    }
+
+    /**
+     * Get the question type id.
+     * @return int
+     */
+    public function typeid(): int {
+        return $this->record ? (int)$this->record->get('typeid') : 0;
+    }
+
+    /**
+     * Get the question length value.
+     * @return int
+     */
+    public function length(): int {
+        return $this->record ? (int)$this->record->get('length') : 0;
+    }
+
+    /**
+     * Get the question precise value.
+     * @return int
+     */
+    public function precise(): int {
+        return $this->record ? (int)$this->record->get('precise') : 0;
+    }
+
+    /**
+     * Get the question position.
+     * @return int
+     */
+    public function position(): int {
+        return $this->record ? (int)$this->record->get('position') : 0;
+    }
+
+    /**
+     * Get the question content (may be array when in editor format).
+     * @return mixed
+     */
+    public function content(): mixed {
+        return $this->contenteditordata ?? ($this->record ? $this->record->get('content') : null);
+    }
+
+    /**
+     * Get the deleted flag.
+     * @return string
+     */
+    public function deleted(): string {
+        return $this->record ? (string)$this->record->get('deleted') : 'n';
+    }
+
+    /**
+     * Get the extradata field.
+     * @return string|null
+     */
+    public function extradata(): ?string {
+        return $this->record ? $this->record->get('extradata') : null;
+    }
+
     /**
      * Return a plain stdClass containing all form-relevant question properties.
      *

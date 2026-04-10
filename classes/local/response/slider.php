@@ -60,7 +60,7 @@ class slider extends numericaltext {
     public function get_feedback_scores(array $rids) {
         global $DB;
         $rsql = '';
-        $params = [$this->question->id];
+        $params = [$this->question->id()];
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
