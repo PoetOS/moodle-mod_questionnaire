@@ -45,11 +45,11 @@ class text extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id}) && (strlen($responsedata->{'q' . $question->id}) > 0)) {
-            $val = $responsedata->{'q' . $question->id};
+        if (isset($responsedata->{'q' . $question->id()}) && (strlen($responsedata->{'q' . $question->id()}) > 0)) {
+            $val = $responsedata->{'q' . $question->id()};
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
+            $record->questionid = $question->id();
             $record->value = $val;
             $answers[] = answer\answer::create_from_data($record);
         }
@@ -72,11 +72,11 @@ class text extends responsetype {
             $response = $responsedata;
         }
 
-        if (!empty($response) && isset($response->answers[$this->question->id][0])) {
+        if (!empty($response) && isset($response->answers[$this->question->id()][0])) {
             $rec = new \mod_questionnaire\local\db\response_text_record();
             $rec->set('responseid', $response->id());
-            $rec->set('questionid', $this->question->id);
-            $rec->set('response', clean_text($response->answers[$this->question->id][0]->value));
+            $rec->set('questionid', $this->question->id());
+            $rec->set('response', clean_text($response->answers[$this->question->id()][0]->value));
             $rec->create();
             return $rec->get('id');
         }
@@ -104,7 +104,7 @@ class text extends responsetype {
                     'r.questionnaireid, r.id AS rid ' .
                     'FROM {' . static::response_table() . '} t, ' .
                     '{questionnaire_response} r ' .
-                    'WHERE questionid=' . $this->question->id . $rsql .
+                    'WHERE questionid=' . $this->question->id() . $rsql .
                     ' AND t.responseid = r.id ' .
                     'ORDER BY r.submitted DESC';
         } else {
@@ -114,7 +114,7 @@ class text extends responsetype {
                     'FROM {' . static::response_table() . '} t, ' .
                     '{questionnaire_response} r, ' .
                     '{user} u ' .
-                    'WHERE questionid=' . $this->question->id . $rsql .
+                    'WHERE questionid=' . $this->question->id() . $rsql .
                     ' AND t.responseid = r.id' .
                     ' AND u.id = r.userid ' .
                     'ORDER BY r.submitted DESC';
@@ -214,7 +214,7 @@ class text extends responsetype {
             if (count($weights) > 1) {
                 $pagetags->sortresponse = true;
             }
-            $pagetags->tableid = $this->question->id;
+            $pagetags->tableid = $this->question->id();
             if ($showtotals == 1) {
                 $pagetags->total = new \stdClass();
                 $pagetags->total->total = "($respondents)";
@@ -250,7 +250,7 @@ class text extends responsetype {
                 $response = new \stdClass();
                 $response->respondent = $straverage;
                 $avg = $sum / $nbresponses;
-                $response->text = sprintf('%.' . $this->question->precise . 'f', $avg);
+                $response->text = sprintf('%.' . $this->question->precise() . 'f', $avg);
                 $response->evencolor = $evencolor;
                 $pagetags->responses[] = (object)['response' => $response];
                 $evencolor = !$evencolor;

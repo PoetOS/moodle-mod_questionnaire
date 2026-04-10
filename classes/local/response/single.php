@@ -45,18 +45,18 @@ class single extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id}) && isset($question->choices[$responsedata->{'q' . $question->id}])) {
+        if (isset($responsedata->{'q' . $question->id()}) && isset($question->choices[$responsedata->{'q' . $question->id()}])) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
-            $record->choiceid = $responsedata->{'q' . $question->id};
+            $record->questionid = $question->id();
+            $record->choiceid = $responsedata->{'q' . $question->id()};
             // If this choice is an "other" choice, look for the added input.
-            if ($question->choices[$responsedata->{'q' . $question->id}]->is_other_choice()) {
-                $cname = 'q' . $question->id .
-                    \mod_questionnaire\local\question\choice::id_other_choice_name($responsedata->{'q' . $question->id});
+            if ($question->choices[$responsedata->{'q' . $question->id()}]->is_other_choice()) {
+                $cname = 'q' . $question->id() .
+                    \mod_questionnaire\local\question\choice::id_other_choice_name($responsedata->{'q' . $question->id()});
                 $record->value = isset($responsedata->{$cname}) ? $responsedata->{$cname} : '';
             }
-            $answers[$responsedata->{'q' . $question->id}] = answer\answer::create_from_data($record);
+            $answers[$responsedata->{'q' . $question->id()}] = answer\answer::create_from_data($record);
         }
         return $answers;
     }
@@ -70,11 +70,11 @@ class single extends responsetype {
      */
     public static function answers_from_appdata($responsedata, $question) {
         $answers = [];
-        $qname = 'q' . $question->id;
+        $qname = 'q' . $question->id();
         if (isset($responsedata->{$qname}[0]) && !empty($responsedata->{$qname}[0])) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
+            $record->questionid = $question->id();
             $record->choiceid = $responsedata->{$qname}[0];
             // If this choice is an "other" choice, look for the added input.
             if ($question->choices[$record->choiceid]->is_other_choice()) {
@@ -116,8 +116,8 @@ class single extends responsetype {
         }
 
         $resid = false;
-        if (!empty($response) && isset($response->answers[$this->question->id])) {
-            foreach ($response->answers[$this->question->id] as $answer) {
+        if (!empty($response) && isset($response->answers[$this->question->id()])) {
+            foreach ($response->answers[$this->question->id()] as $answer) {
                 if (isset($this->question->choices[$answer->choiceid])) {
                     if ($this->question->choices[$answer->choiceid]->is_other_choice()) {
                         // If no input specified, ignore this choice.
@@ -126,7 +126,7 @@ class single extends responsetype {
                         }
                         $otherrec = new \mod_questionnaire\local\db\response_other_record();
                         $otherrec->set('responseid', $response->id());
-                        $otherrec->set('questionid', $this->question->id);
+                        $otherrec->set('questionid', $this->question->id());
                         $otherrec->set('choiceid', $answer->choiceid);
                         $otherrec->set('response', clean_text($answer->value));
                         $otherrec->create();
@@ -134,7 +134,7 @@ class single extends responsetype {
                     // Record the choice selection.
                     $rec = $this->make_primary_record();
                     $rec->set('responseid', $response->id());
-                    $rec->set('questionid', $this->question->id);
+                    $rec->set('questionid', $this->question->id());
                     $rec->set('choiceid', $answer->choiceid);
                     $rec->create();
                     $resid = $rec->get('id');
@@ -155,7 +155,7 @@ class single extends responsetype {
         global $DB;
 
         $rsql = '';
-        $params = [$this->question->id];
+        $params = [$this->question->id()];
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
@@ -201,7 +201,7 @@ class single extends responsetype {
         global $DB;
 
         $rsql = '';
-        $params = [$this->question->id];
+        $params = [$this->question->id()];
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
@@ -258,7 +258,7 @@ class single extends responsetype {
         $responsecountsql = 'SELECT COUNT(DISTINCT r.responseid) ' .
                 'FROM {' . $this->response_table() . '} r, ' .
                 '{questionnaire_response} qr ' .
-                'WHERE questionid = ' . $this->question->id . $rsql .
+                'WHERE questionid = ' . $this->question->id() . $rsql .
                 ' AND r.responseid = qr.id ';
         $numrespondents = $DB->count_records_sql($responsecountsql, $params);
 

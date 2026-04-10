@@ -270,8 +270,8 @@ abstract class responsetype {
     public static function answers_from_appdata($responsedata, $question) {
         // In most cases this can be a direct call to answers_from_webform with the one modification below. Override when this will
         // not work.
-        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
-            $responsedata->{'q' . $question->id} = $responsedata->{'q' . $question->id}[0];
+        if (isset($responsedata->{'q' . $question->id()}) && !empty($responsedata->{'q' . $question->id()})) {
+            $responsedata->{'q' . $question->id()} = $responsedata->{'q' . $question->id()}[0];
         }
         return static::answers_from_webform($responsedata, $question);
     }

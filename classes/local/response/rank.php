@@ -53,8 +53,8 @@ class rank extends responsetype {
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
         foreach ($question->choices as $cid => $choice) {
-            $other = isset($responsedata->{'q' . $question->id . '_' . $cid}) ?
-                $responsedata->{'q' . $question->id . '_' . $cid} : null;
+            $other = isset($responsedata->{'q' . $question->id() . '_' . $cid}) ?
+                $responsedata->{'q' . $question->id() . '_' . $cid} : null;
             // Choice not set or not answered.
             if (!isset($other) || $other == '') {
                 continue;
@@ -66,7 +66,7 @@ class rank extends responsetype {
             }
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
+            $record->questionid = $question->id();
             $record->choiceid = $cid;
             $record->value = $rank;
             $answers[$cid] = answer\answer::create_from_data($record);
@@ -83,12 +83,12 @@ class rank extends responsetype {
      */
     public static function answers_from_appdata($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id}) && !empty($responsedata->{'q' . $question->id})) {
-            foreach ($responsedata->{'q' . $question->id} as $choiceid => $choicevalue) {
+        if (isset($responsedata->{'q' . $question->id()}) && !empty($responsedata->{'q' . $question->id()})) {
+            foreach ($responsedata->{'q' . $question->id()} as $choiceid => $choicevalue) {
                 if (isset($question->choices[$choiceid])) {
                     $record = new \stdClass();
                     $record->responseid = $responsedata->rid;
-                    $record->questionid = $question->id;
+                    $record->questionid = $question->id();
                     $record->choiceid = $choiceid;
                     if (!empty($question->nameddegrees)) {
                         // If using named degrees, the app returns the label string. Find the value.
@@ -123,12 +123,12 @@ class rank extends responsetype {
 
         $resid = false;
 
-        if (isset($response->answers[$this->question->id])) {
-            foreach ($response->answers[$this->question->id] as $answer) {
+        if (isset($response->answers[$this->question->id()])) {
+            foreach ($response->answers[$this->question->id()] as $answer) {
                 // Record the choice selection.
                 $rec = new \mod_questionnaire\local\db\response_rank_record();
                 $rec->set('responseid', $response->id());
-                $rec->set('questionid', $this->question->id);
+                $rec->set('questionid', $this->question->id());
                 $rec->set('choiceid', $answer->choiceid);
                 $rec->set('rankvalue', $answer->value);
                 $rec->create();
@@ -138,7 +138,7 @@ class rank extends responsetype {
                 if (isset($responsedata->{$answer->choiceid . '_qother'})) {
                     $otherrec = new \mod_questionnaire\local\db\response_other_record();
                     $otherrec->set('responseid', $response->id());
-                    $otherrec->set('questionid', $this->question->id);
+                    $otherrec->set('questionid', $this->question->id());
                     $otherrec->set('choiceid', $answer->choiceid);
                     $otherrec->set('response', $responsedata->{$answer->choiceid . '_qother'});
                     $otherrec->create();
@@ -169,13 +169,13 @@ class rank extends responsetype {
         // Get other choices.
         $otherrecs = $this->get_other_choice($rsql, $params);
 
-        $select = 'questionid=' . $this->question->id . ' ORDER BY id ASC';
+        $select = 'questionid=' . $this->question->id() . ' ORDER BY id ASC';
         if ($rows = $DB->get_records_select('questionnaire_quest_choice', $select)) {
             foreach ($rows as $row) {
                 $nbna = $DB->count_records(
                     static::response_table(),
                     [
-                        'questionid' => $this->question->id,
+                        'questionid' => $this->question->id(),
                         'choiceid' => $row->id,
                         'rankvalue' => '-1',
                     ]
@@ -199,14 +199,14 @@ class rank extends responsetype {
             $rankvalue = array_flip(array_keys($this->question->nameddegrees));
         }
 
-        $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->no_duplicate_choices();
+        $isrestricted = ($this->question->length() < count($this->question->choices)) && $this->question->no_duplicate_choices();
         // Usual case.
         if (!$isrestricted) {
             if (!empty($rankvalue)) {
                 $sql = "SELECT r.id, c.content, r.rankvalue, c.id AS choiceid
                 FROM {questionnaire_quest_choice} c, {" . static::response_table() . "} r
                 WHERE r.choiceid = c.id
-                AND c.questionid = " . $this->question->id . "
+                AND c.questionid = " . $this->question->id() . "
                 AND r.rankvalue >= 0{$rsql}
                 ORDER BY choiceid";
                 $results = $DB->get_records_sql($sql, $params);
@@ -231,7 +231,7 @@ class rank extends responsetype {
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                         GROUP BY c2.id) a ON a.id = c.id
                   ORDER BY c.id";
-            $results = $DB->get_records_sql($sql, array_merge([$this->question->id, $this->question->id], $params));
+            $results = $DB->get_records_sql($sql, array_merge([$this->question->id(), $this->question->id()], $params));
 
             // Handle 'other...'.
             if ($otherrecs) {
@@ -271,7 +271,7 @@ class rank extends responsetype {
                                  AND a2.rankvalue >= 0 AND c2.content NOT LIKE '!other%'{$rsql}
                   GROUP BY c2.id) a ON a.id = c.id";
 
-            $results = $DB->get_records_sql($sql, array_merge([$this->question->id, $this->question->id], $params));
+            $results = $DB->get_records_sql($sql, array_merge([$this->question->id(), $this->question->id()], $params));
 
             if ($otherrecs) {
                 $i = 1;
@@ -322,7 +322,7 @@ class rank extends responsetype {
                         AND ro.response <> ''
                GROUP BY ro.response, c.id
                ORDER BY c.id";
-        return $DB->get_records_sql($osql, array_merge($params, [$this->question->id]));
+        return $DB->get_records_sql($osql, array_merge($params, [$this->question->id()]));
     }
 
     /**
@@ -334,7 +334,7 @@ class rank extends responsetype {
         global $DB;
 
         $rsql = '';
-        $params = [$this->question->id];
+        $params = [$this->question->id()];
         if (!empty($rids)) {
             [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $params = array_merge($params, $rparams);
@@ -545,16 +545,16 @@ class rank extends responsetype {
 
         $stravgrank = get_string('averagerank', 'questionnaire');
         $osgood = false;
-        if ($this->question->precise == 3) { // Osgood's semantic differential.
+        if ($this->question->precise() == 3) { // Osgood's semantic differential.
             $osgood = true;
             $stravgrank = get_string('averageposition', 'questionnaire');
         }
         $stravg = '<div style="text-align:right">' . $stravgrank . $stravgvalue . '</div>';
 
-        $isna = $this->question->precise == 1;
+        $isna = $this->question->precise() == 1;
         $isnahead = '';
         $nbchoices = count($this->counts);
-        $isrestricted = ($this->question->length < $nbchoices) && $this->question->precise == 2;
+        $isrestricted = ($this->question->length() < $nbchoices) && $this->question->precise() == 2;
 
         if ($isna) {
             $isnahead = get_string('notapplicable', 'questionnaire');
@@ -632,7 +632,7 @@ class rank extends responsetype {
 
         $imageurl = $CFG->wwwroot . '/mod/questionnaire/images/hbar.gif';
         $spacerimage = $CFG->wwwroot . '/mod/questionnaire/images/hbartransp.gif';
-        $llength = $this->question->length;
+        $llength = $this->question->length();
         if (!$llength) {
             $llength = 5;
         }
@@ -647,7 +647,7 @@ class rank extends responsetype {
             $n[$nameddegrees] = $degree;
             $nameddegrees++;
         }
-        for ($j = 0; $j < $this->question->length; $j++) {
+        for ($j = 0; $j < $this->question->length(); $j++) {
             if (isset($n[$j])) {
                 $str = $n[$j];
             } else {
@@ -712,7 +712,7 @@ class rank extends responsetype {
 
                     if ($avg) {
                         if (($j = $avg * $width) > 0) {
-                            $marginposition = ($avg - 0.5 ) / ($this->question->length + $isrestricted);
+                            $marginposition = ($avg - 0.5 ) / ($this->question->length() + $isrestricted);
                         }
                         if (!right_to_left()) {
                             $margin = 'margin-left:' . $marginposition * 100 . '%';
@@ -858,7 +858,7 @@ class rank extends responsetype {
 
         $nbresponses = count($rids);
         // Prepare data to be displayed.
-        $isrestricted = ($this->question->length < count($this->question->choices)) && $this->question->precise == 2;
+        $isrestricted = ($this->question->length() < count($this->question->choices)) && $this->question->precise() == 2;
 
         $rsql = '';
         if (!empty($rids)) {
@@ -867,7 +867,7 @@ class rank extends responsetype {
         }
 
         // This is questionid.
-        array_push($params, $this->question->id);
+        array_push($params, $this->question->id());
         $sql = "SELECT r.id,
                        CASE
                             WHEN c.content = '!other' THEN o.response
@@ -904,7 +904,7 @@ class rank extends responsetype {
                     break;
             }
         }
-        $nbranks = $this->question->length;
+        $nbranks = $this->question->length();
         $ranks = [];
         $rankvalue = [];
         if (!empty($this->question->nameddegrees)) {
@@ -935,12 +935,12 @@ class rank extends responsetype {
 
         // Psettings for display.
         $strtotal = '<strong>' . get_string('total', 'questionnaire') . '</strong>';
-        $isna = $this->question->precise == 1;
+        $isna = $this->question->precise() == 1;
         $osgood = false;
-        if ($this->question->precise == 3) { // Osgood's semantic differential.
+        if ($this->question->precise() == 3) { // Osgood's semantic differential.
             $osgood = true;
         }
-        if ($this->question->precise == 1) {
+        if ($this->question->precise() == 1) {
             $na = get_string('notapplicable', 'questionnaire');
         } else {
             $na = '';
@@ -973,7 +973,7 @@ class rank extends responsetype {
         ];
 
         // Display the column titles.
-        for ($j = 0; $j < $this->question->length; $j++) {
+        for ($j = 0; $j < $this->question->length(); $j++) {
             if (isset($n[$j])) {
                 $str = $n[$j];
             } else {
@@ -1028,7 +1028,7 @@ class rank extends responsetype {
                 }
                 // Display ranks/rates numbers.
                 $maxrank = max($rank);
-                for ($i = 1; $i <= $this->question->length; $i++) {
+                for ($i = 1; $i <= $this->question->length(); $i++) {
                     $percent = '';
                     if (isset($rank[$i])) {
                         $str = $rank[$i];

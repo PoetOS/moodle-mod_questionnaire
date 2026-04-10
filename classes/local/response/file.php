@@ -38,11 +38,11 @@ class file extends responsetype {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id}) && (strlen($responsedata->{'q' . $question->id}) > 0)) {
-            $val = $responsedata->{'q' . $question->id};
+        if (isset($responsedata->{'q' . $question->id()}) && (strlen($responsedata->{'q' . $question->id()}) > 0)) {
+            $val = $responsedata->{'q' . $question->id()};
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
+            $record->questionid = $question->id();
 
             file_save_draft_area_files(
                 $val,
@@ -66,7 +66,7 @@ class file extends responsetype {
                 $record->value = $file->get_id();
                 $answers[] = answer\answer::create_from_data($record);
             } else {
-                self::delete_old_response((int)$question->id, (int)$record->responseid);
+                self::delete_old_response((int)$question->id(), (int)$record->responseid);
             }
         }
         return $answers;
@@ -172,15 +172,15 @@ class file extends responsetype {
             $response = $responsedata;
         }
 
-        if (!empty($response) && isset($response->answers[$this->question->id][0])) {
-            $fileid = intval(clean_text($response->answers[$this->question->id][0]->value));
+        if (!empty($response) && isset($response->answers[$this->question->id()][0])) {
+            $fileid = intval(clean_text($response->answers[$this->question->id()][0]->value));
 
             // Delete any previous attempts.
-            self::delete_old_response((int)$this->question->id, (int)$response->id());
+            self::delete_old_response((int)$this->question->id(), (int)$response->id());
 
             $rec = new \mod_questionnaire\local\db\response_file_record();
             $rec->set('responseid', $response->id());
-            $rec->set('questionid', $this->question->id);
+            $rec->set('questionid', $this->question->id());
             $rec->set('fileid', $fileid);
             $rec->create();
             $recordid = $rec->get('id');
@@ -306,7 +306,7 @@ class file extends responsetype {
                 'r.questionnaireid, r.id AS rid ' .
                 'FROM {' . static::response_table() . '} t, ' .
                 '{questionnaire_response} r ' .
-                'WHERE questionid=' . $this->question->id . $rsql .
+                'WHERE questionid=' . $this->question->id() . $rsql .
                 ' AND t.responseid = r.id ' .
                 'ORDER BY r.submitted DESC';
         } else {
@@ -316,7 +316,7 @@ class file extends responsetype {
                 'FROM {' . static::response_table() . '} t, ' .
                 '{questionnaire_response} r, ' .
                 '{user} u ' .
-                'WHERE questionid=' . $this->question->id . $rsql .
+                'WHERE questionid=' . $this->question->id() . $rsql .
                 ' AND t.responseid = r.id' .
                 ' AND u.id = r.userid ' .
                 'ORDER BY u.lastname, u.firstname, r.submitted';
@@ -425,7 +425,7 @@ class file extends responsetype {
                 $response = new \stdClass();
                 $response->respondent = $straverage;
                 $avg = $sum / $nbresponses;
-                $response->text = sprintf('%.' . $this->question->precise . 'f', $avg);
+                $response->text = sprintf('%.' . $this->question->precise() . 'f', $avg);
                 $response->evencolor = $evencolor;
                 $pagetags->responses[] = (object) ['response' => $response];
                 $evencolor = !$evencolor;

@@ -34,14 +34,14 @@ class numericaltext extends text {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id}) && is_numeric($responsedata->{'q' . $question->id})) {
-            $val = $responsedata->{'q' . $question->id};
+        if (isset($responsedata->{'q' . $question->id()}) && is_numeric($responsedata->{'q' . $question->id()})) {
+            $val = $responsedata->{'q' . $question->id()};
             // Allow commas as well as points in decimal numbers.
-            $val = str_replace(",", ".", $responsedata->{'q' . $question->id});
+            $val = str_replace(",", ".", $responsedata->{'q' . $question->id()});
             $val = preg_replace("/[^0-9.\-]*(-?[0-9]*\.?[0-9]*).*/", '\1', $val);
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
-            $record->questionid = $question->id;
+            $record->questionid = $question->id();
             $record->value = $val;
             $answers[] = answer\answer::create_from_data($record);
         }

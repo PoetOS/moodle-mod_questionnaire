@@ -52,19 +52,19 @@ class multiple extends single {
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id})) {
-            foreach ($responsedata->{'q' . $question->id} as $cid => $cvalue) {
+        if (isset($responsedata->{'q' . $question->id()})) {
+            foreach ($responsedata->{'q' . $question->id()} as $cid => $cvalue) {
                 $cid = clean_param($cid, PARAM_CLEAN);
                 if (isset($question->choices[$cid])) {
                     $record = new \stdClass();
                     $record->responseid = $responsedata->rid;
-                    $record->questionid = $question->id;
+                    $record->questionid = $question->id();
                     $record->choiceid = $cid;
                     // If this choice is an "other" choice, look for the added input.
                     if ($question->choices[$cid]->is_other_choice()) {
                         $cname = \mod_questionnaire\local\question\choice::id_other_choice_name($cid);
-                        $record->value = isset($responsedata->{'q' . $question->id}[$cname]) ?
-                            $responsedata->{'q' . $question->id}[$cname] : '';
+                        $record->value = isset($responsedata->{'q' . $question->id()}[$cname]) ?
+                            $responsedata->{'q' . $question->id()}[$cname] : '';
                     }
                     $answers[$cid] = answer\answer::create_from_data($record);
                 }
@@ -83,13 +83,13 @@ class multiple extends single {
     public static function answers_from_appdata($responsedata, $question) {
         // Need to override "single" class' implementation.
         $answers = [];
-        $qname = 'q' . $question->id;
+        $qname = 'q' . $question->id();
         if (isset($responsedata->{$qname}) && !empty($responsedata->{$qname})) {
             foreach ($responsedata->{$qname} as $choiceid => $choicevalue) {
                 if ($choicevalue) {
                     $record = new \stdClass();
                     $record->responseid = $responsedata->rid;
-                    $record->questionid = $question->id;
+                    $record->questionid = $question->id();
                     $record->choiceid = $choiceid;
                     // If this choice is an "other" choice, look for the added input.
                     if (isset($question->choices[$choiceid]) && $question->choices[$choiceid]->is_other_choice()) {
