@@ -245,7 +245,7 @@ class renderer extends \plugin_renderer_base {
                 $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
             }
         }
-        $pagetags->questionname = $question->name;
+        $pagetags->questionname = $question->name();
 
         return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }

@@ -464,8 +464,8 @@ function questionnaire_get_parent_positions($questions) {
         foreach ($question->dependencies as $dependency) {
             $dependquestion = $dependency->dependquestionid;
             if (isset($dependquestion) && $dependquestion != 0) {
-                $childid = $question->id;
-                $parentpos = $questions[$dependquestion]->position;
+                $childid = $question->id();
+                $parentpos = $questions[$dependquestion]->position();
 
                 if (!isset($parentpositions[$childid])) {
                     $parentpositions[$childid] = $parentpos;
@@ -492,8 +492,8 @@ function questionnaire_get_child_positions($questions) {
         foreach ($question->dependencies as $dependency) {
             $dependquestion = $dependency->dependquestionid;
             if (isset($dependquestion) && $dependquestion != 0) {
-                $parentid = $questions[$dependquestion]->id; // Equals $dependquestion?.
-                $childpos = $question->position;
+                $parentid = $questions[$dependquestion]->id(); // Equals $dependquestion?.
+                $childpos = $question->position();
 
                 if (!isset($childpositions[$parentid])) {
                     $childpositions[$parentid] = $childpos;
@@ -521,7 +521,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
     if ($qid != 0) {
         $questions = $questionnaire->questions();
         $question = clone($questions[$qid]);
-        $question->qid = $question->id;
+        $question->qid = $question->id();
         $question->sid = $questionnaire->surveyid();
         $question->id = $cmid;
         $draftideditor = file_get_submitted_draft_itemid('question');
@@ -532,7 +532,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             'question',
             $qid,
             ['subdirs' => true],
-            $question->content
+            $question->content()
         );
         $question->content = ['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 

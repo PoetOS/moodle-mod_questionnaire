@@ -75,7 +75,7 @@ if ($sectionid) {
 $validquestions = [];
 foreach ($questionnaire->questions() as $question) {
     if ($question->valid_feedback()) {
-        $validquestions[$question->id] = $question->name;
+        $validquestions[$question->id()] = $question->name();
     }
 }
 
