@@ -127,7 +127,7 @@ class rate extends question {
      * @return bool
      */
     public function normal_rate_scale() {
-        return self::type_is_normal_rate_scale($this->precise);
+        return self::type_is_normal_rate_scale($this->precise());
     }
 
     /**
@@ -135,7 +135,7 @@ class rate extends question {
      * @return bool
      */
     public function has_na_column() {
-        return self::type_is_na_column($this->precise);
+        return self::type_is_na_column($this->precise());
     }
 
     /**
@@ -143,7 +143,7 @@ class rate extends question {
      * @return bool
      */
     public function no_duplicate_choices() {
-        return self::type_is_no_duplicate_choices($this->precise);
+        return self::type_is_no_duplicate_choices($this->precise());
     }
 
     /**
@@ -151,7 +151,7 @@ class rate extends question {
      * @return bool
      */
     public function osgood_rate_scale() {
-        return self::type_is_osgood_rate_scale($this->precise);
+        return self::type_is_osgood_rate_scale($this->precise());
     }
 
     /**
@@ -165,7 +165,7 @@ class rate extends question {
      * True if the question supports feedback and has valid settings for feedback. Override if the default logic is not enough.
      */
     public function valid_feedback() {
-        return $this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name) &&
+        return $this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name()) &&
             ($this->normal_rate_scale() || $this->osgood_rate_scale()) && !empty($this->nameddegrees);
     }
 
@@ -203,14 +203,14 @@ class rate extends question {
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         $choicetags = new \stdClass();
         $choicetags->qelements = [];
-        $choicetags->qelements['caption'] = strip_tags($this->content);
+        $choicetags->qelements['caption'] = strip_tags($this->content());
 
         $disabled = '';
         if ($blankquestionnaire) {
             $disabled = ' disabled="disabled"';
         }
-        if (!empty($data) && (!isset($data->{'q' . $this->id}) || !is_array($data->{'q' . $this->id}))) {
-            $data->{'q' . $this->id} = [];
+        if (!empty($data) && (!isset($data->{'q' . $this->id()}) || !is_array($data->{'q' . $this->id()}))) {
+            $data->{'q' . $this->id()} = [];
         }
 
         // Check if rate question has one line only to display full width columns of choices.
@@ -248,16 +248,16 @@ class rate extends question {
                 $width = 30;
             }
             $nn = 100 - ($width * 2);
-            $colwidth = ($nn / $this->length) . '%';
+            $colwidth = ($nn / $this->length()) . '%';
             $textalign = 'right';
             $width = $width . '%';
         } else if ($nocontent) {
             $width = '0%';
-            $colwidth = (100 / $this->length) . '%';
+            $colwidth = (100 / $this->length()) . '%';
             $textalign = 'right';
         } else {
             $width = '59%';
-            $colwidth = (40 / $this->length) . '%';
+            $colwidth = (40 / $this->length()) . '%';
             $textalign = 'left';
         }
 
@@ -277,7 +277,7 @@ class rate extends question {
         if (!$this->no_duplicate_choices()) {
             $nbchoices = count($this->choices);
         } else { // If "No duplicate choices", can restrict nbchoices to number of rate items specified.
-            $nbchoices = $this->length;
+            $nbchoices = $this->length();
         }
 
         // Display empty td for Not yet answered column.
@@ -289,7 +289,7 @@ class rate extends question {
         if ($nameddegrees > 0) {
             $currentdegree = reset($this->nameddegrees);
         }
-        for ($j = 1; $j <= $this->length; $j++) {
+        for ($j = 1; $j <= $this->length(); $j++) {
             $col = [];
             if (($nameddegrees > 0) && ($currentdegree !== false)) {
                 $str = format_text($currentdegree, FORMAT_HTML, ['noclean' => true]);
@@ -315,7 +315,7 @@ class rate extends question {
 
         $num = 0;
         foreach ($this->choices as $cid => $choice) {
-            $num += (isset($response->answers[$this->id][$cid]) && ($response->answers[$this->id][$cid]->value != -999));
+            $num += (isset($response->answers[$this->id()][$cid]) && ($response->answers[$this->id()][$cid]->value != -999));
         }
 
         $notcomplete = false;
@@ -329,7 +329,7 @@ class rate extends question {
         foreach ($this->choices as $cid => $choice) {
             $cols = [];
             if (isset($choice->content)) {
-                $str = 'q' . "{$this->id}_$cid";
+                $str = 'q' . "{$this->id()}_$cid";
                 $content = $choice->content;
                 $rendercontent = format_text($choice->content, FORMAT_PLAIN);
                 if ($this->osgood_rate_scale()) {
@@ -339,7 +339,7 @@ class rate extends question {
                     $othertext = $choice->other_choice_display();
                     $oname = $cid . '_qother';
                     $oid = $cid . '-other';
-                    $odata = isset($response->answers[$this->id][$cid]) ? $response->answers[$this->id][$cid]->value : '';
+                    $odata = isset($response->answers[$this->id()][$cid]) ? $response->answers[$this->id()][$cid]->value : '';
                     if (isset($odata)) {
                         $ovalue = stripslashes($odata);
                     }
@@ -360,8 +360,8 @@ class rate extends question {
                     $completeclass = 'notanswered';
                     $title = '';
                     if (
-                        $notcomplete && isset($response->answers[$this->id][$cid]) &&
-                        ($response->answers[$this->id][$cid]->value == -999)
+                        $notcomplete && isset($response->answers[$this->id()][$cid]) &&
+                        ($response->answers[$this->id()][$cid]->value == -999)
                     ) {
                         $completeclass = 'notcompleted';
                         $title = get_string('pleasecomplete', 'questionnaire');
@@ -387,7 +387,7 @@ class rate extends question {
                     reset($this->nameddegrees);
                 }
                 $colstart = $hasnotansweredchoice ? self::COL_START + 1 : self::COL_START;
-                for ($j = 1; $j <= $this->length + $this->has_na_column(); $j++) {
+                for ($j = 1; $j <= $this->length() + $this->has_na_column(); $j++) {
                     if (!isset($collabel[$j])) {
                         // If not using this value, continue.
                         continue;
@@ -399,9 +399,9 @@ class rate extends question {
                         $value = key($this->nameddegrees);
                         next($this->nameddegrees);
                     } else {
-                        $value = ($j <= $this->length ? $j : -1);
+                        $value = ($j <= $this->length() ? $j : -1);
                     }
-                    if (isset($response->answers[$this->id][$cid]) && ($value == $response->answers[$this->id][$cid]->value)) {
+                    if (isset($response->answers[$this->id()][$cid]) && ($value == $response->answers[$this->id()][$cid]->value)) {
                         $checked = ' checked="checked"';
                     }
                     $col['colstyle'] = 'text-align:center';
@@ -454,8 +454,8 @@ class rate extends question {
         $resptags->headers = [];
         $resptags->rows = [];
 
-        if (!isset($response->answers[$this->id])) {
-            $response->answers[$this->id][] = new \mod_questionnaire\local\response\answer\answer();
+        if (!isset($response->answers[$this->id()])) {
+            $response->answers[$this->id()][] = new \mod_questionnaire\local\response\answer\answer();
         }
         // Check if rate question has one line only to display full width columns of choices.
         $nocontent = false;
@@ -486,18 +486,18 @@ class rate extends question {
             }
             $nn = 100 - ($sidecolwidthn * 2);
             $resptags->sidecolwidth = $sidecolwidth;
-            $resptags->colwidth = ($nn / $this->length) . '%';
+            $resptags->colwidth = ($nn / $this->length()) . '%';
             $resptags->textalign = 'right';
         } else {
             $resptags->sidecolwidth = '49%';
-            $resptags->colwidth = (50 / $this->length) . '%';
+            $resptags->colwidth = (50 / $this->length()) . '%';
             $resptags->textalign = 'left';
         }
         if (!empty($this->nameddegrees)) {
             $this->length = count($this->nameddegrees);
             reset($this->nameddegrees);
         }
-        for ($j = 1; $j <= $this->length; $j++) {
+        for ($j = 1; $j <= $this->length(); $j++) {
             $cellobj = new \stdClass();
             $cellobj->bg = $bg;
             if (!empty($this->nameddegrees)) {
@@ -524,7 +524,7 @@ class rate extends question {
             $rowobj = new \stdClass();
             // Do not print column names if named column exist.
             if (!array_key_exists($cid, $cidnamed)) {
-                $str = 'q' . "{$this->id}_$cid";
+                $str = 'q' . "{$this->id()}_$cid";
                 $content = $choice->content;
                 $contents = questionnaire_choice_values($content);
                 if ($contents->modname) {
@@ -535,8 +535,8 @@ class rate extends question {
                 }
                 if ($choice->is_other_choice()) {
                     $content = $choice->other_choice_display();
-                    if (isset($response->answers[$this->id][$cid]->otheresponse)) {
-                        $rowobj->othercontent = $response->answers[$this->id][$cid]->otheresponse;
+                    if (isset($response->answers[$this->id()][$cid]->otheresponse)) {
+                        $rowobj->othercontent = $response->answers[$this->id()][$cid]->otheresponse;
                     }
                 }
                 $rowobj->content = format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;';
@@ -546,22 +546,22 @@ class rate extends question {
                     $this->length = count($this->nameddegrees);
                     reset($this->nameddegrees);
                 }
-                for ($j = 1; $j <= $this->length; $j++) {
+                for ($j = 1; $j <= $this->length(); $j++) {
                     $cellobj = new \stdClass();
-                    if (isset($response->answers[$this->id][$cid])) {
+                    if (isset($response->answers[$this->id()][$cid])) {
                         if (!empty($this->nameddegrees)) {
-                            if ($response->answers[$this->id][$cid]->value == key($this->nameddegrees)) {
+                            if ($response->answers[$this->id()][$cid]->value == key($this->nameddegrees)) {
                                 $cellobj->checked = 1;
                             }
                             next($this->nameddegrees);
-                        } else if ($j == $response->answers[$this->id][$cid]->value) {
+                        } else if ($j == $response->answers[$this->id()][$cid]->value) {
                             $cellobj->checked = 1;
                         }
                     }
                     $cellobj->str = $str . $j . $uniquetag++;
                     $cellobj->bg = $bg;
                     // N/A column checked.
-                    $checkedna = (isset($response->answers[$this->id][$cid]) && ($response->answers[$this->id][$cid]->value == -1));
+                    $checkedna = (isset($response->answers[$this->id()][$cid]) && ($response->answers[$this->id()][$cid]->value == -1));
                     if ($bg == 'c0') {
                         $bg = 'c1';
                     } else {
@@ -604,8 +604,8 @@ class rate extends question {
 
         // To make it easier, create an array of answers by choiceid.
         $answers = [];
-        if (isset($response->answers[$this->id])) {
-            foreach ($response->answers[$this->id] as $answer) {
+        if (isset($response->answers[$this->id()])) {
+            foreach ($response->answers[$this->id()] as $answer) {
                 $answers[$answer->choiceid] = $answer;
             }
         }
@@ -658,8 +658,8 @@ class rate extends question {
         // Create an answers array indexed by choiceid for ease.
         $answers = [];
         $nodups = [];
-        if (isset($response->answers[$this->id])) {
-            foreach ($response->answers[$this->id] as $answer) {
+        if (isset($response->answers[$this->id()])) {
+            foreach ($response->answers[$this->id()] as $answer) {
                 $answers[$answer->choiceid] = $answer;
                 $nodups[] = $answer->value;
             }
@@ -681,9 +681,9 @@ class rate extends question {
             $nbchoices -= $nameddegrees;
         }
         // If nodupes and nb choice restricted, nbchoices may be > actual choices, so limit it to $question->length.
-        $isrestricted = ($this->length < count($this->choices)) && $this->no_duplicate_choices();
+        $isrestricted = ($this->length() < count($this->choices)) && $this->no_duplicate_choices();
         if ($isrestricted) {
-            $nbchoices = min($nbchoices, $this->length);
+            $nbchoices = min($nbchoices, $this->length());
         }
 
         // Test for duplicate answers in a no duplicate question type.
@@ -889,7 +889,7 @@ class rate extends question {
             $choice->na = false;
             $choice->choiceid = $choiceid;
             $choice->id = $choiceid;
-            $choice->questionid = $this->id;
+            $choice->questionid = $this->id();
 
             // Add a fieldkey for each choice.
             $choice->fieldkey = $this->mobile_fieldkey($choiceid);
@@ -907,8 +907,8 @@ class rate extends question {
                     $choices[$cnum]->min = 0;
                     $choices[$cnum]->minstr = 1;
                 }
-                $choices[$cnum]->max = intval($this->length) - 1;
-                $choices[$cnum]->maxstr = intval($this->length);
+                $choices[$cnum]->max = intval($this->length()) - 1;
+                $choices[$cnum]->maxstr = intval($this->length());
             } else if ($this->has_na_column()) {
                 $choices[$cnum] = $choice;
                 if ($this->required()) {
@@ -918,7 +918,7 @@ class rate extends question {
                     $choices[$cnum]->min = 0;
                     $choices[$cnum]->minstr = 1;
                 }
-                $choices[$cnum]->max = intval($this->length);
+                $choices[$cnum]->max = intval($this->length());
                 $choices[$cnum]->na = true;
             } else {
                 $excludes[$choiceid] = $choiceid;
@@ -981,7 +981,7 @@ class rate extends question {
                 $rates[] = (object)['value' => $value, 'label' => $label];
             }
         } else {
-            for ($i = 1; $i <= $this->length; $i++) {
+            for ($i = 1; $i <= $this->length(); $i++) {
                 $rates[] = (object)['value' => $i, 'label' => $i];
             }
         }
@@ -995,8 +995,8 @@ class rate extends question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        if (isset($response->answers[$this->id])) {
-            foreach ($response->answers[$this->id] as $answer) {
+        if (isset($response->answers[$this->id()])) {
+            foreach ($response->answers[$this->id()] as $answer) {
                 // Add a fieldkey for each choice.
                 if (!empty($this->nameddegrees)) {
                     if (isset($this->nameddegrees[$answer->value])) {
@@ -1016,8 +1016,8 @@ class rate extends question {
      * Add the nameddegrees property.
      */
     private function add_nameddegrees_from_extradata() {
-        if (!empty($this->extradata)) {
-            $this->nameddegrees = json_decode($this->extradata, true);
+        if (!empty($this->extradata())) {
+            $this->nameddegrees = json_decode($this->extradata(), true);
         }
     }
 

@@ -74,17 +74,17 @@ class essay extends text {
         $cols = 80;
         $rows = 15;
         // Use HTML editor or not?
-        if ($this->precise == 0) {
+        if ($this->precise() == 0) {
             $canusehtmleditor = true;
-            $rows = $this->length == 0 ? $rows : $this->length;
+            $rows = $this->length() == 0 ? $rows : $this->length();
         } else {
             $canusehtmleditor = false;
             // Prior to version 2.6, "precise" was used for rows number.
-            $rows = $this->precise > 1 ? $this->precise : $this->length;
+            $rows = $this->precise() > 1 ? $this->precise() : $this->length();
         }
-        $name = 'q' . $this->id;
-        if (isset($response->answers[$this->id][0])) {
-            $value = $response->answers[$this->id][0]->value;
+        $name = 'q' . $this->id();
+        if (isset($response->answers[$this->id()][0])) {
+            $value = $response->answers[$this->id()][0]->value;
         } else {
             $value = '';
         }
@@ -114,8 +114,8 @@ class essay extends text {
      *
      */
     protected function response_survey_display($response) {
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
+        if (isset($response->answers[$this->id()])) {
+            $answer = reset($response->answers[$this->id()]);
             $answer = format_text($answer->value, FORMAT_HTML);
         } else {
             $answer = '&nbsp;';

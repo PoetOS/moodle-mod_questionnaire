@@ -81,10 +81,10 @@ class numerical extends question {
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
         // Numeric.
         $questiontags = new \stdClass();
-        $precision = $this->precise;
+        $precision = $this->precise();
         $a = new \stdClass();
-        if (isset($response->answers[$this->id][0])) {
-            $mynumber = $response->answers[$this->id][0]->value;
+        if (isset($response->answers[$this->id()][0])) {
+            $mynumber = $response->answers[$this->id()][0]->value;
             if ($mynumber != '') {
                 $mynumber0 = $mynumber;
                 if (!is_numeric($mynumber)) {
@@ -94,11 +94,11 @@ class numerical extends question {
                     if ($precision) {
                         $pos = strpos($mynumber, '.');
                         if (!$pos) {
-                            if (strlen($mynumber) > $this->length) {
-                                $mynumber = substr($mynumber, 0, $this->length);
+                            if (strlen($mynumber) > $this->length()) {
+                                $mynumber = substr($mynumber, 0, $this->length());
                             }
                         }
-                        $this->length += (1 + $precision); // To allow for n numbers after decimal point.
+                        $this->length = $this->length() + (1 + $precision); // To allow for n numbers after decimal point.
                     }
                     $mynumber = number_format($mynumber, $precision, '.', '');
                     if ($mynumber != $mynumber0) {
@@ -110,19 +110,19 @@ class numerical extends question {
                 }
             }
             if ($mynumber != '') {
-                $response->answers[$this->id][0]->value = $mynumber;
+                $response->answers[$this->id()][0]->value = $mynumber;
             }
         }
 
         $choice = new \stdClass();
         $choice->onkeypress = 'return event.keyCode != 13;';
-        $choice->size = $this->length;
+        $choice->size = $this->length();
         // Add a 'thousands separator' instruction if there is a size setting greater than three.
         $choice->instruction = (empty($choice->size) || ($choice->size > 3)) ? get_string('thousands', 'mod_questionnaire') : '';
-        $choice->name = 'q' . $this->id;
-        $choice->maxlength = $this->length;
-        $choice->value = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
-        $choice->id = self::qtypename($this->typeid) . $this->id;
+        $choice->name = 'q' . $this->id();
+        $choice->maxlength = $this->length();
+        $choice->value = (isset($response->answers[$this->id()][0]) ? $response->answers[$this->id()][0]->value : '');
+        $choice->id = self::qtypename($this->typeid()) . $this->id();
         $questiontags->qelements = new \stdClass();
         $questiontags->qelements->choice = $choice;
         return $questiontags;
@@ -138,12 +138,12 @@ class numerical extends question {
         $responseval = false;
         if (is_a($responsedata, 'mod_questionnaire\local\response\response')) {
             // If $responsedata is a response object, look through the answers.
-            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
-                $answer = $responsedata->answers[$this->id][0];
+            if (isset($responsedata->answers[$this->id()]) && !empty($responsedata->answers[$this->id()])) {
+                $answer = $responsedata->answers[$this->id()][0];
                 $responseval = $answer->value;
             }
-        } else if (isset($responsedata->{'q' . $this->id})) {
-            $responseval = $responsedata->{'q' . $this->id};
+        } else if (isset($responsedata->{'q' . $this->id()})) {
+            $responseval = $responsedata->{'q' . $this->id()};
         }
         if ($responseval !== false) {
             // If commas are present, replace them with periods, in case that was meant as the European decimal place.
@@ -161,8 +161,8 @@ class numerical extends question {
      */
     protected function response_survey_display($response) {
         $resptags = new \stdClass();
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
+        if (isset($response->answers[$this->id()])) {
+            $answer = reset($response->answers[$this->id()]);
             $resptags->content = $answer->value;
         }
         return $resptags;
@@ -174,7 +174,7 @@ class numerical extends question {
      * @param string $helptext
      */
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
-        $this->length = isset($this->length) ? $this->length : 10;
+        $this->length = $this->length() ?: 10;
         return parent::form_length($mform, 'maxdigitsallowed');
     }
 
@@ -216,7 +216,7 @@ class numerical extends question {
         $choices[0] = new \stdClass();
         $choices[0]->id = 0;
         $choices[0]->choiceid = 0;
-        $choices[0]->questionid = $this->id;
+        $choices[0]->questionid = $this->id();
         $choices[0]->content = '';
         $choices[0]->value = null;
         return $choices;

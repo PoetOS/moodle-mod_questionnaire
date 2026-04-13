@@ -76,30 +76,30 @@ class sectiontext extends question {
         $options = ['noclean' => true, 'para' => false, 'filter' => true,
             'context' => $this->context, 'overflowdiv' => true];
         $mobiledata = (object)[
-            'id' => $this->id,
-            'name' => $this->name,
-            'typeid' => $this->typeid,
-            'length' => $this->length,
+            'id' => $this->id(),
+            'name' => $this->name(),
+            'typeid' => $this->typeid(),
+            'length' => $this->length(),
             'content' => format_text(
                 file_rewrite_pluginfile_urls(
-                    $this->content,
+                    $this->content(),
                     'pluginfile.php',
                     $this->context->id,
                     'mod_questionnaire',
                     'question',
-                    $this->id
+                    $this->id()
                 ),
                 FORMAT_HTML,
                 $options
             ),
-            'content_stripped' => strip_tags($this->content),
+            'content_stripped' => strip_tags($this->content()),
             'required' => false,
-            'deleted' => $this->deleted,
+            'deleted' => $this->deleted(),
             'response_table' => $this->responsetable,
             'fieldkey' => $this->mobile_fieldkey(),
-            'precise' => $this->precise,
+            'precise' => $this->precise(),
             'qnum' => '',
-            'errormessage' => get_string('required') . ': ' . $this->name,
+            'errormessage' => get_string('required') . ': ' . $this->name(),
         ];
 
         $mobiledata->issectiontext = true;
@@ -160,10 +160,10 @@ class sectiontext extends question {
         $filteredsections = [];
 
         // In which section(s) is this question?
-        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->surveyid])) {
+        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->surveyid()])) {
             foreach ($fbsections as $key => $fbsection) {
                 if ($scorecalculation = section::decode_scorecalculation($fbsection->scorecalculation)) {
-                    if (array_key_exists($this->id, $scorecalculation)) {
+                    if (array_key_exists($this->id(), $scorecalculation)) {
                         array_push($filteredsections, $fbsection->section);
                     }
                 }
