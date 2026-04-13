@@ -79,14 +79,14 @@ class file extends question {
         global $CFG, $PAGE;
         require_once($CFG->libdir . '/filelib.php');
 
-        $elname = 'q' . $this->id;
+        $elname = 'q' . $this->id();
         // If there is a response and the response is resumed, get the original itemid.
         $itemid = (
-            isset($response->answers[$this->id]) &&
-            !empty($response->answers[$this->id]) &&
+            isset($response->answers[$this->id()]) &&
+            !empty($response->answers[$this->id()]) &&
             isset($_REQUEST['resume']) &&
             $_REQUEST['resume'] === '1'
-        ) ? (int)$response->answers[$this->id][0]->id : 0;
+        ) ? (int)$response->answers[$this->id()][0]->id : 0;
         // Prepare the draft area.
         $draftitemid = file_get_submitted_draft_itemid($elname);
         file_prepare_draft_area(
@@ -118,19 +118,19 @@ class file extends question {
         // If $responsedata is a response object, look through the answers.
         if (
             is_a($responsedata, 'mod_questionnaire\local\response\response') &&
-            isset($responsedata->answers[$this->id]) &&
-            !empty($responsedata->answers[$this->id])
+            isset($responsedata->answers[$this->id()]) &&
+            !empty($responsedata->answers[$this->id()])
         ) {
-            $answer = reset($responsedata->answers[$this->id]);
+            $answer = reset($responsedata->answers[$this->id()]);
             $answered = ((int)$answer->value > 0);
-        } else if (isset($responsedata->{'q' . $this->id})) { // If $responsedata is webform data, check that it is not empty.
-            $draftitemid = (int)$responsedata->{'q' . $this->id};
+        } else if (isset($responsedata->{'q' . $this->id()})) { // If $responsedata is webform data, check that it is not empty.
+            $draftitemid = (int)$responsedata->{'q' . $this->id()};
             if ($draftitemid > 0) {
                 $info = file_get_draft_area_info($draftitemid);
                 $answered = $info['filecount'] > 0;
             }
         }
-        return !($this->required() && ($this->deleted == 'n') && !$answered);
+        return !($this->required() && ($this->deleted() == 'n') && !$answered);
     }
 
     /**
@@ -159,8 +159,8 @@ class file extends question {
         global $PAGE, $CFG;
         require_once($CFG->libdir . '/filelib.php');
         require_once($CFG->libdir . '/resourcelib.php');
-        if (isset($data->answers[$this->id])) {
-            $answer = reset($data->answers[$this->id]);
+        if (isset($data->answers[$this->id()])) {
+            $answer = reset($data->answers[$this->id()]);
         } else {
             return '';
         }

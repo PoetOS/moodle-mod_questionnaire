@@ -79,10 +79,10 @@ class slider extends question {
      * @return bool
      */
     public function valid_feedback() {
-        $extradata = json_decode($this->extradata);
+        $extradata = json_decode($this->extradata());
         $minrange = $extradata->minrange;
         // Negative scores are not accepted in Feedback.
-        return $this->supports_feedback() && !empty($this->name) && $minrange >= 0;
+        return $this->supports_feedback() && !empty($this->name()) && $minrange >= 0;
     }
 
     /**
@@ -91,7 +91,7 @@ class slider extends question {
      */
     public function get_feedback_maxscore() {
         if ($this->valid_feedback()) {
-            $extradata = json_decode($this->extradata);
+            $extradata = json_decode($this->extradata());
             $maxscore = $extradata->maxrange;
         } else {
             $maxscore = false;
@@ -111,13 +111,13 @@ class slider extends question {
     protected function question_survey_display($response, $dependants = [], $blankquestionnaire = false) {
         global $PAGE;
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_slider', null, false, questionnaire_get_js_module());
-        $extradata = json_decode($this->extradata);
+        $extradata = json_decode($this->extradata());
         $questiontags = new \stdClass();
-        if (isset($response->answers[$this->id][0])) {
-            $extradata->startingvalue = $response->answers[$this->id][0]->value;
+        if (isset($response->answers[$this->id()][0])) {
+            $extradata->startingvalue = $response->answers[$this->id()][0]->value;
         }
-        $extradata->name = 'q' . $this->id;
-        $extradata->id = self::qtypename($this->typeid) . $this->id;
+        $extradata->name = 'q' . $this->id();
+        $extradata->id = self::qtypename($this->typeid()) . $this->id();
         $questiontags->qelements = new \stdClass();
         $questiontags->qelements->extradata = $extradata;
         $questiontags->isprint = $this->get_isprint();
@@ -134,13 +134,13 @@ class slider extends question {
         $PAGE->requires->js_init_call('M.mod_questionnaire.init_slider', null, false, questionnaire_get_js_module());
 
         $resptags = new \stdClass();
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
+        if (isset($response->answers[$this->id()])) {
+            $answer = reset($response->answers[$this->id()]);
             $resptags->content = format_text($answer->value, FORMAT_HTML);
-            if (!empty($response->answers[$this->id]['extradata'])) {
-                $resptags->extradata = $response->answers[$this->id]['extradata'];
+            if (!empty($response->answers[$this->id()]['extradata'])) {
+                $resptags->extradata = $response->answers[$this->id()]['extradata'];
             } else {
-                $extradata = json_decode($this->extradata);
+                $extradata = json_decode($this->extradata());
                 $resptags->extradata = $extradata;
             }
         }
@@ -189,8 +189,8 @@ class slider extends question {
         $stepvalue = 'stepvalue';
 
         $ranges = [];
-        if (!empty($this->extradata)) {
-            $ranges = json_decode($this->extradata);
+        if (!empty($this->extradata())) {
+            $ranges = json_decode($this->extradata());
         }
         $mform->addElement('text', 'leftlabel', get_string('leftlabel', 'questionnaire'));
         $mform->setType('leftlabel', PARAM_RAW);
@@ -331,7 +331,7 @@ class slider extends question {
      * @return array
      */
     public function mobile_otherdata() {
-        $extradata = json_decode($this->extradata);
+        $extradata = json_decode($this->extradata());
         return [$this->mobile_fieldkey() => $extradata->startingvalue];
     }
 }

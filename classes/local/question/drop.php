@@ -105,15 +105,15 @@ class drop extends question {
             $option = new \stdClass();
             $option->value = $key;
             $option->label = format_string($choice->content);
-            if (isset($response->answers[$this->id][$key])) {
+            if (isset($response->answers[$this->id()][$key])) {
                 $option->selected = true;
             }
             $options[] = $option;
         }
         $chobj = new \stdClass();
-        $chobj->name = 'q' . $this->id;
-        $chobj->id = self::qtypename($this->typeid) . $this->name;
-        $chobj->class = 'select form-select menu q' . $this->id;
+        $chobj->name = 'q' . $this->id();
+        $chobj->id = self::qtypename($this->typeid()) . $this->name();
+        $chobj->class = 'select form-select menu q' . $this->id();
         $chobj->options = $options;
         $choicetags->qelements->choice = $chobj;
         $choicetags->isprint = $this->get_isprint();
@@ -130,14 +130,14 @@ class drop extends question {
         static $uniquetag = 0;  // To make sure all radios have unique names.
 
         $resptags = new \stdClass();
-        $resptags->name = 'q' . $this->id . $uniquetag++;
+        $resptags->name = 'q' . $this->id() . $uniquetag++;
         $resptags->id = 'menu' . $resptags->name;
         $resptags->class = 'select form-select ' . $resptags->id;
         $resptags->options = [];
         $resptags->options[] = (object)['value' => '', 'label' => get_string('choosedots')];
 
-        if (!isset($response->answers[$this->id])) {
-            $response->answers[$this->id][] = new \mod_questionnaire\local\response\answer\answer();
+        if (!isset($response->answers[$this->id()])) {
+            $response->answers[$this->id()][] = new \mod_questionnaire\local\response\answer\answer();
         }
 
         foreach ($this->choices as $id => $choice) {
@@ -145,7 +145,7 @@ class drop extends question {
             $chobj = new \stdClass();
             $chobj->value = $id;
             $chobj->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]);
-            if (isset($response->answers[$this->id][$id])) {
+            if (isset($response->answers[$this->id()][$id])) {
                 $chobj->selected = 1;
                 $resptags->selectedlabel = $chobj->label;
             }
@@ -200,8 +200,8 @@ class drop extends question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        if (isset($response->answers[$this->id])) {
-            foreach ($response->answers[$this->id] as $answer) {
+        if (isset($response->answers[$this->id()])) {
+            foreach ($response->answers[$this->id()] as $answer) {
                 // Add a fieldkey for each choice.
                 $resultdata[$this->mobile_fieldkey()] = $answer->choiceid;
             }

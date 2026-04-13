@@ -494,7 +494,7 @@ abstract class question {
      * @throws \dml_exception
      */
     private function get_choices() {
-        $choicerecs = \mod_questionnaire\local\db\choice_record::get_for_question($this->id);
+        $choicerecs = \mod_questionnaire\local\db\choice_record::get_for_question($this->id());
         if ($choicerecs) {
             foreach ($choicerecs as $choicerec) {
                 $this->choices[$choicerec->get('id')] =
@@ -535,7 +535,7 @@ abstract class question {
     private function get_dependencies() {
         $this->dependencies = [];
         $deprecs = \mod_questionnaire\local\db\dependency_record::get_records(
-            ['questionid' => $this->id, 'surveyid' => $this->surveyid]
+            ['questionid' => $this->id(), 'surveyid' => $this->surveyid()]
         );
         foreach ($deprecs as $deprec) {
             $did = $deprec->get('id');
@@ -564,7 +564,7 @@ abstract class question {
                 } else {
                     $choice->content = format_string($contents->text);
                 }
-                $options[$this->id . ',' . $key] = $this->name . '->' . $choice->content;
+                $options[$this->id() . ',' . $key] = $this->name() . '->' . $choice->content;
             }
         }
         return $options;
@@ -650,7 +650,7 @@ abstract class question {
         $choiceval = $this->responsetype->transform_choiceid($choiceid);
         return $DB->record_exists(
             $this->response_table(),
-            ['responseid' => $rid, 'questionid' => $this->id, 'choiceid' => $choiceval]
+            ['responseid' => $rid, 'questionid' => $this->id(), 'choiceid' => $choiceval]
         );
     }
 
@@ -785,7 +785,7 @@ abstract class question {
      * @return bool
      */
     public function valid_feedback() {
-        if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name)) {
+        if ($this->supports_feedback() && $this->has_choices() && $this->required() && !empty($this->name())) {
             foreach ($this->choices as $choice) {
                 if ($choice->value != null) {
                     return true;
@@ -839,8 +839,8 @@ abstract class question {
     public function response_complete($responsedata) {
         if (is_a($responsedata, 'mod_questionnaire\local\response\response')) {
             // If $responsedata is a response object, look through the answers.
-            if (isset($responsedata->answers[$this->id]) && !empty($responsedata->answers[$this->id])) {
-                $answer = $responsedata->answers[$this->id][0];
+            if (isset($responsedata->answers[$this->id()]) && !empty($responsedata->answers[$this->id()])) {
+                $answer = $responsedata->answers[$this->id()][0];
                 if (
                     !empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
                     $this->choices[$answer->choiceid]->is_other_choice()
@@ -854,9 +854,9 @@ abstract class question {
             }
         } else {
             // If $responsedata is webform data, check that its not empty.
-            $answered = isset($responsedata->{'q' . $this->id}) && ($responsedata->{'q' . $this->id} != '');
+            $answered = isset($responsedata->{'q' . $this->id()}) && ($responsedata->{'q' . $this->id()} != '');
         }
-        return !($this->required() && (empty($this->deleted)) && !$answered);
+        return !($this->required() && (empty($this->deleted())) && !$answered);
     }
 
     /**
@@ -878,18 +878,18 @@ abstract class question {
 
         if ($questionrecord === null) {
             $questionrecord = new \stdClass();
-            $questionrecord->id = $this->id;
-            $questionrecord->surveyid = $this->surveyid;
-            $questionrecord->name = $this->name;
-            $questionrecord->typeid = $this->typeid;
+            $questionrecord->id = $this->id();
+            $questionrecord->surveyid = $this->surveyid();
+            $questionrecord->name = $this->name();
+            $questionrecord->typeid = $this->typeid();
             $questionrecord->result_id = $this->resultid;
-            $questionrecord->length = $this->length;
-            $questionrecord->precise = $this->precise;
-            $questionrecord->position = $this->position;
-            $questionrecord->content = $this->content;
+            $questionrecord->length = $this->length();
+            $questionrecord->precise = $this->precise();
+            $questionrecord->position = $this->position();
+            $questionrecord->content = $this->content();
             $questionrecord->required = $this->required;
-            $questionrecord->deleted = $this->deleted;
-            $questionrecord->extradata = $this->extradata;
+            $questionrecord->deleted = $this->deleted();
+            $questionrecord->extradata = $this->extradata();
             $questionrecord->dependquestion = $this->dependquestion;
             $questionrecord->dependchoice = $this->dependchoice;
         } else {
@@ -897,7 +897,7 @@ abstract class question {
             if (isset($this->qid) && ($this->qid > 0)) {
                 $questionrecord->id = $this->qid;
             } else {
-                $questionrecord->id = $this->id;
+                $questionrecord->id = $this->id();
             }
         }
         $DB->update_record('questionnaire_question', $questionrecord);
@@ -932,7 +932,7 @@ abstract class question {
 
         // Make sure we add all necessary data.
         if (!isset($questionrecord->typeid) || empty($questionrecord->typeid)) {
-            $questionrecord->typeid = $this->typeid;
+            $questionrecord->typeid = $this->typeid();
         }
 
         $questionpersistent = new \mod_questionnaire\local\db\question_record(0, $questionrecord);
@@ -958,7 +958,7 @@ abstract class question {
             if (isset($this->qid) && ($this->qid > 0)) {
                 $qid = $this->qid;
             } else {
-                $qid = $this->id;
+                $qid = $this->id();
             }
             foreach ($this->choices as $key => $choice) {
                 $choicerecord = new \stdClass();
@@ -1033,7 +1033,7 @@ abstract class question {
      */
     public function insert_extradata($extradata) {
         global $DB;
-        return $DB->set_field('questionnaire_question', 'extradata', $extradata, ['id' => $this->id]);
+        return $DB->set_field('questionnaire_question', 'extradata', $extradata, ['id' => $this->id()]);
     }
 
     /**
@@ -1106,7 +1106,7 @@ abstract class question {
         if (isset($this->qid) && ($this->qid > 0)) {
             $qid = $this->qid;
         } else {
-            $qid = $this->id;
+            $qid = $this->id();
         }
         $this->required = $rval;
         return $DB->set_field('questionnaire_question', 'required', $rval, ['id' => $qid]);
@@ -1227,9 +1227,9 @@ abstract class question {
 
         // For now, check what the response type is until we've got it all refactored.
         if ($response instanceof \mod_questionnaire\local\response\response) {
-            $skippedquestion = !isset($response->answers[$this->id]);
+            $skippedquestion = !isset($response->answers[$this->id()]);
         } else {
-            $skippedquestion = !empty($response) && !isset($response->{'q' . $this->id});
+            $skippedquestion = !empty($response) && !isset($response->{'q' . $this->id()});
         }
 
         // If we are on report page and this questionnaire has dependquestions and this question was skipped.
@@ -1254,13 +1254,13 @@ abstract class question {
             // This needs to be done to ensure all dependency data is loaded.
             // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
             $questionnaire->load_parents($this);
-            $pagetags->dependencylist = $questionnaire->renderer->get_dependency_html($this->id, $this->dependencies);
+            $pagetags->dependencylist = $questionnaire->renderer->get_dependency_html($this->id(), $this->dependencies);
         }
 
-        $pagetags->fieldset = (object)['id' => $this->id, 'class' => $displayclass];
+        $pagetags->fieldset = (object)['id' => $this->id(), 'class' => $displayclass];
 
         // Do not display the info box for the label question type.
-        if ($this->typeid != QUESSECTIONTEXT) {
+        if ($this->typeid() != QUESSECTIONTEXT) {
             if (!$nonumbering) {
                 $pagetags->qnum = $qnum;
             }
@@ -1275,24 +1275,24 @@ abstract class question {
             $pagetags->required = $required; // Need to replace this with better renderer / template?
         }
         // If question text is "empty", i.e. 2 non-breaking spaces were inserted, empty it.
-        if ($this->content == '<p>  </p>') {
+        if ($this->content() == '<p>  </p>') {
             $this->content = '';
         }
         $pagetags->skippedclass = $skippedclass;
-        if ($this->typeid == QUESNUMERIC || $this->typeid == QUESTEXT || $this->typeid == QUESSLIDER) {
-            $pagetags->label = (object)['for' => self::qtypename($this->typeid) . $this->id];
-        } else if ($this->typeid == QUESDROP) {
-            $pagetags->label = (object)['for' => self::qtypename($this->typeid) . $this->name];
-        } else if ($this->typeid == QUESESSAY) {
-            $pagetags->label = (object)['for' => 'q' . $this->id];
+        if ($this->typeid() == QUESNUMERIC || $this->typeid() == QUESTEXT || $this->typeid() == QUESSLIDER) {
+            $pagetags->label = (object)['for' => self::qtypename($this->typeid()) . $this->id()];
+        } else if ($this->typeid() == QUESDROP) {
+            $pagetags->label = (object)['for' => self::qtypename($this->typeid()) . $this->name()];
+        } else if ($this->typeid() == QUESESSAY) {
+            $pagetags->label = (object)['for' => 'q' . $this->id()];
         }
         $content = file_rewrite_pluginfile_urls(
-            $this->content,
+            $this->content(),
             'pluginfile.php',
             $this->context->id,
             'mod_questionnaire',
             'question',
-            $this->id
+            $this->id()
         );
         $options = ['noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
         $pagetags->qcontent = format_text($content, FORMAT_HTML, $options);
@@ -1345,7 +1345,7 @@ abstract class question {
         $mform->setType('qid', PARAM_INT);
         $mform->addElement('hidden', 'sid', 0);
         $mform->setType('sid', PARAM_INT);
-        $mform->addElement('hidden', 'typeid', $this->typeid);
+        $mform->addElement('hidden', 'typeid', $this->typeid());
         $mform->setType('typeid', PARAM_INT);
         $mform->addElement('hidden', 'action', 'question');
         $mform->setType('action', PARAM_ALPHA);
@@ -1369,9 +1369,9 @@ abstract class question {
     protected function form_header(\MoodleQuickForm $mform, $helpname = '') {
         // Display different messages for new question creation and existing question modification.
         if (isset($this->qid) && !empty($this->qid)) {
-            $header = get_string('editquestion', 'questionnaire', questionnaire_get_type($this->typeid));
+            $header = get_string('editquestion', 'questionnaire', questionnaire_get_type($this->typeid()));
         } else {
-            $header = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($this->typeid));
+            $header = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($this->typeid()));
         }
         if (empty($helpname)) {
             $helpname = $this->helpname();
@@ -1439,7 +1439,7 @@ abstract class question {
     protected function form_dependencies($form, $questions) {
         // Create a new area for multiple dependencies.
         $mform = $form->_form;
-        $position = ($this->position !== 0) ? $this->position : count($questions) + 1;
+        $position = ($this->position() !== 0) ? $this->position() : count($questions) + 1;
         $dependencies = [];
         $dependencies[''][0] = get_string('choosedots');
         foreach ($questions as $question) {
@@ -1855,7 +1855,7 @@ abstract class question {
                     $dependencyrecord = new \stdClass();
                     $dependencyrecord->id = $ekey;
                     $dependencyrecord->questionid = $this->qid;
-                    $dependencyrecord->surveyid = $this->surveyid;
+                    $dependencyrecord->surveyid = $this->surveyid();
                     $dependencyrecord->dependquestionid = $formdata->dependquestion[$nidx];
                     $dependencyrecord->dependchoiceid = $formdata->dependchoice[$nidx];
                     $dependencyrecord->dependlogic = $formdata->dependlogic_cleaned[$nidx];
@@ -1972,35 +1972,35 @@ abstract class question {
         $options = ['noclean' => true, 'para' => false, 'filter' => true,
             'context' => $this->context, 'overflowdiv' => true];
         $mobiledata = (object)[
-            'id' => $this->id,
-            'name' => $this->name,
-            'typeid' => $this->typeid,
-            'length' => $this->length,
+            'id' => $this->id(),
+            'name' => $this->name(),
+            'typeid' => $this->typeid(),
+            'length' => $this->length(),
             'content' => format_text(
                 file_rewrite_pluginfile_urls(
-                    $this->content,
+                    $this->content(),
                     'pluginfile.php',
                     $this->context->id,
                     'mod_questionnaire',
                     'question',
-                    $this->id
+                    $this->id()
                 ),
                 FORMAT_HTML,
                 $options
             ),
-            'content_stripped' => strip_tags($this->content),
+            'content_stripped' => strip_tags($this->content()),
             'required' => ($this->required == 'y') ? 1 : 0,
-            'deleted' => $this->deleted,
+            'deleted' => $this->deleted(),
             'response_table' => $this->responsetable,
             'fieldkey' => $this->mobile_fieldkey(),
-            'precise' => $this->precise,
+            'precise' => $this->precise(),
             'qnum' => $qnum,
-            'errormessage' => get_string('required') . ': ' . $this->name,
+            'errormessage' => get_string('required') . ': ' . $this->name(),
         ];
         $mobiledata->choices = $this->mobile_question_choices_display();
 
         if ($this->mobile_question_extradata_display()) {
-            $mobiledata->extradata = json_decode($this->extradata);
+            $mobiledata->extradata = json_decode($this->extradata());
         }
         if ($autonum) {
             $mobiledata->content = $qnum . '. ' . $mobiledata->content;
@@ -2038,7 +2038,7 @@ abstract class question {
         if ($choiceid !== 0) {
             $choicefield = '_' . $choiceid;
         }
-        return 'response_' . $this->typeid . '_' . $this->id . $choicefield;
+        return 'response_' . $this->typeid() . '_' . $this->id() . $choicefield;
     }
 
     /**
@@ -2048,8 +2048,8 @@ abstract class question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        if (isset($response->answers[$this->id][0])) {
-            $resultdata[$this->mobile_fieldkey()] = $response->answers[$this->id][0]->value;
+        if (isset($response->answers[$this->id()][0])) {
+            $resultdata[$this->mobile_fieldkey()] = $response->answers[$this->id()][0]->value;
         } else {
             $resultdata[$this->mobile_fieldkey()] = false;
         }

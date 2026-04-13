@@ -101,9 +101,9 @@ class yesno extends question {
      */
     protected function get_dependency_options() {
         $options = [];
-        if ($this->name != '') {
-            $options[$this->id . ',0'] = $this->name . '->' . get_string('yes');
-            $options[$this->id . ',1'] = $this->name . '->' . get_string('no');
+        if ($this->name() != '') {
+            $options[$this->id() . ',0'] = $this->name() . '->' . get_string('yes');
+            $options[$this->id() . ',1'] = $this->name() . '->' . get_string('no');
         }
         return $options;
     }
@@ -131,8 +131,8 @@ class yesno extends question {
         }
 
         $options = [$val1 => $stryes, $val2 => $strno];
-        $name = 'q' . $this->id;
-        $checked = (isset($response->answers[$this->id][0]) ? $response->answers[$this->id][0]->value : '');
+        $name = 'q' . $this->id();
+        $checked = (isset($response->answers[$this->id()][0]) ? $response->answers[$this->id()][0]->value : '');
         $ischecked = false;
 
         $choicetags = new \stdClass();
@@ -192,14 +192,14 @@ class yesno extends question {
 
         $resptags = new \stdClass();
 
-        $resptags->yesname = 'q' . $this->id . $uniquetag++ . 'y';
-        $resptags->noname = 'q' . $this->id . $uniquetag++ . 'n';
+        $resptags->yesname = 'q' . $this->id() . $uniquetag++ . 'y';
+        $resptags->noname = 'q' . $this->id() . $uniquetag++ . 'n';
         $resptags->stryes = get_string('yes');
         $resptags->strno = get_string('no');
-        if (!isset($response->answers[$this->id])) {
-            $response->answers[$this->id][] = new \mod_questionnaire\local\response\answer\answer();
+        if (!isset($response->answers[$this->id()])) {
+            $response->answers[$this->id()][] = new \mod_questionnaire\local\response\answer\answer();
         }
-        $answer = reset($response->answers[$this->id]);
+        $answer = reset($response->answers[$this->id()]);
         if ($answer->value == 'y') {
             $resptags->yesselected = 1;
         }
@@ -262,14 +262,14 @@ class yesno extends question {
         $choices[0] = new \stdClass();
         $choices[0]->id = 0;
         $choices[0]->choiceid = 'n';
-        $choices[0]->questionid = $this->id;
+        $choices[0]->questionid = $this->id();
         $choices[0]->value = null;
         $choices[0]->content = get_string('no');
         $choices[0]->isbool = true;
         $choices[1] = new \stdClass();
         $choices[1]->id = 1;
         $choices[1]->choiceid = 'y';
-        $choices[1]->questionid = $this->id;
+        $choices[1]->questionid = $this->id();
         $choices[1]->value = null;
         $choices[1]->content = get_string('yes');
         $choices[1]->isbool = true;
@@ -288,9 +288,9 @@ class yesno extends question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        if (isset($response->answers[$this->id][0]) && ($response->answers[$this->id][0]->value == 'n')) {
+        if (isset($response->answers[$this->id()][0]) && ($response->answers[$this->id()][0]->value == 'n')) {
             $resultdata[$this->mobile_fieldkey()] = 0;
-        } else if (isset($response->answers[$this->id][0]) && ($response->answers[$this->id][0]->value == 'y')) {
+        } else if (isset($response->answers[$this->id()][0]) && ($response->answers[$this->id()][0]->value == 'y')) {
             $resultdata[$this->mobile_fieldkey()] = 1;
         }
 

@@ -83,14 +83,14 @@ class text extends question {
         $questiontags->qelements = new \stdClass();
         $choice = new \stdClass();
         $choice->onkeypress = 'return event.keyCode != 13;';
-        $choice->size = $this->length;
-        $choice->name = 'q' . $this->id;
-        if ($this->precise > 0) {
-            $choice->maxlength = $this->precise;
+        $choice->size = $this->length();
+        $choice->name = 'q' . $this->id();
+        if ($this->precise() > 0) {
+            $choice->maxlength = $this->precise();
         }
-        $choice->value = (isset($response->answers[$this->id][0]) ?
-            format_string(stripslashes($response->answers[$this->id][0]->value)) : '');
-        $choice->id = self::qtypename($this->typeid) . $this->id;
+        $choice->value = (isset($response->answers[$this->id()][0]) ?
+            format_string(stripslashes($response->answers[$this->id()][0]->value)) : '');
+        $choice->id = self::qtypename($this->typeid()) . $this->id();
         $questiontags->qelements->choice = $choice;
         $questiontags->isprint = $this->get_isprint();
         return $questiontags;
@@ -102,8 +102,8 @@ class text extends question {
      */
     protected function response_survey_display($response) {
         $resptags = new \stdClass();
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
+        if (isset($response->answers[$this->id()])) {
+            $answer = reset($response->answers[$this->id()]);
             $resptags->content = format_text($answer->value, FORMAT_HTML);
         }
         return $resptags;
@@ -156,7 +156,7 @@ class text extends question {
         $choices[0] = new \stdClass();
         $choices[0]->id = 0;
         $choices[0]->choiceid = 0;
-        $choices[0]->questionid = $this->id;
+        $choices[0]->questionid = $this->id();
         $choices[0]->content = '';
         $choices[0]->value = null;
         return $choices;

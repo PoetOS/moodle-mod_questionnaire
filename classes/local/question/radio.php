@@ -92,7 +92,7 @@ class radio extends question {
         global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $otherempty = false;
-        $horizontal = $this->length;
+        $horizontal = $this->length();
         $ischecked = false;
 
         $choicetags = new \stdClass();
@@ -107,10 +107,10 @@ class radio extends question {
             if (!$choice->is_other_choice()) { // This is a normal radio button.
                 $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
 
-                $radio->name = 'q' . $this->id;
+                $radio->name = 'q' . $this->id();
                 $radio->id = $htmlid;
                 $radio->value = $id;
-                if (isset($response->answers[$this->id][$id])) {
+                if (isset($response->answers[$this->id()][$id])) {
                     $radio->checked = true;
                     $ischecked = true;
                 }
@@ -127,19 +127,19 @@ class radio extends question {
             } else {             // Radio button with associated !other text field.
                 $othertext = $choice->other_choice_display();
                 $cname = choice::id_other_choice_name($id);
-                $odata = isset($response->answers[$this->id][$id]) ? $response->answers[$this->id][$id]->value : '';
+                $odata = isset($response->answers[$this->id()][$id]) ? $response->answers[$this->id()][$id]->value : '';
                 $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
 
-                $radio->name = 'q' . $this->id;
+                $radio->name = 'q' . $this->id();
                 $radio->id = $htmlid;
                 $radio->value = $id;
-                if (isset($response->answers[$this->id][$id]) || !empty($odata)) {
+                if (isset($response->answers[$this->id()][$id]) || !empty($odata)) {
                     $radio->checked = true;
                     $ischecked = true;
                 }
                 $otherempty = !empty($radio->checked) && empty($odata);
                 $radio->label = format_text($othertext, FORMAT_HTML, ['noclean' => true]);
-                $radio->oname = 'q' . $this->id . choice::id_other_choice_name($id);
+                $radio->oname = 'q' . $this->id() . choice::id_other_choice_name($id);
                 $radio->oid = $htmlid . '-other';
                 if (isset($odata)) {
                     $radio->ovalue = format_string(stripslashes($odata));
@@ -161,7 +161,7 @@ class radio extends question {
                 $radio->horizontal = $horizontal;
             }
 
-            $radio->name = 'q' . $this->id;
+            $radio->name = 'q' . $this->id();
             $radio->id = $htmlid;
             $radio->value = 0;
 
@@ -196,9 +196,9 @@ class radio extends question {
         $resptags->choices = [];
 
         $qdata = new \stdClass();
-        $horizontal = $this->length;
-        if (isset($response->answers[$this->id])) {
-            $answer = reset($response->answers[$this->id]);
+        $horizontal = $this->length();
+        if (isset($response->answers[$this->id()])) {
+            $answer = reset($response->answers[$this->id()]);
             $checked = $answer->choiceid;
         } else {
             $checked = null;
@@ -239,12 +239,12 @@ class radio extends question {
      */
     public function response_complete($responsedata) {
         if (
-            isset($responsedata->{'q' . $this->id}) && ($this->required()) &&
-            (strpos($responsedata->{'q' . $this->id}, 'other_') !== false)
+            isset($responsedata->{'q' . $this->id()}) && ($this->required()) &&
+            (strpos($responsedata->{'q' . $this->id()}, 'other_') !== false)
         ) {
             return (
                 trim(
-                    $responsedata->{'q' . $this->id . '' . substr($responsedata->{'q' . $this->id}, 5)}
+                    $responsedata->{'q' . $this->id() . '' . substr($responsedata->{'q' . $this->id()}, 5)}
                 ) != false
             );
         } else {
@@ -320,8 +320,8 @@ class radio extends question {
      */
     public function get_mobile_response_data($response) {
         $resultdata = [];
-        if (isset($response->answers[$this->id])) {
-            foreach ($response->answers[$this->id] as $answer) {
+        if (isset($response->answers[$this->id()])) {
+            foreach ($response->answers[$this->id()] as $answer) {
                 // Add a fieldkey for each choice.
                 $resultdata[$this->mobile_fieldkey()] = $answer->choiceid;
                 if ($this->choices[$answer->choiceid]->is_other_choice()) {
