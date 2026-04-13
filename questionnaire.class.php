@@ -1535,7 +1535,7 @@ class questionnaire {
         if ($section > 1) {
             for ($j = 2; $j <= $section; $j++) {
                 foreach ($this->questionsbysec[$j - 1] as $questionid) {
-                    if ($this->questions[$questionid]->typeid < QUESPAGEBREAK) {
+                    if ($this->questions[$questionid]->typeid() < QUESPAGEBREAK) {
                         $i++;
                     }
                 }
@@ -2969,7 +2969,7 @@ class questionnaire {
 
         foreach ($this->questions as $question) {
             $type = $question->typeid();
-            $responsetable = $question->responsetable;
+            $responsetable = $question->responsetable();
             // Build SQL for this question type if not already done.
             if (!$uniquebytable || !in_array($responsetable, $uniquetables)) {
                 if (!in_array($type, $uniquetypes)) {
@@ -4001,7 +4001,7 @@ class questionnaire {
             $newpbids = array_reverse($newpbids);
             $refreshed = new questionnaire($this->course, $this->cm, $this->id, null);
             foreach ($newpbids as $newpbid) {
-                $msg .= $refreshed->questions[$newpbid]->position . '&nbsp;';
+                $msg .= $refreshed->questions[$newpbid]->position() . '&nbsp;';
             }
         }
         return $msg;

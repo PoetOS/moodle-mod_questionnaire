@@ -42,7 +42,7 @@ class rate extends question {
      * @param array $params
      */
     public function __construct($id = 0, $question = null, $context = null, $params = []) {
-        $this->length = 5;
+        $this->set_length(5);
         parent::__construct($id, $question, $context, $params);
         $this->add_nameddegrees_from_extradata();
     }
@@ -494,7 +494,7 @@ class rate extends question {
             $resptags->textalign = 'left';
         }
         if (!empty($this->nameddegrees)) {
-            $this->length = count($this->nameddegrees);
+            $this->set_length(count($this->nameddegrees));
             reset($this->nameddegrees);
         }
         for ($j = 1; $j <= $this->length(); $j++) {
@@ -543,7 +543,7 @@ class rate extends question {
                 $bg = 'c0';
                 $cols = [];
                 if (!empty($this->nameddegrees)) {
-                    $this->length = count($this->nameddegrees);
+                    $this->set_length(count($this->nameddegrees));
                     reset($this->nameddegrees);
                 }
                 for ($j = 1; $j <= $this->length(); $j++) {
@@ -1068,7 +1068,7 @@ class rate extends question {
                 }
 
                 // First get all existing rank responses for this question.
-                $responses = $DB->get_recordset('questionnaire_response_rank', ['questionid' => $question->id]);
+                $responses = $DB->get_recordset('questionnaire_response_rank', ['questionid' => $question->id()]);
                 // Iterating over each response record ensures we won't change an existing record more than once.
                 foreach ($responses as $response) {
                     // Then, if the old value exists, set it to the new one.

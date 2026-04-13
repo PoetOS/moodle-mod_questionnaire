@@ -402,7 +402,7 @@ function questionnaire_get_editor_options($context) {
  */
 function questionnaire_get_parent($question) {
     global $DB;
-    $qid = $question->id;
+    $qid = $question->id();
     $parent = [];
     $dependquestion = $DB->get_record(
         'questionnaire_question',
@@ -442,9 +442,9 @@ function questionnaire_get_parent($question) {
         $parent[$qid]['qdependchoice'] = $qdependchoice;
         $parent[$qid]['parenttype'] = $dependquestion->typeid;
         // Other fields to be used in Questions edit mode.
-        $parent[$qid]['position'] = $question->position;
-        $parent[$qid]['name'] = $question->name;
-        $parent[$qid]['content'] = $question->content;
+        $parent[$qid]['position'] = $question->position();
+        $parent[$qid]['name'] = $question->name();
+        $parent[$qid]['content'] = $question->content();
         $parent[$qid]['parentposition'] = $dependquestion->position;
         $parent[$qid]['parent'] = format_string($dependquestion->name) . '->' . format_string($dependchoice);
     }
@@ -523,7 +523,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
         $question = clone($questions[$qid]);
         $question->qid = $question->id();
         $question->sid = $questionnaire->surveyid();
-        $question->id = $cmid;
+        $question->set_id($cmid);
         $draftideditor = file_get_submitted_draft_itemid('question');
         $content = file_prepare_draft_area(
             $draftideditor,
@@ -534,7 +534,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             ['subdirs' => true],
             $question->content()
         );
-        $question->content = ['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
+        $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
 
         if (isset($question->dependencies)) {
             foreach ($question->dependencies as $dependencies) {
@@ -550,9 +550,8 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
     } else {
         $question = \mod_questionnaire\local\question\question::question_builder($qtype);
         $question->sid = $questionnaire->surveyid();
-        $question->id = $cmid;
-        $question->typeid = $qtype;
-        $question->type = '';
+        $question->set_id($cmid);
+        $question->set_typeid($qtype);
         $draftideditor = file_get_submitted_draft_itemid('question');
         $content = file_prepare_draft_area(
             $draftideditor,
@@ -563,7 +562,7 @@ function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
             ['subdirs' => true],
             ''
         );
-        $question->content = ['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
+        $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
     }
     return $question;
 }

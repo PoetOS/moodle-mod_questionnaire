@@ -101,7 +101,7 @@ class response {
 
         foreach ($questions as $question) {
             if ($question->supports_responses()) {
-                $response->answers[$question->id] = $question->responsetype::answers_from_webform(
+                $response->answers[$question->id()] = $question->responsetype::answers_from_webform(
                     $responsedata,
                     $question
                 );
@@ -149,8 +149,8 @@ class response {
         }
 
         foreach ($questions as $question) {
-            if ($question->supports_responses() && isset($processedresponses->{'q' . $question->id})) {
-                $response->answers[$question->id] = $question->responsetype::answers_from_appdata(
+            if ($question->supports_responses() && isset($processedresponses->{'q' . $question->id()})) {
+                $response->answers[$question->id()] = $question->responsetype::answers_from_appdata(
                     $processedresponses,
                     $question
                 );

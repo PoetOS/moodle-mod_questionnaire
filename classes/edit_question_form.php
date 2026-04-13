@@ -45,7 +45,7 @@ class edit_question_form extends \moodleform {
         // TODO - Is there a better way to do this without session global?
         // The 'sticky' required response value for further new questions.
         if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
-            $question->required = $SESSION->questionnaire->required;
+            $question->set_required_value($SESSION->questionnaire->required);
         }
         if ($question->typeid() === 0) {
             throw new \moodle_exception('undefinedquestiontype', 'mod_questionnaire');

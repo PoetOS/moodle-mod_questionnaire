@@ -225,7 +225,7 @@ final class questiontypes_test extends \advanced_testcase {
         // Question object retrieved from the database should have correct data.
         $this->assertEquals($question->typeid(), $qtype);
         foreach ($questiondata as $property => $value) {
-            $this->assertEquals($question->$property, $value);
+            $this->assertEquals($question->$property(), $value);
         }
         if ($question->has_choices()) {
             $this->assertEquals('array', gettype($question->choices));
@@ -247,7 +247,7 @@ final class questiontypes_test extends \advanced_testcase {
         $this->assertTrue(array_key_exists($question->id(), $questions));
         $this->assertEquals(1, count($questions));
         if ($questions[$question->id()]->has_choices()) {
-            $this->assertEquals(count($choicedata), count($questions[$question->id]->choices));
+            $this->assertEquals(count($choicedata), count($questions[$question->id()]->choices));
         }
     }
 
