@@ -643,6 +643,15 @@ class questionnaire {
     }
 
     /**
+     * True if the current user can print a blank copy of this questionnaire.
+     *
+     * @return bool
+     */
+    public function can_print_blank(): bool {
+        return has_capability('mod/questionnaire:printblank', $this->context);
+    }
+
+    /**
      * True if the current user can create template surveys.
      *
      * @return bool

@@ -561,7 +561,8 @@ class rate extends question {
                     $cellobj->str = $str . $j . $uniquetag++;
                     $cellobj->bg = $bg;
                     // N/A column checked.
-                    $checkedna = (isset($response->answers[$this->id()][$cid]) && ($response->answers[$this->id()][$cid]->value == -1));
+                    $checkedna = (isset($response->answers[$this->id()][$cid]) &&
+                        ($response->answers[$this->id()][$cid]->value == -1));
                     if ($bg == 'c0') {
                         $bg = 'c1';
                     } else {
