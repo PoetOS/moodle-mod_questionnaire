@@ -138,7 +138,7 @@ if ($delq) {
     }
 
     // Log question deleted event.
-    $questiontype = \mod_questionnaire\local\question\question::qtypename($questions[$qid]->typeid);
+    $questiontype = \mod_questionnaire\local\question\question::qtypename($questions[$qid]->typeid());
     questionnaire_observe_event_delete($cm->id, $questiontype, $questionnaire->courseid());
 
     if ($questionnairehasdependencies) {
@@ -219,7 +219,7 @@ if ($action == 'main') {
             // Need to use the key, since IE returns the image position as the value rather than the specified
             // value in the <input> tag.
             $qid = key($qformdata->removebutton);
-            $qtype = $questions[$qid]->typeid;
+            $qtype = $questions[$qid]->typeid();
 
             // Delete section breaks without asking for confirmation.
             if ($qtype == QUESPAGEBREAK) {

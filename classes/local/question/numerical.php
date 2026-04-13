@@ -33,7 +33,7 @@ class numerical extends question {
      * @param array $params
      */
     public function __construct($id = 0, $question = null, $context = null, $params = []) {
-        $this->length = 10;
+        $this->set_length(10);
         return parent::__construct($id, $question, $context, $params);
     }
 
@@ -98,7 +98,7 @@ class numerical extends question {
                                 $mynumber = substr($mynumber, 0, $this->length());
                             }
                         }
-                        $this->length = $this->length() + (1 + $precision); // To allow for n numbers after decimal point.
+                        $this->set_length($this->length() + (1 + $precision)); // To allow for n numbers after decimal point.
                     }
                     $mynumber = number_format($mynumber, $precision, '.', '');
                     if ($mynumber != $mynumber0) {
@@ -174,7 +174,7 @@ class numerical extends question {
      * @param string $helptext
      */
     protected function form_length(\MoodleQuickForm $mform, $helptext = '') {
-        $this->length = $this->length() ?: 10;
+        $this->set_length($this->length() ?: 10);
         return parent::form_length($mform, 'maxdigitsallowed');
     }
 

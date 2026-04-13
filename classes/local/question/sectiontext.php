@@ -95,7 +95,7 @@ class sectiontext extends question {
             'content_stripped' => strip_tags($this->content()),
             'required' => false,
             'deleted' => $this->deleted(),
-            'response_table' => $this->responsetable,
+            'response_table' => $this->questiontype ? $this->questiontype->responsetable : null,
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise(),
             'qnum' => '',

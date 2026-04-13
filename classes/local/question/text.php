@@ -33,8 +33,8 @@ class text extends question {
      * @param array $params
      */
     public function __construct($id = 0, $question = null, $context = null, $params = []) {
-        $this->length = 20;
-        $this->precise = 25;
+        $this->set_length(20);
+        $this->set_precise(25);
         return parent::__construct($id, $question, $context, $params);
     }
 

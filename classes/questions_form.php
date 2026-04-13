@@ -63,7 +63,7 @@ class questions_form extends \moodleform {
 
         $questions = $questionnaire->questions();
         if ($this->moveq) {
-            $moveqposition = $questions[$this->moveq]->position;
+            $moveqposition = $questions[$this->moveq]->position();
         }
 
         $pos = 0;
@@ -125,8 +125,7 @@ class questions_form extends \moodleform {
 
             $qid = $question->id();
             $tid = $question->typeid();
-            $qtype = $question->type;
-            $required = $question->required;
+            $required = $question->required() ? 'y' : 'n';
 
             // Get displayable list of parents for the questions in questions_form.
             if ($questionnairehasdependencies) {

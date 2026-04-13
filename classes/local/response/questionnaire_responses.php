@@ -110,7 +110,7 @@ class questionnaire_responses {
             $questions = $this->questionnaire->questions();
         } else {
             foreach ($this->questionnaire->questions_by_section_all()[$sec] as $question) {
-                $questions[$question->id] = $question;
+                $questions[$question->id()] = $question;
             }
         }
         return \mod_questionnaire\local\response\response::response_from_appdata(
@@ -283,12 +283,12 @@ class questionnaire_responses {
 
         $exportstructure = [];
         foreach ($this->questionnaire->questions() as $question) {
-            $rqid = 'q' . $question->id;
+            $rqid = 'q' . $question->id();
             $response = new \stdClass();
-            $response->questionname = $question->position . '. ' . $question->name;
-            $response->questiontext = $question->content;
+            $response->questionname = $question->position() . '. ' . $question->name();
+            $response->questiontext = $question->content();
             $response->answers = [];
-            if ($question->typeid == 8) {
+            if ($question->typeid() == 8) {
                 $choices = [];
                 $cids = [];
                 foreach ($question->choices as $cid => $choice) {
@@ -298,17 +298,17 @@ class questionnaire_responses {
                         $cids[$rqid . '_' . $cid] = $choice->content;
                     }
                 }
-                if (isset($this->responses[$rid]->answers[$question->id])) {
+                if (isset($this->responses[$rid]->answers[$question->id()])) {
                     foreach ($cids as $rqid => $choice) {
                         $cid = substr($rqid, (strpos($rqid, '_') + 1));
-                        if (isset($this->responses[$rid]->answers[$question->id][$cid])) {
+                        if (isset($this->responses[$rid]->answers[$question->id()][$cid])) {
                             if (
                                 isset($question->choices[$cid]) &&
-                                isset($choices[$this->responses[$rid]->answers[$question->id][$cid]->value])
+                                isset($choices[$this->responses[$rid]->answers[$question->id()][$cid]->value])
                             ) {
-                                $rating = $choices[$this->responses[$rid]->answers[$question->id][$cid]->value];
+                                $rating = $choices[$this->responses[$rid]->answers[$question->id()][$cid]->value];
                             } else {
-                                $rating = $this->responses[$rid]->answers[$question->id][$cid]->value;
+                                $rating = $this->responses[$rid]->answers[$question->id()][$cid]->value;
                             }
                             $response->answers[] = $question->choices[$cid]->content . ' = ' . $rating;
                         }
@@ -316,9 +316,9 @@ class questionnaire_responses {
                 }
             } else if ($question->has_choices()) {
                 $answertext = '';
-                if (isset($this->responses[$rid]->answers[$question->id])) {
+                if (isset($this->responses[$rid]->answers[$question->id()])) {
                     $i = 0;
-                    foreach ($this->responses[$rid]->answers[$question->id] as $answer) {
+                    foreach ($this->responses[$rid]->answers[$question->id()] as $answer) {
                         if ($i > 0) {
                             $answertext .= '; ';
                         }
@@ -331,8 +331,8 @@ class questionnaire_responses {
                     }
                 }
                 $response->answers[] = $answertext;
-            } else if (isset($this->responses[$rid]->answers[$question->id])) {
-                $response->answers[] = $this->responses[$rid]->answers[$question->id][0]->value;
+            } else if (isset($this->responses[$rid]->answers[$question->id()])) {
+                $response->answers[] = $this->responses[$rid]->answers[$question->id()][0]->value;
             }
             $exportstructure[] = $response;
         }
@@ -464,7 +464,7 @@ class questionnaire_responses {
 
             $qids = [];
             foreach ($questionsbysec[$sec] as $question) {
-                $qids[] = $question->id;
+                $qids[] = $question->id();
             }
             if (empty($qids)) {
                 return;
@@ -520,7 +520,7 @@ class questionnaire_responses {
         $questionsbysec = $this->questionnaire->questions_by_section_all();
         for ($j = 2; $j <= $section; $j++) {
             foreach ($questionsbysec[$j - 1] as $question) {
-                if ($question->typeid < QUESPAGEBREAK) {
+                if ($question->typeid() < QUESPAGEBREAK) {
                     $i++;
                 }
             }
@@ -537,7 +537,7 @@ class questionnaire_responses {
                     $strnum = get_string('num', 'questionnaire') . $qnum . '. ';
                     $strmissing .= $strnum;
                     $strnoti = get_string('missingquestion', 'questionnaire') . $strnum;
-                    $notifytarget = $notifyquestions[$question->id] ?? $question;
+                    $notifytarget = $notifyquestions[$question->id()] ?? $question;
                     $notifytarget->add_notification($strnoti);
                 }
                 if (!$question->response_valid($formdata)) {
@@ -722,8 +722,8 @@ class questionnaire_responses {
         $uniquetables = [];
 
         foreach ($this->questionnaire->questions() as $question) {
-            $type = $question->typeid;
-            $responsetable = $question->responsetable;
+            $type = $question->typeid();
+            $responsetable = $question->responsetable();
             if (!$uniquebytable || !in_array($responsetable, $uniquetables)) {
                 if (!in_array($type, $uniquetypes)) {
                     $uniquetypes[] = $type;

@@ -288,8 +288,8 @@ class rank extends responsetype {
             // Formula to calculate the best ranking order.
             $nbresponses = count($rids);
             foreach ($results as $key => $result) {
-                if (isset($this->length)) {
-                    $result->average = ($result->sum + ($nbresponses - $result->num) * ($this->length + 1)) / $nbresponses;
+                if ($this->question->length() > 0) {
+                    $result->average = ($result->sum + ($nbresponses - $result->num) * ($this->question->length() + 1)) / $nbresponses;
                 } else {
                     $result->average = ($result->sum + ($nbresponses - $result->num) * 1 ) / $nbresponses;
                 }

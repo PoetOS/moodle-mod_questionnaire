@@ -84,11 +84,9 @@ abstract class question {
     protected ?question_type $questiontype = null;
 
     /**
-     * TEMPORARY: Buffer for DB-column values assigned by subclass constructors before
-     * parent::__construct() has had a chance to initialise $this->record.
-     * (text, numerical, rate set length/precise before calling parent.)
+     * Buffer for DB-column values assigned by subclass constructors (via set_length() etc.)
+     * before parent::__construct() has had a chance to initialise $this->record.
      * Applied to the record for new questions only; ignored when loading from DB.
-     * Will be removed in Phase 22f once all subclass constructors use initialize_defaults().
      *
      * @var array
      */
@@ -193,9 +191,21 @@ abstract class question {
         }
         $this->preinit = [];
 
-        // Apply caller-supplied overrides ($params keys map to DB columns or other props).
+        // Apply caller-supplied overrides ($params keys map to DB columns or declared props).
+        $dbfields = ['surveyid', 'name', 'typeid', 'length', 'precise',
+                     'position', 'content', 'required', 'deleted', 'extradata'];
         foreach ($params as $property => $value) {
-            $this->$property = $value;
+            if ($property === 'id') {
+                $stub = new \stdClass();
+                $stub->id = (int)$value;
+                $this->record->from_record($stub);
+            } else if ($property === 'content' && is_array($value)) {
+                $this->contenteditordata = $value;
+            } else if (in_array($property, $dbfields, true)) {
+                $this->record->set($property, $value);
+            } else if (property_exists($this, $property)) {
+                $this->$property = $value;
+            }
         }
 
         // Resolve the question_type (cached per typeid for the request lifetime).
@@ -220,111 +230,6 @@ abstract class question {
             $this->responsetype = new $respclass($this);
         }
     }
-
-    // TEMPORARY magic property accessors (Phase 22c).
-    // These __get / __set / __isset methods provide backward compatibility while
-    // the plugin's code base is migrated to use $this->record->get()/$record->set()
-    // or named accessor methods. They will be removed in Phase 22f once all
-    // callers have been updated to the new API.
-
-    /**
-     * TEMPORARY: Proxy read access to DB-backed properties and derived type fields.
-     *
-     * Handles: id, surveyid, name, typeid, length, precise, position, content,
-     *          required, deleted, extradata  (all from $this->record)
-     *          type, responsetable            (derived from $this->questiontype)
-     *
-     * Will be removed in Phase 22f.
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function __get(string $name): mixed {
-        $dbfields = ['surveyid', 'name', 'typeid', 'length', 'precise',
-                     'position', 'content', 'required', 'deleted', 'extradata'];
-        if ($name === 'id') {
-            return $this->record ? $this->record->get('id') : 0;
-        }
-        if ($name === 'content') {
-            // Editor-format array takes precedence over the DB string value.
-            return $this->contenteditordata ?? ($this->record ? $this->record->get('content') : null);
-        }
-        if (in_array($name, $dbfields, true)) {
-            return $this->record ? $this->record->get($name) : null;
-        }
-        if ($name === 'type') {
-            return $this->questiontype ? $this->questiontype->type : '';
-        }
-        if ($name === 'responsetable') {
-            return $this->questiontype ? $this->questiontype->responsetable : null;
-        }
-        return null;
-    }
-
-    /**
-     * TEMPORARY: Proxy write access to DB-backed properties.
-     *
-     * For values set before $this->record is initialised (subclass constructors
-     * that set length/precise before calling parent::__construct), the value is
-     * buffered in $this->preinit and applied to the record later in __construct.
-     *
-     * Will be removed in Phase 22f.
-     *
-     * @param string $name
-     * @param mixed  $value
-     * @return void
-     */
-    public function __set(string $name, mixed $value): void {
-        $dbfields = ['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
-                     'position', 'content', 'required', 'deleted', 'extradata'];
-        if (in_array($name, $dbfields, true)) {
-            if ($name === 'content' && is_array($value)) {
-                // Editor-format array ['text'=>..., 'format'=>..., 'itemid'=>...].
-                // Moodle 5's persistent::get() runs clean_param() on read and rejects
-                // arrays, so store editor data in a separate property rather than the record.
-                $this->contenteditordata = $value;
-                return;
-            }
-            if ($this->record === null) {
-                // Record not yet created — buffer for later (see constructor preinit logic).
-                $this->preinit[$name] = $value;
-            } else if ($name === 'id') {
-                // Use from_record() to set the id; set_id() is not reliably public
-                // across all Moodle versions.
-                $stub = new \stdClass();
-                $stub->id = (int)$value;
-                $this->record->from_record($stub);
-            } else {
-                $this->record->set($name, $value);
-            }
-            return;
-        }
-        // The 'type' and 'responsetable' fields are derived from $this->questiontype and cannot
-        // be set independently. Silently ignore writes to preserve backward compat.
-        if ($name === 'type' || $name === 'responsetable') {
-            return;
-        }
-        // For non-DB properties that are not declared on the class, emit a notice
-        // rather than silently swallowing the assignment.
-        trigger_error("Setting undefined property question::\${$name}", E_USER_NOTICE);
-    }
-
-    /**
-     * TEMPORARY: Allow isset() checks on proxied DB-backed properties.
-     *
-     * Will be removed in Phase 22f.
-     *
-     * @param string $name
-     * @return bool
-     */
-    public function __isset(string $name): bool {
-        $proxied = ['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
-                    'position', 'content', 'required', 'deleted', 'extradata',
-                    'type', 'responsetable'];
-        return in_array($name, $proxied, true);
-    }
-
-    // End TEMPORARY magic property accessors.
 
     // Named accessors for DB-backed fields.
 
@@ -358,6 +263,22 @@ abstract class question {
      */
     public function typeid(): int {
         return $this->record ? (int)$this->record->get('typeid') : 0;
+    }
+
+    /**
+     * Get the question type name string (e.g. 'radio', 'check'), or empty string if not set.
+     * @return string
+     */
+    public function type(): string {
+        return $this->questiontype ? $this->questiontype->type : '';
+    }
+
+    /**
+     * Get the response table name for this question type, or null if not applicable.
+     * @return string|null
+     */
+    public function responsetable(): ?string {
+        return $this->questiontype ? $this->questiontype->responsetable : null;
     }
 
     /**
@@ -408,6 +329,146 @@ abstract class question {
         return $this->record ? $this->record->get('extradata') : null;
     }
 
+    // Named setters for DB-backed fields.
+
+    /**
+     * Set the question id.
+     * @param int $value
+     */
+    public function set_id(int $value): void {
+        $stub = new \stdClass();
+        $stub->id = $value;
+        if ($this->record) {
+            $this->record->from_record($stub);
+        } else {
+            $this->preinit['id'] = $value;
+        }
+    }
+
+    /**
+     * Set the survey id.
+     * @param int $value
+     */
+    public function set_surveyid(int $value): void {
+        if ($this->record) {
+            $this->record->set('surveyid', $value);
+        } else {
+            $this->preinit['surveyid'] = $value;
+        }
+    }
+
+    /**
+     * Set the question name.
+     * @param string $value
+     */
+    public function set_name(string $value): void {
+        if ($this->record) {
+            $this->record->set('name', $value);
+        } else {
+            $this->preinit['name'] = $value;
+        }
+    }
+
+    /**
+     * Set the question type id.
+     * @param int $value
+     */
+    public function set_typeid(int $value): void {
+        if ($this->record) {
+            $this->record->set('typeid', $value);
+        } else {
+            $this->preinit['typeid'] = $value;
+        }
+    }
+
+    /**
+     * Set the question position.
+     * @param int $value
+     */
+    public function set_position(int $value): void {
+        if ($this->record) {
+            $this->record->set('position', $value);
+        } else {
+            $this->preinit['position'] = $value;
+        }
+    }
+
+    /**
+     * Set the question content. Accepts a string value or an editor-format array.
+     * @param mixed $value
+     */
+    public function set_content(mixed $value): void {
+        if (is_array($value)) {
+            $this->contenteditordata = $value;
+        } else if ($this->record) {
+            $this->record->set('content', $value);
+        } else {
+            $this->preinit['content'] = $value;
+        }
+    }
+
+    /**
+     * Set the question length value.
+     * @param int $value
+     */
+    public function set_length(int $value): void {
+        if ($this->record) {
+            $this->record->set('length', $value);
+        } else {
+            $this->preinit['length'] = $value;
+        }
+    }
+
+    /**
+     * Set the question precise value.
+     * @param int $value
+     */
+    public function set_precise(int $value): void {
+        if ($this->record) {
+            $this->record->set('precise', $value);
+        } else {
+            $this->preinit['precise'] = $value;
+        }
+    }
+
+    /**
+     * Set the deleted flag.
+     * @param string|null $value
+     */
+    public function set_deleted(?string $value): void {
+        if ($this->record) {
+            $this->record->set('deleted', $value);
+        } else {
+            $this->preinit['deleted'] = $value;
+        }
+    }
+
+    /**
+     * Set the extradata field.
+     * @param string|null $value
+     */
+    public function set_extradata(?string $value): void {
+        if ($this->record) {
+            $this->record->set('extradata', $value);
+        } else {
+            $this->preinit['extradata'] = $value;
+        }
+    }
+
+    /**
+     * Set the required field value in memory only (no DB write).
+     * Accepts bool or raw 'y'/'n' string.
+     * @param mixed $value
+     */
+    public function set_required_value(mixed $value): void {
+        $rval = is_bool($value) ? ($value ? 'y' : 'n') : (string)$value;
+        if ($this->record) {
+            $this->record->set('required', $rval);
+        } else {
+            $this->preinit['required'] = $rval;
+        }
+    }
+
     /**
      * Return a plain stdClass containing all form-relevant question properties.
      *
@@ -420,12 +481,18 @@ abstract class question {
      */
     public function form_data(): \stdClass {
         $data = new \stdClass();
-        // DB-backed fields proxied via __get — not present in (array)$this.
-        $dbfields = ['id', 'surveyid', 'name', 'typeid', 'length', 'precise',
-            'position', 'content', 'required', 'deleted', 'extradata'];
-        foreach ($dbfields as $field) {
-            $data->$field = $this->$field;
-        }
+        // DB-backed fields — use named accessors.
+        $data->id = $this->id();
+        $data->surveyid = $this->surveyid();
+        $data->name = $this->name();
+        $data->typeid = $this->typeid();
+        $data->length = $this->length();
+        $data->precise = $this->precise();
+        $data->position = $this->position();
+        $data->content = $this->content();
+        $data->required = $this->record ? $this->record->get('required') : null;
+        $data->deleted = $this->deleted();
+        $data->extradata = $this->extradata();
         // Declared public properties used by the edit-question form.
         $data->qid = $this->qid;
         $data->sid = $this->sid;
@@ -510,7 +577,7 @@ abstract class question {
      * @return bool
      */
     public function required() {
-        return ($this->required == 'y');
+        return $this->record ? $this->record->get('required') == 'y' : false;
     }
 
     /**
@@ -887,7 +954,7 @@ abstract class question {
             $questionrecord->precise = $this->precise();
             $questionrecord->position = $this->position();
             $questionrecord->content = $this->content();
-            $questionrecord->required = $this->required;
+            $questionrecord->required = $this->record ? $this->record->get('required') : null;
             $questionrecord->deleted = $this->deleted();
             $questionrecord->extradata = $this->extradata();
             $questionrecord->dependquestion = $this->dependquestion;
@@ -1108,7 +1175,9 @@ abstract class question {
         } else {
             $qid = $this->id();
         }
-        $this->required = $rval;
+        if ($this->record) {
+            $this->record->set('required', $rval);
+        }
         return $DB->set_field('questionnaire_question', 'required', $rval, ['id' => $qid]);
     }
 
@@ -1276,7 +1345,7 @@ abstract class question {
         }
         // If question text is "empty", i.e. 2 non-breaking spaces were inserted, empty it.
         if ($this->content() == '<p>  </p>') {
-            $this->content = '';
+            $this->set_content('');
         }
         $pagetags->skippedclass = $skippedclass;
         if ($this->typeid() == QUESNUMERIC || $this->typeid() == QUESTEXT || $this->typeid() == QUESSLIDER) {
@@ -1444,10 +1513,10 @@ abstract class question {
         $dependencies[''][0] = get_string('choosedots');
         foreach ($questions as $question) {
             if (
-                ($question->position < $position) && !empty($question->name) &&
+                ($question->position() < $position) && !empty($question->name()) &&
                 !empty($dependopts = $question->get_dependency_options())
             ) {
-                $dependencies[$question->name] = $dependopts;
+                $dependencies[$question->name()] = $dependopts;
             }
         }
 
@@ -1989,9 +2058,9 @@ abstract class question {
                 $options
             ),
             'content_stripped' => strip_tags($this->content()),
-            'required' => ($this->required == 'y') ? 1 : 0,
+            'required' => $this->required() ? 1 : 0,
             'deleted' => $this->deleted(),
-            'response_table' => $this->responsetable,
+            'response_table' => $this->questiontype ? $this->questiontype->responsetable : null,
             'fieldkey' => $this->mobile_fieldkey(),
             'precise' => $this->precise(),
             'qnum' => $qnum,
