@@ -323,6 +323,7 @@ class questionnaire {
      *
      * @param stdClass $appdata
      * @param int $sec
+     * @param int $responseid
      * @return bool|\mod_questionnaire\local\response\response
      */
     public function build_response_from_appdata(stdClass $appdata, $sec = 0, int $responseid = 0) {
