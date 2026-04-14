@@ -51,7 +51,7 @@ class questions_form extends \moodleform {
 
         $sid = $questionnaire->surveyid();
         $mform    =& $this->_form;
-        $qidrestore = optional_param(QUESTIONNAIRE_RESTORE_PARAM, 0, PARAM_INT);
+        $qidrestore = optional_param(\mod_questionnaire\questionnaire::restore_param(), 0, PARAM_INT);
 
         $mform->addElement('header', 'questionhdr', get_string('addquestions', 'questionnaire'));
         $mform->addHelpButton('questionhdr', 'questiontypes', 'questionnaire');

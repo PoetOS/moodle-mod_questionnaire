@@ -38,7 +38,7 @@ $delq = optional_param('delq', 0, PARAM_INT);             // Question id to dele
 $qtype = optional_param('typeid', 0, PARAM_INT);         // Question type.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 $delpermanentlyq = optional_param('delpermanentlyq', 0, PARAM_INT); // Question id to delete.
-$restoreq = optional_param(QUESTIONNAIRE_RESTORE_PARAM, 0, PARAM_INT); // Question id to restore question.
+$restoreq = optional_param(questionnaire::restore_param(), 0, PARAM_INT); // Question id to restore question.
 
 $questionnaire = questionnaire::from_cmid($id);
 $course = $questionnaire->course();
@@ -296,13 +296,13 @@ if ($action == 'main') {
             $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
             $reload = true;
         } else if (isset($qformdata->deletebutton)) {
-            $action = QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY;
+            $action = questionnaire::confirm_delete_param();
         } else if (isset($qformdata->restorebutton)) {
             $qid = key($qformdata->restorebutton);
             redirect(
                 new moodle_url(
                     '/mod/questionnaire/questions.php',
-                    ['id' => $cm->id, QUESTIONNAIRE_RESTORE_PARAM => $qid]
+                    ['id' => $cm->id, questionnaire::restore_param() => $qid]
                 )
             );
         }
@@ -445,7 +445,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
         }
     }
     $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
-} else if ($action === QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY) {
+} else if ($action === questionnaire::confirm_delete_param()) {
     $qid = key($qformdata->deletebutton);
     $qtype = $deletequestions[$qid]->typeid();
     $questiondelete = $deletequestions[$qid];
