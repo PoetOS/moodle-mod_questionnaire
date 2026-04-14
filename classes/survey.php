@@ -23,6 +23,7 @@ use mod_questionnaire\local\db\feedback_section_record;
 use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question_type;
 use context_module;
 use stdClass;
 
@@ -718,6 +719,74 @@ class survey {
         }
 
         return $newsid;
+    }
+
+    /**
+     * Delete all soft-deleted page-break questions for a survey.
+     *
+     * Called when a permanent question delete is triggered so stale page breaks are
+     * not left behind in the survey structure.
+     *
+     * @param int $sid Survey id.
+     */
+    public static function delete_pagebreaks(int $sid): void {
+        global $DB;
+        $DB->delete_records_select(
+            'questionnaire_question',
+            'surveyid = :sid AND deleted IS NOT NULL AND typeid = :typeid',
+            ['sid' => $sid, 'typeid' => question_type::QUESPAGEBREAK]
+        );
+    }
+
+    /**
+     * Return a map of child-question-id => parent-question-position for all dependent questions.
+     *
+     * When a question has multiple parents, the one with the highest position wins (last dependency
+     * encountered when iterating the collection).
+     *
+     * @param array $questions Questions indexed by question id.
+     * @return array  child question id => parent question position
+     */
+    public static function get_parent_positions(array $questions): array {
+        $parentpositions = [];
+        foreach ($questions as $question) {
+            foreach ($question->dependencies as $dependency) {
+                $dependquestion = $dependency->dependquestionid;
+                if (isset($dependquestion) && $dependquestion != 0) {
+                    $childid = $question->id();
+                    $parentpos = $questions[$dependquestion]->position();
+                    if (!isset($parentpositions[$childid]) || $parentpos > $parentpositions[$childid]) {
+                        $parentpositions[$childid] = $parentpos;
+                    }
+                }
+            }
+        }
+        return $parentpositions;
+    }
+
+    /**
+     * Return a map of parent-question-id => child-question-position for all dependent questions.
+     *
+     * When a question has multiple children, the one with the lowest position wins.
+     *
+     * @param array $questions Questions indexed by question id.
+     * @return array  parent question id => child question position
+     */
+    public static function get_child_positions(array $questions): array {
+        $childpositions = [];
+        foreach ($questions as $question) {
+            foreach ($question->dependencies as $dependency) {
+                $dependquestion = $dependency->dependquestionid;
+                if (isset($dependquestion) && $dependquestion != 0) {
+                    $parentid = $questions[$dependquestion]->id();
+                    $childpos = $question->position();
+                    if (!isset($childpositions[$parentid]) || $childpos < $childpositions[$parentid]) {
+                        $childpositions[$parentid] = $childpos;
+                    }
+                }
+            }
+        }
+        return $childpositions;
     }
 
     // Private helpers.

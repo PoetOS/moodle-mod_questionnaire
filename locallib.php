@@ -206,23 +206,6 @@ function questionnaire_get_range_time_permanently() {
 }
 
 /**
- * Delete all page break deleted.
- *
- * @param int $sid question survey id.
- */
-function questionnaire_delete_pagebreaks($sid) {
-    global $DB;
-    $DB->delete_records_select(
-        'questionnaire_question',
-        'surveyid = :sid AND deleted IS NOT NULL AND typeid = :typeid',
-        [
-            'sid' => $sid,
-            'typeid' => QUESPAGEBREAK,
-        ]
-    );
-}
-
-/**
  * Get users who have not completed the questionnaire
  *
  * @param object $cm
@@ -290,63 +273,6 @@ function questionnaire_get_editor_options($context) {
         'noclean' => 0,
         'trusttext' => 0,
     ];
-}
-
-/**
- * Get parent position of all child questions in current questionnaire.
- * Use the parent with the largest position value.
- *
- * @param array $questions
- * @return array An array with Child-ID->Parentposition.
- */
-function questionnaire_get_parent_positions($questions) {
-    $parentpositions = [];
-    foreach ($questions as $question) {
-        foreach ($question->dependencies as $dependency) {
-            $dependquestion = $dependency->dependquestionid;
-            if (isset($dependquestion) && $dependquestion != 0) {
-                $childid = $question->id();
-                $parentpos = $questions[$dependquestion]->position();
-
-                if (!isset($parentpositions[$childid])) {
-                    $parentpositions[$childid] = $parentpos;
-                }
-                if (isset($parentpositions[$childid]) && $parentpos > $parentpositions[$childid]) {
-                    $parentpositions[$childid] = $parentpos;
-                }
-            }
-        }
-    }
-    return $parentpositions;
-}
-
-/**
- * Get child position of all parent questions in current questionnaire.
- * Use the child with the smallest position value.
- *
- * @param array $questions
- * @return array An array with Parent-ID->Childposition.
- */
-function questionnaire_get_child_positions($questions) {
-    $childpositions = [];
-    foreach ($questions as $question) {
-        foreach ($question->dependencies as $dependency) {
-            $dependquestion = $dependency->dependquestionid;
-            if (isset($dependquestion) && $dependquestion != 0) {
-                $parentid = $questions[$dependquestion]->id(); // Equals $dependquestion?.
-                $childpos = $question->position();
-
-                if (!isset($childpositions[$parentid])) {
-                    $childpositions[$parentid] = $childpos;
-                }
-
-                if (isset($childpositions[$parentid]) && $childpos < $childpositions[$parentid]) {
-                    $childpositions[$parentid] = $childpos;
-                }
-            }
-        }
-    }
-    return $childpositions;
 }
 
 /**
