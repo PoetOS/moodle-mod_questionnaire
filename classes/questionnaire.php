@@ -1228,7 +1228,13 @@ class questionnaire {
             $question->set_typeid($qtype);
             $draftideditor = file_get_submitted_draft_itemid('question');
             $content = file_prepare_draft_area(
-                $draftideditor, $context->id, 'mod_questionnaire', 'question', 0, ['subdirs' => true], ''
+                $draftideditor,
+                $context->id,
+                'mod_questionnaire',
+                'question',
+                0,
+                ['subdirs' => true],
+                ''
             );
             $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
         }
