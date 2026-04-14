@@ -167,6 +167,3 @@ function questionnaire_get_standard_page_items($id = null, $a = null) {
 
     return ([$cm, $course, $questionnaire]);
 }
-
-
-

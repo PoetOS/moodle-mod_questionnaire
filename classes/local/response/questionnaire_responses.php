@@ -828,6 +828,7 @@ class questionnaire_responses {
     }
 
     /**
+     * Return the question types used in this survey's questions.
      * @param bool $uniquebytable
      * @return array
      */
