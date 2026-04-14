@@ -4520,5 +4520,4 @@ class questionnaire {
         $row = $DB->get_record_sql($sql, array_merge($params, [$userid]));
         return $row;
     }
-
 }
