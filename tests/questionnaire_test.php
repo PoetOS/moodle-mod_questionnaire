@@ -1102,4 +1102,156 @@ final class questionnaire_test extends \advanced_testcase {
             }
         };
     }
+
+    // Tests for response_frequency_options().
+
+    /**
+     * Asserts response_frequency_options() returns an array with five entries.
+     *
+     * @covers \mod_questionnaire\questionnaire::response_frequency_options
+     */
+    public function test_response_frequency_options_returns_five_options(): void {
+        $this->resetAfterTest();
+        $options = questionnaire::response_frequency_options();
+        $this->assertIsArray($options);
+        $this->assertCount(5, $options);
+    }
+
+    /**
+     * Asserts response_frequency_options() contains keys matching the frequency constants.
+     *
+     * @covers \mod_questionnaire\questionnaire::response_frequency_options
+     */
+    public function test_response_frequency_options_has_expected_keys(): void {
+        $this->resetAfterTest();
+        $options = questionnaire::response_frequency_options();
+        $this->assertArrayHasKey(QUESTIONNAIREUNLIMITED, $options);
+        $this->assertArrayHasKey(QUESTIONNAIREONCE, $options);
+        $this->assertArrayHasKey(QUESTIONNAIREDAILY, $options);
+        $this->assertArrayHasKey(QUESTIONNAIREWEEKLY, $options);
+        $this->assertArrayHasKey(QUESTIONNAIREMONTHLY, $options);
+    }
+
+    // Tests for response_viewer_options().
+
+    /**
+     * Asserts response_viewer_options() returns an array with four entries.
+     *
+     * @covers \mod_questionnaire\questionnaire::response_viewer_options
+     */
+    public function test_response_viewer_options_returns_four_options(): void {
+        $this->resetAfterTest();
+        $options = questionnaire::response_viewer_options();
+        $this->assertIsArray($options);
+        $this->assertCount(4, $options);
+    }
+
+    /**
+     * Asserts response_viewer_options() contains keys matching the viewer constants.
+     *
+     * @covers \mod_questionnaire\questionnaire::response_viewer_options
+     */
+    public function test_response_viewer_options_has_expected_keys(): void {
+        $this->resetAfterTest();
+        $options = questionnaire::response_viewer_options();
+        $this->assertArrayHasKey(QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, $options);
+        $this->assertArrayHasKey(QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED, $options);
+        $this->assertArrayHasKey(QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED, $options);
+        $this->assertArrayHasKey(QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS, $options);
+    }
+
+    // Tests for default_page_count(), confirm_delete_param(), restore_param().
+
+    /**
+     * Asserts default_page_count() returns the expected default value of 20.
+     *
+     * @covers \mod_questionnaire\questionnaire::default_page_count
+     */
+    public function test_default_page_count_returns_twenty(): void {
+        $this->assertEquals(20, questionnaire::default_page_count());
+    }
+
+    /**
+     * Asserts confirm_delete_param() returns the expected URL parameter string.
+     *
+     * @covers \mod_questionnaire\questionnaire::confirm_delete_param
+     */
+    public function test_confirm_delete_param_returns_expected_string(): void {
+        $this->assertEquals(QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY, questionnaire::confirm_delete_param());
+    }
+
+    /**
+     * Asserts restore_param() returns the expected URL parameter string.
+     *
+     * @covers \mod_questionnaire\questionnaire::restore_param
+     */
+    public function test_restore_param_returns_expected_string(): void {
+        $this->assertEquals(QUESTIONNAIRE_RESTORE_PARAM, questionnaire::restore_param());
+    }
+
+    // Tests for editor_options().
+
+    /**
+     * Asserts editor_options() returns an array with all expected keys and the given context.
+     *
+     * @covers \mod_questionnaire\questionnaire::editor_options
+     */
+    public function test_editor_options_returns_expected_keys(): void {
+        $context = \context_system::instance();
+        $options = questionnaire::editor_options($context);
+        $this->assertIsArray($options);
+        $this->assertArrayHasKey('subdirs', $options);
+        $this->assertArrayHasKey('maxbytes', $options);
+        $this->assertArrayHasKey('maxfiles', $options);
+        $this->assertArrayHasKey('context', $options);
+        $this->assertArrayHasKey('noclean', $options);
+        $this->assertArrayHasKey('trusttext', $options);
+        $this->assertSame($context, $options['context']);
+    }
+
+    // Tests for response_removal_options().
+
+    /**
+     * Asserts response_removal_options() returns an array.
+     *
+     * @covers \mod_questionnaire\questionnaire::response_removal_options
+     */
+    public function test_response_removal_options_returns_array(): void {
+        $this->resetAfterTest();
+        $options = questionnaire::response_removal_options();
+        $this->assertIsArray($options);
+    }
+
+    /**
+     * response_removal_options() has key 0 ("never") plus one entry per month for 36 months.
+     *
+     * @covers \mod_questionnaire\questionnaire::response_removal_options
+     */
+    public function test_response_removal_options_has_37_entries(): void {
+        $this->resetAfterTest();
+        $this->assertCount(37, questionnaire::response_removal_options());
+    }
+
+    /**
+     * response_removal_options() contains key 0 for the "never remove" option.
+     *
+     * @covers \mod_questionnaire\questionnaire::response_removal_options
+     */
+    public function test_response_removal_options_has_zero_key(): void {
+        $this->resetAfterTest();
+        $this->assertArrayHasKey(0, questionnaire::response_removal_options());
+    }
+
+    // Tests for question_deletion_duration().
+
+    /**
+     * Asserts question_deletion_duration() returns the value from plugin config.
+     *
+     * @covers \mod_questionnaire\questionnaire::question_deletion_duration
+     */
+    public function test_question_deletion_duration_returns_configured_value(): void {
+        $this->resetAfterTest();
+        set_config('duration', 7 * DAYSECS, 'questionnaire_questiondeletion');
+        $this->assertEquals(7 * DAYSECS, questionnaire::question_deletion_duration());
+    }
 }
