@@ -450,7 +450,7 @@ class questions_form extends \moodleform {
         if (!empty($deletequestions)) {
             $restoreimg = $questionnaire->renderer->image_url('i/up');
             $deleteimg = $questionnaire->renderer->image_url('t/delete');
-            $rangetimecrontask = questionnaire_get_range_time_permanently();
+            $rangetimecrontask = questionnaire::question_deletion_duration();
             foreach ($deletequestions as $deletequestion) {
                 $delquestiongroup = [];
                 // Preparing deleted time to display time permanently question.
