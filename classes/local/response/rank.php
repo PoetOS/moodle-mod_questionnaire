@@ -17,6 +17,7 @@
 namespace mod_questionnaire\local\response;
 
 use mod_questionnaire\db\bulk_sql_config;
+use mod_questionnaire\local\question\question;
 
 /**
  * Class for rank responses.
@@ -465,18 +466,18 @@ class rank extends responsetype {
                     if ($key == 'ccontent') {
                         if ($osgood) {
                             [$contentleft, $contentright] = array_merge(preg_split('/[|]/', $val), [' ']);
-                            $contents = questionnaire_choice_values($contentleft);
+                            $contents = question::parse_choice_content($contentleft);
                             if ($contents->title) {
                                 $contentleft = $contents->title;
                             }
-                            $contents = questionnaire_choice_values($contentright);
+                            $contents = question::parse_choice_content($contentright);
                             if ($contents->title) {
                                 $contentright = $contents->title;
                             }
                             $val = strip_tags($contentleft . '|' . $contentright);
                             $val = preg_replace("/[\r\n\t]/", ' ', $val);
                         } else {
-                            $contents = questionnaire_choice_values($val);
+                            $contents = question::parse_choice_content($val);
                             if ($contents->modname) {
                                 $val = $contents->modname;
                             } else if ($contents->title) {
@@ -731,7 +732,7 @@ class rank extends responsetype {
                         // Ensure there are two bits of content.
                         [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
                     } else {
-                        $contents = questionnaire_choice_values($content);
+                        $contents = question::parse_choice_content($content);
                         if ($contents->modname) {
                             $content = $contents->text;
                         }
@@ -954,7 +955,7 @@ class rank extends responsetype {
             $nameddegrees++;
         }
         foreach ($this->question->choices as $choice) {
-            $contents = questionnaire_choice_values($choice->content);
+            $contents = question::parse_choice_content($choice->content);
             if ($contents->modname) {
                 $choice->content = $contents->text;
             }
@@ -1016,7 +1017,7 @@ class rank extends responsetype {
                         'text' => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false])];
                 } else {
                     // Eliminate potentially short-named choices.
-                    $contents = questionnaire_choice_values($content);
+                    $contents = question::parse_choice_content($content);
                     if ($contents->modname) {
                         $content = $contents->text;
                     }

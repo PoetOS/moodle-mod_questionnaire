@@ -1205,7 +1205,7 @@ class questionnaire {
                     $qdependchoice = $dependency->dependchoiceid;
                     $dependchoice = $dependquestion->choices[$dependency->dependchoiceid]->content;
 
-                    $contents = questionnaire_choice_values($dependchoice);
+                    $contents = \mod_questionnaire\local\question\question::parse_choice_content($dependchoice);
                     if ($contents->modname) {
                         $dependchoice = $contents->modname;
                     }
@@ -3447,7 +3447,7 @@ class questionnaire {
                         foreach ($choices as $choice) {
                             $content = $choice->content;
                             $modality = '';
-                            $contents = questionnaire_choice_values($content);
+                            $contents = \mod_questionnaire\local\question\question::parse_choice_content($content);
                             if ($contents->modname) {
                                 $modality = $contents->modname;
                             } else if ($contents->title) {
@@ -3485,18 +3485,18 @@ class questionnaire {
                             } else {
                                 if ($osgood) {
                                     [$contentleft, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
-                                    $contents = questionnaire_choice_values($contentleft);
+                                    $contents = \mod_questionnaire\local\question\question::parse_choice_content($contentleft);
                                     if ($contents->title) {
                                         $contentleft = $contents->title;
                                     }
-                                    $contents = questionnaire_choice_values($contentright);
+                                    $contents = \mod_questionnaire\local\question\question::parse_choice_content($contentright);
                                     if ($contents->title) {
                                         $contentright = $contents->title;
                                     }
                                     $modality = strip_tags($contentleft . '|' . $contentright);
                                     $modality = preg_replace("/[\r\n\t]/", ' ', $modality);
                                 } else {
-                                    $contents = questionnaire_choice_values($content);
+                                    $contents = \mod_questionnaire\local\question\question::parse_choice_content($content);
                                     if ($contents->modname) {
                                         $modality = $contents->modname;
                                     } else if ($contents->title) {

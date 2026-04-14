@@ -119,7 +119,7 @@ class radio extends question {
                     $radio->disabled = true;
                     $value = ' (' . $choice->value . ') ';
                 }
-                $contents = questionnaire_choice_values($choice->content);
+                $contents = question::parse_choice_content($choice->content);
                 $radio->label = $value . format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
@@ -209,7 +209,7 @@ class radio extends question {
                 $chobj->horizontal = 1;
             }
             $chobj->name = $id . $uniquetag++;
-            $contents = questionnaire_choice_values($choice->content);
+            $contents = question::parse_choice_content($choice->content);
             $choice->content = $contents->text . $contents->image;
             if ($id == $checked) {
                 $chobj->selected = 1;

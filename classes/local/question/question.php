@@ -615,6 +615,62 @@ abstract class question {
     }
 
     /**
+     * Parse a choice content string and return its components.
+     *
+     * Examines the content of a possible answer from radio button, check box, or rate question
+     * and returns an object with the following properties:
+     * - text:    displayable text component
+     * - image:   full img tag if an image was embedded, or empty string
+     * - modname: named-modality prefix (before '::'), or empty string
+     * - title:   image title/alt text, or empty string
+     *
+     * @param string $content
+     * @return stdClass
+     */
+    public static function parse_choice_content(string $content): stdClass {
+        $contents = new stdClass();
+        $contents->text = '';
+        $contents->image = '';
+        $contents->modname = '';
+        $contents->title = '';
+        // Has image.
+        if (preg_match('/(<img)\s .*(src="(.[^"]{1,})")/isxmU', $content, $matches)) {
+            $contents->image = $matches[0];
+            $imageurl = $matches[3];
+            // Image has a title or alt text: use one of them.
+            if (
+                preg_match('/(title=.)([^"]{1,})/', $content, $matches) ||
+                preg_match('/(alt=.)([^"]{1,})/', $content, $matches)
+            ) {
+                $contents->title = $matches[2];
+            } else {
+                // Image has no title nor alt text: use its filename (without the extension).
+                preg_match("/.*\/(.*)\..*$/", $imageurl, $matches);
+                $contents->title = $matches[1];
+            }
+            // Content has text or named modality plus an image.
+            if (preg_match('/(.*)(<img.*)/', $content, $matches)) {
+                $content = $matches[1];
+            } else {
+                // Just an image.
+                return $contents;
+            }
+        }
+        // Check for score value first (used e.g. by personality test feature).
+        $r = preg_match_all("/^(\d{1,2}=)(.*)$/", $content, $matches);
+        if ($r) {
+            $content = $matches[2][0];
+        }
+        // Look for named modalities. A double colon :: separates modname from display text.
+        $contents->text = $content;
+        if ($pos = strpos($content, '::')) {
+            $contents->text = substr($content, $pos + 2);
+            $contents->modname = substr($content, 0, $pos);
+        }
+        return $contents;
+    }
+
+    /**
      * Returns an array of dependency options for the question as an array of id value / display value pairs. Override in specific
      * question types that support this differently.
      * @return array An array of valid pair options.
@@ -623,7 +679,7 @@ abstract class question {
         $options = [];
         if ($this->allows_dependents() && $this->has_choices()) {
             foreach ($this->choices as $key => $choice) {
-                $contents = questionnaire_choice_values($choice->content);
+                $contents = self::parse_choice_content($choice->content);
                 if (!empty($contents->modname)) {
                     $choice->content = $contents->modname;
                 } else if (!empty($contents->title)) { // Must be an image; use its title for the dropdown list.
@@ -2089,7 +2145,7 @@ abstract class question {
         if ($this->has_choices()) {
             foreach ($this->choices as $choice) {
                 $choices[$cnum] = clone($choice);
-                $contents = questionnaire_choice_values($choice->content);
+                $contents = self::parse_choice_content($choice->content);
                 $choices[$cnum]->content = format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
                 $cnum++;
             }

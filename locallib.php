@@ -80,61 +80,6 @@ $autonumbering = [
 ];
 
 /**
- * Return the choice values for the content.
- * @param string $content
- * @return stdClass
- */
-function questionnaire_choice_values($content) {
-
-    // If we run the content through format_text first, any filters we want to use (e.g. multilanguage) should work.
-    // examines the content of a possible answer from radio button, check boxes or rate question
-    // returns ->text to be displayed, ->image if present, ->modname name of modality, image ->title.
-    $contents = new stdClass();
-    $contents->text = '';
-    $contents->image = '';
-    $contents->modname = '';
-    $contents->title = '';
-    // Has image.
-    if (preg_match('/(<img)\s .*(src="(.[^"]{1,})")/isxmU', $content, $matches)) {
-        $contents->image = $matches[0];
-        $imageurl = $matches[3];
-        // Image has a title or alt text: use one of them.
-        if (
-            preg_match('/(title=.)([^"]{1,})/', $content, $matches) ||
-            preg_match('/(alt=.)([^"]{1,})/', $content, $matches)
-        ) {
-            $contents->title = $matches[2];
-        } else {
-            // Image has no title nor alt text: use its filename (without the extension).
-            preg_match("/.*\/(.*)\..*$/", $imageurl, $matches);
-            $contents->title = $matches[1];
-        }
-        // Content has text or named modality plus an image.
-        if (preg_match('/(.*)(<img.*)/', $content, $matches)) {
-            $content = $matches[1];
-        } else {
-            // Just an image.
-            return $contents;
-        }
-    }
-
-    // Check for score value first (used e.g. by personality test feature).
-    $r = preg_match_all("/^(\d{1,2}=)(.*)$/", $content, $matches);
-    if ($r) {
-        $content = $matches[2][0];
-    }
-
-    // Look for named modalities.
-    $contents->text = $content;
-    // DEV JR from version 2.5, a double colon :: must be used here instead of the equal sign.
-    if ($pos = strpos($content, '::')) {
-        $contents->text = substr($content, $pos + 2);
-        $contents->modname = substr($content, 0, $pos);
-    }
-    return $contents;
-}
-
-/**
  * Get the information about the standard questionnaire JavaScript module.
  * @return array a standard jsmodule structure.
  */

@@ -226,7 +226,7 @@ class rate extends question {
             }
             if ($nameddegrees == 0) {
                 // Determine if the choices have named values.
-                $contents = questionnaire_choice_values($content);
+                $contents = question::parse_choice_content($content);
                 if ($contents->modname) {
                     $choice->content = $contents->text;
                 }
@@ -526,7 +526,7 @@ class rate extends question {
             if (!array_key_exists($cid, $cidnamed)) {
                 $str = 'q' . "{$this->id()}_$cid";
                 $content = $choice->content;
-                $contents = questionnaire_choice_values($content);
+                $contents = question::parse_choice_content($content);
                 if ($contents->modname) {
                     $content = $contents->text;
                 }
