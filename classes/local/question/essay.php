@@ -90,7 +90,7 @@ class essay extends text {
         }
         if ($canusehtmleditor && !$this->get_isprint()) {
             $editor = editors_get_preferred_editor();
-            $editor->use_editor($name, questionnaire_get_editor_options($this->context));
+            $editor->use_editor($name, \mod_questionnaire\questionnaire::editor_options($this->context));
             $texteditor = html_writer::tag(
                 'textarea',
                 $value,

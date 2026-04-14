@@ -310,7 +310,7 @@ if ($action == 'main') {
         }
     }
 } else if ($action == 'question') {
-    $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
+    $question = $questionnaire->prep_question_for_form($qid, $qtype);
     $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
     $questionsform->set_data($question->form_data());
     if ($questionsform->is_cancelled()) {
@@ -376,7 +376,7 @@ if ($reload) {
         }
         $questionsform->set_data($sdata);
     } else if ($action == 'question') {
-        $question = questionnaire_prep_for_questionform($questionnaire, $qid, $qtype);
+        $question = $questionnaire->prep_question_for_form($qid, $qtype);
         $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
         $questionsform->set_data($question->form_data());
     }

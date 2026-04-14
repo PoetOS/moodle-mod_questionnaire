@@ -99,7 +99,7 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configselect('questionnaire/autodeleteresponse', $name, $desc, 0, $options);
     $settings->add($setting);
 
-    $options = questionnaire_create_remove_options();
+    $options = \mod_questionnaire\questionnaire::response_removal_options();
     $settings->add(
         new admin_setting_configselect(
             'questionnaire/removeoldresponses',

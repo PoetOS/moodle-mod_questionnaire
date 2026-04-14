@@ -1148,6 +1148,94 @@ class questionnaire {
     }
 
     /**
+     * Return the HTML-editor options array for use with editors outside Moodle forms.
+     *
+     * @param \context $context The module context.
+     * @return array
+     */
+    public static function editor_options(\context $context): array {
+        return [
+            'subdirs'   => 0,
+            'maxbytes'  => 0,
+            'maxfiles'  => -1,
+            'context'   => $context,
+            'noclean'   => 0,
+            'trusttext' => 0,
+        ];
+    }
+
+    /**
+     * Return a localised label => value map of response-removal duration options for admin form selects.
+     *
+     * @return array  Keys are seconds (0 = never); values are localised display strings.
+     */
+    public static function response_removal_options(): array {
+        $options = [0 => get_string('removeoldresponsesdefault', 'questionnaire')];
+        for ($i = 1; $i <= 36; $i++) {
+            $options[$i * 2592000] = $i > 1
+                ? get_string('nummonths', 'moodle', $i)
+                : get_string('onemonth', 'questionnaire');
+        }
+        return $options;
+    }
+
+    /**
+     * Prepare a question object for display in the question editing form.
+     *
+     * Populates draft file areas and dependency arrays expected by questions_form.
+     *
+     * @param int $qid   0 when creating a new question; the existing question id when editing.
+     * @param int $qtype Question type id (used only when $qid is 0).
+     * @return \mod_questionnaire\local\question\question
+     */
+    public function prep_question_for_form(int $qid, int $qtype): local\question\question {
+        $cmid = $this->coursemodule()->id;
+        $context = context_module::instance($cmid);
+        if ($qid != 0) {
+            $questions = $this->questions();
+            $question = clone($questions[$qid]);
+            $question->qid = $question->id();
+            $question->sid = $this->surveyid();
+            $question->set_id($cmid);
+            $draftideditor = file_get_submitted_draft_itemid('question');
+            $content = file_prepare_draft_area(
+                $draftideditor,
+                $context->id,
+                'mod_questionnaire',
+                'question',
+                $qid,
+                ['subdirs' => true],
+                $question->content()
+            );
+            $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
+            if (isset($question->dependencies)) {
+                foreach ($question->dependencies as $dependencies) {
+                    if ($dependencies->dependandor === "and") {
+                        $question->dependquestionsand[] =
+                            $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
+                        $question->dependlogicand[] = $dependencies->dependlogic;
+                    } else if ($dependencies->dependandor === "or") {
+                        $question->dependquestionsor[] =
+                            $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
+                        $question->dependlogicor[] = $dependencies->dependlogic;
+                    }
+                }
+            }
+        } else {
+            $question = local\question\question::question_builder($qtype);
+            $question->sid = $this->surveyid();
+            $question->set_id($cmid);
+            $question->set_typeid($qtype);
+            $draftideditor = file_get_submitted_draft_itemid('question');
+            $content = file_prepare_draft_area(
+                $draftideditor, $context->id, 'mod_questionnaire', 'question', 0, ['subdirs' => true], ''
+            );
+            $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
+        }
+        return $question;
+    }
+
+    /**
      * Return the configured duration (in seconds) before soft-deleted questions are permanently removed.
      *
      * The value comes from the questionnaire_questiondeletion plugin config. Callers should not need
