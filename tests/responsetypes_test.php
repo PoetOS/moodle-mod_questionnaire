@@ -473,7 +473,7 @@ final class responsetypes_test extends \advanced_testcase {
         $booleanresponses2->submitted = $booleanresponses2->submitted - 2592000 - 86400;
         $DB->update_record('questionnaire_response', $booleanresponses1);
         $DB->update_record('questionnaire_response', $booleanresponses2);
-        questionnaire_delete_old_responses();
+        \mod_questionnaire\local\response\questionnaire_responses::delete_old_responses();
         $responseresult1 = $DB->record_exists('questionnaire_response', ['id' => $response1->id]);
         $responseresult2 = $DB->record_exists('questionnaire_response', ['id' => $response2->id]);
         $this->assertEmpty($responseresult1);

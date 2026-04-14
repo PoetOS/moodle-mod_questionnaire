@@ -206,59 +206,6 @@ function questionnaire_get_range_time_permanently() {
 }
 
 /**
- * Get users who have not completed the questionnaire
- *
- * @param object $cm
- * @param int $sid
- * @param bool $group single groupid
- * @param string $sort
- * @param bool $startpage
- * @param bool $pagecount
- * @return object the userrecords
- * @throws coding_exception
- * @throws dml_exception
- */
-function questionnaire_get_incomplete_users(
-    $cm,
-    $sid,
-    $group = false,
-    $sort = '',
-    $startpage = false,
-    $pagecount = false
-) {
-
-    global $DB;
-
-    $context = context_module::instance($cm->id);
-
-    // First get all users who can complete this questionnaire.
-    $cap = 'mod/questionnaire:submit';
-    $fields = 'u.id, u.username';
-    if (!$allusers = get_enrolled_users($context, $cap, $group, $fields, $sort)) {
-        return false;
-    }
-    $allusers = array_keys($allusers);
-
-    // Nnow get all completed questionnaires.
-    $params = ['questionnaireid' => $cm->instance, 'complete' => 'y'];
-    $sql = "SELECT userid FROM {questionnaire_response} " .
-           "WHERE questionnaireid = :questionnaireid AND complete = :complete " .
-           "GROUP BY userid ";
-
-    if (!$completedusers = $DB->get_records_sql($sql, $params)) {
-        return $allusers;
-    }
-    $completedusers = array_keys($completedusers);
-    // Now strike all completedusers from allusers.
-    $allusers = array_diff($allusers, $completedusers);
-    // For paging I use array_slice().
-    if (($startpage !== false) && ($pagecount !== false)) {
-        $allusers = array_slice($allusers, $startpage, $pagecount);
-    }
-    return $allusers;
-}
-
-/**
  * Called by HTML editor in showrespondents and Essay question. Based on question/essay/renderer.
  * Pending general solution to using the HTML editor outside of moodleforms in Moodle pages.
  * @param int $context
@@ -372,28 +319,6 @@ function questionnaire_get_standard_page_items($id = null, $a = null) {
 
 
 /**
- * Count responses already saved for that question.
- *
- * @param int $qid question id.
- * @param int $qtype question type.
- * @return int number or 0 if responses were not found.
- */
-function count_reponses_question(int $qid, int $qtype): int {
-    global $DB;
-
-    $countresps = 0;
-    if ($qtype != QUESSECTIONTEXT) {
-        $responsetable = $DB->get_field('questionnaire_question_type', 'responsetable', ['typeid' => $qtype]);
-        if (!empty($responsetable)) {
-            $countresps = $DB->count_records('questionnaire_' . $responsetable, ['questionid' => $qid]);
-        }
-    }
-
-    return $countresps;
-}
-
-
-/**
  * Create options for remove old responses in the questionare.
  *
  * @return array
@@ -407,49 +332,3 @@ function questionnaire_create_remove_options() {
     return $options;
 }
 
-/**
- * Delete all the old responses when we have setting the questionnaire.
- *
- * @throws coding_exception
- * @throws dml_exception
- */
-function questionnaire_delete_old_responses() {
-    global $DB;
-    $currenttime = time();
-
-    $sql = "SELECT qr.id
-              FROM {questionnaire} q
-              JOIN {questionnaire_response} qr ON qr.questionnaireid = q.id AND qr.complete = 'y'
-             WHERE q.removeafter <> 0 AND (q.removeafter < :currenttime - qr.submitted)";
-
-    // Get all old response IDs from questionnaires.
-    $oldresponses = $DB->get_records_sql($sql, ['currenttime' => $currenttime]);
-
-    if (!empty($oldresponses)) {
-        try {
-            $oldresponsesid = array_keys($oldresponses);
-            $count = count($oldresponsesid);
-            if (!PHPUNIT_TEST) {
-                mtrace("\nBeginning deleting $count old responses requests");
-            }
-            // Tables to delete responses from.
-            $responsetables = [
-                    'questionnaire_response_bool', 'questionnaire_response_date', 'questionnaire_resp_multiple',
-                    'questionnaire_response_other', 'questionnaire_response_rank', 'questionnaire_resp_single',
-                    'questionnaire_response_text'];
-
-            // Delete related response data.
-            foreach ($responsetables as $tablename) {
-                $DB->delete_records_list($tablename, 'responseid', $oldresponsesid);
-            }
-
-            // Delete from the main response table.
-            $DB->delete_records_list('questionnaire_response', 'id', $oldresponsesid);
-            if (!PHPUNIT_TEST) {
-                mtrace("\nCompleted deleting $count old responses requests");
-            }
-        } catch (\dml_exception $ex) {
-            debugging('Error: ' . $ex->getMessage(), DEBUG_DEVELOPER);
-        }
-    }
-}

@@ -44,7 +44,7 @@ class cleanup extends \core\task\scheduled_task {
         questionnaire_cleanup();
         $isautodelete = (bool) get_config('questionnaire', 'autodeleteresponse');
         if ($isautodelete) {
-            questionnaire_delete_old_responses();
+            \mod_questionnaire\local\response\questionnaire_responses::delete_old_responses();
         }
     }
 }

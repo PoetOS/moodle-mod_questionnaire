@@ -717,6 +717,120 @@ class questionnaire_responses {
      * @param bool $uniquebytable
      * @return array
      */
+    /**
+     * Return user ids of enrolled users who have not completed the given questionnaire instance.
+     *
+     * @param \stdClass|\cm_info $cm   Course-module record (needs id and instance fields).
+     * @param int                $sid  Survey id (unused — retained for compat; instance check uses cm->instance).
+     * @param int|false          $group     Group id to restrict to, or false for all groups.
+     * @param string             $sort      SQL sort fragment for get_enrolled_users().
+     * @param int|false          $startpage First slice offset for paging, or false to skip.
+     * @param int|false          $pagecount Slice length for paging, or false to skip.
+     * @return array|false  Array of user ids, or false if no eligible users exist.
+     */
+    public static function get_incomplete_users(
+        $cm,
+        int $sid,
+        $group = false,
+        string $sort = '',
+        $startpage = false,
+        $pagecount = false
+    ) {
+        global $DB;
+
+        $context = \context_module::instance($cm->id);
+
+        $cap = 'mod/questionnaire:submit';
+        $fields = 'u.id, u.username';
+        if (!$allusers = get_enrolled_users($context, $cap, $group, $fields, $sort)) {
+            return false;
+        }
+        $allusers = array_keys($allusers);
+
+        $params = ['questionnaireid' => $cm->instance, 'complete' => 'y'];
+        $sql = "SELECT userid FROM {questionnaire_response}
+                 WHERE questionnaireid = :questionnaireid AND complete = :complete
+                 GROUP BY userid";
+        if (!$completedusers = $DB->get_records_sql($sql, $params)) {
+            return $allusers;
+        }
+        $completedusers = array_keys($completedusers);
+        $allusers = array_diff($allusers, $completedusers);
+        if (($startpage !== false) && ($pagecount !== false)) {
+            $allusers = array_slice($allusers, $startpage, $pagecount);
+        }
+        return $allusers;
+    }
+
+    /**
+     * Count the number of response records for a specific question.
+     *
+     * @param int $qid   Question id.
+     * @param int $qtype Question type id.
+     * @return int  Count of response records, or 0 if none/not applicable.
+     */
+    public static function count_for_question(int $qid, int $qtype): int {
+        global $DB;
+
+        if ($qtype == \mod_questionnaire\local\question_type::QUESSECTIONTEXT) {
+            return 0;
+        }
+        $responsetable = $DB->get_field(
+            'questionnaire_question_type',
+            'responsetable',
+            ['typeid' => $qtype]
+        );
+        if (empty($responsetable)) {
+            return 0;
+        }
+        return $DB->count_records('questionnaire_' . $responsetable, ['questionid' => $qid]);
+    }
+
+    /**
+     * Delete all responses that have passed the configured retention period for their questionnaire.
+     *
+     * Called from the cleanup scheduled task.
+     */
+    public static function delete_old_responses(): void {
+        global $DB;
+
+        $currenttime = time();
+        $sql = "SELECT qr.id
+                  FROM {questionnaire} q
+                  JOIN {questionnaire_response} qr ON qr.questionnaireid = q.id AND qr.complete = 'y'
+                 WHERE q.removeafter <> 0 AND (q.removeafter < :currenttime - qr.submitted)";
+        $oldresponses = $DB->get_records_sql($sql, ['currenttime' => $currenttime]);
+
+        if (!empty($oldresponses)) {
+            try {
+                $oldresponsesid = array_keys($oldresponses);
+                $count = count($oldresponsesid);
+                if (!PHPUNIT_TEST) {
+                    mtrace("\nBeginning deleting $count old responses requests");
+                }
+                $responsetables = [
+                    'questionnaire_response_bool', 'questionnaire_response_date',
+                    'questionnaire_resp_multiple', 'questionnaire_response_other',
+                    'questionnaire_response_rank', 'questionnaire_resp_single',
+                    'questionnaire_response_text',
+                ];
+                foreach ($responsetables as $tablename) {
+                    $DB->delete_records_list($tablename, 'responseid', $oldresponsesid);
+                }
+                $DB->delete_records_list('questionnaire_response', 'id', $oldresponsesid);
+                if (!PHPUNIT_TEST) {
+                    mtrace("\nCompleted deleting $count old responses requests");
+                }
+            } catch (\dml_exception $ex) {
+                debugging('Error: ' . $ex->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
+    }
+
+    /**
+     * @param bool $uniquebytable
+     * @return array
+     */
     private function survey_questiontypes($uniquebytable = false) {
         $uniquetypes = [];
         $uniquetables = [];
