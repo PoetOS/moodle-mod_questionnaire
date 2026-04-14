@@ -133,82 +133,6 @@ function questionnaire_cleanup() {
 }
 
 /**
- * Called by HTML editor in showrespondents and Essay question. Based on question/essay/renderer.
- * Pending general solution to using the HTML editor outside of moodleforms in Moodle pages.
- * @param int $context
- * @return array
- */
-function questionnaire_get_editor_options($context) {
-    return [
-        'subdirs' => 0,
-        'maxbytes' => 0,
-        'maxfiles' => -1,
-        'context' => $context,
-        'noclean' => 0,
-        'trusttext' => 0,
-    ];
-}
-
-/**
- * Code snippet used to set up the questionform.
- * @param stdClass $questionnaire
- * @param int $qid
- * @param int $qtype
- * @return mixed|\mod_questionnaire\local\question\question
- */
-function questionnaire_prep_for_questionform($questionnaire, $qid, $qtype) {
-    $cmid = $questionnaire->coursemodule()->id;
-    $context = context_module::instance($cmid);
-    if ($qid != 0) {
-        $questions = $questionnaire->questions();
-        $question = clone($questions[$qid]);
-        $question->qid = $question->id();
-        $question->sid = $questionnaire->surveyid();
-        $question->set_id($cmid);
-        $draftideditor = file_get_submitted_draft_itemid('question');
-        $content = file_prepare_draft_area(
-            $draftideditor,
-            $context->id,
-            'mod_questionnaire',
-            'question',
-            $qid,
-            ['subdirs' => true],
-            $question->content()
-        );
-        $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
-
-        if (isset($question->dependencies)) {
-            foreach ($question->dependencies as $dependencies) {
-                if ($dependencies->dependandor === "and") {
-                    $question->dependquestionsand[] = $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
-                    $question->dependlogicand[] = $dependencies->dependlogic;
-                } else if ($dependencies->dependandor === "or") {
-                    $question->dependquestionsor[] = $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
-                    $question->dependlogicor[] = $dependencies->dependlogic;
-                }
-            }
-        }
-    } else {
-        $question = \mod_questionnaire\local\question\question::question_builder($qtype);
-        $question->sid = $questionnaire->surveyid();
-        $question->set_id($cmid);
-        $question->set_typeid($qtype);
-        $draftideditor = file_get_submitted_draft_itemid('question');
-        $content = file_prepare_draft_area(
-            $draftideditor,
-            $context->id,
-            'mod_questionnaire',
-            'question',
-            0,
-            ['subdirs' => true],
-            ''
-        );
-        $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
-    }
-    return $question;
-}
-
-/**
  * Get the standard page contructs and check for validity.
  * @param int $id The coursemodule id.
  * @param int $a  The module instance id.
@@ -245,17 +169,4 @@ function questionnaire_get_standard_page_items($id = null, $a = null) {
 }
 
 
-/**
- * Create options for remove old responses in the questionare.
- *
- * @return array
- */
-function questionnaire_create_remove_options() {
-    $options = [];
-    $options[0] = get_string('removeoldresponsesdefault', 'questionnaire');
-    for ($i = 1; $i <= 36; $i++) {
-        $options[$i * 2592000] = $i > 1 ? get_string('nummonths', 'moodle', $i) : get_string('onemonth', 'questionnaire');
-    }
-    return $options;
-}
 
