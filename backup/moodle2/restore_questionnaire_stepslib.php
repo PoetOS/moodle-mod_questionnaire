@@ -338,7 +338,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         // Replace the = separator with :: separator in quest_choice content.
         // This fixes radio button options using old "value"="display" formats.
         if (($data->value == null || $data->value == 'NULL') && !preg_match("/^([0-9]{1,3}=.*|!other=.*)$/", $data->content)) {
-            $content = questionnaire_choice_values($data->content);
+            $content = \mod_questionnaire\local\question\question::parse_choice_content($data->content);
             if (strpos($content->text, '=')) {
                 $data->content = str_replace('=', '::', $content->text);
             }

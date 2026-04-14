@@ -141,7 +141,7 @@ class drop extends question {
         }
 
         foreach ($this->choices as $id => $choice) {
-            $contents = questionnaire_choice_values($choice->content);
+            $contents = question::parse_choice_content($choice->content);
             $chobj = new \stdClass();
             $chobj->value = $id;
             $chobj->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]);

@@ -129,7 +129,7 @@ class check extends question {
         $choicetags->qelements = [];
         foreach ($this->choices as $id => $choice) {
             $checkbox = new \stdClass();
-            $contents = questionnaire_choice_values($choice->content);
+            $contents = question::parse_choice_content($choice->content);
             $checked = false;
             if (!empty($response->answers[$this->id()])) {
                 $checked = isset($response->answers[$this->id()][$id]);
@@ -176,7 +176,7 @@ class check extends question {
         foreach ($this->choices as $id => $choice) {
             $chobj = new \stdClass();
             if (!$choice->is_other_choice()) {
-                $contents = questionnaire_choice_values($choice->content);
+                $contents = question::parse_choice_content($choice->content);
                 $choice->content = $contents->text . $contents->image;
                 if (isset($response->answers[$this->id()][$id])) {
                     $chobj->selected = 1;

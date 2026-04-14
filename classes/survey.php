@@ -437,7 +437,7 @@ class survey {
                 case QUESCHECK:
                     $qdependchoice = $dependency->dependchoiceid;
                     $dependchoice = $dependquestion->choices[$dependency->dependchoiceid]->content;
-                    $contents = \questionnaire_choice_values($dependchoice);
+                    $contents = question::parse_choice_content($dependchoice);
                     if ($contents->modname) {
                         $dependchoice = $contents->modname;
                     }

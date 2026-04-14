@@ -16,6 +16,8 @@
 
 namespace mod_questionnaire\local\response;
 
+use mod_questionnaire\local\question\question;
+
 /**
  * Class for single response types.
  *
@@ -273,7 +275,7 @@ class single extends responsetype {
                     $textidx = $content;
                     $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 } else {
-                    $contents = questionnaire_choice_values($row->content);
+                    $contents = question::parse_choice_content($row->content);
                     $textidx = $contents->text . $contents->image;
                     $counts[$textidx] = !empty($counts[$textidx]) ? ($counts[$textidx] + 1) : 1;
                 }
