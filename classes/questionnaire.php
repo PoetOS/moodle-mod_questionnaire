@@ -35,6 +35,41 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class questionnaire {
+    // Response-frequency (qtype field) constants.
+
+    /** @var int Response frequency: unlimited attempts. */
+    private const QTYPE_UNLIMITED = 0;
+    /** @var int Response frequency: one attempt only. */
+    private const QTYPE_ONCE = 1;
+    /** @var int Response frequency: once per day. */
+    private const QTYPE_DAILY = 2;
+    /** @var int Response frequency: once per week. */
+    private const QTYPE_WEEKLY = 3;
+    /** @var int Response frequency: once per month. */
+    private const QTYPE_MONTHLY = 4;
+
+    // Student response-view (respview field) constants.
+
+    /** @var int Response visibility: students never see other responses. */
+    private const RESPVIEW_NEVER = 0;
+    /** @var int Response visibility: students see responses after they have answered. */
+    private const RESPVIEW_WHENANSWERED = 1;
+    /** @var int Response visibility: students see responses after the questionnaire closes. */
+    private const RESPVIEW_WHENCLOSED = 2;
+    /** @var int Response visibility: students always see other responses. */
+    private const RESPVIEW_ALWAYS = 3;
+
+    // Other internal constants.
+
+    /** @var int Maximum calendar event duration in seconds (5 days). */
+    private const MAX_EVENT_LENGTH = 5 * 24 * 60 * 60;
+    /** @var int Default number of rows per pagination page. */
+    private const DEFAULT_PAGE_COUNT = 20;
+    /** @var string URL parameter name for the permanent-delete confirmation action. */
+    private const CONFIRM_DELETE_PERMANENTLY = 'confirmdelpermanentlyq';
+    /** @var string URL parameter name for the question-restore action. */
+    private const RESTORE_PARAM = 'restoreq';
+
     /** @var questionnaire_record The module record instance. */
     protected questionnaire_record $modulerecord;
 
@@ -678,7 +713,7 @@ class questionnaire {
     public function user_can_take(int $userid): bool {
         if (!$this->is_active() || !$this->user_is_eligible($userid)) {
             return false;
-        } else if ($this->modulerecord->get('qtype') == QUESTIONNAIREUNLIMITED) {
+        } else if ($this->modulerecord->get('qtype') == self::QTYPE_UNLIMITED) {
             return true;
         } else if ($userid > 0) {
             return $this->user_time_for_new_attempt($userid);
@@ -705,21 +740,21 @@ class questionnaire {
         $timenow = time();
 
         switch ($this->modulerecord->get('qtype')) {
-            case QUESTIONNAIREUNLIMITED:
+            case self::QTYPE_UNLIMITED:
                 return true;
 
-            case QUESTIONNAIREONCE:
+            case self::QTYPE_ONCE:
                 return false;
 
-            case QUESTIONNAIREDAILY:
+            case self::QTYPE_DAILY:
                 return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
                     (date('Yz', $attempt->submitted) < date('Yz', $timenow));
 
-            case QUESTIONNAIREWEEKLY:
+            case self::QTYPE_WEEKLY:
                 return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
                     (date('YW', $attempt->submitted) < date('YW', $timenow));
 
-            case QUESTIONNAIREMONTHLY:
+            case self::QTYPE_MONTHLY:
                 return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
                     (date('Yn', $attempt->submitted) < date('Yn', $timenow));
 
@@ -855,9 +890,9 @@ class questionnaire {
         $respview = $this->modulerecord->get('respview');
         return $grouplogic && $respslogic && $this->is_survey_owner() &&
             has_capability('mod/questionnaire:readallresponses', $this->context) &&
-            ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp));
+            ($respview == self::RESPVIEW_ALWAYS ||
+                ($respview == self::RESPVIEW_WHENCLOSED && $this->is_closed()) ||
+                ($respview == self::RESPVIEW_WHENANSWERED && $usernumresp));
     }
 
     /**
@@ -887,9 +922,9 @@ class questionnaire {
             // Can view other users' responses if capability is set and view conditions are met.
             if (
                 has_capability('mod/questionnaire:readallresponses', $this->context) &&
-                ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && !$this->user_can_take($USER->id)))
+                ($respview == self::RESPVIEW_ALWAYS ||
+                 ($respview == self::RESPVIEW_WHENCLOSED && $this->is_closed()) ||
+                 ($respview == self::RESPVIEW_WHENANSWERED && !$this->user_can_take($USER->id)))
             ) {
                 return true;
             }
@@ -910,9 +945,9 @@ class questionnaire {
 
             if (
                 has_capability('mod/questionnaire:readallresponses', $this->context) &&
-                ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && !$this->user_can_take($USER->id)))
+                ($respview == self::RESPVIEW_ALWAYS ||
+                 ($respview == self::RESPVIEW_WHENCLOSED && $this->is_closed()) ||
+                 ($respview == self::RESPVIEW_WHENANSWERED && !$this->user_can_take($USER->id)))
             ) {
                 return true;
             }
@@ -937,19 +972,19 @@ class questionnaire {
         $messages = [];
 
         switch ($this->modulerecord->get('qtype')) {
-            case QUESTIONNAIREUNLIMITED:
+            case self::QTYPE_UNLIMITED:
                 $typestring = get_string('unlimited', 'questionnaire');
                 break;
-            case QUESTIONNAIREONCE:
+            case self::QTYPE_ONCE:
                 $typestring = get_string('once', 'questionnaire');
                 break;
-            case QUESTIONNAIREDAILY:
+            case self::QTYPE_DAILY:
                 $typestring = get_string('daily', 'questionnaire');
                 break;
-            case QUESTIONNAIREWEEKLY:
+            case self::QTYPE_WEEKLY:
                 $typestring = get_string('weekly', 'questionnaire');
                 break;
-            case QUESTIONNAIREMONTHLY:
+            case self::QTYPE_MONTHLY:
                 $typestring = get_string('monthly', 'questionnaire');
                 break;
             default:
@@ -1017,13 +1052,13 @@ class questionnaire {
         }
         if (!$this->user_can_take($userid)) {
             switch ($this->modulerecord->get('qtype')) {
-                case QUESTIONNAIREDAILY:
+                case self::QTYPE_DAILY:
                     $msgstring = ' ' . get_string('today', 'questionnaire');
                     break;
-                case QUESTIONNAIREWEEKLY:
+                case self::QTYPE_WEEKLY:
                     $msgstring = ' ' . get_string('thisweek', 'questionnaire');
                     break;
-                case QUESTIONNAIREMONTHLY:
+                case self::QTYPE_MONTHLY:
                     $msgstring = ' ' . get_string('thismonth', 'questionnaire');
                     break;
                 default:
@@ -1052,6 +1087,64 @@ class questionnaire {
      */
     public function add_page($page): void {
         $this->page = $page;
+    }
+
+    // Behavior methods — expose internal constants as a public API.
+
+    /**
+     * Return a localised label => value map of response-frequency options for form selects.
+     *
+     * @return array  Keys are the qtype integer values; values are localised display strings.
+     */
+    public static function response_frequency_options(): array {
+        return [
+            self::QTYPE_UNLIMITED => get_string('qtypeunlimited', 'questionnaire'),
+            self::QTYPE_ONCE      => get_string('qtypeonce', 'questionnaire'),
+            self::QTYPE_DAILY     => get_string('qtypedaily', 'questionnaire'),
+            self::QTYPE_WEEKLY    => get_string('qtypeweekly', 'questionnaire'),
+            self::QTYPE_MONTHLY   => get_string('qtypemonthly', 'questionnaire'),
+        ];
+    }
+
+    /**
+     * Return a localised label => value map of student-response-viewer options for form selects.
+     *
+     * @return array  Keys are the respview integer values; values are localised display strings.
+     */
+    public static function response_viewer_options(): array {
+        return [
+            self::RESPVIEW_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
+            self::RESPVIEW_WHENCLOSED   => get_string('responseviewstudentswhenclosed', 'questionnaire'),
+            self::RESPVIEW_ALWAYS       => get_string('responseviewstudentsalways', 'questionnaire'),
+            self::RESPVIEW_NEVER        => get_string('responseviewstudentsnever', 'questionnaire'),
+        ];
+    }
+
+    /**
+     * Return the default number of rows shown per pagination page.
+     *
+     * @return int
+     */
+    public static function default_page_count(): int {
+        return self::DEFAULT_PAGE_COUNT;
+    }
+
+    /**
+     * Return the URL parameter name used to confirm permanent question deletion.
+     *
+     * @return string
+     */
+    public static function confirm_delete_param(): string {
+        return self::CONFIRM_DELETE_PERMANENTLY;
+    }
+
+    /**
+     * Return the URL parameter name used to restore a soft-deleted question.
+     *
+     * @return string
+     */
+    public static function restore_param(): string {
+        return self::RESTORE_PARAM;
     }
 
     /**
@@ -1249,7 +1342,7 @@ class questionnaire {
 
         if (
             $questionnaire->closedate && $questionnaire->opendate
-            && ($event->timeduration <= QUESTIONNAIRE_MAX_EVENT_LENGTH)
+            && ($event->timeduration <= self::MAX_EVENT_LENGTH)
         ) {
             // Single event for the whole questionnaire.
             $event->name = $questionnaire->name;

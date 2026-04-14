@@ -38,7 +38,7 @@ $format = optional_param('format', FORMAT_MOODLE, PARAM_INT);
 $messageuser = optional_param_array('messageuser', false, PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHA);
 $selectedanonymous = optional_param('selectedanonymous', '', PARAM_ALPHA);
-$perpage = optional_param('perpage', QUESTIONNAIRE_DEFAULT_PAGE_COUNT, PARAM_INT);  // How many per page.
+$perpage = optional_param('perpage', questionnaire::default_page_count(), PARAM_INT);  // How many per page.
 $showall = optional_param('showall', false, PARAM_INT);  // Should we show all users?
 $sid = optional_param('sid', 0, PARAM_INT);
 $qid = optional_param('qid', 0, PARAM_INT);
@@ -390,7 +390,7 @@ if (!$nonrespondents) {
             $questionnaire->page->add_to_page(
                 'formarea',
                 $questionnaire->renderer->container(
-                    html_writer::link($allurl, get_string('showperpage', '', QUESTIONNAIRE_DEFAULT_PAGE_COUNT)),
+                    html_writer::link($allurl, get_string('showperpage', '', questionnaire::default_page_count())),
                     [],
                     'showall'
                 )

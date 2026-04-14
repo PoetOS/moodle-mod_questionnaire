@@ -30,7 +30,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/calendar/lib.php');
-// Constants.
+// Legacy constant aliases — kept for questionnaire.class.php and any code not yet on the new class.
+// Canonical values live as private const on mod_questionnaire\questionnaire; use its behavior
+// methods (response_frequency_options, response_viewer_options, etc.) for new code.
 
 define('QUESTIONNAIREUNLIMITED', 0);
 define('QUESTIONNAIREONCE', 1);
@@ -51,13 +53,7 @@ define('QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY', 'confirmdelpermanentlyq');
 define('QUESTIONNAIRE_RESTORE_PARAM', 'restoreq');
 
 global $questionnairetypes;
-$questionnairetypes = [
-    QUESTIONNAIREUNLIMITED => get_string('qtypeunlimited', 'questionnaire'),
-    QUESTIONNAIREONCE => get_string('qtypeonce', 'questionnaire'),
-    QUESTIONNAIREDAILY => get_string('qtypedaily', 'questionnaire'),
-    QUESTIONNAIREWEEKLY => get_string('qtypeweekly', 'questionnaire'),
-    QUESTIONNAIREMONTHLY => get_string('qtypemonthly', 'questionnaire'),
-];
+$questionnairetypes = \mod_questionnaire\questionnaire::response_frequency_options();
 
 global $questionnairerespondents;
 $questionnairerespondents = [
@@ -73,12 +69,7 @@ $questionnairerealms = [
 ];
 
 global $questionnaireresponseviewers;
-$questionnaireresponseviewers = [
-    QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED => get_string('responseviewstudentswhenanswered', 'questionnaire'),
-    QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED => get_string('responseviewstudentswhenclosed', 'questionnaire'),
-    QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS => get_string('responseviewstudentsalways', 'questionnaire'),
-    QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER => get_string('responseviewstudentsnever', 'questionnaire'),
-];
+$questionnaireresponseviewers = \mod_questionnaire\questionnaire::response_viewer_options();
 
 global $autonumbering;
 $autonumbering = [
