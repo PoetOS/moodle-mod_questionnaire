@@ -142,7 +142,7 @@ if ($delq) {
 
     // Log question deleted event.
     $questiontype = \mod_questionnaire\local\question\question::qtypename($questions[$qid]->typeid());
-    questionnaire_observe_event_delete($cm->id, $questiontype, $questionnaire->courseid());
+    questionnaire::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
 
     if ($questionnairehasdependencies) {
         $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
@@ -154,11 +154,11 @@ if ($delq) {
 if ($delpermanentlyq) {
     $qid = $delpermanentlyq;
     $sid = $questionnaire->surveyid();
-    questionnaire_delete_permanently_questions($qid, $sid);
+    questionnaire::delete_question_permanently($qid, $sid);
     $deletedquestion = $deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
         $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid());
-        questionnaire_observe_event_delete($cm->id, $questiontype, $questionnaire->courseid());
+        questionnaire::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
         $PAGE->set_url($url->out(false));
         $reload = true;
@@ -170,7 +170,7 @@ if ($restoreq) {
     $qid = $restoreq;
     $qdeleted = $deletequestions[$qid] ?? false;
     if ($qid && $qdeleted) {
-        questionnaire_restore_deleted_question($qid, $qdeleted->surveyid());
+        questionnaire::restore_deleted_question($qid, $qdeleted->surveyid());
     }
     $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
     $PAGE->set_url($url->out(false));

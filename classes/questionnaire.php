@@ -1148,6 +1148,78 @@ class questionnaire {
     }
 
     /**
+     * Return the configured duration (in seconds) before soft-deleted questions are permanently removed.
+     *
+     * The value comes from the questionnaire_questiondeletion plugin config. Callers should not need
+     * to know the config key — use this method instead.
+     *
+     * @return string|false  Duration string, or false if not configured.
+     */
+    public static function question_deletion_duration() {
+        return get_config('questionnaire_questiondeletion', 'duration');
+    }
+
+    /**
+     * Permanently delete a soft-deleted question and all its associated response data.
+     *
+     * @param int $qid  Question id.
+     * @param int $sid  Survey id.
+     */
+    public static function delete_question_permanently(int $qid, int $sid): void {
+        global $DB;
+        $select = 'id = :id AND surveyid = :sid AND deleted IS NOT NULL';
+        $DB->delete_records_select('questionnaire_question', $select, ['id' => $qid, 'sid' => $sid]);
+        $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
+        local\response\questionnaire_responses::delete_responses_for_question($qid);
+        $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
+    }
+
+    /**
+     * Trigger the question_deleted event for a specific course module context.
+     *
+     * @param int    $cmid         Course-module id.
+     * @param string $questiontype Short type name of the deleted question.
+     * @param int    $courseid     Course id.
+     */
+    public static function trigger_question_deleted_event(int $cmid, string $questiontype, int $courseid): void {
+        $context = context_module::instance($cmid);
+        $event = \mod_questionnaire\event\question_deleted::create([
+            'context'  => $context,
+            'courseid' => $courseid,
+            'other'    => ['questiontype' => $questiontype],
+        ]);
+        $event->trigger();
+    }
+
+    /**
+     * Restore a soft-deleted question, placing it at the end of the survey's question list.
+     *
+     * @param int $qid  Question id.
+     * @param int $sid  Survey id.
+     */
+    public static function restore_deleted_question(int $qid, int $sid): void {
+        global $DB;
+        $sql = "SELECT *, (
+                        SELECT position + 1
+                          FROM {questionnaire_question}
+                         WHERE surveyid = ?
+                           AND deleted IS NULL
+                      ORDER BY position DESC
+                         LIMIT 1) as lastposition
+                  FROM {questionnaire_question}
+                 WHERE id = ?
+                   AND surveyid = ?
+                   AND deleted IS NOT NULL";
+        $question = $DB->get_record_sql($sql, [$sid, $qid, $sid]);
+        if ($question) {
+            $question->deleted = null;
+            $question->position = $question->lastposition ?? 1;
+            $DB->update_record('questionnaire_question', $question);
+        }
+    }
+
+    /**
      * Create a new questionnaire survey record.
      *
      * @param stdClass $sdata  Survey data object (must include courseid).
