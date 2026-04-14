@@ -289,7 +289,8 @@ class rank extends responsetype {
             $nbresponses = count($rids);
             foreach ($results as $key => $result) {
                 if ($this->question->length() > 0) {
-                    $result->average = ($result->sum + ($nbresponses - $result->num) * ($this->question->length() + 1)) / $nbresponses;
+                    $result->average = ($result->sum + ($nbresponses - $result->num) *
+                        ($this->question->length() + 1)) / $nbresponses;
                 } else {
                     $result->average = ($result->sum + ($nbresponses - $result->num) * 1 ) / $nbresponses;
                 }

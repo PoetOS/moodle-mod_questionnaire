@@ -861,6 +861,74 @@ class questionnaire {
     }
 
     /**
+     * True if the current user can view the specified response (or any response if $rid is 0).
+     *
+     * @param int $rid Response id to check, or 0 to check general viewing rights.
+     * @return bool
+     */
+    public function can_view_response(int $rid = 0): bool {
+        global $USER, $DB;
+
+        $respview = $this->modulerecord->get('respview');
+
+        if (!empty($rid)) {
+            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
+
+            // Response not found or belongs to a different questionnaire.
+            if (empty($response) || $response->questionnaireid != $this->id()) {
+                return false;
+            }
+
+            // Can always view if you have the unrestricted capability.
+            if (has_capability('mod/questionnaire:readallresponseanytime', $this->context)) {
+                return true;
+            }
+
+            // Can view other users' responses if capability is set and view conditions are met.
+            if (
+                has_capability('mod/questionnaire:readallresponses', $this->context) &&
+                ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && !$this->user_can_take($USER->id)))
+            ) {
+                return true;
+            }
+
+            // Can view own response.
+            if (
+                $response->userid == $USER->id &&
+                has_capability('mod/questionnaire:readownresponses', $this->context) &&
+                $this->count_submissions($USER->id) > 0
+            ) {
+                return true;
+            }
+        } else {
+            // No specific response — check general viewing rights.
+            if (has_capability('mod/questionnaire:readallresponseanytime', $this->context)) {
+                return true;
+            }
+
+            if (
+                has_capability('mod/questionnaire:readallresponses', $this->context) &&
+                ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && !$this->user_can_take($USER->id)))
+            ) {
+                return true;
+            }
+
+            if (
+                has_capability('mod/questionnaire:readownresponses', $this->context) &&
+                $this->count_submissions($USER->id) > 0
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Return information strings about how the questionnaire can be attempted.
      *
      * @return string[]
