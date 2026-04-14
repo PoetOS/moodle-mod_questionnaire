@@ -128,11 +128,6 @@ class questionnaire {
      */
     public $questions = [];
 
-    /**
-     * @var \mod_questionnaire\local\question\question[] $deletequestions
-     */
-    public $deletequestions = [];
-
     /** @var \mod_questionnaire\local\response\questionnaire_responses|null $responses Lazy-initialised response handler. */
     protected $responses = null;
 
@@ -208,30 +203,6 @@ class questionnaire {
         // Load the capabilities for this user and questionnaire, if not creating a new one.
         if (!empty($this->cm->id)) {
             $this->capabilities = $this->load_capabilities();
-        }
-    }
-
-    /**
-     * Get all delete questions by survey id.
-     *
-     * @return void
-     * @throws dml_exception
-     */
-    public function get_delete_questions() {
-        global $DB;
-        $sql = "SELECT *
-                  FROM {questionnaire_question}
-                 WHERE deleted IS NOT NULL
-                   AND surveyid = ? AND typeid != ?
-              ORDER BY deleted DESC";
-        if ($records = $DB->get_records_sql($sql, [$this->sid, QUESPAGEBREAK])) {
-            foreach ($records as $record) {
-                $this->deletequestions[$record->id] = \mod_questionnaire\local\question\question::question_builder(
-                    $record->typeid,
-                    $record,
-                    $this->context
-                );
-            }
         }
     }
 
@@ -4554,61 +4525,4 @@ class questionnaire {
         return $row;
     }
 
-    /**
-     * Output the questionnaire information.
-     *
-     * @return string
-     */
-    public function view_information() {
-        $messages = [];
-
-        if (isset($this->qtype)) {
-            switch ($this->qtype) {
-                case QUESTIONNAIREUNLIMITED:
-                    $typestring = get_string('unlimited', 'questionnaire');
-                    break;
-                case QUESTIONNAIREONCE:
-                    $typestring = get_string('once', 'questionnaire');
-                    break;
-                case QUESTIONNAIREDAILY:
-                    $typestring = get_string('daily', 'questionnaire');
-                    break;
-                case QUESTIONNAIREWEEKLY:
-                    $typestring = get_string('weekly', 'questionnaire');
-                    break;
-                case QUESTIONNAIREMONTHLY:
-                    $typestring = get_string('monthly', 'questionnaire');
-                    break;
-                default:
-                    $typestring = '';
-                    break;
-            }
-            array_push($messages, get_string('attemptsallowed', 'questionnaire', $typestring));
-        }
-
-        if ($this->is_open() && !$this->is_closed()) {
-            if ($this->opendate > 0) {
-                array_push($messages, get_string('openedat', 'questionnaire', userdate($this->opendate)));
-            }
-            if ($this->closedate > 0) {
-                array_push($messages, get_string('closesat', 'questionnaire', userdate($this->closedate)));
-            }
-        }
-
-        return $messages;
-    }
-
-    /**
-     * Print each message in an array, surrounded by &lt;p>, &lt;/p> tags.
-     *
-     * @param array $messages the array of message strings.
-     * @return string HTML to output.
-     */
-    public function access_messages($messages) {
-        $output = '';
-        foreach ($messages as $message) {
-            $output .= html_writer::tag('p', $message) . "\n";
-        }
-        return $output;
-    }
 }
