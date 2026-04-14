@@ -28,6 +28,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
 use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\response\questionnaire_responses;
 use mod_questionnaire\output\nonrespondentspage;
 
 // Get the params.
@@ -81,7 +82,7 @@ require_capability('mod/questionnaire:viewsingleresponse', $context);
 
 // Anonymous questionnaire.
 if (!$fullname) {
-    $nonrespondents = questionnaire_get_incomplete_users($cm, $sid);
+    $nonrespondents = questionnaire_responses::get_incomplete_users($cm, $sid);
     $countnonrespondents = count($nonrespondents);
     if ($resume) {
         $countstarted = 0;
@@ -261,7 +262,7 @@ if ($fullname) {
     } else {
         $usedgroupid = false;
     }
-    $nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid);
+    $nonrespondents = questionnaire_responses::get_incomplete_users($cm, $sid, $usedgroupid);
     if (is_array($nonrespondents) || is_object($nonrespondents)) {
         $countnonrespondents = count($nonrespondents);
     } else {
@@ -280,7 +281,7 @@ if ($fullname) {
     }
 }
 
-$nonrespondents = questionnaire_get_incomplete_users($cm, $sid, $usedgroupid, $sort, $startpage, $pagecount);
+$nonrespondents = questionnaire_responses::get_incomplete_users($cm, $sid, $usedgroupid, $sort, $startpage, $pagecount);
 
 // Viewreports-start.
 // Print the list of students.

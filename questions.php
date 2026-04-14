@@ -28,6 +28,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question
 
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\question_type;
+use mod_questionnaire\local\response\questionnaire_responses;
 use mod_questionnaire\output\questionspage;
 use mod_questionnaire\survey;
 
@@ -403,7 +404,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $question = $questions[$qid];
     $qtype = $question->typeid();
 
-    $countresps = count_reponses_question($qid, $qtype);
+    $countresps = questionnaire_responses::count_for_question($qid, $qtype);
 
     // Needed to print potential media in question text.
 
@@ -450,7 +451,7 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $qid = key($qformdata->deletebutton);
     $qtype = $deletequestions[$qid]->typeid();
     $questiondelete = $deletequestions[$qid];
-    $countresps = count_reponses_question($qid, $qtype);
+    $countresps = questionnaire_responses::count_for_question($qid, $qtype);
 
     $urlno = new moodle_url("/mod/questionnaire/questions.php", ['id' => $cm->id]);
     $urlyes = new moodle_url("/mod/questionnaire/questions.php", ['id' => $cm->id, "delpermanentlyq" => $qid]);
