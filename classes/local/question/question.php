@@ -1438,9 +1438,9 @@ abstract class question {
     protected function form_header(\MoodleQuickForm $mform, $helpname = '') {
         // Display different messages for new question creation and existing question modification.
         if (isset($this->qid) && !empty($this->qid)) {
-            $header = get_string('editquestion', 'questionnaire', questionnaire_get_type($this->typeid()));
+            $header = get_string('editquestion', 'questionnaire', question_type::display_name($this->typeid()));
         } else {
-            $header = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($this->typeid()));
+            $header = get_string('addnewquestion', 'questionnaire', question_type::display_name($this->typeid()));
         }
         if (empty($helpname)) {
             $helpname = $this->helpname();
