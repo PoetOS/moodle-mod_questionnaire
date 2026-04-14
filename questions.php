@@ -29,6 +29,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\question_type;
 use mod_questionnaire\output\questionspage;
+use mod_questionnaire\survey;
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.
@@ -104,7 +105,7 @@ if ($delq) {
     $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
     $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
     // Delete all page break that references to question deleted.
-    questionnaire_delete_pagebreaks($sid);
+    survey::delete_pagebreaks($sid);
 
     // Just in case the page is refreshed (F5) after a question has been deleted.
     if (isset($dbquestions[$qid])) {
