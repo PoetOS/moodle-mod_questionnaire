@@ -135,4 +135,43 @@ class question_type {
     public static function qtypenames(): array {
         return self::$qtypenames;
     }
+
+    /**
+     * Return the localised display name for a question type integer.
+     *
+     * @param int $typeid
+     * @return string Empty string if the typeid is not known.
+     */
+    public static function display_name(int $typeid): string {
+        switch ($typeid) {
+            case self::QUESYESNO:
+                return get_string('yesno', 'questionnaire');
+            case self::QUESTEXT:
+                return get_string('textbox', 'questionnaire');
+            case self::QUESESSAY:
+                return get_string('essaybox', 'questionnaire');
+            case self::QUESRADIO:
+                return get_string('radiobuttons', 'questionnaire');
+            case self::QUESCHECK:
+                return get_string('checkboxes', 'questionnaire');
+            case self::QUESDROP:
+                return get_string('dropdown', 'questionnaire');
+            case self::QUESRATE:
+                return get_string('ratescale', 'questionnaire');
+            case self::QUESDATE:
+                return get_string('date', 'questionnaire');
+            case self::QUESNUMERIC:
+                return get_string('numeric', 'questionnaire');
+            case self::QUESSLIDER:
+                return get_string('slider', 'questionnaire');
+            case self::QUESFILE:
+                return get_string('file', 'questionnaire');
+            case self::QUESSECTIONTEXT:
+                return get_string('sectiontext', 'questionnaire');
+            case self::QUESPAGEBREAK:
+                return get_string('sectionbreak', 'questionnaire');
+            default:
+                return '';
+        }
+    }
 }

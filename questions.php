@@ -27,6 +27,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php'); // Needed for question type constants.
 
 use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\question_type;
 use mod_questionnaire\output\questionspage;
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
@@ -382,9 +383,9 @@ if ($reload) {
 // Print the page header.
 if ($action == 'question') {
     if (isset($question->qid)) {
-        $streditquestion = get_string('editquestion', 'questionnaire', questionnaire_get_type($question->typeid()));
+        $streditquestion = get_string('editquestion', 'questionnaire', question_type::display_name($question->typeid()));
     } else {
-        $streditquestion = get_string('addnewquestion', 'questionnaire', questionnaire_get_type($question->typeid()));
+        $streditquestion = get_string('addnewquestion', 'questionnaire', question_type::display_name($question->typeid()));
     }
 } else {
     $streditquestion = get_string('managequestions', 'questionnaire');

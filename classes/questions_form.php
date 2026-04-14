@@ -77,7 +77,7 @@ class questions_form extends \moodleform {
             if (empty($questions) && ($qtype == 'Page Break')) {
                 unset($qtypes[$key]);
             } else {
-                $qtypes[$key] = questionnaire_get_type($key);
+                $qtypes[$key] = \mod_questionnaire\local\question_type::display_name($key);
             }
         }
         natsort($qtypes);
@@ -159,7 +159,7 @@ class questions_form extends \moodleform {
             }
 
             // Needed for non-English languages JR.
-            $qtype = '[' . questionnaire_get_type($tid) . ']';
+            $qtype = '[' . \mod_questionnaire\local\question_type::display_name($tid) . ']';
             // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
             $displaycontent = $question->content();
             if ($displaycontent == '<p>  </p>') {
@@ -468,7 +468,7 @@ class questions_form extends \moodleform {
                 }
                 $qtypeandname = [];
                 $qtypeandname['name'] = $deletequestion->name();
-                $qtypeandname['type'] = questionnaire_get_type($deletequestion->typeid());
+                $qtypeandname['type'] = \mod_questionnaire\local\question_type::display_name($deletequestion->typeid());
 
                 $content = format_text(
                     file_rewrite_pluginfile_urls(

@@ -287,45 +287,6 @@ function questionnaire_delete_pagebreaks($sid) {
 }
 
 /**
- * Return the language string for the specified question type.
- * @param int $id
- * @return lang_string|mixed|string
- * @throws coding_exception
- */
-function questionnaire_get_type($id) {
-    switch ($id) {
-        case 1:
-            return get_string('yesno', 'questionnaire');
-        case 2:
-            return get_string('textbox', 'questionnaire');
-        case 3:
-            return get_string('essaybox', 'questionnaire');
-        case 4:
-            return get_string('radiobuttons', 'questionnaire');
-        case 5:
-            return get_string('checkboxes', 'questionnaire');
-        case 6:
-            return get_string('dropdown', 'questionnaire');
-        case 8:
-            return get_string('ratescale', 'questionnaire');
-        case 9:
-            return get_string('date', 'questionnaire');
-        case 10:
-            return get_string('numeric', 'questionnaire');
-        case 11:
-            return get_string('slider', 'questionnaire');
-        case 12:
-            return get_string('file', 'questionnaire');
-        case 100:
-            return get_string('sectiontext', 'questionnaire');
-        case 99:
-            return get_string('sectionbreak', 'questionnaire');
-        default:
-            return $id;
-    }
-}
-
-/**
  * Get users who have not completed the questionnaire
  *
  * @param object $cm
@@ -393,62 +354,6 @@ function questionnaire_get_editor_options($context) {
         'noclean' => 0,
         'trusttext' => 0,
     ];
-}
-
-/**
- * Get the parent of a child question.
- * @param stdClass $question
- * @return array
- */
-function questionnaire_get_parent($question) {
-    global $DB;
-    $qid = $question->id();
-    $parent = [];
-    $dependquestion = $DB->get_record(
-        'questionnaire_question',
-        ['id' => $question->dependquestionid],
-        'id, position, name, typeid'
-    );
-    if (is_object($dependquestion)) {
-        $qdependchoice = '';
-        switch ($dependquestion->typeid) {
-            case QUESRADIO:
-            case QUESDROP:
-            case QUESCHECK:
-                $dependchoice = $DB->get_record('questionnaire_quest_choice', ['id' => $question->dependchoiceid], 'id,content');
-                $qdependchoice = $dependchoice->id;
-                $dependchoice = $dependchoice->content;
-
-                $contents = questionnaire_choice_values($dependchoice);
-                if ($contents->modname) {
-                    $dependchoice = $contents->modname;
-                }
-                break;
-            case QUESYESNO:
-                switch ($question->dependchoiceid) {
-                    case 0:
-                        $dependchoice = get_string('yes');
-                        $qdependchoice = 'y';
-                        break;
-                    case 1:
-                        $dependchoice = get_string('no');
-                        $qdependchoice = 'n';
-                        break;
-                }
-                break;
-        }
-        // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
-        $parent[$qid]['qdependquestion'] = 'q' . $dependquestion->id;
-        $parent[$qid]['qdependchoice'] = $qdependchoice;
-        $parent[$qid]['parenttype'] = $dependquestion->typeid;
-        // Other fields to be used in Questions edit mode.
-        $parent[$qid]['position'] = $question->position();
-        $parent[$qid]['name'] = $question->name();
-        $parent[$qid]['content'] = $question->content();
-        $parent[$qid]['parentposition'] = $dependquestion->position;
-        $parent[$qid]['parent'] = format_string($dependquestion->name) . '->' . format_string($dependchoice);
-    }
-    return $parent;
 }
 
 /**
