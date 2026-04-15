@@ -211,7 +211,7 @@ class questionnaire {
      * @param int $sid
      * @param null $survey
      */
-    public function add_survey($sid = 0, $survey = null) {
+    private function add_survey($sid = 0, $survey = null) {
         global $DB;
 
         if ($sid) {
@@ -285,7 +285,7 @@ class questionnaire {
      *
      * @param stdClass $formdata
      */
-    public function add_response_from_formdata(stdClass $formdata) {
+    private function add_response_from_formdata(stdClass $formdata) {
         $this->responses()->add_response_from_formdata($formdata);
     }
 
@@ -297,7 +297,7 @@ class questionnaire {
      * @param int $responseid
      * @return bool|\mod_questionnaire\local\response\response
      */
-    public function build_response_from_appdata(stdClass $appdata, $sec = 0, int $responseid = 0) {
+    private function build_response_from_appdata(stdClass $appdata, $sec = 0, int $responseid = 0) {
         return $this->responses()->build_response_from_appdata($appdata, $sec, $responseid);
     }
 
@@ -305,7 +305,7 @@ class questionnaire {
      * Add the renderer to the questionnaire object.
      * @param plugin_renderer_base $renderer The module renderer, extended from core renderer.
      */
-    public function add_renderer(plugin_renderer_base $renderer) {
+    private function add_renderer(plugin_renderer_base $renderer) {
         $this->renderer = $renderer;
     }
 
@@ -326,7 +326,7 @@ class questionnaire {
      * Add the templatable page to the questionnaire object.
      * @param templatable $page The page to render, implementing core classes.
      */
-    public function add_page($page) {
+    private function add_page($page) {
         $this->page = $page;
     }
 
@@ -334,7 +334,7 @@ class questionnaire {
      * Return true if questions should be automatically numbered.
      * @return bool
      */
-    public function questions_autonumbered() {
+    private function questions_autonumbered() {
         // Value of 1 if questions should be numbered. Value of 3 if both questions and pages should be numbered.
         return (!empty($this->autonum) && (($this->autonum == 1) || ($this->autonum == 3)));
     }
@@ -343,7 +343,7 @@ class questionnaire {
      * Return true if pages should be automatically numbered.
      * @return bool
      */
-    public function pages_autonumbered() {
+    private function pages_autonumbered() {
         // Value of 2 if pages should be numbered. Value of 3 if both questions and pages should be numbered.
         return (!empty($this->autonum) && (($this->autonum == 2) || ($this->autonum == 3)));
     }
@@ -351,7 +351,7 @@ class questionnaire {
     /**
      * The main module view function.
      */
-    public function view() {
+    private function view() {
         global $CFG, $USER, $PAGE;
 
         $PAGE->set_title(format_string($this->name));
@@ -410,22 +410,11 @@ class questionnaire {
     }
 
     /**
-     * Delete the specified response, and insert a new one.
-     * @param int $rid
-     * @param int $sec
-     * @param int $quser
-     * @return bool|int
-     */
-    public function delete_insert_response($rid, $sec, $quser) {
-        return $this->responses()->delete_insert_response($rid, $sec, $quser);
-    }
-
-    /**
      * Commit the response.
      * @param int $rid
      * @param int $quser
      */
-    public function commit_submission_response($rid, $quser) {
+    private function commit_submission_response($rid, $quser) {
         $this->responses()->commit_submission_response($rid, $quser);
     }
 
@@ -434,7 +423,7 @@ class questionnaire {
      *
      * @param int $userid
      */
-    public function update_grades($userid) {
+    private function update_grades($userid) {
         if ($this->grade != 0) {
             $questionnaire = new \stdClass();
             $questionnaire->id = $this->id;
@@ -541,7 +530,7 @@ class questionnaire {
      * True if the questionnaire is active.
      * @return bool
      */
-    public function is_active() {
+    private function is_active() {
         return (!empty($this->survey));
     }
 
@@ -553,7 +542,7 @@ class questionnaire {
      *
      * @return int
      */
-    public function id() {
+    private function id() {
         return $this->id;
     }
 
@@ -562,7 +551,7 @@ class questionnaire {
      *
      * @return \stdClass|\cm_info
      */
-    public function coursemodule() {
+    private function coursemodule() {
         return $this->cm;
     }
 
@@ -571,7 +560,7 @@ class questionnaire {
      *
      * @return \stdClass
      */
-    public function course() {
+    private function course() {
         return $this->course;
     }
 
@@ -580,7 +569,7 @@ class questionnaire {
      *
      * @return \context_module
      */
-    public function context() {
+    private function context() {
         return $this->context ?? \context_module::instance($this->cm->id);
     }
 
@@ -589,7 +578,7 @@ class questionnaire {
      *
      * @return array
      */
-    public function questions() {
+    private function questions() {
         return $this->questions;
     }
 
@@ -598,7 +587,7 @@ class questionnaire {
      *
      * @return int
      */
-    public function surveyid() {
+    private function surveyid() {
         return $this->sid;
     }
 
@@ -607,7 +596,7 @@ class questionnaire {
      *
      * @return bool
      */
-    public function can_manage_questionnaire() {
+    private function can_manage_questionnaire() {
         return (bool)$this->capabilities->manage;
     }
 
@@ -616,7 +605,7 @@ class questionnaire {
      *
      * @return bool
      */
-    public function can_edit_questions() {
+    private function can_edit_questions() {
         return (bool)$this->capabilities->editquestions;
     }
 
@@ -625,7 +614,7 @@ class questionnaire {
      *
      * @return bool
      */
-    public function can_view() {
+    private function can_view() {
         return (bool)$this->capabilities->view;
     }
 
@@ -634,7 +623,7 @@ class questionnaire {
      *
      * @return bool
      */
-    public function can_preview() {
+    private function can_preview() {
         return (bool)$this->capabilities->preview;
     }
 
@@ -643,7 +632,7 @@ class questionnaire {
      *
      * @return bool
      */
-    public function can_read_own_responses() {
+    private function can_read_own_responses() {
         return (bool)$this->capabilities->readownresponses;
     }
 
@@ -652,7 +641,7 @@ class questionnaire {
      *
      * @return bool
      */
-    public function can_download_responses() {
+    private function can_download_responses() {
         return (bool)$this->capabilities->downloadresponses;
     }
 
@@ -661,7 +650,7 @@ class questionnaire {
      *
      * @return bool
      */
-    public function can_view_single_response() {
+    private function can_view_single_response() {
         return (bool)$this->capabilities->viewsingleresponse;
     }
 
@@ -670,7 +659,7 @@ class questionnaire {
      *
      * @return bool
      */
-    public function can_delete_responses() {
+    private function can_delete_responses() {
         return (bool)$this->capabilities->deleteresponses;
     }
 
@@ -678,7 +667,7 @@ class questionnaire {
      * Load and return the capabilities object for the current user in this questionnaire context.
      * @return stdClass
      */
-    public function load_capabilities() {
+    private function load_capabilities() {
         $context = $this->context ?? context_module::instance($this->cm->id);
         $cb = new stdClass();
         $cb->view = has_capability('mod/questionnaire:view', $context);
@@ -704,7 +693,7 @@ class questionnaire {
      * True if the questionnaire is open.
      * @return bool
      */
-    public function is_open() {
+    private function is_open() {
         return ($this->opendate > 0) ? ($this->opendate < time()) : true;
     }
 
@@ -712,7 +701,7 @@ class questionnaire {
      * True if the questionnaire is closed.
      * @return bool
      */
-    public function is_closed() {
+    private function is_closed() {
         return ($this->closedate > 0) ? ($this->closedate < time()) : false;
     }
 
@@ -721,7 +710,7 @@ class questionnaire {
      * @param int $userid
      * @return bool
      */
-    public function user_can_take($userid) {
+    private function user_can_take($userid) {
 
         if (!$this->is_active() || !$this->user_is_eligible($userid)) {
             return false;
@@ -739,7 +728,7 @@ class questionnaire {
      * @param int $userid
      * @return bool
      */
-    public function user_is_eligible($userid) {
+    private function user_is_eligible($userid) {
         return ($this->capabilities->view && $this->capabilities->submit);
     }
 
@@ -870,7 +859,7 @@ class questionnaire {
      * True if the accessing course contains the actual questionnaire, as opposed to an instance of a public questionnaire.
      * @return bool
      */
-    public function is_survey_owner() {
+    private function is_survey_owner() {
         return (!empty($this->survey->courseid) && ($this->course->id == $this->survey->courseid));
     }
 
@@ -879,7 +868,7 @@ class questionnaire {
      * @param int $rid
      * @return bool|void
      */
-    public function can_view_response($rid) {
+    private function can_view_response($rid) {
         global $USER, $DB;
 
         if (!empty($rid)) {
@@ -949,7 +938,7 @@ class questionnaire {
      * @param bool $isviewreport
      * @return bool
      */
-    public function can_view_all_responses($usernumresp = null, $isviewreport = false) {
+    private function can_view_all_responses($usernumresp = null, $isviewreport = false) {
         global $USER, $SESSION;
 
         $owner = $this->is_survey_owner();
@@ -986,7 +975,7 @@ class questionnaire {
      * @param bool $respslogic
      * @return bool
      */
-    public function can_view_all_responses_anytime($grouplogic = true, $respslogic = true) {
+    private function can_view_all_responses_anytime($grouplogic = true, $respslogic = true) {
         // Can view if you are a valid group user, this is the owning course, and there are responses, and you have no
         // response view restrictions.
         return $grouplogic && $respslogic && $this->is_survey_owner() && $this->capabilities->readallresponseanytime;
@@ -999,7 +988,7 @@ class questionnaire {
      * @param bool $respslogic
      * @return bool
      */
-    public function can_view_all_responses_with_restrictions($usernumresp, $grouplogic = true, $respslogic = true) {
+    private function can_view_all_responses_with_restrictions($usernumresp, $grouplogic = true, $respslogic = true) {
         // Can view if you are a valid group user, this is the owning course, and there are responses, and you can view
         // subject to viewing settings..
         return $grouplogic && $respslogic && $this->is_survey_owner() &&
@@ -1015,7 +1004,7 @@ class questionnaire {
      * @param int $groupid
      * @return int
      */
-    public function count_submissions($userid = false, $groupid = 0) {
+    private function count_submissions($userid = false, $groupid = 0) {
         global $DB;
 
         $params = [];
@@ -1060,7 +1049,7 @@ class questionnaire {
      * @param int $groupid
      * @return array
      */
-    public function get_responses($userid = false, $groupid = 0) {
+    private function get_responses($userid = false, $groupid = 0) {
         return $this->responses()->get_responses($userid, $groupid);
     }
 
@@ -1093,7 +1082,7 @@ class questionnaire {
      *
      * @return boolean Whether dependencies are set or not.
      */
-    public function has_dependencies() {
+    private function has_dependencies() {
         $hasdependencies = false;
         if (($this->navigate > 0) && isset($this->questions) && !empty($this->questions)) {
             foreach ($this->questions as $question) {
@@ -1111,7 +1100,7 @@ class questionnaire {
      * @param int $questionid
      * @return array
      */
-    public function get_all_dependants($questionid) {
+    private function get_all_dependants($questionid) {
         $directids = $this->get_dependants($questionid);
         $directs = [];
         $indirects = [];
@@ -1143,7 +1132,7 @@ class questionnaire {
      * @param int $questionid
      * @return array
      */
-    public function get_dependants($questionid) {
+    private function get_dependants($questionid) {
         $qu = [];
         // Create an array which shows for every question the child-IDs.
         foreach ($this->questions as $question) {
@@ -1178,7 +1167,7 @@ class questionnaire {
      * Get all descendants and choices for questions with descendants.
      * @return array
      */
-    public function get_dependants_and_choices() {
+    private function get_dependants_and_choices() {
         $questions = array_reverse($this->questions, true);
         $parents = [];
         foreach ($questions as $question) {
@@ -1198,7 +1187,7 @@ class questionnaire {
      * @param \mod_questionnaire\local\question\question $question
      * @return bool
      */
-    public function load_parents($question) {
+    private function load_parents($question) {
         foreach ($question->dependencies as $did => $dependency) {
             $dependquestion = $this->questions[$dependency->dependquestionid];
             $qdependchoice = '';
@@ -1247,7 +1236,7 @@ class questionnaire {
      * @param int $rid
      * @return int | bool
      */
-    public function next_page($secnum, $rid) {
+    private function next_page($secnum, $rid) {
         $secnum++;
         $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
         if ($this->has_dependencies()) {
@@ -1269,7 +1258,7 @@ class questionnaire {
      * @param int $rid
      * @return int | bool
      */
-    public function prev_page($secnum, $rid) {
+    private function prev_page($secnum, $rid) {
         $secnum--;
         if ($this->has_dependencies()) {
             while (($secnum > 0) && !$this->eligible_questions_on_page($secnum, $rid)) {
@@ -1288,7 +1277,7 @@ class questionnaire {
      * @param int $userid
      * @return bool|int|string
      */
-    public function next_page_action($response, $userid) {
+    private function next_page_action($response, $userid) {
         $msg = $this->response_check_format($response->sec, $response);
         if (empty($msg)) {
             $response->rid = $this->existing_response_action($response, $userid);
@@ -1304,7 +1293,7 @@ class questionnaire {
      * @param int $userid
      * @return bool|int
      */
-    public function previous_page_action($response, $userid) {
+    private function previous_page_action($response, $userid) {
         $response->rid = $this->existing_response_action($response, $userid);
         return $this->prev_page($response->sec, $response->rid);
     }
@@ -1315,7 +1304,7 @@ class questionnaire {
      * @param int $userid
      * @return bool|int
      */
-    public function existing_response_action($response, $userid) {
+    private function existing_response_action($response, $userid) {
         $this->response_delete($response->rid, $response->sec);
         return $this->response_insert($response, $userid);
     }
@@ -1326,7 +1315,7 @@ class questionnaire {
      * @param int $rid The current response id.
      * @return boolean
      */
-    public function eligible_questions_on_page($secnum, $rid) {
+    private function eligible_questions_on_page($secnum, $rid) {
         $questionstodisplay = false;
 
         foreach ($this->questionsbysec[$secnum] as $questionid) {
@@ -2143,7 +2132,7 @@ class questionnaire {
      * @param int $userid The submission to grade
      * @return array
      */
-    public function get_notifiable_users($userid) {
+    private function get_notifiable_users($userid) {
         // Potential users should be active users only.
         $potentialusers = get_enrolled_users(
             $this->context,
@@ -2339,7 +2328,7 @@ class questionnaire {
      * @param bool $resume
      * @return bool|int
      */
-    public function response_insert($responsedata, $userid, $resume = false) {
+    private function response_insert($responsedata, $userid, $resume = false) {
         return $this->responses()->response_insert($responsedata, $userid, $resume);
     }
 
@@ -2937,7 +2926,7 @@ class questionnaire {
      * @param bool $uniquebytable
      * @return array
      */
-    protected function get_survey_questiontypes($uniquebytable = false) {
+    private function get_survey_questiontypes($uniquebytable = false) {
 
         $uniquetypes = [];
         $uniquetables = [];
@@ -2964,7 +2953,7 @@ class questionnaire {
      *
      * @return array
      */
-    protected function choice_types() {
+    private function choice_types() {
         return [QUESRADIO, QUESDROP, QUESCHECK, QUESRATE];
     }
 
@@ -2973,7 +2962,7 @@ class questionnaire {
      * author: Guy Thomas
      * @return array|string
      */
-    protected function user_fields() {
+    private function user_fields() {
         if (class_exists('\core_user\fields')) {
             $userfieldsarr = \core_user\fields::get_name_fields();
         } else {
@@ -2993,7 +2982,7 @@ class questionnaire {
      * @param int $showincompletes
      * @return array
      */
-    protected function get_survey_all_responses($rid = '', $userid = '', $groupid = false, $showincompletes = 0) {
+    private function get_survey_all_responses($rid = '', $userid = '', $groupid = false, $showincompletes = 0) {
         return $this->responses()->get_survey_all_responses($rid, $userid, $groupid, $showincompletes);
     }
 
@@ -3002,7 +2991,7 @@ class questionnaire {
      *
      * @return boolean
      */
-    public function survey_is_public() {
+    private function survey_is_public() {
         return is_object($this->survey) && ($this->survey->realm == 'public');
     }
 
@@ -3169,7 +3158,7 @@ class questionnaire {
      * @param array $identityfields
      * @return array
      */
-    protected function process_csv_row(
+    private function process_csv_row(
         array &$row,
         stdClass $resprow,
         $currentgroupid,
@@ -3786,7 +3775,7 @@ class questionnaire {
      * @param int $movetopos The position to move question to.
      *
      */
-    public function move_question($moveqid, $movetopos) {
+    private function move_question($moveqid, $movetopos) {
         global $DB;
 
         $questions = $this->questions;
@@ -3821,7 +3810,7 @@ class questionnaire {
      * Adds missing breaks and removes duplicate/misplaced ones.
      * @return false|string A status message, or false on failure.
      */
-    public function check_page_breaks() {
+    private function check_page_breaks() {
         global $DB;
         $msg = '';
         // Store the new page breaks ids.
@@ -4496,7 +4485,7 @@ class questionnaire {
      * @param array $options
      * @return array
      */
-    protected function get_identity_fields($options) {
+    private function get_identity_fields($options) {
         $fields = !in_array('useridentityfields', $options) || $this->respondenttype == 'anonymous' ? [] :
             \core_user\fields::get_identity_fields($this->context);
         return $fields;
@@ -4509,7 +4498,7 @@ class questionnaire {
      * @param int $userid
      * @return array
      */
-    public static function get_user_identity_fields($context, $userid) {
+    private static function get_user_identity_fields($context, $userid) {
         global $DB;
 
         $fields = \core_user\fields::for_identity($context);
