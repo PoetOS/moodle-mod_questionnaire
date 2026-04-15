@@ -544,21 +544,225 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertStringContainsString(userdate($closedate), $msg);
     }
 
-    /*
-     * TODO: tests requiring a real course module and context.
+    // Tests for capability methods (require a real course module and context).
+
+    /**
+     * Asserts can_manage_questionnaire() returns true for an editing teacher and false for a student.
      *
-     * The following methods need has_capability() and therefore a real CM:
-     * user_is_eligible(), user_can_take(), can_read_own_responses(),
-     * can_view_single_response(), can_delete_responses(), can_download_responses(),
-     * can_manage_questionnaire(), can_edit_questions(),
-     * can_view_all_responses(), can_view_all_responses_anytime(),
-     * can_view_all_responses_with_restrictions(),
-     * user_access_messages() when questionnaire is inactive (uses can_manage_questionnaire).
-     *
-     * These tests should be written once the generator is updated to use the
-     * current DB column names (respeligible, respview, etc.) and the add_instance
-     * pathway is working correctly with the refactored schema.
+     * @covers \mod_questionnaire\questionnaire::can_manage_questionnaire
      */
+    public function test_can_manage_questionnaire_teacher_vs_student(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $teacher = $generator->create_user();
+        $student = $generator->create_user();
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($teacher->id, $course->id, $teacherrole->id);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->assertTrue($instance->can_manage_questionnaire($teacher->id));
+        $this->assertFalse($instance->can_manage_questionnaire($student->id));
+    }
+
+    /**
+     * Asserts can_edit_questions() returns true for an editing teacher and false for a student.
+     *
+     * @covers \mod_questionnaire\questionnaire::can_edit_questions
+     */
+    public function test_can_edit_questions_teacher_vs_student(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $teacher = $generator->create_user();
+        $student = $generator->create_user();
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($teacher->id, $course->id, $teacherrole->id);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->assertTrue($instance->can_edit_questions($teacher->id));
+        $this->assertFalse($instance->can_edit_questions($student->id));
+    }
+
+    /**
+     * Asserts can_view() returns true for the current user when set to a teacher.
+     *
+     * @covers \mod_questionnaire\questionnaire::can_view
+     */
+    public function test_can_view_returns_true_for_enrolled_user(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $student = $generator->create_user();
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->setUser($student);
+        $this->assertTrue($instance->can_view());
+    }
+
+    /**
+     * Asserts can_preview() returns true for a teacher and false for a student.
+     *
+     * @covers \mod_questionnaire\questionnaire::can_preview
+     */
+    public function test_can_preview_teacher_vs_student(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $teacher = $generator->create_user();
+        $student = $generator->create_user();
+        $teacherrole = $DB->get_record('role', ['shortname' => 'teacher'], '*', MUST_EXIST);
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($teacher->id, $course->id, $teacherrole->id);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->setUser($teacher);
+        $this->assertTrue($instance->can_preview());
+        $this->setUser($student);
+        $this->assertFalse($instance->can_preview());
+    }
+
+    /**
+     * Asserts user_is_eligible() returns true for an enrolled student and false for a guest.
+     *
+     * @covers \mod_questionnaire\questionnaire::user_is_eligible
+     */
+    public function test_user_is_eligible_enrolled_vs_unenrolled(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $student = $generator->create_user();
+        $guest = $generator->create_user();
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->assertTrue($instance->user_is_eligible($student->id));
+        $this->assertFalse($instance->user_is_eligible($guest->id));
+    }
+
+    /**
+     * Asserts can_read_own_responses() returns true for a student (default role capability).
+     *
+     * @covers \mod_questionnaire\questionnaire::can_read_own_responses
+     */
+    public function test_can_read_own_responses_for_enrolled_student(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $student = $generator->create_user();
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->assertTrue($instance->can_read_own_responses($student->id));
+    }
+
+    /**
+     * Asserts can_delete_responses() returns true for an editing teacher and false for a student.
+     *
+     * @covers \mod_questionnaire\questionnaire::can_delete_responses
+     */
+    public function test_can_delete_responses_teacher_vs_student(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $teacher = $generator->create_user();
+        $student = $generator->create_user();
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($teacher->id, $course->id, $teacherrole->id);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->assertTrue($instance->can_delete_responses($teacher->id));
+        $this->assertFalse($instance->can_delete_responses($student->id));
+    }
+
+    /**
+     * Asserts can_download_responses() returns true for a teacher and false for a student.
+     *
+     * @covers \mod_questionnaire\questionnaire::can_download_responses
+     */
+    public function test_can_download_responses_teacher_vs_student(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $teacher = $generator->create_user();
+        $student = $generator->create_user();
+        $teacherrole = $DB->get_record('role', ['shortname' => 'teacher'], '*', MUST_EXIST);
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($teacher->id, $course->id, $teacherrole->id);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->assertTrue($instance->can_download_responses($teacher->id));
+        $this->assertFalse($instance->can_download_responses($student->id));
+    }
+
+    /**
+     * Asserts can_view_single_response() returns true for a teacher and false for a student.
+     *
+     * @covers \mod_questionnaire\questionnaire::can_view_single_response
+     */
+    public function test_can_view_single_response_teacher_vs_student(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $instance = $generator->get_plugin_generator('mod_questionnaire')->create_instance(['course' => $course->id]);
+
+        $teacher = $generator->create_user();
+        $student = $generator->create_user();
+        $teacherrole = $DB->get_record('role', ['shortname' => 'teacher'], '*', MUST_EXIST);
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($teacher->id, $course->id, $teacherrole->id);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+
+        $this->assertTrue($instance->can_view_single_response($teacher->id));
+        $this->assertFalse($instance->can_view_single_response($student->id));
+    }
 
     // Tests for navigate() and pages_autonumbered().
 
