@@ -334,7 +334,7 @@ class questionnaire {
      * Return true if questions should be automatically numbered.
      * @return bool
      */
-    private function questions_autonumbered() {
+    public function questions_autonumbered() {
         // Value of 1 if questions should be numbered. Value of 3 if both questions and pages should be numbered.
         return (!empty($this->autonum) && (($this->autonum == 1) || ($this->autonum == 3)));
     }
@@ -565,7 +565,7 @@ class questionnaire {
      *
      * @return \context_module
      */
-    private function context() {
+    public function context() {
         return $this->context ?? \context_module::instance($this->cm->id);
     }
 
@@ -574,7 +574,7 @@ class questionnaire {
      *
      * @return array
      */
-    private function questions() {
+    public function questions() {
         return $this->questions;
     }
 
@@ -1078,7 +1078,7 @@ class questionnaire {
      *
      * @return boolean Whether dependencies are set or not.
      */
-    private function has_dependencies() {
+    public function has_dependencies() {
         $hasdependencies = false;
         if (($this->navigate > 0) && isset($this->questions) && !empty($this->questions)) {
             foreach ($this->questions as $question) {
@@ -1183,7 +1183,7 @@ class questionnaire {
      * @param \mod_questionnaire\local\question\question $question
      * @return bool
      */
-    private function load_parents($question) {
+    public function load_parents($question) {
         foreach ($question->dependencies as $did => $dependency) {
             $dependquestion = $this->questions[$dependency->dependquestionid];
             $qdependchoice = '';
@@ -3771,7 +3771,7 @@ class questionnaire {
      * @param int $movetopos The position to move question to.
      *
      */
-    private function move_question($moveqid, $movetopos) {
+    public function move_question($moveqid, $movetopos) {
         global $DB;
 
         $questions = $this->questions;
@@ -3806,7 +3806,7 @@ class questionnaire {
      * Adds missing breaks and removes duplicate/misplaced ones.
      * @return false|string A status message, or false on failure.
      */
-    private function check_page_breaks() {
+    public function check_page_breaks() {
         global $DB;
         $msg = '';
         // Store the new page breaks ids.
