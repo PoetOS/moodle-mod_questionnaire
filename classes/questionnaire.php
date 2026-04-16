@@ -2524,6 +2524,67 @@ class questionnaire {
     }
 
     /**
+     * Process a mobile-app submission and return a result array.
+     *
+     * Handles next/previous page navigation and final submission from the mobile app.
+     * All response persistence is delegated to the questionnaire_responses handler.
+     *
+     * @param int $userid
+     * @param int $sec Section (page) number.
+     * @param int $completed Whether the questionnaire has already been completed (1/0).
+     * @param int $rid Existing in-progress response id (0 if none).
+     * @param int $submit Whether the user is submitting (1/0).
+     * @param string $action 'nextpage', 'previouspage', or empty for a plain save.
+     * @param array $responses Key/value response data from the app.
+     * @return array Result array; may contain 'warnings', 'nextpagenum', or 'response' keys.
+     */
+    public function save_mobile_data(
+        int $userid,
+        int $sec,
+        int $completed,
+        int $rid,
+        int $submit,
+        string $action,
+        array $responses
+    ): array {
+        $ret = [];
+        $response = $this->responses()->build_response_from_appdata((object)$responses, $sec, $rid);
+        $response->sec = $sec;
+        $response->rid = $rid;
+
+        if ($action == 'nextpage') {
+            $result = $this->next_page_action($response, $userid);
+            if (is_string($result)) {
+                $ret['warnings'] = $result;
+            } else {
+                $ret['nextpagenum'] = $result;
+            }
+        } else if ($action == 'previouspage') {
+            $ret['nextpagenum'] = $this->previous_page_action($response, $userid);
+        } else if (!$completed) {
+            // If reviewing a completed questionnaire, don't insert a response.
+            $msg = $this->responses()->response_check_format(
+                $response->sec,
+                $response,
+                true,
+                true,
+                $this->survey->questions()
+            );
+            if (empty($msg)) {
+                $rid = $this->responses()->response_insert($response, $userid);
+            } else {
+                $ret['warnings'] = $msg;
+                $ret['response'] = $response;
+            }
+        }
+
+        if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
+            $this->responses()->commit_submission_response($rid, $userid);
+        }
+        return $ret;
+    }
+
+    /**
      * Return users who should be notified of a new submission by $userid.
      *
      * In SEPARATEGROUPS mode only users who share a group with $userid are notified.

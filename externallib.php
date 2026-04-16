@@ -37,9 +37,6 @@ use external_multiple_structure;
 use external_value;
 use external_warnings;
 
-require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-
 /**
  * Questionnaire module external functions
  *
@@ -126,13 +123,11 @@ class external extends external_api {
             ]
         );
 
-        [$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($cmid);
-        $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
+        $questionnaire = \mod_questionnaire\questionnaire::from_cmid($cmid);
 
-        $context = \context_module::instance($cm->id);
-        self::validate_context($context);
+        self::validate_context($questionnaire->context());
 
-        require_capability('mod/questionnaire:submit', $context);
+        require_capability('mod/questionnaire:submit', $questionnaire->context());
 
         $result = $questionnaire->save_mobile_data($userid, $sec, $completed, $rid, $submit, $action, $responses);
         $result['submitted'] = true;
