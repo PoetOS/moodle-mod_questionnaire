@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\task;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * A schedule task for mod_questionnaire cron.
