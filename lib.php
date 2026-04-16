@@ -383,7 +383,7 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
  * @param navigation_node $questionnairenode The node to add module settings to
  */
 function questionnaire_extend_settings_navigation(settings_navigation $settings, navigation_node $questionnairenode) {
-    \mod_questionnaire\questionnaire::extend_settings_navigation($settings, $questionnairenode);
+    \mod_questionnaire\questionnaire::from_cm($settings->get_page()->cm)->extend_settings_navigation($settings, $questionnairenode);
 }
 
 // Any other questionnaire functions go here.  Each of them must have a name that
