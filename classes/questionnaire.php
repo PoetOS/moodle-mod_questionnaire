@@ -1242,96 +1242,110 @@ class questionnaire {
     }
 
     /**
-     * Return all surveys of a given realm visible from a course, for use in select menus.
+     * Return private surveys belonging to the given course as a labelled select array.
      *
-     * Mirrors the legacy questionnaire::get_survey_list() used by mod_form.php.
+     * Keys are "private-{survey_id}"; values are popup-preview action-link strings.
      *
      * @param int $courseid
-     * @param string $type realm: 'public', 'template', 'private', or '' for all in course.
-     * @return array DB records keyed by survey id.
+     * @return array
      */
-    public static function get_survey_list(int $courseid = 0, string $type = ''): array {
-        global $DB;
-
-        if ($courseid == 0) {
-            if (isadmin()) {
-                $sql = "SELECT id,name,courseid,realm,status
-                          FROM {questionnaire_survey}
-                         ORDER BY realm,name";
-                $params = null;
-            } else {
-                return [];
-            }
-        } else if ($type == 'public') {
-            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname
-                      FROM {questionnaire} q
-                INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course
-                     WHERE realm = ?
-                  ORDER BY realm,name";
-            $params = [$type];
-        } else if ($type == 'template') {
-            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname
-                      FROM {questionnaire} q
-                INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course
-                     WHERE (realm = ?)
-                  ORDER BY realm,name";
-            $params = [$type];
-        } else if ($type == 'private') {
-            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname
-                      FROM {questionnaire} q
-                INNER JOIN {questionnaire_survey} s ON s.id = q.sid
-                     WHERE s.courseid = ? AND realm = ?
-                  ORDER BY realm,name";
-            $params = [$courseid, $type];
-        } else {
-            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname
-                      FROM {questionnaire} q
-                INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course
-                     WHERE s.courseid = ?
-                  ORDER BY realm,name";
-            $params = [$courseid];
-        }
-        return $DB->get_records_sql($sql, $params) ?? [];
+    public static function get_private_surveys(int $courseid): array {
+        return self::build_survey_select_list(self::get_survey_list('private', $courseid), 'private', 0);
     }
 
     /**
-     * Return a labelled survey list suitable for a radio/select element in mod_form.
+     * Return public surveys from other courses as a labelled select array.
      *
-     * Each key is "{type}-{survey_id}" and each value is an action-link label string.
-     * Mirrors the legacy questionnaire::get_survey_select() used by mod_form.php.
+     * Surveys whose courseid matches $courseid are excluded (they are the current course's
+     * own public surveys, which would create a circular reference).
+     * Keys are "public-{survey_id}"; values are popup-preview action-link strings.
      *
-     * @param int $courseid
-     * @param string $type realm: 'public', 'template', or 'private'.
+     * @param int $courseid The current course id; surveys from this course are excluded.
      * @return array
      */
-    public static function get_survey_select(int $courseid = 0, string $type = ''): array {
+    public static function get_public_surveys(int $courseid): array {
+        return self::build_survey_select_list(self::get_survey_list('public', 0), 'public', $courseid);
+    }
+
+    /**
+     * Return template surveys from any course as a labelled select array.
+     *
+     * Keys are "template-{survey_id}"; values are popup-preview action-link strings.
+     *
+     * @param int $courseid Passed for consistency; not used for filtering.
+     * @return array
+     */
+    public static function get_template_surveys(int $courseid): array {
+        return self::build_survey_select_list(self::get_survey_list('template', 0), 'template', 0);
+    }
+
+    /**
+     * Fetch surveys of the given realm and return them as enriched value objects.
+     *
+     * Uses survey_record and questionnaire_record persistents — no direct $DB access.
+     * Surveys with no linked questionnaire instance are excluded.
+     *
+     * Each returned object has: ->surveyid, ->surveycourseid, ->qid, ->qname
+     *
+     * @param string $realm 'private', 'public', or 'template'.
+     * @param int $courseid Scope to this course when realm is 'private'; ignored otherwise.
+     * @return \stdClass[]
+     */
+    private static function get_survey_list(string $realm, int $courseid): array {
+        if ($realm === 'private' && $courseid > 0) {
+            $surveyrecords = local\db\survey_record::get_by_realm_in_course($realm, $courseid);
+        } else {
+            $surveyrecords = local\db\survey_record::get_by_realm($realm);
+        }
+
+        $items = [];
+        foreach ($surveyrecords as $survey) {
+            $questionnaire = local\db\questionnaire_record::get_for_survey($survey->get('id'));
+            if ($questionnaire === null) {
+                continue;
+            }
+            $item = new \stdClass();
+            $item->surveyid = $survey->get('id');
+            $item->surveycourseid = $survey->get('courseid');
+            $item->qid = $questionnaire->get('id');
+            $item->qname = $questionnaire->get('name');
+            $items[] = $item;
+        }
+        return $items;
+    }
+
+    /**
+     * Format a list of survey items as a labelled popup-preview select array.
+     *
+     * @param \stdClass[] $items From get_survey_list().
+     * @param string $realm Used as the key prefix (e.g. 'private-42').
+     * @param int $excludecourseid Skip surveys whose courseid matches this value (pass 0 to skip
+     *     no surveys). Used by get_public_surveys() to omit the current course's own public surveys.
+     * @return array
+     */
+    private static function build_survey_select_list(array $items, string $realm, int $excludecourseid): array {
         global $OUTPUT, $DB;
 
         $surveylist = [];
-        if ($surveys = self::get_survey_list($courseid, $type)) {
-            $strpreview = get_string('preview_questionnaire', 'questionnaire');
-            foreach ($surveys as $survey) {
-                $originalcourse = $DB->get_record('course', ['id' => $survey->courseid]);
-                if (!$originalcourse) {
-                    continue;
-                }
-                if ($type == 'public' && $survey->courseid == $courseid) {
-                    continue;
-                }
-                $args = "sid={$survey->id}&popup=1";
-                if (!empty($survey->qid)) {
-                    $args .= "&qid={$survey->qid}";
-                }
-                $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
-                $action = new \popup_action('click', $link);
-                $label = $OUTPUT->action_link(
-                    $link,
-                    $survey->qname . ' [' . $originalcourse->fullname . ']',
-                    $action,
-                    ['title' => $strpreview]
-                );
-                $surveylist[$type . '-' . $survey->id] = $label;
+        $strpreview = get_string('preview_questionnaire', 'questionnaire');
+        foreach ($items as $item) {
+            if ($excludecourseid > 0 && $item->surveycourseid == $excludecourseid) {
+                continue;
             }
+            $originalcourse = $DB->get_record('course', ['id' => $item->surveycourseid]);
+            if (!$originalcourse) {
+                continue;
+            }
+            $args = "sid={$item->surveyid}&popup=1&qid={$item->qid}";
+            $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
+            $action = new \popup_action('click', $link);
+            $label = $OUTPUT->action_link(
+                $link,
+                $item->qname . ' [' . $originalcourse->fullname . ']',
+                $action,
+                ['title' => $strpreview]
+            );
+            $surveylist[$realm . '-' . $item->surveyid] = $label;
         }
         return $surveylist;
     }

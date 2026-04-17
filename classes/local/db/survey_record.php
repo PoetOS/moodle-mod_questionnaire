@@ -127,6 +127,27 @@ class survey_record extends \core\persistent {
     }
 
     /**
+     * Return all surveys with the given realm belonging to a specific course.
+     *
+     * @param string $realm
+     * @param int $courseid
+     * @return self[]
+     */
+    public static function get_by_realm_in_course(string $realm, int $courseid): array {
+        return static::get_records(['realm' => $realm, 'courseid' => $courseid], 'name');
+    }
+
+    /**
+     * Return all surveys with the given realm across all courses.
+     *
+     * @param string $realm
+     * @return self[]
+     */
+    public static function get_by_realm(string $realm): array {
+        return static::get_records(['realm' => $realm], 'name');
+    }
+
+    /**
      * Create a new survey record from survey data.
      *
      * @param stdClass $sdata Survey data object.
