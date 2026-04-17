@@ -118,6 +118,17 @@ class questionnaire_record extends \core\persistent {
     }
 
     /**
+     * Return the first questionnaire instance linked to the given survey, or null if none exists.
+     *
+     * @param int $surveyid
+     * @return self|null
+     */
+    public static function get_for_survey(int $surveyid): ?self {
+        $records = static::get_records(['sid' => $surveyid]);
+        return !empty($records) ? reset($records) : null;
+    }
+
+    /**
      * Create a new questionnaire record from mod_form data.
      *
      * @param stdClass $formdata Form data from mod_form.
