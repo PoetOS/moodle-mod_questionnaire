@@ -1242,6 +1242,101 @@ class questionnaire {
     }
 
     /**
+     * Return all surveys of a given realm visible from a course, for use in select menus.
+     *
+     * Mirrors the legacy questionnaire::get_survey_list() used by mod_form.php.
+     *
+     * @param int $courseid
+     * @param string $type realm: 'public', 'template', 'private', or '' for all in course.
+     * @return array DB records keyed by survey id.
+     */
+    public static function get_survey_list(int $courseid = 0, string $type = ''): array {
+        global $DB;
+
+        if ($courseid == 0) {
+            if (isadmin()) {
+                $sql = "SELECT id,name,courseid,realm,status
+                          FROM {questionnaire_survey}
+                         ORDER BY realm,name";
+                $params = null;
+            } else {
+                return [];
+            }
+        } else if ($type == 'public') {
+            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname
+                      FROM {questionnaire} q
+                INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course
+                     WHERE realm = ?
+                  ORDER BY realm,name";
+            $params = [$type];
+        } else if ($type == 'template') {
+            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname
+                      FROM {questionnaire} q
+                INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course
+                     WHERE (realm = ?)
+                  ORDER BY realm,name";
+            $params = [$type];
+        } else if ($type == 'private') {
+            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname
+                      FROM {questionnaire} q
+                INNER JOIN {questionnaire_survey} s ON s.id = q.sid
+                     WHERE s.courseid = ? AND realm = ?
+                  ORDER BY realm,name";
+            $params = [$courseid, $type];
+        } else {
+            $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname
+                      FROM {questionnaire} q
+                INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course
+                     WHERE s.courseid = ?
+                  ORDER BY realm,name";
+            $params = [$courseid];
+        }
+        return $DB->get_records_sql($sql, $params) ?? [];
+    }
+
+    /**
+     * Return a labelled survey list suitable for a radio/select element in mod_form.
+     *
+     * Each key is "{type}-{survey_id}" and each value is an action-link label string.
+     * Mirrors the legacy questionnaire::get_survey_select() used by mod_form.php.
+     *
+     * @param int $courseid
+     * @param string $type realm: 'public', 'template', or 'private'.
+     * @return array
+     */
+    public static function get_survey_select(int $courseid = 0, string $type = ''): array {
+        global $OUTPUT, $DB;
+
+        $surveylist = [];
+        if ($surveys = self::get_survey_list($courseid, $type)) {
+            $strpreview = get_string('preview_questionnaire', 'questionnaire');
+            foreach ($surveys as $survey) {
+                $originalcourse = $DB->get_record('course', ['id' => $survey->courseid]);
+                if (!$originalcourse) {
+                    continue;
+                }
+                if ($type == 'public' && $survey->courseid == $courseid) {
+                    continue;
+                }
+                $args = "sid={$survey->id}&popup=1";
+                if (!empty($survey->qid)) {
+                    $args .= "&qid={$survey->qid}";
+                }
+                $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
+                $action = new \popup_action('click', $link);
+                $label = $OUTPUT->action_link(
+                    $link,
+                    $survey->qname . ' [' . $originalcourse->fullname . ']',
+                    $action,
+                    ['title' => $strpreview]
+                );
+                $surveylist[$type . '-' . $survey->id] = $label;
+            }
+        }
+        return $surveylist;
+    }
+
+    /**
      * Return the configured duration (in seconds) before soft-deleted questions are permanently removed.
      *
      * The value comes from the questionnaire_questiondeletion plugin config. Callers should not need

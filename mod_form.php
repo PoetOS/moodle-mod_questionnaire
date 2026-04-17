@@ -17,7 +17,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 /**
@@ -36,7 +35,9 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         global $COURSE, $CFG;
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
-        $questionnaire = new questionnaire($COURSE, $this->_cm, $this->_instance, null);
+        $questionnaire = !empty($this->_instance)
+            ? \mod_questionnaire\questionnaire::from_instanceid($this->_instance)
+            : null;
 
         $mform    =& $this->_form;
 
@@ -96,18 +97,14 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         }
         $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);
 
-        if (empty($questionnaire->sid)) {
-            if (!isset($questionnaire->id)) {
-                $questionnaire->id = 0;
-            }
-
+        if (empty($questionnaire?->surveyid())) {
             $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
             $mform->addHelpButton('contenthdr', 'createcontent', 'questionnaire');
 
             $mform->addElement('radio', 'create', get_string('createnew', 'questionnaire'), '', 'new-0');
 
             // Retrieve existing private questionnaires from current course.
-            $surveys = \questionnaire::get_survey_select($COURSE->id, 'private');
+            $surveys = \mod_questionnaire\questionnaire::get_survey_select($COURSE->id, 'private');
             if (!empty($surveys)) {
                 $prelabel = get_string('useprivate', 'questionnaire');
                 foreach ($surveys as $value => $label) {
@@ -116,7 +113,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
                 }
             }
             // Retrieve existing template questionnaires from this site.
-            $surveys = \questionnaire::get_survey_select($COURSE->id, 'template');
+            $surveys = \mod_questionnaire\questionnaire::get_survey_select($COURSE->id, 'template');
             if (!empty($surveys)) {
                 $prelabel = get_string('usetemplate', 'questionnaire');
                 foreach ($surveys as $value => $label) {
@@ -133,7 +130,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             }
 
             // Retrieve existing public questionnaires from this site.
-            $surveys = \questionnaire::get_survey_select($COURSE->id, 'public');
+            $surveys = \mod_questionnaire\questionnaire::get_survey_select($COURSE->id, 'public');
             if (!empty($surveys)) {
                 $prelabel = get_string('usepublic', 'questionnaire');
                 foreach ($surveys as $value => $label) {
@@ -165,7 +162,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             );
             $mform->addHelpButton('removeafter', 'removeoldresponses', 'questionnaire');
             // Just set default value when creating a new questionare.
-            if (empty($questionnaire->sid)) {
+            if (empty($questionnaire?->surveyid())) {
                 $defaultconfig = get_config('questionnaire', 'removeoldresponses');
                 $mform->setDefault('removeafter', $defaultconfig);
             }
