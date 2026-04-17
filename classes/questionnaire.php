@@ -1242,40 +1242,40 @@ class questionnaire {
     }
 
     /**
-     * Return private surveys belonging to the given course as a labelled select array.
+     * Return private questionnaires belonging to the given course as a labelled select array.
      *
      * Keys are "private-{survey_id}"; values are popup-preview action-link strings.
      *
      * @param int $courseid
      * @return array
      */
-    public static function get_private_surveys(int $courseid): array {
+    public static function get_private_questionnaires(int $courseid): array {
         return self::build_survey_select_list(self::get_survey_list('private', $courseid), 'private', 0);
     }
 
     /**
-     * Return public surveys from other courses as a labelled select array.
+     * Return public questionnaires from other courses as a labelled select array.
      *
      * Surveys whose courseid matches $courseid are excluded (they are the current course's
      * own public surveys, which would create a circular reference).
      * Keys are "public-{survey_id}"; values are popup-preview action-link strings.
      *
-     * @param int $courseid The current course id; surveys from this course are excluded.
+     * @param int $courseid The current course id; questionnaires from this course are excluded.
      * @return array
      */
-    public static function get_public_surveys(int $courseid): array {
+    public static function get_public_questionnaires(int $courseid): array {
         return self::build_survey_select_list(self::get_survey_list('public', 0), 'public', $courseid);
     }
 
     /**
-     * Return template surveys from any course as a labelled select array.
+     * Return template questionnaires from any course as a labelled select array.
      *
      * Keys are "template-{survey_id}"; values are popup-preview action-link strings.
      *
      * @param int $courseid Passed for consistency; not used for filtering.
      * @return array
      */
-    public static function get_template_surveys(int $courseid): array {
+    public static function get_template_questionnaires(int $courseid): array {
         return self::build_survey_select_list(self::get_survey_list('template', 0), 'template', 0);
     }
 
