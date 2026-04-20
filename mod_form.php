@@ -35,8 +35,8 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         global $COURSE, $CFG;
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
-        $questionnaire = !empty($this->_instance)
-            ? \mod_questionnaire\questionnaire::from_instanceid($this->_instance)
+        $surveyid = !empty($this->_instance)
+            ? \mod_questionnaire\questionnaire::from_instanceid($this->_instance)->surveyid()
             : null;
 
         $mform    =& $this->_form;
@@ -97,7 +97,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         }
         $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);
 
-        if (empty($questionnaire?->surveyid())) {
+        if (empty($surveyid)) {
             $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
             $mform->addHelpButton('contenthdr', 'createcontent', 'questionnaire');
 
@@ -162,7 +162,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             );
             $mform->addHelpButton('removeafter', 'removeoldresponses', 'questionnaire');
             // Just set default value when creating a new questionare.
-            if (empty($questionnaire?->surveyid())) {
+            if (empty($surveyid)) {
                 $defaultconfig = get_config('questionnaire', 'removeoldresponses');
                 $mform->setDefault('removeafter', $defaultconfig);
             }
