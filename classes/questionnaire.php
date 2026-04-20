@@ -2597,6 +2597,19 @@ class questionnaire {
     }
 
     /**
+     * Return a structured export of all answers for a given response id.
+     *
+     * Delegates to questionnaire_responses::get_structured_response(). Used by the
+     * privacy provider to export user data.
+     *
+     * @param int $rid The response id.
+     * @return array
+     */
+    public function get_structured_response(int $rid): array {
+        return $this->responses()->get_structured_response($rid);
+    }
+
+    /**
      * Return all responses for this questionnaire, optionally filtered by user or group.
      *
      * @param int|false $userid  Limit to this user, or false for all users.
