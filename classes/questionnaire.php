@@ -164,6 +164,31 @@ class questionnaire {
     }
 
     /**
+     * Return a lightweight questionnaire instance built from already-loaded persistent records.
+     *
+     * Skips all database lookups for course, course_module, and context. Only
+     * modulerecord and survey are set. This factory is intended for low-overhead
+     * contexts such as building select lists in mod_form, where CM and capability
+     * checks are not needed.
+     *
+     * Callers must not invoke methods that require coursemodule(), context(), or course().
+     *
+     * @param questionnaire_record $qrec Already-loaded questionnaire persistent record.
+     * @param local\db\survey_record $srec Already-loaded survey persistent record.
+     * @return self
+     */
+    public static function from_records(
+        questionnaire_record $qrec,
+        local\db\survey_record $srec
+    ): self {
+        // Bypass the normal constructor to avoid the CM and course DB lookups.
+        $instance = (new \ReflectionClass(self::class))->newInstanceWithoutConstructor();
+        $instance->modulerecord = $qrec;
+        $instance->survey = survey::from_record_shallow($srec);
+        return $instance;
+    }
+
+    /**
      * Get the id of the questionnaire instance.
      *
      * @return int
@@ -1280,47 +1305,45 @@ class questionnaire {
     }
 
     /**
-     * Fetch surveys of the given realm and return them as enriched value objects.
+     * Fetch surveys of the given realm and return them as lightweight questionnaire objects.
      *
-     * Uses survey_record and questionnaire_record persistents — no direct $DB access.
-     * Surveys with no linked questionnaire instance are excluded.
+     * Uses the survey domain class finders and questionnaire_record persistents — no direct
+     * $DB access. Surveys with no linked questionnaire instance are excluded.
      *
-     * Each returned object has: ->surveyid, ->surveycourseid, ->qid, ->qname
+     * Returned questionnaire objects are built via from_records() and only expose
+     * id(), name(), surveyid(), and survey() accessors safely. Callers must not
+     * call coursemodule(), context(), or course() on them.
      *
      * @param string $realm 'private', 'public', or 'template'.
      * @param int $courseid Scope to this course when realm is 'private'; ignored otherwise.
-     * @return \stdClass[]
+     * @return self[]
      */
     private static function get_survey_list(string $realm, int $courseid): array {
         if ($realm === 'private' && $courseid > 0) {
-            $surveyrecords = local\db\survey_record::get_by_realm_in_course($realm, $courseid);
+            $surveys = survey::get_private_for_course($courseid);
         } else {
-            $surveyrecords = local\db\survey_record::get_by_realm($realm);
+            $surveys = survey::get_by_realm($realm);
         }
 
         $items = [];
-        foreach ($surveyrecords as $survey) {
-            $questionnaire = local\db\questionnaire_record::get_for_survey($survey->get('id'));
-            if ($questionnaire === null) {
+        foreach ($surveys as $surveyobj) {
+            $qrec = local\db\questionnaire_record::get_for_survey($surveyobj->id());
+            if ($qrec === null) {
                 continue;
             }
-            $item = new \stdClass();
-            $item->surveyid = $survey->get('id');
-            $item->surveycourseid = $survey->get('courseid');
-            $item->qid = $questionnaire->get('id');
-            $item->qname = $questionnaire->get('name');
-            $items[] = $item;
+            $items[] = self::from_records($qrec, $surveyobj->survey_record());
         }
         return $items;
     }
 
     /**
-     * Format a list of survey items as a labelled popup-preview select array.
+     * Format a list of lightweight questionnaire objects as a labelled popup-preview select array.
      *
-     * @param \stdClass[] $items From get_survey_list().
+     * @param self[] $items From get_survey_list() — lightweight from_records() instances.
      * @param string $realm Used as the key prefix (e.g. 'private-42').
-     * @param int $excludecourseid Skip surveys whose courseid matches this value (pass 0 to skip
-     *     no surveys). Used by get_public_surveys() to omit the current course's own public surveys.
+     * @param int $excludecourseid Skip items whose survey owning_courseid matches this value
+     *     (pass 0 to skip no items). Used by get_public_questionnaires() to omit the current
+     *     course's own public surveys.
      * @return array
      */
     private static function build_survey_select_list(array $items, string $realm, int $excludecourseid): array {
@@ -1328,24 +1351,27 @@ class questionnaire {
 
         $surveylist = [];
         $strpreview = get_string('preview_questionnaire', 'questionnaire');
-        foreach ($items as $item) {
-            if ($excludecourseid > 0 && $item->surveycourseid == $excludecourseid) {
+        foreach ($items as $questionnaire) {
+            $owningcourseid = $questionnaire->survey()->owning_courseid();
+            if ($excludecourseid > 0 && $owningcourseid == $excludecourseid) {
                 continue;
             }
-            $originalcourse = $DB->get_record('course', ['id' => $item->surveycourseid]);
+            $originalcourse = $DB->get_record('course', ['id' => $owningcourseid]);
             if (!$originalcourse) {
                 continue;
             }
-            $args = "sid={$item->surveyid}&popup=1&qid={$item->qid}";
+            $sid = $questionnaire->surveyid();
+            $qid = $questionnaire->id();
+            $args = "sid={$sid}&popup=1&qid={$qid}";
             $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
             $action = new \popup_action('click', $link);
             $label = $OUTPUT->action_link(
                 $link,
-                $item->qname . ' [' . $originalcourse->fullname . ']',
+                $questionnaire->name() . ' [' . $originalcourse->fullname . ']',
                 $action,
                 ['title' => $strpreview]
             );
-            $surveylist[$realm . '-' . $item->surveyid] = $label;
+            $surveylist[$realm . '-' . $sid] = $label;
         }
         return $surveylist;
     }

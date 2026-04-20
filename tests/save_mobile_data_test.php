@@ -150,7 +150,7 @@ final class save_mobile_data_test extends \advanced_testcase {
      */
     public function test_plain_save_returns_warnings_for_missing_required(): void {
         global $DB;
-        [$questionnaire, $userid] = $this->make_fixture(false, true); // required question
+        [$questionnaire, $userid] = $this->make_fixture(false, true); // Required question.
 
         $result = $questionnaire->save_mobile_data($userid, 1, 0, 0, 0, '', []);
 
@@ -191,7 +191,7 @@ final class save_mobile_data_test extends \advanced_testcase {
      */
     public function test_submit_skipped_when_warnings_present(): void {
         global $DB;
-        [$questionnaire, $userid] = $this->make_fixture(false, true); // required question
+        [$questionnaire, $userid] = $this->make_fixture(false, true); // Required question.
 
         $questionnaire->save_mobile_data($userid, 1, 0, 0, 1, '', []);
 
@@ -208,7 +208,7 @@ final class save_mobile_data_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questionnaire::save_mobile_data
      */
     public function test_nextpage_returns_next_section_number(): void {
-        [$questionnaire, $userid] = $this->make_fixture(true); // two-page questionnaire
+        [$questionnaire, $userid] = $this->make_fixture(true); // Two-page questionnaire.
 
         $result = $questionnaire->save_mobile_data($userid, 1, 0, 0, 0, 'nextpage', []);
 
@@ -224,7 +224,7 @@ final class save_mobile_data_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questionnaire::save_mobile_data
      */
     public function test_previouspage_returns_previous_section_number(): void {
-        [$questionnaire, $userid] = $this->make_fixture(true); // two-page questionnaire
+        [$questionnaire, $userid] = $this->make_fixture(true); // Two-page questionnaire.
 
         $result = $questionnaire->save_mobile_data($userid, 2, 0, 0, 0, 'previouspage', []);
 

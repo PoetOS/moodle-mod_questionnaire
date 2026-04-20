@@ -82,7 +82,75 @@ class survey {
         return new self(new survey_record(), $context);
     }
 
+    /**
+     * Return a survey built from an already-loaded survey_record, without hitting the DB again.
+     *
+     * @param survey_record $surveyrecord
+     * @param context_module|null $context
+     * @return self
+     */
+    public static function from_record(survey_record $surveyrecord, ?context_module $context = null): self {
+        return new self($surveyrecord, $context);
+    }
+
+    /**
+     * Return a shallow survey built from an already-loaded survey_record without loading questions.
+     *
+     * Useful for lightweight contexts such as select-list building where only survey
+     * metadata (id, name, realm, courseid) is needed and the question-loading DB query
+     * would be wasteful.
+     *
+     * @param survey_record $surveyrecord
+     * @return self
+     */
+    public static function from_record_shallow(survey_record $surveyrecord): self {
+        $instance = new self(new survey_record());
+        $instance->surveyrecord = $surveyrecord;
+        return $instance;
+    }
+
+    // Survey finders.
+
+    /**
+     * Return all private surveys belonging to the given course (shallow — no questions loaded).
+     *
+     * @param int $courseid
+     * @return self[]
+     */
+    public static function get_private_for_course(int $courseid): array {
+        return array_map(
+            fn($rec) => self::from_record_shallow($rec),
+            survey_record::get_by_realm_in_course('private', $courseid)
+        );
+    }
+
+    /**
+     * Return all surveys with the given realm across all courses (shallow — no questions loaded).
+     *
+     * @param string $realm 'public' or 'template'.
+     * @return self[]
+     */
+    public static function get_by_realm(string $realm): array {
+        return array_map(
+            fn($rec) => self::from_record_shallow($rec),
+            survey_record::get_by_realm($realm)
+        );
+    }
+
     // Survey record accessors.
+
+    /**
+     * Return the underlying survey_record persistent object.
+     *
+     * Intended for factory methods (e.g. questionnaire::from_records()) that need to
+     * pass the already-loaded record to another object without re-querying the database.
+     * General callers should use the named accessor methods instead.
+     *
+     * @return survey_record
+     */
+    public function survey_record(): survey_record {
+        return $this->surveyrecord;
+    }
 
     /**
      * Get the survey id.
