@@ -151,7 +151,9 @@ class renderer extends \plugin_renderer_base {
         foreach ($hiddeninputs as $name => $value) {
             $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
         }
-        $this->page->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, \mod_questionnaire\questionnaire::js_module());
+        $this->page->requires->js_init_call(
+            'M.mod_questionnaire.init_attempt_form', null, false, \mod_questionnaire\questionnaire::js_module()
+        );
         return $output;
     }
 

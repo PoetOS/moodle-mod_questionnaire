@@ -292,5 +292,4 @@ class provider implements
             }
         }
     }
-
 }
