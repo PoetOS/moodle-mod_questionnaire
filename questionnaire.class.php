@@ -374,15 +374,6 @@ class questionnaire {
     }
 
     /**
-     * Return the module context for this questionnaire.
-     *
-     * @return \context_module
-     */
-    public function context() {
-        return $this->context ?? \context_module::instance($this->cm->id);
-    }
-
-    /**
      * Return the loaded question objects for this questionnaire.
      *
      * @return array

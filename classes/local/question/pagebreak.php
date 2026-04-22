@@ -78,10 +78,10 @@ class pagebreak extends question {
      * Override this, or any of the internal methods, to provide specific form data for editing the question type.
      * The structure of the elements here is the default layout for the question form.
      * @param edit_question_form $form The main moodleform object.
-     * @param questionnaire $questionnaire The questionnaire being edited.
+     * @param \mod_questionnaire\questionnaire $questionnaire The questionnaire being edited.
      * @return bool
      */
-    public function edit_form(edit_question_form $form, questionnaire $questionnaire) {
+    public function edit_form(edit_question_form $form, \mod_questionnaire\questionnaire $questionnaire) {
         return false;
     }
 
