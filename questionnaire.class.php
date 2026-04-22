@@ -158,6 +158,7 @@ class questionnaire {
 
     // Class Methods.
 
+
     /**
      * The constructor.
      * @param stdClass $course
@@ -203,21 +204,6 @@ class questionnaire {
         // Load the capabilities for this user and questionnaire, if not creating a new one.
         if (!empty($this->cm->id)) {
             $this->capabilities = $this->load_capabilities();
-        }
-    }
-
-    /**
-     * Adding a survey record to the object.
-     * @param int $sid
-     * @param null $survey
-     */
-    private function add_survey($sid = 0, $survey = null) {
-        global $DB;
-
-        if ($sid) {
-            $this->survey = $DB->get_record('questionnaire_survey', ['id' => $sid]);
-        } else if (is_object($survey)) {
-            $this->survey = clone($survey);
         }
     }
 
@@ -281,35 +267,6 @@ class questionnaire {
     }
 
     /**
-     * Load the response information from a submitted web form.
-     *
-     * @param stdClass $formdata
-     */
-    private function add_response_from_formdata(stdClass $formdata) {
-        $this->responses()->add_response_from_formdata($formdata);
-    }
-
-    /**
-     * Return a response object from a submitted mobile app form.
-     *
-     * @param stdClass $appdata
-     * @param int $sec
-     * @param int $responseid
-     * @return bool|\mod_questionnaire\local\response\response
-     */
-    private function build_response_from_appdata(stdClass $appdata, $sec = 0, int $responseid = 0) {
-        return $this->responses()->build_response_from_appdata($appdata, $sec, $responseid);
-    }
-
-    /**
-     * Add the renderer to the questionnaire object.
-     * @param plugin_renderer_base $renderer The module renderer, extended from core renderer.
-     */
-    private function add_renderer(plugin_renderer_base $renderer) {
-        $this->renderer = $renderer;
-    }
-
-    /**
      * Return the response handler for this questionnaire instance (lazy-initialised).
      * @return \mod_questionnaire\local\response\questionnaire_responses
      */
@@ -323,116 +280,12 @@ class questionnaire {
     }
 
     /**
-     * Add the templatable page to the questionnaire object.
-     * @param templatable $page The page to render, implementing core classes.
-     */
-    private function add_page($page) {
-        $this->page = $page;
-    }
-
-    /**
      * Return true if questions should be automatically numbered.
      * @return bool
      */
     public function questions_autonumbered() {
         // Value of 1 if questions should be numbered. Value of 3 if both questions and pages should be numbered.
         return (!empty($this->autonum) && (($this->autonum == 1) || ($this->autonum == 3)));
-    }
-
-    /**
-     * Return true if pages should be automatically numbered.
-     * @return bool
-     */
-    private function pages_autonumbered() {
-        // Value of 2 if pages should be numbered. Value of 3 if both questions and pages should be numbered.
-        return (!empty($this->autonum) && (($this->autonum == 2) || ($this->autonum == 3)));
-    }
-
-    /**
-     * The main module view function.
-     */
-    private function view() {
-        global $CFG, $USER, $PAGE;
-
-        $PAGE->set_title(format_string($this->name));
-        $PAGE->set_heading(format_string($this->course->fullname));
-        $message = $this->user_access_messages($USER->id, true);
-        if ($message !== false) {
-            $this->page->add_to_page('notifications', $message);
-        } else {
-            // Handle the main questionnaire completion page.
-            $quser = $USER->id;
-
-            $msg = $this->print_survey($quser, $USER->id);
-
-            // If Questionnaire was submitted with all required fields completed ($msg is empty),
-            // then record the submittal.
-            $viewform = data_submitted($CFG->wwwroot . "/mod/questionnaire/complete.php");
-            if (
-                $viewform && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
-                ($viewform->submittype == "Submit Survey") && empty($msg)
-            ) {
-                if (!empty($viewform->rid)) {
-                    $viewform->rid = (int)$viewform->rid;
-                }
-                if (!empty($viewform->sec)) {
-                    $viewform->sec = (int)$viewform->sec;
-                }
-                $this->response_delete($viewform->rid, $viewform->sec);
-                $this->rid = $this->response_insert($viewform, $quser);
-                $this->response_commit($this->rid);
-
-                $this->update_grades($quser);
-
-                // Update completion state.
-                $completion = new completion_info($this->course);
-                if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
-                    $completion->update_state($this->cm, COMPLETION_COMPLETE);
-                }
-
-                // Log this submitted response. Note this removes the anonymity in the logged event.
-                $context = context_module::instance($this->cm->id);
-                $anonymous = $this->respondenttype == 'anonymous';
-                $params = [
-                    'context' => $context,
-                    'courseid' => $this->course->id,
-                    'relateduserid' => $USER->id,
-                    'anonymous' => $anonymous,
-                    'other' => ['questionnaireid' => $this->id],
-                ];
-                $event = \mod_questionnaire\event\attempt_submitted::create($params);
-                $event->trigger();
-
-                $this->submission_notify($this->rid);
-                $this->response_goto_thankyou();
-            }
-        }
-    }
-
-    /**
-     * Commit the response.
-     * @param int $rid
-     * @param int $quser
-     */
-    private function commit_submission_response($rid, $quser) {
-        $this->responses()->commit_submission_response($rid, $quser);
-    }
-
-    /**
-     * Update the grade for this questionnaire and user.
-     *
-     * @param int $userid
-     */
-    private function update_grades($userid) {
-        if ($this->grade != 0) {
-            $questionnaire = new \stdClass();
-            $questionnaire->id = $this->id;
-            $questionnaire->name = $this->name;
-            $questionnaire->grade = $this->grade;
-            $questionnaire->cmidnumber = $this->cm->idnumber;
-            $questionnaire->courseid = $this->course->id;
-            questionnaire_update_grades($questionnaire, $userid);
-        }
     }
 
     /**
@@ -520,46 +373,6 @@ class questionnaire {
         $this->print_survey_end(1, 1);
     }
 
-    // Access Methods.
-
-    /**
-     * True if the questionnaire is active.
-     * @return bool
-     */
-    private function is_active() {
-        return (!empty($this->survey));
-    }
-
-    // Forwarding methods — mirror the new classes/questionnaire.php API so that shared includes
-    // (tabs.php etc.) work with both the legacy class and the new domain class during migration.
-
-    /**
-     * Return the questionnaire instance ID.
-     *
-     * @return int
-     */
-    private function id() {
-        return $this->id;
-    }
-
-    /**
-     * Return the course-module object for this questionnaire.
-     *
-     * @return \stdClass|\cm_info
-     */
-    private function coursemodule() {
-        return $this->cm;
-    }
-
-    /**
-     * Return the course object for this questionnaire.
-     *
-     * @return \stdClass
-     */
-    private function course() {
-        return $this->course;
-    }
-
     /**
      * Return the module context for this questionnaire.
      *
@@ -576,156 +389,6 @@ class questionnaire {
      */
     public function questions() {
         return $this->questions;
-    }
-
-    /**
-     * Return the survey ID associated with this questionnaire.
-     *
-     * @return int
-     */
-    private function surveyid() {
-        return $this->sid;
-    }
-
-    /**
-     * True if the current user can manage this questionnaire.
-     *
-     * @return bool
-     */
-    private function can_manage_questionnaire() {
-        return (bool)$this->capabilities->manage;
-    }
-
-    /**
-     * True if the current user can edit questions.
-     *
-     * @return bool
-     */
-    private function can_edit_questions() {
-        return (bool)$this->capabilities->editquestions;
-    }
-
-    /**
-     * True if the current user can view this questionnaire.
-     *
-     * @return bool
-     */
-    private function can_view() {
-        return (bool)$this->capabilities->view;
-    }
-
-    /**
-     * True if the current user can preview this questionnaire.
-     *
-     * @return bool
-     */
-    private function can_preview() {
-        return (bool)$this->capabilities->preview;
-    }
-
-    /**
-     * True if the current user can read their own responses.
-     *
-     * @return bool
-     */
-    private function can_read_own_responses() {
-        return (bool)$this->capabilities->readownresponses;
-    }
-
-    /**
-     * True if the current user can download responses.
-     *
-     * @return bool
-     */
-    private function can_download_responses() {
-        return (bool)$this->capabilities->downloadresponses;
-    }
-
-    /**
-     * True if the current user can view a single response.
-     *
-     * @return bool
-     */
-    private function can_view_single_response() {
-        return (bool)$this->capabilities->viewsingleresponse;
-    }
-
-    /**
-     * True if the current user can delete responses.
-     *
-     * @return bool
-     */
-    private function can_delete_responses() {
-        return (bool)$this->capabilities->deleteresponses;
-    }
-
-    /**
-     * Load and return the capabilities object for the current user in this questionnaire context.
-     * @return stdClass
-     */
-    private function load_capabilities() {
-        $context = $this->context ?? context_module::instance($this->cm->id);
-        $cb = new stdClass();
-        $cb->view = has_capability('mod/questionnaire:view', $context);
-        $cb->submit = has_capability('mod/questionnaire:submit', $context);
-        $cb->viewsingleresponse = has_capability('mod/questionnaire:viewsingleresponse', $context);
-        $cb->submissionnotification = has_capability('mod/questionnaire:submissionnotification', $context);
-        $cb->downloadresponses = has_capability('mod/questionnaire:downloadresponses', $context);
-        $cb->deleteresponses = has_capability('mod/questionnaire:deleteresponses', $context);
-        $cb->manage = has_capability('mod/questionnaire:manage', $context);
-        $cb->editquestions = has_capability('mod/questionnaire:editquestions', $context);
-        $cb->createtemplates = has_capability('mod/questionnaire:createtemplates', $context);
-        $cb->createpublic = has_capability('mod/questionnaire:createpublic', $context);
-        $cb->readownresponses = has_capability('mod/questionnaire:readownresponses', $context);
-        $cb->readallresponses = has_capability('mod/questionnaire:readallresponses', $context);
-        $cb->readallresponseanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
-        $cb->printblank = has_capability('mod/questionnaire:printblank', $context);
-        $cb->preview = has_capability('mod/questionnaire:preview', $context);
-        $cb->viewhiddenactivities = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
-        return $cb;
-    }
-
-    /**
-     * True if the questionnaire is open.
-     * @return bool
-     */
-    private function is_open() {
-        return ($this->opendate > 0) ? ($this->opendate < time()) : true;
-    }
-
-    /**
-     * True if the questionnaire is closed.
-     * @return bool
-     */
-    private function is_closed() {
-        return ($this->closedate > 0) ? ($this->closedate < time()) : false;
-    }
-
-    /**
-     * True if the specified user can complete this questionnaire.
-     * @param int $userid
-     * @return bool
-     */
-    private function user_can_take($userid) {
-
-        if (!$this->is_active() || !$this->user_is_eligible($userid)) {
-            return false;
-        } else if ($this->qtype == QUESTIONNAIREUNLIMITED) {
-            return true;
-        } else if ($userid > 0) {
-            return $this->user_time_for_new_attempt($userid);
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * True if the specified user is eligible to complete this questionnaire.
-     * @param int $userid
-     * @return bool
-     */
-    private function user_is_eligible($userid) {
-        return ($this->capabilities->view && $this->capabilities->submit);
     }
 
     /**
@@ -852,228 +515,6 @@ class questionnaire {
     }
 
     /**
-     * True if the accessing course contains the actual questionnaire, as opposed to an instance of a public questionnaire.
-     * @return bool
-     */
-    private function is_survey_owner() {
-        return (!empty($this->survey->courseid) && ($this->course->id == $this->survey->courseid));
-    }
-
-    /**
-     * True if the user can view the specified response.
-     * @param int $rid
-     * @return bool|void
-     */
-    private function can_view_response($rid) {
-        global $USER, $DB;
-
-        if (!empty($rid)) {
-            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
-
-            // If the response was not found, can't view it.
-            if (empty($response)) {
-                return false;
-            }
-
-            // If the response belongs to a different survey than this one, can't view it.
-            if ($response->questionnaireid != $this->id) {
-                return false;
-            }
-
-            // If you can view all responses always, then you can view it.
-            if ($this->capabilities->readallresponseanytime) {
-                return true;
-            }
-
-            // If you are allowed to view this response for another user.
-            // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
-            if (
-                $this->capabilities->readallresponses &&
-                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
-            ) {
-                return true;
-            }
-
-            // If you can read your own response.
-            if (
-                ($response->userid == $USER->id) && $this->capabilities->readownresponses &&
-                ($this->count_submissions($USER->id) > 0)
-            ) {
-                return true;
-            }
-        } else {
-            // If you can view all responses always, then you can view it.
-            if ($this->capabilities->readallresponseanytime) {
-                return true;
-            }
-
-            // If you are allowed to view this response for another user.
-            // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
-            if (
-                $this->capabilities->readallresponses &&
-                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
-            ) {
-                return true;
-            }
-
-            // If you can read your own response.
-            if ($this->capabilities->readownresponses && ($this->count_submissions($USER->id) > 0)) {
-                return true;
-            }
-        }
-    }
-
-    /**
-     * True if the user can view the responses to this questionnaire, and there are valid responses.
-     *
-     * @param null|int $usernumresp
-     * @param bool $isviewreport
-     * @return bool
-     */
-    private function can_view_all_responses($usernumresp = null, $isviewreport = false) {
-        global $USER, $SESSION;
-
-        $owner = $this->is_survey_owner();
-        $numresp = $this->count_submissions();
-        if ($usernumresp === null) {
-            $usernumresp = $this->count_submissions($USER->id);
-        }
-
-        // Number of Responses in currently selected group (or all participants etc.).
-        if (isset($SESSION->questionnaire->numselectedresps)) {
-            $numselectedresps = $SESSION->questionnaire->numselectedresps;
-        } else {
-            $numselectedresps = $numresp;
-        }
-
-        // If questionnaire is set to separate groups, prevent user who is not member of any group
-        // to view All responses.
-        $canviewgroups = true;
-        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
-        $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
-        if ($groupmode == 1) {
-            $canviewgroups = groups_has_membership($this->cm, $USER->id);
-        }
-
-        $grouplogic = $canviewgroups || $canviewallgroups;
-        $respslogic = ($numresp > 0) && ($numselectedresps > 0) || $isviewreport;
-        return $this->can_view_all_responses_anytime($grouplogic, $respslogic) ||
-            $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic);
-    }
-
-    /**
-     * True if the user can view all of the responses to this questionnaire any time, and there are valid responses.
-     * @param bool $grouplogic
-     * @param bool $respslogic
-     * @return bool
-     */
-    private function can_view_all_responses_anytime($grouplogic = true, $respslogic = true) {
-        // Can view if you are a valid group user, this is the owning course, and there are responses, and you have no
-        // response view restrictions.
-        return $grouplogic && $respslogic && $this->is_survey_owner() && $this->capabilities->readallresponseanytime;
-    }
-
-    /**
-     * True if the user can view all of the responses to this questionnaire any time, and there are valid responses.
-     * @param null|int $usernumresp
-     * @param bool $grouplogic
-     * @param bool $respslogic
-     * @return bool
-     */
-    private function can_view_all_responses_with_restrictions($usernumresp, $grouplogic = true, $respslogic = true) {
-        // Can view if you are a valid group user, this is the owning course, and there are responses, and you can view
-        // subject to viewing settings..
-        return $grouplogic && $respslogic && $this->is_survey_owner() &&
-            ($this->capabilities->readallresponses &&
-                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
-    }
-
-    /**
-     * Return the number of submissions for this questionnaire.
-     * @param bool $userid
-     * @param int $groupid
-     * @return int
-     */
-    private function count_submissions($userid = false, $groupid = 0) {
-        global $DB;
-
-        $params = [];
-        $groupsql = '';
-        $groupcnd = '';
-        if ($groupid != 0) {
-            $groupsql = 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
-            $groupcnd = ' AND gm.groupid = :groupid ';
-            $params['groupid'] = $groupid;
-        }
-
-        // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
-        // Public questionnaires can have responses to multiple questionnaire instances.
-        if ($this->survey_is_public_master()) {
-            $sql = 'SELECT COUNT(r.id) ' .
-                'FROM {questionnaire_response} r ' .
-                'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
-                'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
-                $groupsql .
-                'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
-            $params['surveyid'] = $this->sid;
-            $params['status'] = 'y';
-        } else {
-            $sql = 'SELECT COUNT(r.id) ' .
-                'FROM {questionnaire_response} r ' .
-                $groupsql .
-                'WHERE r.questionnaireid = :questionnaireid AND r.complete = :status' . $groupcnd;
-            $params['questionnaireid'] = $this->id;
-            $params['status'] = 'y';
-        }
-        if ($userid) {
-            $sql .= ' AND r.userid = :userid';
-            $params['userid'] = $userid;
-        }
-        return $DB->count_records_sql($sql, $params);
-    }
-
-    /**
-     * Get the requested responses for this questionnaire.
-     *
-     * @param int|bool $userid
-     * @param int $groupid
-     * @return array
-     */
-    private function get_responses($userid = false, $groupid = 0) {
-        return $this->responses()->get_responses($userid, $groupid);
-    }
-
-    /**
-     * True if any of the questions are required.
-     * @param int $section
-     * @return bool
-     */
-    private function has_required($section = 0) {
-        if (empty($this->questions)) {
-            return false;
-        } else if ($section <= 0) {
-            foreach ($this->questions as $question) {
-                if ($question->required()) {
-                    return true;
-                }
-            }
-        } else if (key_exists($section, $this->questionsbysec)) {
-            foreach ($this->questionsbysec[$section] as $questionid) {
-                if ($this->questions[$questionid]->required()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Check if current questionnaire has dependencies set and any question has dependencies.
      *
      * @return boolean Whether dependencies are set or not.
@@ -1089,93 +530,6 @@ class questionnaire {
             }
         }
         return $hasdependencies;
-    }
-
-    /**
-     * Get a list of all dependent questions.
-     * @param int $questionid
-     * @return array
-     */
-    private function get_all_dependants($questionid) {
-        $directids = $this->get_dependants($questionid);
-        $directs = [];
-        $indirects = [];
-        foreach ($directids as $directid) {
-            $this->load_parents($this->questions[$directid]);
-            $indirectids = $this->get_dependants($directid);
-            foreach ($this->questions[$directid]->dependencies as $dep) {
-                if ($dep->dependquestionid == $questionid) {
-                    $directs[$directid][] = $dep;
-                }
-            }
-            foreach ($indirectids as $indirectid) {
-                $this->load_parents($this->questions[$indirectid]);
-                foreach ($this->questions[$indirectid]->dependencies as $dep) {
-                    if ($dep->dependquestionid != $questionid) {
-                        $indirects[$indirectid][] = $dep;
-                    }
-                }
-            }
-        }
-        $alldependants = new stdClass();
-        $alldependants->directs = $directs;
-        $alldependants->indirects = $indirects;
-        return($alldependants);
-    }
-
-    /**
-     * Get a list of all dependent questions.
-     * @param int $questionid
-     * @return array
-     */
-    private function get_dependants($questionid) {
-        $qu = [];
-        // Create an array which shows for every question the child-IDs.
-        foreach ($this->questions as $question) {
-            if ($question->has_dependencies()) {
-                foreach ($question->dependencies as $dependency) {
-                    if (($dependency->dependquestionid == $questionid) && !in_array($question->id(), $qu)) {
-                        $qu[] = $question->id();
-                    }
-                }
-            }
-        }
-        return($qu);
-    }
-
-    /**
-     * Function to sort descendants array in get_dependants function.
-     * @param mixed $a
-     * @param mixed $b
-     * @return int
-     */
-    private static function cmp($a, $b) {
-        if ($a == $b) {
-            return 0;
-        } else if ($a < $b) {
-            return -1;
-        } else {
-            return 1;
-        }
-    }
-
-    /**
-     * Get all descendants and choices for questions with descendants.
-     * @return array
-     */
-    private function get_dependants_and_choices() {
-        $questions = array_reverse($this->questions, true);
-        $parents = [];
-        foreach ($questions as $question) {
-            foreach ($question->dependencies as $dependency) {
-                $child = new stdClass();
-                $child->choiceid = $dependency->dependchoiceid;
-                $child->logic = $dependency->dependlogic;
-                $child->andor = $dependency->dependandor;
-                $parents[$dependency->dependquestionid][$question->id()][] = $child;
-            }
-        }
-        return($parents);
     }
 
     /**
@@ -1225,105 +579,6 @@ class questionnaire {
         }
         return true;
     }
-
-    /**
-     * Determine the next valid page and return it. Return false if no valid next page.
-     * @param int $secnum
-     * @param int $rid
-     * @return int | bool
-     */
-    private function next_page($secnum, $rid) {
-        $secnum++;
-        $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
-        if ($this->has_dependencies()) {
-            while (!$this->eligible_questions_on_page($secnum, $rid)) {
-                $secnum++;
-                // We have reached the end of questionnaire on a page without any question left.
-                if ($secnum > $numsections) {
-                    $secnum = false;
-                    break;
-                }
-            }
-        }
-        return $secnum;
-    }
-
-    /**
-     * Determine the previous valid page and return it. Return false if no valid previous page.
-     * @param int $secnum
-     * @param int $rid
-     * @return int | bool
-     */
-    private function prev_page($secnum, $rid) {
-        $secnum--;
-        if ($this->has_dependencies()) {
-            while (($secnum > 0) && !$this->eligible_questions_on_page($secnum, $rid)) {
-                $secnum--;
-            }
-        }
-        if ($secnum === 0) {
-            $secnum = false;
-        }
-        return $secnum;
-    }
-
-    /**
-     * Return the correct action to a next page request.
-     * @param mod_questionnaire\local\response\response $response
-     * @param int $userid
-     * @return bool|int|string
-     */
-    private function next_page_action($response, $userid) {
-        $msg = $this->response_check_format($response->sec, $response);
-        if (empty($msg)) {
-            $response->rid = $this->existing_response_action($response, $userid);
-            return $this->next_page($response->sec, $response->rid);
-        } else {
-            return $msg;
-        }
-    }
-
-    /**
-     * Return the correct action to a previous page request.
-     * @param mod_questionnaire\local\response\response $response
-     * @param int $userid
-     * @return bool|int
-     */
-    private function previous_page_action($response, $userid) {
-        $response->rid = $this->existing_response_action($response, $userid);
-        return $this->prev_page($response->sec, $response->rid);
-    }
-
-    /**
-     * Handle updating an existing response.
-     * @param mod_questionnaire\local\response\response $response
-     * @param int $userid
-     * @return bool|int
-     */
-    private function existing_response_action($response, $userid) {
-        $this->response_delete($response->rid, $response->sec);
-        return $this->response_insert($response, $userid);
-    }
-
-    /**
-     * Are there any eligible questions to be displayed on the specified page/section.
-     * @param int $secnum The section number to check.
-     * @param int $rid The current response id.
-     * @return boolean
-     */
-    private function eligible_questions_on_page($secnum, $rid) {
-        $questionstodisplay = false;
-
-        foreach ($this->questionsbysec[$secnum] as $questionid) {
-            if ($this->questions[$questionid]->dependency_fulfilled($rid, $this->questions)) {
-                $questionstodisplay = true;
-                break;
-            }
-        }
-        return $questionstodisplay;
-    }
-
-    // Display Methods.
 
     /**
      * The main display method for the survey. Adds HTML to the templates.
@@ -1464,303 +719,6 @@ class questionnaire {
     }
 
     /**
-     * Print the entire survey page.
-     * @param stdClass $formdata
-     * @param int $section
-     * @param string $message
-     * @return bool|void
-     */
-    private function survey_render(&$formdata, $section = 1, $message = '') {
-
-        $this->usehtmleditor = null;
-
-        if (empty($section)) {
-            $section = 1;
-        }
-        $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
-        if ($section > $numsections) {
-            $formdata->sec = $numsections;
-            $this->page->add_to_page(
-                'notifications',
-                $this->renderer->notification(get_string('finished', 'questionnaire'), \core\output\notification::NOTIFY_WARNING)
-            );
-            return(false);  // Invalid section.
-        }
-
-        // Check to see if there are required questions.
-        $hasrequired = $this->has_required($section);
-
-        // Find out what question number we are on $i New fix for question numbering.
-        $i = 0;
-        if ($section > 1) {
-            for ($j = 2; $j <= $section; $j++) {
-                foreach ($this->questionsbysec[$j - 1] as $questionid) {
-                    if ($this->questions[$questionid]->typeid() < QUESPAGEBREAK) {
-                        $i++;
-                    }
-                }
-            }
-        }
-
-        $this->print_survey_start($message, $section, $numsections, $hasrequired, '', 1);
-        // Only show progress bar on questionnaires with more than one page.
-        if ($this->progressbar && isset($this->questionsbysec) && count($this->questionsbysec) > 1) {
-            $this->page->add_to_page(
-                'progressbar',
-                $this->renderer->render_progress_bar($section, $this->questionsbysec)
-            );
-        }
-        if (key_exists($section, $this->questionsbysec)) {
-            foreach ($this->questionsbysec[$section] as $questionid) {
-                if ($this->questions[$questionid]->is_numbered()) {
-                    $i++;
-                }
-                // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
-                $formdata->questionnaire_id = $this->id;
-                if (isset($formdata->rid) && !empty($formdata->rid)) {
-                    $this->add_response($formdata->rid);
-                } else {
-                    $this->add_response_from_formdata($formdata);
-                }
-                $this->page->add_to_page(
-                    'questions',
-                    $this->renderer->question_output(
-                        $this->questions[$questionid],
-                        ($this->responses()->get_response($formdata->rid) ?? []),
-                        $i,
-                        $this->usehtmleditor,
-                        [],
-                        $this
-                    )
-                );
-            }
-        }
-
-        $this->print_survey_end($section, $numsections);
-
-        return;
-    }
-
-    /**
-     * Print the start of the survey page.
-     * @param string $message
-     * @param int $section
-     * @param int $numsections
-     * @param bool $hasrequired
-     * @param string $rid
-     * @param bool $blankquestionnaire
-     * @param string $outputtarget
-     */
-    private function print_survey_start(
-        $message,
-        $section,
-        $numsections,
-        $hasrequired,
-        $rid = '',
-        $blankquestionnaire = false,
-        $outputtarget = 'html'
-    ) {
-        global $CFG, $DB;
-        require_once($CFG->libdir . '/filelib.php');
-
-        $userid = '';
-        $resp = '';
-        $groupname = '';
-        $currentgroupid = 0;
-        $timesubmitted = '';
-        // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
-        if ($rid) {
-            $courseid = $this->course->id;
-            if ($resp = $DB->get_record('questionnaire_response', ['id' => $rid])) {
-                if ($this->respondenttype == 'fullname') {
-                    $userid = $resp->userid;
-                    // Display name of group(s) that student belongs to... if questionnaire is set to Groups separate or visible.
-                    if (groups_get_activity_groupmode($this->cm, $this->course)) {
-                        if ($groups = groups_get_all_groups($courseid, $resp->userid)) {
-                            if (count($groups) == 1) {
-                                $group = current($groups);
-                                $currentgroupid = $group->id;
-                                $groupname = ' (' . get_string('group') . ': ' . $group->name . ')';
-                            } else {
-                                $groupname = ' (' . get_string('groups') . ': ';
-                                foreach ($groups as $group) {
-                                    $groupname .= $group->name . ', ';
-                                }
-                                $groupname = substr($groupname, 0, strlen($groupname) - 2) . ')';
-                            }
-                        } else {
-                            $groupname = ' (' . get_string('groupnonmembers') . ')';
-                        }
-                    }
-
-                    $params = [
-                        'objectid' => $this->survey->id,
-                        'context' => $this->context,
-                        'courseid' => $this->course->id,
-                        'relateduserid' => $userid,
-                        'other' => ['action' => 'vresp', 'currentgroupid' => $currentgroupid, 'rid' => $rid],
-                    ];
-                    $event = \mod_questionnaire\event\response_viewed::create($params);
-                    $event->trigger();
-                }
-            }
-        }
-        $ruser = '';
-        if ($resp && !$blankquestionnaire) {
-            if ($userid) {
-                if ($user = $DB->get_record('user', ['id' => $userid])) {
-                    $ruser = fullname($user);
-                }
-            }
-            if ($this->respondenttype == 'anonymous') {
-                $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
-            } else {
-                // JR DEV comment following line out if you do NOT want time submitted displayed in Anonymous surveys.
-                if ($resp->submitted) {
-                    $timesubmitted = '&nbsp;' . get_string('submitted', 'questionnaire') . '&nbsp;' . userdate($resp->submitted);
-                }
-            }
-        }
-        if ($ruser) {
-            $respinfo = '';
-            if ($outputtarget == 'html') {
-                // Disable the pdf function for now, until it looks a lot better.
-                if (false) {
-                    $linkname = get_string('downloadpdf', 'mod_questionnaire');
-                    $link = new moodle_url(
-                        '/mod/questionnaire/report.php',
-                        [
-                            'action' => 'vresp',
-                            'instance' => $this->id,
-                            'target' => 'pdf',
-                            'individualresponse' => 1,
-                            'rid' => $rid,
-                        ]
-                    );
-                    $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
-                    $respinfo .= $this->renderer->action_link($link, null, null, null, $downpdficon);
-                }
-
-                $linkname = get_string('print', 'mod_questionnaire');
-                $link = new \moodle_url(
-                    '/mod/questionnaire/report.php',
-                    [
-                        'action' => 'vresp',
-                        'instance' => $this->id,
-                        'target' => 'print',
-                        'individualresponse' => 1,
-                        'rid' => $rid,
-                    ]
-                );
-                $htmlicon = new pix_icon('t/print', $linkname);
-                $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                    'height' => 600, 'width' => 800, 'title' => $linkname];
-                $name = 'popup';
-                $action = new popup_action('click', $link, $name, $options);
-                $respinfo .= $this->renderer->action_link($link, null, $action, ['title' => $linkname], $htmlicon) . '&nbsp;';
-            }
-            $respinfo .= get_string('respondent', 'questionnaire') . ': <strong>' . $ruser . '</strong>';
-            if ($this->survey_is_public()) {
-                // For a public questionnaire, look for the course that used it.
-                $coursename = '';
-                $sql = 'SELECT q.id, q.course, c.fullname ' .
-                       'FROM {questionnaire_response} qr ' .
-                       'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
-                       'INNER JOIN {course} c ON q.course = c.id ' .
-                       'WHERE qr.id = ? AND qr.complete = ? ';
-                if ($record = $DB->get_record_sql($sql, [$rid, 'y'])) {
-                    $coursename = $record->fullname;
-                }
-                $respinfo .= ' ' . get_string('course') . ': ' . $coursename;
-            }
-            $respinfo .= $groupname;
-            $respinfo .= $timesubmitted;
-            $this->page->add_to_page('respondentinfo', $this->renderer->respondent_info($respinfo));
-        }
-
-        // We don't want to display the print icon in the print popup window itself!
-        if ($this->capabilities->printblank && $blankquestionnaire && $section == 1) {
-            // Open print friendly as popup window.
-            $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
-            $title = get_string('printblanktooltip', 'questionnaire');
-            $url = '/mod/questionnaire/print.php?qid=' . $this->id . '&amp;rid=0&amp;' . 'courseid=' .
-                $this->course->id . '&amp;sec=1';
-            $options = [
-                'menubar' => true,
-                'location' => false,
-                'scrollbars' => true,
-                'resizable' => true,
-                'height' => 600,
-                'width' => 800,
-                'title' => $title,
-            ];
-            $name = 'popup';
-            $link = new moodle_url($url);
-            $action = new popup_action('click', $link, $name, $options);
-            $class = "floatprinticon";
-            $this->page->add_to_page(
-                'printblank',
-                $this->renderer->action_link(
-                    $link,
-                    $linkname,
-                    $action,
-                    ['class' => $class, 'title' => $title],
-                    new pix_icon('t/print', $title)
-                )
-            );
-        }
-        if ($section == 1) {
-            if (!empty($this->survey->title)) {
-                $this->survey->title = format_string($this->survey->title);
-                $this->page->add_to_page('title', $this->survey->title);
-            }
-            if (!empty($this->survey->subtitle)) {
-                $this->survey->subtitle = format_string($this->survey->subtitle);
-                $this->page->add_to_page('subtitle', $this->survey->subtitle);
-            }
-            if ($this->survey->info) {
-                $infotext = file_rewrite_pluginfile_urls(
-                    $this->survey->info,
-                    'pluginfile.php',
-                    $this->context->id,
-                    'mod_questionnaire',
-                    'info',
-                    $this->survey->id
-                );
-                $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
-            }
-        }
-
-        if ($message) {
-            $this->page->add_to_page('message', $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR));
-        }
-    }
-
-    /**
-     * Print the end of the survey page.
-     * @param int $section
-     * @param int $numsections
-     */
-    private function print_survey_end($section, $numsections) {
-        // If no pages autonumbering.
-        if (!$this->pages_autonumbered()) {
-            return;
-        }
-        if ($numsections > 1) {
-            $a = new stdClass();
-            $a->page = $section;
-            $a->totpages = $numsections;
-            $this->page->add_to_page(
-                'pageinfo',
-                $this->renderer->container(
-                    get_string('pageof', 'questionnaire', $a) . '&nbsp;&nbsp;',
-                    'surveyPage'
-                )
-            );
-        }
-    }
-
-    /**
      * Display a survey suitable for printing.
      * @param int $courseid
      * @param string $message
@@ -1898,44 +856,6 @@ class questionnaire {
         return;
     }
 
-    // RESPONSE LIBRARY.
-
-    /**
-     * Check that all questions have been answered in a suitable way.
-     * @param int $section
-     * @param stdClass $formdata
-     * @param bool $checkmissing
-     * @param bool $checkwrongformat
-     * @return string
-     */
-    private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
-        return $this->responses()->response_check_format(
-            $section,
-            $formdata,
-            $checkmissing,
-            $checkwrongformat,
-            $this->questions
-        );
-    }
-
-    /**
-     * Delete the spcified response.
-     * @param int $rid
-     * @param null|int $sec
-     */
-    private function response_delete($rid, $sec = null) {
-        $this->responses()->response_delete($rid, $sec);
-    }
-
-    /**
-     * Commit the specified response.
-     * @param int $rid
-     * @return bool
-     */
-    private function response_commit($rid) {
-        return $this->responses()->response_commit($rid);
-    }
-
     /**
      * Get the latest response id for the user, or verify that the given response id is valid.
      * @param int $userid
@@ -1952,58 +872,6 @@ class questionnaire {
         } else {
             return 0;
         }
-    }
-
-    /**
-     * Returns the number of the section in which questions have been answered in a response.
-     * @param int $rid
-     * @return int
-     */
-    private function response_select_max_sec($rid) {
-        global $DB;
-
-        $pos = $this->response_select_max_pos($rid);
-        $select = 'surveyid = ? AND typeid = ? AND position < ? AND deleted IS NULL';
-        $params = [$this->sid, QUESPAGEBREAK, $pos];
-        $max = $DB->count_records_select('questionnaire_question', $select, $params) + 1;
-
-        return $max;
-    }
-
-    /**
-     * Returns the position of the last answered question in a response.
-     * @param int $rid
-     * @return int
-     */
-    private function response_select_max_pos($rid) {
-        global $DB;
-
-        $max = 0;
-
-        foreach (
-            [
-                'response_bool',
-                'resp_single',
-                'resp_multiple',
-                'response_rank',
-                'response_text',
-                'response_other',
-                'response_date',
-            ] as $tbl
-        ) {
-            $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_' . $tbl . '} a, {questionnaire_question} q ' .
-                'WHERE a.responseid = ? AND ' .
-                'q.id = a.questionid AND ' .
-                'q.surveyid = ? AND ' .
-                'q.deleted IS NULL';
-            if ($record = $DB->get_record_sql($sql, [$rid, $this->sid])) {
-                $newmax = (int)$record->num;
-                if ($newmax > $max) {
-                    $max = $newmax;
-                }
-            }
-        }
-        return $max;
     }
 
     /**
@@ -2040,167 +908,6 @@ class questionnaire {
     }
 
     /**
-     * Send submission notifications to users with "submissionnotification" capability.
-     * @param int $rid The id of the response record.
-     * @return boolean Operation success.
-     *
-     */
-    private function send_submission_notifications($rid) {
-        global $CFG, $USER;
-
-        $this->add_response($rid);
-        $message = '';
-
-        if ($this->notifications == 2) {
-            $message .= $this->get_full_submission_for_notifications($rid);
-        }
-
-        $success = true;
-        if ($notifyusers = $this->get_notifiable_users($USER->id)) {
-            $info = new stdClass();
-            // Need to handle user differently for anonymous surveys.
-            if ($this->respondenttype != 'anonymous') {
-                $info->userfrom = $USER;
-                $info->username = fullname($info->userfrom, true);
-                $info->profileurl = $CFG->wwwroot . '/user/view.php?id=' . $info->userfrom->id . '&course=' . $this->course->id;
-                $langstringtext = 'submissionnotificationtextuser';
-                $langstringhtml = 'submissionnotificationhtmluser';
-            } else {
-                $info->userfrom = \core_user::get_noreply_user();
-                $info->username = '';
-                $info->profileurl = '';
-                $langstringtext = 'submissionnotificationtextanon';
-                $langstringhtml = 'submissionnotificationhtmlanon';
-            }
-            $info->name = format_string($this->name);
-            $info->submissionurl = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&sid=' . $this->survey->id .
-                '&rid=' . $rid . '&instance=' . $this->id;
-            $info->coursename = format_string($this->course->fullname);
-
-            $info->postsubject = get_string('submissionnotificationsubject', 'questionnaire');
-            $info->posttext = get_string($langstringtext, 'questionnaire', $info);
-            $info->posthtml = '<p>' . get_string($langstringhtml, 'questionnaire', $info) . '</p>';
-            if (!empty($message)) {
-                $info->posttext .= html_to_text($message);
-                $info->posthtml .= $message;
-            }
-
-            foreach ($notifyusers as $notifyuser) {
-                $info->userto = $notifyuser;
-                $this->send_message($info, 'notification');
-            }
-        }
-
-        return $success;
-    }
-
-    /**
-     * Message someone about something.
-     *
-     * @param object $info The information for the message.
-     * @param string $eventtype
-     * @return void
-     */
-    private function send_message($info, $eventtype) {
-        $eventdata = new \core\message\message();
-        $eventdata->courseid = $this->course->id;
-        $eventdata->modulename = 'questionnaire';
-        $eventdata->userfrom = $info->userfrom;
-        $eventdata->userto = $info->userto;
-        $eventdata->subject = $info->postsubject;
-        $eventdata->fullmessage = $info->posttext;
-        $eventdata->fullmessageformat = FORMAT_PLAIN;
-        $eventdata->fullmessagehtml = $info->posthtml;
-        $eventdata->smallmessage = $info->postsubject;
-
-        $eventdata->name = $eventtype;
-        $eventdata->component = 'mod_questionnaire';
-        $eventdata->notification = 1;
-        $eventdata->contexturl = $info->submissionurl;
-        $eventdata->contexturlname = $info->name;
-
-        message_send($eventdata);
-    }
-
-    /**
-     * Returns a list of users that should receive notification about given submission.
-     *
-     * @param int $userid The submission to grade
-     * @return array
-     */
-    private function get_notifiable_users($userid) {
-        // Potential users should be active users only.
-        $potentialusers = get_enrolled_users(
-            $this->context,
-            'mod/questionnaire:submissionnotification',
-            null,
-            'u.*',
-            null,
-            null,
-            null,
-            true
-        );
-
-        $notifiableusers = [];
-        if (groups_get_activity_groupmode($this->cm) == SEPARATEGROUPS) {
-            if ($groups = groups_get_all_groups($this->course->id, $userid, $this->cm->groupingid)) {
-                foreach ($groups as $group) {
-                    foreach ($potentialusers as $potentialuser) {
-                        if ($potentialuser->id == $userid) {
-                            // Do not send self.
-                            continue;
-                        }
-                        if (groups_is_member($group->id, $potentialuser->id)) {
-                            $notifiableusers[$potentialuser->id] = $potentialuser;
-                        }
-                    }
-                }
-            } else {
-                // User not in group, try to find graders without group.
-                foreach ($potentialusers as $potentialuser) {
-                    if ($potentialuser->id == $userid) {
-                        // Do not send self.
-                        continue;
-                    }
-                    if (!groups_has_membership($this->cm, $potentialuser->id)) {
-                        $notifiableusers[$potentialuser->id] = $potentialuser;
-                    }
-                }
-            }
-        } else {
-            foreach ($potentialusers as $potentialuser) {
-                if ($potentialuser->id == $userid) {
-                    // Do not send self.
-                    continue;
-                }
-                $notifiableusers[$potentialuser->id] = $potentialuser;
-            }
-        }
-        return $notifiableusers;
-    }
-
-    /**
-     * Return a formatted string containing all the questions and answers for a specific submission.
-     * @param int $rid
-     * @return string
-     */
-    private function get_full_submission_for_notifications($rid) {
-        $responses = $this->get_full_submission_for_export($rid);
-        $message = '';
-        foreach ($responses as $response) {
-            $message .= html_to_text(format_string($response->questionname)) . "<br />\n";
-            $message .= get_string('question') . ': ' . html_to_text(format_string($response->questiontext)) . "<br />\n";
-            $message .= get_string('answers', 'questionnaire') . ":<br />\n";
-            foreach ($response->answers as $answer) {
-                $message .= html_to_text($answer) . "<br />\n";
-            }
-            $message .= "<br />\n";
-        }
-
-        return $message;
-    }
-
-    /**
      * Construct the response data for a given response and return a structured export.
      * @param int $rid
      * @return string
@@ -2208,133 +915,6 @@ class questionnaire {
      */
     public function get_structured_response($rid) {
         return $this->responses()->get_structured_response($rid);
-    }
-
-    /**
-     * Return a JSON structure containing all the questions and answers for a specific submission.
-     * @param int $rid
-     * @return array
-     */
-    private function get_full_submission_for_export($rid) {
-        return $this->responses()->get_full_submission_for_export($rid);
-    }
-
-    /**
-     * Format the submission answers for legacy email delivery.
-     * @param array $answers The array of response answers.
-     * @return array The formatted set of answers as plain text and HTML.
-     */
-    private function get_formatted_answers_for_emails($answers) {
-        global $USER;
-
-        // Line endings for html and plaintext emails.
-        $endhtml = "\r\n<br />";
-        $endplaintext = "\r\n";
-
-        reset($answers);
-
-        $formatted = ['plaintext' => '', 'html' => ''];
-        for ($i = 0; $i < count($answers[0]); $i++) {
-            $sep = ' : ';
-
-            switch ($i) {
-                case 1:
-                    $sep = ' ';
-                    break;
-                case 4:
-                    $formatted['plaintext'] .= get_string('user') . ' ';
-                    $formatted['html'] .= get_string('user') . ' ';
-                    break;
-                case 6:
-                    if ($this->respondenttype != 'anonymous') {
-                        $formatted['html'] .= get_string('email') . $sep . $USER->email . $endhtml;
-                        $formatted['plaintext'] .= get_string('email') . $sep . $USER->email . $endplaintext;
-                    }
-            }
-            $formatted['html'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endhtml;
-            $formatted['plaintext'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endplaintext;
-        }
-
-        return $formatted;
-    }
-
-    /**
-     * Send the full response submission to the defined email addresses.
-     * @param int $rid The id of the response record.
-     * @param string $email The comma separated list of emails to send to.
-     * @return bool
-     */
-    private function response_send_email($rid, $email) {
-        global $CFG;
-
-        $submission = $this->generate_csv(0, $rid, '', null, 1);
-        if (!empty($submission)) {
-            $answers = $this->get_formatted_answers_for_emails($submission);
-        } else {
-            $answers = ['html' => '', 'plaintext' => ''];
-        }
-
-        $name = s($this->name);
-        if (empty($email)) {
-            return(false);
-        }
-
-        // Line endings for html and plaintext emails.
-        $endhtml = "\r\n<br>";
-        $endplaintext = "\r\n";
-
-        $subject = get_string('surveyresponse', 'questionnaire') . ": $name [$rid]";
-        $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;sid=' . $this->survey->id .
-            '&amp;rid=' . $rid . '&amp;instance=' . $this->id;
-
-        // Html and plaintext body.
-        $bodyhtml = '<a href="' . $url . '">' . $url . '</a>' . $endhtml;
-        $bodyplaintext = $url . $endplaintext;
-        $bodyhtml .= get_string('surveyresponse', 'questionnaire') . ' "' . $name . '"' . $endhtml;
-        $bodyplaintext .= get_string('surveyresponse', 'questionnaire') . ' "' . $name . '"' . $endplaintext;
-
-        $bodyhtml .= $answers['html'];
-        $bodyplaintext .= $answers['plaintext'];
-
-        // Use plaintext version for altbody.
-        $altbody = "\n$bodyplaintext\n";
-
-        $return = true;
-        $mailaddresses = preg_split('/,|;/', $email);
-        foreach ($mailaddresses as $email) {
-            $userto = new stdClass();
-            $userto->email = trim($email);
-            $userto->mailformat = 1;
-            // Dummy userid to keep email_to_user happy in moodle 2.6.
-            $userto->id = -10;
-            $userfrom = $CFG->noreplyaddress;
-            if (email_to_user($userto, $userfrom, $subject, $altbody, $bodyhtml)) {
-                $return = $return && true;
-            } else {
-                $return = false;
-            }
-        }
-        return $return;
-    }
-
-    /**
-     * Insert the provided response.
-     * @param object $responsedata An object containing all data for the response.
-     * @param int $userid
-     * @param bool $resume
-     * @return bool|int
-     */
-    private function response_insert($responsedata, $userid, $resume = false) {
-        return $this->responses()->response_insert($responsedata, $userid, $resume);
-    }
-
-    /**
-     * Get the answers for the all response types.
-     * @param int $rid
-     * @return array
-     */
-    private function response_select($rid) {
-        return $this->responses()->response_select($rid);
     }
 
     /**
@@ -2416,51 +996,6 @@ class questionnaire {
         }
         return;
     }
-
-    /**
-     * Redirect to the provided url.
-     * @param string $url
-     */
-    private function response_goto_saved($url) {
-        global $CFG, $USER;
-        $resumesurvey = get_string('resumesurvey', 'questionnaire');
-        $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>' . $resumesurvey . '</strong>');
-
-        $this->page->add_to_page(
-            'notifications',
-            $this->renderer->notification($savedprogress, \core\output\notification::NOTIFY_SUCCESS)
-        );
-        $this->page->add_to_page(
-            'respondentinfo',
-            $this->renderer->homelink(
-                $CFG->wwwroot . '/course/view.php?id=' . $this->course->id,
-                get_string("backto", "moodle", $this->course->fullname)
-            )
-        );
-
-        if ($this->resume) {
-            $message = $this->user_access_messages($USER->id, true);
-            if ($message === false) {
-                if ($this->user_can_take($USER->id)) {
-                    if ($this->questions) { // Sanity check.
-                        if ($this->user_has_saved_response($USER->id)) {
-                            $this->page->add_to_page(
-                                'respondentinfo',
-                                $this->renderer->homelink(
-                                    $CFG->wwwroot . '/mod/questionnaire/complete.php?' .
-                                        'id=' . $this->cm->id . '&resume=1',
-                                    $resumesurvey
-                                )
-                            );
-                        }
-                    }
-                }
-            }
-        }
-        return;
-    }
-
-    // Survey Results Methods.
 
     /**
      * Add the navigation to the responses page.
@@ -2917,81 +1452,6 @@ class questionnaire {
     }
 
     /**
-     * Get unique list of question types used in the current survey.
-     * author: Guy Thomas
-     * @param bool $uniquebytable
-     * @return array
-     */
-    private function get_survey_questiontypes($uniquebytable = false) {
-
-        $uniquetypes = [];
-        $uniquetables = [];
-
-        foreach ($this->questions as $question) {
-            $type = $question->typeid();
-            $responsetable = $question->responsetable();
-            // Build SQL for this question type if not already done.
-            if (!$uniquebytable || !in_array($responsetable, $uniquetables)) {
-                if (!in_array($type, $uniquetypes)) {
-                    $uniquetypes[] = $type;
-                }
-                if (!in_array($responsetable, $uniquetables)) {
-                    $uniquetables[] = $responsetable;
-                }
-            }
-        }
-
-        return $uniquetypes;
-    }
-
-    /**
-     * Return array of all types considered to be choices.
-     *
-     * @return array
-     */
-    private function choice_types() {
-        return [QUESRADIO, QUESDROP, QUESCHECK, QUESRATE];
-    }
-
-    /**
-     * Return all the fields to be used for users in questionnaire sql.
-     * author: Guy Thomas
-     * @return array|string
-     */
-    private function user_fields() {
-        if (class_exists('\core_user\fields')) {
-            $userfieldsarr = \core_user\fields::get_name_fields();
-        } else {
-            $userfieldsarr = get_all_user_name_fields();
-        }
-        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution']);
-        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution', 'idnumber']);
-        return $userfieldsarr;
-    }
-
-    /**
-     * Get all survey responses in one go.
-     * author: Guy Thomas
-     * @param string $rid
-     * @param string $userid
-     * @param bool $groupid
-     * @param int $showincompletes
-     * @return array
-     */
-    private function get_survey_all_responses($rid = '', $userid = '', $groupid = false, $showincompletes = 0) {
-        return $this->responses()->get_survey_all_responses($rid, $userid, $groupid, $showincompletes);
-    }
-
-    /**
-     * Return true if the survey is a 'public' one.
-     *
-     * @return boolean
-     */
-    private function survey_is_public() {
-        return is_object($this->survey) && ($this->survey->realm == 'public');
-    }
-
-    /**
      * Return true if the survey is a 'public' one and this is the master instance.
      *
      * @return boolean
@@ -3099,153 +1559,6 @@ class questionnaire {
         $status = $status && $DB->delete_records('questionnaire_survey', ['id' => $sid]);
 
         return $status;
-    }
-
-    /**
-     * Process individual row for csv output
-     * @param array $row
-     * @param stdClass $resprow resultset row
-     * @param int $currentgroupid
-     * @param array $questionsbyposition
-     * @param int $nbinfocols
-     * @param int $numrespcols
-     * @param array $options
-     * @param array $identityfields
-     * @return array
-     */
-    private function process_csv_row(
-        array &$row,
-        stdClass $resprow,
-        $currentgroupid,
-        array &$questionsbyposition,
-        $nbinfocols,
-        $numrespcols,
-        $options,
-        $identityfields
-    ) {
-        global $DB;
-
-        // If using an anonymous response, map users to unique user numbers so that number of unique anonymous users can be seen.
-        static $anonumap = [];
-
-        $positioned = [];
-        $user = new stdClass();
-        foreach ($this->user_fields() as $userfield) {
-            $user->$userfield = $resprow->$userfield;
-        }
-        $user->id = $resprow->userid;
-        $isanonymous = ($this->respondenttype == 'anonymous');
-
-        // Moodle:
-        // Get the course name that this questionnaire belongs to.
-        if (!$this->survey_is_public()) {
-            $courseid = $this->course->id;
-            $coursename = $this->course->fullname;
-        } else {
-            // For a public questionnaire, look for the course that used it.
-            $sql = 'SELECT q.id, q.course, c.fullname ' .
-                   'FROM {questionnaire_response} qr ' .
-                   'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
-                   'INNER JOIN {course} c ON q.course = c.id ' .
-                   'WHERE qr.id = ? AND qr.complete = ? ';
-            if ($record = $DB->get_record_sql($sql, [$resprow->rid, 'y'])) {
-                $courseid = $record->course;
-                $coursename = $record->fullname;
-            } else {
-                $courseid = $this->course->id;
-                $coursename = $this->course->fullname;
-            }
-        }
-
-        // Moodle:
-        // Determine if the user is a member of a group in this course or not.
-        // TODO - review for performance.
-        $groupname = '';
-        if (groups_get_activity_groupmode($this->cm, $this->course)) {
-            if ($currentgroupid > 0) {
-                $groupname = groups_get_group_name($currentgroupid);
-            } else {
-                if ($user->id) {
-                    if ($groups = groups_get_all_groups($courseid, $user->id)) {
-                        foreach ($groups as $group) {
-                            $groupname .= $group->name . ', ';
-                        }
-                        $groupname = substr($groupname, 0, strlen($groupname) - 2);
-                    } else {
-                        $groupname = ' (' . get_string('groupnonmembers') . ')';
-                    }
-                }
-            }
-        }
-
-        if ($isanonymous) {
-            if (!isset($anonumap[$user->id])) {
-                $anonumap[$user->id] = count($anonumap) + 1;
-            }
-            $fullname = get_string('anonymous', 'questionnaire') . $anonumap[$user->id];
-            $username = '';
-            $uid = '';
-        } else {
-            $uid = $user->id;
-            $fullname = fullname($user);
-            $username = $user->username;
-        }
-
-        if (in_array('response', $options)) {
-            array_push($positioned, $resprow->rid);
-        }
-        if (in_array('submitted', $options)) {
-            // For better compabitility & readability with Excel.
-            $submitted = date(get_string('strfdateformatcsv', 'questionnaire'), $resprow->submitted);
-            array_push($positioned, $submitted);
-        }
-        if (in_array('institution', $options)) {
-            array_push($positioned, $user->institution);
-        }
-        if (in_array('department', $options)) {
-            array_push($positioned, $user->department);
-        }
-        if (in_array('course', $options)) {
-            array_push($positioned, $coursename);
-        }
-        if (in_array('group', $options)) {
-            array_push($positioned, $groupname);
-        }
-        if (in_array('id', $options)) {
-            array_push($positioned, $uid);
-        }
-        if (in_array('useridnumber', $options)) {
-            array_push($positioned, $user->idnumber);
-        }
-        if (in_array('fullname', $options)) {
-            array_push($positioned, $fullname);
-        }
-        if (in_array('username', $options)) {
-            array_push($positioned, $username);
-        }
-        if (in_array('complete', $options)) {
-            array_push($positioned, $resprow->complete);
-        }
-        foreach ($identityfields as $field) {
-            array_push($positioned, $resprow->$field);
-        }
-
-        for ($c = $nbinfocols; $c < $numrespcols; $c++) {
-            if (isset($row[$c])) {
-                $positioned[] = $row[$c];
-            } else if (isset($questionsbyposition[$c])) {
-                $question = $questionsbyposition[$c];
-                $qtype = intval($question->typeid());
-                if ($qtype === QUESCHECK) {
-                    $positioned[] = '0';
-                } else {
-                    $positioned[] = null;
-                }
-            } else {
-                $positioned[] = null;
-            }
-        }
-        return $positioned;
     }
 
     /**
@@ -4346,8 +2659,6 @@ class questionnaire {
         return $feedbackmessages;
     }
 
-    // Mobile support area.
-
     /**
      * Save the data from the mobile app.
      * @param int $userid
@@ -4432,6 +2743,1683 @@ class questionnaire {
         }
 
         return $areas;
+    }
+
+    /**
+     * Adding a survey record to the object.
+     * @param int $sid
+     * @param null $survey
+     */
+    private function add_survey($sid = 0, $survey = null) {
+        global $DB;
+
+        if ($sid) {
+            $this->survey = $DB->get_record('questionnaire_survey', ['id' => $sid]);
+        } else if (is_object($survey)) {
+            $this->survey = clone($survey);
+        }
+    }
+
+    /**
+     * Load the response information from a submitted web form.
+     *
+     * @param stdClass $formdata
+     */
+    private function add_response_from_formdata(stdClass $formdata) {
+        $this->responses()->add_response_from_formdata($formdata);
+    }
+
+    /**
+     * Return a response object from a submitted mobile app form.
+     *
+     * @param stdClass $appdata
+     * @param int $sec
+     * @param int $responseid
+     * @return bool|\mod_questionnaire\local\response\response
+     */
+    private function build_response_from_appdata(stdClass $appdata, $sec = 0, int $responseid = 0) {
+        return $this->responses()->build_response_from_appdata($appdata, $sec, $responseid);
+    }
+
+    /**
+     * Add the renderer to the questionnaire object.
+     * @param plugin_renderer_base $renderer The module renderer, extended from core renderer.
+     */
+    private function add_renderer(plugin_renderer_base $renderer) {
+        $this->renderer = $renderer;
+    }
+
+    /**
+     * Add the templatable page to the questionnaire object.
+     * @param templatable $page The page to render, implementing core classes.
+     */
+    private function add_page($page) {
+        $this->page = $page;
+    }
+
+    /**
+     * Return true if pages should be automatically numbered.
+     * @return bool
+     */
+    private function pages_autonumbered() {
+        // Value of 2 if pages should be numbered. Value of 3 if both questions and pages should be numbered.
+        return (!empty($this->autonum) && (($this->autonum == 2) || ($this->autonum == 3)));
+    }
+
+    /**
+     * The main module view function.
+     */
+    private function view() {
+        global $CFG, $USER, $PAGE;
+
+        $PAGE->set_title(format_string($this->name));
+        $PAGE->set_heading(format_string($this->course->fullname));
+        $message = $this->user_access_messages($USER->id, true);
+        if ($message !== false) {
+            $this->page->add_to_page('notifications', $message);
+        } else {
+            // Handle the main questionnaire completion page.
+            $quser = $USER->id;
+
+            $msg = $this->print_survey($quser, $USER->id);
+
+            // If Questionnaire was submitted with all required fields completed ($msg is empty),
+            // then record the submittal.
+            $viewform = data_submitted($CFG->wwwroot . "/mod/questionnaire/complete.php");
+            if (
+                $viewform && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
+                ($viewform->submittype == "Submit Survey") && empty($msg)
+            ) {
+                if (!empty($viewform->rid)) {
+                    $viewform->rid = (int)$viewform->rid;
+                }
+                if (!empty($viewform->sec)) {
+                    $viewform->sec = (int)$viewform->sec;
+                }
+                $this->response_delete($viewform->rid, $viewform->sec);
+                $this->rid = $this->response_insert($viewform, $quser);
+                $this->response_commit($this->rid);
+
+                $this->update_grades($quser);
+
+                // Update completion state.
+                $completion = new completion_info($this->course);
+                if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
+                    $completion->update_state($this->cm, COMPLETION_COMPLETE);
+                }
+
+                // Log this submitted response. Note this removes the anonymity in the logged event.
+                $context = context_module::instance($this->cm->id);
+                $anonymous = $this->respondenttype == 'anonymous';
+                $params = [
+                    'context' => $context,
+                    'courseid' => $this->course->id,
+                    'relateduserid' => $USER->id,
+                    'anonymous' => $anonymous,
+                    'other' => ['questionnaireid' => $this->id],
+                ];
+                $event = \mod_questionnaire\event\attempt_submitted::create($params);
+                $event->trigger();
+
+                $this->submission_notify($this->rid);
+                $this->response_goto_thankyou();
+            }
+        }
+    }
+
+    /**
+     * Commit the response.
+     * @param int $rid
+     * @param int $quser
+     */
+    private function commit_submission_response($rid, $quser) {
+        $this->responses()->commit_submission_response($rid, $quser);
+    }
+
+    /**
+     * Update the grade for this questionnaire and user.
+     *
+     * @param int $userid
+     */
+    private function update_grades($userid) {
+        if ($this->grade != 0) {
+            $questionnaire = new \stdClass();
+            $questionnaire->id = $this->id;
+            $questionnaire->name = $this->name;
+            $questionnaire->grade = $this->grade;
+            $questionnaire->cmidnumber = $this->cm->idnumber;
+            $questionnaire->courseid = $this->course->id;
+            questionnaire_update_grades($questionnaire, $userid);
+        }
+    }
+
+    /**
+     * True if the questionnaire is active.
+     * @return bool
+     */
+    private function is_active() {
+        return (!empty($this->survey));
+    }
+
+    /**
+     * Return the questionnaire instance ID.
+     *
+     * @return int
+     */
+    private function id() {
+        return $this->id;
+    }
+
+    /**
+     * Return the course-module object for this questionnaire.
+     *
+     * @return \stdClass|\cm_info
+     */
+    private function coursemodule() {
+        return $this->cm;
+    }
+
+    /**
+     * Return the course object for this questionnaire.
+     *
+     * @return \stdClass
+     */
+    private function course() {
+        return $this->course;
+    }
+
+    /**
+     * Return the survey ID associated with this questionnaire.
+     *
+     * @return int
+     */
+    private function surveyid() {
+        return $this->sid;
+    }
+
+    /**
+     * True if the current user can manage this questionnaire.
+     *
+     * @return bool
+     */
+    private function can_manage_questionnaire() {
+        return (bool)$this->capabilities->manage;
+    }
+
+    /**
+     * True if the current user can edit questions.
+     *
+     * @return bool
+     */
+    private function can_edit_questions() {
+        return (bool)$this->capabilities->editquestions;
+    }
+
+    /**
+     * True if the current user can view this questionnaire.
+     *
+     * @return bool
+     */
+    private function can_view() {
+        return (bool)$this->capabilities->view;
+    }
+
+    /**
+     * True if the current user can preview this questionnaire.
+     *
+     * @return bool
+     */
+    private function can_preview() {
+        return (bool)$this->capabilities->preview;
+    }
+
+    /**
+     * True if the current user can read their own responses.
+     *
+     * @return bool
+     */
+    private function can_read_own_responses() {
+        return (bool)$this->capabilities->readownresponses;
+    }
+
+    /**
+     * True if the current user can download responses.
+     *
+     * @return bool
+     */
+    private function can_download_responses() {
+        return (bool)$this->capabilities->downloadresponses;
+    }
+
+    /**
+     * True if the current user can view a single response.
+     *
+     * @return bool
+     */
+    private function can_view_single_response() {
+        return (bool)$this->capabilities->viewsingleresponse;
+    }
+
+    /**
+     * True if the current user can delete responses.
+     *
+     * @return bool
+     */
+    private function can_delete_responses() {
+        return (bool)$this->capabilities->deleteresponses;
+    }
+
+    /**
+     * Load and return the capabilities object for the current user in this questionnaire context.
+     * @return stdClass
+     */
+    private function load_capabilities() {
+        $context = $this->context ?? context_module::instance($this->cm->id);
+        $cb = new stdClass();
+        $cb->view = has_capability('mod/questionnaire:view', $context);
+        $cb->submit = has_capability('mod/questionnaire:submit', $context);
+        $cb->viewsingleresponse = has_capability('mod/questionnaire:viewsingleresponse', $context);
+        $cb->submissionnotification = has_capability('mod/questionnaire:submissionnotification', $context);
+        $cb->downloadresponses = has_capability('mod/questionnaire:downloadresponses', $context);
+        $cb->deleteresponses = has_capability('mod/questionnaire:deleteresponses', $context);
+        $cb->manage = has_capability('mod/questionnaire:manage', $context);
+        $cb->editquestions = has_capability('mod/questionnaire:editquestions', $context);
+        $cb->createtemplates = has_capability('mod/questionnaire:createtemplates', $context);
+        $cb->createpublic = has_capability('mod/questionnaire:createpublic', $context);
+        $cb->readownresponses = has_capability('mod/questionnaire:readownresponses', $context);
+        $cb->readallresponses = has_capability('mod/questionnaire:readallresponses', $context);
+        $cb->readallresponseanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
+        $cb->printblank = has_capability('mod/questionnaire:printblank', $context);
+        $cb->preview = has_capability('mod/questionnaire:preview', $context);
+        $cb->viewhiddenactivities = has_capability('moodle/course:viewhiddenactivities', $context, null, false);
+        return $cb;
+    }
+
+    /**
+     * True if the questionnaire is open.
+     * @return bool
+     */
+    private function is_open() {
+        return ($this->opendate > 0) ? ($this->opendate < time()) : true;
+    }
+
+    /**
+     * True if the questionnaire is closed.
+     * @return bool
+     */
+    private function is_closed() {
+        return ($this->closedate > 0) ? ($this->closedate < time()) : false;
+    }
+
+    /**
+     * True if the specified user can complete this questionnaire.
+     * @param int $userid
+     * @return bool
+     */
+    private function user_can_take($userid) {
+
+        if (!$this->is_active() || !$this->user_is_eligible($userid)) {
+            return false;
+        } else if ($this->qtype == QUESTIONNAIREUNLIMITED) {
+            return true;
+        } else if ($userid > 0) {
+            return $this->user_time_for_new_attempt($userid);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * True if the specified user is eligible to complete this questionnaire.
+     * @param int $userid
+     * @return bool
+     */
+    private function user_is_eligible($userid) {
+        return ($this->capabilities->view && $this->capabilities->submit);
+    }
+
+    /**
+     * True if the accessing course contains the actual questionnaire, as opposed to an instance of a public questionnaire.
+     * @return bool
+     */
+    private function is_survey_owner() {
+        return (!empty($this->survey->courseid) && ($this->course->id == $this->survey->courseid));
+    }
+
+    /**
+     * True if the user can view the specified response.
+     * @param int $rid
+     * @return bool|void
+     */
+    private function can_view_response($rid) {
+        global $USER, $DB;
+
+        if (!empty($rid)) {
+            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
+
+            // If the response was not found, can't view it.
+            if (empty($response)) {
+                return false;
+            }
+
+            // If the response belongs to a different survey than this one, can't view it.
+            if ($response->questionnaireid != $this->id) {
+                return false;
+            }
+
+            // If you can view all responses always, then you can view it.
+            if ($this->capabilities->readallresponseanytime) {
+                return true;
+            }
+
+            // If you are allowed to view this response for another user.
+            // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
+            if (
+                $this->capabilities->readallresponses &&
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
+            ) {
+                return true;
+            }
+
+            // If you can read your own response.
+            if (
+                ($response->userid == $USER->id) && $this->capabilities->readownresponses &&
+                ($this->count_submissions($USER->id) > 0)
+            ) {
+                return true;
+            }
+        } else {
+            // If you can view all responses always, then you can view it.
+            if ($this->capabilities->readallresponseanytime) {
+                return true;
+            }
+
+            // If you are allowed to view this response for another user.
+            // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
+            if (
+                $this->capabilities->readallresponses &&
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
+            ) {
+                return true;
+            }
+
+            // If you can read your own response.
+            if ($this->capabilities->readownresponses && ($this->count_submissions($USER->id) > 0)) {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * True if the user can view the responses to this questionnaire, and there are valid responses.
+     *
+     * @param null|int $usernumresp
+     * @param bool $isviewreport
+     * @return bool
+     */
+    private function can_view_all_responses($usernumresp = null, $isviewreport = false) {
+        global $USER, $SESSION;
+
+        $owner = $this->is_survey_owner();
+        $numresp = $this->count_submissions();
+        if ($usernumresp === null) {
+            $usernumresp = $this->count_submissions($USER->id);
+        }
+
+        // Number of Responses in currently selected group (or all participants etc.).
+        if (isset($SESSION->questionnaire->numselectedresps)) {
+            $numselectedresps = $SESSION->questionnaire->numselectedresps;
+        } else {
+            $numselectedresps = $numresp;
+        }
+
+        // If questionnaire is set to separate groups, prevent user who is not member of any group
+        // to view All responses.
+        $canviewgroups = true;
+        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
+        $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
+        if ($groupmode == 1) {
+            $canviewgroups = groups_has_membership($this->cm, $USER->id);
+        }
+
+        $grouplogic = $canviewgroups || $canviewallgroups;
+        $respslogic = ($numresp > 0) && ($numselectedresps > 0) || $isviewreport;
+        return $this->can_view_all_responses_anytime($grouplogic, $respslogic) ||
+            $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic);
+    }
+
+    /**
+     * True if the user can view all of the responses to this questionnaire any time, and there are valid responses.
+     * @param bool $grouplogic
+     * @param bool $respslogic
+     * @return bool
+     */
+    private function can_view_all_responses_anytime($grouplogic = true, $respslogic = true) {
+        // Can view if you are a valid group user, this is the owning course, and there are responses, and you have no
+        // response view restrictions.
+        return $grouplogic && $respslogic && $this->is_survey_owner() && $this->capabilities->readallresponseanytime;
+    }
+
+    /**
+     * True if the user can view all of the responses to this questionnaire any time, and there are valid responses.
+     * @param null|int $usernumresp
+     * @param bool $grouplogic
+     * @param bool $respslogic
+     * @return bool
+     */
+    private function can_view_all_responses_with_restrictions($usernumresp, $grouplogic = true, $respslogic = true) {
+        // Can view if you are a valid group user, this is the owning course, and there are responses, and you can view
+        // subject to viewing settings..
+        return $grouplogic && $respslogic && $this->is_survey_owner() &&
+            ($this->capabilities->readallresponses &&
+                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
+                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
+                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
+    }
+
+    /**
+     * Return the number of submissions for this questionnaire.
+     * @param bool $userid
+     * @param int $groupid
+     * @return int
+     */
+    private function count_submissions($userid = false, $groupid = 0) {
+        global $DB;
+
+        $params = [];
+        $groupsql = '';
+        $groupcnd = '';
+        if ($groupid != 0) {
+            $groupsql = 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
+            $groupcnd = ' AND gm.groupid = :groupid ';
+            $params['groupid'] = $groupid;
+        }
+
+        // Since submission can be across questionnaires in the case of public questionnaires, need to check the realm.
+        // Public questionnaires can have responses to multiple questionnaire instances.
+        if ($this->survey_is_public_master()) {
+            $sql = 'SELECT COUNT(r.id) ' .
+                'FROM {questionnaire_response} r ' .
+                'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
+                'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
+                $groupsql .
+                'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
+            $params['surveyid'] = $this->sid;
+            $params['status'] = 'y';
+        } else {
+            $sql = 'SELECT COUNT(r.id) ' .
+                'FROM {questionnaire_response} r ' .
+                $groupsql .
+                'WHERE r.questionnaireid = :questionnaireid AND r.complete = :status' . $groupcnd;
+            $params['questionnaireid'] = $this->id;
+            $params['status'] = 'y';
+        }
+        if ($userid) {
+            $sql .= ' AND r.userid = :userid';
+            $params['userid'] = $userid;
+        }
+        return $DB->count_records_sql($sql, $params);
+    }
+
+    /**
+     * Get the requested responses for this questionnaire.
+     *
+     * @param int|bool $userid
+     * @param int $groupid
+     * @return array
+     */
+    private function get_responses($userid = false, $groupid = 0) {
+        return $this->responses()->get_responses($userid, $groupid);
+    }
+
+    /**
+     * True if any of the questions are required.
+     * @param int $section
+     * @return bool
+     */
+    private function has_required($section = 0) {
+        if (empty($this->questions)) {
+            return false;
+        } else if ($section <= 0) {
+            foreach ($this->questions as $question) {
+                if ($question->required()) {
+                    return true;
+                }
+            }
+        } else if (key_exists($section, $this->questionsbysec)) {
+            foreach ($this->questionsbysec[$section] as $questionid) {
+                if ($this->questions[$questionid]->required()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get a list of all dependent questions.
+     * @param int $questionid
+     * @return array
+     */
+    private function get_all_dependants($questionid) {
+        $directids = $this->get_dependants($questionid);
+        $directs = [];
+        $indirects = [];
+        foreach ($directids as $directid) {
+            $this->load_parents($this->questions[$directid]);
+            $indirectids = $this->get_dependants($directid);
+            foreach ($this->questions[$directid]->dependencies as $dep) {
+                if ($dep->dependquestionid == $questionid) {
+                    $directs[$directid][] = $dep;
+                }
+            }
+            foreach ($indirectids as $indirectid) {
+                $this->load_parents($this->questions[$indirectid]);
+                foreach ($this->questions[$indirectid]->dependencies as $dep) {
+                    if ($dep->dependquestionid != $questionid) {
+                        $indirects[$indirectid][] = $dep;
+                    }
+                }
+            }
+        }
+        $alldependants = new stdClass();
+        $alldependants->directs = $directs;
+        $alldependants->indirects = $indirects;
+        return($alldependants);
+    }
+
+    /**
+     * Get a list of all dependent questions.
+     * @param int $questionid
+     * @return array
+     */
+    private function get_dependants($questionid) {
+        $qu = [];
+        // Create an array which shows for every question the child-IDs.
+        foreach ($this->questions as $question) {
+            if ($question->has_dependencies()) {
+                foreach ($question->dependencies as $dependency) {
+                    if (($dependency->dependquestionid == $questionid) && !in_array($question->id(), $qu)) {
+                        $qu[] = $question->id();
+                    }
+                }
+            }
+        }
+        return($qu);
+    }
+
+    /**
+     * Function to sort descendants array in get_dependants function.
+     * @param mixed $a
+     * @param mixed $b
+     * @return int
+     */
+    private static function cmp($a, $b) {
+        if ($a == $b) {
+            return 0;
+        } else if ($a < $b) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+
+    /**
+     * Get all descendants and choices for questions with descendants.
+     * @return array
+     */
+    private function get_dependants_and_choices() {
+        $questions = array_reverse($this->questions, true);
+        $parents = [];
+        foreach ($questions as $question) {
+            foreach ($question->dependencies as $dependency) {
+                $child = new stdClass();
+                $child->choiceid = $dependency->dependchoiceid;
+                $child->logic = $dependency->dependlogic;
+                $child->andor = $dependency->dependandor;
+                $parents[$dependency->dependquestionid][$question->id()][] = $child;
+            }
+        }
+        return($parents);
+    }
+
+    /**
+     * Determine the next valid page and return it. Return false if no valid next page.
+     * @param int $secnum
+     * @param int $rid
+     * @return int | bool
+     */
+    private function next_page($secnum, $rid) {
+        $secnum++;
+        $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
+        if ($this->has_dependencies()) {
+            while (!$this->eligible_questions_on_page($secnum, $rid)) {
+                $secnum++;
+                // We have reached the end of questionnaire on a page without any question left.
+                if ($secnum > $numsections) {
+                    $secnum = false;
+                    break;
+                }
+            }
+        }
+        return $secnum;
+    }
+
+    /**
+     * Determine the previous valid page and return it. Return false if no valid previous page.
+     * @param int $secnum
+     * @param int $rid
+     * @return int | bool
+     */
+    private function prev_page($secnum, $rid) {
+        $secnum--;
+        if ($this->has_dependencies()) {
+            while (($secnum > 0) && !$this->eligible_questions_on_page($secnum, $rid)) {
+                $secnum--;
+            }
+        }
+        if ($secnum === 0) {
+            $secnum = false;
+        }
+        return $secnum;
+    }
+
+    /**
+     * Return the correct action to a next page request.
+     * @param mod_questionnaire\local\response\response $response
+     * @param int $userid
+     * @return bool|int|string
+     */
+    private function next_page_action($response, $userid) {
+        $msg = $this->response_check_format($response->sec, $response);
+        if (empty($msg)) {
+            $response->rid = $this->existing_response_action($response, $userid);
+            return $this->next_page($response->sec, $response->rid);
+        } else {
+            return $msg;
+        }
+    }
+
+    /**
+     * Return the correct action to a previous page request.
+     * @param mod_questionnaire\local\response\response $response
+     * @param int $userid
+     * @return bool|int
+     */
+    private function previous_page_action($response, $userid) {
+        $response->rid = $this->existing_response_action($response, $userid);
+        return $this->prev_page($response->sec, $response->rid);
+    }
+
+    /**
+     * Handle updating an existing response.
+     * @param mod_questionnaire\local\response\response $response
+     * @param int $userid
+     * @return bool|int
+     */
+    private function existing_response_action($response, $userid) {
+        $this->response_delete($response->rid, $response->sec);
+        return $this->response_insert($response, $userid);
+    }
+
+    /**
+     * Are there any eligible questions to be displayed on the specified page/section.
+     * @param int $secnum The section number to check.
+     * @param int $rid The current response id.
+     * @return boolean
+     */
+    private function eligible_questions_on_page($secnum, $rid) {
+        $questionstodisplay = false;
+
+        foreach ($this->questionsbysec[$secnum] as $questionid) {
+            if ($this->questions[$questionid]->dependency_fulfilled($rid, $this->questions)) {
+                $questionstodisplay = true;
+                break;
+            }
+        }
+        return $questionstodisplay;
+    }
+
+    /**
+     * Print the entire survey page.
+     * @param stdClass $formdata
+     * @param int $section
+     * @param string $message
+     * @return bool|void
+     */
+    private function survey_render(&$formdata, $section = 1, $message = '') {
+
+        $this->usehtmleditor = null;
+
+        if (empty($section)) {
+            $section = 1;
+        }
+        $numsections = isset($this->questionsbysec) ? count($this->questionsbysec) : 0;
+        if ($section > $numsections) {
+            $formdata->sec = $numsections;
+            $this->page->add_to_page(
+                'notifications',
+                $this->renderer->notification(get_string('finished', 'questionnaire'), \core\output\notification::NOTIFY_WARNING)
+            );
+            return(false);  // Invalid section.
+        }
+
+        // Check to see if there are required questions.
+        $hasrequired = $this->has_required($section);
+
+        // Find out what question number we are on $i New fix for question numbering.
+        $i = 0;
+        if ($section > 1) {
+            for ($j = 2; $j <= $section; $j++) {
+                foreach ($this->questionsbysec[$j - 1] as $questionid) {
+                    if ($this->questions[$questionid]->typeid() < QUESPAGEBREAK) {
+                        $i++;
+                    }
+                }
+            }
+        }
+
+        $this->print_survey_start($message, $section, $numsections, $hasrequired, '', 1);
+        // Only show progress bar on questionnaires with more than one page.
+        if ($this->progressbar && isset($this->questionsbysec) && count($this->questionsbysec) > 1) {
+            $this->page->add_to_page(
+                'progressbar',
+                $this->renderer->render_progress_bar($section, $this->questionsbysec)
+            );
+        }
+        if (key_exists($section, $this->questionsbysec)) {
+            foreach ($this->questionsbysec[$section] as $questionid) {
+                if ($this->questions[$questionid]->is_numbered()) {
+                    $i++;
+                }
+                // Need questionnaire id to get the questionnaire object in sectiontext (Label) question class.
+                $formdata->questionnaire_id = $this->id;
+                if (isset($formdata->rid) && !empty($formdata->rid)) {
+                    $this->add_response($formdata->rid);
+                } else {
+                    $this->add_response_from_formdata($formdata);
+                }
+                $this->page->add_to_page(
+                    'questions',
+                    $this->renderer->question_output(
+                        $this->questions[$questionid],
+                        ($this->responses()->get_response($formdata->rid) ?? []),
+                        $i,
+                        $this->usehtmleditor,
+                        [],
+                        $this
+                    )
+                );
+            }
+        }
+
+        $this->print_survey_end($section, $numsections);
+
+        return;
+    }
+
+    /**
+     * Print the start of the survey page.
+     * @param string $message
+     * @param int $section
+     * @param int $numsections
+     * @param bool $hasrequired
+     * @param string $rid
+     * @param bool $blankquestionnaire
+     * @param string $outputtarget
+     */
+    private function print_survey_start(
+        $message,
+        $section,
+        $numsections,
+        $hasrequired,
+        $rid = '',
+        $blankquestionnaire = false,
+        $outputtarget = 'html'
+    ) {
+        global $CFG, $DB;
+        require_once($CFG->libdir . '/filelib.php');
+
+        $userid = '';
+        $resp = '';
+        $groupname = '';
+        $currentgroupid = 0;
+        $timesubmitted = '';
+        // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
+        if ($rid) {
+            $courseid = $this->course->id;
+            if ($resp = $DB->get_record('questionnaire_response', ['id' => $rid])) {
+                if ($this->respondenttype == 'fullname') {
+                    $userid = $resp->userid;
+                    // Display name of group(s) that student belongs to... if questionnaire is set to Groups separate or visible.
+                    if (groups_get_activity_groupmode($this->cm, $this->course)) {
+                        if ($groups = groups_get_all_groups($courseid, $resp->userid)) {
+                            if (count($groups) == 1) {
+                                $group = current($groups);
+                                $currentgroupid = $group->id;
+                                $groupname = ' (' . get_string('group') . ': ' . $group->name . ')';
+                            } else {
+                                $groupname = ' (' . get_string('groups') . ': ';
+                                foreach ($groups as $group) {
+                                    $groupname .= $group->name . ', ';
+                                }
+                                $groupname = substr($groupname, 0, strlen($groupname) - 2) . ')';
+                            }
+                        } else {
+                            $groupname = ' (' . get_string('groupnonmembers') . ')';
+                        }
+                    }
+
+                    $params = [
+                        'objectid' => $this->survey->id,
+                        'context' => $this->context,
+                        'courseid' => $this->course->id,
+                        'relateduserid' => $userid,
+                        'other' => ['action' => 'vresp', 'currentgroupid' => $currentgroupid, 'rid' => $rid],
+                    ];
+                    $event = \mod_questionnaire\event\response_viewed::create($params);
+                    $event->trigger();
+                }
+            }
+        }
+        $ruser = '';
+        if ($resp && !$blankquestionnaire) {
+            if ($userid) {
+                if ($user = $DB->get_record('user', ['id' => $userid])) {
+                    $ruser = fullname($user);
+                }
+            }
+            if ($this->respondenttype == 'anonymous') {
+                $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
+            } else {
+                // JR DEV comment following line out if you do NOT want time submitted displayed in Anonymous surveys.
+                if ($resp->submitted) {
+                    $timesubmitted = '&nbsp;' . get_string('submitted', 'questionnaire') . '&nbsp;' . userdate($resp->submitted);
+                }
+            }
+        }
+        if ($ruser) {
+            $respinfo = '';
+            if ($outputtarget == 'html') {
+                // Disable the pdf function for now, until it looks a lot better.
+                if (false) {
+                    $linkname = get_string('downloadpdf', 'mod_questionnaire');
+                    $link = new moodle_url(
+                        '/mod/questionnaire/report.php',
+                        [
+                            'action' => 'vresp',
+                            'instance' => $this->id,
+                            'target' => 'pdf',
+                            'individualresponse' => 1,
+                            'rid' => $rid,
+                        ]
+                    );
+                    $downpdficon = new pix_icon('b/pdfdown', $linkname, 'mod_questionnaire');
+                    $respinfo .= $this->renderer->action_link($link, null, null, null, $downpdficon);
+                }
+
+                $linkname = get_string('print', 'mod_questionnaire');
+                $link = new \moodle_url(
+                    '/mod/questionnaire/report.php',
+                    [
+                        'action' => 'vresp',
+                        'instance' => $this->id,
+                        'target' => 'print',
+                        'individualresponse' => 1,
+                        'rid' => $rid,
+                    ]
+                );
+                $htmlicon = new pix_icon('t/print', $linkname);
+                $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
+                    'height' => 600, 'width' => 800, 'title' => $linkname];
+                $name = 'popup';
+                $action = new popup_action('click', $link, $name, $options);
+                $respinfo .= $this->renderer->action_link($link, null, $action, ['title' => $linkname], $htmlicon) . '&nbsp;';
+            }
+            $respinfo .= get_string('respondent', 'questionnaire') . ': <strong>' . $ruser . '</strong>';
+            if ($this->survey_is_public()) {
+                // For a public questionnaire, look for the course that used it.
+                $coursename = '';
+                $sql = 'SELECT q.id, q.course, c.fullname ' .
+                       'FROM {questionnaire_response} qr ' .
+                       'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
+                       'INNER JOIN {course} c ON q.course = c.id ' .
+                       'WHERE qr.id = ? AND qr.complete = ? ';
+                if ($record = $DB->get_record_sql($sql, [$rid, 'y'])) {
+                    $coursename = $record->fullname;
+                }
+                $respinfo .= ' ' . get_string('course') . ': ' . $coursename;
+            }
+            $respinfo .= $groupname;
+            $respinfo .= $timesubmitted;
+            $this->page->add_to_page('respondentinfo', $this->renderer->respondent_info($respinfo));
+        }
+
+        // We don't want to display the print icon in the print popup window itself!
+        if ($this->capabilities->printblank && $blankquestionnaire && $section == 1) {
+            // Open print friendly as popup window.
+            $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
+            $title = get_string('printblanktooltip', 'questionnaire');
+            $url = '/mod/questionnaire/print.php?qid=' . $this->id . '&amp;rid=0&amp;' . 'courseid=' .
+                $this->course->id . '&amp;sec=1';
+            $options = [
+                'menubar' => true,
+                'location' => false,
+                'scrollbars' => true,
+                'resizable' => true,
+                'height' => 600,
+                'width' => 800,
+                'title' => $title,
+            ];
+            $name = 'popup';
+            $link = new moodle_url($url);
+            $action = new popup_action('click', $link, $name, $options);
+            $class = "floatprinticon";
+            $this->page->add_to_page(
+                'printblank',
+                $this->renderer->action_link(
+                    $link,
+                    $linkname,
+                    $action,
+                    ['class' => $class, 'title' => $title],
+                    new pix_icon('t/print', $title)
+                )
+            );
+        }
+        if ($section == 1) {
+            if (!empty($this->survey->title)) {
+                $this->survey->title = format_string($this->survey->title);
+                $this->page->add_to_page('title', $this->survey->title);
+            }
+            if (!empty($this->survey->subtitle)) {
+                $this->survey->subtitle = format_string($this->survey->subtitle);
+                $this->page->add_to_page('subtitle', $this->survey->subtitle);
+            }
+            if ($this->survey->info) {
+                $infotext = file_rewrite_pluginfile_urls(
+                    $this->survey->info,
+                    'pluginfile.php',
+                    $this->context->id,
+                    'mod_questionnaire',
+                    'info',
+                    $this->survey->id
+                );
+                $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
+            }
+        }
+
+        if ($message) {
+            $this->page->add_to_page('message', $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR));
+        }
+    }
+
+    /**
+     * Print the end of the survey page.
+     * @param int $section
+     * @param int $numsections
+     */
+    private function print_survey_end($section, $numsections) {
+        // If no pages autonumbering.
+        if (!$this->pages_autonumbered()) {
+            return;
+        }
+        if ($numsections > 1) {
+            $a = new stdClass();
+            $a->page = $section;
+            $a->totpages = $numsections;
+            $this->page->add_to_page(
+                'pageinfo',
+                $this->renderer->container(
+                    get_string('pageof', 'questionnaire', $a) . '&nbsp;&nbsp;',
+                    'surveyPage'
+                )
+            );
+        }
+    }
+
+    /**
+     * Check that all questions have been answered in a suitable way.
+     * @param int $section
+     * @param stdClass $formdata
+     * @param bool $checkmissing
+     * @param bool $checkwrongformat
+     * @return string
+     */
+    private function response_check_format($section, $formdata, $checkmissing = true, $checkwrongformat = true) {
+        return $this->responses()->response_check_format(
+            $section,
+            $formdata,
+            $checkmissing,
+            $checkwrongformat,
+            $this->questions
+        );
+    }
+
+    /**
+     * Delete the spcified response.
+     * @param int $rid
+     * @param null|int $sec
+     */
+    private function response_delete($rid, $sec = null) {
+        $this->responses()->response_delete($rid, $sec);
+    }
+
+    /**
+     * Commit the specified response.
+     * @param int $rid
+     * @return bool
+     */
+    private function response_commit($rid) {
+        return $this->responses()->response_commit($rid);
+    }
+
+    /**
+     * Returns the number of the section in which questions have been answered in a response.
+     * @param int $rid
+     * @return int
+     */
+    private function response_select_max_sec($rid) {
+        global $DB;
+
+        $pos = $this->response_select_max_pos($rid);
+        $select = 'surveyid = ? AND typeid = ? AND position < ? AND deleted IS NULL';
+        $params = [$this->sid, QUESPAGEBREAK, $pos];
+        $max = $DB->count_records_select('questionnaire_question', $select, $params) + 1;
+
+        return $max;
+    }
+
+    /**
+     * Returns the position of the last answered question in a response.
+     * @param int $rid
+     * @return int
+     */
+    private function response_select_max_pos($rid) {
+        global $DB;
+
+        $max = 0;
+
+        foreach (
+            [
+                'response_bool',
+                'resp_single',
+                'resp_multiple',
+                'response_rank',
+                'response_text',
+                'response_other',
+                'response_date',
+            ] as $tbl
+        ) {
+            $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_' . $tbl . '} a, {questionnaire_question} q ' .
+                'WHERE a.responseid = ? AND ' .
+                'q.id = a.questionid AND ' .
+                'q.surveyid = ? AND ' .
+                'q.deleted IS NULL';
+            if ($record = $DB->get_record_sql($sql, [$rid, $this->sid])) {
+                $newmax = (int)$record->num;
+                if ($newmax > $max) {
+                    $max = $newmax;
+                }
+            }
+        }
+        return $max;
+    }
+
+    /**
+     * Send submission notifications to users with "submissionnotification" capability.
+     * @param int $rid The id of the response record.
+     * @return boolean Operation success.
+     *
+     */
+    private function send_submission_notifications($rid) {
+        global $CFG, $USER;
+
+        $this->add_response($rid);
+        $message = '';
+
+        if ($this->notifications == 2) {
+            $message .= $this->get_full_submission_for_notifications($rid);
+        }
+
+        $success = true;
+        if ($notifyusers = $this->get_notifiable_users($USER->id)) {
+            $info = new stdClass();
+            // Need to handle user differently for anonymous surveys.
+            if ($this->respondenttype != 'anonymous') {
+                $info->userfrom = $USER;
+                $info->username = fullname($info->userfrom, true);
+                $info->profileurl = $CFG->wwwroot . '/user/view.php?id=' . $info->userfrom->id . '&course=' . $this->course->id;
+                $langstringtext = 'submissionnotificationtextuser';
+                $langstringhtml = 'submissionnotificationhtmluser';
+            } else {
+                $info->userfrom = \core_user::get_noreply_user();
+                $info->username = '';
+                $info->profileurl = '';
+                $langstringtext = 'submissionnotificationtextanon';
+                $langstringhtml = 'submissionnotificationhtmlanon';
+            }
+            $info->name = format_string($this->name);
+            $info->submissionurl = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&sid=' . $this->survey->id .
+                '&rid=' . $rid . '&instance=' . $this->id;
+            $info->coursename = format_string($this->course->fullname);
+
+            $info->postsubject = get_string('submissionnotificationsubject', 'questionnaire');
+            $info->posttext = get_string($langstringtext, 'questionnaire', $info);
+            $info->posthtml = '<p>' . get_string($langstringhtml, 'questionnaire', $info) . '</p>';
+            if (!empty($message)) {
+                $info->posttext .= html_to_text($message);
+                $info->posthtml .= $message;
+            }
+
+            foreach ($notifyusers as $notifyuser) {
+                $info->userto = $notifyuser;
+                $this->send_message($info, 'notification');
+            }
+        }
+
+        return $success;
+    }
+
+    /**
+     * Message someone about something.
+     *
+     * @param object $info The information for the message.
+     * @param string $eventtype
+     * @return void
+     */
+    private function send_message($info, $eventtype) {
+        $eventdata = new \core\message\message();
+        $eventdata->courseid = $this->course->id;
+        $eventdata->modulename = 'questionnaire';
+        $eventdata->userfrom = $info->userfrom;
+        $eventdata->userto = $info->userto;
+        $eventdata->subject = $info->postsubject;
+        $eventdata->fullmessage = $info->posttext;
+        $eventdata->fullmessageformat = FORMAT_PLAIN;
+        $eventdata->fullmessagehtml = $info->posthtml;
+        $eventdata->smallmessage = $info->postsubject;
+
+        $eventdata->name = $eventtype;
+        $eventdata->component = 'mod_questionnaire';
+        $eventdata->notification = 1;
+        $eventdata->contexturl = $info->submissionurl;
+        $eventdata->contexturlname = $info->name;
+
+        message_send($eventdata);
+    }
+
+    /**
+     * Returns a list of users that should receive notification about given submission.
+     *
+     * @param int $userid The submission to grade
+     * @return array
+     */
+    private function get_notifiable_users($userid) {
+        // Potential users should be active users only.
+        $potentialusers = get_enrolled_users(
+            $this->context,
+            'mod/questionnaire:submissionnotification',
+            null,
+            'u.*',
+            null,
+            null,
+            null,
+            true
+        );
+
+        $notifiableusers = [];
+        if (groups_get_activity_groupmode($this->cm) == SEPARATEGROUPS) {
+            if ($groups = groups_get_all_groups($this->course->id, $userid, $this->cm->groupingid)) {
+                foreach ($groups as $group) {
+                    foreach ($potentialusers as $potentialuser) {
+                        if ($potentialuser->id == $userid) {
+                            // Do not send self.
+                            continue;
+                        }
+                        if (groups_is_member($group->id, $potentialuser->id)) {
+                            $notifiableusers[$potentialuser->id] = $potentialuser;
+                        }
+                    }
+                }
+            } else {
+                // User not in group, try to find graders without group.
+                foreach ($potentialusers as $potentialuser) {
+                    if ($potentialuser->id == $userid) {
+                        // Do not send self.
+                        continue;
+                    }
+                    if (!groups_has_membership($this->cm, $potentialuser->id)) {
+                        $notifiableusers[$potentialuser->id] = $potentialuser;
+                    }
+                }
+            }
+        } else {
+            foreach ($potentialusers as $potentialuser) {
+                if ($potentialuser->id == $userid) {
+                    // Do not send self.
+                    continue;
+                }
+                $notifiableusers[$potentialuser->id] = $potentialuser;
+            }
+        }
+        return $notifiableusers;
+    }
+
+    /**
+     * Return a formatted string containing all the questions and answers for a specific submission.
+     * @param int $rid
+     * @return string
+     */
+    private function get_full_submission_for_notifications($rid) {
+        $responses = $this->get_full_submission_for_export($rid);
+        $message = '';
+        foreach ($responses as $response) {
+            $message .= html_to_text(format_string($response->questionname)) . "<br />\n";
+            $message .= get_string('question') . ': ' . html_to_text(format_string($response->questiontext)) . "<br />\n";
+            $message .= get_string('answers', 'questionnaire') . ":<br />\n";
+            foreach ($response->answers as $answer) {
+                $message .= html_to_text($answer) . "<br />\n";
+            }
+            $message .= "<br />\n";
+        }
+
+        return $message;
+    }
+
+    /**
+     * Return a JSON structure containing all the questions and answers for a specific submission.
+     * @param int $rid
+     * @return array
+     */
+    private function get_full_submission_for_export($rid) {
+        return $this->responses()->get_full_submission_for_export($rid);
+    }
+
+    /**
+     * Format the submission answers for legacy email delivery.
+     * @param array $answers The array of response answers.
+     * @return array The formatted set of answers as plain text and HTML.
+     */
+    private function get_formatted_answers_for_emails($answers) {
+        global $USER;
+
+        // Line endings for html and plaintext emails.
+        $endhtml = "\r\n<br />";
+        $endplaintext = "\r\n";
+
+        reset($answers);
+
+        $formatted = ['plaintext' => '', 'html' => ''];
+        for ($i = 0; $i < count($answers[0]); $i++) {
+            $sep = ' : ';
+
+            switch ($i) {
+                case 1:
+                    $sep = ' ';
+                    break;
+                case 4:
+                    $formatted['plaintext'] .= get_string('user') . ' ';
+                    $formatted['html'] .= get_string('user') . ' ';
+                    break;
+                case 6:
+                    if ($this->respondenttype != 'anonymous') {
+                        $formatted['html'] .= get_string('email') . $sep . $USER->email . $endhtml;
+                        $formatted['plaintext'] .= get_string('email') . $sep . $USER->email . $endplaintext;
+                    }
+            }
+            $formatted['html'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endhtml;
+            $formatted['plaintext'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endplaintext;
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Send the full response submission to the defined email addresses.
+     * @param int $rid The id of the response record.
+     * @param string $email The comma separated list of emails to send to.
+     * @return bool
+     */
+    private function response_send_email($rid, $email) {
+        global $CFG;
+
+        $submission = $this->generate_csv(0, $rid, '', null, 1);
+        if (!empty($submission)) {
+            $answers = $this->get_formatted_answers_for_emails($submission);
+        } else {
+            $answers = ['html' => '', 'plaintext' => ''];
+        }
+
+        $name = s($this->name);
+        if (empty($email)) {
+            return(false);
+        }
+
+        // Line endings for html and plaintext emails.
+        $endhtml = "\r\n<br>";
+        $endplaintext = "\r\n";
+
+        $subject = get_string('surveyresponse', 'questionnaire') . ": $name [$rid]";
+        $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;sid=' . $this->survey->id .
+            '&amp;rid=' . $rid . '&amp;instance=' . $this->id;
+
+        // Html and plaintext body.
+        $bodyhtml = '<a href="' . $url . '">' . $url . '</a>' . $endhtml;
+        $bodyplaintext = $url . $endplaintext;
+        $bodyhtml .= get_string('surveyresponse', 'questionnaire') . ' "' . $name . '"' . $endhtml;
+        $bodyplaintext .= get_string('surveyresponse', 'questionnaire') . ' "' . $name . '"' . $endplaintext;
+
+        $bodyhtml .= $answers['html'];
+        $bodyplaintext .= $answers['plaintext'];
+
+        // Use plaintext version for altbody.
+        $altbody = "\n$bodyplaintext\n";
+
+        $return = true;
+        $mailaddresses = preg_split('/,|;/', $email);
+        foreach ($mailaddresses as $email) {
+            $userto = new stdClass();
+            $userto->email = trim($email);
+            $userto->mailformat = 1;
+            // Dummy userid to keep email_to_user happy in moodle 2.6.
+            $userto->id = -10;
+            $userfrom = $CFG->noreplyaddress;
+            if (email_to_user($userto, $userfrom, $subject, $altbody, $bodyhtml)) {
+                $return = $return && true;
+            } else {
+                $return = false;
+            }
+        }
+        return $return;
+    }
+
+    /**
+     * Insert the provided response.
+     * @param object $responsedata An object containing all data for the response.
+     * @param int $userid
+     * @param bool $resume
+     * @return bool|int
+     */
+    private function response_insert($responsedata, $userid, $resume = false) {
+        return $this->responses()->response_insert($responsedata, $userid, $resume);
+    }
+
+    /**
+     * Get the answers for the all response types.
+     * @param int $rid
+     * @return array
+     */
+    private function response_select($rid) {
+        return $this->responses()->response_select($rid);
+    }
+
+    /**
+     * Redirect to the provided url.
+     * @param string $url
+     */
+    private function response_goto_saved($url) {
+        global $CFG, $USER;
+        $resumesurvey = get_string('resumesurvey', 'questionnaire');
+        $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>' . $resumesurvey . '</strong>');
+
+        $this->page->add_to_page(
+            'notifications',
+            $this->renderer->notification($savedprogress, \core\output\notification::NOTIFY_SUCCESS)
+        );
+        $this->page->add_to_page(
+            'respondentinfo',
+            $this->renderer->homelink(
+                $CFG->wwwroot . '/course/view.php?id=' . $this->course->id,
+                get_string("backto", "moodle", $this->course->fullname)
+            )
+        );
+
+        if ($this->resume) {
+            $message = $this->user_access_messages($USER->id, true);
+            if ($message === false) {
+                if ($this->user_can_take($USER->id)) {
+                    if ($this->questions) { // Sanity check.
+                        if ($this->user_has_saved_response($USER->id)) {
+                            $this->page->add_to_page(
+                                'respondentinfo',
+                                $this->renderer->homelink(
+                                    $CFG->wwwroot . '/mod/questionnaire/complete.php?' .
+                                        'id=' . $this->cm->id . '&resume=1',
+                                    $resumesurvey
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        return;
+    }
+
+    /**
+     * Get unique list of question types used in the current survey.
+     * author: Guy Thomas
+     * @param bool $uniquebytable
+     * @return array
+     */
+    private function get_survey_questiontypes($uniquebytable = false) {
+
+        $uniquetypes = [];
+        $uniquetables = [];
+
+        foreach ($this->questions as $question) {
+            $type = $question->typeid();
+            $responsetable = $question->responsetable();
+            // Build SQL for this question type if not already done.
+            if (!$uniquebytable || !in_array($responsetable, $uniquetables)) {
+                if (!in_array($type, $uniquetypes)) {
+                    $uniquetypes[] = $type;
+                }
+                if (!in_array($responsetable, $uniquetables)) {
+                    $uniquetables[] = $responsetable;
+                }
+            }
+        }
+
+        return $uniquetypes;
+    }
+
+    /**
+     * Return array of all types considered to be choices.
+     *
+     * @return array
+     */
+    private function choice_types() {
+        return [QUESRADIO, QUESDROP, QUESCHECK, QUESRATE];
+    }
+
+    /**
+     * Return all the fields to be used for users in questionnaire sql.
+     * author: Guy Thomas
+     * @return array|string
+     */
+    private function user_fields() {
+        if (class_exists('\core_user\fields')) {
+            $userfieldsarr = \core_user\fields::get_name_fields();
+        } else {
+            $userfieldsarr = get_all_user_name_fields();
+        }
+        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution']);
+        $userfieldsarr = array_merge($userfieldsarr, ['username', 'department', 'institution', 'idnumber']);
+        return $userfieldsarr;
+    }
+
+    /**
+     * Get all survey responses in one go.
+     * author: Guy Thomas
+     * @param string $rid
+     * @param string $userid
+     * @param bool $groupid
+     * @param int $showincompletes
+     * @return array
+     */
+    private function get_survey_all_responses($rid = '', $userid = '', $groupid = false, $showincompletes = 0) {
+        return $this->responses()->get_survey_all_responses($rid, $userid, $groupid, $showincompletes);
+    }
+
+    /**
+     * Return true if the survey is a 'public' one.
+     *
+     * @return boolean
+     */
+    private function survey_is_public() {
+        return is_object($this->survey) && ($this->survey->realm == 'public');
+    }
+
+    /**
+     * Process individual row for csv output
+     * @param array $row
+     * @param stdClass $resprow resultset row
+     * @param int $currentgroupid
+     * @param array $questionsbyposition
+     * @param int $nbinfocols
+     * @param int $numrespcols
+     * @param array $options
+     * @param array $identityfields
+     * @return array
+     */
+    private function process_csv_row(
+        array &$row,
+        stdClass $resprow,
+        $currentgroupid,
+        array &$questionsbyposition,
+        $nbinfocols,
+        $numrespcols,
+        $options,
+        $identityfields
+    ) {
+        global $DB;
+
+        // If using an anonymous response, map users to unique user numbers so that number of unique anonymous users can be seen.
+        static $anonumap = [];
+
+        $positioned = [];
+        $user = new stdClass();
+        foreach ($this->user_fields() as $userfield) {
+            $user->$userfield = $resprow->$userfield;
+        }
+        $user->id = $resprow->userid;
+        $isanonymous = ($this->respondenttype == 'anonymous');
+
+        // Moodle:
+        // Get the course name that this questionnaire belongs to.
+        if (!$this->survey_is_public()) {
+            $courseid = $this->course->id;
+            $coursename = $this->course->fullname;
+        } else {
+            // For a public questionnaire, look for the course that used it.
+            $sql = 'SELECT q.id, q.course, c.fullname ' .
+                   'FROM {questionnaire_response} qr ' .
+                   'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
+                   'INNER JOIN {course} c ON q.course = c.id ' .
+                   'WHERE qr.id = ? AND qr.complete = ? ';
+            if ($record = $DB->get_record_sql($sql, [$resprow->rid, 'y'])) {
+                $courseid = $record->course;
+                $coursename = $record->fullname;
+            } else {
+                $courseid = $this->course->id;
+                $coursename = $this->course->fullname;
+            }
+        }
+
+        // Moodle:
+        // Determine if the user is a member of a group in this course or not.
+        // TODO - review for performance.
+        $groupname = '';
+        if (groups_get_activity_groupmode($this->cm, $this->course)) {
+            if ($currentgroupid > 0) {
+                $groupname = groups_get_group_name($currentgroupid);
+            } else {
+                if ($user->id) {
+                    if ($groups = groups_get_all_groups($courseid, $user->id)) {
+                        foreach ($groups as $group) {
+                            $groupname .= $group->name . ', ';
+                        }
+                        $groupname = substr($groupname, 0, strlen($groupname) - 2);
+                    } else {
+                        $groupname = ' (' . get_string('groupnonmembers') . ')';
+                    }
+                }
+            }
+        }
+
+        if ($isanonymous) {
+            if (!isset($anonumap[$user->id])) {
+                $anonumap[$user->id] = count($anonumap) + 1;
+            }
+            $fullname = get_string('anonymous', 'questionnaire') . $anonumap[$user->id];
+            $username = '';
+            $uid = '';
+        } else {
+            $uid = $user->id;
+            $fullname = fullname($user);
+            $username = $user->username;
+        }
+
+        if (in_array('response', $options)) {
+            array_push($positioned, $resprow->rid);
+        }
+        if (in_array('submitted', $options)) {
+            // For better compabitility & readability with Excel.
+            $submitted = date(get_string('strfdateformatcsv', 'questionnaire'), $resprow->submitted);
+            array_push($positioned, $submitted);
+        }
+        if (in_array('institution', $options)) {
+            array_push($positioned, $user->institution);
+        }
+        if (in_array('department', $options)) {
+            array_push($positioned, $user->department);
+        }
+        if (in_array('course', $options)) {
+            array_push($positioned, $coursename);
+        }
+        if (in_array('group', $options)) {
+            array_push($positioned, $groupname);
+        }
+        if (in_array('id', $options)) {
+            array_push($positioned, $uid);
+        }
+        if (in_array('useridnumber', $options)) {
+            array_push($positioned, $user->idnumber);
+        }
+        if (in_array('fullname', $options)) {
+            array_push($positioned, $fullname);
+        }
+        if (in_array('username', $options)) {
+            array_push($positioned, $username);
+        }
+        if (in_array('complete', $options)) {
+            array_push($positioned, $resprow->complete);
+        }
+        foreach ($identityfields as $field) {
+            array_push($positioned, $resprow->$field);
+        }
+
+        for ($c = $nbinfocols; $c < $numrespcols; $c++) {
+            if (isset($row[$c])) {
+                $positioned[] = $row[$c];
+            } else if (isset($questionsbyposition[$c])) {
+                $question = $questionsbyposition[$c];
+                $qtype = intval($question->typeid());
+                if ($qtype === QUESCHECK) {
+                    $positioned[] = '0';
+                } else {
+                    $positioned[] = null;
+                }
+            } else {
+                $positioned[] = null;
+            }
+        }
+        return $positioned;
     }
 
     /**
