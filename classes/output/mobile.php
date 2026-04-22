@@ -17,6 +17,7 @@
 namespace mod_questionnaire\output;
 
 use mod_questionnaire\local\response\response;
+use mod_questionnaire\questionnaire as questionnaire_class;
 
 /**
  * Mobile output class for mod_questionnaire.
@@ -34,8 +35,7 @@ class mobile {
      * @return array HTML, javascript and other data
      */
     public static function mobile_view_activity($args) {
-        global $OUTPUT, $USER, $CFG, $DB;
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+        global $OUTPUT, $USER;
 
         $args = (object) $args;
 
@@ -48,23 +48,23 @@ class mobile {
         $submit = isset($args->submit) ? $args->submit : false;
         $completed = isset($args->completed) ? $args->completed : false;
 
-        [$cm, $course, $questionnaire] = questionnaire_get_standard_page_items($cmid);
-        $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
+        $questionnaire = questionnaire_class::from_cmid($cmid);
+        $cm = $questionnaire->coursemodule();
 
         $data = [];
         $data['cmid'] = $cmid;
         $data['userid'] = $userid;
-        $data['intro'] = $questionnaire->intro;
-        $data['autonumquestions'] = $questionnaire->autonum;
-        $data['id'] = $questionnaire->id;
+        $data['intro'] = $questionnaire->intro();
+        $data['autonumquestions'] = $questionnaire->questions_autonumbered();
+        $data['id'] = $questionnaire->id();
         $data['rid'] = $rid;
-        $data['surveyid'] = $questionnaire->survey->id;
+        $data['surveyid'] = $questionnaire->surveyid();
         $data['pagenum'] = $pagenum;
         $data['prevpage'] = 0;
         $data['nextpage'] = 0;
 
         // Capabilities check.
-        $context = \context_module::instance($cmid);
+        $context = $questionnaire->context();
         self::require_capability($cm, $context, 'mod/questionnaire:view');
 
         // Any notifications will be displayed on top of main page, and prevent questionnaire from being completed. This also checks
@@ -114,7 +114,7 @@ class mobile {
                     } else if ($action == 'nextpage') {
                         $pageresult = $result['nextpagenum'];
                         if ($pageresult === false) {
-                            $pagenum = count($questionnaire->questionsbysec);
+                            $pagenum = count($questionnaire->questions_by_section_all());
                         } else if (is_string($pageresult)) {
                             $data['notifications'] .= !empty($data['notifications']) ? "\n<br />$pageresult" : $pageresult;
                         } else {
@@ -136,9 +136,10 @@ class mobile {
                     $pagequestiondata = self::add_pagequestion_data($questionnaire, $pagenum, $response);
                     $data['pagequestions'] = $pagequestiondata['pagequestions'];
                     $responses = $pagequestiondata['responses'];
-                    $numpages = count($questionnaire->questionsbysec);
+                    $questionsbysec = $questionnaire->questions_by_section_all();
+                    $numpages = count($questionsbysec);
                     // Set some variables we are going to be using.
-                    if (!empty($questionnaire->questionsbysec) && ($numpages > 1)) {
+                    if (!empty($questionsbysec) && ($numpages > 1)) {
                         if ($pagenum > 1) {
                             $data['prevpage'] = true;
                         }
@@ -155,14 +156,17 @@ class mobile {
 
             case 'review':
                 // If reviewing a submission.
-                if ($questionnaire->capabilities->readownresponses && isset($args->submissionid) && !empty($args->submissionid)) {
+                if ($questionnaire->can_read_own_responses() && isset($args->submissionid) && !empty($args->submissionid)) {
                     $questionnaire->add_response($args->submissionid);
                     $response = $questionnaire->responses()->get_response($args->submissionid);
                     $qnum = 1;
                     $pagequestions = [];
-                    foreach ($questionnaire->questions as $question) {
+                    foreach ($questionnaire->questions() as $question) {
                         if ($question->supports_mobile()) {
-                            $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
+                            $pagequestions[] = $question->mobile_question_display(
+                                $qnum,
+                                $questionnaire->questions_autonumbered()
+                            );
                             $responses = array_merge($responses, $question->get_mobile_response_data($response));
                             if ($question->is_numbered()) {
                                 $qnum++;
@@ -209,13 +213,13 @@ class mobile {
 
     /**
      * Add the submissions.
-     * @param \questionnaire $questionnaire
+     * @param questionnaire_class $questionnaire
      * @param array $data
      * @param int $userid
      */
-    protected static function add_index_data($questionnaire, &$data, $userid) {
+    protected static function add_index_data(questionnaire_class $questionnaire, array &$data, int $userid): void {
         // List any existing submissions, if user is allowed to review them.
-        if ($questionnaire->capabilities->readownresponses) {
+        if ($questionnaire->can_read_own_responses()) {
             $questionnaire->add_user_responses();
             $submissions = [];
             foreach ($questionnaire->responses()->get_loaded_responses() as $response) {
@@ -234,23 +238,29 @@ class mobile {
     }
 
     /**
-     * Ass the questions for the page.
-     * @param \questionnaire $questionnaire
+     * Add the questions for the page.
+     * @param questionnaire_class $questionnaire
      * @param int $pagenum
-     * @param response $response
+     * @param response|null $response
      * @return array
      */
-    protected static function add_pagequestion_data($questionnaire, $pagenum, $response = null) {
+    protected static function add_pagequestion_data(
+        questionnaire_class $questionnaire,
+        int $pagenum,
+        ?response $response = null
+    ): array {
         $qnum = 1;
         $pagequestions = [];
         $responses = [];
+        $questionsbysec = $questionnaire->questions_by_section_all();
+        $autonumbered = $questionnaire->questions_autonumbered();
 
-        // Find out what question number we are on $i New fix for question numbering.
+        // Find out what question number we are on — new fix for question numbering.
         $i = 0;
         if ($pagenum > 1) {
             for ($j = 2; $j <= $pagenum; $j++) {
-                foreach ($questionnaire->questionsbysec[$j - 1] as $questionid) {
-                    if ($questionnaire->questions[$questionid]->typeid() < QUESPAGEBREAK) {
+                foreach ($questionsbysec[$j - 1] as $question) {
+                    if ($question->typeid() < QUESPAGEBREAK) {
                         $i++;
                     }
                 }
@@ -258,15 +268,14 @@ class mobile {
         }
         $qnum = $i + 1;
 
-        foreach ($questionnaire->questionsbysec[$pagenum] as $questionid) {
-            $question = $questionnaire->questions[$questionid];
+        foreach ($questionsbysec[$pagenum] as $question) {
             if ($question->supports_mobile()) {
-                $pagequestions[] = $question->mobile_question_display($qnum, $questionnaire->autonum);
+                $pagequestions[] = $question->mobile_question_display($qnum, $autonumbered);
                 $mobileotherdata = $question->mobile_otherdata();
                 if (!empty($mobileotherdata)) {
                     $responses = array_merge($responses, $mobileotherdata);
                 }
-                if (($response !== null) && isset($response->answers[$questionid])) {
+                if (($response !== null) && isset($response->answers[$question->id()])) {
                     $responses = array_merge($responses, $question->get_mobile_response_data($response));
                 }
                 if ($question->is_numbered()) {

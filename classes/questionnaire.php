@@ -2597,6 +2597,17 @@ class questionnaire {
     }
 
     /**
+     * Load a single response into the responses handler by response id.
+     *
+     * Convenience pass-through to questionnaire_responses::add_response().
+     *
+     * @param int $responseid
+     */
+    public function add_response(int $responseid): void {
+        $this->responses()->add_response($responseid);
+    }
+
+    /**
      * Return a structured export of all answers for a given response id.
      *
      * Delegates to questionnaire_responses::get_structured_response(). Used by the
