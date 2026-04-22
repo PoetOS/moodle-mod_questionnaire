@@ -131,39 +131,3 @@ function questionnaire_cleanup() {
     // Find deleted questions and remove them from database (with their associated choices, etc.).
     return true;
 }
-
-/**
- * Get the standard page contructs and check for validity.
- * @param int $id The coursemodule id.
- * @param int $a  The module instance id.
- * @return array An array with the $cm, $course, and $questionnaire records in that order.
- */
-function questionnaire_get_standard_page_items($id = null, $a = null) {
-    global $DB;
-
-    if ($id) {
-        if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-            throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-        }
-
-        if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
-            throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-        }
-
-        if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
-            throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-        }
-    } else {
-        if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $a])) {
-            throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-        }
-        if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
-            throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-        }
-        if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-            throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-        }
-    }
-
-    return ([$cm, $course, $questionnaire]);
-}
