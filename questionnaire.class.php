@@ -208,84 +208,12 @@ class questionnaire {
     }
 
     /**
-     * Adding questions to the object.
-     * @param bool $sid
-     */
-    private function add_questions($sid = 0) {
-        if ($sid === 0) {
-            $sid = $this->sid;
-        }
-
-        if (!isset($this->questions)) {
-            $this->questions = [];
-            $this->questionsbysec = [];
-        }
-
-        $records = \mod_questionnaire\local\db\question_record::get_active_for_survey($sid);
-        if ($records) {
-            $sec = 1;
-            $isbreak = false;
-            foreach ($records as $rec) {
-                $typeid = $rec->get('typeid');
-                $qid = $rec->get('id');
-                $this->questions[$qid] = \mod_questionnaire\local\question\question::question_builder(
-                    $typeid,
-                    $rec->to_record(),
-                    $this->context
-                );
-
-                if ($typeid != QUESPAGEBREAK) {
-                    $this->questionsbysec[$sec][] = $qid;
-                    $isbreak = false;
-                } else {
-                    // Sanity check: no section break allowed as first position, no 2 consecutive section breaks.
-                    if ($rec->get('position') != 1 && $isbreak == false) {
-                        $sec++;
-                        $isbreak = true;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Load all response information for this user.
      *
      * @param int $userid
      */
     public function add_user_responses($userid = null) {
         $this->responses()->add_user_responses($userid);
-    }
-
-    /**
-     * Load the specified response information.
-     *
-     * @param int $responseid
-     */
-    private function add_response(int $responseid) {
-        $this->responses()->add_response($responseid);
-    }
-
-    /**
-     * Return the response handler for this questionnaire instance (lazy-initialised).
-     * @return \mod_questionnaire\local\response\questionnaire_responses
-     */
-    private function responses(): \mod_questionnaire\local\response\questionnaire_responses {
-        if (!isset($this->responses)) {
-            $this->responses = new \mod_questionnaire\local\response\questionnaire_responses(
-                \mod_questionnaire\questionnaire::from_instanceid($this->id)
-            );
-        }
-        return $this->responses;
-    }
-
-    /**
-     * Return true if questions should be automatically numbered.
-     * @return bool
-     */
-    private function questions_autonumbered() {
-        // Value of 1 if questions should be numbered. Value of 3 if both questions and pages should be numbered.
-        return (!empty($this->autonum) && (($this->autonum == 1) || ($this->autonum == 3)));
     }
 
     /**
@@ -371,204 +299,6 @@ class questionnaire {
         }
 
         $this->print_survey_end(1, 1);
-    }
-
-    /**
-     * Return the loaded question objects for this questionnaire.
-     *
-     * @return array
-     */
-    private function questions() {
-        return $this->questions;
-    }
-
-    /**
-     * Return any message if the user cannot complete this questionnaire, explaining why.
-     * @param int $userid
-     * @param bool $asnotification Return as a rendered notification.
-     * @return bool|string
-     */
-    private function user_access_messages($userid = 0, $asnotification = false) {
-        global $USER;
-
-        if ($userid == 0) {
-            $userid = $USER->id;
-        }
-        $message = false;
-
-        if (!$this->is_active()) {
-            if ($this->capabilities->manage) {
-                $msg = 'removenotinuse';
-            } else {
-                $msg = 'notavail';
-            }
-            $message = get_string($msg, 'questionnaire');
-        } else if ($this->survey->realm == 'template') {
-            $message = get_string('templatenotviewable', 'questionnaire');
-        } else if (!$this->is_open()) {
-            $message = get_string('notopen', 'questionnaire', userdate($this->opendate));
-        } else if ($this->is_closed()) {
-            $message = get_string('closed', 'questionnaire', userdate($this->closedate));
-        } else if (!$this->user_is_eligible($userid)) {
-            $message = get_string('noteligible', 'questionnaire');
-        } else if (!$this->user_can_take($userid)) {
-            switch ($this->qtype) {
-                case QUESTIONNAIREDAILY:
-                    $msgstring = ' ' . get_string('today', 'questionnaire');
-                    break;
-                case QUESTIONNAIREWEEKLY:
-                    $msgstring = ' ' . get_string('thisweek', 'questionnaire');
-                    break;
-                case QUESTIONNAIREMONTHLY:
-                    $msgstring = ' ' . get_string('thismonth', 'questionnaire');
-                    break;
-                default:
-                    $msgstring = '';
-                    break;
-            }
-            $message = get_string("alreadyfilled", "questionnaire", $msgstring);
-        }
-
-        if (($message !== false) && $asnotification) {
-            $message = $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR);
-        }
-
-        return $message;
-    }
-
-    /**
-     * True if the specified user has a saved response for this questionnaire.
-     * @param int $userid
-     * @return bool
-     */
-    private function user_has_saved_response($userid) {
-        return $this->responses()->user_has_saved_response($userid);
-    }
-
-    /**
-     * True if the specified user can complete this questionnaire at this time.
-     * @param int $userid
-     * @return bool
-     */
-    private function user_time_for_new_attempt($userid) {
-        global $DB;
-
-        $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'y'];
-        if (!($attempts = $DB->get_records('questionnaire_response', $params, 'submitted DESC'))) {
-            return true;
-        }
-
-        $attempt = reset($attempts);
-        $timenow = time();
-
-        switch ($this->qtype) {
-            case QUESTIONNAIREUNLIMITED:
-                $cantake = true;
-                break;
-
-            case QUESTIONNAIREONCE:
-                $cantake = false;
-                break;
-
-            case QUESTIONNAIREDAILY:
-                $attemptyear = date('Y', $attempt->submitted);
-                $currentyear = date('Y', $timenow);
-                $attemptdayofyear = date('z', $attempt->submitted);
-                $currentdayofyear = date('z', $timenow);
-                $cantake = (($attemptyear < $currentyear) ||
-                    (($attemptyear == $currentyear) && ($attemptdayofyear < $currentdayofyear)));
-                break;
-
-            case QUESTIONNAIREWEEKLY:
-                $attemptyear = date('Y', $attempt->submitted);
-                $currentyear = date('Y', $timenow);
-                $attemptweekofyear = date('W', $attempt->submitted);
-                $currentweekofyear = date('W', $timenow);
-                $cantake = (($attemptyear < $currentyear) ||
-                    (($attemptyear == $currentyear) && ($attemptweekofyear < $currentweekofyear)));
-                break;
-
-            case QUESTIONNAIREMONTHLY:
-                $attemptyear = date('Y', $attempt->submitted);
-                $currentyear = date('Y', $timenow);
-                $attemptmonthofyear = date('n', $attempt->submitted);
-                $currentmonthofyear = date('n', $timenow);
-                $cantake = (($attemptyear < $currentyear) ||
-                    (($attemptyear == $currentyear) && ($attemptmonthofyear < $currentmonthofyear)));
-                break;
-
-            default:
-                $cantake = false;
-                break;
-        }
-
-        return $cantake;
-    }
-
-    /**
-     * Check if current questionnaire has dependencies set and any question has dependencies.
-     *
-     * @return boolean Whether dependencies are set or not.
-     */
-    private function has_dependencies() {
-        $hasdependencies = false;
-        if (($this->navigate > 0) && isset($this->questions) && !empty($this->questions)) {
-            foreach ($this->questions as $question) {
-                if ($question->has_dependencies()) {
-                    $hasdependencies = true;
-                    break;
-                }
-            }
-        }
-        return $hasdependencies;
-    }
-
-    /**
-     * Load needed parent question information into the dependencies structure for the requested question.
-     * @param \mod_questionnaire\local\question\question $question
-     * @return bool
-     */
-    private function load_parents($question) {
-        foreach ($question->dependencies as $did => $dependency) {
-            $dependquestion = $this->questions[$dependency->dependquestionid];
-            $qdependchoice = '';
-            switch ($dependquestion->typeid()) {
-                case QUESRADIO:
-                case QUESDROP:
-                case QUESCHECK:
-                    $qdependchoice = $dependency->dependchoiceid;
-                    $dependchoice = $dependquestion->choices[$dependency->dependchoiceid]->content;
-
-                    $contents = \mod_questionnaire\local\question\question::parse_choice_content($dependchoice);
-                    if ($contents->modname) {
-                        $dependchoice = $contents->modname;
-                    }
-                    break;
-                case QUESYESNO:
-                    switch ($dependency->dependchoiceid) {
-                        case 0:
-                            $dependchoice = get_string('yes');
-                            $qdependchoice = 'y';
-                            break;
-                        case 1:
-                            $dependchoice = get_string('no');
-                            $qdependchoice = 'n';
-                            break;
-                    }
-                    break;
-            }
-            // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
-            $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id();
-            $question->dependencies[$did]->qdependchoice = $qdependchoice;
-            $question->dependencies[$did]->parenttype = $dependquestion->typeid();
-            // Other fields to be used in Questions edit mode.
-            $question->dependencies[$did]->position = $question->position();
-            $question->dependencies[$did]->name = $question->name();
-            $question->dependencies[$did]->content = $question->content();
-            $question->dependencies[$did]->parentposition = $dependquestion->position();
-            $question->dependencies[$did]->parent = format_string($dependquestion->name()) . '->' . format_string($dependchoice);
-        }
-        return true;
     }
 
     /**
@@ -848,24 +578,6 @@ class questionnaire {
     }
 
     /**
-     * Get the latest response id for the user, or verify that the given response id is valid.
-     * @param int $userid
-     * @return int
-     */
-    private function get_latest_responseid($userid) {
-        global $DB;
-
-        // Find latest in progress rid.
-        $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
-        if ($records = $DB->get_records('questionnaire_response', $params, 'submitted DESC', 'id,questionnaireid', 0, 1)) {
-            $rec = reset($records);
-            return $rec->id;
-        } else {
-            return 0;
-        }
-    }
-
-    /**
      * Handle all submission notification actions.
      * @param int $rid The id of the response record.
      * @return boolean Operation success.
@@ -896,16 +608,6 @@ class questionnaire {
         }
 
         return $success;
-    }
-
-    /**
-     * Construct the response data for a given response and return a structured export.
-     * @param int $rid
-     * @return string
-     * @throws coding_exception
-     */
-    private function get_structured_response($rid) {
-        return $this->responses()->get_structured_response($rid);
     }
 
     /**
@@ -1440,15 +1142,6 @@ class questionnaire {
         }
 
         return;
-    }
-
-    /**
-     * Return true if the survey is a 'public' one and this is the master instance.
-     *
-     * @return boolean
-     */
-    private function survey_is_public_master() {
-        return $this->survey_is_public() && ($this->course->id == $this->survey->courseid);
     }
 
     /**
@@ -2648,6 +2341,313 @@ class questionnaire {
         }
 
         return $feedbackmessages;
+    }
+
+    /**
+     * Adding questions to the object.
+     * @param bool $sid
+     */
+    private function add_questions($sid = 0) {
+        if ($sid === 0) {
+            $sid = $this->sid;
+        }
+
+        if (!isset($this->questions)) {
+            $this->questions = [];
+            $this->questionsbysec = [];
+        }
+
+        $records = \mod_questionnaire\local\db\question_record::get_active_for_survey($sid);
+        if ($records) {
+            $sec = 1;
+            $isbreak = false;
+            foreach ($records as $rec) {
+                $typeid = $rec->get('typeid');
+                $qid = $rec->get('id');
+                $this->questions[$qid] = \mod_questionnaire\local\question\question::question_builder(
+                    $typeid,
+                    $rec->to_record(),
+                    $this->context
+                );
+
+                if ($typeid != QUESPAGEBREAK) {
+                    $this->questionsbysec[$sec][] = $qid;
+                    $isbreak = false;
+                } else {
+                    // Sanity check: no section break allowed as first position, no 2 consecutive section breaks.
+                    if ($rec->get('position') != 1 && $isbreak == false) {
+                        $sec++;
+                        $isbreak = true;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Load the specified response information.
+     *
+     * @param int $responseid
+     */
+    private function add_response(int $responseid) {
+        $this->responses()->add_response($responseid);
+    }
+
+    /**
+     * Return the response handler for this questionnaire instance (lazy-initialised).
+     * @return \mod_questionnaire\local\response\questionnaire_responses
+     */
+    private function responses(): \mod_questionnaire\local\response\questionnaire_responses {
+        if (!isset($this->responses)) {
+            $this->responses = new \mod_questionnaire\local\response\questionnaire_responses(
+                \mod_questionnaire\questionnaire::from_instanceid($this->id)
+            );
+        }
+        return $this->responses;
+    }
+
+    /**
+     * Return true if questions should be automatically numbered.
+     * @return bool
+     */
+    private function questions_autonumbered() {
+        // Value of 1 if questions should be numbered. Value of 3 if both questions and pages should be numbered.
+        return (!empty($this->autonum) && (($this->autonum == 1) || ($this->autonum == 3)));
+    }
+
+    /**
+     * Return the loaded question objects for this questionnaire.
+     *
+     * @return array
+     */
+    private function questions() {
+        return $this->questions;
+    }
+
+    /**
+     * Return any message if the user cannot complete this questionnaire, explaining why.
+     * @param int $userid
+     * @param bool $asnotification Return as a rendered notification.
+     * @return bool|string
+     */
+    private function user_access_messages($userid = 0, $asnotification = false) {
+        global $USER;
+
+        if ($userid == 0) {
+            $userid = $USER->id;
+        }
+        $message = false;
+
+        if (!$this->is_active()) {
+            if ($this->capabilities->manage) {
+                $msg = 'removenotinuse';
+            } else {
+                $msg = 'notavail';
+            }
+            $message = get_string($msg, 'questionnaire');
+        } else if ($this->survey->realm == 'template') {
+            $message = get_string('templatenotviewable', 'questionnaire');
+        } else if (!$this->is_open()) {
+            $message = get_string('notopen', 'questionnaire', userdate($this->opendate));
+        } else if ($this->is_closed()) {
+            $message = get_string('closed', 'questionnaire', userdate($this->closedate));
+        } else if (!$this->user_is_eligible($userid)) {
+            $message = get_string('noteligible', 'questionnaire');
+        } else if (!$this->user_can_take($userid)) {
+            switch ($this->qtype) {
+                case QUESTIONNAIREDAILY:
+                    $msgstring = ' ' . get_string('today', 'questionnaire');
+                    break;
+                case QUESTIONNAIREWEEKLY:
+                    $msgstring = ' ' . get_string('thisweek', 'questionnaire');
+                    break;
+                case QUESTIONNAIREMONTHLY:
+                    $msgstring = ' ' . get_string('thismonth', 'questionnaire');
+                    break;
+                default:
+                    $msgstring = '';
+                    break;
+            }
+            $message = get_string("alreadyfilled", "questionnaire", $msgstring);
+        }
+
+        if (($message !== false) && $asnotification) {
+            $message = $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR);
+        }
+
+        return $message;
+    }
+
+    /**
+     * True if the specified user has a saved response for this questionnaire.
+     * @param int $userid
+     * @return bool
+     */
+    private function user_has_saved_response($userid) {
+        return $this->responses()->user_has_saved_response($userid);
+    }
+
+    /**
+     * True if the specified user can complete this questionnaire at this time.
+     * @param int $userid
+     * @return bool
+     */
+    private function user_time_for_new_attempt($userid) {
+        global $DB;
+
+        $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'y'];
+        if (!($attempts = $DB->get_records('questionnaire_response', $params, 'submitted DESC'))) {
+            return true;
+        }
+
+        $attempt = reset($attempts);
+        $timenow = time();
+
+        switch ($this->qtype) {
+            case QUESTIONNAIREUNLIMITED:
+                $cantake = true;
+                break;
+
+            case QUESTIONNAIREONCE:
+                $cantake = false;
+                break;
+
+            case QUESTIONNAIREDAILY:
+                $attemptyear = date('Y', $attempt->submitted);
+                $currentyear = date('Y', $timenow);
+                $attemptdayofyear = date('z', $attempt->submitted);
+                $currentdayofyear = date('z', $timenow);
+                $cantake = (($attemptyear < $currentyear) ||
+                    (($attemptyear == $currentyear) && ($attemptdayofyear < $currentdayofyear)));
+                break;
+
+            case QUESTIONNAIREWEEKLY:
+                $attemptyear = date('Y', $attempt->submitted);
+                $currentyear = date('Y', $timenow);
+                $attemptweekofyear = date('W', $attempt->submitted);
+                $currentweekofyear = date('W', $timenow);
+                $cantake = (($attemptyear < $currentyear) ||
+                    (($attemptyear == $currentyear) && ($attemptweekofyear < $currentweekofyear)));
+                break;
+
+            case QUESTIONNAIREMONTHLY:
+                $attemptyear = date('Y', $attempt->submitted);
+                $currentyear = date('Y', $timenow);
+                $attemptmonthofyear = date('n', $attempt->submitted);
+                $currentmonthofyear = date('n', $timenow);
+                $cantake = (($attemptyear < $currentyear) ||
+                    (($attemptyear == $currentyear) && ($attemptmonthofyear < $currentmonthofyear)));
+                break;
+
+            default:
+                $cantake = false;
+                break;
+        }
+
+        return $cantake;
+    }
+
+    /**
+     * Check if current questionnaire has dependencies set and any question has dependencies.
+     *
+     * @return boolean Whether dependencies are set or not.
+     */
+    private function has_dependencies() {
+        $hasdependencies = false;
+        if (($this->navigate > 0) && isset($this->questions) && !empty($this->questions)) {
+            foreach ($this->questions as $question) {
+                if ($question->has_dependencies()) {
+                    $hasdependencies = true;
+                    break;
+                }
+            }
+        }
+        return $hasdependencies;
+    }
+
+    /**
+     * Load needed parent question information into the dependencies structure for the requested question.
+     * @param \mod_questionnaire\local\question\question $question
+     * @return bool
+     */
+    private function load_parents($question) {
+        foreach ($question->dependencies as $did => $dependency) {
+            $dependquestion = $this->questions[$dependency->dependquestionid];
+            $qdependchoice = '';
+            switch ($dependquestion->typeid()) {
+                case QUESRADIO:
+                case QUESDROP:
+                case QUESCHECK:
+                    $qdependchoice = $dependency->dependchoiceid;
+                    $dependchoice = $dependquestion->choices[$dependency->dependchoiceid]->content;
+
+                    $contents = \mod_questionnaire\local\question\question::parse_choice_content($dependchoice);
+                    if ($contents->modname) {
+                        $dependchoice = $contents->modname;
+                    }
+                    break;
+                case QUESYESNO:
+                    switch ($dependency->dependchoiceid) {
+                        case 0:
+                            $dependchoice = get_string('yes');
+                            $qdependchoice = 'y';
+                            break;
+                        case 1:
+                            $dependchoice = get_string('no');
+                            $qdependchoice = 'n';
+                            break;
+                    }
+                    break;
+            }
+            // Qdependquestion, parenttype and qdependchoice fields to be used in preview mode.
+            $question->dependencies[$did]->qdependquestion = 'q' . $dependquestion->id();
+            $question->dependencies[$did]->qdependchoice = $qdependchoice;
+            $question->dependencies[$did]->parenttype = $dependquestion->typeid();
+            // Other fields to be used in Questions edit mode.
+            $question->dependencies[$did]->position = $question->position();
+            $question->dependencies[$did]->name = $question->name();
+            $question->dependencies[$did]->content = $question->content();
+            $question->dependencies[$did]->parentposition = $dependquestion->position();
+            $question->dependencies[$did]->parent = format_string($dependquestion->name()) . '->' . format_string($dependchoice);
+        }
+        return true;
+    }
+
+    /**
+     * Get the latest response id for the user, or verify that the given response id is valid.
+     * @param int $userid
+     * @return int
+     */
+    private function get_latest_responseid($userid) {
+        global $DB;
+
+        // Find latest in progress rid.
+        $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
+        if ($records = $DB->get_records('questionnaire_response', $params, 'submitted DESC', 'id,questionnaireid', 0, 1)) {
+            $rec = reset($records);
+            return $rec->id;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Construct the response data for a given response and return a structured export.
+     * @param int $rid
+     * @return string
+     * @throws coding_exception
+     */
+    private function get_structured_response($rid) {
+        return $this->responses()->get_structured_response($rid);
+    }
+
+    /**
+     * Return true if the survey is a 'public' one and this is the master instance.
+     *
+     * @return boolean
+     */
+    private function survey_is_public_master() {
+        return $this->survey_is_public() && ($this->course->id == $this->survey->courseid);
     }
 
     /**
