@@ -211,7 +211,7 @@ class questionnaire {
      * Adding questions to the object.
      * @param bool $sid
      */
-    public function add_questions($sid = 0) {
+    private function add_questions($sid = 0) {
         if ($sid === 0) {
             $sid = $this->sid;
         }
@@ -262,7 +262,7 @@ class questionnaire {
      *
      * @param int $responseid
      */
-    public function add_response(int $responseid) {
+    private function add_response(int $responseid) {
         $this->responses()->add_response($responseid);
     }
 
@@ -270,7 +270,7 @@ class questionnaire {
      * Return the response handler for this questionnaire instance (lazy-initialised).
      * @return \mod_questionnaire\local\response\questionnaire_responses
      */
-    public function responses(): \mod_questionnaire\local\response\questionnaire_responses {
+    private function responses(): \mod_questionnaire\local\response\questionnaire_responses {
         if (!isset($this->responses)) {
             $this->responses = new \mod_questionnaire\local\response\questionnaire_responses(
                 \mod_questionnaire\questionnaire::from_instanceid($this->id)
@@ -283,7 +283,7 @@ class questionnaire {
      * Return true if questions should be automatically numbered.
      * @return bool
      */
-    public function questions_autonumbered() {
+    private function questions_autonumbered() {
         // Value of 1 if questions should be numbered. Value of 3 if both questions and pages should be numbered.
         return (!empty($this->autonum) && (($this->autonum == 1) || ($this->autonum == 3)));
     }
@@ -378,7 +378,7 @@ class questionnaire {
      *
      * @return array
      */
-    public function questions() {
+    private function questions() {
         return $this->questions;
     }
 
@@ -388,7 +388,7 @@ class questionnaire {
      * @param bool $asnotification Return as a rendered notification.
      * @return bool|string
      */
-    public function user_access_messages($userid = 0, $asnotification = false) {
+    private function user_access_messages($userid = 0, $asnotification = false) {
         global $USER;
 
         if ($userid == 0) {
@@ -441,7 +441,7 @@ class questionnaire {
      * @param int $userid
      * @return bool
      */
-    public function user_has_saved_response($userid) {
+    private function user_has_saved_response($userid) {
         return $this->responses()->user_has_saved_response($userid);
     }
 
@@ -450,7 +450,7 @@ class questionnaire {
      * @param int $userid
      * @return bool
      */
-    public function user_time_for_new_attempt($userid) {
+    private function user_time_for_new_attempt($userid) {
         global $DB;
 
         $params = ['questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'y'];
@@ -510,7 +510,7 @@ class questionnaire {
      *
      * @return boolean Whether dependencies are set or not.
      */
-    public function has_dependencies() {
+    private function has_dependencies() {
         $hasdependencies = false;
         if (($this->navigate > 0) && isset($this->questions) && !empty($this->questions)) {
             foreach ($this->questions as $question) {
@@ -528,7 +528,7 @@ class questionnaire {
      * @param \mod_questionnaire\local\question\question $question
      * @return bool
      */
-    public function load_parents($question) {
+    private function load_parents($question) {
         foreach ($question->dependencies as $did => $dependency) {
             $dependquestion = $this->questions[$dependency->dependquestionid];
             $qdependchoice = '';
@@ -852,7 +852,7 @@ class questionnaire {
      * @param int $userid
      * @return int
      */
-    public function get_latest_responseid($userid) {
+    private function get_latest_responseid($userid) {
         global $DB;
 
         // Find latest in progress rid.
@@ -904,7 +904,7 @@ class questionnaire {
      * @return string
      * @throws coding_exception
      */
-    public function get_structured_response($rid) {
+    private function get_structured_response($rid) {
         return $this->responses()->get_structured_response($rid);
     }
 
@@ -1447,7 +1447,7 @@ class questionnaire {
      *
      * @return boolean
      */
-    public function survey_is_public_master() {
+    private function survey_is_public_master() {
         return $this->survey_is_public() && ($this->course->id == $this->survey->courseid);
     }
 
@@ -2661,7 +2661,7 @@ class questionnaire {
      * @param array $responses
      * @return array
      */
-    public function save_mobile_data($userid, $sec, $completed, $rid, $submit, $action, array $responses) {
+    private function save_mobile_data($userid, $sec, $completed, $rid, $submit, $action, array $responses) {
         global $DB, $CFG; // Do not delete "$CFG".
 
         $ret = [];
@@ -2700,7 +2700,7 @@ class questionnaire {
      * @return array
      * @throws dml_exception
      */
-    public function get_all_file_areas() {
+    private function get_all_file_areas() {
         global $DB;
 
         $areas = [];
