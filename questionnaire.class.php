@@ -3057,47 +3057,6 @@ class questionnaire {
     }
 
     /**
-     * Return a labelled list of surveys for a select element (used in mod_form).
-     * @param int $courseid
-     * @param string $type realm type
-     * @return array
-     */
-    public static function get_survey_select($courseid = 0, $type = '') {
-        global $OUTPUT, $DB;
-
-        $surveylist = [];
-
-        if ($surveys = self::get_survey_list($courseid, $type)) {
-            $strpreview = get_string('preview_questionnaire', 'questionnaire');
-            foreach ($surveys as $survey) {
-                $originalcourse = $DB->get_record('course', ['id' => $survey->courseid]);
-                if (!$originalcourse) {
-                    continue;
-                }
-
-                if (($type == 'public') && ($survey->courseid == $courseid)) {
-                    continue;
-                } else {
-                    $args = "sid={$survey->id}&popup=1";
-                    if (!empty($survey->qid)) {
-                        $args .= "&qid={$survey->qid}";
-                    }
-                    $link = new moodle_url("/mod/questionnaire/preview.php?{$args}");
-                    $action = new popup_action('click', $link);
-                    $label = $OUTPUT->action_link(
-                        $link,
-                        $survey->qname . ' [' . $originalcourse->fullname . ']',
-                        $action,
-                        ['title' => $strpreview]
-                    );
-                    $surveylist[$type . '-' . $survey->id] = $label;
-                }
-            }
-        }
-        return $surveylist;
-    }
-
-    /**
      * Delete a survey and all associated data.
      * @param int $sid survey id
      * @param int $questionnaireid questionnaire instance id
