@@ -1117,6 +1117,39 @@ class questionnaire {
     // Behavior methods — expose internal constants as a public API.
 
     /**
+     * Return the Moodle JavaScript module descriptor for the questionnaire AMD module.
+     *
+     * Used by the renderer and question types that require client-side initialisation.
+     *
+     * @return array
+     */
+    public static function js_module(): array {
+        return [
+            'name'     => 'mod_questionnaire',
+            'fullpath' => '/mod/questionnaire/module.js',
+            'requires' => ['base', 'dom', 'event-delegate', 'event-key',
+                'core_question_engine', 'moodle-core-formchangechecker'],
+            'strings'  => [
+                ['cancel', 'moodle'],
+                ['flagged', 'question'],
+                ['functiondisabledbysecuremode', 'quiz'],
+                ['startattempt', 'quiz'],
+                ['timesup', 'quiz'],
+                ['changesmadereallygoaway', 'moodle'],
+                ['leftpart', 'questionnaire'],
+                ['leftpartdefault', 'questionnaire'],
+                ['middlepart', 'questionnaire'],
+                ['middlepartdefault', 'questionnaire'],
+                ['middlepartwithtwovalues', 'questionnaire'],
+                ['middlepartwithtwovaluesdefault', 'questionnaire'],
+                ['rightpart', 'questionnaire'],
+                ['rightpartdefault', 'questionnaire'],
+                ['where', 'questionnaire'],
+            ],
+        ];
+    }
+
+    /**
      * Return a localised label => value map of response-frequency options for form selects.
      *
      * @return array  Keys are the qtype integer values; values are localised display strings.

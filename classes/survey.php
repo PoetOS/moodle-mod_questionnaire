@@ -643,6 +643,64 @@ class survey {
     // Survey CRUD (static).
 
     /**
+     * Delete this survey and all its associated content.
+     *
+     * Removes questions (with their choices and dependencies), feedback sections,
+     * feedback messages, and the survey record itself. Does NOT delete questionnaire
+     * response data — callers that need to purge responses must do so beforehand.
+     *
+     * @return bool True on success.
+     */
+    public function delete(): bool {
+        global $DB;
+        $sid = $this->id();
+        $status = true;
+
+        // Delete all question data for the survey.
+        if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid], 'id')) {
+            foreach ($questions as $question) {
+                $DB->delete_records('questionnaire_quest_choice', ['questionid' => $question->id]);
+                $DB->delete_records('questionnaire_dependency', ['questionid' => $question->id]);
+                $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $question->id]);
+            }
+            $status = $status && $DB->delete_records('questionnaire_question', ['surveyid' => $sid]);
+            $status = $status && $DB->delete_records('questionnaire_dependency', ['surveyid' => $sid]);
+        }
+
+        // Delete all feedback sections and feedback messages for the survey.
+        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid], 'id')) {
+            foreach ($fbsections as $fbsection) {
+                $DB->delete_records('questionnaire_feedback', ['sectionid' => $fbsection->id]);
+            }
+            $status = $status && $DB->delete_records('questionnaire_fb_sections', ['surveyid' => $sid]);
+        }
+
+        $status = $status && $DB->delete_records('questionnaire_survey', ['id' => $sid]);
+
+        return $status;
+    }
+
+    /**
+     * Delete all orphaned surveys — surveys that have no linked questionnaire instance.
+     *
+     * Intended for use by the scheduled cleanup task.
+     */
+    public static function cleanup_orphans(): void {
+        global $DB;
+
+        $sql = 'SELECT qs.* FROM {questionnaire_survey} qs
+                LEFT JOIN {questionnaire} q ON q.sid = qs.id
+                WHERE q.sid IS NULL';
+
+        if ($surveys = $DB->get_records_sql($sql)) {
+            foreach ($surveys as $surveyrow) {
+                $survey = self::from_sid((int) $surveyrow->id);
+                $survey->delete();
+            }
+        }
+    }
+
+    /**
      * Create a new survey record.
      *
      * @param stdClass $sdata Survey data object (must include courseid).
