@@ -78,4 +78,3 @@ $autonumbering = [
     2 => get_string('autonumberpages', 'questionnaire'),
     3 => get_string('autonumberpagesandquestions', 'questionnaire'),
 ];
-
