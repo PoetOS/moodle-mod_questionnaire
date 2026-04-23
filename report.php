@@ -666,7 +666,7 @@ switch ($action) {
         if (!empty($resps)) {
             // NOTE: response_analysis uses $resps to get the id's of the responses only.
             // Need to figure out what this function does.
-            $feedbackmessages = $questionnaire->response_analysis(0, $resps, false, false, true, $currentgroupid);
+            $feedbackmessages = $questionnaire->reporter()->response_analysis(0, $resps, false, false, true, $currentgroupid);
 
             if ($feedbackmessages) {
                 $msgout = '';

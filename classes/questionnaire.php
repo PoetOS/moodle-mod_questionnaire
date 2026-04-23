@@ -3094,31 +3094,6 @@ class questionnaire {
     }
 
     /**
-     * Analyse responses and return any feedback messages.
-     *
-     * Shim — delegates to the legacy questionnaire class until response analysis
-     * is refactored.
-     *
-     * @param int $rid            Response id (0 for all).
-     * @param array|string $resps Responses to analyse.
-     * @param bool $compare       True when comparing with group.
-     * @param bool $isgroupmember True when viewer is a group member.
-     * @param bool $allresponses  True when all responses are included.
-     * @param int $currentgroupid Active group id.
-     * @return array Feedback message strings.
-     */
-    public function response_analysis(
-        int $rid,
-        $resps,
-        bool $compare,
-        bool $isgroupmember,
-        bool $allresponses,
-        int $currentgroupid
-    ) {
-        return $this->legacy()->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
-    }
-
-    /**
      * Return a lazy-loaded legacy questionnaire instance sharing this object's renderer and page.
      *
      * Used only by rendering shims until the legacy class is fully replaced.
