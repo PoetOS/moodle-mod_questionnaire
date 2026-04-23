@@ -252,6 +252,15 @@ class survey {
     }
 
     /**
+     * True if this survey is configured to display numeric feedback scores.
+     *
+     * @return bool
+     */
+    public function feedbackscores(): bool {
+        return (bool) $this->surveyrecord->get('feedbackscores');
+    }
+
+    /**
      * Get the chart type configured for feedback display.
      *
      * @return string
