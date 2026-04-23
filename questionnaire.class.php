@@ -1136,55 +1136,6 @@ class questionnaire {
     }
 
     /**
-     * Delete a survey and all associated data.
-     * @param int $sid survey id
-     * @param int $questionnaireid questionnaire instance id
-     * @return bool
-     */
-    public static function delete_survey(int $sid, int $questionnaireid) {
-        global $DB;
-        $status = true;
-        // Delete all survey attempts and responses.
-        $rid = $DB->get_fieldset_select('questionnaire_response', 'id', 'questionnaireid = ?', [$questionnaireid]);
-        if (!empty($rid)) {
-            [$insql, $params] = $DB->get_in_or_equal($rid);
-            $DB->delete_records_select('questionnaire_response_bool', "responseid $insql", $params);
-            $DB->delete_records_select('questionnaire_response_date', "responseid $insql", $params);
-            $DB->delete_records_select('questionnaire_resp_multiple', "responseid $insql", $params);
-            $DB->delete_records_select('questionnaire_response_other', "responseid $insql", $params);
-            $DB->delete_records_select('questionnaire_response_rank', "responseid $insql", $params);
-            $DB->delete_records_select('questionnaire_resp_single', "responseid $insql", $params);
-            $DB->delete_records_select('questionnaire_response_text', "responseid $insql", $params);
-            $DB->delete_records_select('questionnaire_response_file', "responseid $insql", $params);
-        }
-        $status = $status && $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaireid]);
-
-        // Delete all question data for the survey.
-        if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid], 'id')) {
-            foreach ($questions as $question) {
-                $DB->delete_records('questionnaire_quest_choice', ['questionid' => $question->id]);
-                $DB->delete_records('questionnaire_dependency', ['questionid' => $question->id]);
-                $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $question->id]);
-            }
-            $status = $status && $DB->delete_records('questionnaire_question', ['surveyid' => $sid]);
-            // Just to make sure.
-            $status = $status && $DB->delete_records('questionnaire_dependency', ['surveyid' => $sid]);
-        }
-
-        // Delete all feedback sections and feedback messages for the survey.
-        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid], 'id')) {
-            foreach ($fbsections as $fbsection) {
-                $DB->delete_records('questionnaire_feedback', ['sectionid' => $fbsection->id]);
-            }
-            $status = $status && $DB->delete_records('questionnaire_fb_sections', ['surveyid' => $sid]);
-        }
-
-        $status = $status && $DB->delete_records('questionnaire_survey', ['id' => $sid]);
-
-        return $status;
-    }
-
-    /**
      * Exports the results of a survey to an array.
      * @param int $currentgroupid
      * @param string $rid
@@ -2364,15 +2315,6 @@ class questionnaire {
     }
 
     /**
-     * Return the loaded question objects for this questionnaire.
-     *
-     * @return array
-     */
-    private function questions() {
-        return $this->questions;
-    }
-
-    /**
      * Return any message if the user cannot complete this questionnaire, explaining why.
      * @param int $userid
      * @param bool $asnotification Return as a rendered notification.
@@ -2599,92 +2541,6 @@ class questionnaire {
     }
 
     /**
-     * Save the data from the mobile app.
-     * @param int $userid
-     * @param int $sec
-     * @param bool $completed
-     * @param int $rid
-     * @param bool $submit
-     * @param string $action
-     * @param array $responses
-     * @return array
-     */
-    private function save_mobile_data($userid, $sec, $completed, $rid, $submit, $action, array $responses) {
-        global $DB, $CFG; // Do not delete "$CFG".
-
-        $ret = [];
-        $response = $this->build_response_from_appdata((object)$responses, $sec, $rid);
-        $response->sec = $sec;
-        $response->rid = $rid;
-
-        if ($action == 'nextpage') {
-            $result = $this->next_page_action($response, $userid);
-            if (is_string($result)) {
-                $ret['warnings'] = $result;
-            } else {
-                $ret['nextpagenum'] = $result;
-            }
-        } else if ($action == 'previouspage') {
-            $ret['nextpagenum'] = $this->previous_page_action($response, $userid);
-        } else if (!$completed) {
-            // If reviewing a completed questionnaire, don't insert a response.
-            $msg = $this->response_check_format($response->sec, $response);
-            if (empty($msg)) {
-                $rid = $this->response_insert($response, $userid);
-            } else {
-                $ret['warnings'] = $msg;
-                $ret['response'] = $response;
-            }
-        }
-
-        if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
-            $this->commit_submission_response($rid, $userid);
-        }
-        return $ret;
-    }
-
-    /**
-     * Get all of the areas that can have files.
-     * @return array
-     * @throws dml_exception
-     */
-    private function get_all_file_areas() {
-        global $DB;
-
-        $areas = [];
-        $areas['info'] = $this->sid;
-        $areas['thankbody'] = $this->sid;
-
-        // Add question areas.
-        if (empty($this->questions)) {
-            $this->add_questions();
-        }
-        $areas['question'] = [];
-        foreach ($this->questions as $question) {
-            $areas['question'][] = $question->id();
-        }
-
-        // Add feedback areas.
-        $areas['feedbacknotes'] = $this->sid;
-        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $this->sid]);
-        if (!empty($fbsections)) {
-            $areas['sectionheading'] = [];
-            foreach ($fbsections as $section) {
-                $areas['sectionheading'][] = $section->id;
-                $feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $section->id]);
-                if (!empty($feedbacks)) {
-                    $areas['feedback'] = [];
-                    foreach ($feedbacks as $feedback) {
-                        $areas['feedback'][] = $feedback->id;
-                    }
-                }
-            }
-        }
-
-        return $areas;
-    }
-
-    /**
      * Adding a survey record to the object.
      * @param int $sid
      * @param null $survey
@@ -2721,89 +2577,12 @@ class questionnaire {
     }
 
     /**
-     * Add the renderer to the questionnaire object.
-     * @param plugin_renderer_base $renderer The module renderer, extended from core renderer.
-     */
-    private function add_renderer(plugin_renderer_base $renderer) {
-        $this->renderer = $renderer;
-    }
-
-    /**
-     * Add the templatable page to the questionnaire object.
-     * @param templatable $page The page to render, implementing core classes.
-     */
-    private function add_page($page) {
-        $this->page = $page;
-    }
-
-    /**
      * Return true if pages should be automatically numbered.
      * @return bool
      */
     private function pages_autonumbered() {
         // Value of 2 if pages should be numbered. Value of 3 if both questions and pages should be numbered.
         return (!empty($this->autonum) && (($this->autonum == 2) || ($this->autonum == 3)));
-    }
-
-    /**
-     * The main module view function.
-     */
-    private function view() {
-        global $CFG, $USER, $PAGE;
-
-        $PAGE->set_title(format_string($this->name));
-        $PAGE->set_heading(format_string($this->course->fullname));
-        $message = $this->user_access_messages($USER->id, true);
-        if ($message !== false) {
-            $this->page->add_to_page('notifications', $message);
-        } else {
-            // Handle the main questionnaire completion page.
-            $quser = $USER->id;
-
-            $msg = $this->print_survey($quser, $USER->id);
-
-            // If Questionnaire was submitted with all required fields completed ($msg is empty),
-            // then record the submittal.
-            $viewform = data_submitted($CFG->wwwroot . "/mod/questionnaire/complete.php");
-            if (
-                $viewform && confirm_sesskey() && isset($viewform->submit) && isset($viewform->submittype) &&
-                ($viewform->submittype == "Submit Survey") && empty($msg)
-            ) {
-                if (!empty($viewform->rid)) {
-                    $viewform->rid = (int)$viewform->rid;
-                }
-                if (!empty($viewform->sec)) {
-                    $viewform->sec = (int)$viewform->sec;
-                }
-                $this->response_delete($viewform->rid, $viewform->sec);
-                $this->rid = $this->response_insert($viewform, $quser);
-                $this->response_commit($this->rid);
-
-                $this->update_grades($quser);
-
-                // Update completion state.
-                $completion = new completion_info($this->course);
-                if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
-                    $completion->update_state($this->cm, COMPLETION_COMPLETE);
-                }
-
-                // Log this submitted response. Note this removes the anonymity in the logged event.
-                $context = context_module::instance($this->cm->id);
-                $anonymous = $this->respondenttype == 'anonymous';
-                $params = [
-                    'context' => $context,
-                    'courseid' => $this->course->id,
-                    'relateduserid' => $USER->id,
-                    'anonymous' => $anonymous,
-                    'other' => ['questionnaireid' => $this->id],
-                ];
-                $event = \mod_questionnaire\event\attempt_submitted::create($params);
-                $event->trigger();
-
-                $this->submission_notify($this->rid);
-                $this->response_goto_thankyou();
-            }
-        }
     }
 
     /**
@@ -2847,105 +2626,6 @@ class questionnaire {
      */
     private function id() {
         return $this->id;
-    }
-
-    /**
-     * Return the course-module object for this questionnaire.
-     *
-     * @return \stdClass|\cm_info
-     */
-    private function coursemodule() {
-        return $this->cm;
-    }
-
-    /**
-     * Return the course object for this questionnaire.
-     *
-     * @return \stdClass
-     */
-    private function course() {
-        return $this->course;
-    }
-
-    /**
-     * Return the survey ID associated with this questionnaire.
-     *
-     * @return int
-     */
-    private function surveyid() {
-        return $this->sid;
-    }
-
-    /**
-     * True if the current user can manage this questionnaire.
-     *
-     * @return bool
-     */
-    private function can_manage_questionnaire() {
-        return (bool)$this->capabilities->manage;
-    }
-
-    /**
-     * True if the current user can edit questions.
-     *
-     * @return bool
-     */
-    private function can_edit_questions() {
-        return (bool)$this->capabilities->editquestions;
-    }
-
-    /**
-     * True if the current user can view this questionnaire.
-     *
-     * @return bool
-     */
-    private function can_view() {
-        return (bool)$this->capabilities->view;
-    }
-
-    /**
-     * True if the current user can preview this questionnaire.
-     *
-     * @return bool
-     */
-    private function can_preview() {
-        return (bool)$this->capabilities->preview;
-    }
-
-    /**
-     * True if the current user can read their own responses.
-     *
-     * @return bool
-     */
-    private function can_read_own_responses() {
-        return (bool)$this->capabilities->readownresponses;
-    }
-
-    /**
-     * True if the current user can download responses.
-     *
-     * @return bool
-     */
-    private function can_download_responses() {
-        return (bool)$this->capabilities->downloadresponses;
-    }
-
-    /**
-     * True if the current user can view a single response.
-     *
-     * @return bool
-     */
-    private function can_view_single_response() {
-        return (bool)$this->capabilities->viewsingleresponse;
-    }
-
-    /**
-     * True if the current user can delete responses.
-     *
-     * @return bool
-     */
-    private function can_delete_responses() {
-        return (bool)$this->capabilities->deleteresponses;
     }
 
     /**
@@ -3023,141 +2703,6 @@ class questionnaire {
      */
     private function is_survey_owner() {
         return (!empty($this->survey->courseid) && ($this->course->id == $this->survey->courseid));
-    }
-
-    /**
-     * True if the user can view the specified response.
-     * @param int $rid
-     * @return bool|void
-     */
-    private function can_view_response($rid) {
-        global $USER, $DB;
-
-        if (!empty($rid)) {
-            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
-
-            // If the response was not found, can't view it.
-            if (empty($response)) {
-                return false;
-            }
-
-            // If the response belongs to a different survey than this one, can't view it.
-            if ($response->questionnaireid != $this->id) {
-                return false;
-            }
-
-            // If you can view all responses always, then you can view it.
-            if ($this->capabilities->readallresponseanytime) {
-                return true;
-            }
-
-            // If you are allowed to view this response for another user.
-            // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
-            if (
-                $this->capabilities->readallresponses &&
-                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
-            ) {
-                return true;
-            }
-
-            // If you can read your own response.
-            if (
-                ($response->userid == $USER->id) && $this->capabilities->readownresponses &&
-                ($this->count_submissions($USER->id) > 0)
-            ) {
-                return true;
-            }
-        } else {
-            // If you can view all responses always, then you can view it.
-            if ($this->capabilities->readallresponseanytime) {
-                return true;
-            }
-
-            // If you are allowed to view this response for another user.
-            // If resp_view is set to QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, then this will always be false.
-            if (
-                $this->capabilities->readallresponses &&
-                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                 ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED  && !$this->user_can_take($USER->id)))
-            ) {
-                return true;
-            }
-
-            // If you can read your own response.
-            if ($this->capabilities->readownresponses && ($this->count_submissions($USER->id) > 0)) {
-                return true;
-            }
-        }
-    }
-
-    /**
-     * True if the user can view the responses to this questionnaire, and there are valid responses.
-     *
-     * @param null|int $usernumresp
-     * @param bool $isviewreport
-     * @return bool
-     */
-    private function can_view_all_responses($usernumresp = null, $isviewreport = false) {
-        global $USER, $SESSION;
-
-        $owner = $this->is_survey_owner();
-        $numresp = $this->count_submissions();
-        if ($usernumresp === null) {
-            $usernumresp = $this->count_submissions($USER->id);
-        }
-
-        // Number of Responses in currently selected group (or all participants etc.).
-        if (isset($SESSION->questionnaire->numselectedresps)) {
-            $numselectedresps = $SESSION->questionnaire->numselectedresps;
-        } else {
-            $numselectedresps = $numresp;
-        }
-
-        // If questionnaire is set to separate groups, prevent user who is not member of any group
-        // to view All responses.
-        $canviewgroups = true;
-        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
-        $groupmode = groups_get_activity_groupmode($this->cm, $this->course);
-        if ($groupmode == 1) {
-            $canviewgroups = groups_has_membership($this->cm, $USER->id);
-        }
-
-        $grouplogic = $canviewgroups || $canviewallgroups;
-        $respslogic = ($numresp > 0) && ($numselectedresps > 0) || $isviewreport;
-        return $this->can_view_all_responses_anytime($grouplogic, $respslogic) ||
-            $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic);
-    }
-
-    /**
-     * True if the user can view all of the responses to this questionnaire any time, and there are valid responses.
-     * @param bool $grouplogic
-     * @param bool $respslogic
-     * @return bool
-     */
-    private function can_view_all_responses_anytime($grouplogic = true, $respslogic = true) {
-        // Can view if you are a valid group user, this is the owning course, and there are responses, and you have no
-        // response view restrictions.
-        return $grouplogic && $respslogic && $this->is_survey_owner() && $this->capabilities->readallresponseanytime;
-    }
-
-    /**
-     * True if the user can view all of the responses to this questionnaire any time, and there are valid responses.
-     * @param null|int $usernumresp
-     * @param bool $grouplogic
-     * @param bool $respslogic
-     * @return bool
-     */
-    private function can_view_all_responses_with_restrictions($usernumresp, $grouplogic = true, $respslogic = true) {
-        // Can view if you are a valid group user, this is the owning course, and there are responses, and you can view
-        // subject to viewing settings..
-        return $grouplogic && $respslogic && $this->is_survey_owner() &&
-            ($this->capabilities->readallresponses &&
-                ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
-                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED && $this->is_closed()) ||
-                    ($this->respview == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED && $usernumresp)));
     }
 
     /**
@@ -3244,38 +2789,6 @@ class questionnaire {
      * @param int $questionid
      * @return array
      */
-    private function get_all_dependants($questionid) {
-        $directids = $this->get_dependants($questionid);
-        $directs = [];
-        $indirects = [];
-        foreach ($directids as $directid) {
-            $this->load_parents($this->questions[$directid]);
-            $indirectids = $this->get_dependants($directid);
-            foreach ($this->questions[$directid]->dependencies as $dep) {
-                if ($dep->dependquestionid == $questionid) {
-                    $directs[$directid][] = $dep;
-                }
-            }
-            foreach ($indirectids as $indirectid) {
-                $this->load_parents($this->questions[$indirectid]);
-                foreach ($this->questions[$indirectid]->dependencies as $dep) {
-                    if ($dep->dependquestionid != $questionid) {
-                        $indirects[$indirectid][] = $dep;
-                    }
-                }
-            }
-        }
-        $alldependants = new stdClass();
-        $alldependants->directs = $directs;
-        $alldependants->indirects = $indirects;
-        return($alldependants);
-    }
-
-    /**
-     * Get a list of all dependent questions.
-     * @param int $questionid
-     * @return array
-     */
     private function get_dependants($questionid) {
         $qu = [];
         // Create an array which shows for every question the child-IDs.
@@ -3289,22 +2802,6 @@ class questionnaire {
             }
         }
         return($qu);
-    }
-
-    /**
-     * Function to sort descendants array in get_dependants function.
-     * @param mixed $a
-     * @param mixed $b
-     * @return int
-     */
-    private static function cmp($a, $b) {
-        if ($a == $b) {
-            return 0;
-        } else if ($a < $b) {
-            return -1;
-        } else {
-            return 1;
-        }
     }
 
     /**

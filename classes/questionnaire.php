@@ -2384,9 +2384,7 @@ class questionnaire {
      * @return bool True on success.
      */
     public static function delete_instance(int $id): bool {
-        global $CFG, $DB;
-        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+        global $DB;
 
         if (!$questionnaire = $DB->get_record('questionnaire', ['id' => $id])) {
             return false;
@@ -2408,11 +2406,63 @@ class questionnaire {
         if ($survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid])) {
             // If this survey is owned by this course, delete all of the survey records and responses.
             if ($survey->courseid == $questionnaire->course) {
-                $result = $result && \questionnaire::delete_survey($questionnaire->sid, $questionnaire->id);
+                $result = $result && self::delete_survey($questionnaire->sid, $questionnaire->id);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Delete a survey and all associated data.
+     *
+     * @param int $sid Survey id.
+     * @param int $questionnaireid Questionnaire instance id.
+     * @return bool True on success.
+     */
+    private static function delete_survey(int $sid, int $questionnaireid): bool {
+        global $DB;
+
+        $status = true;
+
+        // Delete all survey attempts and responses.
+        $rid = $DB->get_fieldset_select('questionnaire_response', 'id', 'questionnaireid = ?', [$questionnaireid]);
+        if (!empty($rid)) {
+            [$insql, $params] = $DB->get_in_or_equal($rid);
+            $DB->delete_records_select('questionnaire_response_bool', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_date', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_resp_multiple', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_other', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_rank', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_resp_single', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_text', "responseid $insql", $params);
+            $DB->delete_records_select('questionnaire_response_file', "responseid $insql", $params);
+        }
+        $status = $status && $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaireid]);
+
+        // Delete all question data for the survey.
+        if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid], 'id')) {
+            foreach ($questions as $question) {
+                $DB->delete_records('questionnaire_quest_choice', ['questionid' => $question->id]);
+                $DB->delete_records('questionnaire_dependency', ['questionid' => $question->id]);
+                $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $question->id]);
+            }
+            $status = $status && $DB->delete_records('questionnaire_question', ['surveyid' => $sid]);
+            // Just to make sure.
+            $status = $status && $DB->delete_records('questionnaire_dependency', ['surveyid' => $sid]);
+        }
+
+        // Delete all feedback sections and feedback messages for the survey.
+        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid], 'id')) {
+            foreach ($fbsections as $fbsection) {
+                $DB->delete_records('questionnaire_feedback', ['sectionid' => $fbsection->id]);
+            }
+            $status = $status && $DB->delete_records('questionnaire_fb_sections', ['surveyid' => $sid]);
+        }
+
+        $status = $status && $DB->delete_records('questionnaire_survey', ['id' => $sid]);
+
+        return $status;
     }
 
     /**
