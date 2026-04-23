@@ -69,7 +69,7 @@ if (!$questionnaire->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$questionnairehasdependencies = $questionnaire->has_dependencies();
+$questionnairehasdependencies = $questionnaire->navigator()->has_dependencies();
 $dependants = null;
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
@@ -233,7 +233,7 @@ if ($action == 'main') {
             if ($questionnairehasdependencies) {
                 // Important: due to possibly multiple parents per question
                 // just remove the dependency and inform the user about it.
-                $dependants = $questionnaire->get_all_dependants($qid);
+                $dependants = $questionnaire->navigator()->get_all_dependants($qid);
                 if (!(empty($dependants->directs) && empty($dependants->indirects))) {
                     $action = "confirmdelquestionparent";
                 }

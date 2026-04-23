@@ -91,7 +91,7 @@ class questions_form extends \moodleform {
 
         $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
 
-        $questionnairehasdependencies = $questionnaire->has_dependencies();
+        $questionnairehasdependencies = $questionnaire->navigator()->has_dependencies();
 
         $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
 
@@ -130,7 +130,7 @@ class questions_form extends \moodleform {
             // Get displayable list of parents for the questions in questions_form.
             if ($questionnairehasdependencies) {
                 // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
-                $questionnaire->load_parents($question);
+                $questionnaire->navigator()->load_parents($question);
                 $dependencies = $questionnaire->renderer->get_dependency_html($question->id(), $question->dependencies);
             } else {
                 $dependencies = '';
