@@ -1146,7 +1146,7 @@ class questionnaire {
      * @param int $rankaverages
      * @return array
      */
-    public function generate_csv(
+    private function generate_csv(
         $currentgroupid,
         $rid = '',
         $userid = '',

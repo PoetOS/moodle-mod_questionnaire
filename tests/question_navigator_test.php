@@ -44,7 +44,6 @@ require_once($CFG->dirroot . '/mod/questionnaire/tests/survey_testable.php');
  * @covers \mod_questionnaire\local\question_navigator
  */
 final class question_navigator_test extends \advanced_testcase {
-
     // Helpers.
 
     /**

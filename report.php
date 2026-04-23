@@ -534,7 +534,7 @@ switch ($action) {
         $emailroles = optional_param('emailroles', 0, PARAM_INT);
         $emailextra = optional_param('emailextra', '', PARAM_RAW);
 
-        $output = $questionnaire->generate_csv(
+        $output = $questionnaire->reporter()->generate_csv(
             $currentgroupid,
             '',
             $user,

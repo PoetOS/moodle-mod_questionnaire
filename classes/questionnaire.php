@@ -22,6 +22,7 @@ use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question_navigator;
 use mod_questionnaire\local\response\questionnaire_responses;
+use mod_questionnaire\reporter;
 use mod_questionnaire\local\response\response;
 use mod_questionnaire\survey;
 use context_module;
@@ -99,6 +100,9 @@ class questionnaire {
 
     /** @var question_navigator|null Lazy-loaded navigator for page and dependency traversal. */
     private ?question_navigator $navigator = null;
+
+    /** @var reporter|null Lazy-loaded reporter for CSV export and response analysis. */
+    private ?reporter $reporter = null;
 
     /** @var string Course-module idnumber, used by gradebook. Set by callers that need it. */
     public string $cmidnumber = '';
@@ -461,6 +465,16 @@ class questionnaire {
     public function navigator(): question_navigator {
         $this->navigator ??= new question_navigator($this->survey, $this->navigate() > 0);
         return $this->navigator;
+    }
+
+    /**
+     * Return the reporter for CSV export and response analysis.
+     *
+     * @return reporter
+     */
+    public function reporter(): reporter {
+        $this->reporter ??= new reporter($this);
+        return $this->reporter;
     }
 
     /**
@@ -3102,41 +3116,6 @@ class questionnaire {
         int $currentgroupid
     ) {
         return $this->legacy()->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
-    }
-
-    /**
-     * Generate CSV export data for all (or filtered) responses.
-     *
-     * Shim — delegates to the legacy questionnaire class until CSV generation
-     * is refactored.
-     *
-     * @param int $currentgroupid Group id filter (0 = all).
-     * @param string $rid         Response id filter ('' = all).
-     * @param int|string $userid  User id filter ('' = all).
-     * @param int|null $choicecodes Include choice codes column.
-     * @param int $choicetext     Include choice text column.
-     * @param int $showincompletes Include incomplete responses.
-     * @param int $rankaverages   Include rank averages.
-     * @return array Rows of CSV data (row 0 = column headers).
-     */
-    public function generate_csv(
-        int $currentgroupid = 0,
-        string $rid = '',
-        $userid = '',
-        ?int $choicecodes = null,
-        int $choicetext = 1,
-        int $showincompletes = 0,
-        int $rankaverages = 0
-    ): array {
-        return $this->legacy()->generate_csv(
-            $currentgroupid,
-            $rid,
-            $userid,
-            $choicecodes,
-            $choicetext,
-            $showincompletes,
-            $rankaverages
-        );
     }
 
     /**
