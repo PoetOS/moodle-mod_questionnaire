@@ -111,7 +111,10 @@ class slider extends question {
     protected function question_survey_display($response, $dependants = [], $blankquestionnaire = false) {
         global $PAGE;
         $PAGE->requires->js_init_call(
-            'M.mod_questionnaire.init_slider', null, false, \mod_questionnaire\questionnaire::js_module()
+            'M.mod_questionnaire.init_slider',
+            null,
+            false,
+            \mod_questionnaire\questionnaire::js_module()
         );
         $extradata = json_decode($this->extradata());
         $questiontags = new \stdClass();
@@ -134,7 +137,10 @@ class slider extends question {
     protected function response_survey_display($response) {
         global $PAGE;
         $PAGE->requires->js_init_call(
-            'M.mod_questionnaire.init_slider', null, false, \mod_questionnaire\questionnaire::js_module()
+            'M.mod_questionnaire.init_slider',
+            null,
+            false,
+            \mod_questionnaire\questionnaire::js_module()
         );
 
         $resptags = new \stdClass();
