@@ -2313,7 +2313,7 @@ class questionnaire {
      * Return true if questions should be automatically numbered.
      * @return bool
      */
-    private function questions_autonumbered() {
+    public function questions_autonumbered() {
         // Value of 1 if questions should be numbered. Value of 3 if both questions and pages should be numbered.
         return (!empty($this->autonum) && (($this->autonum == 1) || ($this->autonum == 3)));
     }
