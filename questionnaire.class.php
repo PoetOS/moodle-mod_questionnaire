@@ -208,15 +208,6 @@ class questionnaire {
     }
 
     /**
-     * Load all response information for this user.
-     *
-     * @param int $userid
-     */
-    public function add_user_responses($userid = null) {
-        $this->responses()->add_user_responses($userid);
-    }
-
-    /**
      * Function to view an entire responses data.
      * @param int $rid
      * @param string $referer
@@ -2345,6 +2336,15 @@ class questionnaire {
         }
 
         return $feedbackmessages;
+    }
+
+    /**
+     * Load all response information for this user.
+     *
+     * @param int $userid
+     */
+    private function add_user_responses($userid = null) {
+        $this->responses()->add_user_responses($userid);
     }
 
     /**

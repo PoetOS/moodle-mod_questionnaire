@@ -2991,16 +2991,13 @@ class questionnaire {
     }
 
     /**
-     * Load all responses for the given user into the legacy instance's response store.
+     * Load all responses for the given user into the response store.
      *
-     * Shim — delegates to the legacy questionnaire class until response loading
-     * is refactored onto the new domain objects.
-     *
-     * @param int|null $userid Load responses for this user, or null for all users.
+     * @param int|null $userid Load responses for this user, or null for the current user.
      * @return void
      */
     public function add_user_responses(?int $userid = null): void {
-        $this->legacy()->add_user_responses($userid);
+        $this->responses()->add_user_responses($userid);
     }
 
     /**
