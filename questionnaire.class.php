@@ -2464,7 +2464,7 @@ class questionnaire {
      * @param \mod_questionnaire\local\question\question $question
      * @return bool
      */
-    private function load_parents($question) {
+    public function load_parents($question) {
         foreach ($question->dependencies as $did => $dependency) {
             $dependquestion = $this->questions[$dependency->dependquestionid];
             $qdependchoice = '';
