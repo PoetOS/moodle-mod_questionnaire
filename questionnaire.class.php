@@ -1140,58 +1140,6 @@ class questionnaire {
     }
 
     /**
-     * Return survey records for a given course and realm type.
-     * @param int $courseid
-     * @param string $type realm type: 'public', 'template', 'private', or '' for all
-     * @return array|false
-     */
-    public static function get_survey_list($courseid = 0, $type = '') {
-        global $DB;
-
-        if ($courseid == 0) {
-            if (isadmin()) {
-                $sql = "SELECT id,name,courseid,realm,status " .
-                       "{questionnaire_survey} " .
-                       "ORDER BY realm,name ";
-                $params = null;
-            } else {
-                return false;
-            }
-        } else {
-            if ($type == 'public') {
-                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
-                       "FROM {questionnaire} q " .
-                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
-                       "WHERE realm = ? " .
-                       "ORDER BY realm,name ";
-                $params = [$type];
-            } else if ($type == 'template') {
-                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
-                       "FROM {questionnaire} q " .
-                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
-                       "WHERE (realm = ?) " .
-                       "ORDER BY realm,name ";
-                $params = [$type];
-            } else if ($type == 'private') {
-                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname " .
-                    "FROM {questionnaire} q " .
-                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
-                    "WHERE s.courseid = ? and realm = ? " .
-                    "ORDER BY realm,name ";
-                $params = [$courseid, $type];
-            } else {
-                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname " .
-                       "FROM {questionnaire} q " .
-                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
-                       "WHERE s.courseid = ? " .
-                       "ORDER BY realm,name ";
-                $params = [$courseid];
-            }
-        }
-        return $DB->get_records_sql($sql, $params) ?? [];
-    }
-
-    /**
      * Delete a survey and all associated data.
      * @param int $sid survey id
      * @param int $questionnaireid questionnaire instance id
@@ -2336,6 +2284,58 @@ class questionnaire {
         }
 
         return $feedbackmessages;
+    }
+
+    /**
+     * Return survey records for a given course and realm type.
+     * @param int $courseid
+     * @param string $type realm type: 'public', 'template', 'private', or '' for all
+     * @return array|false
+     */
+    private static function get_survey_list($courseid = 0, $type = '') {
+        global $DB;
+
+        if ($courseid == 0) {
+            if (isadmin()) {
+                $sql = "SELECT id,name,courseid,realm,status " .
+                       "{questionnaire_survey} " .
+                       "ORDER BY realm,name ";
+                $params = null;
+            } else {
+                return false;
+            }
+        } else {
+            if ($type == 'public') {
+                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
+                       "FROM {questionnaire} q " .
+                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
+                       "WHERE realm = ? " .
+                       "ORDER BY realm,name ";
+                $params = [$type];
+            } else if ($type == 'template') {
+                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,s.title,q.id as qid,q.name as qname " .
+                       "FROM {questionnaire} q " .
+                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
+                       "WHERE (realm = ?) " .
+                       "ORDER BY realm,name ";
+                $params = [$type];
+            } else if ($type == 'private') {
+                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname " .
+                    "FROM {questionnaire} q " .
+                    "INNER JOIN {questionnaire_survey} s ON s.id = q.sid " .
+                    "WHERE s.courseid = ? and realm = ? " .
+                    "ORDER BY realm,name ";
+                $params = [$courseid, $type];
+            } else {
+                $sql = "SELECT s.id,s.name,s.courseid,s.realm,s.status,q.id as qid,q.name as qname " .
+                       "FROM {questionnaire} q " .
+                       "INNER JOIN {questionnaire_survey} s ON s.id = q.sid AND s.courseid = q.course " .
+                       "WHERE s.courseid = ? " .
+                       "ORDER BY realm,name ";
+                $params = [$courseid];
+            }
+        }
+        return $DB->get_records_sql($sql, $params) ?? [];
     }
 
     /**
