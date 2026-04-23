@@ -20,6 +20,7 @@ use mod_questionnaire\local\db\dependency_record;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\question_navigator;
 use mod_questionnaire\local\response\questionnaire_responses;
 use mod_questionnaire\local\response\response;
 use mod_questionnaire\survey;
@@ -95,6 +96,9 @@ class questionnaire {
 
     /** @var \questionnaire|null Lazy-loaded legacy instance used by rendering shims. */
     private $legacyinstance = null;
+
+    /** @var question_navigator|null Lazy-loaded navigator for page and dependency traversal. */
+    private ?question_navigator $navigator = null;
 
     /** @var string Course-module idnumber, used by gradebook. Set by callers that need it. */
     public string $cmidnumber = '';
@@ -450,84 +454,38 @@ class questionnaire {
     }
 
     /**
-     * True if any question in this questionnaire has dependency (skip-logic) conditions.
+     * Return the navigator for page traversal and dependency inspection.
+     *
+     * @return question_navigator
+     */
+    public function navigator(): question_navigator {
+        $this->navigator ??= new question_navigator($this->survey, $this->navigate() > 0);
+        return $this->navigator;
+    }
+
+    /**
+     * True if skip-logic is enabled and at least one question has a dependency condition.
+     *
+     * Kept as a delegation method because question.php receives either the legacy or new
+     * questionnaire class and calls this method on whichever it has.
      *
      * @return bool
      */
     public function has_dependencies(): bool {
-        return $this->navigate() > 0 && $this->survey->has_questions_with_dependencies();
-    }
-
-    /**
-     * Get the IDs of all questions that depend on the given question.
-     *
-     * @param int $questionid
-     * @return array
-     */
-    public function get_dependants(int $questionid): array {
-        return $this->survey->get_dependants($questionid);
-    }
-
-    /**
-     * Get all direct and indirect dependants of a question.
-     *
-     * @param int $questionid
-     * @return stdClass Object with ->directs and ->indirects arrays.
-     */
-    public function get_all_dependants(int $questionid): stdClass {
-        return $this->survey->get_all_dependants($questionid);
-    }
-
-    /**
-     * Get all descendants and their choice conditions, keyed by parent question id.
-     *
-     * @return array
-     */
-    public function get_dependants_and_choices(): array {
-        return $this->survey->get_dependants_and_choices();
+        return $this->navigator()->has_dependencies();
     }
 
     /**
      * Load display info for each dependency of a question (parent name, choice label, etc.).
      *
+     * Kept as a delegation method because question.php receives either the legacy or new
+     * questionnaire class and calls this method on whichever it has.
+     *
      * @param question $question
      * @return bool
      */
     public function load_parents(question $question): bool {
-        return $this->survey->load_parents($question);
-    }
-
-    /**
-     * True if there are any eligible (dependency-satisfied) questions on the given section.
-     *
-     * @param int $secnum 1-based section number.
-     * @param int $rid Response id (0 if no response yet).
-     * @return bool
-     */
-    public function eligible_questions_on_page(int $secnum, int $rid): bool {
-        return $this->survey->eligible_questions_on_page($secnum, $rid);
-    }
-
-    /**
-     * Return the next valid section number after $secnum, or false if none.
-     *
-     * @param int $secnum Current section number.
-     * @param int $rid Response id.
-     * @return int|bool
-     */
-    public function next_page(int $secnum, int $rid): int|bool {
-        return $this->survey->next_page($secnum, $rid, $this->has_dependencies());
-    }
-
-    /**
-     * Return the previous valid section number before $secnum, or false if none.
-     *
-     * @param int $secnum Current section number.
-     * @param int $rid Response id.
-     * @return int|bool
-     */
-    public function prev_page(int $secnum, int $rid): int|bool {
-        return $this->survey->prev_page($secnum, $rid, $this->has_dependencies());
+        return $this->navigator()->load_parents($question);
     }
 
     /**
@@ -2729,7 +2687,7 @@ class questionnaire {
         $msg = $this->responses()->response_check_format($response->sec, $response, true, true, $this->survey->questions());
         if (empty($msg)) {
             $response->rid = $this->existing_response_action($response, $userid);
-            return $this->next_page($response->sec, $response->rid);
+            return $this->navigator()->next_page($response->sec, $response->rid);
         }
         return $msg;
     }
@@ -2743,7 +2701,7 @@ class questionnaire {
      */
     public function previous_page_action($response, int $userid): int|bool {
         $response->rid = $this->existing_response_action($response, $userid);
-        return $this->prev_page($response->sec, $response->rid);
+        return $this->navigator()->prev_page($response->sec, $response->rid);
     }
 
     /**
