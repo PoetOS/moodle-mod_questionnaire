@@ -2424,42 +2424,23 @@ class questionnaire {
     public static function reset_userdata(object $data): array {
         global $CFG, $DB;
         require_once($CFG->libdir . '/questionlib.php');
-        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 
         $componentstr = get_string('modulenameplural', 'questionnaire');
         $status = [];
 
         if (!empty($data->reset_questionnaire)) {
-            $surveys = \questionnaire::get_survey_list($data->courseid, '');
-
-            // Delete responses.
-            foreach ($surveys as $survey) {
-                // Get all responses for this questionnaire.
-                $sql = "SELECT qr.id, qr.questionnaireid, qr.submitted, qr.userid, q.sid
-                     FROM {questionnaire} q
-                     INNER JOIN {questionnaire_response} qr ON q.id = qr.questionnaireid
-                     WHERE q.sid = ?
-                     ORDER BY qr.id";
-                $resps = $DB->get_records_sql($sql, [$survey->id]);
-                if (!empty($resps)) {
-                    $questrecord = $DB->get_record(
-                        "questionnaire",
-                        ["sid" => $survey->id, "course" => $survey->courseid]
-                    );
-                    $questcourse = $DB->get_record("course", ["id" => $questrecord->course]);
-                    $questcm = get_coursemodule_from_instance("questionnaire", $questrecord->id, $questcourse->id);
-                    $questobj = new \questionnaire($questcourse, $questcm, 0, $questrecord);
-                    foreach ($resps as $response) {
-                        $questobj->responses()->delete_response($response);
-                    }
+            $instances = $DB->get_records('questionnaire', ['course' => $data->courseid]);
+            foreach ($instances as $instance) {
+                $questionnaire = self::from_instanceid($instance->id);
+                // Delete responses.
+                $resps = $DB->get_records('questionnaire_response', ['questionnaireid' => $instance->id]);
+                foreach ($resps as $response) {
+                    $questionnaire->responses()->delete_response($response);
                 }
                 // Remove this questionnaire's grades (and feedback) from gradebook (if any).
-                $select = "itemmodule = 'questionnaire' AND iteminstance = " . $survey->qid;
-                $fields = 'id';
-                if ($itemid = $DB->get_record_select('grade_items', $select, null, $fields)) {
-                    $itemid = $itemid->id;
-                    $DB->delete_records_select('grade_grades', 'itemid = ' . $itemid);
+                $select = "itemmodule = 'questionnaire' AND iteminstance = ?";
+                if ($itemid = $DB->get_record_select('grade_items', $select, [$instance->id], 'id')) {
+                    $DB->delete_records_select('grade_grades', 'itemid = ' . $itemid->id);
                 }
             }
             $status[] = [
