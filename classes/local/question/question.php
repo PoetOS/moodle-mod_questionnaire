@@ -26,6 +26,7 @@
 namespace mod_questionnaire\local\question;
 use mod_questionnaire\edit_question_form;
 use mod_questionnaire\local\db\question_record;
+use mod_questionnaire\local\db\question_type_record;
 use mod_questionnaire\local\question_type;
 use mod_questionnaire\local\response\response;
 use mod_questionnaire\questionnaire;
@@ -554,6 +555,27 @@ abstract class question {
      */
     public function has_choices() {
         return false;
+    }
+
+    /**
+     * Return all question type IDs whose questions have choice records.
+     *
+     * Queries the questionnaire_question_type table and caches the result for the
+     * duration of the request.
+     *
+     * @return int[]
+     */
+    public static function typeids_with_choices(): array {
+        static $cache = null;
+        if ($cache !== null) {
+            return $cache;
+        }
+        $records = question_type_record::get_records(['haschoices' => 'y']);
+        $cache = [];
+        foreach ($records as $record) {
+            $cache[] = (int)$record->get('typeid');
+        }
+        return $cache;
     }
 
     /**

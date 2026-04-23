@@ -28,6 +28,7 @@ namespace mod_questionnaire;
 /**
  * Unit tests for questionnaire_csvexport_test.
  * @group mod_questionnaire
+ * @covers \mod_questionnaire\reporter::generate_csv
  */
 final class csvexport_test extends \advanced_testcase {
     public function setUp(): void {
@@ -60,8 +61,6 @@ final class csvexport_test extends \advanced_testcase {
 
     /**
      * Tests the CSV export.
-     *
-     * @covers \questionnaire::generate_csv
      */
     public function test_csvexport(): void {
         $this->resetAfterTest();
@@ -69,23 +68,17 @@ final class csvexport_test extends \advanced_testcase {
         $qdg = $dg->get_plugin_generator('mod_questionnaire');
         $qdg->create_and_fully_populate(1, 5, 1, 1);
 
-        // The following line simply.
         $questionnaires = $qdg->questionnaires();
         foreach ($questionnaires as $questionnaire) {
-            global $CFG;
-            require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-            [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id(), 'questionnaire', $questionnaire->courseid());
-            $questionnaireinst = new \questionnaire($course, $cm, $questionnaire->id(), null, true);
-
             // Test for only complete responses.
-            $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 0));
+            $newoutput = $this->get_csv_text($questionnaire->reporter()->generate_csv(0, '', '', 0, 0, 0));
             $this->assertEquals(count($newoutput), count($this->expected_complete_output()));
             foreach ($newoutput as $key => $output) {
                 $this->assertEquals($this->expected_complete_output()[$key], $output);
             }
 
             // Test for all responses.
-            $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 1));
+            $newoutput = $this->get_csv_text($questionnaire->reporter()->generate_csv(0, '', '', 0, 0, 1));
             $this->assertEquals(count($newoutput), count($this->expected_incomplete_output()));
             foreach ($newoutput as $key => $output) {
                 $this->assertEquals($this->expected_incomplete_output()[$key], $output);
@@ -95,8 +88,6 @@ final class csvexport_test extends \advanced_testcase {
 
     /**
      * Tests the CSV export with identity fields and anonymous questionnaires.
-     *
-     * @covers \questionnaire::generate_csv
      */
     public function test_csvexport_identity_fields(): void {
         global $DB;
@@ -133,11 +124,8 @@ final class csvexport_test extends \advanced_testcase {
      * @param object $user
      * @param int $roleid
      * @param array $profilefields
-     * @param object $item
+     * @param \mod_questionnaire\questionnaire $item
      * @param bool $anonymous
-     * @throws coding_exception
-     * @throws dml_exception
-     * @throws moodle_exception
      */
     private function do_test_csvexport_identity_fields($course, $cm, $user, $roleid, $profilefields, $item, $anonymous): void {
         global $DB;
@@ -155,8 +143,8 @@ final class csvexport_test extends \advanced_testcase {
         assign_capability('moodle/site:viewuseridentity', CAP_ALLOW, $roleid, $context);
 
         // Generate CSV output.
-        $questionnaire = new \questionnaire($course, $cm, $item->id());
-        $output = $questionnaire->generate_csv(0, '', '', 0, 0, 1);
+        $questionnaire = \mod_questionnaire\questionnaire::from_cmid($cm->id);
+        $output = $questionnaire->reporter()->generate_csv(0, '', '', 0, 0, 1);
 
         $this->assertNotNull($output);
         $this->assertCount(3, $output);

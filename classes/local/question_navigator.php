@@ -34,6 +34,11 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class question_navigator {
+    /** @var survey The survey whose pages and questions are navigated. */
+    private survey $survey;
+
+    /** @var bool True when the questionnaire module has navigate > 0. */
+    private bool $skiplogicenabled;
 
     /**
      * Construct a navigator for the given survey.
@@ -41,10 +46,9 @@ class question_navigator {
      * @param survey $survey The survey whose pages and questions are navigated.
      * @param bool $skiplogicenabled True when the questionnaire module has navigate=1.
      */
-    public function __construct(
-        private survey $survey,
-        private bool $skiplogicenabled
-    ) {
+    public function __construct(survey $survey, bool $skiplogicenabled) {
+        $this->survey = $survey;
+        $this->skiplogicenabled = $skiplogicenabled;
     }
 
     // Dependency inspection.
