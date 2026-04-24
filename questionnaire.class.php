@@ -280,7 +280,7 @@ class questionnaire {
     /**
      * Function to view all loaded responses.
      */
-    public function view_all_responses() {
+    private function view_all_responses() {
         $this->print_survey_start('', 1, 1, 0);
 
         // If a student's responses have been deleted by teacher while student was viewing the report,

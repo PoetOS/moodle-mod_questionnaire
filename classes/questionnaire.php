@@ -2993,29 +2993,6 @@ class questionnaire {
         }
     }
 
-    /**
-     * Load all responses for the given user into the response store.
-     *
-     * @param int|null $userid Load responses for this user, or null for the current user.
-     * @return void
-     */
-    public function add_user_responses(?int $userid = null): void {
-        $this->responses()->add_user_responses($userid);
-    }
-
-    /**
-     * Render all loaded responses for display.
-     *
-     * Shim — delegates to the legacy questionnaire class until the results
-     * rendering is refactored.
-     *
-     * @return void
-     */
-    public function view_all_responses(): void {
-        $legacy = $this->legacy();
-        $legacy->page = $this->page;
-        $legacy->view_all_responses();
-    }
 
     /**
      * Render the student response navigation bar for myreport/report pages.
