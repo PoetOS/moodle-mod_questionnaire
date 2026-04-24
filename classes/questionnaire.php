@@ -78,8 +78,8 @@ class questionnaire {
     /** @var survey The survey domain object for this questionnaire. */
     protected survey $survey;
 
-    /** @var stdClass|\cm_info The course_modules record for this questionnaire. */
-    protected stdClass|\cm_info $coursemodule;
+    /** @var \cm_info The course module info object for this questionnaire. */
+    protected \cm_info $coursemodule;
 
     /** @var context_module The context for this questionnaire. */
     protected context_module $context;
@@ -115,12 +115,12 @@ class questionnaire {
      *
      * @param int $mid Instance id (questionnaire.id).
      * @param questionnaire_record|null $modulerecord Pre-loaded persistent — omit to load from DB.
-     * @param stdClass|\cm_info|null $coursemodule Pre-loaded course_modules row — omit to look up.
+     * @param \cm_info|null $coursemodule Pre-loaded cm_info — omit to look up.
      */
     public function __construct(
         int $mid = 0,
         ?questionnaire_record $modulerecord = null,
-        stdClass|\cm_info|null $coursemodule = null
+        ?\cm_info $coursemodule = null
     ) {
         if (!empty($mid)) {
             $this->modulerecord = new questionnaire_record($mid);
@@ -130,8 +130,9 @@ class questionnaire {
             throw new \coding_exception('Either mid or modulerecord must be provided to construct a questionnaire object.');
         }
 
-        $this->coursemodule = $coursemodule ??
-            get_coursemodule_from_instance('questionnaire', $this->modulerecord->get('id'), 0, false, MUST_EXIST);
+        $this->coursemodule = $coursemodule ?? \cm_info::create(
+            get_coursemodule_from_instance('questionnaire', $this->modulerecord->get('id'), 0, false, MUST_EXIST)
+        );
         $this->context = context_module::instance($this->coursemodule->id);
         $this->course = get_course($this->modulerecord->get('course'));
         $sid = $this->modulerecord->get('sid');
@@ -142,31 +143,32 @@ class questionnaire {
      * Return a questionnaire instance from an activity instance id.
      *
      * @param int $instanceid questionnaire.id
+     * @param \cm_info|null $cm Optional pre-loaded cm_info — omit to look up.
      * @return self
      */
-    public static function from_instanceid(int $instanceid): self {
-        return new self($instanceid);
+    public static function from_instanceid(int $instanceid, ?\cm_info $cm = null): self {
+        return new self($instanceid, null, $cm);
     }
 
     /**
      * Return a questionnaire instance from a course module id.
      *
      * @param int $cmid course_modules.id
-     * @param stdClass|\cm_info|null $cm Optional pre-loaded course_modules row.
+     * @param \cm_info|null $cm Optional pre-loaded cm_info — omit to look up.
      * @return self
      */
-    public static function from_cmid(int $cmid): self {
-        $cm = get_coursemodule_from_id('questionnaire', $cmid, 0, false, MUST_EXIST);
+    public static function from_cmid(int $cmid, ?\cm_info $cm = null): self {
+        $cm = $cm ?? \cm_info::create(get_coursemodule_from_id('questionnaire', $cmid, 0, false, MUST_EXIST));
         return new self($cm->instance, null, $cm);
     }
 
     /**
-     * Return a questionnaire instance from a course_modules object.
+     * Return a questionnaire instance from a cm_info object.
      *
-     * @param stdClass|\cm_info $cm course_modules row or cm_info object.
+     * @param \cm_info $cm Course module info object.
      * @return self
      */
-    public static function from_cm(stdClass|\cm_info $cm): self {
+    public static function from_cm(\cm_info $cm): self {
         return new self($cm->instance, null, $cm);
     }
 
@@ -250,11 +252,11 @@ class questionnaire {
     }
 
     /**
-     * Get the course module record.
+     * Get the course module info object.
      *
-     * @return stdClass|\cm_info
+     * @return \cm_info
      */
-    public function coursemodule(): stdClass|\cm_info {
+    public function coursemodule(): \cm_info {
         return $this->coursemodule;
     }
 

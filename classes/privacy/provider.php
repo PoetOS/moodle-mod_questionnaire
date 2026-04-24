@@ -231,11 +231,11 @@ class provider implements
             return;
         }
 
-        if (!$cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
+        if (!$cmrecord = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
             return;
         }
 
-        $questionnaire = questionnaire::from_cm($cm);
+        $questionnaire = questionnaire::from_cm(\cm_info::create($cmrecord));
         $qresponses = $questionnaire->responses();
         $responses = $qresponses->get_responses();
         foreach ($responses as $response) {
@@ -258,11 +258,11 @@ class provider implements
             if (!($context instanceof \context_module)) {
                 continue;
             }
-            if (!$cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
+            if (!$cmrecord = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
                 continue;
             }
 
-            $questionnaire = questionnaire::from_cm($cm);
+            $questionnaire = questionnaire::from_cm(\cm_info::create($cmrecord));
             $qresponses = $questionnaire->responses();
             $responses = $qresponses->get_responses($userid);
             foreach ($responses as $response) {
@@ -279,11 +279,11 @@ class provider implements
      */
     public static function delete_data_for_users(approved_userlist $userlist) {
         $context = $userlist->get_context();
-        if (!$cm = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
+        if (!$cmrecord = get_coursemodule_from_id('questionnaire', $context->instanceid)) {
             return;
         }
 
-        $questionnaire = questionnaire::from_cm($cm);
+        $questionnaire = questionnaire::from_cm(\cm_info::create($cmrecord));
         $qresponses = $questionnaire->responses();
         foreach ($userlist->get_userids() as $userid) {
             $responses = $qresponses->get_responses($userid);
