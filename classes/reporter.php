@@ -20,6 +20,7 @@ use mod_questionnaire\local\feedback\section;
 use mod_questionnaire\local\question\choice;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question\rate;
+use mod_questionnaire\local\response\questionnaire_responses;
 use html_writer;
 use html_table;
 use stdClass;
@@ -41,6 +42,9 @@ class reporter {
     /** @var questionnaire The questionnaire being reported on. */
     private questionnaire $questionnaire;
 
+    /** @var questionnaire_responses|null Cached response collection shared across methods. */
+    private ?questionnaire_responses $responsecollection = null;
+
     /**
      * Construct a reporter for the given questionnaire.
      *
@@ -48,6 +52,48 @@ class reporter {
      */
     public function __construct(questionnaire $questionnaire) {
         $this->questionnaire = $questionnaire;
+    }
+
+    /**
+     * Load all responses for the given user into the shared response store.
+     *
+     * Must be called before view_all_responses() when using the two-step pattern.
+     *
+     * @param int|null $userid Load for this user, or null for the current user.
+     * @return void
+     */
+    public function add_user_responses(?int $userid = null): void {
+        $this->responsecollection()->add_user_responses($userid);
+    }
+
+    /**
+     * Render all loaded responses for display.
+     *
+     * Uses the response collection populated by add_user_responses().
+     *
+     * @return void
+     */
+    public function view_all_responses(): void {
+        $this->print_survey_start('', 1, 1, 0);
+
+        $loadedresponses = $this->responsecollection()->get_loaded_responses();
+        if (!empty($loadedresponses)) {
+            $this->questionnaire->page->add_to_page(
+                'responses',
+                $this->questionnaire->renderer->all_response_output(
+                    $loadedresponses,
+                    $this->questionnaire->questions(),
+                    $this->questionnaire
+                )
+            );
+        } else {
+            $this->questionnaire->page->add_to_page(
+                'responses',
+                $this->questionnaire->renderer->all_response_output(get_string('noresponses', 'questionnaire'))
+            );
+        }
+
+        $this->print_survey_end(1, 1);
     }
 
     /**
@@ -534,7 +580,7 @@ class reporter {
         $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
 
         $i = 0;
-        $responses = $this->questionnaire->responses();
+        $responses = $this->responsecollection();
         $responses->add_response($rid);
         if ($referer != 'print') {
             $feedbackmessages = $this->response_analysis($rid, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid);
@@ -983,6 +1029,41 @@ class reporter {
     }
 
     // Private helpers.
+
+    /**
+     * Return the shared response collection, creating it on first access.
+     *
+     * @return questionnaire_responses
+     */
+    private function responsecollection(): questionnaire_responses {
+        $this->responsecollection ??= $this->questionnaire->responses();
+        return $this->responsecollection;
+    }
+
+    /**
+     * Render the page/section count footer into the page (no-op when autonumbering is off).
+     *
+     * @param int $section Current section number.
+     * @param int $numsections Total number of sections.
+     * @return void
+     */
+    private function print_survey_end(int $section, int $numsections): void {
+        if (!$this->questionnaire->pages_autonumbered()) {
+            return;
+        }
+        if ($numsections > 1) {
+            $a = new stdClass();
+            $a->page = $section;
+            $a->totpages = $numsections;
+            $this->questionnaire->page->add_to_page(
+                'pageinfo',
+                $this->questionnaire->renderer->container(
+                    get_string('pageof', 'questionnaire', $a) . '&nbsp;&nbsp;',
+                    'surveyPage'
+                )
+            );
+        }
+    }
 
     /**
      * Render the survey header (respondent info, title, subtitle, description) into the page.
