@@ -99,7 +99,7 @@ switch ($action) {
         include('tabs.php');
 
         $questionnaire->page->add_to_page('myheaders', $titletext);
-        $questionnaire->survey_results($rids, $USER->id);
+        $questionnaire->reporter()->survey_results($rids, $USER->id);
 
         echo $questionnaire->renderer->render($questionnaire->page);
 

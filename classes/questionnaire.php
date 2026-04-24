@@ -385,7 +385,7 @@ class questionnaire {
      * @return bool
      */
     public function move_question(int $moveqid, int $movetopos): bool {
-        return $this->legacy()->move_question($moveqid, $movetopos);
+        return $this->legacy_instance()->move_question($moveqid, $movetopos);
     }
 
     /**
@@ -397,7 +397,7 @@ class questionnaire {
      * @return false|string Status message, or false on failure.
      */
     public function check_page_breaks() {
-        return $this->legacy()->check_page_breaks();
+        return $this->legacy_instance()->check_page_breaks();
     }
 
     /**
@@ -2905,7 +2905,7 @@ class questionnaire {
      * @return string Error message string, or empty string on success.
      */
     public function print_survey(int $quser, $userid = false): ?string {
-        return $this->legacy()->print_survey($quser, $userid);
+        return $this->legacy_instance()->print_survey($quser, $userid);
     }
 
     /**
@@ -2922,8 +2922,8 @@ class questionnaire {
      * @return false|void
      */
     public function survey_print_render($courseid, $message = '', $referer = '', $rid = 0, $blankquestionnaire = false) {
-        $this->legacy()->page = $this->page;
-        return $this->legacy()->survey_print_render($courseid, $message, $referer, $rid, $blankquestionnaire);
+        $this->legacy_instance()->page = $this->page;
+        return $this->legacy_instance()->survey_print_render($courseid, $message, $referer, $rid, $blankquestionnaire);
     }
 
     /**
@@ -2936,7 +2936,7 @@ class questionnaire {
      * @return bool
      */
     public function submission_notify(int $rid): bool {
-        return $this->legacy()->submission_notify($rid);
+        return $this->legacy_instance()->submission_notify($rid);
     }
 
     /**
@@ -2948,8 +2948,8 @@ class questionnaire {
      * @return void
      */
     public function response_goto_thankyou(): void {
-        $this->legacy()->page = $this->page;
-        $this->legacy()->response_goto_thankyou();
+        $this->legacy_instance()->page = $this->page;
+        $this->legacy_instance()->response_goto_thankyou();
     }
 
     /**
@@ -2960,39 +2960,6 @@ class questionnaire {
     public function can_view_all_groups(): bool {
         return has_capability('moodle/site:accessallgroups', $this->context);
     }
-
-    /**
-     * Render the aggregate survey results for a set of response ids.
-     *
-     * Shim — delegates to the legacy questionnaire class until the results
-     * rendering is refactored.
-     *
-     * @param array|string $rids Response ids to summarise.
-     * @param int|false $uid  Restrict to this user id, or false for all.
-     * @param bool $pdf       True if rendering for PDF output.
-     * @param string $currentgroupid  Current group id string.
-     * @param string $sort    Sort order string.
-     * @return void
-     */
-    public function survey_results(
-        $rids = '',
-        $uid = false,
-        bool $pdf = false,
-        string $currentgroupid = '',
-        string $sort = ''
-    ): void {
-        global $questionnaire;
-        $legacy = $this->legacy();
-        $legacy->page = $this->page;
-        $prev = $questionnaire;
-        $questionnaire = $legacy;
-        try {
-            $legacy->survey_results($rids, $uid, $pdf, $currentgroupid, $sort);
-        } finally {
-            $questionnaire = $prev;
-        }
-    }
-
 
     /**
      * Render the student response navigation bar for myreport/report pages.
@@ -3016,7 +2983,7 @@ class questionnaire {
         string $reporttype = 'myreport',
         string $sid = ''
     ): void {
-        $legacy = $this->legacy();
+        $legacy = $this->legacy_instance();
         $legacy->page = $this->page;
         $legacy->survey_results_navbar_student($currrid, $userid, $instance, $resps, $reporttype, $sid);
     }
@@ -3034,7 +3001,7 @@ class questionnaire {
      * @return void
      */
     public function survey_results_navbar_alpha(int $currrid, int $currentgroupid, stdClass $cm, bool $byresponse): void {
-        $legacy = $this->legacy();
+        $legacy = $this->legacy_instance();
         $legacy->page = $this->page;
         $legacy->survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse);
     }
@@ -3042,11 +3009,13 @@ class questionnaire {
     /**
      * Return a lazy-loaded legacy questionnaire instance sharing this object's renderer and page.
      *
-     * Used only by rendering shims until the legacy class is fully replaced.
+     * Used by reporter and rendering shims. Some legacy responsetype renderers still read
+     * global $questionnaire, so callers that invoke results_output() must temporarily assign
+     * this object to that global.
      *
      * @return \questionnaire
      */
-    private function legacy(): \questionnaire {
+    public function legacy_instance(): \questionnaire {
         global $CFG, $DB;
         if (!isset($this->legacyinstance)) {
             require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
