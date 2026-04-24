@@ -106,7 +106,13 @@ class reporter {
      * @param string $sort Column sort direction for results tables.
      * @return void
      */
-    public function survey_results($rids = '', $uid = false, bool $pdf = false, string $currentgroupid = '', string $sort = ''): void {
+    public function survey_results(
+        $rids = '',
+        $uid = false,
+        bool $pdf = false,
+        string $currentgroupid = '',
+        string $sort = ''
+    ): void {
         global $SESSION, $DB;
 
         $SESSION->questionnaire->noresponses = false;
@@ -164,7 +170,8 @@ class reporter {
                     ]
                 );
             }
-            $this->questionnaire->page->add_to_page('respondentinfo', ' ' . $respondentstring . ': <strong>' . $numresps . '</strong>');
+            $respondentinfo = ' ' . $respondentstring . ': <strong>' . $numresps . '</strong>';
+            $this->questionnaire->page->add_to_page('respondentinfo', $respondentinfo);
             if (empty($rows)) {
                 return;
             }
@@ -229,7 +236,11 @@ class reporter {
                         ['noclean' => true]
                     );
                     $response->results = $this->questionnaire->renderer->results_output(
-                        $question, $ridlist, $sort, $anonymous, $pdf
+                        $question,
+                        $ridlist,
+                        $sort,
+                        $anonymous,
+                        $pdf
                     );
                     $this->questionnaire->page->add_to_page('responses', $response);
                 } else {
@@ -1637,7 +1648,11 @@ class reporter {
                 $name = 'popup';
                 $action = new \popup_action('click', $link, $name, $options);
                 $respinfo .= $this->questionnaire->renderer->action_link(
-                    $link, null, $action, ['title' => $linkname], $htmlicon
+                    $link,
+                    null,
+                    $action,
+                    ['title' => $linkname],
+                    $htmlicon
                 ) . '&nbsp;';
             }
             $respinfo .= get_string('respondent', 'questionnaire') . ': <strong>' . $ruser . '</strong>';

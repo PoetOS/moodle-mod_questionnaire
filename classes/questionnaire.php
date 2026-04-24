@@ -16,6 +16,7 @@
 
 namespace mod_questionnaire;
 
+use cm_info;
 use mod_questionnaire\local\db\dependency_record;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
@@ -72,17 +73,17 @@ class questionnaire {
     /** @var string URL parameter name for the question-restore action. */
     private const RESTORE_PARAM = 'restoreq';
 
-    /** @var questionnaire_record The module record instance. */
-    protected questionnaire_record $modulerecord;
+    /** @var questionnaire_record|null The module record instance. */
+    protected ?questionnaire_record $modulerecord = null;
 
-    /** @var survey The survey domain object for this questionnaire. */
-    protected survey $survey;
+    /** @var survey|null The survey domain object for this questionnaire. */
+    protected ?survey $survey = null;
 
-    /** @var \cm_info The course module info object for this questionnaire. */
-    protected \cm_info $coursemodule;
+    /** @var cm_info|null The course module info object for this questionnaire. */
+    protected ?cm_info $coursemodule = null;
 
-    /** @var context_module The context for this questionnaire. */
-    protected context_module $context;
+    /** @var context_module|null The context for this questionnaire. */
+    protected ?context_module $context = null;
 
     /** @var stdClass The course record for this questionnaire. */
     protected stdClass $course;
@@ -113,26 +114,36 @@ class questionnaire {
     /**
      * Construct from a questionnaire instance id, optionally with a pre-loaded persistent and cm.
      *
-     * @param int $mid Instance id (questionnaire.id).
-     * @param questionnaire_record|null $modulerecord Pre-loaded persistent — omit to load from DB.
-     * @param \cm_info|null $coursemodule Pre-loaded cm_info — omit to look up.
+     * @param int|null $mid Instance id (questionnaire.id).
+     * @param int|null $cmid Course module id, if already known.
+     * @param \cm_info|null $cm Optional pre-loaded cm_info object.
      */
-    public function __construct(
-        int $mid = 0,
-        ?questionnaire_record $modulerecord = null,
-        ?\cm_info $coursemodule = null
-    ) {
-        if (!empty($mid)) {
-            $this->modulerecord = new questionnaire_record($mid);
-        } else if (!empty($modulerecord)) {
-            $this->modulerecord = $modulerecord;
-        } else {
-            throw new \coding_exception('Either mid or modulerecord must be provided to construct a questionnaire object.');
+    public function __construct(?int $mid = null, ?int $cmid = null, ?cm_info $cm = null) {
+        if (empty($mid) && empty($cmid) && empty($cm)) {
+            throw new \coding_exception('Modulerecord id, coursemodule id or coursemodule must be provided.');
         }
 
-        $this->coursemodule = $coursemodule ?? \cm_info::create(
-            get_coursemodule_from_instance('questionnaire', $this->modulerecord->get('id'), 0, false, MUST_EXIST)
-        );
+        if (!empty($mid)) {
+            $this->modulerecord = new questionnaire_record($mid);
+        }
+        if (!empty($cm)) {
+            $this->coursemodule = clone($cm);
+        } else if (!empty($cmid)) {
+            $this->coursemodule = cm_info::create(
+                get_coursemodule_from_id('questionnaire', $cmid, 0, false, MUST_EXIST)
+            );
+        }
+
+        if (empty($this->modulerecord)) {
+            $this->modulerecord = new questionnaire_record($this->coursemodule->instance);
+        }
+
+        if (empty($this->coursemodule)) {
+            $this->coursemodule = \cm_info::create(
+                get_coursemodule_from_instance('questionnaire', $this->modulerecord->get('id'), 0, false, MUST_EXIST)
+            );
+        }
+
         $this->context = context_module::instance($this->coursemodule->id);
         $this->course = get_course($this->modulerecord->get('course'));
         $sid = $this->modulerecord->get('sid');
@@ -143,23 +154,20 @@ class questionnaire {
      * Return a questionnaire instance from an activity instance id.
      *
      * @param int $instanceid questionnaire.id
-     * @param \cm_info|null $cm Optional pre-loaded cm_info — omit to look up.
      * @return self
      */
-    public static function from_instanceid(int $instanceid, ?\cm_info $cm = null): self {
-        return new self($instanceid, null, $cm);
+    public static function from_instanceid(int $instanceid): self {
+        return new self($instanceid);
     }
 
     /**
      * Return a questionnaire instance from a course module id.
      *
      * @param int $cmid course_modules.id
-     * @param \cm_info|null $cm Optional pre-loaded cm_info — omit to look up.
      * @return self
      */
-    public static function from_cmid(int $cmid, ?\cm_info $cm = null): self {
-        $cm = $cm ?? \cm_info::create(get_coursemodule_from_id('questionnaire', $cmid, 0, false, MUST_EXIST));
-        return new self($cm->instance, null, $cm);
+    public static function from_cmid(int $cmid): self {
+        return new self(null, $cmid);
     }
 
     /**
@@ -169,7 +177,7 @@ class questionnaire {
      * @return self
      */
     public static function from_cm(\cm_info $cm): self {
-        return new self($cm->instance, null, $cm);
+        return new self(null, null, $cm);
     }
 
     /**
