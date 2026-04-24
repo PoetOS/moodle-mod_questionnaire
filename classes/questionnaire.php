@@ -142,11 +142,10 @@ class questionnaire {
      * Return a questionnaire instance from an activity instance id.
      *
      * @param int $instanceid questionnaire.id
-     * @param stdClass|\cm_info|null $cm Optional pre-loaded course_modules row.
      * @return self
      */
-    public static function from_instanceid(int $instanceid, stdClass|\cm_info|null $cm = null): self {
-        return new self($instanceid, null, $cm);
+    public static function from_instanceid(int $instanceid): self {
+        return new self($instanceid);
     }
 
     /**
@@ -156,8 +155,8 @@ class questionnaire {
      * @param stdClass|\cm_info|null $cm Optional pre-loaded course_modules row.
      * @return self
      */
-    public static function from_cmid(int $cmid, stdClass|\cm_info|null $cm = null): self {
-        $cm = $cm ?? get_coursemodule_from_id('questionnaire', $cmid, 0, false, MUST_EXIST);
+    public static function from_cmid(int $cmid): self {
+        $cm = get_coursemodule_from_id('questionnaire', $cmid, 0, false, MUST_EXIST);
         return new self($cm->instance, null, $cm);
     }
 
@@ -253,9 +252,9 @@ class questionnaire {
     /**
      * Get the course module record.
      *
-     * @return stdClass
+     * @return stdClass|\cm_info
      */
-    public function coursemodule(): stdClass {
+    public function coursemodule(): stdClass|\cm_info {
         return $this->coursemodule;
     }
 
@@ -2959,51 +2958,6 @@ class questionnaire {
      */
     public function can_view_all_groups(): bool {
         return has_capability('moodle/site:accessallgroups', $this->context);
-    }
-
-    /**
-     * Render the student response navigation bar for myreport/report pages.
-     *
-     * Shim — delegates to the legacy questionnaire class until the navigation
-     * rendering is refactored.
-     *
-     * @param int $currrid      Currently displayed response id.
-     * @param int $userid       User whose responses are being navigated.
-     * @param int $instance     Questionnaire instance id (for URL construction).
-     * @param array $resps      All responses to navigate across.
-     * @param string $reporttype 'myreport' or 'report'.
-     * @param string $sid       Survey id (used in report mode URLs).
-     * @return void
-     */
-    public function survey_results_navbar_student(
-        int $currrid,
-        int $userid,
-        int $instance,
-        array $resps,
-        string $reporttype = 'myreport',
-        string $sid = ''
-    ): void {
-        $legacy = $this->legacy_instance();
-        $legacy->page = $this->page;
-        $legacy->survey_results_navbar_student($currrid, $userid, $instance, $resps, $reporttype, $sid);
-    }
-
-    /**
-     * Render the alphabetical response navigation bar for the report page.
-     *
-     * Shim — delegates to the legacy questionnaire class until the navigation
-     * rendering is refactored.
-     *
-     * @param int $currrid       Currently displayed response id.
-     * @param int $currentgroupid Active group id.
-     * @param stdClass $cm       Course module object.
-     * @param bool $byresponse   True when navigating by individual response.
-     * @return void
-     */
-    public function survey_results_navbar_alpha(int $currrid, int $currentgroupid, stdClass $cm, bool $byresponse): void {
-        $legacy = $this->legacy_instance();
-        $legacy->page = $this->page;
-        $legacy->survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse);
     }
 
     /**

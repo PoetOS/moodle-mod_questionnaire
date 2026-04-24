@@ -293,6 +293,276 @@ class reporter {
     }
 
     /**
+     * Render the alphabetical/by-response navigation bar for the report page.
+     *
+     * @param int $currrid Currently displayed response id.
+     * @param int $currentgroupid Active group id (0 = all).
+     * @param stdClass $cm Course module object.
+     * @param bool $byresponse True when showing respondents list rather than nav arrows.
+     * @return void
+     */
+    public function survey_results_navbar_alpha(
+        int $currrid,
+        int $currentgroupid,
+        stdClass $cm,
+        bool $byresponse
+    ): void {
+        global $CFG, $DB;
+
+        $isfullname = $this->questionnaire->respondenttype() !== 'anonymous';
+        if ($isfullname) {
+            $responses = $this->questionnaire->get_responses(false, $currentgroupid);
+        } else {
+            $responses = $this->questionnaire->get_responses();
+        }
+        if (!$responses) {
+            return;
+        }
+        $total = count($responses);
+        if ($total === 0) {
+            return;
+        }
+
+        $rids = [];
+        $ridssub = [];
+        $ridsuserfullname = [];
+        $ridsuserid = [];
+        $i = 0;
+        $currpos = -1;
+        foreach ($responses as $response) {
+            $rids[] = $response->id;
+            if ($isfullname) {
+                $user = $DB->get_record('user', ['id' => $response->userid]);
+                $ridssub[] = $response->submitted;
+                $ridsuserfullname[] = fullname($user);
+                $ridsuserid[] = $response->userid;
+            }
+            if ($response->id == $currrid) {
+                $currpos = $i;
+            }
+            $i++;
+        }
+
+        $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&group=' .
+            $currentgroupid . '&individualresponse=1';
+
+        if (!$byresponse) {
+            $navbar = new stdClass();
+            $prevrid = ($currpos > 0) ? $rids[$currpos - 1] : null;
+            $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
+            $firstrid = $rids[0];
+            $lastrid = $rids[$total - 1];
+            if ($prevrid != null) {
+                $pos = $currpos - 1;
+                $firstuserfullname = '';
+                $navbar->firstrespondent = ['url' => ($url . '&rid=' . $firstrid)];
+                $navbar->previous = ['url' => ($url . '&rid=' . $prevrid)];
+                if ($isfullname) {
+                    $responsedate = userdate($ridssub[$pos]);
+                    $title = $ridsuserfullname[$pos];
+                    if ($ridsuserid[$pos] == $ridsuserid[$currpos]) {
+                        $title .= ' | ' . $responsedate;
+                    }
+                    $firstuserfullname = $ridsuserfullname[0];
+                } else {
+                    $title = '';
+                }
+                $navbar->firstrespondent['title'] = $firstuserfullname;
+                $navbar->previous['title'] = $title;
+            }
+            $navbar->respnumber = ['currpos' => ($currpos + 1), 'total' => $total];
+            if ($nextrid != null) {
+                $pos = $currpos + 1;
+                $lastuserfullname = '';
+                $navbar->lastrespondent = ['url' => ($url . '&rid=' . $lastrid)];
+                $navbar->next = ['url' => ($url . '&rid=' . $nextrid)];
+                if ($isfullname) {
+                    $responsedate = userdate($ridssub[$pos]);
+                    $title = $ridsuserfullname[$pos];
+                    if ($ridsuserid[$pos] == $ridsuserid[$currpos]) {
+                        $title .= ' | ' . $responsedate;
+                    }
+                    $lastuserfullname = $ridsuserfullname[$total - 1];
+                } else {
+                    $title = '';
+                }
+                $navbar->lastrespondent['title'] = $lastuserfullname;
+                $navbar->next['title'] = $title;
+            }
+            $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&byresponse=1&group=' . $currentgroupid;
+            $navbar->listlink = $url;
+
+            $linkname = '&nbsp;' . get_string('print', 'questionnaire');
+            $printurl = '/mod/questionnaire/print.php?qid=' . $this->questionnaire->id() .
+                '&rid=' . $currrid . '&courseid=' . $this->questionnaire->courseid() . '&sec=1';
+            $title = get_string('printtooltip', 'questionnaire');
+            $options = [
+                'menubar'   => true,
+                'location'  => false,
+                'scrollbars' => true,
+                'resizable' => true,
+                'height'    => 600,
+                'width'     => 800,
+            ];
+            $action = new \popup_action('click', new \moodle_url($printurl), 'popup', $options);
+            $navbar->printaction = $this->questionnaire->renderer->action_link(
+                new \moodle_url($printurl),
+                $linkname,
+                $action,
+                ['title' => $title],
+                new \pix_icon('t/print', $title)
+            );
+            $this->questionnaire->page->add_to_page(
+                'navigationbar',
+                $this->questionnaire->renderer->navigationbar($navbar)
+            );
+        } else {
+            $resparr = [];
+            for ($i = 0; $i < $total; $i++) {
+                if ($isfullname) {
+                    $responsedate = userdate($ridssub[$i]);
+                    $resparr[] = '<a title = "' . $responsedate . '" href="' . $url . '&amp;rid=' .
+                        $rids[$i] . '&amp;individualresponse=1" >' . $ridsuserfullname[$i] . '</a> ';
+                } else {
+                    $resparr[] = '<a title = "" href="' . $url . '&amp;rid=' .
+                        $rids[$i] . '&amp;individualresponse=1" >' .
+                        get_string('response', 'questionnaire') . ($i + 1) . '</a> ';
+                }
+            }
+            $entries = count($resparr);
+            $maxlines = 20;
+            $maxcols = 3;
+            if ($entries >= $maxlines) {
+                $colnumber = min(intval($entries / $maxlines), $maxcols);
+            } else {
+                $colnumber = 1;
+            }
+            $lines = 0;
+            $a = 0;
+            while ($entries / $colnumber > 1) {
+                $lines++;
+                $entries = $entries - $colnumber;
+            }
+            $respcols = new stdClass();
+            for ($i = 0; $i < $colnumber; $i++) {
+                $colname = 'respondentscolumn' . $i;
+                $respcols->$colname = (object)['respondentlink' => []];
+                for ($j = 0; $j < $lines; $j++) {
+                    $respcols->{$colname}->respondentlink[] = $resparr[$a];
+                    $a++;
+                }
+                if ($entries) {
+                    $respcols->{$colname}->respondentlink[] = $resparr[$a];
+                    $entries--;
+                    $a++;
+                }
+            }
+            $this->questionnaire->page->add_to_page(
+                'responses',
+                $this->questionnaire->renderer->responselist($respcols)
+            );
+        }
+    }
+
+    /**
+     * Render the student response navigation bar for myreport/report pages.
+     *
+     * @param int $currrid Currently displayed response id.
+     * @param int $userid User whose responses are being navigated.
+     * @param int $instance Questionnaire instance id (for URL construction).
+     * @param array $resps All responses to navigate across.
+     * @param string $reporttype 'myreport' or 'report'.
+     * @param string $sid Survey id (used in report mode URLs).
+     * @return void
+     */
+    public function survey_results_navbar_student(
+        int $currrid,
+        int $userid,
+        int $instance,
+        array $resps,
+        string $reporttype = 'myreport',
+        string $sid = ''
+    ): void {
+        global $DB;
+
+        $stranonymous = get_string('anonymous', 'questionnaire');
+        $total = count($resps);
+        $rids = [];
+        $ridssub = [];
+        $ridsusers = [];
+        $i = 0;
+        $currpos = -1;
+        foreach ($resps as $response) {
+            $rids[] = $response->id;
+            $ridssub[] = $response->submitted;
+            $ruser = '';
+            if ($reporttype === 'report') {
+                if ($this->questionnaire->respondenttype() !== 'anonymous') {
+                    if ($user = $DB->get_record('user', ['id' => $response->userid])) {
+                        $ruser = ' | ' . fullname($user);
+                    }
+                } else {
+                    $ruser = ' | ' . $stranonymous;
+                }
+            }
+            $ridsusers[] = $ruser;
+            if ($response->id == $currrid) {
+                $currpos = $i;
+            }
+            $i++;
+        }
+
+        $prevrid = ($currpos > 0) ? $rids[$currpos - 1] : null;
+        $nextrid = ($currpos < $total - 1) ? $rids[$currpos + 1] : null;
+
+        if ($reporttype === 'myreport') {
+            $url = 'myreport.php?instance=' . $instance . '&user=' . $userid .
+                '&action=vresp&byresponse=1&individualresponse=1';
+        } else {
+            $url = 'report.php?instance=' . $instance . '&user=' . $userid .
+                '&action=vresp&byresponse=1&individualresponse=1&sid=' . $sid;
+        }
+
+        $navbar = new stdClass();
+        $displaypos = 1;
+        if ($prevrid !== null) {
+            $title = userdate($ridssub[$currpos - 1]) . $ridsusers[$currpos - 1];
+            $navbar->previous = ['url' => ($url . '&rid=' . $prevrid), 'title' => $title];
+        }
+        for ($i = 0; $i < $currpos; $i++) {
+            $title = userdate($ridssub[$i]) . $ridsusers[$i];
+            $navbar->prevrespnumbers[] = [
+                'url' => ($url . '&rid=' . $rids[$i]),
+                'title' => $title,
+                'respnumber' => $displaypos,
+            ];
+            $displaypos++;
+        }
+        $navbar->currrespnumber = $displaypos;
+        for (++$i; $i < $total; $i++) {
+            $displaypos++;
+            $title = userdate($ridssub[$i]) . $ridsusers[$i];
+            $navbar->nextrespnumbers[] = [
+                'url' => ($url . '&rid=' . $rids[$i]),
+                'title' => $title,
+                'respnumber' => $displaypos,
+            ];
+        }
+        if ($nextrid !== null) {
+            $title = userdate($ridssub[$currpos + 1]) . $ridsusers[$currpos + 1];
+            $navbar->next = ['url' => ($url . '&rid=' . $nextrid), 'title' => $title];
+        }
+        $this->questionnaire->page->add_to_page(
+            'navigationbar',
+            $this->questionnaire->renderer->usernavigationbar($navbar)
+        );
+        $this->questionnaire->page->add_to_page(
+            'bottomnavigationbar',
+            $this->questionnaire->renderer->usernavigationbar($navbar)
+        );
+    }
+
+    /**
      * Generate CSV export data for all (or filtered) responses.
      *
      * Returns a 2-D array where row 0 is the column header row and subsequent

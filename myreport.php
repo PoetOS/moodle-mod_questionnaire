@@ -240,7 +240,7 @@ switch ($action) {
 
         if (count($resps) > 1) {
             $userresps = $resps;
-            $questionnaire->survey_results_navbar_student($rid, $userid, $instance, $userresps);
+            $questionnaire->reporter()->survey_results_navbar_student($rid, $userid, $instance, $userresps);
         }
         $resps = [];
         // Determine here which "global" responses should get displayed for comparison with current user.
