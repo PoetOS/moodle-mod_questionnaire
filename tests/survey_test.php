@@ -532,4 +532,72 @@ final class survey_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists('questionnaire_question', ['id' => $pbid]));
         $this->assertTrue($DB->record_exists('questionnaire_question', ['id' => $regularid]));
     }
+
+    // Tests for survey listing methods.
+
+    /**
+     * Asserts get_private_questionnaires() returns an entry keyed "private-{sid}" for a private survey.
+     *
+     * @covers \mod_questionnaire\survey::get_private_questionnaires
+     */
+    public function test_get_private_questionnaires_returns_entry_for_course_survey(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+        $sid = $questionnaire->surveyid();
+
+        $result = survey::get_private_questionnaires($course->id);
+
+        $this->assertArrayHasKey('private-' . $sid, $result);
+        $this->assertNotEmpty($result['private-' . $sid]);
+    }
+
+    /**
+     * Asserts get_public_questionnaires() includes other-course public surveys and excludes the current course's own.
+     *
+     * @covers \mod_questionnaire\survey::get_public_questionnaires
+     */
+    public function test_get_public_questionnaires_excludes_current_course(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course1 = $this->getDataGenerator()->create_course();
+        $course2 = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+
+        $q1 = $generator->create_instance(['course' => $course1->id]);
+        $generator->create_content($q1, ['realm' => 'public']);
+        $sid1 = $q1->surveyid();
+
+        $q2 = $generator->create_instance(['course' => $course2->id]);
+        $generator->create_content($q2, ['realm' => 'public']);
+        $sid2 = $q2->surveyid();
+
+        $result = survey::get_public_questionnaires($course1->id);
+
+        $this->assertArrayNotHasKey('public-' . $sid1, $result);
+        $this->assertArrayHasKey('public-' . $sid2, $result);
+    }
+
+    /**
+     * Asserts get_template_questionnaires() returns an entry keyed "template-{sid}" for a template survey.
+     *
+     * @covers \mod_questionnaire\survey::get_template_questionnaires
+     */
+    public function test_get_template_questionnaires_returns_template_survey(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+        $generator->create_content($questionnaire, ['realm' => 'template']);
+        $sid = $questionnaire->surveyid();
+
+        $result = survey::get_template_questionnaires($course->id);
+
+        $this->assertArrayHasKey('template-' . $sid, $result);
+        $this->assertNotEmpty($result['template-' . $sid]);
+    }
 }
