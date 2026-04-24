@@ -297,14 +297,12 @@ class reporter {
      *
      * @param int $currrid Currently displayed response id.
      * @param int $currentgroupid Active group id (0 = all).
-     * @param stdClass $cm Course module object.
      * @param bool $byresponse True when showing respondents list rather than nav arrows.
      * @return void
      */
     public function survey_results_navbar_alpha(
         int $currrid,
         int $currentgroupid,
-        stdClass $cm,
         bool $byresponse
     ): void {
         global $CFG, $DB;

@@ -33,9 +33,10 @@ $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $cancel = optional_param('cancel', '', PARAM_ALPHA);
 $submitbutton2 = optional_param('submitbutton2', '', PARAM_ALPHA);
 
-if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
+if (! $cmrecord = get_coursemodule_from_id('questionnaire', $id)) {
     throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
 }
+$cm = \cm_info::create($cmrecord);
 
 if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
     throw new \moodle_exception('coursemisconf', 'mod_questionnaire');

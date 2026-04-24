@@ -899,7 +899,7 @@ switch ($action) {
                 $questionnaire->page->add_to_page('respondentinfo', $respinfo);
             }
             if ($outputtarget == 'html') {
-                $questionnaire->reporter()->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
+                $questionnaire->reporter()->survey_results_navbar_alpha($rid, $currentgroupid, $byresponse);
             }
             if (!$byresponse && $questionnaire->can_view_response($rid)) { // Show respondents individual responses.
                 $questionnaire->reporter()->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
