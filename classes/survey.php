@@ -137,14 +137,111 @@ class survey {
         );
     }
 
+    /**
+     * Return private questionnaires for the given course as a labelled popup-preview select array.
+     *
+     * Keys are "private-{survey_id}"; values are popup-preview action-link strings.
+     *
+     * @param int $courseid
+     * @return array
+     */
+    public static function get_private_questionnaires(int $courseid): array {
+        return self::build_survey_select_list(
+            self::get_survey_list('private', $courseid), 'private', 0
+        );
+    }
+
+    /**
+     * Return public questionnaires from other courses as a labelled popup-preview select array.
+     *
+     * Surveys whose courseid matches $courseid are excluded (they are the current course's
+     * own public surveys, which would create a circular reference).
+     * Keys are "public-{survey_id}"; values are popup-preview action-link strings.
+     *
+     * @param int $courseid The current course id; questionnaires from this course are excluded.
+     * @return array
+     */
+    public static function get_public_questionnaires(int $courseid): array {
+        return self::build_survey_select_list(
+            self::get_survey_list('public', 0), 'public', $courseid
+        );
+    }
+
+    /**
+     * Return template questionnaires from any course as a labelled popup-preview select array.
+     *
+     * Keys are "template-{survey_id}"; values are popup-preview action-link strings.
+     *
+     * @param int $courseid Passed for consistency; not used for filtering.
+     * @return array
+     */
+    public static function get_template_questionnaires(int $courseid): array {
+        return self::build_survey_select_list(
+            self::get_survey_list('template', 0), 'template', 0
+        );
+    }
+
+    /**
+     * Return surveys of the given realm, scoped to a course when realm is 'private'.
+     *
+     * @param string $realm 'private', 'public', or 'template'.
+     * @param int $courseid Scope to this course when realm is 'private'; ignored otherwise.
+     * @return self[]
+     */
+    private static function get_survey_list(string $realm, int $courseid): array {
+        return ($realm === 'private' && $courseid > 0)
+            ? self::get_private_for_course($courseid)
+            : self::get_by_realm($realm);
+    }
+
+    /**
+     * Format a list of surveys as a labelled popup-preview select array for form radio buttons.
+     *
+     * Surveys with no linked questionnaire instance are skipped.
+     *
+     * @param self[] $surveys From get_survey_list().
+     * @param string $realm Key prefix (e.g. 'private-42').
+     * @param int $excludecourseid Skip items whose owning_courseid matches this value (0 = skip none).
+     * @return array
+     */
+    private static function build_survey_select_list(array $surveys, string $realm, int $excludecourseid): array {
+        global $OUTPUT, $DB;
+
+        $surveylist = [];
+        $strpreview = get_string('preview_questionnaire', 'questionnaire');
+        foreach ($surveys as $survey) {
+            $owningcourseid = $survey->owning_courseid();
+            if ($excludecourseid > 0 && $owningcourseid == $excludecourseid) {
+                continue;
+            }
+            $qrecs = $DB->get_records('questionnaire', ['sid' => $survey->id()], '', 'id, name', 0, 1);
+            $qrec = reset($qrecs);
+            if (!$qrec) {
+                continue;
+            }
+            $originalcourse = $DB->get_record('course', ['id' => $owningcourseid]);
+            if (!$originalcourse) {
+                continue;
+            }
+            $sid = $survey->id();
+            $args = "sid={$sid}&popup=1&qid={$qrec->id}";
+            $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
+            $action = new \popup_action('click', $link);
+            $label = $OUTPUT->action_link(
+                $link,
+                $qrec->name . ' [' . $originalcourse->fullname . ']',
+                $action,
+                ['title' => $strpreview]
+            );
+            $surveylist[$realm . '-' . $sid] = $label;
+        }
+        return $surveylist;
+    }
+
     // Survey record accessors.
 
     /**
      * Return the underlying survey_record persistent object.
-     *
-     * Intended for factory methods (e.g. questionnaire::from_records()) that need to
-     * pass the already-loaded record to another object without re-querying the database.
-     * General callers should use the named accessor methods instead.
      *
      * @return survey_record
      */
