@@ -688,7 +688,7 @@ class questionnaire {
      * @param stdClass $cm
      * @param bool $byresponse
      */
-    public function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
+    private function survey_results_navbar_alpha($currrid, $currentgroupid, $cm, $byresponse) {
         global $CFG, $DB;
 
         // Is this questionnaire set to fullname or anonymous?
@@ -865,7 +865,7 @@ class questionnaire {
      * @param string $reporttype
      * @param string $sid
      */
-    public function survey_results_navbar_student($currrid, $userid, $instance, $resps, $reporttype = 'myreport', $sid = '') {
+    private function survey_results_navbar_student($currrid, $userid, $instance, $resps, $reporttype = 'myreport', $sid = '') {
         global $DB;
         $stranonymous = get_string('anonymous', 'questionnaire');
 
