@@ -944,7 +944,7 @@ class questionnaire {
      * @param string $sort
      * @return string|void
      */
-    public function survey_results($rid = '', $uid = false, $pdf = false, $currentgroupid = '', $sort = '') {
+    private function survey_results($rid = '', $uid = false, $pdf = false, $currentgroupid = '', $sort = '') {
         global $SESSION, $DB;
 
         $SESSION->questionnaire->noresponses = false;

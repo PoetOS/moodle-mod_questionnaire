@@ -97,6 +97,202 @@ class reporter {
     }
 
     /**
+     * Render aggregate survey results into the page object.
+     *
+     * @param array|string $rids Response id(s) to show ('' or [] = all responses).
+     * @param int|false $uid User id filter (false = all users).
+     * @param bool $pdf True when rendering to PDF.
+     * @param string $currentgroupid Active group filter ('0' or a group id).
+     * @param string $sort Column sort direction for results tables.
+     * @return void
+     */
+    public function survey_results($rids = '', $uid = false, bool $pdf = false, string $currentgroupid = '', string $sort = ''): void {
+        global $SESSION, $DB;
+
+        $SESSION->questionnaire->noresponses = false;
+
+        $survey = $this->questionnaire->survey();
+        $questions = $this->questionnaire->questions();
+
+        if (empty($survey) || empty($questions)) {
+            return;
+        }
+
+        if (!empty($rids)) {
+            $ridlist = $rids;
+        } else {
+            $userview = optional_param('responsestats', 0, PARAM_ALPHA);
+            if ($uid !== false) {
+                $rows = $this->questionnaire->get_responses($uid);
+            } else if ($currentgroupid == 0) {
+                $rows = $this->questionnaire->get_responses();
+            } else {
+                $rows = $this->questionnaire->get_responses(false, (int)$currentgroupid);
+            }
+            if (!$rows) {
+                $this->questionnaire->page->add_to_page(
+                    'respondentinfo',
+                    $this->questionnaire->renderer->notification(
+                        get_string('noresponses', 'questionnaire'),
+                        \core\output\notification::NOTIFY_ERROR
+                    )
+                );
+                $SESSION->questionnaire->noresponses = true;
+                return;
+            }
+            $numresps = count($rows);
+            $respondentstring = get_string('responses', 'questionnaire');
+            if ($userview === 'y') {
+                $respondentstring = get_string('submissions', 'questionnaire');
+            }
+            if (!$userview) {
+                $completedcount = 0;
+                $inprogresscount = 0;
+                foreach ($rows as $row) {
+                    if ($row->complete === 'y') {
+                        $completedcount++;
+                    } else if ($row->complete === 'n') {
+                        $inprogresscount++;
+                    }
+                }
+                $numresps .= ' ' . get_string(
+                    'responses_breakdown',
+                    'questionnaire',
+                    [
+                        'responses'  => $completedcount,
+                        'incomplete' => $inprogresscount,
+                    ]
+                );
+            }
+            $this->questionnaire->page->add_to_page('respondentinfo', ' ' . $respondentstring . ': <strong>' . $numresps . '</strong>');
+            if (empty($rows)) {
+                return;
+            }
+            $ridlist = [];
+            foreach ($rows as $row) {
+                $ridlist[] = $row->id;
+            }
+        }
+
+        if ($survey->title() !== '') {
+            $this->questionnaire->page->add_to_page('title', format_string($survey->title()));
+        }
+        if ($survey->subtitle() !== '') {
+            $this->questionnaire->page->add_to_page('subtitle', format_string($survey->subtitle()));
+        }
+        if ($survey->info() !== '') {
+            $infotext = file_rewrite_pluginfile_urls(
+                $survey->info(),
+                'pluginfile.php',
+                $this->questionnaire->context()->id,
+                'mod_questionnaire',
+                'info',
+                $this->questionnaire->surveyid()
+            );
+            $this->questionnaire->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
+        }
+
+        $qnum = 0;
+        $anonymous = $this->questionnaire->respondenttype() == 'anonymous';
+
+        // Some legacy responsetype renderers (text, file) read global $questionnaire.
+        global $questionnaire;
+        $prevquestionnaire = $questionnaire;
+        $questionnaire = $this->questionnaire->legacy_instance();
+        try {
+            foreach ($questions as $question) {
+                if ($question->typeid() == QUESPAGEBREAK) {
+                    continue;
+                }
+                if ($question->is_numbered()) {
+                    $qnum++;
+                }
+                $displaycontent = $question->content();
+                if ($displaycontent == '<p>  </p>') {
+                    $displaycontent = '';
+                }
+                if ($pdf) {
+                    $response = new stdClass();
+                    if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
+                        $response->qnum = $qnum;
+                    }
+                    $response->qcontent = format_text(
+                        file_rewrite_pluginfile_urls(
+                            $displaycontent,
+                            'pluginfile.php',
+                            $question->context->id,
+                            'mod_questionnaire',
+                            'question',
+                            $question->id()
+                        ),
+                        FORMAT_HTML,
+                        ['noclean' => true]
+                    );
+                    $response->results = $this->questionnaire->renderer->results_output(
+                        $question, $ridlist, $sort, $anonymous, $pdf
+                    );
+                    $this->questionnaire->page->add_to_page('responses', $response);
+                } else {
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->container_start('qn-container')
+                    );
+                    if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
+                        $this->questionnaire->page->add_to_page(
+                            'responses',
+                            $this->questionnaire->renderer->container_start('qn-info')
+                        );
+                        $this->questionnaire->page->add_to_page(
+                            'responses',
+                            $this->questionnaire->renderer->heading($qnum, 2, 'qn-number')
+                        );
+                        $this->questionnaire->page->add_to_page(
+                            'responses',
+                            $this->questionnaire->renderer->container_end()
+                        );
+                    }
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->container_start('qn-content')
+                    );
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->container(
+                            format_text(
+                                file_rewrite_pluginfile_urls(
+                                    $displaycontent,
+                                    'pluginfile.php',
+                                    $question->context->id,
+                                    'mod_questionnaire',
+                                    'question',
+                                    $question->id()
+                                ),
+                                FORMAT_HTML,
+                                ['noclean' => true]
+                            ),
+                            'qn-question'
+                        )
+                    );
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->results_output($question, $ridlist, $sort, $anonymous)
+                    );
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->container_end()
+                    );
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->container_end()
+                    );
+                }
+            }
+        } finally {
+            $questionnaire = $prevquestionnaire;
+        }
+    }
+
+    /**
      * Generate CSV export data for all (or filtered) responses.
      *
      * Returns a 2-D array where row 0 is the column header row and subsequent

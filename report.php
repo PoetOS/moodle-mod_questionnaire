@@ -695,7 +695,7 @@ switch ($action) {
             $strsort = get_string('order_' . $sort, 'questionnaire');
             $respinfo .= $strsort;
             $questionnaire->page->add_to_page('respondentinfo', $respinfo);
-            $questionnaire->survey_results('', false, true, $currentgroupid, $sort);
+            $questionnaire->reporter()->survey_results('', false, true, $currentgroupid, $sort);
             $html = $questionnaire->renderer->render($questionnaire->page);
 
             // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
@@ -755,7 +755,7 @@ switch ($action) {
                 $questionnaire->page->add_to_page('respondentinfo', $respinfo);
             }
 
-            $ret = $questionnaire->survey_results('', false, false, $currentgroupid, $sort);
+            $ret = $questionnaire->reporter()->survey_results('', false, false, $currentgroupid, $sort);
 
             echo $questionnaire->renderer->header();
             echo $questionnaire->renderer->render($questionnaire->page);
