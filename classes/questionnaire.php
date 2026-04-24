@@ -3045,37 +3045,6 @@ class questionnaire {
     }
 
     /**
-     * Render a single saved response, optionally with feedback/comparison data.
-     *
-     * Shim — delegates to the legacy questionnaire class until the response
-     * display is refactored.
-     *
-     * @param int $rid             Response id to display.
-     * @param string $referer      'print' suppresses feedback rendering.
-     * @param array|string $resps  Responses used for comparison/feedback.
-     * @param bool $compare        True if showing group-comparison feedback.
-     * @param bool $isgroupmember  True if the viewer is in the comparison group.
-     * @param bool $allresponses   True when all responses are included.
-     * @param int $currentgroupid  Active group id (0 = all participants).
-     * @param string $outputtarget 'html' or 'pdf'.
-     * @return void
-     */
-    public function view_response(
-        int $rid,
-        string $referer = '',
-        $resps = '',
-        bool $compare = false,
-        bool $isgroupmember = false,
-        bool $allresponses = false,
-        int $currentgroupid = 0,
-        string $outputtarget = 'html'
-    ): void {
-        $legacy = $this->legacy();
-        $legacy->page = $this->page;
-        $legacy->view_response($rid, $referer, $resps, $compare, $isgroupmember, $allresponses, $currentgroupid, $outputtarget);
-    }
-
-    /**
      * Render the alphabetical response navigation bar for the report page.
      *
      * Shim — delegates to the legacy questionnaire class until the navigation

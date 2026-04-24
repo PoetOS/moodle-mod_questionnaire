@@ -218,7 +218,7 @@ class questionnaire {
      * @param int $currentgroupid
      * @param string $outputtarget
      */
-    public function view_response(
+    private function view_response(
         $rid,
         $referer = '',
         $resps = '',
@@ -1824,7 +1824,7 @@ class questionnaire {
      * @param array $filteredsections
      * @return array|string
      */
-    public function response_analysis(
+    private function response_analysis(
         $rid,
         $resps,
         $compare,

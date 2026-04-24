@@ -848,7 +848,7 @@ switch ($action) {
                 $groupname = '<strong>' . $responsestatus[$userview] . '</strong>';
             }
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
+                $questionnaire->reporter()->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
             $html = $questionnaire->renderer->render($questionnaire->page);
             // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
@@ -900,7 +900,7 @@ switch ($action) {
                 $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
             }
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
+                $questionnaire->reporter()->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
             echo $questionnaire->renderer->header();
             echo $questionnaire->renderer->render($questionnaire->page);
