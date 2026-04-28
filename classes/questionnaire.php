@@ -2558,6 +2558,17 @@ class questionnaire {
     }
 
     /**
+     * Load all submitted responses for a user into the responses handler.
+     *
+     * Convenience pass-through to questionnaire_responses::add_user_responses().
+     *
+     * @param int|null $userid Defaults to current user when null.
+     */
+    public function add_user_responses(?int $userid = null): void {
+        $this->responses()->add_user_responses($userid);
+    }
+
+    /**
      * Return a structured export of all answers for a given response id.
      *
      * Delegates to questionnaire_responses::get_structured_response(). Used by the
