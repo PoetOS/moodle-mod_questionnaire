@@ -51,10 +51,8 @@ define('QUESFILE', 12);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
 
-global $idcounter, $CFG;
+global $idcounter;
 $idcounter = 0;
-
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 /**
  * Class for describing a question
