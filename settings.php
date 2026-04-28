@@ -24,7 +24,6 @@
  */
 
 defined('MOODLE_INTERNAL') || die;
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 if ($ADMIN->fulltree) {
     $options = [0 => get_string('no'), 1 => get_string('yes')];
