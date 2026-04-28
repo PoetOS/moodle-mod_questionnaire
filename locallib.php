@@ -51,30 +51,3 @@ define('QUESTIONNAIRE_DEFAULT_PAGE_COUNT', 20);
 
 define('QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY', 'confirmdelpermanentlyq');
 define('QUESTIONNAIRE_RESTORE_PARAM', 'restoreq');
-
-global $questionnairetypes;
-$questionnairetypes = \mod_questionnaire\questionnaire::response_frequency_options();
-
-global $questionnairerespondents;
-$questionnairerespondents = [
-    'fullname' => get_string('respondenttypefullname', 'questionnaire'),
-    'anonymous' => get_string('respondenttypeanonymous', 'questionnaire'),
-];
-
-global $questionnairerealms;
-$questionnairerealms = [
-    'private' => get_string('private', 'questionnaire'),
-    'public' => get_string('public', 'questionnaire'),
-    'template' => get_string('template', 'questionnaire'),
-];
-
-global $questionnaireresponseviewers;
-$questionnaireresponseviewers = \mod_questionnaire\questionnaire::response_viewer_options();
-
-global $autonumbering;
-$autonumbering = [
-    0 => get_string('autonumberno', 'questionnaire'),
-    1 => get_string('autonumberquestions', 'questionnaire'),
-    2 => get_string('autonumberpages', 'questionnaire'),
-    3 => get_string('autonumberpagesandquestions', 'questionnaire'),
-];

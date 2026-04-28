@@ -32,20 +32,21 @@ class settings_form extends \moodleform {
      * Defines the form.
      */
     public function definition() {
-        global $questionnaire, $questionnairerealms;
+        global $questionnaire;
 
         $mform    =& $this->_form;
 
         $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
 
+        $realms = \mod_questionnaire\questionnaire::realm_options();
         if (!$questionnaire->can_create_templates()) {
-            unset($questionnairerealms['template']);
+            unset($realms['template']);
         }
         if (!$questionnaire->can_create_public()) {
-            unset($questionnairerealms['public']);
+            unset($realms['public']);
         }
-        if (isset($questionnairerealms['public']) || isset($questionnairerealms['template'])) {
-            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $questionnairerealms);
+        if (isset($realms['public']) || isset($realms['template'])) {
+            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $realms);
             $mform->setDefault('realm', $questionnaire->survey()->realm());
             $mform->addHelpButton('realm', 'realm', 'questionnaire');
         } else {
