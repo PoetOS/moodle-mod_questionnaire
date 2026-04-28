@@ -23,7 +23,6 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php'); // Needed for question type constants.
 
 use mod_questionnaire\questionnaire;
