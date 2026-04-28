@@ -316,6 +316,15 @@ class questionnaire {
     }
 
     /**
+     * Get the notification setting for this questionnaire (0 = none, 1 = simple, 2 = full).
+     *
+     * @return int
+     */
+    public function notifications(): int {
+        return (int) $this->modulerecord->get('notifications');
+    }
+
+    /**
      * Return true if this questionnaire allows resuming a saved response.
      *
      * @return bool
@@ -369,7 +378,26 @@ class questionnaire {
      * @return bool
      */
     public function move_question(int $moveqid, int $movetopos): bool {
-        return $this->legacy_instance()->move_question($moveqid, $movetopos);
+        global $DB;
+
+        $questions = $this->questions();
+        if (!is_array($questions) || !isset($questions[$moveqid])) {
+            return false;
+        }
+        $movequestion = $questions[$moveqid];
+        $index = 1;
+        foreach ($questions as $question) {
+            if ($index == $movetopos) {
+                $index++;
+            }
+            if ($question->id() == $movequestion->id()) {
+                $DB->update_record('questionnaire_question', (object)['id' => $movequestion->id(), 'position' => $movetopos]);
+                continue;
+            }
+            $DB->update_record('questionnaire_question', (object)['id' => $question->id(), 'position' => $index]);
+            $index++;
+        }
+        return true;
     }
 
     /**
@@ -1943,9 +1971,7 @@ class questionnaire {
         int $userid = 0,
         int $groupid = 0
     ): void {
-        global $CFG, $COURSE, $USER, $DB;
-        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+        global $COURSE, $USER, $DB;
 
         if ($COURSE->id == $courseid) {
             $course = $COURSE;
@@ -1956,8 +1982,7 @@ class questionnaire {
         $modinfo = get_fast_modinfo($course);
 
         $cm = $modinfo->cms[$cmid];
-        $questionnaire = $DB->get_record('questionnaire', ['id' => $cm->instance]);
-        $questionnaire = new \questionnaire($course, $cm, 0, $questionnaire);
+        $questionnaire = self::from_cm($cm);
 
         $context = \context_module::instance($cm->id);
         $grader = has_capability('mod/questionnaire:viewsingleresponse', $context);
@@ -1968,16 +1993,17 @@ class questionnaire {
             // For a public questionnaire, look for the original public questionnaire that it is based on.
             if (!$questionnaire->survey_is_public_master()) {
                 // For a public questionnaire, look for the original public questionnaire that it is based on.
+                $surveycourseid = $questionnaire->survey()->owning_courseid();
                 $originalquestionnaire = $DB->get_record(
                     'questionnaire',
-                    ['sid' => $questionnaire->survey->id, 'course' => $questionnaire->survey->courseid]
+                    ['sid' => $questionnaire->surveyid(), 'course' => $surveycourseid]
                 );
                 $cmoriginal = get_coursemodule_from_instance(
                     "questionnaire",
                     $originalquestionnaire->id,
-                    $questionnaire->survey->courseid
+                    $surveycourseid
                 );
-                $contextoriginal = \context_course::instance($questionnaire->survey->courseid, MUST_EXIST);
+                $contextoriginal = \context_course::instance($surveycourseid, MUST_EXIST);
                 if (!has_capability('mod/questionnaire:viewsingleresponse', $contextoriginal)) {
                     $tmpactivity = new stdClass();
                     $tmpactivity->type = 'questionnaire';
@@ -2008,7 +2034,7 @@ class questionnaire {
         }
 
         $params['timestart'] = $timestart;
-        $params['questionnaireid'] = $questionnaire->id;
+        $params['questionnaireid'] = $questionnaire->id();
 
         $userfieldsapi = \core_user\fields::for_userpic();
         $ufields = $userfieldsapi->get_sql('u', false, '', 'useridagain', false)->selects;
@@ -2039,7 +2065,7 @@ class questionnaire {
         $aname = format_string($cm->name, true);
         $userattempts = [];
         foreach ($attempts as $attempt) {
-            if ($questionnaire->respondenttype != 'anonymous') {
+            if ($questionnaire->respondenttype() != 'anonymous') {
                 if (!isset($userattempts[$attempt->lastname])) {
                     $userattempts[$attempt->lastname] = 1;
                 } else {
@@ -2109,7 +2135,7 @@ class questionnaire {
                     }
                 }
             }
-            if ($questionnaire->respondenttype != 'anonymous') {
+            if ($questionnaire->respondenttype() != 'anonymous') {
                 $tmpactivity->user->fullname = fullname($attempt, $viewfullnames);
             } else {
                 $tmpactivity->user = '';
@@ -2218,14 +2244,12 @@ class questionnaire {
      */
     public static function coursemodule_edit_post_actions(object $data, object $course): object {
         global $DB;
-        require_once(dirname(__DIR__) . '/questionnaire.class.php');
 
         if (!empty($data->copyid)) {
-            $cm = (object)['id' => $data->coursemodule];
-            $questionnaire = new \questionnaire($course, $cm, 0, $data);
+            $questionnaire = self::from_cmid((int)$data->coursemodule);
             $oldquestionnaireid = $DB->get_field('questionnaire', 'id', ['sid' => $data->copyid]);
             $oldcm = get_coursemodule_from_instance('questionnaire', $oldquestionnaireid);
-            $oldquestionnaire = new \questionnaire($course, $oldcm, $oldquestionnaireid, null);
+            $oldquestionnaire = self::from_cmid((int)$oldcm->id);
             $oldcontext = \context_module::instance($oldcm->id);
             $newcontext = \context_module::instance($data->coursemodule);
             $areas = $questionnaire->get_all_file_areas();
@@ -2714,9 +2738,8 @@ class questionnaire {
      * @return array Indexed by user id.
      */
     public function get_notifiable_users(int $userid): array {
-        // Potential users should be active users only.
         $potentialusers = get_enrolled_users(
-            $this->context,
+            $this->context(),
             'mod/questionnaire:submissionnotification',
             null,
             'u.*',
@@ -2726,13 +2749,13 @@ class questionnaire {
             true
         );
 
+        $cm = $this->coursemodule();
         $notifiableusers = [];
-        if (groups_get_activity_groupmode($this->coursemodule) == SEPARATEGROUPS) {
-            if ($groups = groups_get_all_groups($this->course()->id, $userid, $this->coursemodule->groupingid)) {
+        if (groups_get_activity_groupmode($cm) == SEPARATEGROUPS) {
+            if ($groups = groups_get_all_groups($this->courseid(), $userid, $cm->groupingid)) {
                 foreach ($groups as $group) {
                     foreach ($potentialusers as $potentialuser) {
                         if ($potentialuser->id == $userid) {
-                            // Do not send self.
                             continue;
                         }
                         if (groups_is_member($group->id, $potentialuser->id)) {
@@ -2741,13 +2764,11 @@ class questionnaire {
                     }
                 }
             } else {
-                // User not in group, try to find graders without group.
                 foreach ($potentialusers as $potentialuser) {
                     if ($potentialuser->id == $userid) {
-                        // Do not send self.
                         continue;
                     }
-                    if (!groups_has_membership($this->coursemodule, $potentialuser->id)) {
+                    if (!groups_has_membership($cm, $potentialuser->id)) {
                         $notifiableusers[$potentialuser->id] = $potentialuser;
                     }
                 }
@@ -2755,7 +2776,6 @@ class questionnaire {
         } else {
             foreach ($potentialusers as $potentialuser) {
                 if ($potentialuser->id == $userid) {
-                    // Do not send self.
                     continue;
                 }
                 $notifiableusers[$potentialuser->id] = $potentialuser;
@@ -2854,14 +2874,205 @@ class questionnaire {
     /**
      * Notify subscribers that a response has been submitted.
      *
-     * Shim — delegates to the legacy questionnaire class until submission
-     * notifications are refactored.
-     *
      * @param int $rid The response id.
      * @return bool
      */
     public function submission_notify(int $rid): bool {
-        return $this->legacy_instance()->submission_notify($rid);
+        global $DB;
+
+        $success = true;
+        $email = $this->survey()->email();
+        if (!empty($email)) {
+            $success = $this->response_send_email($rid, $email);
+        }
+        if ($this->notifications()) {
+            $success = $this->send_submission_notifications($rid) && $success;
+        }
+        return $success;
+    }
+
+    /**
+     * Send a notification message for each user with the submissionnotification capability.
+     *
+     * @param int $rid The response id.
+     * @return bool
+     */
+    private function send_submission_notifications(int $rid): bool {
+        global $CFG, $USER;
+
+        $this->add_response($rid);
+        $message = '';
+        if ($this->notifications() == 2) {
+            $message .= $this->get_full_submission_for_notifications($rid);
+        }
+
+        $success = true;
+        if ($notifyusers = $this->get_notifiable_users($USER->id)) {
+            $info = new stdClass();
+            if ($this->respondenttype() != 'anonymous') {
+                $info->userfrom = $USER;
+                $info->username = fullname($info->userfrom, true);
+                $info->profileurl = $CFG->wwwroot . '/user/view.php?id=' . $info->userfrom->id .
+                    '&course=' . $this->courseid();
+                $langstringtext = 'submissionnotificationtextuser';
+                $langstringhtml = 'submissionnotificationhtmluser';
+            } else {
+                $info->userfrom = \core_user::get_noreply_user();
+                $info->username = '';
+                $info->profileurl = '';
+                $langstringtext = 'submissionnotificationtextanon';
+                $langstringhtml = 'submissionnotificationhtmlanon';
+            }
+            $info->name = format_string($this->name());
+            $info->submissionurl = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&sid=' .
+                $this->surveyid() . '&rid=' . $rid . '&instance=' . $this->id();
+            $info->coursename = format_string($this->course()->fullname);
+            $info->postsubject = get_string('submissionnotificationsubject', 'questionnaire');
+            $info->posttext = get_string($langstringtext, 'questionnaire', $info);
+            $info->posthtml = '<p>' . get_string($langstringhtml, 'questionnaire', $info) . '</p>';
+            if (!empty($message)) {
+                $info->posttext .= html_to_text($message);
+                $info->posthtml .= $message;
+            }
+            foreach ($notifyusers as $notifyuser) {
+                $info->userto = $notifyuser;
+                $this->send_message($info, 'notification');
+            }
+        }
+        return $success;
+    }
+
+    /**
+     * Return a formatted string of all questions and answers for a specific submission.
+     *
+     * @param int $rid The response id.
+     * @return string
+     */
+    private function get_full_submission_for_notifications(int $rid): string {
+        $responses = $this->responses()->get_full_submission_for_export($rid);
+        $message = '';
+        foreach ($responses as $response) {
+            $message .= html_to_text(format_string($response->questionname)) . "<br />\n";
+            $message .= get_string('question') . ': ' . html_to_text(format_string($response->questiontext)) . "<br />\n";
+            $message .= get_string('answers', 'questionnaire') . ":<br />\n";
+            foreach ($response->answers as $answer) {
+                $message .= html_to_text($answer) . "<br />\n";
+            }
+            $message .= "<br />\n";
+        }
+        return $message;
+    }
+
+    /**
+     * Send the full response submission to the defined email addresses.
+     *
+     * @param int $rid The response id.
+     * @param string $email Comma- or semicolon-separated list of addresses.
+     * @return bool
+     */
+    private function response_send_email(int $rid, string $email): bool {
+        global $CFG;
+
+        $submission = $this->reporter()->generate_csv(0, (string)$rid, '', null, 1);
+        if (!empty($submission)) {
+            $answers = $this->get_formatted_answers_for_emails($submission);
+        } else {
+            $answers = ['html' => '', 'plaintext' => ''];
+        }
+
+        $name = s($this->name());
+        if (empty($email)) {
+            return false;
+        }
+
+        $endhtml = "\r\n<br>";
+        $endplaintext = "\r\n";
+
+        $subject = get_string('surveyresponse', 'questionnaire') . ": $name [$rid]";
+        $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;sid=' .
+            $this->surveyid() . '&amp;rid=' . $rid . '&amp;instance=' . $this->id();
+
+        $bodyhtml = '<a href="' . $url . '">' . $url . '</a>' . $endhtml;
+        $bodyplaintext = $url . $endplaintext;
+        $bodyhtml .= get_string('surveyresponse', 'questionnaire') . ' "' . $name . '"' . $endhtml;
+        $bodyplaintext .= get_string('surveyresponse', 'questionnaire') . ' "' . $name . '"' . $endplaintext;
+        $bodyhtml .= $answers['html'];
+        $bodyplaintext .= $answers['plaintext'];
+
+        $altbody = "\n$bodyplaintext\n";
+        $return = true;
+        foreach (preg_split('/,|;/', $email) as $addr) {
+            $userto = new stdClass();
+            $userto->email = trim($addr);
+            $userto->mailformat = 1;
+            $userto->id = -10;
+            $userfrom = $CFG->noreplyaddress;
+            if (!email_to_user($userto, $userfrom, $subject, $altbody, $bodyhtml)) {
+                $return = false;
+            }
+        }
+        return $return;
+    }
+
+    /**
+     * Format submission answers for email delivery.
+     *
+     * @param array $answers Raw answers array from generate_csv.
+     * @return array Keys 'plaintext' and 'html'.
+     */
+    private function get_formatted_answers_for_emails(array $answers): array {
+        global $USER;
+
+        $endhtml = "\r\n<br />";
+        $endplaintext = "\r\n";
+        reset($answers);
+
+        $formatted = ['plaintext' => '', 'html' => ''];
+        for ($i = 0; $i < count($answers[0]); $i++) {
+            $sep = ' : ';
+            switch ($i) {
+                case 1:
+                    $sep = ' ';
+                    break;
+                case 4:
+                    $formatted['plaintext'] .= get_string('user') . ' ';
+                    $formatted['html'] .= get_string('user') . ' ';
+                    break;
+                case 6:
+                    if ($this->respondenttype() != 'anonymous') {
+                        $formatted['html'] .= get_string('email') . $sep . $USER->email . $endhtml;
+                        $formatted['plaintext'] .= get_string('email') . $sep . $USER->email . $endplaintext;
+                    }
+            }
+            $formatted['html'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endhtml;
+            $formatted['plaintext'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endplaintext;
+        }
+        return $formatted;
+    }
+
+    /**
+     * Send a message via Moodle messaging.
+     *
+     * @param object $info Message details (userfrom, userto, postsubject, posttext, posthtml, submissionurl, name).
+     * @param string $eventtype Message type identifier.
+     */
+    private function send_message(object $info, string $eventtype): void {
+        $eventdata = new \core\message\message();
+        $eventdata->courseid = $this->courseid();
+        $eventdata->modulename = 'questionnaire';
+        $eventdata->userfrom = $info->userfrom;
+        $eventdata->userto = $info->userto;
+        $eventdata->subject = $info->postsubject;
+        $eventdata->fullmessage = $info->posttext;
+        $eventdata->fullmessageformat = FORMAT_PLAIN;
+        $eventdata->fullmessagehtml = $info->posthtml;
+        $eventdata->smallmessage = $info->postsubject;
+        $eventdata->name = $eventtype;
+        $eventdata->component = 'mod_questionnaire';
+        $eventdata->notification = 1;
+        $eventdata->contexturl = $info->submissionurl;
+        $eventdata->contexturlname = $info->name;
+        message_send($eventdata);
     }
 
     /**
