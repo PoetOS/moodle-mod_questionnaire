@@ -147,7 +147,9 @@ class survey {
      */
     public static function get_private_questionnaires(int $courseid): array {
         return self::build_survey_select_list(
-            self::get_survey_list('private', $courseid), 'private', 0
+            self::get_survey_list('private', $courseid),
+            'private',
+            0
         );
     }
 
@@ -163,7 +165,9 @@ class survey {
      */
     public static function get_public_questionnaires(int $courseid): array {
         return self::build_survey_select_list(
-            self::get_survey_list('public', 0), 'public', $courseid
+            self::get_survey_list('public', 0),
+            'public',
+            $courseid
         );
     }
 
@@ -177,7 +181,9 @@ class survey {
      */
     public static function get_template_questionnaires(int $courseid): array {
         return self::build_survey_select_list(
-            self::get_survey_list('template', 0), 'template', 0
+            self::get_survey_list('template', 0),
+            'template',
+            0
         );
     }
 

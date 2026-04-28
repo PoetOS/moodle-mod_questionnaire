@@ -1135,6 +1135,45 @@ class questionnaire {
     }
 
     /**
+     * Return a localised label => value map of respondent-type options for form selects.
+     *
+     * @return array  Keys are 'fullname' or 'anonymous'; values are localised display strings.
+     */
+    public static function respondent_type_options(): array {
+        return [
+            'fullname'  => get_string('respondenttypefullname', 'questionnaire'),
+            'anonymous' => get_string('respondenttypeanonymous', 'questionnaire'),
+        ];
+    }
+
+    /**
+     * Return a localised label => value map of survey-realm options for form selects.
+     *
+     * @return array  Keys are 'private', 'public', 'template'; values are localised display strings.
+     */
+    public static function realm_options(): array {
+        return [
+            'private'  => get_string('private', 'questionnaire'),
+            'public'   => get_string('public', 'questionnaire'),
+            'template' => get_string('template', 'questionnaire'),
+        ];
+    }
+
+    /**
+     * Return a localised label => value map of auto-numbering options for form selects.
+     *
+     * @return array  Keys are 0–3; values are localised display strings.
+     */
+    public static function auto_numbering_options(): array {
+        return [
+            0 => get_string('autonumberno', 'questionnaire'),
+            1 => get_string('autonumberquestions', 'questionnaire'),
+            2 => get_string('autonumberpages', 'questionnaire'),
+            3 => get_string('autonumberpagesandquestions', 'questionnaire'),
+        ];
+    }
+
+    /**
      * Return the default number of rows shown per pagination page.
      *
      * @return int
@@ -1497,7 +1536,8 @@ class questionnaire {
      * @return void
      */
     public static function set_events(stdClass $questionnaire): void {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/calendar/lib.php');
 
         if ($events = $DB->get_records('event', ['modulename' => 'questionnaire', 'instance' => $questionnaire->id])) {
             foreach ($events as $event) {

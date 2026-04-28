@@ -17,7 +17,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 /**
  * print the form to add or edit a questionnaire-instance
@@ -33,7 +32,6 @@ class mod_questionnaire_mod_form extends moodleform_mod {
      */
     protected function definition() {
         global $COURSE, $CFG;
-        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
         $surveyid = !empty($this->_instance)
             ? \mod_questionnaire\questionnaire::from_instanceid($this->_instance)->surveyid()
@@ -55,16 +53,31 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
-        $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnairetypes);
+        $mform->addElement(
+            'select',
+            'qtype',
+            get_string('qtype', 'questionnaire'),
+            \mod_questionnaire\questionnaire::response_frequency_options()
+        );
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
 
         $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->setType('cannotchangerespondenttype', PARAM_INT);
-        $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $questionnairerespondents);
+        $mform->addElement(
+            'select',
+            'respondenttype',
+            get_string('respondenttype', 'questionnaire'),
+            \mod_questionnaire\questionnaire::respondent_type_options()
+        );
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
 
-        $mform->addElement('select', 'respview', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
+        $mform->addElement(
+            'select',
+            'respview',
+            get_string('responseview', 'questionnaire'),
+            \mod_questionnaire\questionnaire::response_viewer_options()
+        );
         $mform->addHelpButton('respview', 'responseview', 'questionnaire');
 
         $notificationoptions = [
@@ -83,7 +96,12 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
         $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
 
-        $mform->addElement('select', 'autonum', get_string('autonumbering', 'questionnaire'), $autonumbering);
+        $mform->addElement(
+            'select',
+            'autonum',
+            get_string('autonumbering', 'questionnaire'),
+            \mod_questionnaire\questionnaire::auto_numbering_options()
+        );
         $mform->addHelpButton('autonum', 'autonumbering', 'questionnaire');
         // Default = autonumber both questions and pages.
         $mform->setDefault('autonum', 3);
