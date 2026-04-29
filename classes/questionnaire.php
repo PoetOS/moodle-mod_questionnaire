@@ -403,13 +403,171 @@ class questionnaire {
     /**
      * Validate that page breaks are correctly placed for dependent questions.
      *
-     * Shim — delegates to the legacy questionnaire class until page-break logic
-     * is refactored.
+     * Removes redundant consecutive page breaks and inserts missing page breaks
+     * between questions that have different dependency chains.
      *
      * @return false|string Status message, or false on failure.
      */
     public function check_page_breaks() {
-        return $this->legacy_instance()->check_page_breaks();
+        global $DB;
+        $msg = '';
+        $newpbids = [];
+        $delpb = 0;
+        $sid = $this->surveyid();
+        $positions = [];
+        if (
+            $questions = $DB->get_records_select(
+                'questionnaire_question',
+                'surveyid = :sid AND deleted IS NULL',
+                ['sid' => $sid],
+                'position'
+            )
+        ) {
+            foreach ($questions as $key => $qu) {
+                $newqu = new \stdClass();
+                $newqu->questionid = $key;
+                $newqu->typeid = $qu->typeid;
+                $newqu->qname = $qu->name;
+                $newqu->qpos = $qu->position;
+                $dependencies = $DB->get_records(
+                    'questionnaire_dependency',
+                    ['questionid' => $key, 'surveyid' => $sid],
+                    'id ASC',
+                    'id, dependquestionid, dependchoiceid, dependlogic'
+                );
+                $newqu->dependencies = $dependencies ?? [];
+                $positions[] = (array)$newqu;
+            }
+        }
+        $count = count($positions);
+
+        for ($i = $count - 1; $i >= 0; $i--) {
+            $qu = $positions[$i];
+            $questionnb = $i;
+            $prevqu = null;
+            $prevtypeid = null;
+            if ($i > 0) {
+                $prevqu = $positions[$i - 1];
+                $prevtypeid = $prevqu['typeid'];
+            }
+            if ($qu['typeid'] == QUESPAGEBREAK) {
+                $questionnb--;
+                if ($prevtypeid == QUESPAGEBREAK || $i == $count - 1 || $qu['qpos'] == 1) {
+                    $qid = $qu['questionid'];
+                    $delpb++;
+                    $msg .= get_string('checkbreaksremoved', 'questionnaire', $delpb) . '<br />';
+                    if (
+                        $questions = $DB->get_records_select(
+                            'questionnaire_question',
+                            'surveyid = :sid AND deleted IS NULL',
+                            ['sid' => $sid],
+                            'id'
+                        )
+                    ) {
+                        $DB->set_field(
+                            'questionnaire_question',
+                            'deleted',
+                            time(),
+                            ['id' => $qid, 'surveyid' => $sid]
+                        );
+                        $select = 'surveyid = :sid AND deleted IS NULL AND position > :pos';
+                        $records = $DB->get_records_select(
+                            'questionnaire_question',
+                            $select,
+                            ['sid' => $sid, 'pos' => $questions[$qid]->position],
+                            'position ASC'
+                        );
+                        if ($records) {
+                            foreach ($records as $record) {
+                                $DB->set_field(
+                                    'questionnaire_question',
+                                    'position',
+                                    $record->position - 1,
+                                    ['id' => $record->id]
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            if ($qu['typeid'] != QUESPAGEBREAK) {
+                if ($prevqu) {
+                    $prevdependencies = $prevqu['dependencies'];
+                    $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ?
+                        $qu['dependencies'] : $prevdependencies;
+                    $innerdependencies = count($qu['dependencies']) < count($prevdependencies) ?
+                        $qu['dependencies'] : $prevdependencies;
+
+                    $okeys = [];
+                    $ikeys = [];
+                    foreach ($outerdependencies as $okey => $outerdependency) {
+                        foreach ($innerdependencies as $ikey => $innerdependency) {
+                            if (
+                                $outerdependency->dependquestionid === $innerdependency->dependquestionid &&
+                                $outerdependency->dependchoiceid === $innerdependency->dependchoiceid &&
+                                $outerdependency->dependlogic === $innerdependency->dependlogic
+                            ) {
+                                $okeys[] = $okey;
+                                $ikeys[] = $ikey;
+                            }
+                        }
+                    }
+
+                    foreach ($okeys as $key) {
+                        if (key_exists($key, $outerdependencies)) {
+                            unset($outerdependencies[$key]);
+                        }
+                    }
+                    foreach ($ikeys as $key) {
+                        if (key_exists($key, $innerdependencies)) {
+                            unset($innerdependencies[$key]);
+                        }
+                    }
+
+                    $diffdependencies = count($outerdependencies) + count($innerdependencies);
+
+                    if (
+                        ($prevtypeid != QUESPAGEBREAK && $diffdependencies != 0) ||
+                        (!isset($qu['dependencies']) && isset($prevdependencies))
+                    ) {
+                        $sql = "SELECT MAX(position) as maxpos
+                                  FROM {questionnaire_question}
+                                 WHERE surveyid = :sid
+                                   AND deleted IS NULL";
+                        if ($record = $DB->get_record_sql($sql, ['sid' => $this->surveyid()])) {
+                            $pos = $record->maxpos + 1;
+                        } else {
+                            $pos = 1;
+                        }
+                        $question = new \stdClass();
+                        $question->surveyid = $this->surveyid();
+                        $question->typeid = QUESPAGEBREAK;
+                        $question->position = $pos;
+                        $question->content = 'break';
+
+                        if (!($newqid = $DB->insert_record('questionnaire_question', $question))) {
+                            return false;
+                        }
+                        $newpbids[] = $newqid;
+                        $refreshed = self::from_cmid($this->coursemodule()->id);
+                        $refreshed->add_questions();
+                        $refreshed->move_question($newqid, $qu['qpos']);
+                    }
+                }
+            }
+        }
+        if (empty($newpbids) && !$msg) {
+            $msg = get_string('checkbreaksok', 'questionnaire');
+        } else if ($newpbids) {
+            $msg .= get_string('checkbreaksadded', 'questionnaire') . '&nbsp;';
+            $newpbids = array_reverse($newpbids);
+            $refreshed = self::from_cmid($this->coursemodule()->id);
+            $refreshed->add_questions();
+            foreach ($newpbids as $newpbid) {
+                $msg .= $refreshed->questions()[$newpbid]->position() . '&nbsp;';
+            }
+        }
+        return $msg;
     }
 
     /**
@@ -2794,11 +2952,8 @@ class questionnaire {
     }
 
     // Completion flow methods.
-    // TODO: The print_survey(), submission_notify(), response_goto_thankyou(), and legacy() methods
-    // below are temporary shims that delegate to the legacy questionnaire class. They exist only
-    // until print_survey() and the surrounding rendering layer are refactored as part of the
-    // rendering overhaul. Once that work is done, the legacy() helper and all three shims are
-    // removed and questionnaire.class.php is no longer instantiated from this class.
+    // The print_survey() and survey_print_render() shims below delegate to the legacy class.
+    // They will be removed once the rendering layer is refactored.
 
     /**
      * Render the questionnaire completion page and handle form submission.
@@ -3078,14 +3233,80 @@ class questionnaire {
     /**
      * Redirect or render the thank-you screen after a submission.
      *
-     * Shim — delegates to the legacy questionnaire class until the rendering
-     * overhaul covers the thank-you flow.
-     *
      * @return void
      */
     public function response_goto_thankyou(): void {
-        $this->legacy_instance()->page = $this->page;
-        $this->legacy_instance()->response_goto_thankyou();
+        global $USER;
+
+        $thankurl = $this->survey()->thankspage();
+        $thankhead = $this->survey()->thankhead();
+        $thankbody = $this->survey()->thankbody();
+
+        if (!empty($thankurl)) {
+            if (!headers_sent()) {
+                header("Location: $thankurl");
+                exit;
+            }
+            echo '
+                <script language="JavaScript" type="text/javascript">
+                <!--
+                window.location="' . $thankurl . '"
+                //-->
+                </script>
+                <noscript>
+                <h2 class="thankhead">Thank You for completing this survey.</h2>
+                <blockquote class="thankbody">Please click
+                <a href="' . $thankurl . '">here</a> to continue.</blockquote>
+                </noscript>
+            ';
+            exit;
+        }
+        if (empty($thankhead)) {
+            $thankhead = get_string('thank_head', 'questionnaire');
+        }
+        $questionsbysec = $this->questions_by_section_all();
+        if ($this->use_progressbar() && count($questionsbysec) > 1) {
+            $this->page->add_to_page(
+                'progressbar',
+                $this->renderer->render_progress_bar(count($questionsbysec) + 1, $questionsbysec)
+            );
+        }
+        $this->page->add_to_page('title', format_string($thankhead));
+        $this->page->add_to_page(
+            'addinfo',
+            format_text(
+                file_rewrite_pluginfile_urls(
+                    $thankbody,
+                    'pluginfile.php',
+                    $this->context()->id,
+                    'mod_questionnaire',
+                    'thankbody',
+                    $this->surveyid()
+                ),
+                FORMAT_HTML,
+                ['noclean' => true]
+            )
+        );
+        $currentgroupid = groups_get_activity_group($this->coursemodule());
+        if (!groups_is_member($currentgroupid, $USER->id)) {
+            $currentgroupid = 0;
+        }
+        if ($this->can_read_own_responses()) {
+            $url = new \moodle_url(
+                'myreport.php',
+                [
+                    'id' => $this->coursemodule()->id,
+                    'instance' => $this->coursemodule()->instance,
+                    'user' => $USER->id,
+                    'byresponse' => 0,
+                    'action' => 'vresp',
+                ]
+            );
+            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
+        } else {
+            $url = new \moodle_url('/course/view.php', ['id' => $this->courseid()]);
+            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
+        }
     }
 
     /**
