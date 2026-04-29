@@ -105,6 +105,9 @@ class questionnaire {
     /** @var reporter|null Lazy-loaded reporter for CSV export and response analysis. */
     private ?reporter $reporter = null;
 
+    /** @var questionnaire_responses|null Lazy-loaded responses handler; cached so in-memory state persists. */
+    private ?questionnaire_responses $responseshandler = null;
+
     /** @var string Course-module idnumber, used by gradebook. Set by callers that need it. */
     public string $cmidnumber = '';
 
@@ -2720,12 +2723,17 @@ class questionnaire {
     // Response-flow and utility methods.
 
     /**
-     * Return a new questionnaire_responses handler for this questionnaire.
+     * Return the questionnaire_responses handler for this questionnaire.
+     *
+     * The same instance is returned on every call so that in-memory response state
+     * (loaded via add_response / add_response_from_formdata) is visible to subsequent
+     * get_response calls within the same request.
      *
      * @return questionnaire_responses
      */
     public function responses(): questionnaire_responses {
-        return new questionnaire_responses($this);
+        $this->responseshandler ??= new questionnaire_responses($this);
+        return $this->responseshandler;
     }
 
     /**
@@ -2997,22 +3005,157 @@ class questionnaire {
     /**
      * Render the survey page(s) for completion.
      *
-     * Shim — delegates to the legacy questionnaire class until print_survey() is
-     * refactored as part of the rendering overhaul.
+     * Processes form submissions for navigation and draft-saving, then renders
+     * the current page of the survey.
      *
      * @param int $quser
      * @param int|false $userid
-     * @return string Error message string, or empty string on success.
+     * @return string|null Error message string, or null on success.
      */
     public function print_survey(int $quser, $userid = false): ?string {
-        return $this->legacy_instance()->print_survey($quser, $userid);
+        global $SESSION, $CFG;
+
+        if (!($formdata = data_submitted()) || !confirm_sesskey()) {
+            $formdata = new \stdClass();
+        }
+
+        $formdata->rid = $this->get_latest_responseid($quser);
+        if (($formdata->rid != 0) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
+            $formdata->sec = $this->response_select_max_sec($formdata->rid);
+        }
+        if (empty($formdata->sec)) {
+            $formdata->sec = 1;
+        } else {
+            $formdata->sec = (intval($formdata->sec) > 0) ? intval($formdata->sec) : 1;
+        }
+
+        $questionsbysec = $this->questions_by_section_all();
+        $numsections = count($questionsbysec);
+        $msg = '';
+        $action = $CFG->wwwroot . '/mod/questionnaire/complete.php?id=' . $this->coursemodule()->id;
+
+        if ($formdata->sec == 1) {
+            $SESSION->questionnaire->end = false;
+        }
+
+        if (!empty($formdata->submit)) {
+            if (isset($SESSION->questionnaire->end) && $SESSION->questionnaire->end == true) {
+                return null;
+            }
+            $msg = $this->response_check_format($formdata->sec, $formdata);
+            if (empty($msg)) {
+                return null;
+            }
+            $formdata->rid = $this->existing_response_action($formdata, $userid);
+        }
+
+        if (!empty($formdata->resume) && ($this->resume())) {
+            $this->response_delete($formdata->rid, $formdata->sec);
+            $formdata->rid = $this->response_insert($formdata, $quser, true);
+            $this->response_goto_saved($action);
+            return null;
+        }
+
+        if (!empty($formdata->next)) {
+            $msg = $this->response_check_format($formdata->sec, $formdata);
+            if ($msg) {
+                $formdata->next = '';
+                $formdata->rid = $this->existing_response_action($formdata, $userid);
+            } else {
+                $nextsec = $this->next_page_action($formdata, $userid);
+                if ($nextsec === false) {
+                    $SESSION->questionnaire->end = true;
+                    $formdata->sec = $numsections + 1;
+                } else {
+                    $formdata->sec = $nextsec;
+                }
+            }
+        }
+
+        if (!empty($formdata->prev)) {
+            if (isset($SESSION->questionnaire->end) && ($SESSION->questionnaire->end == true)) {
+                $SESSION->questionnaire->end = false;
+                $formdata->sec--;
+            }
+            $msg = $this->response_check_format($formdata->sec, $formdata, false, true);
+            if ($msg) {
+                $formdata->prev = '';
+                $formdata->rid = $this->existing_response_action($formdata, $userid);
+            } else {
+                $prevsec = $this->previous_page_action($formdata, $userid);
+                if ($prevsec === false) {
+                    $formdata->sec = 0;
+                } else {
+                    $formdata->sec = $prevsec;
+                }
+            }
+        }
+
+        if (!empty($formdata->rid)) {
+            $this->add_response($formdata->rid);
+        }
+
+        $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
+        $formdatarid = isset($formdata->rid) ? $formdata->rid : '0';
+        $this->page->add_to_page(
+            'formstart',
+            $this->renderer->complete_formstart(
+                $action,
+                [
+                    'referer' => $formdatareferer,
+                    'a' => $this->id(),
+                    'sid' => $this->surveyid(),
+                    'rid' => $formdatarid,
+                    'sec' => $formdata->sec,
+                    'sesskey' => sesskey(),
+                ]
+            )
+        );
+        if ($this->questions() && $numsections) {
+            $this->survey_render($formdata, $formdata->sec, $msg);
+            $controlbuttons = [];
+            if ($formdata->sec > 1) {
+                $controlbuttons['prev'] = [
+                    'type' => 'submit',
+                    'class' => 'btn btn-secondary control-button-prev',
+                    'value' => '<< ' . get_string('previouspage', 'questionnaire'),
+                ];
+            }
+            if ($this->resume()) {
+                $controlbuttons['resume'] = [
+                    'type' => 'submit',
+                    'class' => 'btn btn-secondary control-button-save',
+                    'value' => get_string('save_and_exit', 'questionnaire'),
+                ];
+            }
+            if ($formdata->sec == $numsections) {
+                $controlbuttons['submittype'] = ['type' => 'hidden', 'value' => 'Submit Survey'];
+                $controlbuttons['submit'] = [
+                    'type' => 'submit',
+                    'class' => 'btn btn-primary control-button-submit',
+                    'value' => get_string('submitsurvey', 'questionnaire'),
+                ];
+            } else {
+                $controlbuttons['next'] = [
+                    'type' => 'submit',
+                    'class' => 'btn btn-secondary control-button-next',
+                    'value' => get_string('nextpage', 'questionnaire') . ' >>',
+                ];
+            }
+            $this->page->add_to_page('controlbuttons', $this->renderer->complete_controlbuttons($controlbuttons));
+        } else {
+            $this->page->add_to_page(
+                'controlbuttons',
+                $this->renderer->complete_controlbuttons(get_string('noneinuse', 'questionnaire'))
+            );
+        }
+        $this->page->add_to_page('formend', $this->renderer->complete_formend());
+
+        return $msg ?: null;
     }
 
     /**
      * Render the survey for printing or preview display.
-     *
-     * Shim — delegates to the legacy questionnaire class until the print/preview
-     * rendering is refactored.
      *
      * @param int $courseid
      * @param string $message
@@ -3021,9 +3164,684 @@ class questionnaire {
      * @param bool $blankquestionnaire
      * @return false|void
      */
-    public function survey_print_render($courseid, $message = '', $referer = '', $rid = 0, $blankquestionnaire = false) {
-        $this->legacy_instance()->page = $this->page;
-        return $this->legacy_instance()->survey_print_render($courseid, $message, $referer, $rid, $blankquestionnaire);
+    public function survey_print_render(
+        $courseid,
+        $message = '',
+        $referer = '',
+        $rid = 0,
+        $blankquestionnaire = false
+    ) {
+        global $CFG;
+
+        if (!empty($rid)) {
+            $this->view_response($rid, $referer);
+            return;
+        }
+
+        $section = 1;
+        $questionsbysec = $this->questions_by_section_all();
+        $numsections = count($questionsbysec);
+
+        if ($section > $numsections) {
+            return false;
+        }
+
+        $hasrequired = $this->has_required();
+
+        $i = 1;
+        for ($j = 2; $j <= $section; $j++) {
+            $i += count($questionsbysec[$j - 1]);
+        }
+
+        $action = $CFG->wwwroot . '/mod/questionnaire/preview.php?id=' . $this->coursemodule()->id;
+        $this->page->add_to_page('formstart', $this->renderer->complete_formstart($action));
+
+        $formdata = new \stdClass();
+        $errors = 1;
+        if (data_submitted()) {
+            $formdata = data_submitted();
+            $formdata->rid = $formdata->rid ?? 0;
+            $this->add_response_from_formdata($formdata);
+            $pageerror = '';
+            $s = 1;
+            $errors = 0;
+            foreach ($questionsbysec as $sec) {
+                $errormessage = $this->response_check_format($s, $formdata);
+                if ($errormessage) {
+                    if ($numsections > 1) {
+                        $pageerror = get_string('page', 'questionnaire') . ' ' . $s . ' : ';
+                    }
+                    $this->page->add_to_page(
+                        'notifications',
+                        $this->renderer->notification(
+                            $pageerror . $errormessage,
+                            \core\output\notification::NOTIFY_ERROR
+                        )
+                    );
+                    $errors++;
+                }
+                $s++;
+            }
+        }
+
+        $this->print_survey_start($message, 1, 1, $hasrequired, '');
+
+        if (($referer == 'preview') && $this->has_dependencies()) {
+            $allqdependants = $this->get_dependants_and_choices();
+        } else {
+            $allqdependants = [];
+        }
+        if ($errors == 0) {
+            $this->page->add_to_page(
+                'message',
+                $this->renderer->notification(
+                    get_string('submitpreviewcorrect', 'questionnaire'),
+                    \core\output\notification::NOTIFY_SUCCESS
+                )
+            );
+        }
+
+        $page = 1;
+        foreach ($questionsbysec as $sec) {
+            $output = '';
+            if ($numsections > 1) {
+                $output .= $this->renderer->print_preview_pagenumber(
+                    get_string('page', 'questionnaire') . ' ' . $page
+                );
+                $page++;
+            }
+            foreach ($sec as $question) {
+                if (!$question->is_numbered()) {
+                    $i--;
+                }
+                $dependants = $allqdependants[$question->id()] ?? [];
+                $question->set_isprint($referer === 'print');
+                $output .= $this->renderer->question_output(
+                    $question,
+                    ($this->responses()->get_response(0) ?? new \mod_questionnaire\local\response\response()),
+                    $i++,
+                    null,
+                    $dependants,
+                    $this
+                );
+                $this->page->add_to_page('questions', $output);
+                $output = '';
+            }
+        }
+
+        if ($referer == 'preview' && !$blankquestionnaire) {
+            $url = $CFG->wwwroot . '/mod/questionnaire/preview.php?id=' . $this->coursemodule()->id;
+            $this->page->add_to_page(
+                'formend',
+                $this->renderer->print_preview_formend(
+                    $url,
+                    get_string('submitpreview', 'questionnaire'),
+                    get_string('reset')
+                )
+            );
+        }
+    }
+
+    /**
+     * Render the survey start block (title, subtitle, info, respondent info, print-blank link).
+     *
+     * @param string $message
+     * @param int $section
+     * @param int $numsections
+     * @param bool $hasrequired
+     * @param string $rid
+     * @param bool $blankquestionnaire
+     * @param string $outputtarget
+     */
+    private function print_survey_start(
+        $message,
+        $section,
+        $numsections,
+        $hasrequired,
+        $rid = '',
+        $blankquestionnaire = false,
+        $outputtarget = 'html'
+    ) {
+        global $CFG, $DB;
+        require_once($CFG->libdir . '/filelib.php');
+
+        $userid = '';
+        $resp = '';
+        $groupname = '';
+        $currentgroupid = 0;
+        $timesubmitted = '';
+        if ($rid) {
+            $courseid = $this->courseid();
+            if ($resp = $DB->get_record('questionnaire_response', ['id' => $rid])) {
+                if ($this->respondenttype() == 'fullname') {
+                    $userid = $resp->userid;
+                    if (groups_get_activity_groupmode($this->coursemodule(), $this->course())) {
+                        if ($groups = groups_get_all_groups($courseid, $resp->userid)) {
+                            if (count($groups) == 1) {
+                                $group = current($groups);
+                                $currentgroupid = $group->id;
+                                $groupname = ' (' . get_string('group') . ': ' . $group->name . ')';
+                            } else {
+                                $groupname = ' (' . get_string('groups') . ': ';
+                                foreach ($groups as $group) {
+                                    $groupname .= $group->name . ', ';
+                                }
+                                $groupname = substr($groupname, 0, strlen($groupname) - 2) . ')';
+                            }
+                        } else {
+                            $groupname = ' (' . get_string('groupnonmembers') . ')';
+                        }
+                    }
+
+                    $params = [
+                        'objectid' => $this->surveyid(),
+                        'context' => $this->context(),
+                        'courseid' => $this->courseid(),
+                        'relateduserid' => $userid,
+                        'other' => ['action' => 'vresp', 'currentgroupid' => $currentgroupid, 'rid' => $rid],
+                    ];
+                    $event = \mod_questionnaire\event\response_viewed::create($params);
+                    $event->trigger();
+                }
+            }
+        }
+        $ruser = '';
+        if ($resp && !$blankquestionnaire) {
+            if ($userid) {
+                if ($user = $DB->get_record('user', ['id' => $userid])) {
+                    $ruser = fullname($user);
+                }
+            }
+            if ($this->respondenttype() == 'anonymous') {
+                $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
+            } else {
+                if ($resp->submitted) {
+                    $timesubmitted = '&nbsp;' . get_string('submitted', 'questionnaire') .
+                        '&nbsp;' . userdate($resp->submitted);
+                }
+            }
+        }
+        if ($ruser) {
+            $respinfo = '';
+            if ($outputtarget == 'html') {
+                $linkname = get_string('print', 'mod_questionnaire');
+                $link = new \moodle_url(
+                    '/mod/questionnaire/report.php',
+                    [
+                        'action' => 'vresp',
+                        'instance' => $this->id(),
+                        'target' => 'print',
+                        'individualresponse' => 1,
+                        'rid' => $rid,
+                    ]
+                );
+                $htmlicon = new \pix_icon('t/print', $linkname);
+                $options = [
+                    'menubar' => true,
+                    'location' => false,
+                    'scrollbars' => true,
+                    'resizable' => true,
+                    'height' => 600,
+                    'width' => 800,
+                    'title' => $linkname,
+                ];
+                $name = 'popup';
+                $action = new \popup_action('click', $link, $name, $options);
+                $respinfo .= $this->renderer->action_link(
+                    $link,
+                    null,
+                    $action,
+                    ['title' => $linkname],
+                    $htmlicon
+                ) . '&nbsp;';
+            }
+            $respinfo .= get_string('respondent', 'questionnaire') . ': <strong>' . $ruser . '</strong>';
+            if ($this->survey_is_public()) {
+                $coursename = '';
+                $sql = 'SELECT q.id, q.course, c.fullname ' .
+                       'FROM {questionnaire_response} qr ' .
+                       'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
+                       'INNER JOIN {course} c ON q.course = c.id ' .
+                       'WHERE qr.id = ? AND qr.complete = ? ';
+                if ($record = $DB->get_record_sql($sql, [$rid, 'y'])) {
+                    $coursename = $record->fullname;
+                }
+                $respinfo .= ' ' . get_string('course') . ': ' . $coursename;
+            }
+            $respinfo .= $groupname;
+            $respinfo .= $timesubmitted;
+            $this->page->add_to_page('respondentinfo', $this->renderer->respondent_info($respinfo));
+        }
+
+        if ($this->can_print_blank() && $blankquestionnaire && $section == 1) {
+            $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
+            $title = get_string('printblanktooltip', 'questionnaire');
+            $url = '/mod/questionnaire/print.php?qid=' . $this->id() . '&amp;rid=0&amp;' .
+                'courseid=' . $this->courseid() . '&amp;sec=1';
+            $options = [
+                'menubar' => true,
+                'location' => false,
+                'scrollbars' => true,
+                'resizable' => true,
+                'height' => 600,
+                'width' => 800,
+                'title' => $title,
+            ];
+            $name = 'popup';
+            $link = new \moodle_url($url);
+            $action = new \popup_action('click', $link, $name, $options);
+            $class = "floatprinticon";
+            $this->page->add_to_page(
+                'printblank',
+                $this->renderer->action_link(
+                    $link,
+                    $linkname,
+                    $action,
+                    ['class' => $class, 'title' => $title],
+                    new \pix_icon('t/print', $title)
+                )
+            );
+        }
+        if ($section == 1) {
+            $title = $this->surveytitle();
+            if (!empty($title)) {
+                $this->page->add_to_page('title', format_string($title));
+            }
+            $subtitle = $this->surveysubtitle();
+            if (!empty($subtitle)) {
+                $this->page->add_to_page('subtitle', format_string($subtitle));
+            }
+            $info = $this->surveyinfo();
+            if ($info) {
+                $infotext = file_rewrite_pluginfile_urls(
+                    $info,
+                    'pluginfile.php',
+                    $this->context()->id,
+                    'mod_questionnaire',
+                    'info',
+                    $this->surveyid()
+                );
+                $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
+            }
+        }
+
+        if ($message) {
+            $this->page->add_to_page(
+                'message',
+                $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR)
+            );
+        }
+    }
+
+    /**
+     * Render the page-number footer for paginated surveys.
+     *
+     * @param int $section
+     * @param int $numsections
+     */
+    private function print_survey_end($section, $numsections) {
+        if (!$this->pages_autonumbered()) {
+            return;
+        }
+        if ($numsections > 1) {
+            $a = new \stdClass();
+            $a->page = $section;
+            $a->totpages = $numsections;
+            $this->page->add_to_page(
+                'pageinfo',
+                $this->renderer->container(
+                    get_string('pageof', 'questionnaire', $a) . '&nbsp;&nbsp;',
+                    'surveyPage'
+                )
+            );
+        }
+    }
+
+    /**
+     * Render the current section's questions for survey completion.
+     *
+     * @param \stdClass $formdata
+     * @param int $section
+     * @param string $message
+     * @return bool|void
+     */
+    private function survey_render(&$formdata, $section = 1, $message = '') {
+        if (empty($section)) {
+            $section = 1;
+        }
+        $questionsbysec = $this->questions_by_section_all();
+        $numsections = count($questionsbysec);
+        if ($section > $numsections) {
+            $formdata->sec = $numsections;
+            $this->page->add_to_page(
+                'notifications',
+                $this->renderer->notification(get_string('finished', 'questionnaire'), \core\output\notification::NOTIFY_WARNING)
+            );
+            return false;
+        }
+
+        $hasrequired = $this->has_required($section);
+
+        $i = 0;
+        if ($section > 1) {
+            for ($j = 2; $j <= $section; $j++) {
+                foreach ($questionsbysec[$j - 1] as $question) {
+                    if ($question->typeid() < QUESPAGEBREAK) {
+                        $i++;
+                    }
+                }
+            }
+        }
+
+        $this->print_survey_start($message, $section, $numsections, $hasrequired, '', true);
+        if ($this->use_progressbar() && count($questionsbysec) > 1) {
+            $this->page->add_to_page(
+                'progressbar',
+                $this->renderer->render_progress_bar($section, $questionsbysec)
+            );
+        }
+        if (key_exists($section, $questionsbysec)) {
+            foreach ($questionsbysec[$section] as $question) {
+                if ($question->is_numbered()) {
+                    $i++;
+                }
+                $formdata->questionnaire_id = $this->id();
+                if (isset($formdata->rid) && !empty($formdata->rid)) {
+                    $this->add_response($formdata->rid);
+                } else {
+                    $this->add_response_from_formdata($formdata);
+                }
+                $this->page->add_to_page(
+                    'questions',
+                    $this->renderer->question_output(
+                        $question,
+                        ($this->responses()->get_response($formdata->rid) ?? []),
+                        $i,
+                        null,
+                        [],
+                        $this
+                    )
+                );
+            }
+        }
+
+        $this->print_survey_end($section, $numsections);
+    }
+
+    /**
+     * Render a single response for viewing (report, print, or preview context).
+     *
+     * @param int $rid
+     * @param string $referer
+     * @param mixed $resps
+     * @param bool $compare
+     * @param bool $isgroupmember
+     * @param bool $allresponses
+     * @param int $currentgroupid
+     * @param string $outputtarget
+     */
+    private function view_response(
+        $rid,
+        $referer = '',
+        $resps = '',
+        $compare = false,
+        $isgroupmember = false,
+        $allresponses = false,
+        $currentgroupid = 0,
+        $outputtarget = 'html'
+    ) {
+        $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
+
+        $i = 0;
+        $this->add_response($rid);
+        if ($referer != 'print') {
+            $feedbackmessages = $this->reporter()->response_analysis(
+                $rid,
+                $resps,
+                $compare,
+                $isgroupmember,
+                $allresponses,
+                $currentgroupid
+            );
+            if ($feedbackmessages) {
+                $msgout = '';
+                foreach ($feedbackmessages as $msg) {
+                    $msgout .= $msg;
+                }
+                $this->page->add_to_page('feedbackmessages', $msgout);
+            }
+
+            $feedbacknotes = $this->survey()->feedbacknotes();
+            if ($feedbacknotes) {
+                $text = file_rewrite_pluginfile_urls(
+                    $feedbacknotes,
+                    'pluginfile.php',
+                    $this->context()->id,
+                    'mod_questionnaire',
+                    'feedbacknotes',
+                    $this->surveyid()
+                );
+                $this->page->add_to_page('feedbacknotes', $this->renderer->box(format_text($text, FORMAT_HTML)));
+            }
+        }
+        $pdf = ($outputtarget == 'pdf');
+        foreach ($this->questions() as $question) {
+            if (!$question->dependency_fulfilled($rid, $this->questions())) {
+                continue;
+            }
+            if ($question->typeid() < QUESPAGEBREAK) {
+                $i++;
+            }
+            if ($question->typeid() != QUESPAGEBREAK) {
+                $this->page->add_to_page(
+                    'responses',
+                    $this->renderer->response_output(
+                        $question,
+                        $this->responses()->get_response($rid),
+                        $i,
+                        $pdf,
+                        $this
+                    )
+                );
+            }
+        }
+    }
+
+    /**
+     * Redirect to the saved-progress confirmation screen.
+     *
+     * @param string $url The completion URL to offer as a resume link.
+     */
+    private function response_goto_saved($url) {
+        global $CFG, $USER;
+        $resumesurvey = get_string('resumesurvey', 'questionnaire');
+        $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>' . $resumesurvey . '</strong>');
+
+        $this->page->add_to_page(
+            'notifications',
+            $this->renderer->notification($savedprogress, \core\output\notification::NOTIFY_SUCCESS)
+        );
+        $this->page->add_to_page(
+            'respondentinfo',
+            $this->renderer->homelink(
+                $CFG->wwwroot . '/course/view.php?id=' . $this->courseid(),
+                get_string('backto', 'moodle', $this->course()->fullname)
+            )
+        );
+
+        if ($this->resume()) {
+            $message = $this->user_access_messages($USER->id, true);
+            if ($message === null) {
+                if ($this->user_can_take($USER->id)) {
+                    if ($this->questions()) {
+                        if ($this->user_has_saved_response($USER->id)) {
+                            $this->page->add_to_page(
+                                'respondentinfo',
+                                $this->renderer->homelink(
+                                    $CFG->wwwroot . '/mod/questionnaire/complete.php?' .
+                                        'id=' . $this->coursemodule()->id . '&resume=1',
+                                    $resumesurvey
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Return true if any question in the given section (or in any section) is required.
+     *
+     * @param int $section 0 to check all sections, otherwise the 1-based section number.
+     * @return bool
+     */
+    private function has_required($section = 0) {
+        if (empty($this->questions())) {
+            return false;
+        } else if ($section <= 0) {
+            foreach ($this->questions() as $question) {
+                if ($question->required()) {
+                    return true;
+                }
+            }
+        } else {
+            $questionsbysec = $this->questions_by_section_all();
+            if (key_exists($section, $questionsbysec)) {
+                foreach ($questionsbysec[$section] as $question) {
+                    if ($question->required()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return all parent questions and the child choices that depend on them.
+     *
+     * @return array Keyed by parent question id; values are arrays of child question ids
+     *               mapped to arrays of dependency objects.
+     */
+    private function get_dependants_and_choices() {
+        $questions = array_reverse($this->questions(), true);
+        $parents = [];
+        foreach ($questions as $question) {
+            foreach ($question->dependencies as $dependency) {
+                $child = new \stdClass();
+                $child->choiceid = $dependency->dependchoiceid;
+                $child->logic = $dependency->dependlogic;
+                $child->andor = $dependency->dependandor;
+                $parents[$dependency->dependquestionid][$question->id()][] = $child;
+            }
+        }
+        return $parents;
+    }
+
+    /**
+     * Return the section number of the last answered section in a response.
+     *
+     * @param int $rid
+     * @return int
+     */
+    private function response_select_max_sec($rid) {
+        global $DB;
+        $pos = $this->response_select_max_pos($rid);
+        $select = 'surveyid = ? AND typeid = ? AND position < ? AND deleted IS NULL';
+        $params = [$this->surveyid(), QUESPAGEBREAK, $pos];
+        $max = $DB->count_records_select('questionnaire_question', $select, $params) + 1;
+        return $max;
+    }
+
+    /**
+     * Return the position of the last answered question in a response.
+     *
+     * @param int $rid
+     * @return int
+     */
+    private function response_select_max_pos($rid) {
+        global $DB;
+        $max = 0;
+        foreach (
+            [
+                'response_bool',
+                'resp_single',
+                'resp_multiple',
+                'response_rank',
+                'response_text',
+                'response_other',
+                'response_date',
+            ] as $tbl
+        ) {
+            $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_' . $tbl . '} a, {questionnaire_question} q ' .
+                'WHERE a.responseid = ? AND ' .
+                'q.id = a.questionid AND ' .
+                'q.surveyid = ? AND ' .
+                'q.deleted IS NULL';
+            if ($record = $DB->get_record_sql($sql, [$rid, $this->surveyid()])) {
+                $newmax = (int)$record->num;
+                if ($newmax > $max) {
+                    $max = $newmax;
+                }
+            }
+        }
+        return $max;
+    }
+
+    /**
+     * Delegate format-checking to the response manager.
+     *
+     * @param int $section
+     * @param \stdClass $formdata
+     * @param bool $checkmissing
+     * @param bool $checkwrongformat
+     * @return string
+     */
+    private function response_check_format(
+        $section,
+        $formdata,
+        $checkmissing = true,
+        $checkwrongformat = true
+    ) {
+        return $this->responses()->response_check_format(
+            $section,
+            $formdata,
+            $checkmissing,
+            $checkwrongformat,
+            $this->questions()
+        );
+    }
+
+    /**
+     * Delete the specified response (or a section within it).
+     *
+     * @param int $rid
+     * @param int|null $sec
+     */
+    private function response_delete($rid, $sec = null) {
+        $this->responses()->response_delete($rid, $sec);
+    }
+
+    /**
+     * Persist formdata as a new or updated response record.
+     *
+     * @param mixed $responsedata
+     * @param int $userid
+     * @param bool $resume
+     * @return int New response id.
+     */
+    private function response_insert($responsedata, $userid, $resume = false) {
+        return $this->responses()->response_insert($responsedata, $userid, $resume);
+    }
+
+    /**
+     * Populate the in-memory response store from submitted form data.
+     *
+     * @param \stdClass $formdata
+     */
+    private function add_response_from_formdata(\stdClass $formdata) {
+        $this->responses()->add_response_from_formdata($formdata);
     }
 
     /**
