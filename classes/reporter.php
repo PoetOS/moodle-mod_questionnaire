@@ -202,10 +202,16 @@ class reporter {
         $qnum = 0;
         $anonymous = $this->questionnaire->respondenttype() == 'anonymous';
 
-        // Some legacy responsetype renderers (text, file) read global $questionnaire.
+        // response\text and response\file read global $questionnaire for viewsingleresponse,
+        // respondenttype, and survey->id. Provide a minimal shim from the new class.
         global $questionnaire;
         $prevquestionnaire = $questionnaire;
-        $questionnaire = $this->questionnaire->legacy_instance();
+        $questionnaire = new \stdClass();
+        $questionnaire->capabilities = new \stdClass();
+        $questionnaire->capabilities->viewsingleresponse = $this->questionnaire->can_view_single_response();
+        $questionnaire->respondenttype = $this->questionnaire->respondenttype();
+        $questionnaire->survey = new \stdClass();
+        $questionnaire->survey->id = $this->questionnaire->surveyid();
         try {
             foreach ($questions as $question) {
                 if ($question->typeid() == QUESPAGEBREAK) {

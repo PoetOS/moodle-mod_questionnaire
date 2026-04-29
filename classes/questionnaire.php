@@ -96,9 +96,6 @@ class questionnaire {
     /** @var \templatable The templatable page to render. */
     public $page;
 
-    /** @var \questionnaire|null Lazy-loaded legacy instance used by rendering shims. */
-    private $legacyinstance = null;
-
     /** @var question_navigator|null Lazy-loaded navigator for page and dependency traversal. */
     private ?question_navigator $navigator = null;
 
@@ -4136,26 +4133,4 @@ class questionnaire {
         return has_capability('moodle/site:accessallgroups', $this->context);
     }
 
-    /**
-     * Return a lazy-loaded legacy questionnaire instance sharing this object's renderer and page.
-     *
-     * Used by reporter and rendering shims. Some legacy responsetype renderers still read
-     * global $questionnaire, so callers that invoke results_output() must temporarily assign
-     * this object to that global.
-     *
-     * @return \questionnaire
-     */
-    public function legacy_instance(): \questionnaire {
-        global $CFG, $DB;
-        if (!isset($this->legacyinstance)) {
-            require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-            $record = $DB->get_record('questionnaire', ['id' => $this->id()], '*', MUST_EXIST);
-            $course = $this->course();
-            $cm = $this->coursemodule();
-            $this->legacyinstance = new \questionnaire($course, $cm, 0, $record);
-            $this->legacyinstance->renderer = $this->renderer;
-            $this->legacyinstance->page = $this->page;
-        }
-        return $this->legacyinstance;
-    }
 }
