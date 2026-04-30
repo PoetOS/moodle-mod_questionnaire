@@ -39,6 +39,29 @@ abstract class responsetype {
     /** @var array $choices An array of \mod_questionnaire\local\response\choice objects. */
     public $choices;
 
+    /** @var bool Whether the current user may view individual responses. */
+    protected bool $canviewsingleresponse = false;
+
+    /** @var string Respondent type ('anonymous' or other) for the owning questionnaire. */
+    protected string $displayrespondenttype = '';
+
+    /** @var int Survey ID for the owning questionnaire (used to build report URLs). */
+    protected int $displaysurveysid = 0;
+
+    /**
+     * Provide the values needed by text and file response result renderers so they
+     * do not need to read global $questionnaire.
+     *
+     * @param bool $viewsingleresponse Whether the current user may view a single response.
+     * @param string $respondenttype 'anonymous' or '' / named.
+     * @param int $surveyid The survey id of the owning questionnaire.
+     */
+    public function set_display_context(bool $viewsingleresponse, string $respondenttype, int $surveyid): void {
+        $this->canviewsingleresponse = $viewsingleresponse;
+        $this->displayrespondenttype = $respondenttype;
+        $this->displaysurveysid = $surveyid;
+    }
+
     /**
      * responsetype constructor.
      * @param \mod_questionnaire\local\question\question $question
