@@ -4132,5 +4132,4 @@ class questionnaire {
     public function can_view_all_groups(): bool {
         return has_capability('moodle/site:accessallgroups', $this->context);
     }
-
 }

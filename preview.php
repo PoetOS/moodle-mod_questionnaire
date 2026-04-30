@@ -42,29 +42,33 @@ if ($id) {
     $canprintblank = $questionnaire->can_print_blank();
 } else {
     // Survey-only (template/public preview from "Add questionnaire" page).
-    // The new class requires a real module instance; keep this path on the legacy class.
-    require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-
     if (!$survey = $DB->get_record('questionnaire_survey', ['id' => $sid])) {
         throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
     }
     if (!$course = $DB->get_record('course', ['id' => $survey->courseid])) {
         throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
     }
-    // Dummy questionnaire object.
-    $dummyq = new stdClass();
-    $dummyq->id = 0;
-    $dummyq->course = $course->id;
-    $dummyq->name = $survey->title;
-    $dummyq->sid = $sid;
-    $dummyq->resume = 0;
-    // Dummy cm object.
     $cm = !empty($qid) ? get_coursemodule_from_instance('questionnaire', $qid, $course->id) : false;
-    $questionnaire = new questionnaire($course, $cm, $qid, $dummyq);
-    $canpreview = (!isset($questionnaire->capabilities) &&
-                   has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
-                  (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
-    $canprintblank = isset($questionnaire->capabilities) ? $questionnaire->capabilities->printblank : false;
+    if ($cm) {
+        // Real CM available — use new class.
+        $questionnaire = questionnaire_class::from_cmid($cm->id);
+        $canpreview = $questionnaire->can_preview();
+        $canprintblank = $questionnaire->can_print_blank();
+    } else {
+        // No module instance (browsing public/template surveys) — keep legacy class.
+        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+        $dummyq = new stdClass();
+        $dummyq->id = 0;
+        $dummyq->course = $course->id;
+        $dummyq->name = $survey->title;
+        $dummyq->sid = $sid;
+        $dummyq->resume = 0;
+        $questionnaire = new questionnaire($course, false, 0, $dummyq);
+        $canpreview = (!isset($questionnaire->capabilities) &&
+                       has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
+                      (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
+        $canprintblank = isset($questionnaire->capabilities) ? $questionnaire->capabilities->printblank : false;
+    }
 }
 
 // Check login and get context.
