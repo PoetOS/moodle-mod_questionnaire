@@ -30,24 +30,3 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/calendar/lib.php');
-// Legacy constant aliases — kept for questionnaire.class.php and any code not yet on the new class.
-// Canonical values live as private const on mod_questionnaire\questionnaire; use its behavior
-// methods (response_frequency_options, response_viewer_options, etc.) for new code.
-
-define('QUESTIONNAIREUNLIMITED', 0);
-define('QUESTIONNAIREONCE', 1);
-define('QUESTIONNAIREDAILY', 2);
-define('QUESTIONNAIREWEEKLY', 3);
-define('QUESTIONNAIREMONTHLY', 4);
-
-define('QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER', 0);
-define('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED', 1);
-define('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED', 2);
-define('QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS', 3);
-
-define('QUESTIONNAIRE_MAX_EVENT_LENGTH', 5 * 24 * 60 * 60);   // 5 days maximum.
-
-define('QUESTIONNAIRE_DEFAULT_PAGE_COUNT', 20);
-
-define('QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY', 'confirmdelpermanentlyq');
-define('QUESTIONNAIRE_RESTORE_PARAM', 'restoreq');

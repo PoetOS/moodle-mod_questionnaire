@@ -328,8 +328,6 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
         $data = (object)$data;
 
-        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
         // Some old systems had '' instead of NULL. Change it to NULL.
         if ($data->value === '') {
             $data->value = null;

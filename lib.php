@@ -167,9 +167,6 @@ function questionnaire_get_coursemodule_info($coursemodule) {
  * @return stdClass
  */
 function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
-    global $CFG;
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
     $result = new stdClass();
     $responses = \mod_questionnaire\local\response\questionnaire_responses::get_user_responses_for_instance(
         ($questionnaire instanceof \mod_questionnaire\questionnaire) ? $questionnaire->id() : $questionnaire->id,
@@ -202,9 +199,6 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
  * @return bool
  */
 function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
-    global $CFG;
-    require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
     $responses = \mod_questionnaire\local\response\questionnaire_responses::get_user_responses_for_instance(
         ($questionnaire instanceof \mod_questionnaire\questionnaire) ? $questionnaire->id() : $questionnaire->id,
         $user->id,

@@ -64,10 +64,10 @@ final class questionnaire_test extends \advanced_testcase {
             'name'             => 'Test questionnaire',
             'intro'            => '',
             'introformat'      => FORMAT_HTML,
-            'qtype'            => QUESTIONNAIREUNLIMITED,
+            'qtype'            => questionnaire::QTYPE_UNLIMITED,
             'respondenttype'   => 'fullname',
             'respeligible'     => 'all',
-            'respview'         => QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER,
+            'respview'         => questionnaire::RESPVIEW_NEVER,
             'notifications'    => 0,
             'opendate'         => 0,
             'closedate'        => 0,
@@ -310,7 +310,7 @@ final class questionnaire_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questionnaire::user_time_for_new_attempt
      */
     public function test_user_time_unlimited_always_allowed(): void {
-        $q = $this->make_questionnaire(['qtype' => QUESTIONNAIREUNLIMITED]);
+        $q = $this->make_questionnaire(['qtype' => questionnaire::QTYPE_UNLIMITED]);
         // UNLIMITED always returns true regardless of existing responses.
         $this->assertTrue($q->user_time_for_new_attempt(1));
     }
@@ -323,7 +323,7 @@ final class questionnaire_test extends \advanced_testcase {
     public function test_user_time_with_no_previous_responses(): void {
         $this->resetAfterTest();
         // Any qtype returns true when the user has no prior responses.
-        $q = $this->make_questionnaire(['id' => 88881, 'qtype' => QUESTIONNAIREONCE]);
+        $q = $this->make_questionnaire(['id' => 88881, 'qtype' => questionnaire::QTYPE_ONCE]);
         $this->assertTrue($q->user_time_for_new_attempt(1));
     }
 
@@ -337,7 +337,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->resetAfterTest();
 
         $qid = 88882;
-        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREONCE]);
+        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => questionnaire::QTYPE_ONCE]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
             'submitted' => time() - 3600, 'complete' => 'y', 'grade' => 0,
@@ -356,7 +356,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->resetAfterTest();
 
         $qid = 88883;
-        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREDAILY]);
+        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => questionnaire::QTYPE_DAILY]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
             'submitted' => mktime(0, 0, 0, (int)date('n'), (int)date('j'), (int)date('Y')),
@@ -376,7 +376,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->resetAfterTest();
 
         $qid = 88884;
-        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREDAILY]);
+        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => questionnaire::QTYPE_DAILY]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
             'submitted' => mktime(0, 0, 0, date('n'), date('j') - 1, date('Y')),
@@ -396,7 +396,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->resetAfterTest();
 
         $qid = 88885;
-        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREWEEKLY]);
+        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => questionnaire::QTYPE_WEEKLY]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
             'submitted' => time() - DAYSECS, 'complete' => 'y', 'grade' => 0,
@@ -421,7 +421,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->resetAfterTest();
 
         $qid = 88886;
-        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREMONTHLY]);
+        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => questionnaire::QTYPE_MONTHLY]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
             // First of this month.
@@ -442,7 +442,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->resetAfterTest();
 
         $qid = 88887;
-        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => QUESTIONNAIREMONTHLY]);
+        $q = $this->make_questionnaire(['id' => $qid, 'qtype' => questionnaire::QTYPE_MONTHLY]);
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $qid, 'userid' => 1,
             // First of last month.
@@ -1146,11 +1146,11 @@ final class questionnaire_test extends \advanced_testcase {
     public function test_response_frequency_options_has_expected_keys(): void {
         $this->resetAfterTest();
         $options = questionnaire::response_frequency_options();
-        $this->assertArrayHasKey(QUESTIONNAIREUNLIMITED, $options);
-        $this->assertArrayHasKey(QUESTIONNAIREONCE, $options);
-        $this->assertArrayHasKey(QUESTIONNAIREDAILY, $options);
-        $this->assertArrayHasKey(QUESTIONNAIREWEEKLY, $options);
-        $this->assertArrayHasKey(QUESTIONNAIREMONTHLY, $options);
+        $this->assertArrayHasKey(questionnaire::QTYPE_UNLIMITED, $options);
+        $this->assertArrayHasKey(questionnaire::QTYPE_ONCE, $options);
+        $this->assertArrayHasKey(questionnaire::QTYPE_DAILY, $options);
+        $this->assertArrayHasKey(questionnaire::QTYPE_WEEKLY, $options);
+        $this->assertArrayHasKey(questionnaire::QTYPE_MONTHLY, $options);
     }
 
     // Tests for response_viewer_options().
@@ -1175,10 +1175,10 @@ final class questionnaire_test extends \advanced_testcase {
     public function test_response_viewer_options_has_expected_keys(): void {
         $this->resetAfterTest();
         $options = questionnaire::response_viewer_options();
-        $this->assertArrayHasKey(QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER, $options);
-        $this->assertArrayHasKey(QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED, $options);
-        $this->assertArrayHasKey(QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED, $options);
-        $this->assertArrayHasKey(QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS, $options);
+        $this->assertArrayHasKey(questionnaire::RESPVIEW_NEVER, $options);
+        $this->assertArrayHasKey(questionnaire::RESPVIEW_WHENANSWERED, $options);
+        $this->assertArrayHasKey(questionnaire::RESPVIEW_WHENCLOSED, $options);
+        $this->assertArrayHasKey(questionnaire::RESPVIEW_ALWAYS, $options);
     }
 
     // Tests for default_page_count(), confirm_delete_param(), restore_param().
@@ -1198,7 +1198,7 @@ final class questionnaire_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questionnaire::confirm_delete_param
      */
     public function test_confirm_delete_param_returns_expected_string(): void {
-        $this->assertEquals(QUESTIONNAIRE_CONFIRM_DELETE_PERMANENTLY, questionnaire::confirm_delete_param());
+        $this->assertEquals(questionnaire::CONFIRM_DELETE_PERMANENTLY, questionnaire::confirm_delete_param());
     }
 
     /**
@@ -1207,7 +1207,7 @@ final class questionnaire_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questionnaire::restore_param
      */
     public function test_restore_param_returns_expected_string(): void {
-        $this->assertEquals(QUESTIONNAIRE_RESTORE_PARAM, questionnaire::restore_param());
+        $this->assertEquals(questionnaire::RESTORE_PARAM, questionnaire::restore_param());
     }
 
     // Tests for editor_options().

@@ -41,26 +41,26 @@ class questionnaire {
     // Response-frequency (qtype field) constants.
 
     /** @var int Response frequency: unlimited attempts. */
-    private const QTYPE_UNLIMITED = 0;
+    public const QTYPE_UNLIMITED = 0;
     /** @var int Response frequency: one attempt only. */
-    private const QTYPE_ONCE = 1;
+    public const QTYPE_ONCE = 1;
     /** @var int Response frequency: once per day. */
-    private const QTYPE_DAILY = 2;
+    public const QTYPE_DAILY = 2;
     /** @var int Response frequency: once per week. */
-    private const QTYPE_WEEKLY = 3;
+    public const QTYPE_WEEKLY = 3;
     /** @var int Response frequency: once per month. */
-    private const QTYPE_MONTHLY = 4;
+    public const QTYPE_MONTHLY = 4;
 
     // Student response-view (respview field) constants.
 
     /** @var int Response visibility: students never see other responses. */
-    private const RESPVIEW_NEVER = 0;
+    public const RESPVIEW_NEVER = 0;
     /** @var int Response visibility: students see responses after they have answered. */
-    private const RESPVIEW_WHENANSWERED = 1;
+    public const RESPVIEW_WHENANSWERED = 1;
     /** @var int Response visibility: students see responses after the questionnaire closes. */
-    private const RESPVIEW_WHENCLOSED = 2;
+    public const RESPVIEW_WHENCLOSED = 2;
     /** @var int Response visibility: students always see other responses. */
-    private const RESPVIEW_ALWAYS = 3;
+    public const RESPVIEW_ALWAYS = 3;
 
     // Other internal constants.
 
@@ -69,9 +69,9 @@ class questionnaire {
     /** @var int Default number of rows per pagination page. */
     private const DEFAULT_PAGE_COUNT = 20;
     /** @var string URL parameter name for the permanent-delete confirmation action. */
-    private const CONFIRM_DELETE_PERMANENTLY = 'confirmdelpermanentlyq';
+    public const CONFIRM_DELETE_PERMANENTLY = 'confirmdelpermanentlyq';
     /** @var string URL parameter name for the question-restore action. */
-    private const RESTORE_PARAM = 'restoreq';
+    public const RESTORE_PARAM = 'restoreq';
 
     /** @var questionnaire_record|null The module record instance. */
     protected ?questionnaire_record $modulerecord = null;
