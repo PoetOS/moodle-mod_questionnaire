@@ -2394,7 +2394,7 @@ class questionnaire {
         $timenow = time();
 
         switch ($this->qtype) {
-            case QUESTIONNAIREUNLIMITED:
+            case \mod_questionnaire\questionnaire::QTYPE_UNLIMITED:
                 $cantake = true;
                 break;
 
@@ -2679,7 +2679,7 @@ class questionnaire {
 
         if (!$this->is_active() || !$this->user_is_eligible($userid)) {
             return false;
-        } else if ($this->qtype == QUESTIONNAIREUNLIMITED) {
+        } else if ($this->qtype == \mod_questionnaire\questionnaire::QTYPE_UNLIMITED) {
             return true;
         } else if ($userid > 0) {
             return $this->user_time_for_new_attempt($userid);
