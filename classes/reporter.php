@@ -202,110 +202,102 @@ class reporter {
         $qnum = 0;
         $anonymous = $this->questionnaire->respondenttype() == 'anonymous';
 
-        // response\text and response\file read global $questionnaire for viewsingleresponse,
-        // respondenttype, and survey->id. Provide a minimal shim from the new class.
-        global $questionnaire;
-        $prevquestionnaire = $questionnaire;
-        $questionnaire = new \stdClass();
-        $questionnaire->capabilities = new \stdClass();
-        $questionnaire->capabilities->viewsingleresponse = $this->questionnaire->can_view_single_response();
-        $questionnaire->respondenttype = $this->questionnaire->respondenttype();
-        $questionnaire->survey = new \stdClass();
-        $questionnaire->survey->id = $this->questionnaire->surveyid();
-        try {
-            foreach ($questions as $question) {
-                if ($question->typeid() == QUESPAGEBREAK) {
-                    continue;
-                }
-                if ($question->is_numbered()) {
-                    $qnum++;
-                }
-                $displaycontent = $question->content();
-                if ($displaycontent == '<p>  </p>') {
-                    $displaycontent = '';
-                }
-                if ($pdf) {
-                    $response = new stdClass();
-                    if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
-                        $response->qnum = $qnum;
-                    }
-                    $response->qcontent = format_text(
-                        file_rewrite_pluginfile_urls(
-                            $displaycontent,
-                            'pluginfile.php',
-                            $question->context->id,
-                            'mod_questionnaire',
-                            'question',
-                            $question->id()
-                        ),
-                        FORMAT_HTML,
-                        ['noclean' => true]
-                    );
-                    $response->results = $this->questionnaire->renderer->results_output(
-                        $question,
-                        $ridlist,
-                        $sort,
-                        $anonymous,
-                        $pdf
-                    );
-                    $this->questionnaire->page->add_to_page('responses', $response);
-                } else {
-                    $this->questionnaire->page->add_to_page(
-                        'responses',
-                        $this->questionnaire->renderer->container_start('qn-container')
-                    );
-                    if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
-                        $this->questionnaire->page->add_to_page(
-                            'responses',
-                            $this->questionnaire->renderer->container_start('qn-info')
-                        );
-                        $this->questionnaire->page->add_to_page(
-                            'responses',
-                            $this->questionnaire->renderer->heading($qnum, 2, 'qn-number')
-                        );
-                        $this->questionnaire->page->add_to_page(
-                            'responses',
-                            $this->questionnaire->renderer->container_end()
-                        );
-                    }
-                    $this->questionnaire->page->add_to_page(
-                        'responses',
-                        $this->questionnaire->renderer->container_start('qn-content')
-                    );
-                    $this->questionnaire->page->add_to_page(
-                        'responses',
-                        $this->questionnaire->renderer->container(
-                            format_text(
-                                file_rewrite_pluginfile_urls(
-                                    $displaycontent,
-                                    'pluginfile.php',
-                                    $question->context->id,
-                                    'mod_questionnaire',
-                                    'question',
-                                    $question->id()
-                                ),
-                                FORMAT_HTML,
-                                ['noclean' => true]
-                            ),
-                            'qn-question'
-                        )
-                    );
-                    $this->questionnaire->page->add_to_page(
-                        'responses',
-                        $this->questionnaire->renderer->results_output($question, $ridlist, $sort, $anonymous)
-                    );
-                    $this->questionnaire->page->add_to_page(
-                        'responses',
-                        $this->questionnaire->renderer->container_end()
-                    );
-                    $this->questionnaire->page->add_to_page(
-                        'responses',
-                        $this->questionnaire->renderer->container_end()
-                    );
-                }
+        $viewsingleresponse = $this->questionnaire->can_view_single_response();
+        $respondenttype = $this->questionnaire->respondenttype();
+        $surveyid = $this->questionnaire->surveyid();
+        foreach ($questions as $question) {
+            if (isset($question->responsetype) && is_object($question->responsetype)) {
+                $question->responsetype->set_display_context($viewsingleresponse, $respondenttype, $surveyid);
             }
-        } finally {
-            $questionnaire = $prevquestionnaire;
+            if ($question->typeid() == QUESPAGEBREAK) {
+                continue;
+            }
+            if ($question->is_numbered()) {
+                $qnum++;
+            }
+            $displaycontent = $question->content();
+            if ($displaycontent == '<p>  </p>') {
+                $displaycontent = '';
+            }
+            if ($pdf) {
+                $response = new stdClass();
+                if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
+                    $response->qnum = $qnum;
+                }
+                $response->qcontent = format_text(
+                    file_rewrite_pluginfile_urls(
+                        $displaycontent,
+                        'pluginfile.php',
+                        $question->context->id,
+                        'mod_questionnaire',
+                        'question',
+                        $question->id()
+                    ),
+                    FORMAT_HTML,
+                    ['noclean' => true]
+                );
+                $response->results = $this->questionnaire->renderer->results_output(
+                    $question,
+                    $ridlist,
+                    $sort,
+                    $anonymous,
+                    $pdf
+                );
+                $this->questionnaire->page->add_to_page('responses', $response);
+            } else {
+                $this->questionnaire->page->add_to_page(
+                    'responses',
+                    $this->questionnaire->renderer->container_start('qn-container')
+                );
+                if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->container_start('qn-info')
+                    );
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->heading($qnum, 2, 'qn-number')
+                    );
+                    $this->questionnaire->page->add_to_page(
+                        'responses',
+                        $this->questionnaire->renderer->container_end()
+                    );
+                }
+                $this->questionnaire->page->add_to_page(
+                    'responses',
+                    $this->questionnaire->renderer->container_start('qn-content')
+                );
+                $this->questionnaire->page->add_to_page(
+                    'responses',
+                    $this->questionnaire->renderer->container(
+                        format_text(
+                            file_rewrite_pluginfile_urls(
+                                $displaycontent,
+                                'pluginfile.php',
+                                $question->context->id,
+                                'mod_questionnaire',
+                                'question',
+                                $question->id()
+                            ),
+                            FORMAT_HTML,
+                            ['noclean' => true]
+                        ),
+                        'qn-question'
+                    )
+                );
+                $this->questionnaire->page->add_to_page(
+                    'responses',
+                    $this->questionnaire->renderer->results_output($question, $ridlist, $sort, $anonymous)
+                );
+                $this->questionnaire->page->add_to_page(
+                    'responses',
+                    $this->questionnaire->renderer->container_end()
+                );
+                $this->questionnaire->page->add_to_page(
+                    'responses',
+                    $this->questionnaire->renderer->container_end()
+                );
+            }
         }
     }
 

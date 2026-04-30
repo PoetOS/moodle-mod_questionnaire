@@ -177,15 +177,15 @@ class text extends responsetype {
 
         // If array element is an object, outputting non-numeric responses.
         if (is_object(reset($weights))) {
-            global $CFG, $SESSION, $questionnaire, $DB;
-            $viewsingleresponse = $questionnaire->capabilities->viewsingleresponse;
-            $nonanonymous = $questionnaire->respondenttype != 'anonymous';
+            global $CFG, $SESSION, $DB;
+            $viewsingleresponse = $this->canviewsingleresponse;
+            $nonanonymous = $this->displayrespondenttype !== 'anonymous';
             if ($viewsingleresponse && $nonanonymous) {
                 $currentgroupid = '';
                 if (isset($SESSION->questionnaire->currentgroupid)) {
                     $currentgroupid = $SESSION->questionnaire->currentgroupid;
                 }
-                $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;sid=' . $questionnaire->survey->id .
+                $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;sid=' . $this->displaysurveysid .
                     '&currentgroupid=' . $currentgroupid;
             }
             $users = [];
