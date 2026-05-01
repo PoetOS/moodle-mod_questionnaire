@@ -3587,6 +3587,9 @@ class questionnaire {
         $currentgroupid = 0,
         $outputtarget = 'html'
     ) {
+        if (!$this->can_view_response($rid)) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
         $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
 
         $i = 0;
