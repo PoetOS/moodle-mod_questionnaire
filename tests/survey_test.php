@@ -33,7 +33,6 @@ use mod_questionnaire\local\db\survey_record;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/survey_testable.php');
 
 /**

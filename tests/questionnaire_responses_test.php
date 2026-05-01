@@ -31,7 +31,6 @@ use mod_questionnaire\local\response\questionnaire_responses;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 /**
  * Unit tests for mod_questionnaire\local\response\questionnaire_responses static methods.

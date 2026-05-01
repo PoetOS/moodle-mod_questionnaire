@@ -21,7 +21,6 @@ use mod_questionnaire\generator\question_response,
     mod_questionnaire\local\question\question;
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php');
 
 /**
