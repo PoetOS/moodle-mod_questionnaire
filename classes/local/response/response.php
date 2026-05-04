@@ -43,6 +43,12 @@ class response {
      */
     public array $answers = [];
 
+    /** @var int Current section number; set by the mobile app flow to track navigation state. */
+    public int $sec = 0;
+
+    /** @var int Response ID alias; set by callers that pass this object to response_insert(). */
+    public int $rid = 0;
+
     /**
      * Construct from a response_record.
      *
