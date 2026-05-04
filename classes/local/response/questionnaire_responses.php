@@ -353,7 +353,6 @@ class questionnaire_responses {
         if (empty($responsedata->rid)) {
             $response = \mod_questionnaire\local\response\response::create($this->questionnaire->id(), $userid);
             $responsedata->rid = $response->id();
-            $responsedata->id = $responsedata->rid;
         } else {
             $response = new \mod_questionnaire\local\response\response(
                 new \mod_questionnaire\local\db\response_record($responsedata->rid)
