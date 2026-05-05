@@ -57,7 +57,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             'select',
             'qtype',
             get_string('qtype', 'questionnaire'),
-            \mod_questionnaire\questionnaire::response_frequency_options()
+            \mod_questionnaire\form_options::response_frequency()
         );
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
 
@@ -67,7 +67,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             'select',
             'respondenttype',
             get_string('respondenttype', 'questionnaire'),
-            \mod_questionnaire\questionnaire::respondent_type_options()
+            \mod_questionnaire\form_options::respondent_type()
         );
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
@@ -76,7 +76,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             'select',
             'respview',
             get_string('responseview', 'questionnaire'),
-            \mod_questionnaire\questionnaire::response_viewer_options()
+            \mod_questionnaire\form_options::response_viewer()
         );
         $mform->addHelpButton('respview', 'responseview', 'questionnaire');
 
@@ -100,7 +100,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             'select',
             'autonum',
             get_string('autonumbering', 'questionnaire'),
-            \mod_questionnaire\questionnaire::auto_numbering_options()
+            \mod_questionnaire\form_options::auto_numbering()
         );
         $mform->addHelpButton('autonum', 'autonumbering', 'questionnaire');
         // Default = autonumber both questions and pages.

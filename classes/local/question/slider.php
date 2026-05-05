@@ -114,7 +114,7 @@ class slider extends question {
             'M.mod_questionnaire.init_slider',
             null,
             false,
-            \mod_questionnaire\questionnaire::js_module()
+            \mod_questionnaire\form_options::js_module()
         );
         $extradata = json_decode($this->extradata());
         $questiontags = new \stdClass();
@@ -140,7 +140,7 @@ class slider extends question {
             'M.mod_questionnaire.init_slider',
             null,
             false,
-            \mod_questionnaire\questionnaire::js_module()
+            \mod_questionnaire\form_options::js_module()
         );
 
         $resptags = new \stdClass();

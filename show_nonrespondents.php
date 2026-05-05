@@ -508,7 +508,7 @@ if (!$nonrespondents) {
             maxlength="255" name="subject" value="' . $subject . '" />';
         $format = '';
         $editor = editors_get_preferred_editor();
-        $editor->use_editor($id, questionnaire::editor_options($context));
+        $editor->use_editor($id, \mod_questionnaire\form_options::editor($context));
         $texteditor = html_writer::tag(
             'div',
             html_writer::tag(

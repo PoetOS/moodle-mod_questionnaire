@@ -557,7 +557,9 @@ switch ($action) {
             // Emailreport button selected.
             if (get_config('questionnaire', 'allowemailreporting') && (!empty($emailroles) || !empty($emailextra))) {
                 require_once('savefileformat.php');
-                $users = !empty($emailroles) ? $questionnaire->get_notifiable_users($USER->id) : [];
+                $users = !empty($emailroles)
+                    ? (new \mod_questionnaire\submission_notifier($questionnaire))->get_notifiable_users($USER->id)
+                    : [];
                 $otheremails = explode(',', $emailextra);
                 if (!empty($users) || !empty($otheremails)) {
                     $thisurl = new moodle_url(

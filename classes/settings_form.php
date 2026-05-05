@@ -38,7 +38,7 @@ class settings_form extends \moodleform {
 
         $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
 
-        $realms = \mod_questionnaire\questionnaire::realm_options();
+        $realms = \mod_questionnaire\form_options::realm();
         if (!$questionnaire->can_create_templates()) {
             unset($realms['template']);
         }
