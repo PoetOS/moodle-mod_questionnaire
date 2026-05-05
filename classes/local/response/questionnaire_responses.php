@@ -419,7 +419,7 @@ class questionnaire_responses {
     public function commit_submission_response($rid, $quser) {
         $this->response_commit($rid);
 
-        \mod_questionnaire\questionnaire::update_grades($this->questionnaire, $quser);
+        \mod_questionnaire\gradebook::update_grades($this->questionnaire, $quser);
 
         $completion = new \completion_info($this->questionnaire->course());
         if ($completion->is_enabled($this->questionnaire->coursemodule()) && $this->questionnaire->completionsubmit()) {

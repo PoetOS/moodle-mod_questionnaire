@@ -155,7 +155,7 @@ class renderer extends \plugin_renderer_base {
             'M.mod_questionnaire.init_attempt_form',
             null,
             false,
-            \mod_questionnaire\questionnaire::js_module()
+            \mod_questionnaire\form_options::js_module()
         );
         return $output;
     }

@@ -251,7 +251,7 @@ function questionnaire_grades($questionnaireid) {
  * @return array array of grades, false if none
  */
 function questionnaire_get_user_grades($questionnaire, $userid = 0) {
-    return \mod_questionnaire\questionnaire::get_user_grades($questionnaire, $userid);
+    return \mod_questionnaire\gradebook::get_user_grades($questionnaire, $userid);
 }
 
 /**
@@ -262,7 +262,7 @@ function questionnaire_get_user_grades($questionnaire, $userid = 0) {
  * @param bool $nullifnone
  */
 function questionnaire_update_grades($questionnaire = null, $userid = 0, $nullifnone = true) {
-    \mod_questionnaire\questionnaire::update_grades($questionnaire, $userid, $nullifnone);
+    \mod_questionnaire\gradebook::update_grades($questionnaire, $userid, $nullifnone);
 }
 
 /**
@@ -273,7 +273,7 @@ function questionnaire_update_grades($questionnaire = null, $userid = 0, $nullif
  * @return int 0 if ok, error code otherwise
  */
 function questionnaire_grade_item_update($questionnaire, $grades = null) {
-    return \mod_questionnaire\questionnaire::grade_item_update($questionnaire, $grades);
+    return \mod_questionnaire\gradebook::grade_item_update($questionnaire, $grades);
 }
 
 /**
