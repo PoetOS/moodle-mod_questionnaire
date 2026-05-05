@@ -34,12 +34,10 @@ $qid = optional_param('qid', 0, PARAM_INT);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if ($id) {
-    // Normal module instance — use new domain class.
+    // Normal module instance.
     $questionnaire = questionnaire_class::from_cmid($id);
     $course = $questionnaire->course();
     $cm = $questionnaire->coursemodule();
-    $canpreview = $questionnaire->can_preview();
-    $canprintblank = $questionnaire->can_print_blank();
 } else {
     // Survey-only (template/public preview from "Add questionnaire" page).
     if (!$survey = $DB->get_record('questionnaire_survey', ['id' => $sid])) {
@@ -50,26 +48,13 @@ if ($id) {
     }
     $cm = !empty($qid) ? get_coursemodule_from_instance('questionnaire', $qid, $course->id) : false;
     if ($cm) {
-        // Real CM available — use new class.
         $questionnaire = questionnaire_class::from_cmid($cm->id);
-        $canpreview = $questionnaire->can_preview();
-        $canprintblank = $questionnaire->can_print_blank();
     } else {
-        // No module instance (browsing public/template surveys) — keep legacy class.
-        require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-        $dummyq = new stdClass();
-        $dummyq->id = 0;
-        $dummyq->course = $course->id;
-        $dummyq->name = $survey->title;
-        $dummyq->sid = $sid;
-        $dummyq->resume = 0;
-        $questionnaire = new questionnaire($course, false, 0, $dummyq);
-        $canpreview = (!isset($questionnaire->capabilities) &&
-                       has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
-                      (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
-        $canprintblank = isset($questionnaire->capabilities) ? $questionnaire->capabilities->printblank : false;
+        $questionnaire = questionnaire_class::from_survey($sid, $course);
     }
 }
+$canpreview = $questionnaire->can_preview();
+$canprintblank = $questionnaire->can_print_blank();
 
 // Check login and get context.
 // Do not require login if this questionnaire is viewed from the Add questionnaire page
@@ -166,16 +151,11 @@ echo $questionnaire->renderer->footer($course);
 
 // Log this questionnaire preview (skip in survey-only mode — no real module instance).
 if ($questionnaire->id() > 0) {
-    if ($questionnaire instanceof questionnaire_class) {
-        $eventcontext = $questionnaire->context();
-    } else {
-        $eventcontext = context_module::instance($questionnaire->cm->id);
-    }
     $anonymous = $questionnaire->respondenttype() == 'anonymous';
     $event = \mod_questionnaire\event\questionnaire_previewed::create([
         'objectid' => $questionnaire->id(),
         'anonymous' => $anonymous,
-        'context' => $eventcontext,
+        'context' => $questionnaire->context(),
     ]);
     $event->trigger();
 }
