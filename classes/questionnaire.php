@@ -114,13 +114,18 @@ class questionnaire {
     /**
      * Construct from a questionnaire instance id, optionally with a pre-loaded persistent and cm.
      *
+     * Pass all arguments null to construct an "empty" instance for survey-only mode;
+     * the from_survey() factory uses this path to populate a survey without a module
+     * instance or course module (e.g. previewing template/public surveys before
+     * attaching them to a course).
+     *
      * @param int|null $mid Instance id (questionnaire.id).
      * @param int|null $cmid Course module id, if already known.
      * @param \cm_info|null $cm Optional pre-loaded cm_info object.
      */
     public function __construct(?int $mid = null, ?int $cmid = null, ?cm_info $cm = null) {
         if (empty($mid) && empty($cmid) && empty($cm)) {
-            throw new \coding_exception('Modulerecord id, coursemodule id or coursemodule must be provided.');
+            return;
         }
 
         if (!empty($mid)) {
@@ -181,21 +186,39 @@ class questionnaire {
     }
 
     /**
-     * Get the id of the questionnaire instance.
+     * Return a survey-only instance: no module record, no course module, no module context.
+     *
+     * Used by preview.php to preview template or public surveys before they are
+     * attached to a course module. The returned instance has id() == 0 and
+     * coursemodule() == null; context() falls back to the course context.
+     *
+     * @param int $sid Survey id.
+     * @param \stdClass $course Course record the survey is being previewed under.
+     * @return self
+     */
+    public static function from_survey(int $sid, \stdClass $course): self {
+        $instance = new self();
+        $instance->course = $course;
+        $instance->survey = survey::from_sid($sid);
+        return $instance;
+    }
+
+    /**
+     * Get the id of the questionnaire instance. Returns 0 in survey-only mode.
      *
      * @return int
      */
     public function id(): int {
-        return $this->modulerecord->get('id');
+        return $this->modulerecord?->get('id') ?? 0;
     }
 
     /**
-     * Get the name of the questionnaire.
+     * Get the name of the questionnaire. Falls back to the survey title in survey-only mode.
      *
      * @return string
      */
     public function name(): string {
-        return $this->modulerecord->get('name');
+        return $this->modulerecord?->get('name') ?? ($this->survey?->title() ?? '');
     }
 
     /**
@@ -204,7 +227,7 @@ class questionnaire {
      * @return string
      */
     public function intro(): string {
-        return $this->modulerecord->get('intro');
+        return $this->modulerecord?->get('intro') ?? '';
     }
 
     /**
@@ -213,7 +236,7 @@ class questionnaire {
      * @return int
      */
     public function courseid(): int {
-        return $this->modulerecord->get('course');
+        return (int) ($this->modulerecord?->get('course') ?? $this->course->id);
     }
 
     /**
@@ -235,21 +258,21 @@ class questionnaire {
     }
 
     /**
-     * Get the course module info object.
+     * Get the course module info object. Returns null in survey-only mode.
      *
-     * @return \cm_info
+     * @return \cm_info|null
      */
-    public function coursemodule(): \cm_info {
+    public function coursemodule(): ?\cm_info {
         return $this->coursemodule;
     }
 
     /**
-     * Get the context for this questionnaire.
+     * Get the context for this questionnaire. Falls back to the course context in survey-only mode.
      *
-     * @return context_module
+     * @return \context
      */
-    public function context(): context_module {
-        return $this->context;
+    public function context(): \context {
+        return $this->context ?? \context_course::instance($this->course->id);
     }
 
     /**
@@ -312,7 +335,7 @@ class questionnaire {
      * @return string
      */
     public function respondenttype(): string {
-        return $this->modulerecord->get('respondenttype') ?? 'fullname';
+        return $this->modulerecord?->get('respondenttype') ?? 'fullname';
     }
 
     /**
@@ -847,9 +870,15 @@ class questionnaire {
     /**
      * True if the current user can print a blank copy of this questionnaire.
      *
+     * Returns false in survey-only mode (no real module instance, so the print.php
+     * link cannot be built).
+     *
      * @return bool
      */
     public function can_print_blank(): bool {
+        if (empty($this->modulerecord)) {
+            return false;
+        }
         return has_capability('mod/questionnaire:printblank', $this->context);
     }
 
@@ -3190,7 +3219,8 @@ class questionnaire {
             $i += count($questionsbysec[$j - 1]);
         }
 
-        $action = $CFG->wwwroot . '/mod/questionnaire/preview.php?id=' . $this->coursemodule()->id;
+        $action = $CFG->wwwroot . '/mod/questionnaire/preview.php?' .
+            ($this->coursemodule() ? 'id=' . $this->coursemodule()->id : 'sid=' . $this->surveyid());
         $this->page->add_to_page('formstart', $this->renderer->complete_formstart($action));
 
         $formdata = new \stdClass();
@@ -3267,7 +3297,8 @@ class questionnaire {
         }
 
         if ($referer == 'preview' && !$blankquestionnaire) {
-            $url = $CFG->wwwroot . '/mod/questionnaire/preview.php?id=' . $this->coursemodule()->id;
+            $url = $CFG->wwwroot . '/mod/questionnaire/preview.php?' .
+                ($this->coursemodule() ? 'id=' . $this->coursemodule()->id : 'sid=' . $this->surveyid());
             $this->page->add_to_page(
                 'formend',
                 $this->renderer->print_preview_formend(
