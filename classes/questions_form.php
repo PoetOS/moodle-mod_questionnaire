@@ -446,11 +446,11 @@ class questions_form extends \moodleform {
         $mform->addElement('header', 'deletionq', get_string('deletionquetions', 'questionnaire'));
         $mform->addHelpButton('deletionq', 'deletionquetions', 'questionnaire');
         $mform->addElement('html', '<div class="qcontainer">');
-        $deletequestions = $questionnaire->get_delete_questions();
+        $deletequestions = $questionnaire->survey()->get_delete_questions();
         if (!empty($deletequestions)) {
             $restoreimg = $questionnaire->renderer->image_url('i/up');
             $deleteimg = $questionnaire->renderer->image_url('t/delete');
-            $rangetimecrontask = questionnaire::question_deletion_duration();
+            $rangetimecrontask = survey::question_deletion_duration();
             foreach ($deletequestions as $deletequestion) {
                 $delquestiongroup = [];
                 // Preparing deleted time to display time permanently question.

@@ -57,7 +57,7 @@ if ($qid) {
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 
-$deletequestions = $questionnaire->get_delete_questions();
+$deletequestions = $questionnaire->survey()->get_delete_questions();
 $questions = $questionnaire->questions();
 
 // Add renderer and page objects to the questionnaire object for display use.
@@ -141,10 +141,10 @@ if ($delq) {
 
     // Log question deleted event.
     $questiontype = \mod_questionnaire\local\question\question::qtypename($questions[$qid]->typeid());
-    questionnaire::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
+    survey::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
 
     if ($questionnairehasdependencies) {
-        $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
+        $SESSION->questionnaire->validateresults = $questionnaire->survey()->check_page_breaks();
     }
     $reload = true;
 }
@@ -153,11 +153,11 @@ if ($delq) {
 if ($delpermanentlyq) {
     $qid = $delpermanentlyq;
     $sid = $questionnaire->surveyid();
-    questionnaire::delete_question_permanently($qid, $sid);
+    survey::delete_question_permanently($qid, $sid);
     $deletedquestion = $deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
         $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid());
-        questionnaire::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
+        survey::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
         $PAGE->set_url($url->out(false));
         $reload = true;
@@ -169,7 +169,7 @@ if ($restoreq) {
     $qid = $restoreq;
     $qdeleted = $deletequestions[$qid] ?? false;
     if ($qid && $qdeleted) {
-        questionnaire::restore_deleted_question($qid, $qdeleted->surveyid());
+        survey::restore_deleted_question($qid, $qdeleted->surveyid());
     }
     $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
     $PAGE->set_url($url->out(false));
@@ -284,17 +284,17 @@ if ($action == 'main') {
             // No need to move question if new position = old position!
             $qpos = key($qformdata->moveherebutton);
             if ($qformdata->moveq != $qpos) {
-                $questionnaire->move_question($qformdata->moveq, $qpos);
+                $questionnaire->survey()->move_question($qformdata->moveq, $qpos);
             }
             if ($questionnairehasdependencies) {
-                $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
+                $SESSION->questionnaire->validateresults = $questionnaire->survey()->check_page_breaks();
             }
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
             redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $cm->id);
             $reload = true;
         } else if (isset($qformdata->validate)) {
             // Validates page breaks for depend questions.
-            $SESSION->questionnaire->validateresults = $questionnaire->check_page_breaks();
+            $SESSION->questionnaire->validateresults = $questionnaire->survey()->check_page_breaks();
             $reload = true;
         } else if (isset($qformdata->deletebutton)) {
             $action = questionnaire::confirm_delete_param();
@@ -309,7 +309,7 @@ if ($action == 'main') {
         }
     }
 } else if ($action == 'question') {
-    $question = $questionnaire->prep_question_for_form($qid, $qtype);
+    $question = $questionnaire->survey()->prep_question_for_form($qid, $qtype);
     $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
     $questionsform->set_data($question->form_data());
     if ($questionsform->is_cancelled()) {
@@ -329,7 +329,7 @@ if ($action == 'main') {
             $qformdata->required = 'n';
         }
 
-        $questionnaire->check_page_breaks();
+        $questionnaire->survey()->check_page_breaks();
         $SESSION->questionnaire->required = $qformdata->required;
         $SESSION->questionnaire->typeid = $qformdata->typeid;
         // Switch to main screen.
@@ -356,7 +356,7 @@ if ($action == 'main') {
 if ($reload) {
     unset($questionsform);
     $questionnaire = questionnaire::from_cmid($id);
-    $deletequestions = $questionnaire->get_delete_questions();
+    $deletequestions = $questionnaire->survey()->get_delete_questions();
     $questions = $questionnaire->questions();
     // Add renderer and page objects to the questionnaire object for display use.
     $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
@@ -375,7 +375,7 @@ if ($reload) {
         }
         $questionsform->set_data($sdata);
     } else if ($action == 'question') {
-        $question = $questionnaire->prep_question_for_form($qid, $qtype);
+        $question = $questionnaire->survey()->prep_question_for_form($qid, $qtype);
         $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
         $questionsform->set_data($question->form_data());
     }
