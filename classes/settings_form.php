@@ -39,10 +39,10 @@ class settings_form extends \moodleform {
         $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
 
         $realms = \mod_questionnaire\form_options::realm();
-        if (!$questionnaire->can_create_templates()) {
+        if (!$questionnaire->capabilities()->can_create_templates()) {
             unset($realms['template']);
         }
-        if (!$questionnaire->can_create_public()) {
+        if (!$questionnaire->capabilities()->can_create_public()) {
             unset($realms['public']);
         }
         if (isset($realms['public']) || isset($realms['template'])) {

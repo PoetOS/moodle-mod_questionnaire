@@ -48,7 +48,7 @@ if (!empty($rid)) {
 }
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
-if (!($questionnaire->can_view() && (($rid == 0) || $questionnaire->can_view_response($rid)))) {
+if (!($questionnaire->capabilities()->can_view() && (($rid == 0) || $questionnaire->capabilities()->can_view_response($rid)))) {
     // Should never happen, unless called directly by a snoop...
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }

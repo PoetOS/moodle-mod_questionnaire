@@ -86,8 +86,8 @@ if ($outputtarget == 'pdf') {
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = $questionnaire->context();
 if (
-    !$questionnaire->can_view_all_responses(null, true) &&
-    !($individualresponse && $questionnaire->can_view_response($rid))
+    !$questionnaire->capabilities()->can_view_all_responses(null, true) &&
+    !($individualresponse && $questionnaire->capabilities()->can_view_response($rid))
 ) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
@@ -150,7 +150,7 @@ if ($groupmode > 0) {
     if ($groupmode == 1) {
         $questionnairegroups = groups_get_all_groups($course->id, $userid);
     }
-    if ($groupmode == 2 || $questionnaire->can_view_all_groups()) {
+    if ($groupmode == 2 || $questionnaire->capabilities()->can_view_all_groups()) {
         $questionnairegroups = groups_get_all_groups($course->id);
     }
 
@@ -163,13 +163,13 @@ if ($groupmode > 0) {
         if ($groupscount === 0 && $groupmode == 1) {
             $currentgroupid = 0;
         }
-        if ($groupmode == 1 && !$questionnaire->can_view_all_groups() && $currentgroupid == 0) {
+        if ($groupmode == 1 && !$questionnaire->capabilities()->can_view_all_groups() && $currentgroupid == 0) {
             $currentgroupid = $firstgroupid;
         }
     } else {
         // Groupmode = separate groups but user is not member of any group
         // and does not have moodle/site:accessallgroups capability -> refuse view responses.
-        if (!$questionnaire->can_view_all_groups()) {
+        if (!$questionnaire->capabilities()->can_view_all_groups()) {
             $currentgroupid = 0;
         }
     }

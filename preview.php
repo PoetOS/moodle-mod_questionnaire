@@ -53,8 +53,8 @@ if ($id) {
         $questionnaire = questionnaire_class::from_survey($sid, $course);
     }
 }
-$canpreview = $questionnaire->can_preview();
-$canprintblank = $questionnaire->can_print_blank();
+$canpreview = $questionnaire->capabilities()->can_preview();
+$canprintblank = $questionnaire->capabilities()->can_print_blank();
 
 // Check login and get context.
 // Do not require login if this questionnaire is viewed from the Add questionnaire page

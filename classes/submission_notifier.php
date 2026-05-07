@@ -35,6 +35,8 @@ class submission_notifier {
     private questionnaire $questionnaire;
 
     /**
+     * Constructor.
+     *
      * @param questionnaire $questionnaire
      */
     public function __construct(questionnaire $questionnaire) {
