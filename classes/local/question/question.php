@@ -1877,7 +1877,7 @@ abstract class question {
             $this->update($questionrecord, false);
 
             if ($questionnaire->has_dependencies()) {
-                $questionnaire->check_page_breaks();
+                $questionnaire->survey()->check_page_breaks();
             }
         } else {
             // Create new question:

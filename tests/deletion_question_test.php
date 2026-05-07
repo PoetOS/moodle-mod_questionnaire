@@ -66,7 +66,7 @@ final class deletion_question_test extends \advanced_testcase {
     public function test_restore_deleted_question(): void {
         global $DB;
         $question = $DB->get_record_select('questionnaire_question', 'name = ?', ['DEMODATE1']);
-        questionnaire::restore_deleted_question($question->id, $question->surveyid);
+        survey::restore_deleted_question($question->id, $question->surveyid);
         $question = $DB->get_record('questionnaire_question', ['id' => $question->id]);
         $this->assertEquals($question->position, 1);
     }
@@ -81,7 +81,7 @@ final class deletion_question_test extends \advanced_testcase {
     public function test_delete_permanently_question(): void {
         global $DB;
         $question = $DB->get_record_select('questionnaire_question', 'name = ?', ['DEMODATE1']);
-        questionnaire::delete_question_permanently($question->id, $question->surveyid);
+        survey::delete_question_permanently($question->id, $question->surveyid);
         $question = $DB->get_record('questionnaire_question', ['id' => $question->id]);
         $this->assertEquals($question, false);
     }

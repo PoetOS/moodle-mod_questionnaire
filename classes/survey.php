@@ -24,6 +24,7 @@ use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question_type;
+use mod_questionnaire\local\response\questionnaire_responses;
 use context_module;
 use stdClass;
 
@@ -513,6 +514,292 @@ class survey {
         return $this->questionsbysec;
     }
 
+    // Question administration.
+
+    /**
+     * Return the soft-deleted questions for this survey.
+     *
+     * @return question[] Keyed by question id.
+     */
+    public function get_delete_questions(): array {
+        global $DB;
+        $sql = "SELECT *
+                  FROM {questionnaire_question}
+                 WHERE deleted IS NOT NULL
+                   AND surveyid = ? AND typeid != ?
+              ORDER BY deleted DESC";
+        $deletequestions = [];
+        if ($records = $DB->get_records_sql($sql, [$this->id(), QUESPAGEBREAK])) {
+            foreach ($records as $record) {
+                $deletequestions[$record->id] = question::question_builder(
+                    $record->typeid,
+                    $record,
+                    $this->context
+                );
+            }
+        }
+        return $deletequestions;
+    }
+
+    /**
+     * Move a question to a new position, re-numbering surrounding questions.
+     *
+     * @param int $moveqid    Id of the question to move.
+     * @param int $movetopos  Target position (1-based).
+     * @return bool
+     */
+    public function move_question(int $moveqid, int $movetopos): bool {
+        global $DB;
+
+        $questions = $this->questions();
+        if (!is_array($questions) || !isset($questions[$moveqid])) {
+            return false;
+        }
+        $movequestion = $questions[$moveqid];
+        $index = 1;
+        foreach ($questions as $question) {
+            if ($index == $movetopos) {
+                $index++;
+            }
+            if ($question->id() == $movequestion->id()) {
+                $DB->update_record('questionnaire_question', (object)['id' => $movequestion->id(), 'position' => $movetopos]);
+                continue;
+            }
+            $DB->update_record('questionnaire_question', (object)['id' => $question->id(), 'position' => $index]);
+            $index++;
+        }
+        return true;
+    }
+
+    /**
+     * Validate that page breaks are correctly placed for dependent questions.
+     *
+     * Removes redundant consecutive page breaks and inserts missing page breaks
+     * between questions that have different dependency chains.
+     *
+     * @return false|string Status message, or false on failure.
+     */
+    public function check_page_breaks() {
+        global $DB;
+        $msg = '';
+        $newpbids = [];
+        $delpb = 0;
+        $sid = $this->id();
+        $positions = [];
+        if (
+            $questions = $DB->get_records_select(
+                'questionnaire_question',
+                'surveyid = :sid AND deleted IS NULL',
+                ['sid' => $sid],
+                'position'
+            )
+        ) {
+            foreach ($questions as $key => $qu) {
+                $newqu = new \stdClass();
+                $newqu->questionid = $key;
+                $newqu->typeid = $qu->typeid;
+                $newqu->qname = $qu->name;
+                $newqu->qpos = $qu->position;
+                $dependencies = $DB->get_records(
+                    'questionnaire_dependency',
+                    ['questionid' => $key, 'surveyid' => $sid],
+                    'id ASC',
+                    'id, dependquestionid, dependchoiceid, dependlogic'
+                );
+                $newqu->dependencies = $dependencies ?? [];
+                $positions[] = (array)$newqu;
+            }
+        }
+        $count = count($positions);
+
+        for ($i = $count - 1; $i >= 0; $i--) {
+            $qu = $positions[$i];
+            $questionnb = $i;
+            $prevqu = null;
+            $prevtypeid = null;
+            if ($i > 0) {
+                $prevqu = $positions[$i - 1];
+                $prevtypeid = $prevqu['typeid'];
+            }
+            if ($qu['typeid'] == QUESPAGEBREAK) {
+                $questionnb--;
+                if ($prevtypeid == QUESPAGEBREAK || $i == $count - 1 || $qu['qpos'] == 1) {
+                    $qid = $qu['questionid'];
+                    $delpb++;
+                    $msg .= get_string('checkbreaksremoved', 'questionnaire', $delpb) . '<br />';
+                    if (
+                        $questions = $DB->get_records_select(
+                            'questionnaire_question',
+                            'surveyid = :sid AND deleted IS NULL',
+                            ['sid' => $sid],
+                            'id'
+                        )
+                    ) {
+                        $DB->set_field(
+                            'questionnaire_question',
+                            'deleted',
+                            time(),
+                            ['id' => $qid, 'surveyid' => $sid]
+                        );
+                        $select = 'surveyid = :sid AND deleted IS NULL AND position > :pos';
+                        $records = $DB->get_records_select(
+                            'questionnaire_question',
+                            $select,
+                            ['sid' => $sid, 'pos' => $questions[$qid]->position],
+                            'position ASC'
+                        );
+                        if ($records) {
+                            foreach ($records as $record) {
+                                $DB->set_field(
+                                    'questionnaire_question',
+                                    'position',
+                                    $record->position - 1,
+                                    ['id' => $record->id]
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            if ($qu['typeid'] != QUESPAGEBREAK) {
+                if ($prevqu) {
+                    $prevdependencies = $prevqu['dependencies'];
+                    $outerdependencies = count($qu['dependencies']) >= count($prevdependencies) ?
+                        $qu['dependencies'] : $prevdependencies;
+                    $innerdependencies = count($qu['dependencies']) < count($prevdependencies) ?
+                        $qu['dependencies'] : $prevdependencies;
+
+                    $okeys = [];
+                    $ikeys = [];
+                    foreach ($outerdependencies as $okey => $outerdependency) {
+                        foreach ($innerdependencies as $ikey => $innerdependency) {
+                            if (
+                                $outerdependency->dependquestionid === $innerdependency->dependquestionid &&
+                                $outerdependency->dependchoiceid === $innerdependency->dependchoiceid &&
+                                $outerdependency->dependlogic === $innerdependency->dependlogic
+                            ) {
+                                $okeys[] = $okey;
+                                $ikeys[] = $ikey;
+                            }
+                        }
+                    }
+
+                    foreach ($okeys as $key) {
+                        if (key_exists($key, $outerdependencies)) {
+                            unset($outerdependencies[$key]);
+                        }
+                    }
+                    foreach ($ikeys as $key) {
+                        if (key_exists($key, $innerdependencies)) {
+                            unset($innerdependencies[$key]);
+                        }
+                    }
+
+                    $diffdependencies = count($outerdependencies) + count($innerdependencies);
+
+                    if (
+                        ($prevtypeid != QUESPAGEBREAK && $diffdependencies != 0) ||
+                        (!isset($qu['dependencies']) && isset($prevdependencies))
+                    ) {
+                        $sql = "SELECT MAX(position) as maxpos
+                                  FROM {questionnaire_question}
+                                 WHERE surveyid = :sid
+                                   AND deleted IS NULL";
+                        if ($record = $DB->get_record_sql($sql, ['sid' => $sid])) {
+                            $pos = $record->maxpos + 1;
+                        } else {
+                            $pos = 1;
+                        }
+                        $question = new \stdClass();
+                        $question->surveyid = $sid;
+                        $question->typeid = QUESPAGEBREAK;
+                        $question->position = $pos;
+                        $question->content = 'break';
+
+                        if (!($newqid = $DB->insert_record('questionnaire_question', $question))) {
+                            return false;
+                        }
+                        $newpbids[] = $newqid;
+                        $this->add_questions();
+                        $this->move_question($newqid, $qu['qpos']);
+                    }
+                }
+            }
+        }
+        if (empty($newpbids) && !$msg) {
+            $msg = get_string('checkbreaksok', 'questionnaire');
+        } else if ($newpbids) {
+            $msg .= get_string('checkbreaksadded', 'questionnaire') . '&nbsp;';
+            $newpbids = array_reverse($newpbids);
+            $this->add_questions();
+            foreach ($newpbids as $newpbid) {
+                $msg .= $this->questions()[$newpbid]->position() . '&nbsp;';
+            }
+        }
+        return $msg;
+    }
+
+    /**
+     * Prepare a question object for display in the question editing form.
+     *
+     * Populates draft file areas and dependency arrays expected by questions_form.
+     *
+     * @param int $qid   0 when creating a new question; the existing question id when editing.
+     * @param int $qtype Question type id (used only when $qid is 0).
+     * @return question
+     */
+    public function prep_question_for_form(int $qid, int $qtype): question {
+        $cmid = $this->context->instanceid;
+        if ($qid != 0) {
+            $questions = $this->questions();
+            $question = clone($questions[$qid]);
+            $question->qid = $question->id();
+            $question->sid = $this->id();
+            $question->set_id($cmid);
+            $draftideditor = file_get_submitted_draft_itemid('question');
+            $content = file_prepare_draft_area(
+                $draftideditor,
+                $this->context->id,
+                'mod_questionnaire',
+                'question',
+                $qid,
+                ['subdirs' => true],
+                $question->content()
+            );
+            $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
+            if (isset($question->dependencies)) {
+                foreach ($question->dependencies as $dependencies) {
+                    if ($dependencies->dependandor === "and") {
+                        $question->dependquestionsand[] =
+                            $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
+                        $question->dependlogicand[] = $dependencies->dependlogic;
+                    } else if ($dependencies->dependandor === "or") {
+                        $question->dependquestionsor[] =
+                            $dependencies->dependquestionid . ',' . $dependencies->dependchoiceid;
+                        $question->dependlogicor[] = $dependencies->dependlogic;
+                    }
+                }
+            }
+        } else {
+            $question = question::question_builder($qtype);
+            $question->sid = $this->id();
+            $question->set_id($cmid);
+            $question->set_typeid($qtype);
+            $draftideditor = file_get_submitted_draft_itemid('question');
+            $content = file_prepare_draft_area(
+                $draftideditor,
+                $this->context->id,
+                'mod_questionnaire',
+                'question',
+                0,
+                ['subdirs' => true],
+                ''
+            );
+            $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
+        }
+        return $question;
+    }
+
     // File areas.
 
     /**
@@ -608,6 +895,78 @@ class survey {
                 $survey = self::from_sid((int) $surveyrow->id);
                 $survey->delete();
             }
+        }
+    }
+
+    /**
+     * Return the configured duration (in seconds) before soft-deleted questions are permanently removed.
+     *
+     * The value comes from the questionnaire_questiondeletion plugin config. Callers should not need
+     * to know the config key — use this method instead.
+     *
+     * @return string|false Duration string, or false if not configured.
+     */
+    public static function question_deletion_duration() {
+        return get_config('questionnaire_questiondeletion', 'duration');
+    }
+
+    /**
+     * Permanently delete a soft-deleted question and all its associated response data.
+     *
+     * @param int $qid Question id.
+     * @param int $sid Survey id.
+     */
+    public static function delete_question_permanently(int $qid, int $sid): void {
+        global $DB;
+        $select = 'id = :id AND surveyid = :sid AND deleted IS NOT NULL';
+        $DB->delete_records_select('questionnaire_question', $select, ['id' => $qid, 'sid' => $sid]);
+        $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
+        questionnaire_responses::delete_responses_for_question($qid);
+        $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
+        $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
+    }
+
+    /**
+     * Trigger the question_deleted event for a specific course module context.
+     *
+     * @param int    $cmid         Course-module id.
+     * @param string $questiontype Short type name of the deleted question.
+     * @param int    $courseid     Course id.
+     */
+    public static function trigger_question_deleted_event(int $cmid, string $questiontype, int $courseid): void {
+        $context = context_module::instance($cmid);
+        $event = \mod_questionnaire\event\question_deleted::create([
+            'context'  => $context,
+            'courseid' => $courseid,
+            'other'    => ['questiontype' => $questiontype],
+        ]);
+        $event->trigger();
+    }
+
+    /**
+     * Restore a soft-deleted question, placing it at the end of the survey's question list.
+     *
+     * @param int $qid Question id.
+     * @param int $sid Survey id.
+     */
+    public static function restore_deleted_question(int $qid, int $sid): void {
+        global $DB;
+        $sql = "SELECT *, (
+                        SELECT position + 1
+                          FROM {questionnaire_question}
+                         WHERE surveyid = ?
+                           AND deleted IS NULL
+                      ORDER BY position DESC
+                         LIMIT 1) as lastposition
+                  FROM {questionnaire_question}
+                 WHERE id = ?
+                   AND surveyid = ?
+                   AND deleted IS NOT NULL";
+        $question = $DB->get_record_sql($sql, [$sid, $qid, $sid]);
+        if ($question) {
+            $question->deleted = null;
+            $question->position = $question->lastposition ?? 1;
+            $DB->update_record('questionnaire_question', $question);
         }
     }
 

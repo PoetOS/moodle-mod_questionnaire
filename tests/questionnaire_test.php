@@ -791,6 +791,6 @@ final class questionnaire_test extends \advanced_testcase {
     public function test_question_deletion_duration_returns_configured_value(): void {
         $this->resetAfterTest();
         set_config('duration', 7 * DAYSECS, 'questionnaire_questiondeletion');
-        $this->assertEquals(7 * DAYSECS, questionnaire::question_deletion_duration());
+        $this->assertEquals(7 * DAYSECS, survey::question_deletion_duration());
     }
 }

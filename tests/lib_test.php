@@ -370,13 +370,13 @@ final class lib_test extends \advanced_testcase {
         $DB->set_field('questionnaire_question', 'deleted', 1234567891, ['id' => $q3]);
 
         // Restore Q2.
-        questionnaire::restore_deleted_question($q2, $sid);
+        survey::restore_deleted_question($q2, $sid);
         $restoredq2 = $DB->get_record('questionnaire_question', ['id' => $q2]);
         $this->assertNull($restoredq2->deleted);
         $this->assertEquals(2, $restoredq2->position); // Should be after Q1.
 
         // Restore Q3.
-        questionnaire::restore_deleted_question($q3, $sid);
+        survey::restore_deleted_question($q3, $sid);
         $restoredq3 = $DB->get_record('questionnaire_question', ['id' => $q3]);
         $this->assertNull($restoredq3->deleted);
         $this->assertEquals(3, $restoredq3->position); // Should be after Q2.
