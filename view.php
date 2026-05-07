@@ -87,7 +87,7 @@ if (!groups_is_member($currentgroupid, $USER->id)) {
 $message = $questionnaire->user_access_messages($USER->id);
 if ($message !== null) {
     $questionnaire->page->add_to_page('message', $message);
-} else if ($questionnaire->user_can_take($USER->id)) {
+} else if ($questionnaire->capabilities()->user_can_take($USER->id)) {
     if ($questionnaire->questions()) { // Sanity check.
         if (!$questionnaire->user_has_saved_response($USER->id)) {
             $questionnaire->page->add_to_page(
@@ -112,7 +112,7 @@ if ($message !== null) {
     }
 }
 
-if ($questionnaire->can_edit_questions() && !$questionnaire->questions() && $questionnaire->is_active()) {
+if ($questionnaire->capabilities()->can_edit_questions() && !$questionnaire->questions() && $questionnaire->is_active()) {
     $questionnaire->page->add_to_page(
         'complete',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' .
@@ -138,7 +138,7 @@ if (isguestuser()) {
 
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
-if ($questionnaire->can_read_own_responses() && ($usernumresp > 0)) {
+if ($questionnaire->capabilities()->can_read_own_responses() && ($usernumresp > 0)) {
     $argstr = 'instance=' . $questionnaire->id() . '&user=' . $USER->id;
     if ($usernumresp > 1) {
         $titletext = get_string('viewyourresponses', 'questionnaire', $usernumresp);
@@ -153,7 +153,7 @@ if ($questionnaire->can_read_own_responses() && ($usernumresp > 0)) {
     );
 }
 
-if ($questionnaire->can_view_all_responses($usernumresp)) {
+if ($questionnaire->capabilities()->can_view_all_responses($usernumresp)) {
     $argstr = 'instance=' . $questionnaire->id() . '&group=' . $currentgroupid;
     $questionnaire->page->add_to_page(
         'allresponses',

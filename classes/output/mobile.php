@@ -156,7 +156,10 @@ class mobile {
 
             case 'review':
                 // If reviewing a submission.
-                if ($questionnaire->can_read_own_responses() && isset($args->submissionid) && !empty($args->submissionid)) {
+                if (
+                    $questionnaire->capabilities()->can_read_own_responses() &&
+                    isset($args->submissionid) && !empty($args->submissionid)
+                ) {
                     $questionnaire->add_response($args->submissionid);
                     $response = $questionnaire->responses()->get_response($args->submissionid);
                     $qnum = 1;
@@ -219,7 +222,7 @@ class mobile {
      */
     protected static function add_index_data(questionnaire_class $questionnaire, array &$data, int $userid): void {
         // List any existing submissions, if user is allowed to review them.
-        if ($questionnaire->can_read_own_responses()) {
+        if ($questionnaire->capabilities()->can_read_own_responses()) {
             $questionnaire->add_user_responses();
             $submissions = [];
             foreach ($questionnaire->responses()->get_loaded_responses() as $response) {

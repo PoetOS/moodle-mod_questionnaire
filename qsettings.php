@@ -60,7 +60,7 @@ $questionnaire->add_page(new qsettingspage());
 
 $SESSION->questionnaire->current_tab = 'settings';
 
-if (!$questionnaire->can_manage_questionnaire()) {
+if (!$questionnaire->capabilities()->can_manage_questionnaire()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 

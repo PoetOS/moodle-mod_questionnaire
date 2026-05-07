@@ -64,7 +64,7 @@ $questions = $questionnaire->questions();
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new questionspage());
 
-if (!$questionnaire->can_edit_questions()) {
+if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 

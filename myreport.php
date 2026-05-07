@@ -42,7 +42,7 @@ $cm = $questionnaire->coursemodule();
 require_course_login($course, true, $cm);
 
 // Should never happen, unless called directly by a snoop...
-if (!$questionnaire->can_read_own_responses() || $userid != $USER->id) {
+if (!$questionnaire->capabilities()->can_read_own_responses() || $userid != $USER->id) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
@@ -181,7 +181,7 @@ switch ($action) {
             if ($groupmode == 1) {
                 $questionnairegroups = groups_get_all_groups($course->id, $userid);
             }
-            if ($groupmode == 2 || $questionnaire->can_view_all_groups()) {
+            if ($groupmode == 2 || $questionnaire->capabilities()->can_view_all_groups()) {
                 $questionnairegroups = groups_get_all_groups($course->id);
             }
 
@@ -194,7 +194,7 @@ switch ($action) {
                 if ($groupscount === 0 && $groupmode == 1) {
                     $currentgroupid = 0;
                 }
-                if ($groupmode == 1 && !$questionnaire->can_view_all_groups() && $currentgroupid == 0) {
+                if ($groupmode == 1 && !$questionnaire->capabilities()->can_view_all_groups() && $currentgroupid == 0) {
                     $currentgroupid = $firstgroupid;
                 }
                 // If currentgroup is All Participants, current user is of course member of that "group"!
@@ -206,7 +206,7 @@ switch ($action) {
             } else {
                 // Groupmode = separate groups but user is not member of any group
                 // and does not have moodle/site:accessallgroups capability -> refuse view responses.
-                if (!$questionnaire->can_view_all_groups()) {
+                if (!$questionnaire->capabilities()->can_view_all_groups()) {
                     $currentgroupid = 0;
                 }
             }

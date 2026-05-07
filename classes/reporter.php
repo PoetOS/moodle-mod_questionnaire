@@ -202,7 +202,7 @@ class reporter {
         $qnum = 0;
         $anonymous = $this->questionnaire->respondenttype() == 'anonymous';
 
-        $viewsingleresponse = $this->questionnaire->can_view_single_response();
+        $viewsingleresponse = $this->questionnaire->capabilities()->can_view_single_response();
         $respondenttype = $this->questionnaire->respondenttype();
         $surveyid = $this->questionnaire->surveyid();
         foreach ($questions as $question) {
@@ -1674,7 +1674,7 @@ class reporter {
             );
         }
 
-        if ($this->questionnaire->can_print_blank() && $blankquestionnaire && $section == 1) {
+        if ($this->questionnaire->capabilities()->can_print_blank() && $blankquestionnaire && $section == 1) {
             $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
             $title = get_string('printblanktooltip', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid=' . $this->questionnaire->id() .

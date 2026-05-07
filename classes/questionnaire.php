@@ -105,6 +105,9 @@ class questionnaire {
     /** @var questionnaire_responses|null Lazy-loaded responses handler; cached so in-memory state persists. */
     private ?questionnaire_responses $responseshandler = null;
 
+    /** @var capabilities|null Lazy-loaded permission/eligibility helper. */
+    private ?capabilities $capabilities = null;
+
     /** @var string Course-module idnumber, used by gradebook. Set by callers that need it. */
     public string $cmidnumber = '';
 
@@ -327,6 +330,24 @@ class questionnaire {
      */
     public function grade(): int {
         return $this->modulerecord->get('grade');
+    }
+
+    /**
+     * Get the response-frequency setting for this questionnaire.
+     *
+     * @return int One of the QTYPE_* constants.
+     */
+    public function qtype(): int {
+        return (int) $this->modulerecord->get('qtype');
+    }
+
+    /**
+     * Get the response-view setting for this questionnaire.
+     *
+     * @return int One of the RESPVIEW_* constants.
+     */
+    public function respview(): int {
+        return (int) $this->modulerecord->get('respview');
     }
 
     /**
@@ -779,187 +800,6 @@ class questionnaire {
     }
 
     /**
-     * True if the specified user is eligible to view and submit this questionnaire.
-     *
-     * @param int|null $userid Defaults to current user.
-     * @return bool
-     */
-    public function user_is_eligible(?int $userid = null): bool {
-        return has_capability('mod/questionnaire:view', $this->context, $userid) &&
-            has_capability('mod/questionnaire:submit', $this->context, $userid);
-    }
-
-    /**
-     * True if the specified user can read their own responses.
-     *
-     * @param int|null $userid
-     * @return bool
-     */
-    public function can_read_own_responses(?int $userid = null): bool {
-        return has_capability('mod/questionnaire:readownresponses', $this->context, $userid);
-    }
-
-    /**
-     * True if the specified user can view a single response.
-     *
-     * @param int|null $userid
-     * @return bool
-     */
-    public function can_view_single_response(?int $userid = null): bool {
-        return has_capability('mod/questionnaire:viewsingleresponse', $this->context, $userid);
-    }
-
-    /**
-     * True if the specified user can delete responses.
-     *
-     * @param int|null $userid
-     * @return bool
-     */
-    public function can_delete_responses(?int $userid = null): bool {
-        return has_capability('mod/questionnaire:deleteresponses', $this->context, $userid);
-    }
-
-    /**
-     * True if the specified user can download responses.
-     *
-     * @param int|null $userid
-     * @return bool
-     */
-    public function can_download_responses(?int $userid = null): bool {
-        return has_capability('mod/questionnaire:downloadresponses', $this->context, $userid);
-    }
-
-    /**
-     * True if the specified user can manage this questionnaire.
-     *
-     * @param int|null $userid
-     * @return bool
-     */
-    public function can_manage_questionnaire(?int $userid = null): bool {
-        return has_capability('mod/questionnaire:manage', $this->context, $userid);
-    }
-
-    /**
-     * True if the specified user can edit questions in this questionnaire.
-     *
-     * @param int|null $userid
-     * @return bool
-     */
-    public function can_edit_questions(?int $userid = null): bool {
-        return has_capability('mod/questionnaire:editquestions', $this->context, $userid);
-    }
-
-    /**
-     * True if the current user can view this questionnaire.
-     *
-     * @return bool
-     */
-    public function can_view(): bool {
-        return has_capability('mod/questionnaire:view', $this->context);
-    }
-
-    /**
-     * True if the current user can preview this questionnaire.
-     *
-     * @return bool
-     */
-    public function can_preview(): bool {
-        return has_capability('mod/questionnaire:preview', $this->context);
-    }
-
-    /**
-     * True if the current user can print a blank copy of this questionnaire.
-     *
-     * Returns false in survey-only mode (no real module instance, so the print.php
-     * link cannot be built).
-     *
-     * @return bool
-     */
-    public function can_print_blank(): bool {
-        if (empty($this->modulerecord)) {
-            return false;
-        }
-        return has_capability('mod/questionnaire:printblank', $this->context);
-    }
-
-    /**
-     * True if the current user can create template surveys.
-     *
-     * @return bool
-     */
-    public function can_create_templates(): bool {
-        return has_capability('mod/questionnaire:createtemplates', $this->context);
-    }
-
-    /**
-     * True if the current user can create public surveys.
-     *
-     * @return bool
-     */
-    public function can_create_public(): bool {
-        return has_capability('mod/questionnaire:createpublic', $this->context);
-    }
-
-    /**
-     * True if the specified user is allowed to take this questionnaire right now.
-     *
-     * @param int $userid
-     * @return bool
-     */
-    public function user_can_take(int $userid): bool {
-        if (!$this->is_active() || !$this->user_is_eligible($userid)) {
-            return false;
-        } else if ($this->modulerecord->get('qtype') == self::QTYPE_UNLIMITED) {
-            return true;
-        } else if ($userid > 0) {
-            return $this->user_time_for_new_attempt($userid);
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * True if the timing rules allow the user to start a new attempt.
-     *
-     * @param int $userid
-     * @return bool
-     */
-    public function user_time_for_new_attempt(int $userid): bool {
-        global $DB;
-
-        $params = ['questionnaireid' => $this->id(), 'userid' => $userid, 'complete' => 'y'];
-        if (!($attempts = $DB->get_records('questionnaire_response', $params, 'submitted DESC'))) {
-            return true;
-        }
-
-        $attempt = reset($attempts);
-        $timenow = time();
-
-        switch ($this->modulerecord->get('qtype')) {
-            case self::QTYPE_UNLIMITED:
-                return true;
-
-            case self::QTYPE_ONCE:
-                return false;
-
-            case self::QTYPE_DAILY:
-                return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
-                    (date('Yz', $attempt->submitted) < date('Yz', $timenow));
-
-            case self::QTYPE_WEEKLY:
-                return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
-                    (date('YW', $attempt->submitted) < date('YW', $timenow));
-
-            case self::QTYPE_MONTHLY:
-                return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
-                    (date('Yn', $attempt->submitted) < date('Yn', $timenow));
-
-            default:
-                return false;
-        }
-    }
-
-    /**
      * True if the user has an in-progress (incomplete) saved response.
      *
      * @param int $userid
@@ -1026,137 +866,6 @@ class questionnaire {
         }
 
         return $DB->count_records_sql($sql, $params);
-    }
-
-    /**
-     * True if the current user can view all responses (checking group membership and response counts).
-     *
-     * @param int|null $usernumresp Number of responses the user has made; null to calculate.
-     * @param bool $isviewreport Whether the context is a view-report page.
-     * @return bool
-     */
-    public function can_view_all_responses(?int $usernumresp = null, bool $isviewreport = false): bool {
-        global $USER, $SESSION;
-
-        $numresp = $this->count_submissions();
-        if ($usernumresp === null) {
-            $usernumresp = $this->count_submissions($USER->id);
-        }
-
-        $numselectedresps = $SESSION->questionnaire->numselectedresps ?? $numresp;
-
-        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->context);
-        $groupmode = groups_get_activity_groupmode($this->coursemodule, $this->modulerecord->get('course'));
-        $canviewgroups = ($groupmode == 1)
-            ? groups_has_membership($this->coursemodule, $USER->id)
-            : true;
-
-        $grouplogic = $canviewgroups || $canviewallgroups;
-        $respslogic = ($numresp > 0 && $numselectedresps > 0) || $isviewreport;
-
-        return $this->can_view_all_responses_anytime($grouplogic, $respslogic) ||
-            $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic);
-    }
-
-    /**
-     * True if the user can view all responses at any time (no submission requirement).
-     *
-     * @param bool $grouplogic
-     * @param bool $respslogic
-     * @return bool
-     */
-    public function can_view_all_responses_anytime(bool $grouplogic = true, bool $respslogic = true): bool {
-        return $grouplogic && $respslogic && $this->is_survey_owner() &&
-            has_capability('mod/questionnaire:readallresponseanytime', $this->context);
-    }
-
-    /**
-     * True if the user can view all responses subject to the questionnaire's view restrictions.
-     *
-     * @param int|null $usernumresp
-     * @param bool $grouplogic
-     * @param bool $respslogic
-     * @return bool
-     */
-    public function can_view_all_responses_with_restrictions(
-        ?int $usernumresp,
-        bool $grouplogic = true,
-        bool $respslogic = true
-    ): bool {
-        $respview = $this->modulerecord->get('respview');
-        return $grouplogic && $respslogic && $this->is_survey_owner() &&
-            has_capability('mod/questionnaire:readallresponses', $this->context) &&
-            ($respview == self::RESPVIEW_ALWAYS ||
-                ($respview == self::RESPVIEW_WHENCLOSED && $this->is_closed()) ||
-                ($respview == self::RESPVIEW_WHENANSWERED && $usernumresp));
-    }
-
-    /**
-     * True if the current user can view the specified response (or any response if $rid is 0).
-     *
-     * @param int $rid Response id to check, or 0 to check general viewing rights.
-     * @return bool
-     */
-    public function can_view_response(int $rid = 0): bool {
-        global $USER, $DB;
-
-        $respview = $this->modulerecord->get('respview');
-
-        if (!empty($rid)) {
-            $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
-
-            // Response not found or belongs to a different questionnaire.
-            if (empty($response) || $response->questionnaireid != $this->id()) {
-                return false;
-            }
-
-            // Can always view if you have the unrestricted capability.
-            if (has_capability('mod/questionnaire:readallresponseanytime', $this->context)) {
-                return true;
-            }
-
-            // Can view other users' responses if capability is set and view conditions are met.
-            if (
-                has_capability('mod/questionnaire:readallresponses', $this->context) &&
-                ($respview == self::RESPVIEW_ALWAYS ||
-                 ($respview == self::RESPVIEW_WHENCLOSED && $this->is_closed()) ||
-                 ($respview == self::RESPVIEW_WHENANSWERED && !$this->user_can_take($USER->id)))
-            ) {
-                return true;
-            }
-
-            // Can view own response.
-            if (
-                $response->userid == $USER->id &&
-                has_capability('mod/questionnaire:readownresponses', $this->context) &&
-                $this->count_submissions($USER->id) > 0
-            ) {
-                return true;
-            }
-        } else {
-            // No specific response — check general viewing rights.
-            if (has_capability('mod/questionnaire:readallresponseanytime', $this->context)) {
-                return true;
-            }
-
-            if (
-                has_capability('mod/questionnaire:readallresponses', $this->context) &&
-                ($respview == self::RESPVIEW_ALWAYS ||
-                 ($respview == self::RESPVIEW_WHENCLOSED && $this->is_closed()) ||
-                 ($respview == self::RESPVIEW_WHENANSWERED && !$this->user_can_take($USER->id)))
-            ) {
-                return true;
-            }
-
-            if (
-                has_capability('mod/questionnaire:readownresponses', $this->context) &&
-                $this->count_submissions($USER->id) > 0
-            ) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -1231,7 +940,7 @@ class questionnaire {
         }
 
         if (!$this->is_active()) {
-            $msg = $this->can_manage_questionnaire() ? 'removenotinuse' : 'notavail';
+            $msg = $this->capabilities()->can_manage_questionnaire() ? 'removenotinuse' : 'notavail';
             return get_string($msg, 'questionnaire');
         }
         if ($this->survey_is_template()) {
@@ -1243,10 +952,10 @@ class questionnaire {
         if ($this->is_closed()) {
             return get_string('closed', 'questionnaire', userdate($this->modulerecord->get('closedate')));
         }
-        if (!$this->user_is_eligible($userid)) {
+        if (!$this->capabilities()->user_is_eligible($userid)) {
             return get_string('noteligible', 'questionnaire');
         }
-        if (!$this->user_can_take($userid)) {
+        if (!$this->capabilities()->user_can_take($userid)) {
             switch ($this->modulerecord->get('qtype')) {
                 case self::QTYPE_DAILY:
                     $msgstring = ' ' . get_string('today', 'questionnaire');
@@ -1774,7 +1483,7 @@ class questionnaire {
             $questionnairenode->add_node($node, $beforekey);
         }
 
-        if ($this->user_can_take($USER->id)) {
+        if ($this->capabilities()->user_can_take($USER->id)) {
             $url = '/mod/questionnaire/complete.php';
             if ($this->user_has_saved_response($USER->id)) {
                 $args = ['id' => $cmid, 'resume' => 1];
@@ -1795,7 +1504,7 @@ class questionnaire {
         }
         $usernumresp = $this->count_submissions($USER->id);
 
-        if ($this->can_read_own_responses() && ($usernumresp > 0)) {
+        if ($this->capabilities()->can_read_own_responses() && ($usernumresp > 0)) {
             $url = '/mod/questionnaire/myreport.php';
 
             if ($usernumresp > 1) {
@@ -1844,7 +1553,7 @@ class questionnaire {
                     'group' => $currentgroupid,
                 ];
                 $myreportnode->add(get_string('myresponses', 'questionnaire'), new \moodle_url($url, $urlargs));
-                if ($this->can_download_responses()) {
+                if ($this->capabilities()->can_download_responses()) {
                     $urlargs = [
                         'instance' => $this->id(),
                         'user' => $USER->id,
@@ -1883,7 +1592,7 @@ class questionnaire {
 
         // If questionnaire is set to separate groups, prevent user who is not member of any group
         // and is not a non-editing teacher to view All responses.
-        if ($this->can_view_all_responses($usernumresp)) {
+        if ($this->capabilities()->can_view_all_responses($usernumresp)) {
             $url = '/mod/questionnaire/report.php';
             $node = \navigation_node::create(
                 get_string('viewallresponses', 'questionnaire'),
@@ -1897,7 +1606,7 @@ class questionnaire {
             );
             $reportnode = $questionnairenode->add_node($node, $beforekey);
 
-            if ($this->can_view_single_response()) {
+            if ($this->capabilities()->can_view_single_response()) {
                 $summarynode = $reportnode->add(
                     get_string('summary', 'questionnaire'),
                     new \moodle_url(
@@ -1930,7 +1639,7 @@ class questionnaire {
                 )
             );
 
-            if ($this->can_delete_responses()) {
+            if ($this->capabilities()->can_delete_responses()) {
                 $summarynode->add(
                     get_string('deleteallresponses', 'questionnaire'),
                     new \moodle_url(
@@ -1940,7 +1649,7 @@ class questionnaire {
                 );
             }
 
-            if ($this->can_download_responses()) {
+            if ($this->capabilities()->can_download_responses()) {
                 $summarynode->add(
                     get_string('downloadtextformat', 'questionnaire'),
                     new \moodle_url(
@@ -1949,7 +1658,7 @@ class questionnaire {
                     )
                 );
             }
-            if ($this->can_view_single_response()) {
+            if ($this->capabilities()->can_view_single_response()) {
                 $byresponsenode = $reportnode->add(
                     get_string('viewbyresponse', 'questionnaire'),
                     new \moodle_url(
@@ -1991,7 +1700,7 @@ class questionnaire {
             $canviewgroups = groups_has_membership($cm, $USER->id);
         }
         $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
-        if ($this->can_view_single_response() && ($canviewallgroups || $canviewgroups)) {
+        if ($this->capabilities()->can_view_single_response() && ($canviewallgroups || $canviewgroups)) {
             $url = '/mod/questionnaire/show_nonrespondents.php';
             $node = \navigation_node::create(
                 get_string('show_nonrespondents', 'questionnaire'),
@@ -2486,6 +2195,16 @@ class questionnaire {
     public function responses(): questionnaire_responses {
         $this->responseshandler ??= new questionnaire_responses($this);
         return $this->responseshandler;
+    }
+
+    /**
+     * Return the capabilities helper for this questionnaire.
+     *
+     * @return capabilities
+     */
+    public function capabilities(): capabilities {
+        $this->capabilities ??= new capabilities($this);
+        return $this->capabilities;
     }
 
     /**
@@ -3111,7 +2830,7 @@ class questionnaire {
             $this->page->add_to_page('respondentinfo', $this->renderer->respondent_info($respinfo));
         }
 
-        if ($this->can_print_blank() && $blankquestionnaire && $section == 1) {
+        if ($this->capabilities()->can_print_blank() && $blankquestionnaire && $section == 1) {
             $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
             $title = get_string('printblanktooltip', 'questionnaire');
             $url = '/mod/questionnaire/print.php?qid=' . $this->id() . '&amp;rid=0&amp;' .
@@ -3370,7 +3089,7 @@ class questionnaire {
         if ($this->resume()) {
             $message = $this->user_access_messages($USER->id, true);
             if ($message === null) {
-                if ($this->user_can_take($USER->id)) {
+                if ($this->capabilities()->user_can_take($USER->id)) {
                     if ($this->questions()) {
                         if ($this->user_has_saved_response($USER->id)) {
                             $this->page->add_to_page(
@@ -3603,7 +3322,7 @@ class questionnaire {
         if (!groups_is_member($currentgroupid, $USER->id)) {
             $currentgroupid = 0;
         }
-        if ($this->can_read_own_responses()) {
+        if ($this->capabilities()->can_read_own_responses()) {
             $url = new \moodle_url(
                 'myreport.php',
                 [
@@ -3619,14 +3338,5 @@ class questionnaire {
             $url = new \moodle_url('/course/view.php', ['id' => $this->courseid()]);
             $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
         }
-    }
-
-    /**
-     * Return true if the current user has site-level access to all groups.
-     *
-     * @return bool
-     */
-    public function can_view_all_groups(): bool {
-        return has_capability('moodle/site:accessallgroups', $this->context);
     }
 }
