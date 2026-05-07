@@ -74,7 +74,7 @@ function questionnaire_get_extra_capabilities() {
  * @return bool|int
  */
 function questionnaire_add_instance($questionnaire) {
-    return \mod_questionnaire\questionnaire::add_instance($questionnaire);
+    return \mod_questionnaire\instance_admin::add_instance($questionnaire);
 }
 
 /**
@@ -87,7 +87,7 @@ function questionnaire_update_instance($questionnaire) {
     // Grade item update is a Moodle gradebook API concern, kept in lib.php.
     $questionnaire->id = $questionnaire->instance;
     questionnaire_grade_item_update($questionnaire);
-    return \mod_questionnaire\questionnaire::update_instance($questionnaire);
+    return \mod_questionnaire\instance_admin::update_instance($questionnaire);
 }
 
 /**
@@ -96,7 +96,7 @@ function questionnaire_update_instance($questionnaire) {
  * @return bool
  */
 function questionnaire_delete_instance($id) {
-    return \mod_questionnaire\questionnaire::delete_instance($id);
+    return \mod_questionnaire\instance_admin::delete_instance($id);
 }
 
 /**
@@ -471,7 +471,7 @@ function questionnaire_reset_course_form_defaults($course) {
  * @return array status array
  */
 function questionnaire_reset_userdata($data) {
-    return \mod_questionnaire\questionnaire::reset_userdata($data);
+    return \mod_questionnaire\instance_admin::reset_userdata($data);
 }
 
 /**
