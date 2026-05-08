@@ -1017,33 +1017,10 @@ abstract class question {
      * @param bool $updatechoices True if choices should also be updated.
      */
     public function update($questionrecord = null, $updatechoices = true) {
-        global $DB;
-
-        if ($questionrecord === null) {
-            $questionrecord = new \stdClass();
-            $questionrecord->id = $this->id();
-            $questionrecord->surveyid = $this->surveyid();
-            $questionrecord->name = $this->name();
-            $questionrecord->typeid = $this->typeid();
-            $questionrecord->result_id = $this->resultid;
-            $questionrecord->length = $this->length();
-            $questionrecord->precise = $this->precise();
-            $questionrecord->position = $this->position();
-            $questionrecord->content = $this->content();
-            $questionrecord->required = $this->record ? $this->record->get('required') : null;
-            $questionrecord->deleted = $this->deleted();
-            $questionrecord->extradata = $this->extradata();
-            $questionrecord->dependquestion = $this->dependquestion;
-            $questionrecord->dependchoice = $this->dependchoice;
-        } else {
-            // Make sure the "id" field is this question's.
-            if (isset($this->qid) && ($this->qid > 0)) {
-                $questionrecord->id = $this->qid;
-            } else {
-                $questionrecord->id = $this->id();
-            }
+        if ($questionrecord !== null) {
+            $this->record->from_record($questionrecord);
         }
-        $DB->update_record('questionnaire_question', $questionrecord);
+        $this->record->update();
 
         if ($updatechoices && $this->has_choices()) {
             $this->update_choices();
@@ -1057,20 +1034,12 @@ abstract class question {
      * @param bool|null $calcposition Whether or not to calculate the next available position in the survey.
      */
     public function add($questionrecord, ?array $choicerecords = null, ?bool $calcposition = true) {
-        global $DB;
-
         // Create new question.
         if ($calcposition) {
             // Set the position to the end.
-            $sql = 'SELECT MAX(position) as maxpos ' .
-                   'FROM {questionnaire_question} ' .
-                   'WHERE surveyid = ? AND deleted IS NULL';
-            $params = ['surveyid' => $questionrecord->surveyid];
-            if ($record = $DB->get_record_sql($sql, $params)) {
-                $questionrecord->position = $record->maxpos + 1;
-            } else {
-                $questionrecord->position = 1;
-            }
+            $questionrecord->position = \mod_questionnaire\local\db\question_record::max_active_position_for_survey(
+                (int) $questionrecord->surveyid
+            ) + 1;
         }
 
         // Make sure we add all necessary data.
@@ -1080,6 +1049,9 @@ abstract class question {
 
         $questionpersistent = new \mod_questionnaire\local\db\question_record(0, $questionrecord);
         $questionpersistent->save();
+        // Adopt the freshly-saved persistent as this question's backing record so
+        // subsequent mutations and accessors are in sync without an extra DB read.
+        $this->record = $questionpersistent;
         $this->qid = $questionpersistent->get('id');
 
         if ($this->has_choices() && !empty($choicerecords)) {
@@ -1175,8 +1147,8 @@ abstract class question {
      * @return bool
      */
     public function insert_extradata($extradata) {
-        global $DB;
-        return $DB->set_field('questionnaire_question', 'extradata', $extradata, ['id' => $this->id()]);
+        $this->record->set('extradata', $extradata);
+        return $this->record->update();
     }
 
     /**
@@ -1243,18 +1215,9 @@ abstract class question {
      * @param bool $required Whether question should be required or not.
      */
     public function set_required($required) {
-        global $DB;
         $rval = $required ? 'y' : 'n';
-        // Need to fix this messed-up qid/id issue.
-        if (isset($this->qid) && ($this->qid > 0)) {
-            $qid = $this->qid;
-        } else {
-            $qid = $this->id();
-        }
-        if ($this->record) {
-            $this->record->set('required', $rval);
-        }
-        return $DB->set_field('questionnaire_question', 'required', $rval, ['id' => $qid]);
+        $this->record->set('required', $rval);
+        return $this->record->update();
     }
 
     /**
@@ -1846,8 +1809,6 @@ abstract class question {
      * @param \mod_questionnaire\questionnaire $questionnaire
      */
     public function form_update($formdata, $questionnaire) {
-        global $DB;
-
         $this->form_preprocess_data($formdata);
         if (!empty($formdata->qid)) {
             // Update existing question.
@@ -1907,7 +1868,8 @@ abstract class question {
                 ['subdirs' => true],
                 $formdata->content
             );
-            $DB->set_field('questionnaire_question', 'content', $content, ['id' => $this->qid]);
+            $this->record->set('content', $content);
+            $this->record->update();
         }
 
         if ($this->has_choices()) {
