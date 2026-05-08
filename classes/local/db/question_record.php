@@ -118,6 +118,74 @@ class question_record extends \core\persistent {
     }
 
     /**
+     * Return every soft-deleted question record for the given survey, excluding page breaks,
+     * ordered by deletion time (most recent first).
+     *
+     * @param int $surveyid
+     * @return question_record[]
+     */
+    public static function get_deleted_for_survey(int $surveyid): array {
+        global $DB;
+        $records = $DB->get_records_select(
+            static::TABLE,
+            'deleted IS NOT NULL AND surveyid = :surveyid AND typeid != :pagebreak',
+            [
+                'surveyid' => $surveyid,
+                'pagebreak' => \mod_questionnaire\local\question_type::QUESPAGEBREAK,
+            ],
+            'deleted DESC'
+        );
+        return array_map(fn($r) => new static(0, $r), $records);
+    }
+
+    /**
+     * Return a soft-deleted question identified by id and survey, or null if none matches.
+     *
+     * @param int $questionid
+     * @param int $surveyid
+     * @return self|null
+     */
+    public static function get_soft_deleted(int $questionid, int $surveyid): ?self {
+        global $DB;
+        $record = $DB->get_record_select(
+            static::TABLE,
+            'id = :id AND surveyid = :surveyid AND deleted IS NOT NULL',
+            ['id' => $questionid, 'surveyid' => $surveyid]
+        );
+        return $record ? new static(0, $record) : null;
+    }
+
+    /**
+     * Return the highest position among active (non-deleted) questions in the survey,
+     * or 0 if there are none.
+     *
+     * @param int $surveyid
+     * @return int
+     */
+    public static function max_active_position_for_survey(int $surveyid): int {
+        global $DB;
+        $max = $DB->get_field_select(
+            static::TABLE,
+            'MAX(position)',
+            'surveyid = :surveyid AND deleted IS NULL',
+            ['surveyid' => $surveyid]
+        );
+        return (int) ($max ?: 0);
+    }
+
+    /**
+     * Update only the position field of a question row.
+     *
+     * @param int $questionid
+     * @param int $position
+     * @return bool
+     */
+    public static function update_position(int $questionid, int $position): bool {
+        global $DB;
+        return $DB->set_field(static::TABLE, 'position', $position, ['id' => $questionid]);
+    }
+
+    /**
      * Bulk delete every question row belonging to the survey, regardless of deleted status.
      *
      * @param int $surveyid
