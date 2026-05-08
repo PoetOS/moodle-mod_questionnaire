@@ -21,6 +21,7 @@ use mod_questionnaire\local\db\dependency_record;
 use mod_questionnaire\local\db\feedback_record;
 use mod_questionnaire\local\db\feedback_section_record;
 use mod_questionnaire\local\db\question_record;
+use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question_type;
@@ -221,9 +222,8 @@ class survey {
             if ($excludecourseid > 0 && $owningcourseid == $excludecourseid) {
                 continue;
             }
-            $qrecs = $DB->get_records('questionnaire', ['sid' => $survey->id()], '', 'id, name', 0, 1);
-            $qrec = reset($qrecs);
-            if (!$qrec) {
+            $qrec = questionnaire_record::get_for_survey($survey->id());
+            if ($qrec === null) {
                 continue;
             }
             $originalcourse = $DB->get_record('course', ['id' => $owningcourseid]);
@@ -231,12 +231,12 @@ class survey {
                 continue;
             }
             $sid = $survey->id();
-            $args = "sid={$sid}&popup=1&qid={$qrec->id}";
+            $args = "sid={$sid}&popup=1&qid={$qrec->get('id')}";
             $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
             $action = new \popup_action('click', $link);
             $label = $OUTPUT->action_link(
                 $link,
-                $qrec->name . ' [' . $originalcourse->fullname . ']',
+                $qrec->get('name') . ' [' . $originalcourse->fullname . ']',
                 $action,
                 ['title' => $strpreview]
             );
@@ -808,7 +808,6 @@ class survey {
      * @return array Keys are area names; values are either a single id or an array of ids.
      */
     public function get_all_file_areas(): array {
-        global $DB;
         $sid = $this->id();
         $areas = [];
         $areas['info'] = $sid;
@@ -821,16 +820,16 @@ class survey {
             $areas['question'][] = $question->id();
         }
         $areas['feedbacknotes'] = $sid;
-        $fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid]);
+        $fbsections = feedback_section_record::get_for_survey($sid);
         if (!empty($fbsections)) {
             $areas['sectionheading'] = [];
             foreach ($fbsections as $section) {
-                $areas['sectionheading'][] = $section->id;
-                $feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $section->id]);
+                $areas['sectionheading'][] = $section->get('id');
+                $feedbacks = feedback_record::get_for_section($section->get('id'));
                 if (!empty($feedbacks)) {
                     $areas['feedback'] = [];
                     foreach ($feedbacks as $feedback) {
-                        $areas['feedback'][] = $feedback->id;
+                        $areas['feedback'][] = $feedback->get('id');
                     }
                 }
             }
