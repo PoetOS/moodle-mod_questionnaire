@@ -776,17 +776,6 @@ class questionnaire {
     }
 
     /**
-     * Update an existing questionnaire survey record.
-     *
-     * @param int $sid  Survey id.
-     * @param stdClass $sdata  Survey data object.
-     * @return int|false  The survey id on success, false on failure.
-     */
-    public static function update_survey(int $sid, stdClass $sdata): int|false {
-        return survey::update_survey($sid, $sdata);
-    }
-
-    /**
      * Create an editable copy of a survey, including all questions, choices, dependencies,
      * and feedback sections.
      *
