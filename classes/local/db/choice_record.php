@@ -60,4 +60,15 @@ class choice_record extends \core\persistent {
     public static function get_for_question(int $questionid): array {
         return static::get_records(['questionid' => $questionid]);
     }
+
+    /**
+     * Bulk delete every choice row belonging to the given question.
+     *
+     * @param int $questionid
+     * @return bool
+     */
+    public static function delete_for_question(int $questionid): bool {
+        global $DB;
+        return $DB->delete_records(static::TABLE, ['questionid' => $questionid]);
+    }
 }

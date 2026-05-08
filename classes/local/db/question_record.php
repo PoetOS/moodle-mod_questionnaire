@@ -106,4 +106,59 @@ class question_record extends \core\persistent {
         );
         return array_map(fn($r) => new static(0, $r), $records);
     }
+
+    /**
+     * Return every question record for the given survey, including soft-deleted rows.
+     *
+     * @param int $surveyid
+     * @return question_record[]
+     */
+    public static function get_for_survey(int $surveyid): array {
+        return static::get_records(['surveyid' => $surveyid]);
+    }
+
+    /**
+     * Bulk delete every question row belonging to the survey, regardless of deleted status.
+     *
+     * @param int $surveyid
+     * @return bool
+     */
+    public static function delete_for_survey(int $surveyid): bool {
+        global $DB;
+        return $DB->delete_records(static::TABLE, ['surveyid' => $surveyid]);
+    }
+
+    /**
+     * Permanently delete a soft-deleted question row identified by id and survey.
+     *
+     * No-op when the row is not currently soft-deleted, so callers can use this safely
+     * without first checking the deleted flag.
+     *
+     * @param int $questionid
+     * @param int $surveyid
+     * @return bool
+     */
+    public static function delete_soft_deleted(int $questionid, int $surveyid): bool {
+        global $DB;
+        return $DB->delete_records_select(
+            static::TABLE,
+            'id = :id AND surveyid = :surveyid AND deleted IS NOT NULL',
+            ['id' => $questionid, 'surveyid' => $surveyid]
+        );
+    }
+
+    /**
+     * Permanently delete every soft-deleted page-break question for the survey.
+     *
+     * @param int $surveyid
+     * @return bool
+     */
+    public static function delete_soft_deleted_pagebreaks_for_survey(int $surveyid): bool {
+        global $DB;
+        return $DB->delete_records_select(
+            static::TABLE,
+            'surveyid = :surveyid AND deleted IS NOT NULL AND typeid = :typeid',
+            ['surveyid' => $surveyid, 'typeid' => \mod_questionnaire\local\question_type::QUESPAGEBREAK]
+        );
+    }
 }

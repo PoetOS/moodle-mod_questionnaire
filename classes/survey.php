@@ -849,30 +849,33 @@ class survey {
      * @return bool True on success.
      */
     public function delete(): bool {
-        global $DB;
         $sid = $this->id();
         $status = true;
 
         // Delete all question data for the survey.
-        if ($questions = $DB->get_records('questionnaire_question', ['surveyid' => $sid], 'id')) {
-            foreach ($questions as $question) {
-                $DB->delete_records('questionnaire_quest_choice', ['questionid' => $question->id]);
-                $DB->delete_records('questionnaire_dependency', ['questionid' => $question->id]);
-                $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $question->id]);
-            }
-            $status = $status && $DB->delete_records('questionnaire_question', ['surveyid' => $sid]);
-            $status = $status && $DB->delete_records('questionnaire_dependency', ['surveyid' => $sid]);
+        $questions = question_record::get_for_survey($sid);
+        foreach ($questions as $question) {
+            $qid = $question->get('id');
+            choice_record::delete_for_question($qid);
+            dependency_record::delete_for_question($qid);
+        }
+        if (!empty($questions)) {
+            $status = $status && question_record::delete_for_survey($sid);
+            $status = $status && dependency_record::delete_for_survey($sid);
         }
 
         // Delete all feedback sections and feedback messages for the survey.
-        if ($fbsections = $DB->get_records('questionnaire_fb_sections', ['surveyid' => $sid], 'id')) {
-            foreach ($fbsections as $fbsection) {
-                $DB->delete_records('questionnaire_feedback', ['sectionid' => $fbsection->id]);
-            }
-            $status = $status && $DB->delete_records('questionnaire_fb_sections', ['surveyid' => $sid]);
+        $fbsections = feedback_section_record::get_for_survey($sid);
+        foreach ($fbsections as $fbsection) {
+            feedback_record::delete_for_section($fbsection->get('id'));
+        }
+        if (!empty($fbsections)) {
+            $status = $status && feedback_section_record::delete_for_survey($sid);
         }
 
-        $status = $status && $DB->delete_records('questionnaire_survey', ['id' => $sid]);
+        if ($this->surveyrecord->get('id')) {
+            $this->surveyrecord->delete();
+        }
 
         return $status;
     }
@@ -916,13 +919,9 @@ class survey {
      * @param int $sid Survey id.
      */
     public static function delete_question_permanently(int $qid, int $sid): void {
-        global $DB;
-        $select = 'id = :id AND surveyid = :sid AND deleted IS NOT NULL';
-        $DB->delete_records_select('questionnaire_question', $select, ['id' => $qid, 'sid' => $sid]);
-        $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
+        question_record::delete_soft_deleted($qid, $sid);
         questionnaire_responses::delete_responses_for_question($qid);
-        $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
+        dependency_record::delete_for_question($qid);
     }
 
     /**
@@ -1125,12 +1124,7 @@ class survey {
      * @param int $sid Survey id.
      */
     public static function delete_pagebreaks(int $sid): void {
-        global $DB;
-        $DB->delete_records_select(
-            'questionnaire_question',
-            'surveyid = :sid AND deleted IS NOT NULL AND typeid = :typeid',
-            ['sid' => $sid, 'typeid' => question_type::QUESPAGEBREAK]
-        );
+        question_record::delete_soft_deleted_pagebreaks_for_survey($sid);
     }
 
     /**
