@@ -570,41 +570,31 @@ class survey {
      * @return false|string Status message, or false on failure.
      */
     public function check_page_breaks() {
-        global $DB;
         $msg = '';
         $newpbids = [];
         $delpb = 0;
         $sid = $this->id();
+
+        // Snapshot active questions and their dependencies as plain arrays so the
+        // sliding-window comparison below can read positional state without re-querying.
         $positions = [];
-        if (
-            $questions = $DB->get_records_select(
-                'questionnaire_question',
-                'surveyid = :sid AND deleted IS NULL',
-                ['sid' => $sid],
-                'position'
-            )
-        ) {
-            foreach ($questions as $key => $qu) {
-                $newqu = new \stdClass();
-                $newqu->questionid = $key;
-                $newqu->typeid = $qu->typeid;
-                $newqu->qname = $qu->name;
-                $newqu->qpos = $qu->position;
-                $dependencies = $DB->get_records(
-                    'questionnaire_dependency',
-                    ['questionid' => $key, 'surveyid' => $sid],
-                    'id ASC',
-                    'id, dependquestionid, dependchoiceid, dependlogic'
-                );
-                $newqu->dependencies = $dependencies ?? [];
-                $positions[] = (array)$newqu;
-            }
+        foreach (question_record::get_active_for_survey($sid) as $key => $qrec) {
+            $deps = array_map(
+                fn($d) => $d->to_record(),
+                dependency_record::get_for_question($key)
+            );
+            $positions[] = [
+                'questionid' => $key,
+                'typeid' => $qrec->get('typeid'),
+                'qname' => $qrec->get('name'),
+                'qpos' => $qrec->get('position'),
+                'dependencies' => $deps,
+            ];
         }
         $count = count($positions);
 
         for ($i = $count - 1; $i >= 0; $i--) {
             $qu = $positions[$i];
-            $questionnb = $i;
             $prevqu = null;
             $prevtypeid = null;
             if ($i > 0) {
@@ -612,41 +602,17 @@ class survey {
                 $prevtypeid = $prevqu['typeid'];
             }
             if ($qu['typeid'] == QUESPAGEBREAK) {
-                $questionnb--;
                 if ($prevtypeid == QUESPAGEBREAK || $i == $count - 1 || $qu['qpos'] == 1) {
                     $qid = $qu['questionid'];
                     $delpb++;
                     $msg .= get_string('checkbreaksremoved', 'questionnaire', $delpb) . '<br />';
-                    if (
-                        $questions = $DB->get_records_select(
-                            'questionnaire_question',
-                            'surveyid = :sid AND deleted IS NULL',
-                            ['sid' => $sid],
-                            'id'
-                        )
-                    ) {
-                        $DB->set_field(
-                            'questionnaire_question',
-                            'deleted',
-                            time(),
-                            ['id' => $qid, 'surveyid' => $sid]
-                        );
-                        $select = 'surveyid = :sid AND deleted IS NULL AND position > :pos';
-                        $records = $DB->get_records_select(
-                            'questionnaire_question',
-                            $select,
-                            ['sid' => $sid, 'pos' => $questions[$qid]->position],
-                            'position ASC'
-                        );
-                        if ($records) {
-                            foreach ($records as $record) {
-                                $DB->set_field(
-                                    'questionnaire_question',
-                                    'position',
-                                    $record->position - 1,
-                                    ['id' => $record->id]
-                                );
-                            }
+                    // Re-load to capture position shifts caused by earlier iterations of this loop.
+                    $current = question_record::get_active_for_survey($sid);
+                    if (isset($current[$qid])) {
+                        $deletedpos = $current[$qid]->get('position');
+                        question_record::soft_delete($qid);
+                        foreach (question_record::get_active_after_position($sid, $deletedpos) as $shifted) {
+                            question_record::update_position($shifted->get('id'), $shifted->get('position') - 1);
                         }
                     }
                 }
@@ -691,27 +657,10 @@ class survey {
                         ($prevtypeid != QUESPAGEBREAK && $diffdependencies != 0) ||
                         (!isset($qu['dependencies']) && isset($prevdependencies))
                     ) {
-                        $sql = "SELECT MAX(position) as maxpos
-                                  FROM {questionnaire_question}
-                                 WHERE surveyid = :sid
-                                   AND deleted IS NULL";
-                        if ($record = $DB->get_record_sql($sql, ['sid' => $sid])) {
-                            $pos = $record->maxpos + 1;
-                        } else {
-                            $pos = 1;
-                        }
-                        $question = new \stdClass();
-                        $question->surveyid = $sid;
-                        $question->typeid = QUESPAGEBREAK;
-                        $question->position = $pos;
-                        $question->content = 'break';
-
-                        if (!($newqid = $DB->insert_record('questionnaire_question', $question))) {
-                            return false;
-                        }
-                        $newpbids[] = $newqid;
+                        $newpos = question_record::max_active_position_for_survey($sid) + 1;
+                        $newpbids[] = question_record::create_pagebreak($sid, $newpos)->get('id');
                         $this->add_questions();
-                        $this->move_question($newqid, $qu['qpos']);
+                        $this->move_question(end($newpbids), $qu['qpos']);
                     }
                 }
             }
