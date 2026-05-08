@@ -886,17 +886,8 @@ class survey {
      * Intended for use by the scheduled cleanup task.
      */
     public static function cleanup_orphans(): void {
-        global $DB;
-
-        $sql = 'SELECT qs.* FROM {questionnaire_survey} qs
-                LEFT JOIN {questionnaire} q ON q.sid = qs.id
-                WHERE q.sid IS NULL';
-
-        if ($surveys = $DB->get_records_sql($sql)) {
-            foreach ($surveys as $surveyrow) {
-                $survey = self::from_sid((int) $surveyrow->id);
-                $survey->delete();
-            }
+        foreach (survey_record::get_orphaned() as $orphan) {
+            self::from_sid((int) $orphan->get('id'))->delete();
         }
     }
 
