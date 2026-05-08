@@ -98,6 +98,20 @@ class response_record extends \core\persistent {
     }
 
     /**
+     * True if the given user has an in-progress (incomplete) saved response for the given questionnaire.
+     *
+     * @param int $questionnaireid
+     * @param int $userid
+     * @return bool
+     */
+    public static function user_has_saved_response(int $questionnaireid, int $userid): bool {
+        return static::record_exists_select(
+            'questionnaireid = :questionnaireid AND userid = :userid AND complete = :complete',
+            ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'complete' => 'n']
+        );
+    }
+
+    /**
      * Return the most recent incomplete response record for the given questionnaire and user, or null.
      *
      * @param int $questionnaireid
