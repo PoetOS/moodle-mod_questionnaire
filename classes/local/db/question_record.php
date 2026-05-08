@@ -186,6 +186,54 @@ class question_record extends \core\persistent {
     }
 
     /**
+     * Mark a question as soft-deleted by stamping its deleted column with the current time.
+     *
+     * @param int $questionid
+     * @return bool
+     */
+    public static function soft_delete(int $questionid): bool {
+        global $DB;
+        return $DB->set_field(static::TABLE, 'deleted', time(), ['id' => $questionid]);
+    }
+
+    /**
+     * Return active questions in the survey whose position is greater than the given one,
+     * ordered by position ascending.
+     *
+     * @param int $surveyid
+     * @param int $position
+     * @return question_record[]
+     */
+    public static function get_active_after_position(int $surveyid, int $position): array {
+        global $DB;
+        $records = $DB->get_records_select(
+            static::TABLE,
+            'surveyid = :surveyid AND deleted IS NULL AND position > :pos',
+            ['surveyid' => $surveyid, 'pos' => $position],
+            'position ASC'
+        );
+        return array_map(fn($r) => new static(0, $r), $records);
+    }
+
+    /**
+     * Insert a new page-break question row at the given position. Returns the created record.
+     *
+     * @param int $surveyid
+     * @param int $position
+     * @return self
+     */
+    public static function create_pagebreak(int $surveyid, int $position): self {
+        $record = new static(0, (object)[
+            'surveyid' => $surveyid,
+            'typeid' => \mod_questionnaire\local\question_type::QUESPAGEBREAK,
+            'position' => $position,
+            'content' => 'break',
+        ]);
+        $record->create();
+        return $record;
+    }
+
+    /**
      * Bulk delete every question row belonging to the survey, regardless of deleted status.
      *
      * @param int $surveyid
