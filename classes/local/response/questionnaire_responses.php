@@ -593,6 +593,39 @@ class questionnaire_responses {
     }
 
     /**
+     * Count the number of distinct users who have a response to this questionnaire,
+     * optionally restricted to members of one or more groups.
+     *
+     * Counts both saved (in-progress) and submitted responses. Callers that need
+     * only submitted responses should use questionnaire::count_submissions().
+     *
+     * @param int[] $groupids Group ids to restrict by; empty means no group filter.
+     * @return int
+     */
+    public function count_distinct_responders(array $groupids = []): int {
+        global $DB;
+
+        $params = ['questionnaireid' => $this->questionnaire->id()];
+
+        if (empty($groupids)) {
+            return $DB->count_records_select(
+                'questionnaire_response',
+                'questionnaireid = :questionnaireid',
+                $params,
+                'COUNT(DISTINCT userid)'
+            );
+        }
+
+        [$gsql, $gparams] = $DB->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
+        $sql = "SELECT COUNT(DISTINCT qr.userid)
+                  FROM {questionnaire_response} qr
+                  JOIN {groups_members} gm ON qr.userid = gm.userid
+                 WHERE qr.questionnaireid = :questionnaireid
+                   AND gm.groupid $gsql";
+        return $DB->count_records_sql($sql, $params + $gparams);
+    }
+
+    /**
      * Get all responses for a given questionnaire instance id and user, without needing an instance.
      * @param int $instanceid The questionnaire.id value.
      * @param int $userid
