@@ -576,11 +576,7 @@ class questionnaire {
      * @return bool
      */
     public function user_has_saved_response(int $userid): bool {
-        global $DB;
-        return $DB->record_exists(
-            'questionnaire_response',
-            ['questionnaireid' => $this->id(), 'userid' => $userid, 'complete' => 'n']
-        );
+        return \mod_questionnaire\local\db\response_record::user_has_saved_response($this->id(), $userid);
     }
 
     /**
@@ -840,7 +836,7 @@ class questionnaire {
         \settings_navigation $settings,
         \navigation_node $questionnairenode
     ): void {
-        global $DB, $USER, $CFG;
+        global $USER;
 
         $individualresponse = optional_param('individualresponse', false, PARAM_INT);
         $rid = optional_param('rid', false, PARAM_INT); // Response id.
@@ -852,11 +848,8 @@ class questionnaire {
         $course = $settings->get_page()->course;
         $courseid = $course->id;
 
-        if ($owner = $DB->get_field('questionnaire_survey', 'courseid', ['id' => $this->surveyid()])) {
-            $owner = (trim($owner) == trim($courseid));
-        } else {
-            $owner = true;
-        }
+        // Treat an unlinked or orphaned survey row as "owned" — same fallback as the legacy code.
+        $owner = ($this->survey()->id() == 0) ? true : $this->survey()->is_owned_by_course((int) $courseid);
 
         // On view page, currentgroupid is not yet sent as an optional_param, so get it.
         $groupmode = groups_get_activity_groupmode($cm, $course);
@@ -1453,11 +1446,9 @@ class questionnaire {
      * @return object The data object (unchanged).
      */
     public static function coursemodule_edit_post_actions(object $data, object $course): object {
-        global $DB;
-
         if (!empty($data->copyid)) {
             $questionnaire = self::from_cmid((int)$data->coursemodule);
-            $oldquestionnaireid = $DB->get_field('questionnaire', 'id', ['sid' => $data->copyid]);
+            $oldquestionnaireid = questionnaire_record::get_for_survey((int) $data->copyid)?->get('id');
             $oldcm = get_coursemodule_from_instance('questionnaire', $oldquestionnaireid);
             $oldquestionnaire = self::from_cmid((int)$oldcm->id);
             $oldcontext = \context_module::instance($oldcm->id);
