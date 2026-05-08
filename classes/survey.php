@@ -898,25 +898,29 @@ class survey {
     }
 
     /**
-     * Update an existing survey record.
+     * Update this survey from form data.
      *
-     * @param int $sid Survey id.
+     * Validates required fields (name, title, realm) and rejects a name change that
+     * would collide with another survey. Applies the supplied data to the loaded
+     * survey persistent and saves it, keeping $this->surveyrecord in sync.
+     *
      * @param stdClass $sdata Survey data object.
-     * @return int|false The survey id on success, false on failure.
+     * @return int|false The survey id on success, false on validation failure.
      */
-    public static function update_survey(int $sid, stdClass $sdata): int|false {
+    public function update_survey(stdClass $sdata): int|false {
         if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
             return false;
         }
 
-        $existing = new survey_record($sid);
-        if (trim($existing->get('name')) != trim(stripslashes($sdata->name))) {
+        if (trim($this->surveyrecord->get('name')) != trim(stripslashes($sdata->name))) {
             if (survey_record::count_records(['name' => $sdata->name]) != 0) {
                 return false;
             }
         }
 
-        return survey_record::update_from_sdata($sid, $sdata)->get('id');
+        $this->surveyrecord->from_record($sdata);
+        $this->surveyrecord->update();
+        return $this->surveyrecord->get('id');
     }
 
     /**

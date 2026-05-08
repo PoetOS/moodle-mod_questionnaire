@@ -129,7 +129,7 @@ if ($settings = $feedbackform->get_data()) {
             $sdata->feedbacksections = 0;
         }
         $sdata->courseid = $settings->courseid;
-        if (!($sid = questionnaire::update_survey($questionnaire->surveyid(), $sdata))) {
+        if (!($sid = $questionnaire->survey()->update_survey($sdata))) {
             throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
         }
     }
