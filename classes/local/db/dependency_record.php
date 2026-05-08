@@ -85,4 +85,29 @@ class dependency_record extends \core\persistent {
     public static function get_for_survey(int $surveyid): array {
         return static::get_records(['surveyid' => $surveyid]);
     }
+
+    /**
+     * Bulk delete every dependency row belonging to the survey.
+     *
+     * @param int $surveyid
+     * @return bool
+     */
+    public static function delete_for_survey(int $surveyid): bool {
+        global $DB;
+        return $DB->delete_records(static::TABLE, ['surveyid' => $surveyid]);
+    }
+
+    /**
+     * Bulk delete every dependency that references the given question — both as the
+     * dependent question and as the question depended on.
+     *
+     * @param int $questionid
+     * @return bool
+     */
+    public static function delete_for_question(int $questionid): bool {
+        global $DB;
+        $ok = $DB->delete_records(static::TABLE, ['questionid' => $questionid]);
+        $ok = $DB->delete_records(static::TABLE, ['dependquestionid' => $questionid]) && $ok;
+        return $ok;
+    }
 }

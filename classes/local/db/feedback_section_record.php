@@ -79,4 +79,15 @@ class feedback_section_record extends \core\persistent {
     public static function get_for_survey(int $surveyid): array {
         return static::get_records(['surveyid' => $surveyid]);
     }
+
+    /**
+     * Bulk delete every feedback-section row belonging to the survey.
+     *
+     * @param int $surveyid
+     * @return bool
+     */
+    public static function delete_for_survey(int $surveyid): bool {
+        global $DB;
+        return $DB->delete_records(static::TABLE, ['surveyid' => $surveyid]);
+    }
 }

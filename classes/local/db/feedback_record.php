@@ -79,4 +79,15 @@ class feedback_record extends \core\persistent {
     public static function get_for_section(int $sectionid): array {
         return static::get_records(['sectionid' => $sectionid]);
     }
+
+    /**
+     * Bulk delete every feedback-message row belonging to the given section.
+     *
+     * @param int $sectionid
+     * @return bool
+     */
+    public static function delete_for_section(int $sectionid): bool {
+        global $DB;
+        return $DB->delete_records(static::TABLE, ['sectionid' => $sectionid]);
+    }
 }
