@@ -522,21 +522,13 @@ class survey {
      * @return question[] Keyed by question id.
      */
     public function get_delete_questions(): array {
-        global $DB;
-        $sql = "SELECT *
-                  FROM {questionnaire_question}
-                 WHERE deleted IS NOT NULL
-                   AND surveyid = ? AND typeid != ?
-              ORDER BY deleted DESC";
         $deletequestions = [];
-        if ($records = $DB->get_records_sql($sql, [$this->id(), QUESPAGEBREAK])) {
-            foreach ($records as $record) {
-                $deletequestions[$record->id] = question::question_builder(
-                    $record->typeid,
-                    $record,
-                    $this->context
-                );
-            }
+        foreach (question_record::get_deleted_for_survey($this->id()) as $qrec) {
+            $deletequestions[$qrec->get('id')] = question::question_builder(
+                $qrec->get('typeid'),
+                $qrec->to_record(),
+                $this->context
+            );
         }
         return $deletequestions;
     }
@@ -549,8 +541,6 @@ class survey {
      * @return bool
      */
     public function move_question(int $moveqid, int $movetopos): bool {
-        global $DB;
-
         $questions = $this->questions();
         if (!is_array($questions) || !isset($questions[$moveqid])) {
             return false;
@@ -562,10 +552,10 @@ class survey {
                 $index++;
             }
             if ($question->id() == $movequestion->id()) {
-                $DB->update_record('questionnaire_question', (object)['id' => $movequestion->id(), 'position' => $movetopos]);
+                question_record::update_position($movequestion->id(), $movetopos);
                 continue;
             }
-            $DB->update_record('questionnaire_question', (object)['id' => $question->id(), 'position' => $index]);
+            question_record::update_position($question->id(), $index);
             $index++;
         }
         return true;
@@ -939,24 +929,13 @@ class survey {
      * @param int $sid Survey id.
      */
     public static function restore_deleted_question(int $qid, int $sid): void {
-        global $DB;
-        $sql = "SELECT *, (
-                        SELECT position + 1
-                          FROM {questionnaire_question}
-                         WHERE surveyid = ?
-                           AND deleted IS NULL
-                      ORDER BY position DESC
-                         LIMIT 1) as lastposition
-                  FROM {questionnaire_question}
-                 WHERE id = ?
-                   AND surveyid = ?
-                   AND deleted IS NOT NULL";
-        $question = $DB->get_record_sql($sql, [$sid, $qid, $sid]);
-        if ($question) {
-            $question->deleted = null;
-            $question->position = $question->lastposition ?? 1;
-            $DB->update_record('questionnaire_question', $question);
+        $record = question_record::get_soft_deleted($qid, $sid);
+        if ($record === null) {
+            return;
         }
+        $record->set('deleted', null);
+        $record->set('position', question_record::max_active_position_for_survey($sid) + 1);
+        $record->update();
     }
 
     /**
