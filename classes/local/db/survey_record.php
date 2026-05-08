@@ -148,6 +148,24 @@ class survey_record extends \core\persistent {
     }
 
     /**
+     * Return every survey that has no linked questionnaire instance row.
+     *
+     * Used by the cleanup task to garbage-collect surveys whose questionnaire
+     * was deleted without taking the survey with it (because the survey was
+     * shared at the time, or because of a partial-delete bug in older versions).
+     *
+     * @return self[]
+     */
+    public static function get_orphaned(): array {
+        global $DB;
+        $sql = 'SELECT qs.* FROM {' . static::TABLE . '} qs
+                LEFT JOIN {questionnaire} q ON q.sid = qs.id
+                WHERE q.sid IS NULL';
+        $records = $DB->get_records_sql($sql);
+        return array_map(fn($r) => new static(0, $r), $records);
+    }
+
+    /**
      * Create a new survey record from survey data.
      *
      * @param stdClass $sdata Survey data object.
