@@ -682,9 +682,9 @@ final class questionnaire_test extends \advanced_testcase {
 
         $areas = $q->get_all_file_areas();
         $this->assertArrayHasKey('sectionheading', $areas);
-        $this->assertContains((string)$sectionid, $areas['sectionheading']);
+        $this->assertContains((int)$sectionid, $areas['sectionheading']);
         $this->assertArrayHasKey('feedback', $areas);
-        $this->assertContains((string)$feedbackid, $areas['feedback']);
+        $this->assertContains((int)$feedbackid, $areas['feedback']);
     }
 
     // Helpers for dependency tests.
