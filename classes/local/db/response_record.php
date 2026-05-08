@@ -112,6 +112,74 @@ class response_record extends \core\persistent {
     }
 
     /**
+     * Count complete responses for one questionnaire instance.
+     *
+     * @param int $questionnaireid Restrict to this instance.
+     * @param int|false $userid Restrict to a specific user, or false for all users.
+     * @param int $groupid Restrict to members of this group, or 0 for no group filter.
+     * @return int
+     */
+    public static function count_complete_for_questionnaire(
+        int $questionnaireid,
+        $userid = false,
+        int $groupid = 0
+    ): int {
+        global $DB;
+
+        $params = ['questionnaireid' => $questionnaireid, 'status' => 'y'];
+        $sql = 'SELECT COUNT(r.id)
+                  FROM {questionnaire_response} r ';
+        if ($groupid != 0) {
+            $sql .= 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
+        }
+        $sql .= 'WHERE r.questionnaireid = :questionnaireid AND r.complete = :status';
+        if ($groupid != 0) {
+            $sql .= ' AND gm.groupid = :groupid';
+            $params['groupid'] = $groupid;
+        }
+        if ($userid) {
+            $sql .= ' AND r.userid = :userid';
+            $params['userid'] = $userid;
+        }
+        return $DB->count_records_sql($sql, $params);
+    }
+
+    /**
+     * Count complete responses across every questionnaire instance that points at the given (public) survey.
+     *
+     * @param int $surveyid The public-master survey id.
+     * @param int|false $userid Restrict to a specific user, or false for all users.
+     * @param int $groupid Restrict to members of this group, or 0 for no group filter.
+     * @return int
+     */
+    public static function count_complete_for_public_survey(
+        int $surveyid,
+        $userid = false,
+        int $groupid = 0
+    ): int {
+        global $DB;
+
+        $params = ['surveyid' => $surveyid, 'status' => 'y'];
+        $sql = 'SELECT COUNT(r.id)
+                  FROM {questionnaire_response} r
+                  INNER JOIN {questionnaire} q ON r.questionnaireid = q.id
+                  INNER JOIN {questionnaire_survey} s ON q.sid = s.id ';
+        if ($groupid != 0) {
+            $sql .= 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
+        }
+        $sql .= 'WHERE s.id = :surveyid AND r.complete = :status';
+        if ($groupid != 0) {
+            $sql .= ' AND gm.groupid = :groupid';
+            $params['groupid'] = $groupid;
+        }
+        if ($userid) {
+            $sql .= ' AND r.userid = :userid';
+            $params['userid'] = $userid;
+        }
+        return $DB->count_records_sql($sql, $params);
+    }
+
+    /**
      * Return the most recent incomplete response record for the given questionnaire and user, or null.
      *
      * @param int $questionnaireid

@@ -129,6 +129,21 @@ class questionnaire_record extends \core\persistent {
     }
 
     /**
+     * Return the questionnaire record linked to the given survey within the given course, or null.
+     *
+     * Used to find the "original" public questionnaire — the one whose course owns the survey,
+     * when the current questionnaire is a copy that points at the same shared survey.
+     *
+     * @param int $surveyid
+     * @param int $courseid
+     * @return self|null
+     */
+    public static function get_for_survey_in_course(int $surveyid, int $courseid): ?self {
+        $records = static::get_records(['sid' => $surveyid, 'course' => $courseid]);
+        return !empty($records) ? reset($records) : null;
+    }
+
+    /**
      * Create a new questionnaire record from mod_form data.
      *
      * @param stdClass $formdata Form data from mod_form.

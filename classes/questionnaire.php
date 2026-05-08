@@ -597,41 +597,17 @@ class questionnaire {
      * @return int
      */
     public function count_submissions($userid = false, int $groupid = 0): int {
-        global $DB;
-
-        $params = [];
-        $groupsql = '';
-        $groupcnd = '';
-        if ($groupid != 0) {
-            $groupsql = 'INNER JOIN {groups_members} gm ON r.userid = gm.userid ';
-            $groupcnd = ' AND gm.groupid = :groupid ';
-            $params['groupid'] = $groupid;
-        }
-
-        if ($this->survey_is_public_master()) {
-            $sql = 'SELECT COUNT(r.id) ' .
-                'FROM {questionnaire_response} r ' .
-                'INNER JOIN {questionnaire} q ON r.questionnaireid = q.id ' .
-                'INNER JOIN {questionnaire_survey} s ON q.sid = s.id ' .
-                $groupsql .
-                'WHERE s.id = :surveyid AND r.complete = :status' . $groupcnd;
-            $params['surveyid'] = $this->survey->id();
-            $params['status'] = 'y';
-        } else {
-            $sql = 'SELECT COUNT(r.id) ' .
-                'FROM {questionnaire_response} r ' .
-                $groupsql .
-                'WHERE r.questionnaireid = :questionnaireid AND r.complete = :status' . $groupcnd;
-            $params['questionnaireid'] = $this->id();
-            $params['status'] = 'y';
-        }
-
-        if ($userid) {
-            $sql .= ' AND r.userid = :userid';
-            $params['userid'] = $userid;
-        }
-
-        return $DB->count_records_sql($sql, $params);
+        return $this->survey_is_public_master()
+            ? \mod_questionnaire\local\db\response_record::count_complete_for_public_survey(
+                $this->surveyid(),
+                $userid,
+                $groupid
+            )
+            : \mod_questionnaire\local\db\response_record::count_complete_for_questionnaire(
+                $this->id(),
+                $userid,
+                $groupid
+            );
     }
 
     /**
@@ -1197,13 +1173,13 @@ class questionnaire {
             if (!$questionnaire->survey_is_public_master()) {
                 // For a public questionnaire, look for the original public questionnaire that it is based on.
                 $surveycourseid = $questionnaire->survey()->owning_courseid();
-                $originalquestionnaire = $DB->get_record(
-                    'questionnaire',
-                    ['sid' => $questionnaire->surveyid(), 'course' => $surveycourseid]
+                $originalquestionnaire = questionnaire_record::get_for_survey_in_course(
+                    $questionnaire->surveyid(),
+                    $surveycourseid
                 );
                 $cmoriginal = get_coursemodule_from_instance(
                     "questionnaire",
-                    $originalquestionnaire->id,
+                    $originalquestionnaire->get('id'),
                     $surveycourseid
                 );
                 $contextoriginal = \context_course::instance($surveycourseid, MUST_EXIST);
