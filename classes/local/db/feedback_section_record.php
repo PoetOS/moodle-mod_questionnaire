@@ -74,10 +74,24 @@ class feedback_section_record extends \core\persistent {
      * Return all feedback sections for a given survey.
      *
      * @param int $surveyid
+     * @param string $sort Optional ORDER BY clause (e.g. 'section ASC').
      * @return feedback_section_record[]
      */
-    public static function get_for_survey(int $surveyid): array {
-        return static::get_records(['surveyid' => $surveyid]);
+    public static function get_for_survey(int $surveyid, string $sort = ''): array {
+        return static::get_records(['surveyid' => $surveyid], $sort);
+    }
+
+    /**
+     * Return the highest section number among feedback sections for the survey,
+     * or 0 if there are none.
+     *
+     * @param int $surveyid
+     * @return int
+     */
+    public static function max_section_for_survey(int $surveyid): int {
+        global $DB;
+        $max = $DB->get_field(static::TABLE, 'MAX(section)', ['surveyid' => $surveyid]);
+        return (int) ($max ?: 0);
     }
 
     /**

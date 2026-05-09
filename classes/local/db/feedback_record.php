@@ -76,8 +76,8 @@ class feedback_record extends \core\persistent {
      * @param int $sectionid
      * @return feedback_record[]
      */
-    public static function get_for_section(int $sectionid): array {
-        return static::get_records(['sectionid' => $sectionid]);
+    public static function get_for_section(int $sectionid, string $sort = ''): array {
+        return static::get_records(['sectionid' => $sectionid], $sort);
     }
 
     /**
