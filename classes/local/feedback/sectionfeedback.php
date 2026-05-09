@@ -16,6 +16,7 @@
 
 namespace mod_questionnaire\local\feedback;
 
+use mod_questionnaire\local\db\feedback_record;
 use invalid_parameter_exception;
 use coding_exception;
 
@@ -54,10 +55,11 @@ class sectionfeedback {
     public function __construct($id = 0, $record = null) {
         // Return a new section based on the data id.
         if ($id != 0) {
-            $record = $this->get_sectionfeedback($id);
-            if (!$record) {
+            $persistent = feedback_record::get_record(['id' => $id]);
+            if (!$persistent) {
                 throw new invalid_parameter_exception('No section feedback exists with that ID.');
             }
+            $record = $persistent->to_record();
         }
         if (($id != 0) || is_object($record)) {
             $this->loadproperties($record);
@@ -70,7 +72,6 @@ class sectionfeedback {
      * @return sectionfeedback
      */
     public static function new_sectionfeedback($data) {
-        global $DB;
         $newsf = new self();
         $newsf->sectionid = $data->sectionid;
         $newsf->feedbacklabel = $data->feedbacklabel;
@@ -78,8 +79,18 @@ class sectionfeedback {
         $newsf->feedbacktextformat = $data->feedbacktextformat;
         $newsf->minscore = $data->minscore;
         $newsf->maxscore = $data->maxscore;
-        $newsfid = $DB->insert_record(self::TABLE, $newsf);
-        $newsf->id = $newsfid;
+
+        $record = new feedback_record(0, (object)[
+            'sectionid' => $newsf->sectionid,
+            'feedbacklabel' => $newsf->feedbacklabel,
+            'feedbacktext' => $newsf->feedbacktext,
+            'feedbacktextformat' => $newsf->feedbacktextformat,
+            'minscore' => $newsf->minscore,
+            'maxscore' => $newsf->maxscore,
+        ]);
+        $record->create();
+
+        $newsf->id = $record->get('id');
         return $newsf;
     }
 
@@ -90,20 +101,15 @@ class sectionfeedback {
      * @throws coding_exception
      */
     public function update() {
-        global $DB;
-
-        $DB->update_record(self::TABLE, $this);
-    }
-
-    /**
-     * Return the record specified by the id.
-     * @param int $id
-     * @return mixed
-     */
-    protected function get_sectionfeedback($id) {
-        global $DB;
-
-        return $DB->get_record(self::TABLE, ['id' => $id]);
+        $record = new feedback_record($this->id, (object)[
+            'sectionid' => $this->sectionid,
+            'feedbacklabel' => $this->feedbacklabel,
+            'feedbacktext' => $this->feedbacktext,
+            'feedbacktextformat' => $this->feedbacktextformat,
+            'minscore' => $this->minscore,
+            'maxscore' => $this->maxscore,
+        ]);
+        $record->update();
     }
 
     /**
@@ -117,18 +123,5 @@ class sectionfeedback {
                 $this->$property = $record->$property;
             }
         }
-    }
-
-    /**
-     * Get the data for this section's feedback from the database.
-     *
-     * @param int $id
-     * @return mixed
-     * @throws \dml_exception
-     */
-    protected function get_section($id) {
-        global $DB;
-
-        return $DB->get_record(self::TABLE, ['id' => $id]);
     }
 }

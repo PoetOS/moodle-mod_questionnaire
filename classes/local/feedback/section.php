@@ -16,6 +16,8 @@
 
 namespace mod_questionnaire\local\feedback;
 
+use mod_questionnaire\local\db\feedback_record;
+use mod_questionnaire\local\db\feedback_section_record;
 use invalid_parameter_exception;
 use coding_exception;
 
@@ -90,19 +92,26 @@ class section {
      * @return section
      */
     public static function new_section($surveyid, $sectionlabel = '') {
-        global $DB;
-
         $newsection = new self([], []);
         if (empty($sectionlabel)) {
             $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
         }
-        $maxsection = $DB->get_field(self::TABLE, 'MAX(section)', ['surveyid' => $surveyid]);
         $newsection->surveyid = $surveyid;
-        $newsection->section = $maxsection + 1;
+        $newsection->section = feedback_section_record::max_section_for_survey($surveyid) + 1;
         $newsection->sectionlabel = $sectionlabel;
         $newsection->scorecalculation = $newsection->encode_scorecalculation([]);
-        $newsecid = $DB->insert_record(self::TABLE, $newsection);
-        $newsection->id = $newsecid;
+
+        $record = new feedback_section_record(0, (object)[
+            'surveyid' => $newsection->surveyid,
+            'section' => $newsection->section,
+            'sectionlabel' => $newsection->sectionlabel,
+            'sectionheading' => $newsection->sectionheading,
+            'sectionheadingformat' => $newsection->sectionheadingformat,
+            'scorecalculation' => $newsection->scorecalculation,
+        ]);
+        $record->create();
+
+        $newsection->id = $record->get('id');
         $newsection->scorecalculation = [];
         return $newsection;
     }
@@ -119,42 +128,33 @@ class section {
      * @throws invalid_parameter_exception
      */
     public function load_section($params) {
-        global $DB;
-
         if (!is_array($params)) {
             throw new coding_exception('Invalid data provided.');
         } else if (isset($params['id'])) {
-            $where = 'WHERE fs.id = :id ';
+            $sectionrec = feedback_section_record::get_record(['id' => $params['id']]);
         } else if (isset($params['surveyid'])) {
-            $where = 'WHERE fs.surveyid = :surveyid AND fs.section = :sectionnum ';
-            if (!isset($params['sectionnum'])) {
-                $params['sectionnum'] = 1;
-            }
+            $sectionrec = feedback_section_record::get_record([
+                'surveyid' => $params['surveyid'],
+                'section' => $params['sectionnum'] ?? 1,
+            ]);
         } else {
             throw new coding_exception('No valid data parameters provided.');
         }
 
-        $select = 'SELECT f.id as fbid, fs.*, f.feedbacklabel, f.feedbacktext, f.feedbacktextformat, f.minscore, f.maxscore ';
-        $from = 'FROM {' . self::TABLE . '} fs LEFT JOIN {' . sectionfeedback::TABLE . '} f ON fs.id = f.sectionid ';
-        $order = 'ORDER BY minscore DESC';
-
-        if (!($feedbackrecs = $DB->get_records_sql($select . $from . $where . $order, $params))) {
+        if (!$sectionrec) {
             throw new invalid_parameter_exception('No feedback sections exists for that data.');
         }
-        foreach ($feedbackrecs as $fbid => $feedbackrec) {
-            if (empty($this->id)) {
-                $this->id = $feedbackrec->id;
-                $this->surveyid = $feedbackrec->surveyid;
-                $this->section = $feedbackrec->section;
-                $this->scorecalculation = $this->get_valid_scorecalculation($feedbackrec->scorecalculation);
-                $this->sectionlabel = $feedbackrec->sectionlabel;
-                $this->sectionheading = $feedbackrec->sectionheading;
-                $this->sectionheadingformat = $feedbackrec->sectionheadingformat;
-            }
-            if (!empty($fbid)) {
-                $feedbackrec->id = $fbid;
-                $this->sectionfeedback[$fbid] = new sectionfeedback(0, $feedbackrec);
-            }
+
+        $this->id = $sectionrec->get('id');
+        $this->surveyid = $sectionrec->get('surveyid');
+        $this->section = $sectionrec->get('section');
+        $this->scorecalculation = $this->get_valid_scorecalculation($sectionrec->get('scorecalculation'));
+        $this->sectionlabel = $sectionrec->get('sectionlabel');
+        $this->sectionheading = $sectionrec->get('sectionheading');
+        $this->sectionheadingformat = $sectionrec->get('sectionheadingformat');
+
+        foreach (feedback_record::get_for_section($this->id, 'minscore DESC') as $feedbackrec) {
+            $this->sectionfeedback[$feedbackrec->get('id')] = new sectionfeedback(0, $feedbackrec->to_record());
         }
     }
 
@@ -182,15 +182,15 @@ class section {
      * @throws coding_exception
      */
     public function set_new_scorecalculation($scorecalculation = null) {
-        global $DB;
-
         if ($scorecalculation == null) {
             $scorecalculation = $this->scorecalculation;
         }
 
         if (is_array($scorecalculation)) {
             $newscore = $this->encode_scorecalculation($scorecalculation);
-            $DB->set_field(self::TABLE, 'scorecalculation', $newscore, ['id' => $this->id]);
+            $record = new feedback_section_record($this->id);
+            $record->set('scorecalculation', $newscore);
+            $record->update();
             $this->scorecalculation = $scorecalculation;
         } else {
             throw new coding_exception('Invalid scorecalculation format.');
@@ -216,20 +216,19 @@ class section {
      * This will also adjust the section numbers so that they are sequential and begin at 1.
      */
     public function delete() {
-        global $DB;
-
         $this->delete_sectionfeedback();
-        $DB->delete_records(self::TABLE, ['id' => $this->id]);
+
+        $record = new feedback_section_record($this->id);
+        $record->delete();
 
         // Resequence the section numbers as necessary.
-        if ($allsections = $DB->get_records(self::TABLE, ['surveyid' => $this->surveyid], 'section ASC')) {
-            $count = 1;
-            foreach ($allsections as $id => $section) {
-                if ($section->section != $count) {
-                    $DB->set_field(self::TABLE, 'section', $count, ['id' => $id]);
-                }
-                $count++;
+        $count = 1;
+        foreach (feedback_section_record::get_for_survey($this->surveyid, 'section ASC') as $section) {
+            if ($section->get('section') != $count) {
+                $section->set('section', $count);
+                $section->update();
             }
+            $count++;
         }
     }
 
@@ -239,10 +238,8 @@ class section {
      * @throws \dml_exception
      */
     public function delete_sectionfeedback() {
-        global $DB;
-
         // It's quicker to delete all of the records at once then to go through the array and delete each object.
-        $DB->delete_records(sectionfeedback::TABLE, ['sectionid' => $this->id]);
+        feedback_record::delete_for_section($this->id);
         $this->sectionfeedback = [];
     }
 
@@ -253,10 +250,18 @@ class section {
      * @throws coding_exception
      */
     public function update() {
-        global $DB;
-
         $this->scorecalculation = $this->encode_scorecalculation($this->scorecalculation);
-        $DB->update_record(self::TABLE, $this);
+
+        $record = new feedback_section_record($this->id, (object)[
+            'surveyid' => $this->surveyid,
+            'section' => $this->section,
+            'sectionlabel' => $this->sectionlabel,
+            'sectionheading' => $this->sectionheading,
+            'sectionheadingformat' => $this->sectionheadingformat,
+            'scorecalculation' => $this->scorecalculation,
+        ]);
+        $record->update();
+
         $this->scorecalculation = $this->get_valid_scorecalculation($this->scorecalculation);
 
         foreach ($this->sectionfeedback as $sectionfeedback) {
