@@ -65,4 +65,36 @@ class response_rank_record extends \core\persistent {
     public static function get_for_response(int $responseid): array {
         return static::get_records(['responseid' => $responseid]);
     }
+
+    /**
+     * Return all rank answers for a given question.
+     *
+     * @param int $questionid
+     * @return response_rank_record[]
+     */
+    public static function get_for_question(int $questionid): array {
+        return static::get_records(['questionid' => $questionid]);
+    }
+
+    /**
+     * Bulk-increment every non-negative rankvalue by 1, optionally restricted to a set of questions.
+     *
+     * Used by the one-time upgrade routine that converted zero-based rank values to one-based.
+     *
+     * @param int[]|null $questionids Restrict to these question ids; null applies to all questions.
+     * @return bool
+     */
+    public static function increment_rankvalues(?array $questionids = null): bool {
+        global $DB;
+        $sql = 'UPDATE {' . static::TABLE . '} SET rankvalue = (rankvalue + 1) WHERE rankvalue >= 0';
+        $params = [];
+        if ($questionids !== null) {
+            if (empty($questionids)) {
+                return true;
+            }
+            [$insql, $params] = $DB->get_in_or_equal($questionids);
+            $sql .= ' AND questionid ' . $insql;
+        }
+        return $DB->execute($sql, $params);
+    }
 }

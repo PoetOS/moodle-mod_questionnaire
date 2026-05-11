@@ -74,6 +74,7 @@ class feedback_record extends \core\persistent {
      * Return all feedback bands for a given section.
      *
      * @param int $sectionid
+     * @param string $sort Optional ORDER BY clause (e.g. 'minscore DESC').
      * @return feedback_record[]
      */
     public static function get_for_section(int $sectionid, string $sort = ''): array {

@@ -16,6 +16,9 @@
 
 namespace mod_questionnaire\local\question;
 
+use mod_questionnaire\local\db\question_record;
+use mod_questionnaire\local\db\response_rank_record;
+
 /**
  * This file contains the parent class for rate question types.
  *
@@ -1039,8 +1042,6 @@ class rate extends question {
      * @param \stdClass|null $questionrec
      */
     public static function move_nameddegree_choices(int $qid = 0, ?\stdClass $questionrec = null) {
-        global $DB;
-
         if ($qid !== 0) {
             $question = new rate($qid);
         } else {
@@ -1068,21 +1069,14 @@ class rate extends question {
                     \mod_questionnaire\local\question\choice::delete_from_db_by_id($choiceid);
                 }
 
-                // First get all existing rank responses for this question.
-                $responses = $DB->get_recordset('questionnaire_response_rank', ['questionid' => $question->id()]);
-                // Iterating over each response record ensures we won't change an existing record more than once.
-                foreach ($responses as $response) {
-                    // Then, if the old value exists, set it to the new one.
-                    if (isset($newvalues[$response->rankvalue])) {
-                        $DB->set_field(
-                            'questionnaire_response_rank',
-                            'rankvalue',
-                            $newvalues[$response->rankvalue],
-                            ['id' => $response->id()]
-                        );
+                // Translate every existing rank response for this question to its new value.
+                foreach (response_rank_record::get_for_question($question->id()) as $response) {
+                    $oldvalue = $response->get('rankvalue');
+                    if (isset($newvalues[$oldvalue])) {
+                        $response->set('rankvalue', $newvalues[$oldvalue]);
+                        $response->update();
                     }
                 }
-                $responses->close();
             }
         }
     }
@@ -1094,52 +1088,26 @@ class rate extends question {
      * @param int|null $surveyid
      */
     public static function move_all_nameddegree_choices(?int $surveyid = null) {
-        global $DB;
-
         // This operation might take a while. Cancel PHP timeouts for this.
         \core_php_time_limit::raise();
 
-        // First, let's adjust all rate answers from zero based to one based (see GHI223).
-        // If a specific survey is being dealt with, only use the questions from that survey.
-        $skip = false;
+        $ratequests = question_record::get_for_type(QUESRATE, $surveyid);
+
+        // First, adjust all rate answers from zero based to one based (see GHI223).
+        // Restrict the bulk update to this survey's rate questions when one was supplied;
+        // skip entirely when the survey has none.
         if ($surveyid !== null) {
-            $qids = $DB->get_records_menu(
-                'questionnaire_question',
-                ['surveyid' => $surveyid,
-                'typeid' => QUESRATE],
-                '',
-                'id,surveyid'
-            );
-            if (!empty($qids)) {
-                [$qsql, $qparams] = $DB->get_in_or_equal(array_keys($qids));
-            } else {
-                // No relevant questions, so no need to do this step.
-                $skip = true;
+            if (empty($ratequests)) {
+                return;
             }
+            response_rank_record::increment_rankvalues(array_map(fn($r) => $r->get('id'), $ratequests));
+        } else {
+            response_rank_record::increment_rankvalues();
         }
 
-        // If we're doing this step, let's do it.
-        if (!$skip) {
-            $select = 'UPDATE {questionnaire_response_rank} ' .
-                'SET rankvalue = (rankvalue + 1) ' .
-                'WHERE (rankvalue >= 0)';
-            if ($surveyid !== null) {
-                $select .= ' AND (questionid ' . $qsql . ')';
-            } else {
-                $qparams = [];
-            }
-            $DB->execute($select, $qparams);
+        foreach ($ratequests as $qrec) {
+            self::move_nameddegree_choices(0, $qrec->to_record());
         }
-
-        $args = ['typeid' => QUESRATE];
-        if ($surveyid !== null) {
-            $args['surveyid'] = $surveyid;
-        }
-        $ratequests = $DB->get_recordset('questionnaire_question', $args);
-        foreach ($ratequests as $questionrec) {
-            self::move_nameddegree_choices(0, $questionrec);
-        }
-        $ratequests->close();
     }
 
     /**
