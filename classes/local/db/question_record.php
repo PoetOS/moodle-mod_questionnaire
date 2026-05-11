@@ -118,6 +118,21 @@ class question_record extends \core\persistent {
     }
 
     /**
+     * Return question records of the given type, optionally restricted to a single survey.
+     *
+     * @param int $typeid
+     * @param int|null $surveyid Restrict to this survey, or null for all surveys.
+     * @return question_record[]
+     */
+    public static function get_for_type(int $typeid, ?int $surveyid = null): array {
+        $filters = ['typeid' => $typeid];
+        if ($surveyid !== null) {
+            $filters['surveyid'] = $surveyid;
+        }
+        return static::get_records($filters);
+    }
+
+    /**
      * Return every soft-deleted question record for the given survey, excluding page breaks,
      * ordered by deletion time (most recent first).
      *
