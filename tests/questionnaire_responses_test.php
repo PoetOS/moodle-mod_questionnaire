@@ -389,4 +389,97 @@ final class questionnaire_responses_test extends \advanced_testcase {
         // No overlap between pages.
         $this->assertEmpty(array_intersect($page0, $page1));
     }
+
+    // Tests for count_distinct_responders().
+
+    /**
+     * Asserts count_distinct_responders() counts each user once regardless of how many responses they have.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::count_distinct_responders
+     */
+    public function test_count_distinct_responders_counts_unique_users(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $questionnaire = $generator->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id]);
+
+        $u1 = $generator->create_user();
+        $u2 = $generator->create_user();
+        $u3 = $generator->create_user();
+
+        // u1 has two responses; should still count once.
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(),
+            'userid' => $u1->id, 'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+        ]);
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(),
+            'userid' => $u1->id, 'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(),
+            'userid' => $u2->id, 'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+        ]);
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(),
+            'userid' => $u3->id, 'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+        ]);
+
+        $this->assertSame(3, $questionnaire->responses()->count_distinct_responders());
+    }
+
+    /**
+     * Asserts count_distinct_responders() restricts the count to members of the given groups.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::count_distinct_responders
+     */
+    public function test_count_distinct_responders_respects_group_filter(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $questionnaire = $generator->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id]);
+
+        $u1 = $generator->create_user();
+        $u2 = $generator->create_user();
+        $u3 = $generator->create_user();
+
+        foreach ([$u1, $u2, $u3] as $u) {
+            $DB->insert_record('questionnaire_response', (object)[
+                'questionnaireid' => $questionnaire->id(),
+                'userid' => $u->id, 'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+            ]);
+        }
+
+        $group = $generator->create_group(['courseid' => $course->id]);
+        $DB->insert_record('groups_members', (object)['groupid' => $group->id, 'userid' => $u1->id]);
+        $DB->insert_record('groups_members', (object)['groupid' => $group->id, 'userid' => $u2->id]);
+
+        $this->assertSame(2, $questionnaire->responses()->count_distinct_responders([$group->id]));
+        $this->assertSame(3, $questionnaire->responses()->count_distinct_responders());
+    }
+
+    /**
+     * Asserts count_distinct_responders() returns zero when no responses exist.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::count_distinct_responders
+     */
+    public function test_count_distinct_responders_returns_zero_when_empty(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $questionnaire = $generator->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id]);
+
+        $this->assertSame(0, $questionnaire->responses()->count_distinct_responders());
+    }
 }
