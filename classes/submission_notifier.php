@@ -252,11 +252,17 @@ class submission_notifier {
     private function format_answers_for_email(array $answers): array {
         global $USER;
 
+        $formatted = ['plaintext' => '', 'html' => ''];
+        // generate_csv returns an array of rows. We need at least a header row (0) and
+        // a data row (1). Anything less means there is nothing to format.
+        if (count($answers) < 2) {
+            return $formatted;
+        }
+
         $endhtml = "\r\n<br />";
         $endplaintext = "\r\n";
         reset($answers);
 
-        $formatted = ['plaintext' => '', 'html' => ''];
         for ($i = 0; $i < count($answers[0]); $i++) {
             $sep = ' : ';
             switch ($i) {

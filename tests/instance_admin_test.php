@@ -40,13 +40,13 @@ final class instance_admin_test extends \advanced_testcase {
      * @return \stdClass
      */
     private function build_add_formdata(int $courseid, string $name = 'New survey'): \stdClass {
-        $cm = $this->getDataGenerator()->create_module('questionnaire', [
+        $placeholder = $this->getDataGenerator()->create_module('questionnaire', [
             'course' => $courseid,
             'name' => 'Placeholder for cm',
         ]);
         // We only use the placeholder to extract a valid coursemodule id.
         $formdata = new \stdClass();
-        $formdata->coursemodule = $cm->cmid;
+        $formdata->coursemodule = $placeholder->coursemodule()->id;
         $formdata->course = $courseid;
         $formdata->name = $name;
         $formdata->intro = '';
@@ -127,6 +127,7 @@ final class instance_admin_test extends \advanced_testcase {
 
         $data = new \stdClass();
         $data->instance = $questionnaire->id();
+        $data->course = $course->id;
         $data->coursemodule = $questionnaire->coursemodule()->id;
         $data->sid = $questionnaire->surveyid();
         $data->realm = 'private';
