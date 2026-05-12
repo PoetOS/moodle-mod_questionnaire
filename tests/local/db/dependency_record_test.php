@@ -25,8 +25,6 @@
 
 namespace mod_questionnaire\local\db;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Unit tests for mod_questionnaire\local\db\dependency_record.
  *
@@ -113,11 +111,11 @@ final class dependency_record_test extends \advanced_testcase {
         $qid = 300;
         $other = 301;
 
-        // qid depends on other.
+        // Qid depends on other.
         $this->make_dep($sid, $qid, $other);
-        // other depends on qid (qid is the depend target).
+        // Other depends on qid (qid is the depend target).
         $this->make_dep($sid, $other, $qid);
-        // unrelated.
+        // Unrelated.
         $kept = $this->make_dep($sid, 999, 998);
 
         $this->assertTrue(dependency_record::delete_for_question($qid));

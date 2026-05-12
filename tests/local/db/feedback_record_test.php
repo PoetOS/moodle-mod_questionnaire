@@ -25,8 +25,6 @@
 
 namespace mod_questionnaire\local\db;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Unit tests for mod_questionnaire\local\db\feedback_record.
  *
@@ -78,7 +76,8 @@ final class feedback_record_test extends \advanced_testcase {
         $high = $this->make_feedback($sid, 75, 100);
         $mid = $this->make_feedback($sid, 50, 75);
 
-        $sorted = feedback_record::get_for_section($sid, 'minscore', 'DESC');
+        $sorted = array_values(feedback_record::get_for_section($sid, 'minscore', 'DESC'));
+        $this->assertCount(3, $sorted);
         $this->assertSame($high, $sorted[0]->get('id'));
         $this->assertSame($mid, $sorted[1]->get('id'));
         $this->assertSame($low, $sorted[2]->get('id'));

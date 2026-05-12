@@ -25,8 +25,6 @@
 
 namespace mod_questionnaire\local\db;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Unit tests for mod_questionnaire\local\db\response_rank_record.
  *

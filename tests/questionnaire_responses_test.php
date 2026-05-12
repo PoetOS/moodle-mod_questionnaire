@@ -411,7 +411,7 @@ final class questionnaire_responses_test extends \advanced_testcase {
         $u2 = $generator->create_user();
         $u3 = $generator->create_user();
 
-        // u1 has two responses; should still count once.
+        // User u1 has two responses; should still count once.
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $questionnaire->id(),
             'userid' => $u1->id, 'submitted' => time(), 'complete' => 'y', 'grade' => 0,
