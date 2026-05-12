@@ -225,7 +225,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertFalse($this->make_questionnaire(['respondenttype' => 'fullname'])->is_anonymous());
     }
 
-    // Tests for survey_is_public() and survey_is_template().
+    // Tests for the survey_is_public and survey_is_template state methods.
 
     /**
      * Asserts survey_is_public() returns correct value based on realm.
@@ -249,7 +249,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertFalse($this->make_questionnaire([], ['realm' => 'private'])->survey_is_template());
     }
 
-    // Tests for survey_is_public_master() and is_survey_owner().
+    // Tests for the survey_is_public_master and is_survey_owner state methods.
 
     /**
      * Asserts survey_is_public_master() returns true when courses match.
@@ -392,7 +392,7 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertStringContainsString(userdate($closedate), $msg);
     }
 
-    // Tests for navigate() and pages_autonumbered().
+    // Tests for the navigate and pages_autonumbered accessors.
 
     /**
      * Asserts navigate() returns the raw integer from the module record.
@@ -752,7 +752,7 @@ final class questionnaire_test extends \advanced_testcase {
         };
     }
 
-    // Tests for default_page_count(), confirm_delete_param(), restore_param().
+    // Tests for the default_page_count, confirm_delete_param and restore_param behavior helpers.
 
     /**
      * Asserts default_page_count() returns the expected default value of 20.
