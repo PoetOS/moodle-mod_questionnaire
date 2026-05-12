@@ -27,8 +27,6 @@ namespace mod_questionnaire\local\db;
 
 use mod_questionnaire\local\question_type;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Unit tests for mod_questionnaire\local\db\question_record.
  *
