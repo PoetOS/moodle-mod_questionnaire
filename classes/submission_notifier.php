@@ -253,7 +253,7 @@ class submission_notifier {
         global $USER;
 
         $formatted = ['plaintext' => '', 'html' => ''];
-        // generate_csv returns an array of rows. We need at least a header row (0) and
+        // The generate_csv result is an array of rows; we need at least a header row (0) and
         // a data row (1). Anything less means there is nothing to format.
         if (count($answers) < 2) {
             return $formatted;
