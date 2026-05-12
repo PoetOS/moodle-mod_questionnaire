@@ -74,11 +74,12 @@ class feedback_section_record extends \core\persistent {
      * Return all feedback sections for a given survey.
      *
      * @param int $surveyid
-     * @param string $sort Optional ORDER BY clause (e.g. 'section ASC').
+     * @param string $sort Optional sort field name (e.g. 'section').
+     * @param string $order Sort direction; ignored when $sort is empty.
      * @return feedback_section_record[]
      */
-    public static function get_for_survey(int $surveyid, string $sort = ''): array {
-        return static::get_records(['surveyid' => $surveyid], $sort);
+    public static function get_for_survey(int $surveyid, string $sort = '', string $order = 'ASC'): array {
+        return static::get_records(['surveyid' => $surveyid], $sort, $order);
     }
 
     /**

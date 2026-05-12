@@ -153,7 +153,7 @@ class section {
         $this->sectionheading = $sectionrec->get('sectionheading');
         $this->sectionheadingformat = $sectionrec->get('sectionheadingformat');
 
-        foreach (feedback_record::get_for_section($this->id, 'minscore DESC') as $feedbackrec) {
+        foreach (feedback_record::get_for_section($this->id, 'minscore', 'DESC') as $feedbackrec) {
             $this->sectionfeedback[$feedbackrec->get('id')] = new sectionfeedback(0, $feedbackrec->to_record());
         }
     }
@@ -223,7 +223,7 @@ class section {
 
         // Resequence the section numbers as necessary.
         $count = 1;
-        foreach (feedback_section_record::get_for_survey($this->surveyid, 'section ASC') as $section) {
+        foreach (feedback_section_record::get_for_survey($this->surveyid, 'section') as $section) {
             if ($section->get('section') != $count) {
                 $section->set('section', $count);
                 $section->update();
