@@ -294,7 +294,7 @@ final class question_navigator_test extends \advanced_testcase {
         $this->assertEquals('and', $result[1][2][0]->andor);
     }
 
-    // Tests for eligible_questions_on_page(), next_page(), prev_page().
+    // Tests for the eligible_questions_on_page, next_page and prev_page navigation methods.
 
     /**
      * Asserts eligible_questions_on_page() returns true for a question with no dependencies.
