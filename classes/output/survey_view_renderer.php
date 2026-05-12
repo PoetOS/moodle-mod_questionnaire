@@ -126,7 +126,7 @@ class survey_view_renderer {
             if (isset($SESSION->questionnaire->end) && $SESSION->questionnaire->end == true) {
                 return null;
             }
-            $msg = $q->response_check_format($formdata->sec, $formdata);
+            $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
             if (empty($msg)) {
                 return null;
             }
@@ -134,14 +134,14 @@ class survey_view_renderer {
         }
 
         if (!empty($formdata->resume) && ($q->resume())) {
-            $q->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $q->response_insert($formdata, $quser, true);
+            $q->responses()->response_delete($formdata->rid, $formdata->sec);
+            $formdata->rid = $q->responses()->response_insert($formdata, $quser, true);
             $q->response_goto_saved($action);
             return null;
         }
 
         if (!empty($formdata->next)) {
-            $msg = $q->response_check_format($formdata->sec, $formdata);
+            $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
             if ($msg) {
                 $formdata->next = '';
                 $formdata->rid = $q->existing_response_action($formdata, $userid);
@@ -161,7 +161,7 @@ class survey_view_renderer {
                 $SESSION->questionnaire->end = false;
                 $formdata->sec--;
             }
-            $msg = $q->response_check_format($formdata->sec, $formdata, false, true);
+            $msg = $q->responses()->response_check_format($formdata->sec, $formdata, false, true);
             if ($msg) {
                 $formdata->prev = '';
                 $formdata->rid = $q->existing_response_action($formdata, $userid);
@@ -511,7 +511,7 @@ class survey_view_renderer {
                 if (isset($formdata->rid) && !empty($formdata->rid)) {
                     $q->add_response($formdata->rid);
                 } else {
-                    $q->add_response_from_formdata($formdata);
+                    $q->responses()->add_response_from_formdata($formdata);
                 }
                 $this->page->add_to_page(
                     'questions',

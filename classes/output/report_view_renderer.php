@@ -103,12 +103,12 @@ class report_view_renderer {
         if (data_submitted()) {
             $formdata = data_submitted();
             $formdata->rid = $formdata->rid ?? 0;
-            $q->add_response_from_formdata($formdata);
+            $q->responses()->add_response_from_formdata($formdata);
             $pageerror = '';
             $s = 1;
             $errors = 0;
             foreach ($questionsbysec as $sec) {
-                $errormessage = $q->response_check_format($s, $formdata);
+                $errormessage = $q->responses()->response_check_format($s, $formdata);
                 if ($errormessage) {
                     if ($numsections > 1) {
                         $pageerror = get_string('page', 'questionnaire') . ' ' . $s . ' : ';

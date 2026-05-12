@@ -1841,60 +1841,6 @@ class questionnaire {
         return $max;
     }
 
-    /**
-     * Delegate format-checking to the response manager.
-     *
-     * @param int $section
-     * @param \stdClass $formdata
-     * @param bool $checkmissing
-     * @param bool $checkwrongformat
-     * @return string
-     */
-    public function response_check_format(
-        $section,
-        $formdata,
-        $checkmissing = true,
-        $checkwrongformat = true
-    ) {
-        return $this->responses()->response_check_format(
-            $section,
-            $formdata,
-            $checkmissing,
-            $checkwrongformat,
-            $this->questions()
-        );
-    }
-
-    /**
-     * Delete the specified response (or a section within it).
-     *
-     * @param int $rid
-     * @param int|null $sec
-     */
-    public function response_delete($rid, $sec = null) {
-        $this->responses()->response_delete($rid, $sec);
-    }
-
-    /**
-     * Persist formdata as a new or updated response record.
-     *
-     * @param mixed $responsedata
-     * @param int $userid
-     * @param bool $resume
-     * @return int New response id.
-     */
-    public function response_insert($responsedata, $userid, $resume = false) {
-        return $this->responses()->response_insert($responsedata, $userid, $resume);
-    }
-
-    /**
-     * Populate the in-memory response store from submitted form data.
-     *
-     * @param \stdClass $formdata
-     */
-    public function add_response_from_formdata(\stdClass $formdata) {
-        $this->responses()->add_response_from_formdata($formdata);
-    }
 
     /**
      * Redirect or render the thank-you screen after a submission.
