@@ -514,6 +514,35 @@ class survey {
         return $this->questionsbysec;
     }
 
+    /**
+     * Return true if any question in the given section (or in any section) is required.
+     *
+     * @param int $section 0 to check all sections, otherwise the 1-based section number.
+     * @return bool
+     */
+    public function has_required(int $section = 0): bool {
+        if (empty($this->questions)) {
+            return false;
+        }
+        if ($section <= 0) {
+            foreach ($this->questions as $question) {
+                if ($question->required()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (!array_key_exists($section, $this->questionsbysec)) {
+            return false;
+        }
+        foreach ($this->questionsbysec[$section] as $question) {
+            if ($question->required()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Question administration.
 
     /**

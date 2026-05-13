@@ -189,6 +189,23 @@ class question_record extends \core\persistent {
     }
 
     /**
+     * Count active questions of a given type whose position is below the given value.
+     *
+     * @param int $surveyid
+     * @param int $typeid
+     * @param int $position
+     * @return int
+     */
+    public static function count_active_before_position(int $surveyid, int $typeid, int $position): int {
+        global $DB;
+        return $DB->count_records_select(
+            static::TABLE,
+            'surveyid = :surveyid AND typeid = :typeid AND position < :position AND deleted IS NULL',
+            ['surveyid' => $surveyid, 'typeid' => $typeid, 'position' => $position]
+        );
+    }
+
+    /**
      * Update only the position field of a question row.
      *
      * @param int $questionid

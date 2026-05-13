@@ -83,6 +83,35 @@ final class survey_test extends \advanced_testcase {
     }
 
     /**
+     * Build a minimal stub question with a required() accessor for has_required() tests.
+     *
+     * @param bool $required
+     * @return object
+     */
+    private function make_required_stub(bool $required): object {
+        return new class ($required) {
+            /** @var bool */
+            private bool $req;
+            /**
+             * Constructor.
+             *
+             * @param bool $required
+             */
+            public function __construct(bool $required) {
+                $this->req = $required;
+            }
+            /**
+             * Required flag accessor.
+             *
+             * @return bool
+             */
+            public function required(): bool {
+                return $this->req;
+            }
+        };
+    }
+
+    /**
      * Build a minimal stub question for position-helper tests.
      *
      * @param int   $id           Question id.
@@ -598,5 +627,65 @@ final class survey_test extends \advanced_testcase {
 
         $this->assertArrayHasKey('template-' . $sid, $result);
         $this->assertNotEmpty($result['template-' . $sid]);
+    }
+
+    // Tests for has_required() (pure, no DB).
+
+    /**
+     * Asserts has_required() returns false when there are no questions.
+     *
+     * @covers \mod_questionnaire\survey::has_required
+     */
+    public function test_has_required_false_when_no_questions(): void {
+        $this->assertFalse($this->make_survey()->has_required());
+        $this->assertFalse($this->make_survey()->has_required(2));
+    }
+
+    /**
+     * Asserts has_required() returns true across all sections when any question is required.
+     *
+     * @covers \mod_questionnaire\survey::has_required
+     */
+    public function test_has_required_true_across_all_sections(): void {
+        $survey = $this->make_survey();
+        $survey->set_questions([
+            1 => $this->make_required_stub(false),
+            2 => $this->make_required_stub(true),
+        ]);
+        $this->assertTrue($survey->has_required());
+    }
+
+    /**
+     * Asserts has_required() returns false across all sections when no question is required.
+     *
+     * @covers \mod_questionnaire\survey::has_required
+     */
+    public function test_has_required_false_across_all_sections(): void {
+        $survey = $this->make_survey();
+        $survey->set_questions([
+            1 => $this->make_required_stub(false),
+            2 => $this->make_required_stub(false),
+        ]);
+        $this->assertFalse($survey->has_required());
+    }
+
+    /**
+     * Asserts has_required() scoped to a section only inspects that section.
+     *
+     * @covers \mod_questionnaire\survey::has_required
+     */
+    public function test_has_required_per_section(): void {
+        $survey = $this->make_survey();
+        $survey->set_questions_by_sec([
+            1 => [$this->make_required_stub(false)],
+            2 => [$this->make_required_stub(true)],
+        ]);
+        $survey->set_questions([
+            1 => $this->make_required_stub(false),
+            2 => $this->make_required_stub(true),
+        ]);
+        $this->assertFalse($survey->has_required(1));
+        $this->assertTrue($survey->has_required(2));
+        $this->assertFalse($survey->has_required(99));
     }
 }

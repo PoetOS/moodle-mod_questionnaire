@@ -87,7 +87,7 @@ class report_view_renderer {
             return false;
         }
 
-        $hasrequired = $q->has_required();
+        $hasrequired = $q->survey()->has_required();
 
         $i = 1;
         for ($j = 2; $j <= $section; $j++) {
@@ -129,7 +129,7 @@ class report_view_renderer {
         $this->build_header($q, $message, 1, 1, $hasrequired, '');
 
         if (($referer == 'preview') && $q->has_dependencies()) {
-            $allqdependants = $q->get_dependants_and_choices();
+            $allqdependants = $q->navigator()->get_dependants_and_choices();
         } else {
             $allqdependants = [];
         }

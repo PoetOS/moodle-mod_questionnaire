@@ -482,4 +482,99 @@ final class questionnaire_responses_test extends \advanced_testcase {
 
         $this->assertSame(0, $questionnaire->responses()->count_distinct_responders());
     }
+
+    // Tests for response_select_max_sec().
+
+    /**
+     * Build a fixture with a Q1, pagebreak, Q2, pagebreak, Q3 layout at explicit positions 1..5.
+     * Inserts questions directly via $DB so positions are deterministic for section-math tests.
+     *
+     * @return array [questionnaire, [q1id, q2id, q3id]]
+     */
+    private function build_three_section_questionnaire(): array {
+        global $DB;
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $questionnaire = $generator->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id]);
+        $sid = $questionnaire->surveyid();
+
+        $mkrow = function (int $surveyid, int $position, int $typeid, string $name) use ($DB): int {
+            return $DB->insert_record('questionnaire_question', (object)[
+                'surveyid' => $surveyid,
+                'name'     => $name,
+                'typeid'   => $typeid,
+                'length'   => 0,
+                'precise'  => 0,
+                'position' => $position,
+                'content'  => $name . ' content',
+                'required' => 'n',
+                'deleted'  => null,
+            ]);
+        };
+
+        $q1id = $mkrow($sid, 1, QUESYESNO, 'Q1');
+        $mkrow($sid, 2, QUESPAGEBREAK, 'PB1');
+        $q2id = $mkrow($sid, 3, QUESYESNO, 'Q2');
+        $mkrow($sid, 4, QUESPAGEBREAK, 'PB2');
+        $q3id = $mkrow($sid, 5, QUESYESNO, 'Q3');
+
+        // Reload so questions_by_section_all is correct for the new layout.
+        $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
+        return [$questionnaire, [$q1id, $q2id, $q3id]];
+    }
+
+    /**
+     * Insert a yes/no answer row tying a response to a question.
+     *
+     * @param int $responseid
+     * @param int $questionid
+     * @return void
+     */
+    private function insert_bool_answer(int $responseid, int $questionid): void {
+        global $DB;
+        $DB->insert_record('questionnaire_response_bool', (object)[
+            'responseid' => $responseid,
+            'questionid' => $questionid,
+            'choiceid'   => 'y',
+        ]);
+    }
+
+    /**
+     * Asserts response_select_max_sec() returns 1 when the response has no answers.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::response_select_max_sec
+     */
+    public function test_response_select_max_sec_returns_one_when_no_answers(): void {
+        $this->resetAfterTest();
+        [$questionnaire] = $this->build_three_section_questionnaire();
+        $student = $this->getDataGenerator()->create_user();
+
+        $response = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id);
+        $this->assertSame(1, $questionnaire->responses()->response_select_max_sec($response->id()));
+    }
+
+    /**
+     * Asserts response_select_max_sec() returns the section number containing the highest answered question.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::response_select_max_sec
+     */
+    public function test_response_select_max_sec_reflects_last_answered_section(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $qids] = $this->build_three_section_questionnaire();
+        $student = $this->getDataGenerator()->create_user();
+
+        $r1 = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id);
+        $this->insert_bool_answer($r1->id(), $qids[0]);
+        $this->assertSame(1, $questionnaire->responses()->response_select_max_sec($r1->id()));
+
+        $r2 = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id);
+        $this->insert_bool_answer($r2->id(), $qids[1]);
+        $this->assertSame(2, $questionnaire->responses()->response_select_max_sec($r2->id()));
+
+        $r3 = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id);
+        $this->insert_bool_answer($r3->id(), $qids[2]);
+        $this->assertSame(3, $questionnaire->responses()->response_select_max_sec($r3->id()));
+    }
 }

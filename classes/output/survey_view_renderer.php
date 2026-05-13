@@ -105,7 +105,7 @@ class survey_view_renderer {
 
         $formdata->rid = $q->get_latest_responseid($quser);
         if (($formdata->rid != 0) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
-            $formdata->sec = $q->response_select_max_sec($formdata->rid);
+            $formdata->sec = $q->responses()->response_select_max_sec($formdata->rid);
         }
         if (empty($formdata->sec)) {
             $formdata->sec = 1;
@@ -482,7 +482,7 @@ class survey_view_renderer {
             return false;
         }
 
-        $hasrequired = $q->has_required($section);
+        $hasrequired = $q->survey()->has_required($section);
 
         $i = 0;
         if ($section > 1) {

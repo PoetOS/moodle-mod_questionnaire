@@ -174,7 +174,7 @@ final class report_view_renderer_test extends \advanced_testcase {
         (new report_view_renderer($renderer, $page))
             ->render_response($instance, $rid, 'print');
 
-        // 'responses' key is only present when there is at least one renderable question;
+        // The 'responses' key is only present when there is at least one renderable question;
         // even without a stored answer the YES/NO question renders an empty response row.
         $data = $this->page_data($page);
         $this->assertObjectHasProperty('responses', $data);

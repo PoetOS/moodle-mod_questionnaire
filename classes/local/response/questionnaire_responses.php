@@ -262,6 +262,58 @@ class questionnaire_responses {
     }
 
     /**
+     * Return the section number of the last answered section in a response.
+     *
+     * @param int $rid
+     * @return int
+     */
+    public function response_select_max_sec(int $rid): int {
+        $surveyid = $this->questionnaire->surveyid();
+        $pos = $this->response_select_max_pos($rid);
+        return \mod_questionnaire\local\db\question_record::count_active_before_position(
+            $surveyid,
+            QUESPAGEBREAK,
+            $pos
+        ) + 1;
+    }
+
+    /**
+     * Return the position of the last answered question in a response.
+     *
+     * @param int $rid
+     * @return int
+     */
+    private function response_select_max_pos(int $rid): int {
+        global $DB;
+        $surveyid = $this->questionnaire->surveyid();
+        $max = 0;
+        foreach (
+            [
+                'response_bool',
+                'resp_single',
+                'resp_multiple',
+                'response_rank',
+                'response_text',
+                'response_other',
+                'response_date',
+            ] as $tbl
+        ) {
+            $sql = 'SELECT MAX(q.position) as num FROM {questionnaire_' . $tbl . '} a, {questionnaire_question} q ' .
+                'WHERE a.responseid = ? AND ' .
+                'q.id = a.questionid AND ' .
+                'q.surveyid = ? AND ' .
+                'q.deleted IS NULL';
+            if ($record = $DB->get_record_sql($sql, [$rid, $surveyid])) {
+                $newmax = (int)$record->num;
+                if ($newmax > $max) {
+                    $max = $newmax;
+                }
+            }
+        }
+        return $max;
+    }
+
+    /**
      * Construct the response data for a given response and return a structured export.
      * @param int $rid
      * @return array
