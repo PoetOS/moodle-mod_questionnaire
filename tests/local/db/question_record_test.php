@@ -165,6 +165,26 @@ final class question_record_test extends \advanced_testcase {
     }
 
     /**
+     * count_active_before_position() counts only matching-type, active questions strictly below the position.
+     */
+    public function test_count_active_before_position(): void {
+        $this->resetAfterTest();
+        $sid = 8108;
+        $pb = QUESPAGEBREAK;
+
+        $this->make_question($sid, 1, $pb);
+        $this->make_question($sid, 3, $pb);
+        $this->make_question($sid, 5, $pb);
+        $this->make_question($sid, 4, 1);             // Wrong typeid — excluded.
+        $this->make_question($sid, 2, $pb, time());   // Soft-deleted — excluded.
+
+        $this->assertSame(2, question_record::count_active_before_position($sid, $pb, 5));
+        $this->assertSame(3, question_record::count_active_before_position($sid, $pb, 99));
+        $this->assertSame(0, question_record::count_active_before_position($sid, $pb, 1));
+        $this->assertSame(0, question_record::count_active_before_position(99999, $pb, 99));
+    }
+
+    /**
      * update_position() sets the position field on the specified row.
      */
     public function test_update_position(): void {
