@@ -78,7 +78,7 @@ class survey_view_renderer {
             if (!empty($viewform->sec)) {
                 $viewform->sec = (int)$viewform->sec;
             }
-            $rid = $q->existing_response_action($viewform, $userid);
+            $rid = $q->submission()->existing_response_action($viewform, $userid);
             $q->responses()->commit_submission_response($rid, $userid);
             (new submission_notifier($q))->notify($rid);
             $q->response_goto_thankyou();
@@ -130,7 +130,7 @@ class survey_view_renderer {
             if (empty($msg)) {
                 return null;
             }
-            $formdata->rid = $q->existing_response_action($formdata, $userid);
+            $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
         }
 
         if (!empty($formdata->resume) && ($q->resume())) {
@@ -144,9 +144,9 @@ class survey_view_renderer {
             $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
             if ($msg) {
                 $formdata->next = '';
-                $formdata->rid = $q->existing_response_action($formdata, $userid);
+                $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
             } else {
-                $nextsec = $q->next_page_action($formdata, $userid);
+                $nextsec = $q->submission()->next_page_action($formdata, $userid);
                 if ($nextsec === false) {
                     $SESSION->questionnaire->end = true;
                     $formdata->sec = $numsections + 1;
@@ -164,9 +164,9 @@ class survey_view_renderer {
             $msg = $q->responses()->response_check_format($formdata->sec, $formdata, false, true);
             if ($msg) {
                 $formdata->prev = '';
-                $formdata->rid = $q->existing_response_action($formdata, $userid);
+                $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
             } else {
-                $prevsec = $q->previous_page_action($formdata, $userid);
+                $prevsec = $q->submission()->previous_page_action($formdata, $userid);
                 if ($prevsec === false) {
                     $formdata->sec = 0;
                 } else {
