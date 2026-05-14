@@ -81,7 +81,7 @@ class survey_view_renderer {
             $rid = $q->submission()->existing_response_action($viewform, $userid);
             $q->responses()->commit_submission_response($rid, $userid);
             (new submission_notifier($q))->notify($rid);
-            $q->response_goto_thankyou();
+            $this->goto_thankyou($q);
         }
     }
 
@@ -136,7 +136,7 @@ class survey_view_renderer {
         if (!empty($formdata->resume) && ($q->resume())) {
             $q->responses()->response_delete($formdata->rid, $formdata->sec);
             $formdata->rid = $q->responses()->response_insert($formdata, $quser, true);
-            $q->response_goto_saved($action);
+            $this->goto_saved($q);
             return null;
         }
 
@@ -528,5 +528,123 @@ class survey_view_renderer {
         }
 
         $this->print_survey_end($q, $section, $numsections);
+    }
+
+    /**
+     * Fill the page with the save-progress confirmation, including a resume link when applicable.
+     *
+     * @param questionnaire $q
+     * @return void
+     */
+    public function goto_saved(questionnaire $q): void {
+        global $CFG, $USER;
+
+        $resumesurvey = get_string('resumesurvey', 'questionnaire');
+        $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>' . $resumesurvey . '</strong>');
+
+        $this->page->add_to_page(
+            'notifications',
+            $this->renderer->notification($savedprogress, \core\output\notification::NOTIFY_SUCCESS)
+        );
+        $this->page->add_to_page(
+            'respondentinfo',
+            $this->renderer->homelink(
+                $CFG->wwwroot . '/course/view.php?id=' . $q->courseid(),
+                get_string('backto', 'moodle', $q->course()->fullname)
+            )
+        );
+
+        if (
+            $q->resume()
+            && $q->user_access_messages($USER->id, true) === null
+            && $q->capabilities()->user_can_take($USER->id)
+            && $q->questions()
+            && $q->user_has_saved_response($USER->id)
+        ) {
+            $this->page->add_to_page(
+                'respondentinfo',
+                $this->renderer->homelink(
+                    $CFG->wwwroot . '/mod/questionnaire/complete.php?' .
+                        'id=' . $q->coursemodule()->id . '&resume=1',
+                    $resumesurvey
+                )
+            );
+        }
+    }
+
+    /**
+     * Render or redirect to the thank-you screen after a submission.
+     *
+     * @param questionnaire $q
+     * @return void
+     */
+    public function goto_thankyou(questionnaire $q): void {
+        global $USER;
+
+        $thankurl = $q->survey()->thankspage();
+        $thankhead = $q->survey()->thankhead();
+        $thankbody = $q->survey()->thankbody();
+
+        if (!empty($thankurl)) {
+            if (!headers_sent()) {
+                header("Location: $thankurl");
+                exit;
+            }
+            echo '
+                <script language="JavaScript" type="text/javascript">
+                <!--
+                window.location="' . $thankurl . '"
+                //-->
+                </script>
+                <noscript>
+                <h2 class="thankhead">Thank You for completing this survey.</h2>
+                <blockquote class="thankbody">Please click
+                <a href="' . $thankurl . '">here</a> to continue.</blockquote>
+                </noscript>
+            ';
+            exit;
+        }
+        if (empty($thankhead)) {
+            $thankhead = get_string('thank_head', 'questionnaire');
+        }
+        $questionsbysec = $q->questions_by_section_all();
+        if ($q->use_progressbar() && count($questionsbysec) > 1) {
+            $this->page->add_to_page(
+                'progressbar',
+                $this->renderer->render_progress_bar(count($questionsbysec) + 1, $questionsbysec)
+            );
+        }
+        $this->page->add_to_page('title', format_string($thankhead));
+        $this->page->add_to_page(
+            'addinfo',
+            format_text(
+                file_rewrite_pluginfile_urls(
+                    $thankbody,
+                    'pluginfile.php',
+                    $q->context()->id,
+                    'mod_questionnaire',
+                    'thankbody',
+                    $q->surveyid()
+                ),
+                FORMAT_HTML,
+                ['noclean' => true]
+            )
+        );
+        if ($q->capabilities()->can_read_own_responses()) {
+            $url = new \moodle_url(
+                'myreport.php',
+                [
+                    'id' => $q->coursemodule()->id,
+                    'instance' => $q->coursemodule()->instance,
+                    'user' => $USER->id,
+                    'byresponse' => 0,
+                    'action' => 'vresp',
+                ]
+            );
+            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
+        } else {
+            $url = new \moodle_url('/course/view.php', ['id' => $q->courseid()]);
+            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
+        }
     }
 }
