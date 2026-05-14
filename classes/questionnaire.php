@@ -106,6 +106,9 @@ class questionnaire {
     /** @var capabilities|null Lazy-loaded permission/eligibility helper. */
     private ?capabilities $capabilities = null;
 
+    /** @var submission_controller|null Lazy-loaded controller for in-progress submission flow. */
+    private ?submission_controller $submission = null;
+
     /** @var string Course-module idnumber, used by gradebook. Set by callers that need it. */
     public string $cmidnumber = '';
 
@@ -1478,6 +1481,16 @@ class questionnaire {
     }
 
     /**
+     * Return the submission controller for page navigation and section saves.
+     *
+     * @return submission_controller
+     */
+    public function submission(): submission_controller {
+        $this->submission ??= new submission_controller($this);
+        return $this->submission;
+    }
+
+    /**
      * Load a single response into the responses handler by response id.
      *
      * Convenience pass-through to questionnaire_responses::add_response().
@@ -1534,47 +1547,6 @@ class questionnaire {
     }
 
     /**
-     * Delete the current response section and insert a fresh one; return the new response id.
-     *
-     * @param stdClass $response Response data object (must have ->rid and ->sec).
-     * @param int $userid
-     * @return int New response id.
-     */
-    public function existing_response_action($response, int $userid): int {
-        $responses = $this->responses();
-        $responses->response_delete($response->rid, $response->sec);
-        return $responses->response_insert($response, $userid);
-    }
-
-    /**
-     * Validate and save the current page, then return the next page number (or an error string).
-     *
-     * @param stdClass $response Response data object.
-     * @param int $userid
-     * @return int|bool|string Next section number, false if no next page, or error message string.
-     */
-    public function next_page_action($response, int $userid): int|bool|string {
-        $msg = $this->responses()->response_check_format($response->sec, $response, true, true, $this->survey->questions());
-        if (empty($msg)) {
-            $response->rid = $this->existing_response_action($response, $userid);
-            return $this->navigator()->next_page($response->sec, $response->rid);
-        }
-        return $msg;
-    }
-
-    /**
-     * Save the current page and return the previous page number.
-     *
-     * @param stdClass $response Response data object.
-     * @param int $userid
-     * @return int|bool Previous section number, or false if none.
-     */
-    public function previous_page_action($response, int $userid): int|bool {
-        $response->rid = $this->existing_response_action($response, $userid);
-        return $this->navigator()->prev_page($response->sec, $response->rid);
-    }
-
-    /**
      * Process a mobile-app submission and return a result array.
      *
      * Handles next/previous page navigation and final submission from the mobile app.
@@ -1604,14 +1576,14 @@ class questionnaire {
         $response->rid = $rid;
 
         if ($action == 'nextpage') {
-            $result = $this->next_page_action($response, $userid);
+            $result = $this->submission()->next_page_action($response, $userid);
             if (is_string($result)) {
                 $ret['warnings'] = $result;
             } else {
                 $ret['nextpagenum'] = $result;
             }
         } else if ($action == 'previouspage') {
-            $ret['nextpagenum'] = $this->previous_page_action($response, $userid);
+            $ret['nextpagenum'] = $this->submission()->previous_page_action($response, $userid);
         } else if (!$completed) {
             // If reviewing a completed questionnaire, don't insert a response.
             $msg = $this->responses()->response_check_format(
