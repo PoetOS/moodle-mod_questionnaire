@@ -258,4 +258,47 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $data = $this->page_data($page);
         $this->assertObjectNotHasProperty('pageinfo', $data);
     }
+
+    /**
+     * goto_saved() adds a save-progress notification and a back-to-course homelink.
+     */
+    public function test_goto_saved_writes_savedprogress_notification(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        (new survey_view_renderer($renderer, $page))->goto_saved($instance);
+
+        $data = $this->page_data($page);
+        $this->assertObjectHasProperty('notifications', $data);
+        $this->assertStringContainsString('progress has been saved', $data->notifications);
+        $this->assertObjectHasProperty('respondentinfo', $data);
+    }
+
+    /**
+     * goto_thankyou() writes the thank-you title and a continue button when no thanks URL is set.
+     */
+    public function test_goto_thankyou_writes_title_and_continue(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        (new survey_view_renderer($renderer, $page))->goto_thankyou($instance);
+
+        $data = $this->page_data($page);
+        $this->assertObjectHasProperty('title', $data);
+        $this->assertObjectHasProperty('continue', $data);
+    }
 }
