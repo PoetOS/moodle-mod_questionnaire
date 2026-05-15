@@ -60,9 +60,8 @@ $PAGE->set_context($context);
 $deletequestions = $questionnaire->survey()->get_delete_questions();
 $questions = $questionnaire->questions();
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new questionspage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new questionspage();
 
 if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
@@ -177,7 +176,7 @@ if ($restoreq) {
 }
 
 if ($action == 'main') {
-    $questionsform = new \mod_questionnaire\questions_form('questions.php', $moveq);
+    $questionsform = new \mod_questionnaire\questions_form('questions.php', $moveq, $renderer);
     $sdata = $questionnaire->survey()->to_stdclass();
     $sdata->sid = $questionnaire->surveyid();
     $sdata->id = $cm->id;
@@ -358,11 +357,10 @@ if ($reload) {
     $questionnaire = questionnaire::from_cmid($id);
     $deletequestions = $questionnaire->survey()->get_delete_questions();
     $questions = $questionnaire->questions();
-    // Add renderer and page objects to the questionnaire object for display use.
-    $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-    $questionnaire->add_page(new questionspage());
+    $renderer = $PAGE->get_renderer('mod_questionnaire');
+    $page = new questionspage();
     if ($action == 'main') {
-        $questionsform = new \mod_questionnaire\questions_form('questions.php', $moveq);
+        $questionsform = new \mod_questionnaire\questions_form('questions.php', $moveq, $renderer);
         $sdata = $questionnaire->survey()->to_stdclass();
         $sdata->sid = $questionnaire->surveyid();
         $sdata->id = $cm->id;
@@ -395,7 +393,7 @@ if ($action == 'question') {
 $PAGE->set_title($streditquestion);
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add($streditquestion);
-echo $questionnaire->renderer->header();
+echo $renderer->header();
 require('tabs.php');
 
 if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
@@ -440,12 +438,12 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
             // Show the dependencies and inform about the dependencies to be removed.
             // Split dependencies in direct and indirect ones to separate for the confirm-dialogue.
             // Only direct ones will be deleted. List direct dependencies.
-            $msg .= $questionnaire->renderer->dependency_warnings($dependants->directs, 'directwarnings', $strnum);
+            $msg .= $renderer->dependency_warnings($dependants->directs, 'directwarnings', $strnum);
             // List indirect dependencies.
-            $msg .= $questionnaire->renderer->dependency_warnings($dependants->indirects, 'indirectwarnings', $strnum);
+            $msg .= $renderer->dependency_warnings($dependants->indirects, 'indirectwarnings', $strnum);
         }
     }
-    $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
+    $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
 } else if ($action === questionnaire::confirm_delete_param()) {
     $qid = key($qformdata->deletebutton);
     $qtype = $deletequestions[$qid]->typeid();
@@ -464,9 +462,9 @@ if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $msg .= '<div class = "qn-container">NA (' . $questiondelete->name() . ')
              <div class="qn-question">' . $questiondelete->content() . '</div></div>';
 
-    $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
+    $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
 } else {
-    $questionnaire->page->add_to_page('formarea', $questionsform->render());
+    $page->add_to_page('formarea', $questionsform->render());
 }
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer();
+echo $renderer->render($page);
+echo $renderer->footer();

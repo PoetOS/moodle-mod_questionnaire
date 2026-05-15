@@ -71,16 +71,11 @@ $cm = $questionnaire->coursemodule();
 
 require_course_login($course, true, $cm);
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
+$renderer = $PAGE->get_renderer('mod_questionnaire');
 if ($outputtarget == 'pdf') {
-    if ($action == 'vresp') {
-        $questionnaire->add_page(new responsepagepdf());
-    } else {
-        $questionnaire->add_page(new reportpagepdf());
-    }
+    $page = ($action == 'vresp') ? new responsepagepdf() : new reportpagepdf();
 } else { // Default to HTML.
-    $questionnaire->add_page(new reportpage());
+    $page = new reportpage();
 }
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
@@ -239,7 +234,7 @@ switch ($action) {
         // Print the page header.
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $questionnaire->renderer->header();
+        echo $renderer->header();
 
         // Print the tabs.
         $SESSION->questionnaire->current_tab = 'deleteresp';
@@ -271,10 +266,10 @@ switch ($action) {
         ]);
         $buttonyes = new single_button($urlyes, get_string('delete'), 'post');
         $buttonno = new single_button($urlno, get_string('cancel'), 'get');
-        $questionnaire->page->add_to_page('notifications', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
-        echo $questionnaire->renderer->render($questionnaire->page);
+        $page->add_to_page('notifications', $renderer->confirm($msg, $buttonyes, $buttonno));
+        echo $renderer->render($page);
         // Finish the page.
-        echo $questionnaire->renderer->footer($course);
+        echo $renderer->footer($course);
         break;
 
     case 'delallresp': // Delete all responses? Ask for confirmation.
@@ -284,7 +279,7 @@ switch ($action) {
             // Print the page header.
             $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
             $PAGE->set_heading(format_string($course->fullname));
-            echo $questionnaire->renderer->header();
+            echo $renderer->header();
 
             // Print the tabs.
             $SESSION->questionnaire->current_tab = 'deleteall';
@@ -309,10 +304,10 @@ switch ($action) {
             $buttonyes = new single_button($urlyes, get_string('delete'), 'post');
             $buttonno = new single_button($urlno, get_string('cancel'), 'get');
 
-            $questionnaire->page->add_to_page('notifications', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
-            echo $questionnaire->renderer->render($questionnaire->page);
+            $page->add_to_page('notifications', $renderer->confirm($msg, $buttonyes, $buttonno));
+            echo $renderer->render($page);
             // Finish the page.
-            echo $questionnaire->renderer->footer($course);
+            echo $renderer->footer($course);
         }
         break;
 
@@ -455,7 +450,7 @@ switch ($action) {
 
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
-        echo $questionnaire->renderer->header();
+        echo $renderer->header();
 
         // Print the tabs.
         // Tab setup.
@@ -482,9 +477,9 @@ switch ($action) {
         $output .= "<br /><br />\n";
         $output .= html_writer::tag('h2', (get_string('downloadtextformat', 'questionnaire'))
                 . ':&nbsp;' . get_string('responses', 'questionnaire') . '&nbsp;' .
-                $groupname . $questionnaire->renderer->help_icon('downloadtextformat', 'questionnaire'));
-        $output .= $questionnaire->renderer->heading(get_string('textdownloadoptions', 'questionnaire'), 3);
-        $output .= $questionnaire->renderer->box_start();
+                $groupname . $renderer->help_icon('downloadtextformat', 'questionnaire'));
+        $output .= $renderer->heading(get_string('textdownloadoptions', 'questionnaire'), 3);
+        $output .= $renderer->box_start();
         $downloadparams = [
             'instance' => $instance,
             'user' => $user,
@@ -492,20 +487,20 @@ switch ($action) {
             'action' => 'dfs',
             'group' => $currentgroupid,
         ];
-        $extrafields = $questionnaire->renderer->render_from_template('mod_questionnaire/extrafields', []);
-        $output .= $questionnaire->renderer->download_dataformat_selector(
+        $extrafields = $renderer->render_from_template('mod_questionnaire/extrafields', []);
+        $output .= $renderer->download_dataformat_selector(
             get_string('downloadtypes', 'questionnaire'),
             'report.php',
             'downloadformat',
             $downloadparams,
             $extrafields
         );
-        $output .= $questionnaire->renderer->box_end();
+        $output .= $renderer->box_end();
 
-        $questionnaire->page->add_to_page('respondentinfo', $output);
-        echo $questionnaire->renderer->render($questionnaire->page);
+        $page->add_to_page('respondentinfo', $output);
+        echo $renderer->render($page);
 
-        echo $questionnaire->renderer->footer('none');
+        echo $renderer->footer('none');
 
         // Log saved as text action.
         $params = [
@@ -534,7 +529,7 @@ switch ($action) {
         $emailroles = optional_param('emailroles', 0, PARAM_INT);
         $emailextra = optional_param('emailextra', '', PARAM_RAW);
 
-        $output = $questionnaire->reporter()->generate_csv(
+        $output = $questionnaire->reporter($renderer, $page)->generate_csv(
             $currentgroupid,
             '',
             $user,
@@ -587,11 +582,11 @@ switch ($action) {
         $canviewallresponses = has_capability('mod/questionnaire:readallresponses', $context);
         $canviewallresponsesanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
         if (!$canviewallresponses && !$canviewallresponsesanytime) {
-            echo $questionnaire->renderer->header();
+            echo $renderer->header();
             // Should never happen, unless called directly by a snoop.
             throw new \moodle_exception('nopermissions', 'mod_questionnaire');
             // Finish the page.
-            echo $questionnaire->renderer->footer($course);
+            echo $renderer->footer($course);
             break;
         }
 
@@ -666,14 +661,14 @@ switch ($action) {
         if (!empty($resps)) {
             // NOTE: response_analysis uses $resps to get the id's of the responses only.
             // Need to figure out what this function does.
-            $feedbackmessages = $questionnaire->reporter()->response_analysis(0, $resps, false, false, true, $currentgroupid);
+            $feedbackmessages = $questionnaire->reporter($renderer, $page)->response_analysis(0, $resps, false, false, true, $currentgroupid);
 
             if ($feedbackmessages) {
                 $msgout = '';
                 foreach ($feedbackmessages as $msg) {
                     $msgout .= $msg;
                 }
-                $questionnaire->page->add_to_page('feedbackmessages', $msgout);
+                $page->add_to_page('feedbackmessages', $msgout);
             }
         }
 
@@ -694,9 +689,9 @@ switch ($action) {
             $respinfo = get_string('view') . ' ' . $groupname;
             $strsort = get_string('order_' . $sort, 'questionnaire');
             $respinfo .= $strsort;
-            $questionnaire->page->add_to_page('respondentinfo', $respinfo);
-            $questionnaire->reporter()->survey_results('', false, true, $currentgroupid, $sort);
-            $html = $questionnaire->renderer->render($questionnaire->page);
+            $page->add_to_page('respondentinfo', $respinfo);
+            $questionnaire->reporter($renderer, $page)->survey_results('', false, true, $currentgroupid, $sort);
+            $html = $renderer->render($page);
 
             // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
             // not an array.
@@ -721,7 +716,7 @@ switch ($action) {
                     ]
                 );
                 $downpdficon = new pix_icon('f/pdf', $linkname);
-                $respinfo .= $questionnaire->renderer->action_link($link, null, null, null, $downpdficon);
+                $respinfo .= $renderer->action_link($link, null, null, null, $downpdficon);
 
                 $linkname = get_string('print', 'mod_questionnaire');
                 $link = new \moodle_url(
@@ -740,7 +735,7 @@ switch ($action) {
                 $name = 'popup';
                 $action = new popup_action('click', $link, $name, $options);
                 $class = '';
-                $respinfo .= $questionnaire->renderer->action_link(
+                $respinfo .= $renderer->action_link(
                     $link,
                     null,
                     $action,
@@ -748,18 +743,18 @@ switch ($action) {
                     $htmlicon
                 ) . '&nbsp;';
 
-                $respinfo .= $questionnaire->renderer->viewresponse_print_menu($url->out(), $responsestatus, $userview);
+                $respinfo .= $renderer->viewresponse_print_menu($url->out(), $responsestatus, $userview);
                 $strsort = get_string('order_' . $sort, 'questionnaire');
                 $respinfo .= $strsort;
-                $respinfo .= $questionnaire->renderer->help_icon('orderresponses', 'questionnaire');
-                $questionnaire->page->add_to_page('respondentinfo', $respinfo);
+                $respinfo .= $renderer->help_icon('orderresponses', 'questionnaire');
+                $page->add_to_page('respondentinfo', $respinfo);
             }
 
-            $ret = $questionnaire->reporter()->survey_results('', false, false, $currentgroupid, $sort);
+            $ret = $questionnaire->reporter($renderer, $page)->survey_results('', false, false, $currentgroupid, $sort);
 
-            echo $questionnaire->renderer->header();
-            echo $questionnaire->renderer->render($questionnaire->page);
-            echo $questionnaire->renderer->footer($course);
+            echo $renderer->header();
+            echo $renderer->render($page);
+            echo $renderer->footer($course);
         }
         break;
 
@@ -800,7 +795,7 @@ switch ($action) {
         // Add group filter dropdown.
         if ($groupmode > 0) {
             $groupselect = groups_print_activity_menu($cm, $url->out(), true);
-            $questionnaire->page->add_to_page('respondentinfo', $groupselect);
+            $page->add_to_page('respondentinfo', $groupselect);
             $currentgroupid = groups_get_activity_group($cm);
         }
 
@@ -850,9 +845,9 @@ switch ($action) {
                 $groupname = '<strong>' . $responsestatus[$userview] . '</strong>';
             }
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->reporter()->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
+                $questionnaire->reporter($renderer, $page)->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
-            $html = $questionnaire->renderer->render($questionnaire->page);
+            $html = $renderer->render($page);
             // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
             // not an array.
             $errorreporting = error_reporting(0);
@@ -861,7 +856,7 @@ switch ($action) {
             error_reporting($errorreporting);
         } else { // Default to HTML.
             if ($noresponses) {
-                $questionnaire->page->add_to_page(
+                $page->add_to_page(
                     'respondentinfo',
                     get_string('group') . ' <strong>' .
                         groups_get_group_name($currentgroupid) . '</strong>: ' . get_string('noresponses', 'questionnaire')
@@ -892,21 +887,21 @@ switch ($action) {
             }
             if ($byresponse) {
                 $respinfo = '';
-                $respinfo .= $questionnaire->renderer->box_start();
-                $respinfo .= $questionnaire->renderer->help_icon('viewindividualresponse', 'questionnaire') . '&nbsp;';
+                $respinfo .= $renderer->box_start();
+                $respinfo .= $renderer->help_icon('viewindividualresponse', 'questionnaire') . '&nbsp;';
                 $respinfo .= get_string('viewindividualresponse', 'questionnaire') . ' <strong> : ' . $groupname . '</strong>';
-                $respinfo .= $questionnaire->renderer->box_end();
-                $questionnaire->page->add_to_page('respondentinfo', $respinfo);
+                $respinfo .= $renderer->box_end();
+                $page->add_to_page('respondentinfo', $respinfo);
             }
             if ($outputtarget == 'html') {
-                $questionnaire->reporter()->survey_results_navbar_alpha($rid, $currentgroupid, $byresponse);
+                $questionnaire->reporter($renderer, $page)->survey_results_navbar_alpha($rid, $currentgroupid, $byresponse);
             }
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->reporter()->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
+                $questionnaire->reporter($renderer, $page)->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
-            echo $questionnaire->renderer->header();
-            echo $questionnaire->renderer->render($questionnaire->page);
-            echo $questionnaire->renderer->footer($course);
+            echo $renderer->header();
+            echo $renderer->render($page);
+            echo $renderer->footer($course);
         }
         break;
 }
