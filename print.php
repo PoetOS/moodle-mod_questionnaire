@@ -39,13 +39,10 @@ $questionnaire = questionnaire::from_instanceid($qid);
 // Check login and get context.
 require_login($courseid);
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-if (!empty($rid)) {
-    $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
-} else {
-    $questionnaire->add_page(new \mod_questionnaire\output\previewpage());
-}
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = !empty($rid)
+    ? new \mod_questionnaire\output\reportpage()
+    : new \mod_questionnaire\output\previewpage();
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 if (!($questionnaire->capabilities()->can_view() && (($rid == 0) || $questionnaire->capabilities()->can_view_response($rid)))) {
@@ -62,8 +59,9 @@ $url->param('sec', $sec);
 $PAGE->set_url($url);
 $PAGE->set_title($questionnaire->surveytitle());
 $PAGE->set_pagelayout('popup');
-echo $questionnaire->renderer->header();
-$questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
-$questionnaire->survey_print_render($courseid, '', 'print', $rid, $blankquestionnaire);
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer();
+echo $renderer->header();
+$page->add_to_page('closebutton', $renderer->close_window_button());
+(new \mod_questionnaire\output\report_view_renderer($renderer, $page))
+    ->build_print_view($questionnaire, $courseid, '', 'print', $rid, $blankquestionnaire);
+echo $renderer->render($page);
+echo $renderer->footer();

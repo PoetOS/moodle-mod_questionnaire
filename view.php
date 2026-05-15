@@ -73,9 +73,8 @@ $PAGE->set_context($questionnaire->context());
 $PAGE->set_title(format_string($questionnaire->name()));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new viewpage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new viewpage();
 
 // No need to print out intro or name in Moodle 4 and above.
 $cm = $questionnaire->coursemodule();
@@ -86,11 +85,11 @@ if (!groups_is_member($currentgroupid, $USER->id)) {
 
 $message = $questionnaire->user_access_messages($USER->id);
 if ($message !== null) {
-    $questionnaire->page->add_to_page('message', $message);
+    $page->add_to_page('message', $message);
 } else if ($questionnaire->capabilities()->user_can_take($USER->id)) {
     if ($questionnaire->questions()) { // Sanity check.
         if (!$questionnaire->user_has_saved_response($USER->id)) {
-            $questionnaire->page->add_to_page(
+            $page->add_to_page(
                 'complete',
                 '<a href="' . $CFG->wwwroot .
                     htmlspecialchars('/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->coursemodule()->id) .
@@ -98,7 +97,7 @@ if ($message !== null) {
             );
         } else {
             $resumesurvey = get_string('resumesurvey', 'questionnaire');
-            $questionnaire->page->add_to_page(
+            $page->add_to_page(
                 'complete',
                 '<a href="' .
                     $CFG->wwwroot . htmlspecialchars(
@@ -108,12 +107,12 @@ if ($message !== null) {
             );
         }
     } else {
-        $questionnaire->page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
+        $page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
     }
 }
 
 if ($questionnaire->capabilities()->can_edit_questions() && !$questionnaire->questions() && $questionnaire->is_active()) {
-    $questionnaire->page->add_to_page(
+    $page->add_to_page(
         'complete',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' .
             'id=' . $questionnaire->coursemodule()->id) . '" class="btn btn-primary">' .
@@ -124,15 +123,15 @@ if ($questionnaire->capabilities()->can_edit_questions() && !$questionnaire->que
 // Time zone message (if required).
 if ($message === null && $questionnaire->is_open() && !$questionnaire->is_closed()) {
     $info = $questionnaire->view_information();
-    $questionnaire->page->add_to_page('info', $questionnaire->access_messages($info));
+    $page->add_to_page('info', $questionnaire->access_messages($info));
 }
 
 if (isguestuser()) {
     $guestno = html_writer::tag('p', get_string('noteligible', 'questionnaire'));
     $liketologin = html_writer::tag('p', get_string('liketologin'));
-    $questionnaire->page->add_to_page(
+    $page->add_to_page(
         'guestuser',
-        $questionnaire->renderer->confirm($guestno . "\n\n" . $liketologin . "\n", get_login_url(), get_local_referer(false))
+        $renderer->confirm($guestno . "\n\n" . $liketologin . "\n", get_login_url(), get_local_referer(false))
     );
 }
 
@@ -146,7 +145,7 @@ if ($questionnaire->capabilities()->can_read_own_responses() && ($usernumresp > 
         $titletext = get_string('yourresponse', 'questionnaire');
         $argstr .= '&byresponse=1&action=vresp';
     }
-    $questionnaire->page->add_to_page(
+    $page->add_to_page(
         'yourresponse',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr) .
             '" class="btn btn-primary">' . $titletext . '</a>'
@@ -155,13 +154,13 @@ if ($questionnaire->capabilities()->can_read_own_responses() && ($usernumresp > 
 
 if ($questionnaire->capabilities()->can_view_all_responses($usernumresp)) {
     $argstr = 'instance=' . $questionnaire->id() . '&group=' . $currentgroupid;
-    $questionnaire->page->add_to_page(
+    $page->add_to_page(
         'allresponses',
         '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr) .
             '" class="btn btn-primary">' . get_string('viewallresponses', 'questionnaire') . '</a>'
     );
 }
 
-echo $questionnaire->renderer->header();
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer();
+echo $renderer->header();
+echo $renderer->render($page);
+echo $renderer->footer();
