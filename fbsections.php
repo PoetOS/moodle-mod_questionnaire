@@ -78,9 +78,8 @@ foreach ($questionnaire->questions() as $question) {
     }
 }
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new feedbackpage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new feedbackpage();
 
 $SESSION->questionnaire->current_tab = 'feedback';
 
@@ -112,7 +111,7 @@ $customdata->sectionselect = $DB->get_records_menu(
     'id,sectionlabel'
 );
 
-$feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata);
+$feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata, $renderer);
 $sdata = clone($feedbacksection);
 $sdata->sid = $surveyid;
 $sdata->sectionid = $feedbacksection->id;
@@ -264,14 +263,14 @@ if ($settings = $feedbackform->get_data()) {
         // Update all feedback data.
         $feedbacksection->update();
     }
-    $feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata);
+    $feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata, $renderer);
 }
 
 // Print the page header.
 $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
-echo $questionnaire->renderer->header();
+echo $renderer->header();
 require('tabs.php');
 
 // Handle confirmations differently.
@@ -289,7 +288,7 @@ if ($action == 'confirmremovequestion') {
     $urlyes = new moodle_url('/mod/questionnaire/fbsections.php', $args);
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
-    $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
+    $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
 } else if ($action == 'confirmdeletesection') {
     $sectionid = required_param('sectionid', PARAM_INT);
     $msg = '<div class="warning centerpara"><p>' .
@@ -300,10 +299,10 @@ if ($action == 'confirmremovequestion') {
     $urlyes = new moodle_url('/mod/questionnaire/fbsections.php', $args);
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
-    $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
+    $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
 } else {
-    $questionnaire->page->add_to_page('formarea', $feedbackform->render());
+    $page->add_to_page('formarea', $feedbackform->render());
 }
 
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($questionnaire->course());
+echo $renderer->render($page);
+echo $renderer->footer($questionnaire->course());

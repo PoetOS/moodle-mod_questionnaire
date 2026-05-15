@@ -46,9 +46,8 @@ if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new feedbackpage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new feedbackpage();
 
 $SESSION->questionnaire->current_tab = 'feedback';
 
@@ -158,12 +157,12 @@ if ($settings = $feedbackform->get_data()) {
 $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
-echo $questionnaire->renderer->header();
+echo $renderer->header();
 require('tabs.php');
 if (!$validquestions) {
-    $questionnaire->page->add_to_page('formarea', get_string('feedbackoptions_help', 'questionnaire'));
+    $page->add_to_page('formarea', get_string('feedbackoptions_help', 'questionnaire'));
 } else {
-    $questionnaire->page->add_to_page('formarea', $feedbackform->render());
+    $page->add_to_page('formarea', $feedbackform->render());
 }
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($questionnaire->course());
+echo $renderer->render($page);
+echo $renderer->footer($questionnaire->course());

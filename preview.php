@@ -101,15 +101,14 @@ if (!$popup) {
 
 $PAGE->requires->js('/mod/questionnaire/module.js');
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\previewpage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new \mod_questionnaire\output\previewpage();
 
-echo $questionnaire->renderer->header();
+echo $renderer->header();
 if (!$popup) {
     require('tabs.php');
 }
-$questionnaire->page->add_to_page('heading', clean_text($pq));
+$page->add_to_page('heading', clean_text($pq));
 
 if ($canprintblank) {
     // Open print friendly as popup window.
@@ -130,9 +129,9 @@ if ($canprintblank) {
     $link = new moodle_url($url);
     $action = new popup_action('click', $link, $name, $options);
     $class = "floatprinticon";
-    $questionnaire->page->add_to_page(
+    $page->add_to_page(
         'printblank',
-        $questionnaire->renderer->action_link(
+        $renderer->action_link(
             $link,
             $linkname,
             $action,
@@ -142,12 +141,13 @@ if ($canprintblank) {
     );
 }
 
-$questionnaire->survey_print_render($course->id, '', 'preview', $rid = 0, $popup);
+(new \mod_questionnaire\output\report_view_renderer($renderer, $page))
+    ->build_print_view($questionnaire, $course->id, '', 'preview', 0, $popup);
 if ($popup) {
-    $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
+    $page->add_to_page('closebutton', $renderer->close_window_button());
 }
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($course);
+echo $renderer->render($page);
+echo $renderer->footer($course);
 
 // Log this questionnaire preview (skip in survey-only mode — no real module instance).
 if ($questionnaire->id() > 0) {
