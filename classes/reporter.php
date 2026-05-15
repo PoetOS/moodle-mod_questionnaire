@@ -42,16 +42,38 @@ class reporter {
     /** @var questionnaire The questionnaire being reported on. */
     private questionnaire $questionnaire;
 
+    /** @var \plugin_renderer_base|null The plugin renderer used for HTML output paths. */
+    private ?\plugin_renderer_base $renderer;
+
+    /** @var object|null The templatable page that HTML output is written into. */
+    private ?object $page;
+
     /** @var questionnaire_responses|null Cached response collection shared across methods. */
     private ?questionnaire_responses $responsecollection = null;
 
     /**
      * Construct a reporter for the given questionnaire.
      *
-     * @param questionnaire $questionnaire The questionnaire being reported on.
+     * Render-path methods (view_all_responses, view_response, survey_results,
+     * response_analysis, survey_results_navbar_*) need both a renderer and a
+     * templatable page. CSV/text-only methods (generate_csv) do not.
+     * Callers that only use the CSV path may pass null for both.
+     *
+     * @param questionnaire $questionnaire
+     * @param \plugin_renderer_base|null $renderer Optional; falls back to $questionnaire->renderer.
+     * @param object|null $page Optional templatable page; falls back to $questionnaire->page.
      */
-    public function __construct(questionnaire $questionnaire) {
+    public function __construct(
+        questionnaire $questionnaire,
+        ?\plugin_renderer_base $renderer = null,
+        ?object $page = null,
+    ) {
         $this->questionnaire = $questionnaire;
+        // Transitional fallback during the 47e refactor. Once $questionnaire->renderer
+        // and $questionnaire->page are removed, every render-path caller will need to
+        // pass these arguments explicitly.
+        $this->renderer = $renderer ?? $questionnaire->renderer;
+        $this->page = $page ?? $questionnaire->page;
     }
 
     /**
@@ -78,18 +100,18 @@ class reporter {
 
         $loadedresponses = $this->responsecollection()->get_loaded_responses();
         if (!empty($loadedresponses)) {
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'responses',
-                $this->questionnaire->renderer->all_response_output(
+                $this->renderer->all_response_output(
                     $loadedresponses,
                     $this->questionnaire->questions(),
                     $this->questionnaire
                 )
             );
         } else {
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'responses',
-                $this->questionnaire->renderer->all_response_output(get_string('noresponses', 'questionnaire'))
+                $this->renderer->all_response_output(get_string('noresponses', 'questionnaire'))
             );
         }
 
@@ -136,9 +158,9 @@ class reporter {
                 $rows = $this->questionnaire->get_responses(false, (int)$currentgroupid);
             }
             if (!$rows) {
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'respondentinfo',
-                    $this->questionnaire->renderer->notification(
+                    $this->renderer->notification(
                         get_string('noresponses', 'questionnaire'),
                         \core\output\notification::NOTIFY_ERROR
                     )
@@ -171,7 +193,7 @@ class reporter {
                 );
             }
             $respondentinfo = ' ' . $respondentstring . ': <strong>' . $numresps . '</strong>';
-            $this->questionnaire->page->add_to_page('respondentinfo', $respondentinfo);
+            $this->page->add_to_page('respondentinfo', $respondentinfo);
             if (empty($rows)) {
                 return;
             }
@@ -182,10 +204,10 @@ class reporter {
         }
 
         if ($survey->title() !== '') {
-            $this->questionnaire->page->add_to_page('title', format_string($survey->title()));
+            $this->page->add_to_page('title', format_string($survey->title()));
         }
         if ($survey->subtitle() !== '') {
-            $this->questionnaire->page->add_to_page('subtitle', format_string($survey->subtitle()));
+            $this->page->add_to_page('subtitle', format_string($survey->subtitle()));
         }
         if ($survey->info() !== '') {
             $infotext = file_rewrite_pluginfile_urls(
@@ -196,7 +218,7 @@ class reporter {
                 'info',
                 $this->questionnaire->surveyid()
             );
-            $this->questionnaire->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
+            $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
         }
 
         $qnum = 0;
@@ -236,40 +258,40 @@ class reporter {
                     FORMAT_HTML,
                     ['noclean' => true]
                 );
-                $response->results = $this->questionnaire->renderer->results_output(
+                $response->results = $this->renderer->results_output(
                     $question,
                     $ridlist,
                     $sort,
                     $anonymous,
                     $pdf
                 );
-                $this->questionnaire->page->add_to_page('responses', $response);
+                $this->page->add_to_page('responses', $response);
             } else {
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'responses',
-                    $this->questionnaire->renderer->container_start('qn-container')
+                    $this->renderer->container_start('qn-container')
                 );
                 if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
-                    $this->questionnaire->page->add_to_page(
+                    $this->page->add_to_page(
                         'responses',
-                        $this->questionnaire->renderer->container_start('qn-info')
+                        $this->renderer->container_start('qn-info')
                     );
-                    $this->questionnaire->page->add_to_page(
+                    $this->page->add_to_page(
                         'responses',
-                        $this->questionnaire->renderer->heading($qnum, 2, 'qn-number')
+                        $this->renderer->heading($qnum, 2, 'qn-number')
                     );
-                    $this->questionnaire->page->add_to_page(
+                    $this->page->add_to_page(
                         'responses',
-                        $this->questionnaire->renderer->container_end()
+                        $this->renderer->container_end()
                     );
                 }
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'responses',
-                    $this->questionnaire->renderer->container_start('qn-content')
+                    $this->renderer->container_start('qn-content')
                 );
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'responses',
-                    $this->questionnaire->renderer->container(
+                    $this->renderer->container(
                         format_text(
                             file_rewrite_pluginfile_urls(
                                 $displaycontent,
@@ -285,17 +307,17 @@ class reporter {
                         'qn-question'
                     )
                 );
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'responses',
-                    $this->questionnaire->renderer->results_output($question, $ridlist, $sort, $anonymous)
+                    $this->renderer->results_output($question, $ridlist, $sort, $anonymous)
                 );
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'responses',
-                    $this->questionnaire->renderer->container_end()
+                    $this->renderer->container_end()
                 );
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'responses',
-                    $this->questionnaire->renderer->container_end()
+                    $this->renderer->container_end()
                 );
             }
         }
@@ -412,16 +434,16 @@ class reporter {
                 'width'     => 800,
             ];
             $action = new \popup_action('click', new \moodle_url($printurl), 'popup', $options);
-            $navbar->printaction = $this->questionnaire->renderer->action_link(
+            $navbar->printaction = $this->renderer->action_link(
                 new \moodle_url($printurl),
                 $linkname,
                 $action,
                 ['title' => $title],
                 new \pix_icon('t/print', $title)
             );
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'navigationbar',
-                $this->questionnaire->renderer->navigationbar($navbar)
+                $this->renderer->navigationbar($navbar)
             );
         } else {
             $resparr = [];
@@ -464,9 +486,9 @@ class reporter {
                     $a++;
                 }
             }
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'responses',
-                $this->questionnaire->renderer->responselist($respcols)
+                $this->renderer->responselist($respcols)
             );
         }
     }
@@ -559,13 +581,13 @@ class reporter {
             $title = userdate($ridssub[$currpos + 1]) . $ridsusers[$currpos + 1];
             $navbar->next = ['url' => ($url . '&rid=' . $nextrid), 'title' => $title];
         }
-        $this->questionnaire->page->add_to_page(
+        $this->page->add_to_page(
             'navigationbar',
-            $this->questionnaire->renderer->usernavigationbar($navbar)
+            $this->renderer->usernavigationbar($navbar)
         );
-        $this->questionnaire->page->add_to_page(
+        $this->page->add_to_page(
             'bottomnavigationbar',
-            $this->questionnaire->renderer->usernavigationbar($navbar)
+            $this->renderer->usernavigationbar($navbar)
         );
     }
 
@@ -1063,7 +1085,7 @@ class reporter {
                 foreach ($feedbackmessages as $msg) {
                     $msgout .= $msg;
                 }
-                $this->questionnaire->page->add_to_page('feedbackmessages', $msgout);
+                $this->page->add_to_page('feedbackmessages', $msgout);
             }
 
             $survey = $this->questionnaire->survey();
@@ -1076,9 +1098,9 @@ class reporter {
                     'feedbacknotes',
                     $this->questionnaire->surveyid()
                 );
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'feedbacknotes',
-                    $this->questionnaire->renderer->box(format_text($text, FORMAT_HTML))
+                    $this->renderer->box(format_text($text, FORMAT_HTML))
                 );
             }
         }
@@ -1092,9 +1114,9 @@ class reporter {
                 $i++;
             }
             if ($question->typeid() != QUESPAGEBREAK) {
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'responses',
-                    $this->questionnaire->renderer->response_output(
+                    $this->renderer->response_output(
                         $question,
                         $responses->get_response($rid),
                         $i,
@@ -1265,9 +1287,9 @@ class reporter {
                 'sectionheading',
                 $sectionid
             );
-            $feedbackmessages[] = $this->questionnaire->renderer->box_start();
+            $feedbackmessages[] = $this->renderer->box_start();
             $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, ['noclean' => true]);
-            $feedbackmessages[] = $this->questionnaire->renderer->box_end();
+            $feedbackmessages[] = $this->renderer->box_end();
 
             if (!empty($feedback->feedbacktext)) {
                 $formatoptions = new stdClass();
@@ -1281,9 +1303,9 @@ class reporter {
                     $feedback->id
                 );
                 $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, $formatoptions);
-                $feedbackmessages[] = $this->questionnaire->renderer->box_start();
+                $feedbackmessages[] = $this->renderer->box_start();
                 $feedbackmessages[] = $feedbacktext;
-                $feedbackmessages[] = $this->questionnaire->renderer->box_end();
+                $feedbackmessages[] = $this->renderer->box_end();
             }
             $score = [$scorepercent, 100 - $scorepercent];
             $allscore = null;
@@ -1292,7 +1314,7 @@ class reporter {
             }
             $usergraph = get_config('questionnaire', 'usergraph');
             if ($usergraph && $survey->charttype()) {
-                $this->questionnaire->page->add_to_page(
+                $this->page->add_to_page(
                     'feedbackcharts',
                     draw_chart(
                         $feedbacktype = 'global',
@@ -1321,7 +1343,7 @@ class reporter {
                 } else {
                     $table->data[] = [$sectionlabel, $allscore[0] . '%' . $oppositeallscore];
                 }
-                $this->questionnaire->page->add_to_page('feedbackscores', html_writer::table($table));
+                $this->page->add_to_page('feedbackscores', html_writer::table($table));
             }
 
             return $feedbackmessages;
@@ -1406,7 +1428,7 @@ class reporter {
                     $imageid
                 );
                 $sectionheading = format_text($sectionheading, 1, $formatoptions);
-                $feedbackmessages[] = $this->questionnaire->renderer->box_start('reportQuestionTitle');
+                $feedbackmessages[] = $this->renderer->box_start('reportQuestionTitle');
                 $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, $formatoptions);
                 $feedback = $DB->get_record_select(
                     'questionnaire_feedback',
@@ -1414,7 +1436,7 @@ class reporter {
                     [$feedbacksectionid, $scorepercent[$section], $scorepercent[$section]],
                     'id,feedbacktext,feedbacktextformat'
                 );
-                $feedbackmessages[] = $this->questionnaire->renderer->box_end();
+                $feedbackmessages[] = $this->renderer->box_end();
                 if (!empty($feedback->feedbacktext)) {
                     $formatoptions = new stdClass();
                     $formatoptions->noclean = true;
@@ -1427,9 +1449,9 @@ class reporter {
                         $feedback->id
                     );
                     $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, $formatoptions);
-                    $feedbackmessages[] = $this->questionnaire->renderer->box_start('feedbacktext');
+                    $feedbackmessages[] = $this->renderer->box_start('feedbacktext');
                     $feedbackmessages[] = $feedbacktext;
-                    $feedbackmessages[] = $this->questionnaire->renderer->box_end();
+                    $feedbackmessages[] = $this->renderer->box_end();
                 }
             }
         }
@@ -1480,7 +1502,7 @@ class reporter {
         }
 
         if ($usergraph && $survey->charttype()) {
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'feedbackcharts',
                 draw_chart(
                     'sections',
@@ -1495,7 +1517,7 @@ class reporter {
             );
         }
         if ($survey->feedbackscores()) {
-            $this->questionnaire->page->add_to_page('feedbackscores', html_writer::table($table));
+            $this->page->add_to_page('feedbackscores', html_writer::table($table));
         }
 
         return $feedbackmessages;
@@ -1521,16 +1543,16 @@ class reporter {
      * @return void
      */
     private function print_survey_end(int $section, int $numsections): void {
-        if (!$this->questionnaire->pages_autonumbered()) {
+        if (!$this->pages_autonumbered()) {
             return;
         }
         if ($numsections > 1) {
             $a = new stdClass();
             $a->page = $section;
             $a->totpages = $numsections;
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'pageinfo',
-                $this->questionnaire->renderer->container(
+                $this->renderer->container(
                     get_string('pageof', 'questionnaire', $a) . '&nbsp;&nbsp;',
                     'surveyPage'
                 )
@@ -1645,7 +1667,7 @@ class reporter {
                 ];
                 $name = 'popup';
                 $action = new \popup_action('click', $link, $name, $options);
-                $respinfo .= $this->questionnaire->renderer->action_link(
+                $respinfo .= $this->renderer->action_link(
                     $link,
                     null,
                     $action,
@@ -1668,9 +1690,9 @@ class reporter {
             }
             $respinfo .= $groupname;
             $respinfo .= $timesubmitted;
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'respondentinfo',
-                $this->questionnaire->renderer->respondent_info($respinfo)
+                $this->renderer->respondent_info($respinfo)
             );
         }
 
@@ -1692,9 +1714,9 @@ class reporter {
             $link = new \moodle_url($url);
             $action = new \popup_action('click', $link, $name, $options);
             $class = "floatprinticon";
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'printblank',
-                $this->questionnaire->renderer->action_link(
+                $this->renderer->action_link(
                     $link,
                     $linkname,
                     $action,
@@ -1706,10 +1728,10 @@ class reporter {
         if ($section == 1) {
             $survey = $this->questionnaire->survey();
             if ($survey->title() !== '') {
-                $this->questionnaire->page->add_to_page('title', format_string($survey->title()));
+                $this->page->add_to_page('title', format_string($survey->title()));
             }
             if ($survey->subtitle() !== '') {
-                $this->questionnaire->page->add_to_page('subtitle', format_string($survey->subtitle()));
+                $this->page->add_to_page('subtitle', format_string($survey->subtitle()));
             }
             if ($survey->info() !== '') {
                 $infotext = file_rewrite_pluginfile_urls(
@@ -1720,14 +1742,14 @@ class reporter {
                     'info',
                     $this->questionnaire->surveyid()
                 );
-                $this->questionnaire->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
+                $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
             }
         }
 
         if ($message) {
-            $this->questionnaire->page->add_to_page(
+            $this->page->add_to_page(
                 'message',
-                $this->questionnaire->renderer->notification($message, \core\output\notification::NOTIFY_ERROR)
+                $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR)
             );
         }
     }

@@ -457,10 +457,15 @@ class questionnaire {
     /**
      * Return the reporter for CSV export and response analysis.
      *
+     * Render-path callers should pass the page-level renderer and templatable page;
+     * CSV-only callers (e.g. submission_notifier) may omit both arguments.
+     *
+     * @param \plugin_renderer_base|null $renderer Renderer used by render-path methods.
+     * @param object|null $page Templatable page used by render-path methods.
      * @return reporter
      */
-    public function reporter(): reporter {
-        $this->reporter ??= new reporter($this);
+    public function reporter(?\plugin_renderer_base $renderer = null, ?object $page = null): reporter {
+        $this->reporter ??= new reporter($this, $renderer, $page);
         return $this->reporter;
     }
 

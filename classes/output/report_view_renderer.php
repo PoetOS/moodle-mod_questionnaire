@@ -212,7 +212,7 @@ class report_view_renderer {
         $i = 0;
         $q->add_response($rid);
         if ($referer != 'print') {
-            $feedbackmessages = $q->reporter()->response_analysis(
+            $feedbackmessages = $q->reporter($this->renderer, $this->page)->response_analysis(
                 $rid,
                 $resps,
                 $compare,
