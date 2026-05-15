@@ -1550,7 +1550,13 @@ class questionnaire {
      * Process a mobile-app submission and return a result array.
      *
      * Handles next/previous page navigation and final submission from the mobile app.
-     * All response persistence is delegated to the questionnaire_responses handler.
+     * Implementation delegates to responses() and submission() — this method itself
+     * is the public surface that externallib.php and output/mobile.php call.
+     *
+     * NOTE: This is the mobile-API contract. Do not rename, relocate, or change the
+     * signature without coordinating with the Moodle mobile app team and bumping the
+     * web-service version. See externallib.php::save_mobile_data and
+     * classes/output/mobile.php::mobile_view_activity_offline.
      *
      * @param int $userid
      * @param int $sec Section (page) number.
