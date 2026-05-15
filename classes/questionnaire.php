@@ -1676,5 +1676,4 @@ class questionnaire {
         return (new \mod_questionnaire\output\report_view_renderer($this->renderer, $this->page))
             ->build_print_view($this, $courseid, $message, $referer, $rid, $blankquestionnaire);
     }
-
 }

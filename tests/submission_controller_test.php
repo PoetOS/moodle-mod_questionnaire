@@ -28,6 +28,8 @@ namespace mod_questionnaire;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/tests/questionnaire_testable.php');
 
