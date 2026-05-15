@@ -1362,7 +1362,8 @@ abstract class question {
             // This needs to be done to ensure all dependency data is loaded.
             // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
             $questionnaire->load_parents($this);
-            $pagetags->dependencylist = $questionnaire->renderer->get_dependency_html($this->id(), $this->dependencies);
+            $pagetags->dependencylist = $PAGE->get_renderer('mod_questionnaire')
+                ->get_dependency_html($this->id(), $this->dependencies);
         }
 
         $pagetags->fieldset = (object)['id' => $this->id(), 'class' => $displayclass];
