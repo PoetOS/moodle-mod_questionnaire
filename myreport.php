@@ -65,9 +65,8 @@ $PAGE->set_context($questionnaire->context());
 $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new reportpage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new reportpage();
 
 $sid = $questionnaire->surveyid();
 $courseid = $questionnaire->courseid();
@@ -93,18 +92,18 @@ switch ($action) {
         }
 
         // Print the page header.
-        echo $questionnaire->renderer->header();
+        echo $renderer->header();
 
         // Print the tabs.
         include('tabs.php');
 
-        $questionnaire->page->add_to_page('myheaders', $titletext);
-        $questionnaire->reporter()->survey_results($rids, $USER->id);
+        $page->add_to_page('myheaders', $titletext);
+        $questionnaire->reporter($renderer, $page)->survey_results($rids, $USER->id);
 
-        echo $questionnaire->renderer->render($questionnaire->page);
+        echo $renderer->render($page);
 
         // Finish the page.
-        echo $questionnaire->renderer->footer($course);
+        echo $renderer->footer($course);
         break;
 
     case 'vall':
@@ -112,20 +111,20 @@ switch ($action) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
         $SESSION->questionnaire->current_tab = 'myvall';
-        $questionnaire->reporter()->add_user_responses($userid);
+        $questionnaire->reporter($renderer, $page)->add_user_responses($userid);
         $titletext = get_string('myresponses', 'questionnaire');
 
         // Print the page header.
-        echo $questionnaire->renderer->header();
+        echo $renderer->header();
 
         // Print the tabs.
         include('tabs.php');
 
-        $questionnaire->page->add_to_page('myheaders', $titletext);
-        $questionnaire->reporter()->view_all_responses();
-        echo $questionnaire->renderer->render($questionnaire->page);
+        $page->add_to_page('myheaders', $titletext);
+        $questionnaire->reporter($renderer, $page)->view_all_responses();
+        echo $renderer->render($page);
         // Finish the page.
-        echo $questionnaire->renderer->footer($course);
+        echo $renderer->footer($course);
         break;
 
     case 'vresp':
@@ -232,15 +231,15 @@ switch ($action) {
 
         $compare = false;
         // Print the page header.
-        echo $questionnaire->renderer->header();
+        echo $renderer->header();
 
         // Print the tabs.
         include('tabs.php');
-        $questionnaire->page->add_to_page('myheaders', $titletext);
+        $page->add_to_page('myheaders', $titletext);
 
         if (count($resps) > 1) {
             $userresps = $resps;
-            $questionnaire->reporter()->survey_results_navbar_student($rid, $userid, $instance, $userresps);
+            $questionnaire->reporter($renderer, $page)->survey_results_navbar_student($rid, $userid, $instance, $userresps);
         }
         $resps = [];
         // Determine here which "global" responses should get displayed for comparison with current user.
@@ -259,10 +258,10 @@ switch ($action) {
             $resps = $respsallparticipants;
         }
         $compare = true;
-        $questionnaire->reporter()->view_response($rid, '', $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
+        $questionnaire->reporter($renderer, $page)->view_response($rid, '', $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
         // Finish the page.
-        echo $questionnaire->renderer->render($questionnaire->page);
-        echo $questionnaire->renderer->footer($course);
+        echo $renderer->render($page);
+        echo $renderer->footer($course);
         break;
 
     case get_string('return', 'questionnaire'):

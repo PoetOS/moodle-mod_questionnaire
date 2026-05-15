@@ -330,5 +330,9 @@ if ((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {
         $tabs[] = $row3;
     }
 
-    $questionnaire->page->add_to_page('tabsarea', print_tabs($tabs, $currenttab, $inactive, $activated, true));
+    // Transitional during the 47e refactor: prefer the includer's local $page
+    // variable, but fall back to $questionnaire->page for pages that have not
+    // yet been migrated.
+    $tabspage = $page ?? $questionnaire->page;
+    $tabspage->add_to_page('tabsarea', print_tabs($tabs, $currenttab, $inactive, $activated, true));
 }

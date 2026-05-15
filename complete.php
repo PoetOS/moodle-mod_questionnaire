@@ -61,9 +61,8 @@ $PAGE->set_context($questionnaire->context());
 $PAGE->set_title(format_string($questionnaire->name()));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new completepage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new completepage();
 
 // Mark as viewed.
 $completion = new completion_info($questionnaire->course());
@@ -80,10 +79,8 @@ if ($resume) {
     $event->trigger();
 }
 
-// Generate the view HTML in the page.
-$questionnaire->view();
+(new \mod_questionnaire\output\survey_view_renderer($renderer, $page))->build_view($questionnaire, $USER->id);
 
-// Output the page.
-echo $questionnaire->renderer->header();
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($questionnaire->course());
+echo $renderer->header();
+echo $renderer->render($page);
+echo $renderer->footer($questionnaire->course());
