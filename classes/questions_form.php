@@ -32,32 +32,20 @@ class questions_form extends \moodleform {
     /** @var int|bool $moveq The id of the question being moved, or false. */
     protected $moveq = false;
 
-    /** @var \plugin_renderer_base|null The plugin renderer used for image_url and dependency_html. */
-    protected ?\plugin_renderer_base $renderer = null;
+    /** @var \plugin_renderer_base The plugin renderer used for image_url and dependency_html. */
+    protected \plugin_renderer_base $renderer;
 
     /**
      * The constructor.
      *
      * @param mixed $action
      * @param bool $moveq
-     * @param \plugin_renderer_base|null $renderer Optional; falls back to $questionnaire->renderer during the
-     *     47e refactor while entry-point pages still call add_renderer() on the questionnaire.
+     * @param \plugin_renderer_base $renderer The plugin renderer.
      */
-    public function __construct($action, $moveq = false, ?\plugin_renderer_base $renderer = null) {
+    public function __construct($action, $moveq, \plugin_renderer_base $renderer) {
         $this->moveq = $moveq;
         $this->renderer = $renderer;
         return parent::__construct($action);
-    }
-
-    /**
-     * Resolve the renderer used by definition(). Falls back to $questionnaire->renderer when
-     * the caller did not pass a renderer to the constructor.
-     *
-     * @return \plugin_renderer_base
-     */
-    private function renderer(): \plugin_renderer_base {
-        global $questionnaire;
-        return $this->renderer ?? $questionnaire->renderer;
     }
 
     /**
@@ -149,7 +137,7 @@ class questions_form extends \moodleform {
             if ($questionnairehasdependencies) {
                 // TODO - Perhaps this should be a function called by the questionnaire after it loads all questions?
                 $questionnaire->navigator()->load_parents($question);
-                $dependencies = $this->renderer()->get_dependency_html($question->id(), $question->dependencies);
+                $dependencies = $this->renderer->get_dependency_html($question->id(), $question->dependencies);
             } else {
                 $dependencies = '';
             }
@@ -201,7 +189,7 @@ class questions_form extends \moodleform {
             }
             $moveqgroup = [];
 
-            $spacer = $this->renderer()->image_url('spacer');
+            $spacer = $this->renderer->image_url('spacer');
 
             if (!$this->moveq) {
                 if ($dependencies) {
@@ -236,9 +224,9 @@ class questions_form extends \moodleform {
                     $esrc = $spacer;
                     $eextra = ['disabled' => 'disabled'];
                 } else {
-                    $esrc = $this->renderer()->image_url('t/edit');
+                    $esrc = $this->renderer->image_url('t/edit');
                 }
-                $rsrc = $this->renderer()->image_url('t/delete');
+                $rsrc = $this->renderer->image_url('t/delete');
 
                 // Question numbers.
                 $manageqgroup[] =& $mform->createElement(
@@ -250,7 +238,7 @@ class questions_form extends \moodleform {
 
                 // Need to index by 'id' since IE doesn't return assigned 'values' for image inputs.
                 $manageqgroup[] =& $mform->createElement('static', 'opentag_' . $question->id(), '', '');
-                $msrc = $this->renderer()->image_url('t/move');
+                $msrc = $this->renderer->image_url('t/move');
 
                 if ($questionnairehasdependencies) {
                     // Do not allow moving parent question at position #1 to be moved down if it has a child at position < 4.
@@ -259,7 +247,7 @@ class questions_form extends \moodleform {
                             $maxdown = $childpositions[$qid];
                             if ($maxdown < 4) {
                                 $strdisabled = get_string('movedisabled', 'questionnaire');
-                                $msrc = $this->renderer()->image_url('t/block');
+                                $msrc = $this->renderer->image_url('t/block');
                                 $mextra = [
                                     'value' => $question->id(),
                                     'alt' => $strdisabled,
@@ -307,7 +295,7 @@ class questions_form extends \moodleform {
                                     (!empty($previousquestiondependencies) && empty($nextquestiondependencies))
                                 ) {
                                     $strdisabled = get_string('movedisabled', 'questionnaire');
-                                    $msrc = $this->renderer()->image_url('t/block');
+                                    $msrc = $this->renderer->image_url('t/block');
                                     $mextra = [
                                         'value' => $question->id(),
                                         'alt' => $strdisabled,
@@ -339,10 +327,10 @@ class questions_form extends \moodleform {
 
                 if ($tid != QUESPAGEBREAK && $tid != QUESSECTIONTEXT  && $tid != QUESSLIDER) {
                     if ($required == 'y') {
-                        $reqsrc = $this->renderer()->image_url('t/stop');
+                        $reqsrc = $this->renderer->image_url('t/stop');
                         $strrequired = get_string('required', 'questionnaire');
                     } else {
-                        $reqsrc = $this->renderer()->image_url('t/go');
+                        $reqsrc = $this->renderer->image_url('t/go');
                         $strrequired = get_string('notrequired', 'questionnaire');
                     }
                     $strrequired .= ' ' . get_string('clicktoswitch', 'questionnaire');
@@ -401,7 +389,7 @@ class questions_form extends \moodleform {
                                 'alt' => $strmove,
                                 'title' => $strmovehere . ' (position ' . $pos . ')',
                             ];
-                            $msrc = $this->renderer()->image_url('movehere');
+                            $msrc = $this->renderer->image_url('movehere');
                             $moveqgroup[] =& $mform->createElement('static', 'opentag_' . $question->id(), '', '');
                             $moveqgroup[] =& $mform->createElement(
                                 'image',
@@ -466,8 +454,8 @@ class questions_form extends \moodleform {
         $mform->addElement('html', '<div class="qcontainer">');
         $deletequestions = $questionnaire->survey()->get_delete_questions();
         if (!empty($deletequestions)) {
-            $restoreimg = $this->renderer()->image_url('i/up');
-            $deleteimg = $this->renderer()->image_url('t/delete');
+            $restoreimg = $this->renderer->image_url('i/up');
+            $deleteimg = $this->renderer->image_url('t/delete');
             $rangetimecrontask = survey::question_deletion_duration();
             foreach ($deletequestions as $deletequestion) {
                 $delquestiongroup = [];

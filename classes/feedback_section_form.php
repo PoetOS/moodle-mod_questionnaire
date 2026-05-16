@@ -37,31 +37,19 @@ class feedback_section_form extends \moodleform {
      */
     public $context;
 
-    /** @var \plugin_renderer_base|null Optional renderer; falls back to $questionnaire->renderer when null. */
-    protected ?\plugin_renderer_base $renderer = null;
+    /** @var \plugin_renderer_base The plugin renderer used by definition(). */
+    protected \plugin_renderer_base $renderer;
 
     /**
-     * Constructor — accepts the standard moodleform args plus an optional renderer.
+     * Constructor — accepts the standard moodleform args plus the plugin renderer.
      *
      * @param mixed $action
      * @param mixed $customdata
-     * @param \plugin_renderer_base|null $renderer Optional; falls back to $questionnaire->renderer
-     *     during the 47e refactor.
+     * @param \plugin_renderer_base $renderer The plugin renderer.
      */
-    public function __construct($action = null, $customdata = null, ?\plugin_renderer_base $renderer = null) {
+    public function __construct($action, $customdata, \plugin_renderer_base $renderer) {
         $this->renderer = $renderer;
         parent::__construct($action, $customdata);
-    }
-
-    /**
-     * Resolve the renderer used by definition(). Falls back to $questionnaire->renderer when
-     * the caller did not pass a renderer to the constructor.
-     *
-     * @return \plugin_renderer_base
-     */
-    private function renderer(): \plugin_renderer_base {
-        global $questionnaire;
-        return $this->renderer ?? $questionnaire->renderer;
     }
 
     /**
@@ -145,7 +133,7 @@ class feedback_section_form extends \moodleform {
                 );
                 $qvalid = $validquestions;
                 if (!empty($feedbacksection->scorecalculation)) {
-                    $rsrc = $this->renderer()->image_url('t/delete');
+                    $rsrc = $this->renderer->image_url('t/delete');
                     $strremove = get_string('remove', 'questionnaire');
                     $rextra = ['alt' => $strremove, 'title' => $strremove];
                     $counter = 1;

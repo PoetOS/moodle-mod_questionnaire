@@ -86,14 +86,6 @@ class questionnaire {
     /** @var stdClass The course record for this questionnaire. */
     protected stdClass $course;
 
-    // PROPERTIES TO BE REPLACED AND REFACTORED LATER.
-
-    /** @var \plugin_renderer_base The module renderer, extended from core renderer. */
-    public $renderer;
-
-    /** @var \templatable The templatable page to render. */
-    public $page;
-
     /** @var question_navigator|null Lazy-loaded navigator for page and dependency traversal. */
     private ?question_navigator $navigator = null;
 
@@ -724,24 +716,6 @@ class questionnaire {
         }
 
         return null;
-    }
-
-    /**
-     * Add the renderer to the questionnaire object.
-     *
-     * @param \plugin_renderer_base $renderer
-     */
-    public function add_renderer(\plugin_renderer_base $renderer): void {
-        $this->renderer = $renderer;
-    }
-
-    /**
-     * Add the templatable page to the questionnaire object.
-     *
-     * @param \templatable $page
-     */
-    public function add_page($page): void {
-        $this->page = $page;
     }
 
     // Behavior methods — expose internal constants as a public API.
@@ -1625,60 +1599,5 @@ class questionnaire {
      */
     public function get_all_file_areas(): array {
         return $this->survey->get_all_file_areas();
-    }
-
-    // Completion flow methods.
-    // The print_survey() and survey_print_render() shims below delegate to the legacy class.
-    // They will be removed once the rendering layer is refactored.
-
-    /**
-     * Render the questionnaire completion page and handle form submission.
-     *
-     * Displays the survey form via the legacy print_survey() shim, then on a valid
-     * "Submit Survey" POST commits the response, notifies subscribers, and redirects
-     * to the thank-you screen.
-     *
-     * @return void
-     */
-    public function view(): void {
-        global $USER;
-        (new \mod_questionnaire\output\survey_view_renderer($this->renderer, $this->page))
-            ->build_view($this, $USER->id);
-    }
-
-    /**
-     * Render the survey page(s) for completion.
-     *
-     * Processes form submissions for navigation and draft-saving, then renders
-     * the current page of the survey.
-     *
-     * @param int $quser
-     * @param int|false $userid
-     * @return string|null Error message string, or null on success.
-     */
-    public function print_survey(int $quser, $userid = false): ?string {
-        return (new \mod_questionnaire\output\survey_view_renderer($this->renderer, $this->page))
-            ->build_survey_form($this, $quser, $userid ?: null);
-    }
-
-    /**
-     * Render the survey for printing or preview display.
-     *
-     * @param int $courseid
-     * @param string $message
-     * @param string $referer
-     * @param int $rid
-     * @param bool $blankquestionnaire
-     * @return false|void
-     */
-    public function survey_print_render(
-        $courseid,
-        $message = '',
-        $referer = '',
-        $rid = 0,
-        $blankquestionnaire = false
-    ) {
-        return (new \mod_questionnaire\output\report_view_renderer($this->renderer, $this->page))
-            ->build_print_view($this, $courseid, $message, $referer, $rid, $blankquestionnaire);
     }
 }
