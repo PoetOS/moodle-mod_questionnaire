@@ -60,8 +60,8 @@ class reporter {
      * Callers that only use the CSV path may pass null for both.
      *
      * @param questionnaire $questionnaire
-     * @param \plugin_renderer_base|null $renderer Optional; falls back to $questionnaire->renderer.
-     * @param object|null $page Optional templatable page; falls back to $questionnaire->page.
+     * @param \plugin_renderer_base|null $renderer Required by render-path methods.
+     * @param object|null $page Templatable page required by render-path methods.
      */
     public function __construct(
         questionnaire $questionnaire,
@@ -69,11 +69,8 @@ class reporter {
         ?object $page = null,
     ) {
         $this->questionnaire = $questionnaire;
-        // Transitional fallback during the 47e refactor. Once $questionnaire->renderer
-        // and $questionnaire->page are removed, every render-path caller will need to
-        // pass these arguments explicitly.
-        $this->renderer = $renderer ?? $questionnaire->renderer;
-        $this->page = $page ?? $questionnaire->page;
+        $this->renderer = $renderer;
+        $this->page = $page;
     }
 
     /**
