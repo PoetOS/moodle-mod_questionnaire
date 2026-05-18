@@ -403,6 +403,9 @@ function questionnaire_delete_response($response, $questionnaire='') {
     $status = $status && $DB->delete_records('questionnaire_response', array('id' => $rid));
 
     if ($status && $cm) {
+        // Invalidate completion cache after response deletion.
+        \mod_questionnaire\completion_cache::invalidate($questionnaire->id);
+
         // Update completion state if necessary.
         $completion = new completion_info($questionnaire->course);
         if ($completion->is_enabled($cm) == COMPLETION_TRACKING_AUTOMATIC && $questionnaire->completionsubmit) {

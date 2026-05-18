@@ -321,6 +321,9 @@ class questionnaire {
 
                 $this->update_grades($quser);
 
+                // Invalidate completion cache before updating state.
+                \mod_questionnaire\completion_cache::invalidate($this->id);
+
                 // Update completion state.
                 $completion = new completion_info($this->course);
                 if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
@@ -375,6 +378,9 @@ class questionnaire {
         }
 
         $this->update_grades($quser);
+
+        // Invalidate completion cache before updating state.
+        \mod_questionnaire\completion_cache::invalidate($this->id);
 
         // Update completion state.
         $completion = new \completion_info($this->course);
