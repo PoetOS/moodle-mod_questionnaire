@@ -1232,19 +1232,7 @@ function questionnaire_reset_userdata($data) {
  *
  */
 function questionnaire_get_completion_state($cm, $userid, $type) {
-    global $DB;
-
-    // Get questionnaire details.
-    $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance), '*', MUST_EXIST);
-
-    // If completion option is enabled, evaluate it and return true/false.
-    if ($questionnaire->completionsubmit) {
-        $params = ['userid' => $userid, 'questionnaireid' => $questionnaire->id, 'complete' => 'y'];
-        return $DB->record_exists('questionnaire_response', $params);
-    } else {
-        // Completion option is not enabled so just return $type.
-        return $type;
-    }
+    return \mod_questionnaire\completion_cache::check($cm, $userid, $type);
 }
 
 /**

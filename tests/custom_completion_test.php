@@ -47,6 +47,14 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php')
 class custom_completion_test extends \advanced_testcase {
 
     /**
+     * Clear completion cache between tests.
+     */
+    public function setUp(): void {
+        parent::setUp();
+        \mod_questionnaire\completion_cache::clear();
+    }
+
+    /**
      * Data provider for get_state().
      *
      * @return array[]

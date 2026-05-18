@@ -1,5 +1,30 @@
 Release Notes
 
+Release 4.4.0.02 (Feature/completion-cache)
+
+Performance:
+* Added completion state caching to eliminate redundant DB queries during grade
+  recalculation and completion reports.
+
+Problem:
+* The function `questionnaire_get_completion_state()` executed 2 DB queries per check (load questionnaire record + check response existence). During grade recalculation, this is called for every student on every activity that has an availability condition based on questionnaire completion. On a course with 500 students and 45 dependent activities, this produced ~46,000 queries per regrade.
+  At 100,000 users this would reach ~9,000,000 queries.
+
+Solution:
+* [SPECAPPS-205] New class `\mod_questionnaire\completion_cache` provides two layers of caching:
+  - Questionnaire record cache: loads each questionnaire's settings once per request, eliminating repeated identical queries across users.
+  - Lazy bulk preload: on first completion check for a questionnaire, loads ALL completed user IDs in a single `SELECT DISTINCT userid` query. All subsequent checks for any user on the same questionnaire are PHP array lookups with zero DB queries.
+
+Cache invalidation:
+* Cache is invalidated on response submit (both initial and resume paths) and response delete, ensuring correctness when completion state changes mid-request.
+
+Files changed:
+* classes/completion_cache.php (new) - cache class with check(), clear(), invalidate() methods
+* lib.php - questionnaire_get_completion_state() delegates to cache
+* questionnaire.class.php - cache invalidation on submit
+* locallib.php - cache invalidation on delete
+* tests/custom_completion_test.php - setUp() added to clear cache between tests
+
 Release 4.4.0 (Build - 2025110900)
 New Features:
 * [PR590](https://github.com/PoetOS/moodle-mod_questionnaire/pull/590): Allow responses to be deleted automatically after a specified time. This is disabled by default.
