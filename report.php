@@ -661,7 +661,8 @@ switch ($action) {
         if (!empty($resps)) {
             // NOTE: response_analysis uses $resps to get the id's of the responses only.
             // Need to figure out what this function does.
-            $feedbackmessages = $questionnaire->reporter($renderer, $page)->response_analysis(0, $resps, false, false, true, $currentgroupid);
+            $feedbackmessages = $questionnaire->reporter($renderer, $page)
+                ->response_analysis(0, $resps, false, false, true, $currentgroupid);
 
             if ($feedbackmessages) {
                 $msgout = '';
@@ -845,7 +846,8 @@ switch ($action) {
                 $groupname = '<strong>' . $responsestatus[$userview] . '</strong>';
             }
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->reporter($renderer, $page)->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
+                $questionnaire->reporter($renderer, $page)
+                    ->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
             $html = $renderer->render($page);
             // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
@@ -897,7 +899,8 @@ switch ($action) {
                 $questionnaire->reporter($renderer, $page)->survey_results_navbar_alpha($rid, $currentgroupid, $byresponse);
             }
             if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->reporter($renderer, $page)->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
+                $questionnaire->reporter($renderer, $page)
+                    ->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
             echo $renderer->header();
             echo $renderer->render($page);
