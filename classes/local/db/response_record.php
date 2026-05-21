@@ -233,4 +233,22 @@ class response_record extends \core\persistent {
         );
         return empty($records) ? null : reset($records);
     }
+
+    /**
+     * Return the most recent complete response record for the given questionnaire and user, or null.
+     *
+     * @param int $questionnaireid
+     * @param int $userid
+     * @return response_record|null
+     */
+    public static function get_latest_complete_for_user(int $questionnaireid, int $userid): ?self {
+        $records = static::get_records(
+            ['questionnaireid' => $questionnaireid, 'userid' => $userid, 'complete' => 'y'],
+            'submitted',
+            'DESC',
+            0,
+            1
+        );
+        return empty($records) ? null : reset($records);
+    }
 }

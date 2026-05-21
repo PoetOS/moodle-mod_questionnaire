@@ -198,14 +198,15 @@ class capabilities {
      * @return bool
      */
     public function user_time_for_new_attempt(int $userid): bool {
-        global $DB;
-
-        $params = ['questionnaireid' => $this->questionnaire->id(), 'userid' => $userid, 'complete' => 'y'];
-        if (!($attempts = $DB->get_records('questionnaire_response', $params, 'submitted DESC'))) {
+        $attempt = \mod_questionnaire\local\db\response_record::get_latest_complete_for_user(
+            $this->questionnaire->id(),
+            $userid
+        );
+        if ($attempt === null) {
             return true;
         }
 
-        $attempt = reset($attempts);
+        $lastsubmitted = (int)$attempt->get('submitted');
         $timenow = time();
 
         switch ($this->questionnaire->qtype()) {
@@ -216,16 +217,16 @@ class capabilities {
                 return false;
 
             case questionnaire::QTYPE_DAILY:
-                return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
-                    (date('Yz', $attempt->submitted) < date('Yz', $timenow));
+                return (date('Y', $lastsubmitted) < date('Y', $timenow)) ||
+                    (date('Yz', $lastsubmitted) < date('Yz', $timenow));
 
             case questionnaire::QTYPE_WEEKLY:
-                return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
-                    (date('YW', $attempt->submitted) < date('YW', $timenow));
+                return (date('Y', $lastsubmitted) < date('Y', $timenow)) ||
+                    (date('YW', $lastsubmitted) < date('YW', $timenow));
 
             case questionnaire::QTYPE_MONTHLY:
-                return (date('Y', $attempt->submitted) < date('Y', $timenow)) ||
-                    (date('Yn', $attempt->submitted) < date('Yn', $timenow));
+                return (date('Y', $lastsubmitted) < date('Y', $timenow)) ||
+                    (date('Yn', $lastsubmitted) < date('Yn', $timenow));
 
             default:
                 return false;

@@ -209,6 +209,26 @@ final class response_record_test extends \advanced_testcase {
     }
 
     /**
+     * get_latest_complete_for_user() returns the most recent complete response, or null.
+     */
+    public function test_get_latest_complete_for_user(): void {
+        $this->resetAfterTest();
+        $qid = 9050;
+        $userid = 73;
+
+        $this->assertNull(response_record::get_latest_complete_for_user($qid, $userid));
+
+        $older = $this->make_response($qid, $userid, 'y', time() - 3600);
+        $newer = $this->make_response($qid, $userid, 'y', time());
+        $this->make_response($qid, $userid, 'n'); // Incomplete — excluded.
+        $this->make_response($qid, 74, 'y');     // Other user — excluded.
+
+        $latest = response_record::get_latest_complete_for_user($qid, $userid);
+        $this->assertNotNull($latest);
+        $this->assertSame($newer, $latest->get('id'));
+    }
+
+    /**
      * count_complete_for_questionnaire() counts only complete responses scoped to the instance.
      */
     public function test_count_complete_for_questionnaire(): void {
