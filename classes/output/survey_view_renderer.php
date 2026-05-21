@@ -261,21 +261,21 @@ class survey_view_renderer {
         $blankquestionnaire = false,
         $outputtarget = 'html'
     ): void {
-        global $CFG, $DB;
+        global $CFG;
         require_once($CFG->libdir . '/filelib.php');
 
-        $userid = '';
-        $resp = '';
+        $userid = 0;
+        $resp = null;
         $groupname = '';
         $currentgroupid = 0;
         $timesubmitted = '';
         if ($rid) {
             $courseid = $q->courseid();
-            if ($resp = $DB->get_record('questionnaire_response', ['id' => $rid])) {
+            if ($resp = \mod_questionnaire\local\db\response_record::get_or_null((int)$rid)) {
                 if ($q->respondenttype() == 'fullname') {
-                    $userid = $resp->userid;
+                    $userid = (int)$resp->get('userid');
                     if (groups_get_activity_groupmode($q->coursemodule(), $q->course())) {
-                        if ($groups = groups_get_all_groups($courseid, $resp->userid)) {
+                        if ($groups = groups_get_all_groups($courseid, $userid)) {
                             if (count($groups) == 1) {
                                 $group = current($groups);
                                 $currentgroupid = $group->id;
@@ -307,16 +307,17 @@ class survey_view_renderer {
         $ruser = '';
         if ($resp && !$blankquestionnaire) {
             if ($userid) {
-                if ($user = $DB->get_record('user', ['id' => $userid])) {
+                if ($user = \core_user::get_user($userid)) {
                     $ruser = fullname($user);
                 }
             }
             if ($q->respondenttype() == 'anonymous') {
                 $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
             } else {
-                if ($resp->submitted) {
+                $submitted = (int)$resp->get('submitted');
+                if ($submitted) {
                     $timesubmitted = '&nbsp;' . get_string('submitted', 'questionnaire') .
-                        '&nbsp;' . userdate($resp->submitted);
+                        '&nbsp;' . userdate($submitted);
                 }
             }
         }
@@ -356,15 +357,7 @@ class survey_view_renderer {
             }
             $respinfo .= get_string('respondent', 'questionnaire') . ': <strong>' . $ruser . '</strong>';
             if ($q->survey_is_public()) {
-                $coursename = '';
-                $sql = 'SELECT q.id, q.course, c.fullname ' .
-                       'FROM {questionnaire_response} qr ' .
-                       'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
-                       'INNER JOIN {course} c ON q.course = c.id ' .
-                       'WHERE qr.id = ? AND qr.complete = ? ';
-                if ($record = $DB->get_record_sql($sql, [$rid, 'y'])) {
-                    $coursename = $record->fullname;
-                }
+                $coursename = \mod_questionnaire\local\db\response_record::get_course_fullname((int)$rid) ?? '';
                 $respinfo .= ' ' . get_string('course') . ': ' . $coursename;
             }
             $respinfo .= $groupname;

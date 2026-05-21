@@ -111,6 +111,22 @@ final class response_record_test extends \advanced_testcase {
     }
 
     /**
+     * get_course_fullname() returns the owning course's fullname for a complete response.
+     */
+    public function test_get_course_fullname(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course(['fullname' => 'Shared course']);
+        $sid = $this->make_survey((int)$course->id, 'public');
+        $qid = $this->make_questionnaire((int)$course->id, $sid);
+        $completerid = $this->make_response($qid, 1, 'y');
+        $incompleterid = $this->make_response($qid, 1, 'n');
+
+        $this->assertSame('Shared course', response_record::get_course_fullname($completerid));
+        $this->assertNull(response_record::get_course_fullname($incompleterid));
+        $this->assertNull(response_record::get_course_fullname(999999));
+    }
+
+    /**
      * get_for_questionnaire() returns every response for the questionnaire.
      */
     public function test_get_for_questionnaire(): void {

@@ -196,6 +196,27 @@ class response_record extends \core\persistent {
     }
 
     /**
+     * Return the course fullname for the questionnaire that owns the given complete response, or null.
+     *
+     * Used when displaying respondent info for a response submitted against a public survey,
+     * where the response may belong to a questionnaire instance in a different course.
+     *
+     * @param int $rid Response id.
+     * @return string|null
+     */
+    public static function get_course_fullname(int $rid): ?string {
+        global $DB;
+
+        $sql = 'SELECT c.fullname
+                  FROM {questionnaire_response} r
+                  INNER JOIN {questionnaire} q ON r.questionnaireid = q.id
+                  INNER JOIN {course} c ON q.course = c.id
+                 WHERE r.id = :rid AND r.complete = :status';
+        $fullname = $DB->get_field_sql($sql, ['rid' => $rid, 'status' => 'y']);
+        return $fullname === false ? null : $fullname;
+    }
+
+    /**
      * Return the most recent incomplete response record for the given questionnaire and user, or null.
      *
      * @param int $questionnaireid
