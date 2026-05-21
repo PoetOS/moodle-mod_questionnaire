@@ -27,6 +27,7 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\db\response_record;
 use mod_questionnaire\output\reportpage;
 use mod_questionnaire\output\reportpagepdf;
 use mod_questionnaire\output\responsepagepdf;
@@ -216,19 +217,20 @@ switch ($action) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
-        } else if (!($resp = $DB->get_record('questionnaire_response', ['id' => $rid]))) {
+        } else if (!($resp = response_record::get_or_null((int)$rid))) {
             throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
         }
 
         $ruser = false;
-        if (!empty($resp->userid)) {
-            if ($user = $DB->get_record('user', ['id' => $resp->userid])) {
+        $respuserid = $resp->get('userid');
+        if (!empty($respuserid)) {
+            if ($user = \core_user::get_user($respuserid)) {
                 $ruser = fullname($user);
             } else {
                 $ruser = '- ' . get_string('unknown', 'questionnaire') . ' -';
             }
         } else {
-            $ruser = $resp->userid;
+            $ruser = $respuserid;
         }
 
         // Print the page header.
@@ -240,7 +242,7 @@ switch ($action) {
         $SESSION->questionnaire->current_tab = 'deleteresp';
         include('tabs.php');
 
-        $timesubmitted = '<br />' . get_string('submitted', 'questionnaire') . '&nbsp;' . userdate($resp->submitted);
+        $timesubmitted = '<br />' . get_string('submitted', 'questionnaire') . '&nbsp;' . userdate($resp->get('submitted'));
         if ($questionnaire->respondenttype() == 'anonymous') {
             $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
             $timesubmitted = '';
@@ -320,12 +322,13 @@ switch ($action) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
-        } else if (!($response = $DB->get_record('questionnaire_response', ['id' => $rid]))) {
+        } else if (!($response = response_record::get_or_null((int)$rid))) {
             throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
         }
 
-        if ($questionnaire->responses()->delete_response($response)) {
-            if (!$DB->count_records('questionnaire_response', ['questionnaireid' => $questionnaire->id(), 'complete' => 'y'])) {
+        $responseuserid = $response->get('userid');
+        if ($questionnaire->responses()->delete_response($response->to_record())) {
+            if (!response_record::count_complete_for_questionnaire($questionnaire->id())) {
                 $redirection = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $cm->id;
             } else {
                 $redirection = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;instance=' .
@@ -337,7 +340,7 @@ switch ($action) {
                 'objectid' => $questionnaire->surveyid(),
                 'context' => $questionnaire->context(),
                 'courseid' => $questionnaire->courseid(),
-                'relateduserid' => $response->userid,
+                'relateduserid' => $responseuserid,
             ];
             $event = \mod_questionnaire\event\response_deleted::create($params);
             $event->trigger();
@@ -346,14 +349,14 @@ switch ($action) {
         } else {
             if ($questionnaire->respondenttype() == 'anonymous') {
                 $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
-            } else if (!empty($response->userid)) {
-                if ($user = $DB->get_record('user', ['id' => $response->userid])) {
+            } else if (!empty($responseuserid)) {
+                if ($user = \core_user::get_user($responseuserid)) {
                     $ruser = fullname($user);
                 } else {
                     $ruser = '- ' . get_string('unknown', 'questionnaire') . ' -';
                 }
             } else {
-                $ruser = $response->userid;
+                $ruser = $responseuserid;
             }
             $link = new \moodle_url('/mod/questionnaire/report.php', [
                 'action' => 'vresp',
@@ -389,25 +392,6 @@ switch ($action) {
                     if (!($resps = $questionnaire->get_responses(false, $currentgroupid))) {
                         $resps = [];
                     }
-            }
-            if (empty($resps)) {
-                $noresponses = true;
-            } else {
-                if ($rid === false) {
-                    $resp = current($resps);
-                    $rid = $resp->id;
-                } else {
-                    $resp = $DB->get_record('questionnaire_response', ['id' => $rid]);
-                }
-                if (!empty($resp->userid)) {
-                    if ($user = $DB->get_record('user', ['id' => $resp->userid])) {
-                        $ruser = fullname($user);
-                    } else {
-                        $ruser = '- ' . get_string('unknown', 'questionnaire') . ' -';
-                    }
-                } else {
-                    $ruser = $resp->userid;
-                }
             }
         } else {
             $resps = $respsallparticipants;
@@ -766,7 +750,6 @@ switch ($action) {
         } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         }
-        $ruser = false;
         $noresponses = false;
         if ($usergraph) {
             $charttype = $questionnaire->survey()->charttype();
@@ -812,22 +795,8 @@ switch ($action) {
                 }
                 if (empty($resps)) {
                     $noresponses = true;
-                } else {
-                    if ($rid === false) {
-                        $resp = current($resps);
-                        $rid = $resp->id;
-                    } else {
-                        $resp = $DB->get_record('questionnaire_response', ['id' => $rid]);
-                    }
-                    if (!empty($resp->userid)) {
-                        if ($user = $DB->get_record('user', ['id' => $resp->userid])) {
-                            $ruser = fullname($user);
-                        } else {
-                            $ruser = '- ' . get_string('unknown', 'questionnaire') . ' -';
-                        }
-                    } else {
-                        $ruser = $resp->userid;
-                    }
+                } else if ($rid === false) {
+                    $rid = current($resps)->id;
                 }
             } else {
                 $resps = $respsallparticipants;

@@ -73,6 +73,22 @@ class response_record extends \core\persistent {
     }
 
     /**
+     * Return the response with the given id, or null if it does not exist.
+     *
+     * Persistent's constructor throws on a missing id; callers that want to
+     * branch on "exists or not" should use this finder instead.
+     *
+     * @param int $rid
+     * @return response_record|null
+     */
+    public static function get_or_null(int $rid): ?self {
+        if (empty($rid)) {
+            return null;
+        }
+        return static::record_exists($rid) ? new self($rid) : null;
+    }
+
+    /**
      * Return all complete responses for a given questionnaire and user.
      *
      * @param int $questionnaireid

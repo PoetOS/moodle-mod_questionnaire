@@ -333,7 +333,8 @@ class reporter {
         int $currentgroupid,
         bool $byresponse
     ): void {
-        global $CFG, $DB;
+        global $CFG;
+        require_once($CFG->dirroot . '/user/lib.php');
 
         $isfullname = $this->questionnaire->respondenttype() !== 'anonymous';
         if ($isfullname) {
@@ -349,6 +350,14 @@ class reporter {
             return;
         }
 
+        $users = [];
+        if ($isfullname) {
+            $userids = array_filter(array_map(fn($r) => (int)$r->userid, $responses));
+            if (!empty($userids)) {
+                $users = user_get_users_by_id(array_values(array_unique($userids)));
+            }
+        }
+
         $rids = [];
         $ridssub = [];
         $ridsuserfullname = [];
@@ -358,9 +367,8 @@ class reporter {
         foreach ($responses as $response) {
             $rids[] = $response->id;
             if ($isfullname) {
-                $user = $DB->get_record('user', ['id' => $response->userid]);
                 $ridssub[] = $response->submitted;
-                $ridsuserfullname[] = fullname($user);
+                $ridsuserfullname[] = isset($users[$response->userid]) ? fullname($users[$response->userid]) : '';
                 $ridsuserid[] = $response->userid;
             }
             if ($response->id == $currrid) {
