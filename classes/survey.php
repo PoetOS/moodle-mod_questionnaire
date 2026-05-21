@@ -85,17 +85,6 @@ class survey {
     }
 
     /**
-     * Return a survey built from an already-loaded survey_record, without hitting the DB again.
-     *
-     * @param survey_record $surveyrecord
-     * @param context_module|null $context
-     * @return self
-     */
-    public static function from_record(survey_record $surveyrecord, ?context_module $context = null): self {
-        return new self($surveyrecord, $context);
-    }
-
-    /**
      * Return a shallow survey built from an already-loaded survey_record without loading questions.
      *
      * Useful for lightweight contexts such as select-list building where only survey
@@ -105,7 +94,7 @@ class survey {
      * @param survey_record $surveyrecord
      * @return self
      */
-    public static function from_record_shallow(survey_record $surveyrecord): self {
+    private static function from_record_shallow(survey_record $surveyrecord): self {
         $instance = new self(new survey_record());
         $instance->surveyrecord = $surveyrecord;
         return $instance;
@@ -119,7 +108,7 @@ class survey {
      * @param int $courseid
      * @return self[]
      */
-    public static function get_private_for_course(int $courseid): array {
+    private static function get_private_for_course(int $courseid): array {
         return array_map(
             fn($rec) => self::from_record_shallow($rec),
             survey_record::get_by_realm_in_course('private', $courseid)
@@ -132,7 +121,7 @@ class survey {
      * @param string $realm 'public' or 'template'.
      * @return self[]
      */
-    public static function get_by_realm(string $realm): array {
+    private static function get_by_realm(string $realm): array {
         return array_map(
             fn($rec) => self::from_record_shallow($rec),
             survey_record::get_by_realm($realm)

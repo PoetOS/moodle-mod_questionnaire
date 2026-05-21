@@ -747,29 +747,6 @@ class questionnaire {
         return self::RESTORE_PARAM;
     }
 
-    /**
-     * Create a new questionnaire survey record.
-     *
-     * @param stdClass $sdata  Survey data object (must include courseid).
-     * @return int  The new survey id.
-     */
-    public static function add_survey(stdClass $sdata): int {
-        return survey::add_survey($sdata);
-    }
-
-    /**
-     * Create an editable copy of a survey, including all questions, choices, dependencies,
-     * and feedback sections.
-     *
-     * @param stdClass $surveydata  The survey record to copy.
-     * @param array    $questions   The questions array.
-     * @param int      $owner       The courseid that will own the new survey.
-     * @return int|false  The new survey id on success, false on failure.
-     */
-    public static function copy_survey(stdClass $surveydata, array $questions, int $owner): int|false {
-        return survey::copy_survey($surveydata, $questions, $owner);
-    }
-
     // Navigation / display / hook methods (delegated from lib.php).
 
     /**
