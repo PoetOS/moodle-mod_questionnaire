@@ -95,6 +95,22 @@ final class response_record_test extends \advanced_testcase {
     }
 
     /**
+     * get_or_null() returns the record when it exists and null when it doesn't.
+     */
+    public function test_get_or_null(): void {
+        $this->resetAfterTest();
+        $rid = $this->make_response(8000, 1, 'y');
+
+        $record = response_record::get_or_null($rid);
+        $this->assertInstanceOf(response_record::class, $record);
+        $this->assertEquals($rid, $record->get('id'));
+        $this->assertEquals(8000, $record->get('questionnaireid'));
+
+        $this->assertNull(response_record::get_or_null(999999));
+        $this->assertNull(response_record::get_or_null(0));
+    }
+
+    /**
      * get_for_questionnaire() returns every response for the questionnaire.
      */
     public function test_get_for_questionnaire(): void {
