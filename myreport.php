@@ -258,7 +258,8 @@ switch ($action) {
             $resps = $respsallparticipants;
         }
         $compare = true;
-        $questionnaire->reporter($renderer, $page)->view_response($rid, '', $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
+        $questionnaire->reporter($renderer, $page)
+            ->view_response($rid, '', $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
         // Finish the page.
         echo $renderer->render($page);
         echo $renderer->footer($course);
