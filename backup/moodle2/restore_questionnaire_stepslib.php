@@ -220,6 +220,9 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         // Cover for legacy backup data.
         if ($data->deleted === 'n') {
             $data->deleted = null;
+        } else if ($data->deleted === 'y') {
+            // Question was deleted, so don't restore it.
+            return;
         }
         // Insert the questionnaire_question record.
         $newitemid = $DB->insert_record('questionnaire_question', $data);
