@@ -1,5 +1,13 @@
 # Release Notes #
 
+## Release 5.0.3 (Build - 2026052200) ##
+### Bug Fixes: ###
+* [PR700](https://github.com/PoetOS/moodle-mod_questionnaire/pull/700): Overview page fix for 5.1.
+* [PR706](https://github.com/PoetOS/moodle-mod_questionnaire/pull/706): Code style issue fix.
+* [PR756](https://github.com/PoetOS/moodle-mod_questionnaire/pull/756): Fix restore for deleted questions.
+* [PR758](https://github.com/PoetOS/moodle-mod_questionnaire/pull/758): Fix wrongly deleted response records.
+
+
 ## Release 5.0.2 (Build - 2026040400) ##
 ### New Features: ###
 * [PR677](https://github.com/PoetOS/moodle-mod_questionnaire/pull/677): New recycle bin for deleted questions.
