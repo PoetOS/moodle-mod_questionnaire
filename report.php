@@ -27,7 +27,7 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
-use mod_questionnaire\local\db\response_record;
+use mod_questionnaire\report_actions;
 use mod_questionnaire\output\pdf_factory;
 use mod_questionnaire\output\reportpage;
 use mod_questionnaire\output\reportpagepdf;
@@ -210,224 +210,22 @@ $userview = array_key_exists($userview, $responsestatus) ? $userview : '0';
 
 switch ($action) {
     case 'dresp':  // Delete individual response? Ask for confirmation.
-        require_capability('mod/questionnaire:deleteresponses', $context);
-
-        if (!$questionnaire->survey()) {
-            throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
-            throw new \moodle_exception('surveyowner', 'mod_questionnaire');
-        } else if (!$rid || !is_numeric($rid)) {
-            throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
-        } else if (!($resp = response_record::get_or_null((int)$rid))) {
-            throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
-        }
-
-        $ruser = false;
-        $respuserid = $resp->get('userid');
-        if (!empty($respuserid)) {
-            if ($user = \core_user::get_user($respuserid)) {
-                $ruser = fullname($user);
-            } else {
-                $ruser = '- ' . get_string('unknown', 'questionnaire') . ' -';
-            }
-        } else {
-            $ruser = $respuserid;
-        }
-
-        // Print the page header.
-        $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
-        $PAGE->set_heading(format_string($course->fullname));
-        echo $renderer->header();
-
-        // Print the tabs.
-        $SESSION->questionnaire->current_tab = 'deleteresp';
-        include('tabs.php');
-
-        $timesubmitted = '<br />' . get_string('submitted', 'questionnaire') . '&nbsp;' . userdate($resp->get('submitted'));
-        if ($questionnaire->respondenttype() == 'anonymous') {
-            $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
-            $timesubmitted = '';
-        }
-
-        // Print the confirmation.
-        $msg = '<div class="warning centerpara">';
-        $msg .= get_string('confirmdelresp', 'questionnaire', $ruser . $timesubmitted);
-        $msg .= '</div>';
-        $urlyes = new moodle_url('report.php', [
-            'action' => 'dvresp',
-            'rid' => $rid,
-            'individualresponse' => 1,
-            'instance' => $instance,
-            'group' => $currentgroupid,
-        ]);
-        $urlno = new moodle_url('report.php', [
-            'action' => 'vresp',
-            'instance' => $instance,
-            'rid' => $rid,
-            'individualresponse' => 1,
-            'group' => $currentgroupid,
-        ]);
-        $buttonyes = new single_button($urlyes, get_string('delete'), 'post');
-        $buttonno = new single_button($urlno, get_string('cancel'), 'get');
-        $page->add_to_page('notifications', $renderer->confirm($msg, $buttonyes, $buttonno));
-        echo $renderer->render($page);
-        // Finish the page.
-        echo $renderer->footer($course);
+        (new report_actions($questionnaire, $renderer))
+            ->confirm_delete_response($page, (int)$rid, $currentgroupid);
         break;
 
     case 'delallresp': // Delete all responses? Ask for confirmation.
-        require_capability('mod/questionnaire:deleteresponses', $context);
-
-        if (!empty($respsallparticipants)) {
-            // Print the page header.
-            $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
-            $PAGE->set_heading(format_string($course->fullname));
-            echo $renderer->header();
-
-            // Print the tabs.
-            $SESSION->questionnaire->current_tab = 'deleteall';
-            include('tabs.php');
-
-            // Print the confirmation.
-            $msg = '<div class="warning centerpara">';
-            if ($groupmode == 0) {   // No groups or visible groups.
-                $msg .= get_string('confirmdelallresp', 'questionnaire');
-            } else {                 // Separate groups.
-                $msg .= get_string('confirmdelgroupresp', 'questionnaire', $groupname);
-            }
-            $msg .= '</div>';
-
-            $urlyes = new moodle_url('report.php', [
-                'action' => 'dvallresp',
-                'sid' => $sid,
-                'instance' => $instance,
-                'group' => $currentgroupid,
-            ]);
-            $urlno = new moodle_url('report.php', ['instance' => $instance, 'group' => $currentgroupid]);
-            $buttonyes = new single_button($urlyes, get_string('delete'), 'post');
-            $buttonno = new single_button($urlno, get_string('cancel'), 'get');
-
-            $page->add_to_page('notifications', $renderer->confirm($msg, $buttonyes, $buttonno));
-            echo $renderer->render($page);
-            // Finish the page.
-            echo $renderer->footer($course);
-        }
+        (new report_actions($questionnaire, $renderer))
+            ->confirm_delete_all_responses($page, $groupmode, $currentgroupid, $groupname ?? '', $respsallparticipants);
         break;
 
     case 'dvresp': // Delete single response. Do it!
-        require_capability('mod/questionnaire:deleteresponses', $context);
-
-        if (!$questionnaire->survey()) {
-            throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
-            throw new \moodle_exception('surveyowner', 'mod_questionnaire');
-        } else if (!$rid || !is_numeric($rid)) {
-            throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
-        } else if (!($response = response_record::get_or_null((int)$rid))) {
-            throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
-        }
-
-        $responseuserid = $response->get('userid');
-        if ($questionnaire->responses()->delete_response($response->to_record())) {
-            if (!response_record::count_complete_for_questionnaire($questionnaire->id())) {
-                $redirection = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $cm->id;
-            } else {
-                $redirection = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;instance=' .
-                    $instance . '&amp;byresponse=1';
-            }
-
-            // Log this questionnaire delete single response action.
-            $params = [
-                'objectid' => $questionnaire->surveyid(),
-                'context' => $questionnaire->context(),
-                'courseid' => $questionnaire->courseid(),
-                'relateduserid' => $responseuserid,
-            ];
-            $event = \mod_questionnaire\event\response_deleted::create($params);
-            $event->trigger();
-
-            redirect($redirection);
-        } else {
-            if ($questionnaire->respondenttype() == 'anonymous') {
-                $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
-            } else if (!empty($responseuserid)) {
-                if ($user = \core_user::get_user($responseuserid)) {
-                    $ruser = fullname($user);
-                } else {
-                    $ruser = '- ' . get_string('unknown', 'questionnaire') . ' -';
-                }
-            } else {
-                $ruser = $responseuserid;
-            }
-            $link = new \moodle_url('/mod/questionnaire/report.php', [
-                'action' => 'vresp',
-                'sid' => $sid,
-                'instance' => $instance,
-                'byresponse' => '1',
-            ]);
-            throw new \moodle_exception(
-                'couldnotdelrespby',
-                'mod_questionnaire',
-                $link,
-                ['rid' => $rid, 'user' => $ruser]
-            );
-        }
+        (new report_actions($questionnaire, $renderer))->delete_response((int)$rid);
         break;
 
     case 'dvallresp': // Delete all responses in questionnaire (or group). Do it!
-        require_capability('mod/questionnaire:deleteresponses', $context);
-
-        if (!$questionnaire->survey()) {
-            throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
-            throw new \moodle_exception('surveyowner', 'mod_questionnaire');
-        }
-
-        // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
-        if ($groupmode > 0) {
-            switch ($currentgroupid) {
-                case 0:     // All participants.
-                    $resps = $respsallparticipants;
-                    break;
-                default:     // Members of a specific group.
-                    if (!($resps = $questionnaire->get_responses(false, $currentgroupid))) {
-                        $resps = [];
-                    }
-            }
-        } else {
-            $resps = $respsallparticipants;
-        }
-
-        if (!empty($resps)) {
-            foreach ($resps as $response) {
-                $questionnaire->responses()->delete_response($response);
-            }
-            if (!$questionnaire->count_submissions()) {
-                $redirection = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $cm->id;
-            } else {
-                $redirection = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vall&amp;sid=' . $sid . '&amp;instance=' .
-                    $instance;
-            }
-
-            // Log this questionnaire delete all responses action.
-            $anonymous = $questionnaire->respondenttype() == 'anonymous';
-
-            $event = \mod_questionnaire\event\all_responses_deleted::create([
-                'objectid' => $questionnaire->id(),
-                'anonymous' => $anonymous,
-                'context' => $context,
-            ]);
-            $event->trigger();
-
-            redirect($redirection);
-        } else {
-            $link = new \moodle_url('/mod/questionnaire/report.php', [
-                'action' => 'vall',
-                'sid' => $sid,
-                'instance' => $instance,
-            ]);
-            throw new \moodle_exception('couldnotdelresp', 'mod_questionnaire', $link);
-        }
+        (new report_actions($questionnaire, $renderer))
+            ->delete_all_responses($groupmode, $currentgroupid, $respsallparticipants);
         break;
 
     case 'dwnpg': // Download page options.
