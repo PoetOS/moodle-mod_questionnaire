@@ -28,6 +28,7 @@ require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\db\response_record;
+use mod_questionnaire\output\pdf_factory;
 use mod_questionnaire\output\reportpage;
 use mod_questionnaire\output\reportpagepdf;
 use mod_questionnaire\output\responsepagepdf;
@@ -667,7 +668,7 @@ switch ($action) {
         ];
 
         if ($outputtarget == 'pdf') {
-            $pdf = questionnaire_report_start_pdf();
+            $pdf = pdf_factory::create();
             if ($currentgroupid > 0) {
                 $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
             } else {
@@ -810,7 +811,7 @@ switch ($action) {
         }
 
         if ($outputtarget == 'pdf') {
-            $pdf = questionnaire_report_start_pdf();
+            $pdf = pdf_factory::create();
             if ($currentgroupid > 0) {
                 $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
             } else {
@@ -877,42 +878,4 @@ switch ($action) {
             echo $renderer->footer($course);
         }
         break;
-}
-
-/**
- * Return a pdf object.
- *
- * @package mod_questionnaire
- * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
- * @author     Mike Churchward
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @return pdf
- */
-function questionnaire_report_start_pdf() {
-    global $CFG;
-
-    require_once($CFG->libdir . '/pdflib.php');
-    $pdf = new pdf();
-    $pdf->SetCreator(PDF_CREATOR);
-    $pdf->SetAuthor('Moodle Questionnaire');
-    $pdf->SetTitle('All responses');
-    $pdf->setPrintHeader(false);
-    // Set default monospaced font.
-    $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-
-    // Set margins.
-    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-    $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-    $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-
-    // Set auto page breaks.
-    $pdf->SetAutoPageBreak(true, PDF_MARGIN_BOTTOM);
-
-    // Set image scale factor.
-    $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-    // Set background color for headings.
-    $pdf->SetFillColor(238, 238, 238);
-    $pdf->AddPage('L');
-    return $pdf;
 }
