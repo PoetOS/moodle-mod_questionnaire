@@ -28,6 +28,7 @@ require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\report_actions;
+use mod_questionnaire\report_downloader;
 use mod_questionnaire\output\pdf_factory;
 use mod_questionnaire\output\reportpage;
 use mod_questionnaire\output\reportpagepdf;
@@ -231,132 +232,13 @@ switch ($action) {
         break;
 
     case 'dwnpg': // Download page options.
-        require_capability('mod/questionnaire:downloadresponses', $context);
-
-        $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->set_heading(format_string($course->fullname));
-        echo $renderer->header();
-
-        // Print the tabs.
-        // Tab setup.
-        if (empty($user)) {
-            $SESSION->questionnaire->current_tab = 'downloadcsv';
-        } else {
-            $SESSION->questionnaire->current_tab = 'mydownloadcsv';
-        }
-
-        include('tabs.php');
-
-        $groupname = '';
-        if ($groupmode > 0) {
-            switch ($currentgroupid) {
-                case 0:     // All participants.
-                    $groupname = get_string('allparticipants');
-                    break;
-                default:     // Members of a specific group.
-                    $groupname = get_string('membersofselectedgroup', 'group') . ' ' .
-                        get_string('group') . ' ' . $questionnairegroups[$currentgroupid]->name;
-            }
-        }
-        $output = '';
-        $output .= "<br /><br />\n";
-        $output .= html_writer::tag('h2', (get_string('downloadtextformat', 'questionnaire'))
-                . ':&nbsp;' . get_string('responses', 'questionnaire') . '&nbsp;' .
-                $groupname . $renderer->help_icon('downloadtextformat', 'questionnaire'));
-        $output .= $renderer->heading(get_string('textdownloadoptions', 'questionnaire'), 3);
-        $output .= $renderer->box_start();
-        $downloadparams = [
-            'instance' => $instance,
-            'user' => $user,
-            'sid' => $sid,
-            'action' => 'dfs',
-            'group' => $currentgroupid,
-        ];
-        $extrafields = $renderer->render_from_template('mod_questionnaire/extrafields', []);
-        $output .= $renderer->download_dataformat_selector(
-            get_string('downloadtypes', 'questionnaire'),
-            'report.php',
-            'downloadformat',
-            $downloadparams,
-            $extrafields
-        );
-        $output .= $renderer->box_end();
-
-        $page->add_to_page('respondentinfo', $output);
-        echo $renderer->render($page);
-
-        echo $renderer->footer('none');
-
-        // Log saved as text action.
-        $params = [
-            'objectid' => $questionnaire->id(),
-            'context' => $questionnaire->context(),
-            'courseid' => $course->id,
-            'other' => ['action' => $action, 'instance' => $instance, 'currentgroupid' => $currentgroupid],
-        ];
-        $event = \mod_questionnaire\event\all_responses_saved_as_text::create($params);
-        $event->trigger();
-
-        exit();
+        (new report_downloader($questionnaire, $renderer))
+            ->show_download_options($page, $groupmode, $currentgroupid, $questionnairegroups ?: [], (int)$user);
         break;
 
     case 'dfs':
-        require_capability('mod/questionnaire:downloadresponses', $context);
-        // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
-        $name = clean_param($questionnaire->name(), PARAM_FILE);
-        $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
-
-        $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
-        $choicetext = optional_param('choicetext', '0', PARAM_INT);
-        $showincompletes = optional_param('complete', '0', PARAM_INT);
-        $rankaverages = optional_param('rankaverages', '0', PARAM_INT);
-        $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
-        $emailroles = optional_param('emailroles', 0, PARAM_INT);
-        $emailextra = optional_param('emailextra', '', PARAM_RAW);
-
-        $output = $questionnaire->reporter($renderer, $page)->generate_csv(
-            $currentgroupid,
-            '',
-            $user,
-            $choicecodes,
-            $choicetext,
-            $showincompletes,
-            $rankaverages
-        );
-
-        $columns = $output[0];
-        unset($output[0]);
-
-        // Check if email report was selected.
-        $emailreport = optional_param('emailreport', '', PARAM_ALPHA);
-        if (empty($emailreport)) {
-            \core\dataformat::download_data($name, $dataformat, $columns, $output);
-        } else {
-            // Emailreport button selected.
-            if (get_config('questionnaire', 'allowemailreporting') && (!empty($emailroles) || !empty($emailextra))) {
-                require_once('savefileformat.php');
-                $users = !empty($emailroles)
-                    ? (new \mod_questionnaire\submission_notifier($questionnaire))->get_notifiable_users($USER->id)
-                    : [];
-                $otheremails = explode(',', $emailextra);
-                if (!empty($users) || !empty($otheremails)) {
-                    $thisurl = new moodle_url(
-                        'report.php',
-                        ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]
-                    );
-                    save_as_dataformat($name, $dataformat, $columns, $output, $users, $otheremails, $thisurl);
-                }
-            } else {
-                redirect(
-                    new moodle_url(
-                        'report.php',
-                        ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]
-                    ),
-                    get_string('emailsnotspecified', 'questionnaire')
-                );
-            }
-        }
-        exit();
+        (new report_downloader($questionnaire, $renderer))
+            ->download_responses($page, $currentgroupid, (int)$user);
         break;
 
     case 'vall':         // View all responses.
