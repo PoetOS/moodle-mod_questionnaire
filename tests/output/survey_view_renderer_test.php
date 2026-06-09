@@ -197,6 +197,115 @@ final class survey_view_renderer_test extends \advanced_testcase {
     }
 
     /**
+     * handle_submit_action() short-circuits (returns null) when the user has already
+     * walked past the final page (SESSION->questionnaire->end == true).
+     */
+    public function test_handle_submit_action_short_circuits_when_past_end(): void {
+        global $PAGE, $SESSION;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        $this->init_session();
+        $SESSION->questionnaire->end = true;
+
+        $svr = new survey_view_renderer($renderer, $page);
+        $formdata = (object)['sec' => 1, 'rid' => 0];
+        $method = new \ReflectionMethod($svr, 'handle_submit_action');
+        $method->setAccessible(true);
+
+        $this->assertNull($method->invoke($svr, $instance, $formdata, (int)$studentid));
+    }
+
+    /**
+     * handle_resume_action() persists the in-progress response and posts a
+     * "progress saved" notification to the page (delegating to goto_saved).
+     */
+    public function test_handle_resume_action_writes_savedprogress(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        $this->init_session();
+
+        $svr = new survey_view_renderer($renderer, $page);
+        $formdata = (object)['sec' => 1, 'rid' => 0];
+        $method = new \ReflectionMethod($svr, 'handle_resume_action');
+        $method->setAccessible(true);
+        $method->invoke($svr, $instance, $formdata, (int)$studentid);
+
+        $data = $this->page_data($page);
+        $this->assertObjectHasProperty('notifications', $data);
+        $this->assertStringContainsString('progress has been saved', $data->notifications);
+        $this->assertNotEmpty($formdata->rid);
+    }
+
+    /**
+     * handle_next_action() advances formdata->sec to the next section on success.
+     */
+    public function test_handle_next_action_advances_to_next_section(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        $this->init_session();
+
+        $svr = new survey_view_renderer($renderer, $page);
+        $formdata = (object)['sec' => 1, 'rid' => 0, 'next' => 'Next'];
+        $method = new \ReflectionMethod($svr, 'handle_next_action');
+        $method->setAccessible(true);
+        $msg = $method->invoke($svr, $instance, $formdata, (int)$studentid, 1);
+
+        $this->assertSame('', $msg);
+        $this->assertSame(2, $formdata->sec);
+    }
+
+    /**
+     * handle_prev_action() walks back from the past-end summary by decrementing
+     * sec and clearing SESSION->end before validating the current page.
+     */
+    public function test_handle_prev_action_walks_back_from_past_end(): void {
+        global $PAGE, $SESSION;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        $this->init_session();
+        $SESSION->questionnaire->end = true;
+
+        $svr = new survey_view_renderer($renderer, $page);
+        // After the user walked past the last section (sec=2), pressing Prev should land them on sec=1.
+        $formdata = (object)['sec' => 2, 'rid' => 0, 'prev' => 'Prev'];
+        $method = new \ReflectionMethod($svr, 'handle_prev_action');
+        $method->setAccessible(true);
+        $method->invoke($svr, $instance, $formdata, (int)$studentid);
+
+        $this->assertFalse($SESSION->questionnaire->end);
+    }
+
+    /**
      * print_survey_end() writes a "page X of Y" footer when auto-numbering is on and
      * there is more than one section.
      */
