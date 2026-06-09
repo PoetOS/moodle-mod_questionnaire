@@ -123,56 +123,24 @@ class survey_view_renderer {
         }
 
         if (!empty($formdata->submit)) {
-            if (isset($SESSION->questionnaire->end) && $SESSION->questionnaire->end == true) {
+            $submitresult = $this->handle_submit_action($q, $formdata, $userid);
+            if ($submitresult === null) {
                 return null;
             }
-            $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
-            if (empty($msg)) {
-                return null;
-            }
-            $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
+            $msg = $submitresult;
         }
 
         if (!empty($formdata->resume) && ($q->resume())) {
-            $q->responses()->response_delete($formdata->rid, $formdata->sec);
-            $formdata->rid = $q->responses()->response_insert($formdata, $quser, true);
-            $this->goto_saved($q);
+            $this->handle_resume_action($q, $formdata, $quser);
             return null;
         }
 
         if (!empty($formdata->next)) {
-            $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
-            if ($msg) {
-                $formdata->next = '';
-                $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
-            } else {
-                $nextsec = $q->submission()->next_page_action($formdata, $userid);
-                if ($nextsec === false) {
-                    $SESSION->questionnaire->end = true;
-                    $formdata->sec = $numsections + 1;
-                } else {
-                    $formdata->sec = $nextsec;
-                }
-            }
+            $msg = $this->handle_next_action($q, $formdata, $userid, $numsections);
         }
 
         if (!empty($formdata->prev)) {
-            if (isset($SESSION->questionnaire->end) && ($SESSION->questionnaire->end == true)) {
-                $SESSION->questionnaire->end = false;
-                $formdata->sec--;
-            }
-            $msg = $q->responses()->response_check_format($formdata->sec, $formdata, false, true);
-            if ($msg) {
-                $formdata->prev = '';
-                $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
-            } else {
-                $prevsec = $q->submission()->previous_page_action($formdata, $userid);
-                if ($prevsec === false) {
-                    $formdata->sec = 0;
-                } else {
-                    $formdata->sec = $prevsec;
-                }
-            }
+            $msg = $this->handle_prev_action($q, $formdata, $userid);
         }
 
         if (!empty($formdata->rid)) {
@@ -236,6 +204,121 @@ class survey_view_renderer {
         $this->page->add_to_page('formend', $this->renderer->complete_formend());
 
         return $msg ?: null;
+    }
+
+    /**
+     * Process the "Submit Survey" button press.
+     *
+     * Returns null when the caller should short-circuit (already past the end,
+     * or no validation errors so the response is now final). Returns a non-empty
+     * error string when validation failed; in that case formdata->rid is also
+     * updated to the in-progress response id so the form re-renders with errors.
+     *
+     * @param questionnaire $q
+     * @param \stdClass $formdata
+     * @param int|null $userid Owner of the response (anonymous = null).
+     * @return string|null null = short-circuit, string = error message to render.
+     */
+    protected function handle_submit_action(questionnaire $q, \stdClass $formdata, ?int $userid): ?string {
+        global $SESSION;
+
+        if (isset($SESSION->questionnaire->end) && $SESSION->questionnaire->end == true) {
+            return null;
+        }
+        $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
+        if (empty($msg)) {
+            return null;
+        }
+        $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
+        return $msg;
+    }
+
+    /**
+     * Process the "Save and exit" button press: persist the in-progress response and show the saved page.
+     *
+     * Caller must return null after this; the saved page replaces the form.
+     *
+     * @param questionnaire $q
+     * @param \stdClass $formdata
+     * @param int $quser User id the response belongs to.
+     * @return void
+     */
+    protected function handle_resume_action(questionnaire $q, \stdClass $formdata, int $quser): void {
+        $q->responses()->response_delete($formdata->rid, $formdata->sec);
+        $formdata->rid = $q->responses()->response_insert($formdata, $quser, true);
+        $this->goto_saved($q);
+    }
+
+    /**
+     * Process the "Next page" button press.
+     *
+     * Returns an empty string on success (formdata->sec is advanced, possibly to numsections+1 if
+     * this was the final page). On validation failure returns the error message and re-stages the
+     * current section by clearing formdata->next and refreshing formdata->rid.
+     *
+     * @param questionnaire $q
+     * @param \stdClass $formdata
+     * @param int|null $userid
+     * @param int $numsections Total section count, used to compute the post-last-page sec.
+     * @return string Error message ('' on success).
+     */
+    protected function handle_next_action(
+        questionnaire $q,
+        \stdClass $formdata,
+        ?int $userid,
+        int $numsections
+    ): string {
+        global $SESSION;
+
+        $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
+        if ($msg) {
+            $formdata->next = '';
+            $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
+            return $msg;
+        }
+        $nextsec = $q->submission()->next_page_action($formdata, $userid);
+        if ($nextsec === false) {
+            $SESSION->questionnaire->end = true;
+            $formdata->sec = $numsections + 1;
+        } else {
+            $formdata->sec = $nextsec;
+        }
+        return '';
+    }
+
+    /**
+     * Process the "Previous page" button press.
+     *
+     * If the user just returned from the (virtual) past-end summary page, walk back one section
+     * before validating. Returns an empty string on success (formdata->sec is decremented, possibly
+     * to 0 if this was the first page). On validation failure returns the error message and
+     * re-stages the current section by clearing formdata->prev and refreshing formdata->rid.
+     *
+     * @param questionnaire $q
+     * @param \stdClass $formdata
+     * @param int|null $userid
+     * @return string Error message ('' on success).
+     */
+    protected function handle_prev_action(questionnaire $q, \stdClass $formdata, ?int $userid): string {
+        global $SESSION;
+
+        if (isset($SESSION->questionnaire->end) && ($SESSION->questionnaire->end == true)) {
+            $SESSION->questionnaire->end = false;
+            $formdata->sec--;
+        }
+        $msg = $q->responses()->response_check_format($formdata->sec, $formdata, false, true);
+        if ($msg) {
+            $formdata->prev = '';
+            $formdata->rid = $q->submission()->existing_response_action($formdata, $userid);
+            return $msg;
+        }
+        $prevsec = $q->submission()->previous_page_action($formdata, $userid);
+        if ($prevsec === false) {
+            $formdata->sec = 0;
+        } else {
+            $formdata->sec = $prevsec;
+        }
+        return '';
     }
 
     /**
