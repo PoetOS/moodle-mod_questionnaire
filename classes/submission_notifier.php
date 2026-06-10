@@ -230,12 +230,12 @@ class submission_notifier {
 
         $altbody = "\n$bodyplaintext\n";
         $return = true;
+        $userfrom = \core_user::get_noreply_user();
         foreach (preg_split('/,|;/', $email) as $addr) {
             $userto = new stdClass();
             $userto->email = trim($addr);
             $userto->mailformat = 1;
             $userto->id = -10;
-            $userfrom = $CFG->noreplyaddress;
             if (!email_to_user($userto, $userfrom, $subject, $altbody, $bodyhtml)) {
                 $return = false;
             }

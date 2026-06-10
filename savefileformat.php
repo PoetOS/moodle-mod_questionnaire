@@ -90,10 +90,11 @@ function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users 
         fwrite($fp, $output);
         fclose($fp);
         $subjecttext = get_string('summaryreportattached', 'questionnaire');
+        $noreplyuser = \core_user::get_noreply_user();
         foreach ($users as $user) {
             email_to_user(
                 $user,
-                $CFG->noreplyaddress,
+                $noreplyuser,
                 $subjecttext,
                 $subjecttext,
                 '',
@@ -106,7 +107,7 @@ function save_as_dataformat($filename, $dataformat, $columns, $iterator, $users 
             $user = (object)['id' => -10, 'email' => $email, 'firstname' => $email, 'lastname' => $email, 'mailformat' => 1];
             email_to_user(
                 $user,
-                $CFG->noreplyaddress,
+                $noreplyuser,
                 $subjecttext,
                 $subjecttext,
                 '',
