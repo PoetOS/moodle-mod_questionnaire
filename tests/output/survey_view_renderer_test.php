@@ -278,6 +278,110 @@ final class survey_view_renderer_test extends \advanced_testcase {
     }
 
     /**
+     * handle_submit_action() returns the validation error and refreshes formdata->rid
+     * when the user tries to submit a page with a required question left blank.
+     */
+    public function test_handle_submit_action_returns_error_on_missing_required(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        // Mark the only question on the survey as required so check_format flags it as missing.
+        $qid = $DB->get_field('questionnaire_question', 'id', ['surveyid' => $instance->surveyid()]);
+        $DB->set_field('questionnaire_question', 'required', 'y', ['id' => $qid]);
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        $this->init_session();
+
+        $svr = new survey_view_renderer($renderer, $page);
+        $formdata = (object)['sec' => 1, 'rid' => 0, 'submit' => 'Submit Survey'];
+        $method = new \ReflectionMethod($svr, 'handle_submit_action');
+        $method->setAccessible(true);
+        $msg = $method->invoke($svr, $instance, $formdata, (int)$studentid);
+
+        $this->assertNotEmpty($msg);
+        $this->assertNotEmpty($formdata->rid);
+    }
+
+    /**
+     * handle_next_action() returns the validation error, clears formdata->next, and
+     * refreshes formdata->rid when the user tries to advance past a required question.
+     */
+    public function test_handle_next_action_returns_error_on_missing_required(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $qid = $DB->get_field('questionnaire_question', 'id', ['surveyid' => $instance->surveyid()]);
+        $DB->set_field('questionnaire_question', 'required', 'y', ['id' => $qid]);
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        $this->init_session();
+
+        $svr = new survey_view_renderer($renderer, $page);
+        $formdata = (object)['sec' => 1, 'rid' => 0, 'next' => 'Next'];
+        $method = new \ReflectionMethod($svr, 'handle_next_action');
+        $method->setAccessible(true);
+        $msg = $method->invoke($svr, $instance, $formdata, (int)$studentid, 1);
+
+        $this->assertNotEmpty($msg);
+        $this->assertSame('', $formdata->next);
+        $this->assertNotEmpty($formdata->rid);
+    }
+
+    /**
+     * handle_prev_action() returns a wrong-format error, clears formdata->prev,
+     * and refreshes formdata->rid when the current page contains an invalid date.
+     *
+     * Prev only checks format (not missing-required), so we use a date question
+     * with a non-date value to trigger response_valid() == false.
+     */
+    public function test_handle_prev_action_returns_error_on_invalid_format(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $plugin = $generator->get_plugin_generator('mod_questionnaire');
+        $instance = $plugin->create_test_questionnaire(
+            $course,
+            QUESDATE,
+            ['content' => 'When?'],
+            []
+        );
+        $student = $generator->create_user();
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+        $this->setUser($student->id);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $qid = $DB->get_field('questionnaire_question', 'id', ['surveyid' => $instance->surveyid()]);
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new viewpage();
+        $this->init_session();
+
+        $svr = new survey_view_renderer($renderer, $page);
+        $formdata = (object)['sec' => 1, 'rid' => 0, 'prev' => 'Prev', 'q' . $qid => 'not-a-date'];
+        $method = new \ReflectionMethod($svr, 'handle_prev_action');
+        $method->setAccessible(true);
+        $msg = $method->invoke($svr, $instance, $formdata, (int)$student->id);
+
+        $this->assertNotEmpty($msg);
+        $this->assertSame('', $formdata->prev);
+        $this->assertNotEmpty($formdata->rid);
+    }
+
+    /**
      * handle_prev_action() walks back from the past-end summary by decrementing
      * sec and clearing SESSION->end before validating the current page.
      */
