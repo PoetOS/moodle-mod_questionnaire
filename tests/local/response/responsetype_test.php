@@ -259,4 +259,151 @@ final class responsetype_test extends \advanced_testcase {
         $question = $this->question_stub(11);
         $this->assertSame([], text::answers_from_webform((object)['rid' => 50, 'q11' => ''], $question));
     }
+
+    /**
+     * Build a real course + questionnaire with one question of the given type, plus an empty
+     * parent response row. Returns [questionnaire, question, parent response id].
+     *
+     * @param int $qtype Question type constant (QUESYESNO, QUESTEXT, etc).
+     * @return array
+     */
+    private function build_data_fixture(int $qtype): array {
+        global $DB, $USER;
+
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire(
+            $course,
+            $qtype,
+            ['content' => 'data fixture']
+        );
+        $question = reset($questionnaire->questions());
+
+        // Use $USER->id so text::get_results' user join finds a row in its non-anonymous branch.
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(),
+            'userid' => $USER->id,
+            'submitted' => time(),
+            'complete' => 'n',
+            'grade' => 0,
+        ]);
+        return [$questionnaire, $question, (int)$rid];
+    }
+
+    /**
+     * boolean::insert_response() writes a 'y' answer to questionnaire_response_bool.
+     */
+    public function test_boolean_insert_response_writes_record(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESYESNO);
+
+        $rt = new boolean($question);
+        $data = (object)['rid' => $rid, 'a' => $questionnaire->id(), 'q' . $question->id() => 'y'];
+        $insertedid = $rt->insert_response($data);
+
+        $this->assertNotFalse($insertedid);
+        $row = $DB->get_record('questionnaire_response_bool', ['id' => $insertedid]);
+        $this->assertEquals($rid, $row->responseid);
+        $this->assertEquals($question->id(), $row->questionid);
+        $this->assertSame('y', $row->choiceid);
+    }
+
+    /**
+     * boolean::get_results() returns one count per choice id.
+     */
+    public function test_boolean_get_results_counts_choices(): void {
+        global $DB, $USER;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESYESNO);
+        $rt = new boolean($question);
+
+        // Three responses: two 'y', one 'n', each in its own parent response row.
+        $rt->insert_response((object)['rid' => $rid, 'a' => $questionnaire->id(), 'q' . $question->id() => 'y']);
+        $rid2 = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(), 'userid' => $USER->id,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $rt->insert_response((object)['rid' => $rid2, 'a' => $questionnaire->id(), 'q' . $question->id() => 'y']);
+        $rid3 = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(), 'userid' => $USER->id,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $rt->insert_response((object)['rid' => $rid3, 'a' => $questionnaire->id(), 'q' . $question->id() => 'n']);
+
+        $results = $rt->get_results([$rid, $rid2, $rid3]);
+        $bychoice = [];
+        foreach ($results as $row) {
+            $bychoice[$row->choiceid] = (int)$row->num;
+        }
+        $this->assertSame(2, $bychoice['y'] ?? 0);
+        $this->assertSame(1, $bychoice['n'] ?? 0);
+    }
+
+    /**
+     * boolean::display_results() returns a templatable object derived from the counts.
+     */
+    public function test_boolean_display_results_returns_tags(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESYESNO);
+        $rt = new boolean($question);
+        $rt->insert_response((object)['rid' => $rid, 'a' => $questionnaire->id(), 'q' . $question->id() => 'y']);
+
+        $tags = $rt->display_results([$rid], '', false);
+        $this->assertIsObject($tags);
+        // Get_results_tags fills counts via $pagetags->counts; verify the structure renders something.
+        $this->assertNotEmpty(get_object_vars($tags));
+    }
+
+    /**
+     * text::insert_response() writes the clean text value to questionnaire_response_text.
+     */
+    public function test_text_insert_response_writes_value(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+
+        $rt = new text($question);
+        $data = (object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => 'free-form answer',
+        ];
+        $insertedid = $rt->insert_response($data);
+
+        $this->assertNotFalse($insertedid);
+        $row = $DB->get_record('questionnaire_response_text', ['id' => $insertedid]);
+        $this->assertEquals($rid, $row->responseid);
+        $this->assertEquals($question->id(), $row->questionid);
+        $this->assertSame('free-form answer', $row->response);
+    }
+
+    /**
+     * text::get_results() returns the inserted text answers joined with the parent response.
+     */
+    public function test_text_get_results_returns_value(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+        $rt = new text($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => 'hello world',
+        ]);
+
+        $results = $rt->get_results([$rid]);
+        $this->assertCount(1, $results);
+        $row = reset($results);
+        $this->assertSame('hello world', $row->response);
+    }
 }
