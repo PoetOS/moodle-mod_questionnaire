@@ -29,7 +29,7 @@ require_once("../../config.php");
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\report_actions;
 use mod_questionnaire\report_downloader;
-use mod_questionnaire\output\pdf_factory;
+use mod_questionnaire\report_viewer;
 use mod_questionnaire\output\reportpage;
 use mod_questionnaire\output\reportpagepdf;
 use mod_questionnaire\output\responsepagepdf;
@@ -242,319 +242,36 @@ switch ($action) {
     case 'vall':         // View all responses.
     case 'vallasort':    // View all responses sorted in ascending order.
     case 'vallarsort':   // View all responses sorted in descending order.
-        $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
-        $PAGE->set_heading(format_string($course->fullname));
-        $canviewallresponses = has_capability('mod/questionnaire:readallresponses', $context);
-        $canviewallresponsesanytime = has_capability('mod/questionnaire:readallresponseanytime', $context);
-        if (!$canviewallresponses && !$canviewallresponsesanytime) {
-            echo $renderer->header();
-            // Should never happen, unless called directly by a snoop.
-            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
-            // Finish the page.
-            echo $renderer->footer($course);
-            break;
-        }
-
-        // Print the tabs.
-        switch ($action) {
-            case 'vallasort':
-                $SESSION->questionnaire->current_tab = 'vallasort';
-                break;
-            case 'vallarsort':
-                $SESSION->questionnaire->current_tab = 'vallarsort';
-                break;
-            default:
-                $SESSION->questionnaire->current_tab = 'valldefault';
-        }
-        if ($outputtarget != 'print') {
-            include('tabs.php');
-        }
-
-        $respinfo = '';
-        $resps = [];
-        // Enable choose_group if there are questionnaire groups and groupmode is not set to "no groups"
-        // and if there are more goups than 1 (or if user can view all groups).
-        if (is_array($questionnairegroups) && $groupmode > 0) {
-            $groupselect = groups_print_activity_menu($cm, $url->out(), true);
-            // Count number of responses in each group.
-            foreach ($questionnairegroups as $group) {
-                $respscount = $questionnaire->count_submissions(false, $group->id);
-                $thisgroupname = groups_get_group_name($group->id);
-                $escapedgroupname = preg_quote($thisgroupname, '/');
-                if (!empty($respscount)) {
-                    // Add number of responses to name of group in the groups select list.
-                    $groupselect = preg_replace(
-                        '/\<option value="' . $group->id . '">' . $escapedgroupname . '<\/option>/',
-                        '<option value="' . $group->id . '">' . $thisgroupname . ' (' . $respscount . ')</option>',
-                        $groupselect
-                    );
-                } else {
-                    // Remove groups with no responses from the groups select list.
-                    $groupselect = preg_replace(
-                        '/\<option value="' . $group->id . '">' . $escapedgroupname . '<\/option>/',
-                        '',
-                        $groupselect
-                    );
-                }
-            }
-            $respinfo .= isset($groupselect) ? ($groupselect . ' ') : '';
-            $currentgroupid = groups_get_activity_group($cm);
-        }
-        if ($currentgroupid > 0) {
-            $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
-        } else {
-            $groupname = '<strong>' . $responsestatus[$userview] . '</strong>';
-        }
-
-        // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
-        if ($groupmode > 0) {
-            switch ($currentgroupid) {
-                case 0:     // All participants.
-                    $resps = $respsallparticipants;
-                    break;
-                default:     // Members of a specific group.
-                    if (!($resps = $questionnaire->get_responses(false, $currentgroupid))) {
-                        $resps = '';
-                    }
-            }
-            if (empty($resps)) {
-                $noresponses = true;
-            }
-        } else {
-            $resps = $respsallparticipants;
-        }
-        if (!empty($resps)) {
-            // NOTE: response_analysis uses $resps to get the id's of the responses only.
-            // Need to figure out what this function does.
-            $feedbackmessages = $questionnaire->reporter($renderer, $page)
-                ->response_analysis(0, $resps, false, false, true, $currentgroupid);
-
-            if ($feedbackmessages) {
-                $msgout = '';
-                foreach ($feedbackmessages as $msg) {
-                    $msgout .= $msg;
-                }
-                $page->add_to_page('feedbackmessages', $msgout);
-            }
-        }
-
-        $params = [
-            'objectid' => $questionnaire->id(),
-            'context' => $context,
-            'courseid' => $course->id,
-            'other' => ['action' => $action, 'instance' => $instance, 'groupid' => $currentgroupid],
-        ];
-
-        if ($outputtarget == 'pdf') {
-            $pdf = pdf_factory::create();
-            if ($currentgroupid > 0) {
-                $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
-            } else {
-                $groupname = '<strong>' . $responsestatus[$userview] . '</strong>';
-            }
-            $respinfo = get_string('view') . ' ' . $groupname;
-            $strsort = get_string('order_' . $sort, 'questionnaire');
-            $respinfo .= $strsort;
-            $page->add_to_page('respondentinfo', $respinfo);
-            $questionnaire->reporter($renderer, $page)->survey_results('', false, true, $currentgroupid, $sort);
-            $html = $renderer->render($page);
-
-            // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
-            // not an array.
-            $errorreporting = error_reporting(0);
-            $pdf->writeHTML($html);
-            @$pdf->Output(clean_param($questionnaire->name(), PARAM_FILE) . '.pdf', 'D');
-            error_reporting($errorreporting);
-        } else { // Default to HTML.
-            $event = \mod_questionnaire\event\all_responses_viewed::create($params);
-            $event->trigger();
-
-            if ($outputtarget != 'print') {
-                $linkname = get_string('downloadpdf', 'mod_questionnaire');
-                $link = new moodle_url(
-                    '/mod/questionnaire/report.php',
-                    [
-                        'action' => 'vall',
-                        'instance' => $instance,
-                        'group' => $currentgroupid,
-                        'target' => 'pdf',
-                        'responsestats' => $userview,
-                    ]
-                );
-                $downpdficon = new pix_icon('f/pdf', $linkname);
-                $respinfo .= $renderer->action_link($link, null, null, null, $downpdficon);
-
-                $linkname = get_string('print', 'mod_questionnaire');
-                $link = new \moodle_url(
-                    '/mod/questionnaire/report.php',
-                    [
-                        'action' => 'vall',
-                        'instance' => $instance,
-                        'group' => $currentgroupid,
-                        'target' => 'print',
-                        'responsestats' => $userview,
-                        ]
-                );
-                $htmlicon = new pix_icon('t/print', $linkname);
-                $options = ['menubar' => true, 'location' => false, 'scrollbars' => true, 'resizable' => true,
-                    'height' => 600, 'width' => 800, 'title' => $linkname];
-                $name = 'popup';
-                $action = new popup_action('click', $link, $name, $options);
-                $class = '';
-                $respinfo .= $renderer->action_link(
-                    $link,
-                    null,
-                    $action,
-                    ['class' => $class, 'title' => $linkname],
-                    $htmlicon
-                ) . '&nbsp;';
-
-                $respinfo .= $renderer->viewresponse_print_menu($url->out(), $responsestatus, $userview);
-                $strsort = get_string('order_' . $sort, 'questionnaire');
-                $respinfo .= $strsort;
-                $respinfo .= $renderer->help_icon('orderresponses', 'questionnaire');
-                $page->add_to_page('respondentinfo', $respinfo);
-            }
-
-            $ret = $questionnaire->reporter($renderer, $page)->survey_results('', false, false, $currentgroupid, $sort);
-
-            echo $renderer->header();
-            echo $renderer->render($page);
-            echo $renderer->footer($course);
-        }
+        (new report_viewer($questionnaire, $renderer))->view_all_responses(
+            $page,
+            $action,
+            $outputtarget,
+            $url,
+            $groupmode,
+            $currentgroupid,
+            $questionnairegroups ?: [],
+            $respsallparticipants,
+            $sort,
+            $userview,
+            $responsestatus
+        );
         break;
 
     case 'vresp': // View by response.
     default:
-        if (!$questionnaire->survey()) {
-            throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($questionnaire->survey()->owning_courseid() != $course->id) {
-            throw new \moodle_exception('surveyowner', 'mod_questionnaire');
-        }
-        $noresponses = false;
-        if ($usergraph) {
-            $charttype = $questionnaire->survey()->charttype();
-            if ($charttype) {
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
-
-                switch ($charttype) {
-                    case 'bipolar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
-                        break;
-                    case 'hbar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
-                        break;
-                    case 'radar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
-                        break;
-                    case 'rose':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
-                        break;
-                    case 'vprogress':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
-                        break;
-                }
-            }
-        }
-
-        // Add group filter dropdown.
-        if ($groupmode > 0) {
-            $groupselect = groups_print_activity_menu($cm, $url->out(), true);
-            $page->add_to_page('respondentinfo', $groupselect);
-            $currentgroupid = groups_get_activity_group($cm);
-        }
-
-        if ($byresponse || $rid) {
-            // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
-            if ($groupmode > 0) {
-                switch ($currentgroupid) {
-                    case 0:     // All participants.
-                        $resps = $respsallparticipants;
-                        break;
-                    default:     // Members of a specific group.
-                        $resps = $questionnaire->get_responses(false, $currentgroupid);
-                }
-                if (empty($resps)) {
-                    $noresponses = true;
-                } else if ($rid === false) {
-                    $rid = current($resps)->id;
-                }
-            } else {
-                $resps = $respsallparticipants;
-            }
-        }
-        $rids = array_keys($resps);
-        if (!$rid && !$noresponses) {
-            $rid = $rids[0];
-        }
-
-        if ($outputtarget == 'pdf') {
-            $pdf = pdf_factory::create();
-            if ($currentgroupid > 0) {
-                $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
-            } else {
-                $groupname = '<strong>' . $responsestatus[$userview] . '</strong>';
-            }
-            if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->reporter($renderer, $page)
-                    ->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
-            }
-            $html = $renderer->render($page);
-            // Supress any warnings. There is at least one error in the TCPF library at line 16749 where 'text-align' is
-            // not an array.
-            $errorreporting = error_reporting(0);
-            $pdf->writeHTML($html);
-            @$pdf->Output(clean_param($questionnaire->name(), PARAM_FILE), 'D');
-            error_reporting($errorreporting);
-        } else { // Default to HTML.
-            if ($noresponses) {
-                $page->add_to_page(
-                    'respondentinfo',
-                    get_string('group') . ' <strong>' .
-                        groups_get_group_name($currentgroupid) . '</strong>: ' . get_string('noresponses', 'questionnaire')
-                );
-            }
-
-            // Print the page header.
-            $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
-            $PAGE->set_heading(format_string($course->fullname));
-
-            // Print the tabs.
-            if ($byresponse) {
-                $SESSION->questionnaire->current_tab = 'vrespsummary';
-            }
-            if ($individualresponse) {
-                $SESSION->questionnaire->current_tab = 'individualresp';
-            }
-            if ($outputtarget == 'html') {
-                include('tabs.php');
-            }
-
-            // Print the main part of the page.
-            // TODO provide option to select how many columns and/or responses per page.
-
-            $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
-            if ($currentgroupid == 0) {
-                $groupname = $responsestatus[$userview];
-            }
-            if ($byresponse) {
-                $respinfo = '';
-                $respinfo .= $renderer->box_start();
-                $respinfo .= $renderer->help_icon('viewindividualresponse', 'questionnaire') . '&nbsp;';
-                $respinfo .= get_string('viewindividualresponse', 'questionnaire') . ' <strong> : ' . $groupname . '</strong>';
-                $respinfo .= $renderer->box_end();
-                $page->add_to_page('respondentinfo', $respinfo);
-            }
-            if ($outputtarget == 'html') {
-                $questionnaire->reporter($renderer, $page)->survey_results_navbar_alpha($rid, $currentgroupid, $byresponse);
-            }
-            if (!$byresponse) { // Show respondents individual responses.
-                $questionnaire->reporter($renderer, $page)
-                    ->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
-            }
-            echo $renderer->header();
-            echo $renderer->render($page);
-            echo $renderer->footer($course);
-        }
+        (new report_viewer($questionnaire, $renderer))->view_individual_response(
+            $page,
+            $outputtarget,
+            $url,
+            $groupmode,
+            $currentgroupid,
+            $respsallparticipants,
+            $rid,
+            (bool)$byresponse,
+            (bool)$individualresponse,
+            (bool)$usergraph,
+            $userview,
+            $responsestatus
+        );
         break;
 }
