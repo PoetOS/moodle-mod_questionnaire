@@ -176,31 +176,6 @@ if ($groupmode > 0) {
         $groupname = '<strong>' . get_string('allparticipants') . '</strong>';
     }
 }
-if ($usergraph) {
-    $charttype = $questionnaire->survey()->charttype();
-    if ($charttype) {
-        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
-
-        switch ($charttype) {
-            case 'bipolar':
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
-                break;
-            case 'hbar':
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
-                break;
-            case 'radar':
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
-                break;
-            case 'rose':
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
-                break;
-            case 'vprogress':
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
-                break;
-        }
-    }
-}
-
 $responsestatus = [
         'y' => get_string('fullsubmissions', 'questionnaire'),
         '0' => get_string('allresponses', 'questionnaire'),
@@ -253,7 +228,8 @@ switch ($action) {
             $respsallparticipants,
             $sort,
             $userview,
-            $responsestatus
+            $responsestatus,
+            (bool)$usergraph
         );
         break;
 
