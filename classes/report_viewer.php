@@ -63,6 +63,7 @@ class report_viewer {
      * @param string $sort 'ascending', 'descending', or 'default'.
      * @param string $userview The 'responsestats' filter ('y', '0', or 'n').
      * @param array $responsestatus Map of response-status labels keyed by 'y' / '0' / 'n'.
+     * @param bool $usergraph Whether to inject RGraph JS for chart rendering.
      * @return void
      */
     public function view_all_responses(
@@ -76,7 +77,8 @@ class report_viewer {
         array $respsallparticipants,
         string $sort,
         string $userview,
-        array $responsestatus
+        array $responsestatus,
+        bool $usergraph
     ): void {
         global $PAGE, $SESSION;
 
@@ -93,6 +95,8 @@ class report_viewer {
             echo $this->renderer->header();
             throw new \moodle_exception('nopermissions', 'mod_questionnaire');
         }
+
+        $this->init_rgraph($usergraph);
 
         switch ($action) {
             case 'vallasort':
@@ -301,29 +305,7 @@ class report_viewer {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         }
         $noresponses = false;
-        if ($usergraph) {
-            $charttype = $this->questionnaire->survey()->charttype();
-            if ($charttype) {
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
-                switch ($charttype) {
-                    case 'bipolar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
-                        break;
-                    case 'hbar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
-                        break;
-                    case 'radar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
-                        break;
-                    case 'rose':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
-                        break;
-                    case 'vprogress':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
-                        break;
-                }
-            }
-        }
+        $this->init_rgraph($usergraph);
 
         if ($groupmode > 0) {
             $groupselect = groups_print_activity_menu($cm, $url->out(), true);
@@ -414,6 +396,42 @@ class report_viewer {
         echo $this->renderer->header();
         echo $this->renderer->render($page);
         echo $this->renderer->footer($course);
+    }
+
+    /**
+     * Queue the RGraph JS files needed by the survey's chart type, if user-side charts are enabled.
+     *
+     * @param bool $usergraph Site-level usergraph setting.
+     * @return void
+     */
+    private function init_rgraph(bool $usergraph): void {
+        global $PAGE;
+
+        if (!$usergraph) {
+            return;
+        }
+        $charttype = $this->questionnaire->survey()->charttype();
+        if (!$charttype) {
+            return;
+        }
+        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
+        switch ($charttype) {
+            case 'bipolar':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
+                break;
+            case 'hbar':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
+                break;
+            case 'radar':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
+                break;
+            case 'rose':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
+                break;
+            case 'vprogress':
+                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
+                break;
+        }
     }
 
     /**
