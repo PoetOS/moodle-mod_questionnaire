@@ -267,7 +267,7 @@ final class responsetype_test extends \advanced_testcase {
      * @param int $qtype Question type constant (QUESYESNO, QUESTEXT, etc).
      * @return array
      */
-    private function build_data_fixture(int $qtype): array {
+    private function build_data_fixture(int $qtype, ?array $choicedata = null): array {
         global $DB, $USER;
 
         $course = $this->getDataGenerator()->create_course();
@@ -275,7 +275,8 @@ final class responsetype_test extends \advanced_testcase {
         $questionnaire = $generator->create_test_questionnaire(
             $course,
             $qtype,
-            ['content' => 'data fixture']
+            ['content' => 'data fixture'],
+            $choicedata
         );
         $question = reset($questionnaire->questions());
 
@@ -405,5 +406,143 @@ final class responsetype_test extends \advanced_testcase {
         $this->assertCount(1, $results);
         $row = reset($results);
         $this->assertSame('hello world', $row->response);
+    }
+
+    /**
+     * date::insert_response() writes a YYYY-MM-DD value to questionnaire_response_date.
+     */
+    public function test_date_insert_response_writes_value(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESDATE);
+
+        $rt = new date($question);
+        $insertedid = $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => '2026-06-14',
+        ]);
+
+        $this->assertNotFalse($insertedid);
+        $row = $DB->get_record('questionnaire_response_date', ['id' => $insertedid]);
+        $this->assertEquals($rid, $row->responseid);
+        $this->assertEquals($question->id(), $row->questionid);
+        $this->assertSame('2026-06-14', $row->response);
+    }
+
+    /**
+     * date::insert_response() rejects badly-formatted input (returns false, writes nothing).
+     */
+    public function test_date_insert_response_rejects_bad_format(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESDATE);
+
+        $rt = new date($question);
+        $result = $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => 'not-a-date',
+        ]);
+
+        $this->assertFalse($result);
+        $this->assertSame(0, $DB->count_records('questionnaire_response_date', ['responseid' => $rid]));
+    }
+
+    /**
+     * date::get_results() returns the stored date rows for the given response ids.
+     */
+    public function test_date_get_results_returns_dates(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESDATE);
+        $rt = new date($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => '2026-06-14',
+        ]);
+
+        $results = $rt->get_results([$rid]);
+        $this->assertCount(1, $results);
+        $row = reset($results);
+        $this->assertSame('2026-06-14', $row->response);
+    }
+
+    /**
+     * single::insert_response() writes one questionnaire_resp_single row for the chosen choice id.
+     */
+    public function test_single_insert_response_writes_choice(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'One', 'value' => 1],
+            (object)['content' => 'Two', 'value' => 2],
+            (object)['content' => 'Three', 'value' => 3],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESRADIO, $choices);
+
+        // Pick the "Two" choice id from the question's loaded choices.
+        $twoid = 0;
+        foreach ($question->choices as $cid => $choice) {
+            if ($choice->content === 'Two') {
+                $twoid = $cid;
+                break;
+            }
+        }
+        $this->assertNotEmpty($twoid);
+
+        $rt = new single($question);
+        $insertedid = $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => $twoid,
+        ]);
+
+        $this->assertNotFalse($insertedid);
+        $row = $DB->get_record('questionnaire_resp_single', ['id' => $insertedid]);
+        $this->assertEquals($rid, $row->responseid);
+        $this->assertEquals($question->id(), $row->questionid);
+        $this->assertEquals($twoid, $row->choiceid);
+    }
+
+    /**
+     * single::get_results() joins the response and choice rows so each result carries the choice content.
+     */
+    public function test_single_get_results_returns_choice_content(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'One', 'value' => 1],
+            (object)['content' => 'Two', 'value' => 2],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESRADIO, $choices);
+
+        $twoid = 0;
+        foreach ($question->choices as $cid => $choice) {
+            if ($choice->content === 'Two') {
+                $twoid = $cid;
+                break;
+            }
+        }
+
+        $rt = new single($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => $twoid,
+        ]);
+
+        $results = $rt->get_results([$rid]);
+        $contents = array_map(fn($r) => $r->content ?? null, $results);
+        $this->assertContains('Two', $contents);
     }
 }
