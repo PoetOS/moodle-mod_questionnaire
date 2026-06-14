@@ -265,6 +265,7 @@ final class responsetype_test extends \advanced_testcase {
      * parent response row. Returns [questionnaire, question, parent response id].
      *
      * @param int $qtype Question type constant (QUESYESNO, QUESTEXT, etc).
+     * @param array|null $choicedata Optional choice rows for choice-based question types.
      * @return array
      */
     private function build_data_fixture(int $qtype, ?array $choicedata = null): array {
