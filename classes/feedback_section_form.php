@@ -153,7 +153,7 @@ class feedback_section_form extends \moodleform {
                         unset($rextra['style']);
                         $questionactions[] = $mform->createElement('image', 'confirmremovequestion[' . $qid . ']', $rsrc, $rextra);
 
-                        $mform->addGroup($questionactions, '', $questionnaire->questions()[$qid]->name);
+                        $mform->addGroup($questionactions, '', $questionnaire->questions()[$qid]->name());
                         $counter++;
                     }
                 }
