@@ -25,6 +25,7 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
+use mod_questionnaire\survey_settings_controller;
 use mod_questionnaire\output\qsettingspage;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
@@ -99,58 +100,17 @@ if ($settingsform->is_cancelled()) {
 }
 
 if ($settings = $settingsform->get_data()) {
-    $sdata = new stdClass();
-    $sdata->id = $settings->sid;
-    $sdata->name = $settings->name;
-    $sdata->realm = $settings->realm;
-    $sdata->title = $settings->title;
-    $sdata->subtitle = $settings->subtitle;
+    (new survey_settings_controller($questionnaire))->save($settings);
 
-    $sdata->infoitemid = $settings->info['itemid'];
-    $sdata->infoformat = $settings->info['format'];
-    $sdata->info = $settings->info['text'];
-    $sdata->info = file_save_draft_area_files(
-        $sdata->infoitemid,
-        $context->id,
-        'mod_questionnaire',
-        'info',
-        $sdata->id,
-        ['subdirs' => true],
-        $sdata->info
-    );
-
-    $sdata->theme = ''; // Deprecated theme field.
-    $sdata->thankspage = $settings->thankspage;
-    $sdata->thankhead = $settings->thankhead;
-
-    $sdata->thankitemid = $settings->thankbody['itemid'];
-    $sdata->thankformat = $settings->thankbody['format'];
-    $sdata->thankbody = $settings->thankbody['text'];
-    $sdata->thankbody = file_save_draft_area_files(
-        $sdata->thankitemid,
-        $context->id,
-        'mod_questionnaire',
-        'thankbody',
-        $sdata->id,
-        ['subdirs' => true],
-        $sdata->thankbody
-    );
-    $sdata->email = $settings->email;
-
-    $sdata->courseid = $settings->courseid;
-    if (!($sid = $questionnaire->survey()->update_survey($sdata))) {
-        throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
+    if ($submitbutton2) {
+        $redirecturl = course_get_url($cm->course);
     } else {
-        if ($submitbutton2) {
-            $redirecturl = course_get_url($cm->course);
-        } else {
-            $redirecturl = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $questionnaire->coursemodule()->id;
-        }
+        $redirecturl = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' . $questionnaire->coursemodule()->id;
+    }
 
-        // Save current advanced settings only.
-        if (isset($settings->submitbutton) || isset($settings->submitbutton2)) {
-            redirect($redirecturl, get_string('settingssaved', 'questionnaire'));
-        }
+    // Save current advanced settings only.
+    if (isset($settings->submitbutton) || isset($settings->submitbutton2)) {
+        redirect($redirecturl, get_string('settingssaved', 'questionnaire'));
     }
 }
 

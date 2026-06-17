@@ -915,30 +915,52 @@ class survey {
         return survey_record::create_from_sdata($sdata)->get('id');
     }
 
+    /** @var string[] Survey persistent fields that may be updated via update_settings(). */
+    private const UPDATABLE_FIELDS = [
+        'name', 'realm', 'title', 'subtitle', 'info', 'theme',
+        'thankspage', 'thankhead', 'thankbody', 'email', 'courseid',
+        'feedbacksections', 'feedbacknotes', 'feedbackscores', 'charttype',
+    ];
+
     /**
-     * Update this survey from form data.
+     * Update this survey from an explicit array of field => value pairs.
      *
-     * Validates required fields (name, title, realm) and rejects a name change that
-     * would collide with another survey. Applies the supplied data to the loaded
-     * survey persistent and saves it, keeping $this->surveyrecord in sync.
+     * Only keys in self::UPDATABLE_FIELDS are accepted; passing anything else throws
+     * a coding_exception (so callers cannot accidentally smuggle id, timecreated or
+     * unrelated form metadata onto the persistent). When 'name', 'title' or 'realm'
+     * are present they are required to be non-empty; a name change also has to be
+     * unique across all surveys.
      *
-     * @param stdClass $sdata Survey data object.
+     * @param array $fields Map of survey field name => value.
      * @return int|false The survey id on success, false on validation failure.
      */
-    public function update_survey(stdClass $sdata): int|false {
-        if (empty($sdata->name) || empty($sdata->title) || empty($sdata->realm)) {
-            return false;
+    public function update_settings(array $fields): int|false {
+        foreach (array_keys($fields) as $key) {
+            if (!in_array($key, self::UPDATABLE_FIELDS, true)) {
+                throw new \coding_exception("survey::update_settings: field '{$key}' is not updatable");
+            }
         }
 
-        if (trim($this->surveyrecord->get('name')) != trim(stripslashes($sdata->name))) {
-            if (survey_record::count_records(['name' => $sdata->name]) != 0) {
+        foreach (['name', 'title', 'realm'] as $required) {
+            if (array_key_exists($required, $fields) && empty($fields[$required])) {
                 return false;
             }
         }
 
-        $this->surveyrecord->from_record($sdata);
+        if (array_key_exists('name', $fields)) {
+            $newname = $fields['name'];
+            if (trim($this->surveyrecord->get('name')) != trim(stripslashes($newname))) {
+                if (survey_record::count_records(['name' => $newname]) != 0) {
+                    return false;
+                }
+            }
+        }
+
+        foreach ($fields as $key => $value) {
+            $this->surveyrecord->set($key, $value);
+        }
         $this->surveyrecord->update();
-        return $this->surveyrecord->get('id');
+        return (int) $this->surveyrecord->get('id');
     }
 
     /**

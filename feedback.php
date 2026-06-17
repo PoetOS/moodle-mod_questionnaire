@@ -28,6 +28,7 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
+use mod_questionnaire\feedback_settings_controller;
 use mod_questionnaire\output\feedbackpage;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
@@ -88,64 +89,14 @@ foreach ($questionnaire->questions() as $question) {
 }
 
 if ($settings = $feedbackform->get_data()) {
+    $controller = new feedback_settings_controller($questionnaire);
     if (isset($settings->feedbacksettingsbutton1) || isset($settings->feedbacksettingsbutton2) || isset($settings->buttongroup)) {
-        if (isset($settings->feedbackscores)) {
-            $sdata->feedbackscores = $settings->feedbackscores;
-        } else {
-            $sdata->feedbackscores = 0;
-        }
-
-        if (isset($settings->feedbacknotes)) {
-            $sdata->fbnotesitemid = $settings->feedbacknotes['itemid'];
-            $sdata->fbnotesformat = $settings->feedbacknotes['format'];
-            $sdata->feedbacknotes = $settings->feedbacknotes['text'];
-            $sdata->feedbacknotes = file_save_draft_area_files(
-                $sdata->fbnotesitemid,
-                $questionnaire->context()->id,
-                'mod_questionnaire',
-                'feedbacknotes',
-                $sdata->id,
-                ['subdirs' => true],
-                $sdata->feedbacknotes
-            );
-        } else {
-            $sdata->feedbacknotes = '';
-        }
-
-        if ($settings->feedbacksections > 0) {
-            $sdata->feedbacksections = $settings->feedbacksections;
-            $usergraph = get_config('questionnaire', 'usergraph');
-            if ($usergraph) {
-                if ($settings->feedbacksections == 1) {
-                    $sdata->charttype = $settings->chart_type_global;
-                } else if ($settings->feedbacksections == 2) {
-                    $sdata->charttype = $settings->chart_type_two_sections;
-                } else if ($settings->feedbacksections > 2) {
-                    $sdata->charttype = $settings->chart_type_sections;
-                }
-            }
-        } else {
-            $sdata->feedbacksections = 0;
-        }
-        $sdata->courseid = $settings->courseid;
-        if (!($sid = $questionnaire->survey()->update_survey($sdata))) {
-            throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
-        }
+        $controller->save($settings);
     }
 
     // Handle the edit feedback sections action.
     if (isset($settings->buttongroup['feedbackeditbutton'])) {
-        // Create a single section for Global Feedback if not existent.
-        $firstsection =
-            $DB->get_field('questionnaire_fb_sections', 'MIN(section)', ['surveyid' => $questionnaire->surveyid()]) ?: 0;
-        if (($sdata->feedbacksections > 0) && ($firstsection == 0)) {
-            if ($sdata->feedbacksections == 1) {
-                $sectionlabel = get_string('feedbackglobal', 'questionnaire');
-            } else {
-                $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
-            }
-            $feedbacksection = mod_questionnaire\local\feedback\section::new_section($questionnaire->surveyid(), $sectionlabel);
-        }
+        $firstsection = $controller->ensure_first_section();
         redirect(new moodle_url(
             '/mod/questionnaire/fbsections.php',
             ['id' => $questionnaire->coursemodule()->id, 'section' => $firstsection]

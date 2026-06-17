@@ -112,19 +112,19 @@ class mod_questionnaire_generator extends testing_module_generator {
     }
 
     /**
-     * Create a survey instance with data from an existing questionnaire object.
+     * Apply additional survey fields to an existing questionnaire's survey row.
+     *
+     * Only fields in survey::update_settings()'s allowlist may appear in $record.
+     *
      * @param \mod_questionnaire\questionnaire $questionnaire
-     * @param array $record
-     * @return bool|int
+     * @param array $record Map of survey field => value (e.g. ['realm' => 'public']).
+     * @return bool|int Survey id on success, false on validation failure.
      */
     public function create_content($questionnaire, $record = []) {
-        global $DB;
-
-        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()], '*', MUST_EXIST);
-        foreach ($record as $name => $value) {
-            $survey->{$name} = $value;
+        if (empty($record)) {
+            return $questionnaire->surveyid();
         }
-        return $questionnaire->survey()->update_survey($survey);
+        return $questionnaire->survey()->update_settings($record);
     }
 
     /**
