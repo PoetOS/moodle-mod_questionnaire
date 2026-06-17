@@ -629,6 +629,137 @@ final class survey_test extends \advanced_testcase {
         $this->assertNotEmpty($result['template-' . $sid]);
     }
 
+    // Tests for update_settings() (DB).
+
+    /**
+     * Asserts update_settings() persists each allowlisted field onto the survey row.
+     *
+     * @covers \mod_questionnaire\survey::update_settings
+     */
+    public function test_update_settings_persists_allowlisted_fields(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+        $sid = $questionnaire->surveyid();
+
+        $survey = survey::from_sid($sid);
+        $result = $survey->update_settings([
+            'feedbacksections' => 2,
+            'feedbackscores'   => 1,
+            'feedbacknotes'    => 'Notes body',
+            'charttype'        => 'bipolar',
+        ]);
+
+        $this->assertSame($sid, $result);
+        $row = $DB->get_record('questionnaire_survey', ['id' => $sid]);
+        $this->assertEquals(2, $row->feedbacksections);
+        $this->assertEquals(1, $row->feedbackscores);
+        $this->assertEquals('Notes body', $row->feedbacknotes);
+        $this->assertEquals('bipolar', $row->charttype);
+    }
+
+    /**
+     * Asserts update_settings() rejects unknown / non-allowlisted fields.
+     *
+     * @covers \mod_questionnaire\survey::update_settings
+     */
+    public function test_update_settings_rejects_unknown_field(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+
+        $survey = survey::from_sid($questionnaire->surveyid());
+
+        $this->expectException(\coding_exception::class);
+        $survey->update_settings(['id' => 999]);
+    }
+
+    /**
+     * Asserts update_settings() rejects a field that is not in the persistent's properties
+     * (e.g. someone passing a form-only key like 'sid').
+     *
+     * @covers \mod_questionnaire\survey::update_settings
+     */
+    public function test_update_settings_rejects_form_metadata_field(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+
+        $survey = survey::from_sid($questionnaire->surveyid());
+
+        $this->expectException(\coding_exception::class);
+        $survey->update_settings(['sid' => $questionnaire->surveyid()]);
+    }
+
+    /**
+     * Asserts update_settings() returns false when a present 'name' / 'title' / 'realm' is empty.
+     *
+     * @covers \mod_questionnaire\survey::update_settings
+     */
+    public function test_update_settings_returns_false_for_empty_required_field(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+
+        $survey = survey::from_sid($questionnaire->surveyid());
+        $this->assertFalse($survey->update_settings(['name' => '']));
+        $this->assertFalse($survey->update_settings(['title' => '']));
+        $this->assertFalse($survey->update_settings(['realm' => '']));
+    }
+
+    /**
+     * Asserts update_settings() returns false when renaming to a value that collides with another survey.
+     *
+     * @covers \mod_questionnaire\survey::update_settings
+     */
+    public function test_update_settings_returns_false_for_duplicate_name(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $q1 = $generator->create_instance(['course' => $course->id]);
+        $q2 = $generator->create_instance(['course' => $course->id]);
+
+        $survey1 = survey::from_sid($q1->surveyid());
+        $survey2 = survey::from_sid($q2->surveyid());
+
+        $survey1->update_settings(['name' => 'shared-name']);
+        $this->assertFalse($survey2->update_settings(['name' => 'shared-name']));
+    }
+
+    /**
+     * Asserts update_settings() does NOT silently mutate fields that were not supplied
+     * (only the named keys are written).
+     *
+     * @covers \mod_questionnaire\survey::update_settings
+     */
+    public function test_update_settings_does_not_touch_unsupplied_fields(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+        $sid = $questionnaire->surveyid();
+        $originaltitle = $DB->get_field('questionnaire_survey', 'title', ['id' => $sid]);
+
+        survey::from_sid($sid)->update_settings(['feedbacksections' => 3]);
+
+        $this->assertEquals($originaltitle, $DB->get_field('questionnaire_survey', 'title', ['id' => $sid]));
+        $this->assertEquals(3, $DB->get_field('questionnaire_survey', 'feedbacksections', ['id' => $sid]));
+    }
+
     // Tests for has_required() (pure, no DB).
 
     /**
