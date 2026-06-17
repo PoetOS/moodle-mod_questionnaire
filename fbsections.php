@@ -278,7 +278,7 @@ if ($action == 'confirmremovequestion') {
     $sectionid = required_param('sectionid', PARAM_INT);
     $qid = required_param('qid', PARAM_INT);
     $msgargs = new stdClass();
-    $msgargs->qname = $questionnaire->questions()[$qid]->name;
+    $msgargs->qname = $questionnaire->questions()[$qid]->name();
     $msgargs->sname = $feedbacksection->sectionlabel;
     $msg = '<div class="warning centerpara"><p>' . get_string('confirmremovequestion', 'questionnaire', $msgargs) . '</p></div>';
     $args = ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $sectionid];
