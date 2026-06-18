@@ -210,5 +210,4 @@ class report_downloader {
             get_string('emailsnotspecified', 'questionnaire')
         );
     }
-
 }
