@@ -34,7 +34,7 @@ use mod_questionnaire\output\reportpage;
 use mod_questionnaire\output\reportpagepdf;
 use mod_questionnaire\output\responsepagepdf;
 
-$instance = optional_param('instance', false, PARAM_INT);   // Questionnaire ID.
+$instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $action = optional_param('action', 'vall', PARAM_ALPHA);
 $sid = optional_param('sid', null, PARAM_INT);              // Survey id.
 $rid = optional_param('rid', false, PARAM_INT);
@@ -58,14 +58,6 @@ switch ($action) {
         $sort = 'default';
 }
 
-if ($instance === false) {
-    if (!empty($SESSION->instance)) {
-        $instance = $SESSION->instance;
-    } else {
-        throw new \moodle_exception('requiredparameter', 'mod_questionnaire');
-    }
-}
-$SESSION->instance = $instance;
 $usergraph = get_config('questionnaire', 'usergraph');
 
 $questionnaire = questionnaire::from_instanceid($instance);
@@ -139,7 +131,6 @@ $groupmode = groups_get_activity_groupmode($cm, $course);
 $questionnairegroups = '';
 $groupscount = 0;
 $SESSION->questionnaire->respscount = 0;
-$SESSION->questionnaire_surveyid = $sid;
 
 if ($groupmode > 0) {
     if ($groupmode == 1) {

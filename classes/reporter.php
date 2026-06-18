@@ -377,8 +377,8 @@ class reporter {
             $i++;
         }
 
-        $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&group=' .
-            $currentgroupid . '&individualresponse=1';
+        $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&instance='
+            . $this->questionnaire->id() . '&group=' . $currentgroupid . '&individualresponse=1';
 
         if (!$byresponse) {
             $navbar = new stdClass();
@@ -423,7 +423,8 @@ class reporter {
                 $navbar->lastrespondent['title'] = $lastuserfullname;
                 $navbar->next['title'] = $title;
             }
-            $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&byresponse=1&group=' . $currentgroupid;
+            $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&byresponse=1&instance='
+                . $this->questionnaire->id() . '&group=' . $currentgroupid;
             $navbar->listlink = $url;
 
             $linkname = '&nbsp;' . get_string('print', 'questionnaire');

@@ -140,8 +140,8 @@ class report_actions {
                 $redirection = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' .
                     $this->questionnaire->coursemodule()->id;
             } else {
-                $redirection = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;instance=' .
-                    $instance . '&amp;byresponse=1';
+                $redirection = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&instance=' .
+                    $instance . '&byresponse=1';
             }
 
             $event = \mod_questionnaire\event\response_deleted::create([
@@ -268,8 +268,8 @@ class report_actions {
                 $redirection = $CFG->wwwroot . '/mod/questionnaire/view.php?id=' .
                     $this->questionnaire->coursemodule()->id;
             } else {
-                $redirection = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vall&amp;sid=' .
-                    $sid . '&amp;instance=' . $instance;
+                $redirection = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vall&sid=' .
+                    $sid . '&instance=' . $instance;
             }
 
             $event = \mod_questionnaire\event\all_responses_deleted::create([
