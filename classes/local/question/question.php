@@ -1291,10 +1291,11 @@ abstract class question {
         $blankquestionnaire,
         $dependants = [],
         $qnum = '',
-        $questionnaire = null
+        $questionnaire = null,
+        bool $individualresponse = false
     ): stdClass {
         $this->questionnaire = $questionnaire;
-        $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire);
+        $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire, $individualresponse);
         $pagetags->qformelement = $this->question_survey_display($response, $dependants, $blankquestionnaire);
         return $pagetags;
     }
@@ -1304,10 +1305,11 @@ abstract class question {
      * @param \mod_questionnaire\local\response\response $response
      * @param string $qnum
      * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return \stdClass
      */
-    public function response_output($response, $qnum = '', $questionnaire = null) {
-        $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire);
+    public function response_output($response, $qnum = '', $questionnaire = null, bool $individualresponse = false) {
+        $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire, $individualresponse);
         $pagetags->qformelement = $this->response_survey_display($response);
         return $pagetags;
     }
@@ -1317,13 +1319,18 @@ abstract class question {
      * @param int $qnum
      * @param response $response
      * @param questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return \stdClass
      */
-    public function questionstart_survey_display($qnum, $response = null, $questionnaire = null): stdClass {
-        global $OUTPUT, $SESSION, $PAGE;
+    public function questionstart_survey_display(
+        $qnum,
+        $response = null,
+        $questionnaire = null,
+        bool $individualresponse = false
+    ): stdClass {
+        global $OUTPUT, $PAGE;
 
         $pagetags = new \stdClass();
-        $currenttab = $SESSION->questionnaire->current_tab;
         $pagetype = $PAGE->pagetype;
         $skippedclass = '';
         // If no questions autonumbering.
@@ -1356,7 +1363,7 @@ abstract class question {
             $questionnaire !== null &&
             (
                 $pagetype == 'mod-questionnaire-preview' ||
-                ($nonumbering && ($currenttab == 'mybyresponse' || $currenttab == 'individualresp'))
+                ($nonumbering && $individualresponse)
             )
         ) {
             // This needs to be done to ensure all dependency data is loaded.

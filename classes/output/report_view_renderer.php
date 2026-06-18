@@ -260,7 +260,8 @@ class report_view_renderer {
                         $q->responses()->get_response($rid),
                         $i,
                         $pdf,
-                        $q
+                        $q,
+                        true
                     )
                 );
             }

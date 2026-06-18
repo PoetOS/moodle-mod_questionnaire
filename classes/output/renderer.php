@@ -232,11 +232,27 @@ class renderer extends \plugin_renderer_base {
      * @param boolean $blankquestionnaire Used for printing a blank one.
      * @param array $dependants Array of all questions/choices depending on $question.
      * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      */
-    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants = [], $questionnaire = null) {
+    public function question_output(
+        $question,
+        $response,
+        $qnum,
+        $blankquestionnaire,
+        $dependants = [],
+        $questionnaire = null,
+        bool $individualresponse = false
+    ) {
 
-        $pagetags = $question->question_output($response, $blankquestionnaire, $dependants, $qnum, $questionnaire);
+        $pagetags = $question->question_output(
+            $response,
+            $blankquestionnaire,
+            $dependants,
+            $qnum,
+            $questionnaire,
+            $individualresponse
+        );
 
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -262,11 +278,19 @@ class renderer extends \plugin_renderer_base {
      * @param int $qnum The question number.
      * @param bool $pdf
      * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      * @throws \moodle_exception
      */
-    public function response_output($question, $response, $qnum = null, $pdf = false, $questionnaire = null) {
-        $pagetags = $question->response_output($response, $qnum, $questionnaire);
+    public function response_output(
+        $question,
+        $response,
+        $qnum = null,
+        $pdf = false,
+        $questionnaire = null,
+        bool $individualresponse = false
+    ) {
+        $pagetags = $question->response_output($response, $qnum, $questionnaire, $individualresponse);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -295,20 +319,22 @@ class renderer extends \plugin_renderer_base {
      * @param array|string $responses
      * @param array $questions
      * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      */
-    public function all_response_output($responses, $questions = null, $questionnaire = null) {
+    public function all_response_output($responses, $questions = null, $questionnaire = null, bool $individualresponse = false) {
         $output = '';
         if (is_string($responses)) {
             $output .= $responses;
         } else {
             $qnum = 1;
             foreach ($questions as $question) {
-                if (empty($pagetags = $question->questionstart_survey_display($qnum, null, $questionnaire))) {
+                $pagetags = $question->questionstart_survey_display($qnum, null, $questionnaire, $individualresponse);
+                if (empty($pagetags)) {
                     continue;
                 }
                 foreach ($responses as $response) {
-                    $resptags = $question->response_output($response);
+                    $resptags = $question->response_output($response, '', $questionnaire, $individualresponse);
                     // If the response has a template, then render it from the 'qformelement' context.
                     // If no template, then 'qformelement' already contains HTML.
                     if (($template = $question->response_template())) {

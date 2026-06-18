@@ -1126,7 +1126,8 @@ class reporter {
                         $responses->get_response($rid),
                         $i,
                         $pdf,
-                        $this->questionnaire
+                        $this->questionnaire,
+                        true
                     )
                 );
             }

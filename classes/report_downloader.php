@@ -68,7 +68,7 @@ class report_downloader {
         array $questionnairegroups,
         int $user
     ): void {
-        global $PAGE, $SESSION;
+        global $PAGE;
 
         require_capability('mod/questionnaire:downloadresponses', $this->questionnaire->context());
 
@@ -79,8 +79,8 @@ class report_downloader {
         $PAGE->set_heading(format_string($course->fullname));
         echo $this->renderer->header();
 
-        $SESSION->questionnaire->current_tab = empty($user) ? 'downloadcsv' : 'mydownloadcsv';
-        $this->include_tabs($page, $currentgroupid);
+        $tabname = empty($user) ? 'downloadcsv' : 'mydownloadcsv';
+        (new \mod_questionnaire\output\tabs($this->questionnaire, $tabname, $currentgroupid))->render($page);
 
         $groupname = '';
         if ($groupmode > 0) {
@@ -211,21 +211,4 @@ class report_downloader {
         );
     }
 
-    /**
-     * Include the shared tabs.php with the variables it expects in scope.
-     *
-     * tabs.php reads $questionnaire, $page, $currentgroupid, $rid, $USER and
-     * $CFG from the calling scope; pulling them in here lets the include
-     * resolve from any class method as it does from the top-level entry script.
-     *
-     * @param object $page Templatable report page (tab bar is appended via add_to_page).
-     * @param int $currentgroupid Active group filter.
-     * @param int|null $rid Response id (used only by the deleteresp / individualresp tabs).
-     * @return void
-     */
-    private function include_tabs(object $page, int $currentgroupid, ?int $rid = null): void {
-        global $CFG, $USER;
-        $questionnaire = $this->questionnaire;
-        include($CFG->dirroot . '/mod/questionnaire/tabs.php');
-    }
 }

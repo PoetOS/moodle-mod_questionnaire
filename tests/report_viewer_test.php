@@ -62,7 +62,6 @@ final class report_viewer_test extends \advanced_testcase {
         if (!isset($SESSION->questionnaire) || !is_object($SESSION->questionnaire)) {
             $SESSION->questionnaire = new \stdClass();
         }
-        $SESSION->questionnaire->current_tab = '';
     }
 
     /**

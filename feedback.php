@@ -43,14 +43,8 @@ require_course_login($questionnaire->course(), true, $questionnaire->coursemodul
 $PAGE->set_url(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $id]));
 $PAGE->set_context($questionnaire->context());
 
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = new feedbackpage();
-
-$SESSION->questionnaire->current_tab = 'feedback';
 
 if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
@@ -109,7 +103,7 @@ $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
 echo $renderer->header();
-require('tabs.php');
+(new \mod_questionnaire\output\tabs($questionnaire, 'feedback'))->render($page);
 if (!$validquestions) {
     $page->add_to_page('formarea', get_string('feedbackoptions_help', 'questionnaire'));
 } else {

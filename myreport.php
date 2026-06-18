@@ -75,14 +75,12 @@ $courseid = $questionnaire->courseid();
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
-$SESSION->questionnaire->current_tab = 'myreport';
 
 switch ($action) {
     case 'summary':
         if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
-        $SESSION->questionnaire->current_tab = 'mysummary';
         $resps = $questionnaire->get_responses($userid);
         $rids = array_keys($resps);
         if (count($resps) > 1) {
@@ -95,7 +93,7 @@ switch ($action) {
         echo $renderer->header();
 
         // Print the tabs.
-        include('tabs.php');
+        (new \mod_questionnaire\output\tabs($questionnaire, 'mysummary', $currentgroupid))->render($page);
 
         $page->add_to_page('myheaders', $titletext);
         $questionnaire->reporter($renderer, $page)->survey_results($rids, $USER->id);
@@ -110,7 +108,6 @@ switch ($action) {
         if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
-        $SESSION->questionnaire->current_tab = 'myvall';
         $questionnaire->reporter($renderer, $page)->add_user_responses($userid);
         $titletext = get_string('myresponses', 'questionnaire');
 
@@ -118,7 +115,7 @@ switch ($action) {
         echo $renderer->header();
 
         // Print the tabs.
-        include('tabs.php');
+        (new \mod_questionnaire\output\tabs($questionnaire, 'myvall', $currentgroupid))->render($page);
 
         $page->add_to_page('myheaders', $titletext);
         $questionnaire->reporter($renderer, $page)->view_all_responses();
@@ -131,7 +128,6 @@ switch ($action) {
         if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
-        $SESSION->questionnaire->current_tab = 'mybyresponse';
         $usergraph = get_config('questionnaire', 'usergraph');
         if ($usergraph) {
             $charttype = $questionnaire->survey()->charttype();
@@ -234,7 +230,7 @@ switch ($action) {
         echo $renderer->header();
 
         // Print the tabs.
-        include('tabs.php');
+        (new \mod_questionnaire\output\tabs($questionnaire, 'mybyresponse', $currentgroupid, is_int($rid) ? $rid : null))->render($page);
         $page->add_to_page('myheaders', $titletext);
 
         if (count($resps) > 1) {

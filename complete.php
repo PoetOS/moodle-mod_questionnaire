@@ -33,7 +33,6 @@ use mod_questionnaire\output\completepage;
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
-$SESSION->questionnaire->current_tab = 'view';
 
 $id = optional_param('id', null, PARAM_INT);    // Course Module ID.
 $a = optional_param('a', null, PARAM_INT);      // Questionnaire ID.

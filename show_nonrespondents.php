@@ -44,12 +44,6 @@ $sid = optional_param('sid', 0, PARAM_INT);
 $qid = optional_param('qid', 0, PARAM_INT);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-
-$SESSION->questionnaire->current_tab = 'nonrespondents';
-
 $questionnaire = questionnaire::from_cmid($id);
 $course = $questionnaire->course();
 $cm = $questionnaire->coursemodule();
@@ -166,7 +160,7 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_title(format_string($questionnaire->name()));
 echo $renderer->header();
 
-require('tabs.php');
+(new \mod_questionnaire\output\tabs($questionnaire, 'nonrespondents', $currentgroupid))->render($page);
 
 $usedgroupid = false;
 $sort = '';

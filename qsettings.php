@@ -49,16 +49,10 @@ $context = context_module::instance($cm->id);
 $url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/qsettings.php', ['id' => $id]);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-
 $questionnaire = questionnaire::from_cm($cm);
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = new qsettingspage();
-
-$SESSION->questionnaire->current_tab = 'settings';
 
 if (!$questionnaire->capabilities()->can_manage_questionnaire()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
@@ -119,7 +113,7 @@ $PAGE->set_title(get_string('editingquestionnaire', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(get_string('editingquestionnaire', 'questionnaire'));
 echo $renderer->header();
-require('tabs.php');
+(new \mod_questionnaire\output\tabs($questionnaire, 'settings'))->render($page);
 $page->add_to_page('formarea', $settingsform->render());
 echo $renderer->render($page);
 echo $renderer->footer($course);

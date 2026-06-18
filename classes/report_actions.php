@@ -59,7 +59,7 @@ class report_actions {
      * @return void
      */
     public function confirm_delete_response(object $page, int $rid, int $currentgroupid): void {
-        global $PAGE, $SESSION;
+        global $PAGE;
 
         require_capability('mod/questionnaire:deleteresponses', $this->questionnaire->context());
 
@@ -84,8 +84,7 @@ class report_actions {
         $PAGE->set_heading(format_string($this->questionnaire->course()->fullname));
         echo $this->renderer->header();
 
-        $SESSION->questionnaire->current_tab = 'deleteresp';
-        $this->include_tabs($page, $currentgroupid, $rid);
+        (new \mod_questionnaire\output\tabs($this->questionnaire, 'deleteresp', $currentgroupid, $rid))->render($page);
 
         $instance = $this->questionnaire->id();
         $msg = '<div class="warning centerpara">';
@@ -192,7 +191,7 @@ class report_actions {
         string $groupname,
         array $respsallparticipants
     ): void {
-        global $PAGE, $SESSION;
+        global $PAGE;
 
         require_capability('mod/questionnaire:deleteresponses', $this->questionnaire->context());
 
@@ -204,8 +203,7 @@ class report_actions {
         $PAGE->set_heading(format_string($this->questionnaire->course()->fullname));
         echo $this->renderer->header();
 
-        $SESSION->questionnaire->current_tab = 'deleteall';
-        $this->include_tabs($page, $currentgroupid);
+        (new \mod_questionnaire\output\tabs($this->questionnaire, 'deleteall', $currentgroupid))->render($page);
 
         $instance = $this->questionnaire->id();
         $msg = '<div class="warning centerpara">';
@@ -308,21 +306,4 @@ class report_actions {
         return '- ' . get_string('unknown', 'questionnaire') . ' -';
     }
 
-    /**
-     * Include the shared tabs.php with the variables it expects in scope.
-     *
-     * tabs.php reads $questionnaire, $page, $currentgroupid, $rid, $USER and
-     * $CFG from the calling scope. Pulling them in here lets the include
-     * resolve from any class method as it does from the top-level entry script.
-     *
-     * @param object $page Templatable page (tab bar is appended via add_to_page).
-     * @param int $currentgroupid Active group filter.
-     * @param int|null $rid Response id (used only by the deleteresp / individualresp tabs).
-     * @return void
-     */
-    private function include_tabs(object $page, int $currentgroupid, ?int $rid = null): void {
-        global $CFG, $USER;
-        $questionnaire = $this->questionnaire;
-        include($CFG->dirroot . '/mod/questionnaire/tabs.php');
-    }
 }
