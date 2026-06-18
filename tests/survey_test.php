@@ -629,7 +629,7 @@ final class survey_test extends \advanced_testcase {
         $this->assertNotEmpty($result['template-' . $sid]);
     }
 
-    // Tests for update_settings() (DB).
+    // Tests covering the update_settings allowlist persistence path.
 
     /**
      * Asserts update_settings() persists each allowlisted field onto the survey row.

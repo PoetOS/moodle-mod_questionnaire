@@ -428,5 +428,4 @@ class report_viewer {
                 break;
         }
     }
-
 }

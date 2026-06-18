@@ -305,5 +305,4 @@ class report_actions {
         }
         return '- ' . get_string('unknown', 'questionnaire') . ' -';
     }
-
 }

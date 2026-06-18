@@ -230,7 +230,9 @@ switch ($action) {
         echo $renderer->header();
 
         // Print the tabs.
-        (new \mod_questionnaire\output\tabs($questionnaire, 'mybyresponse', $currentgroupid, is_int($rid) ? $rid : null))->render($page);
+        $myrid = is_int($rid) ? $rid : null;
+        (new \mod_questionnaire\output\tabs($questionnaire, 'mybyresponse', $currentgroupid, $myrid))
+            ->render($page);
         $page->add_to_page('myheaders', $titletext);
 
         if (count($resps) > 1) {
