@@ -1270,20 +1270,13 @@ abstract class question {
 
     /**
      * Get the output for question renderers / templates.
-     * @param \mod_questionnaire\local\response\response $response
-     * @param boolean $blankquestionnaire
-     * @param array $dependants Array of all questions/choices depending on this question.
-     * @param int $qnum
-     * @return \stdClass
-     */
-    /**
-     * Get the output for question renderers / templates.
      *
      * @param \mod_questionnaire\local\response\response|\stdClass $response The response object or form data.
      * @param bool $blankquestionnaire Whether the questionnaire is blank.
      * @param array $dependants Array of all questions/choices depending on this question.
      * @param int|string $qnum The question number.
      * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return \stdClass The output object for rendering.
      */
     public function question_output(
