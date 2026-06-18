@@ -44,7 +44,6 @@ final class report_view_renderer_test extends \advanced_testcase {
             $SESSION->questionnaire = new \stdClass();
         }
         $SESSION->questionnaire->end = false;
-        $SESSION->questionnaire->current_tab = '';
     }
 
     /**

@@ -82,11 +82,6 @@ if (!$canpreview && !$popup) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-$SESSION->questionnaire->current_tab = 'preview';
-
 $qp = get_string('preview_questionnaire', 'questionnaire');
 $pq = get_string('previewing', 'questionnaire');
 
@@ -106,7 +101,7 @@ $page = new \mod_questionnaire\output\previewpage();
 
 echo $renderer->header();
 if (!$popup) {
-    require('tabs.php');
+    (new \mod_questionnaire\output\tabs($questionnaire, 'preview'))->render($page);
 }
 $page->add_to_page('heading', clean_text($pq));
 

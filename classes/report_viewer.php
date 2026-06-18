@@ -80,7 +80,7 @@ class report_viewer {
         array $responsestatus,
         bool $usergraph
     ): void {
-        global $PAGE, $SESSION;
+        global $PAGE;
 
         $course = $this->questionnaire->course();
         $context = $this->questionnaire->context();
@@ -98,18 +98,13 @@ class report_viewer {
 
         $this->init_rgraph($usergraph);
 
-        switch ($action) {
-            case 'vallasort':
-                $SESSION->questionnaire->current_tab = 'vallasort';
-                break;
-            case 'vallarsort':
-                $SESSION->questionnaire->current_tab = 'vallarsort';
-                break;
-            default:
-                $SESSION->questionnaire->current_tab = 'valldefault';
-        }
+        $currenttab = match ($action) {
+            'vallasort' => 'vallasort',
+            'vallarsort' => 'vallarsort',
+            default => 'valldefault',
+        };
         if ($outputtarget != 'print') {
-            $this->include_tabs($page, $currentgroupid);
+            (new \mod_questionnaire\output\tabs($this->questionnaire, $currenttab, $currentgroupid))->render($page);
         }
 
         $respinfo = '';
@@ -294,7 +289,7 @@ class report_viewer {
         string $userview,
         array $responsestatus
     ): void {
-        global $PAGE, $SESSION;
+        global $PAGE;
 
         $course = $this->questionnaire->course();
         $cm = $this->questionnaire->coursemodule();
@@ -363,14 +358,14 @@ class report_viewer {
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
 
-        if ($byresponse) {
-            $SESSION->questionnaire->current_tab = 'vrespsummary';
-        }
-        if ($individualresponse) {
-            $SESSION->questionnaire->current_tab = 'individualresp';
-        }
+        $currenttab = $individualresponse ? 'individualresp' : ($byresponse ? 'vrespsummary' : 'vresp');
         if ($outputtarget == 'html') {
-            $this->include_tabs($page, $currentgroupid, is_int($rid) ? $rid : null);
+            (new \mod_questionnaire\output\tabs(
+                $this->questionnaire,
+                $currenttab,
+                $currentgroupid,
+                is_int($rid) ? $rid : null
+            ))->render($page);
         }
 
         $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
@@ -434,21 +429,4 @@ class report_viewer {
         }
     }
 
-    /**
-     * Include the shared tabs.php with the variables it expects in scope.
-     *
-     * tabs.php reads $questionnaire, $page, $currentgroupid, $rid, $USER and
-     * $CFG from the calling scope; pulling them in here lets the include
-     * resolve from any class method as it does from the top-level entry script.
-     *
-     * @param object $page Templatable report page.
-     * @param int $currentgroupid Active group filter.
-     * @param int|null $rid Response id (used only by deleteresp / individualresp tabs).
-     * @return void
-     */
-    private function include_tabs(object $page, int $currentgroupid, ?int $rid = null): void {
-        global $CFG, $USER;
-        $questionnaire = $this->questionnaire;
-        include($CFG->dirroot . '/mod/questionnaire/tabs.php');
-    }
 }

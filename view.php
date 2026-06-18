@@ -33,7 +33,6 @@ use mod_questionnaire\output\viewpage;
 if (!isset($SESSION->questionnaire)) {
     $SESSION->questionnaire = new stdClass();
 }
-$SESSION->questionnaire->current_tab = 'view';
 
 $cmid = optional_param('id', null, PARAM_INT);    // Course Module ID.
 $qid = optional_param('a', null, PARAM_INT);      // Or questionnaire ID.

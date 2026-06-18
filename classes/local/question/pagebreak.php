@@ -48,9 +48,15 @@ class pagebreak extends question {
      * @param int $qnum
      * @param \mod_questionnaire\local\response\response $response
      * @param \questionnaire|null $questionnaire
+     * @param bool $individualresponse Unused; signature must match parent.
      * @return \stdClass
      */
-    public function questionstart_survey_display($qnum, $response = null, $questionnaire = null): \stdClass {
+    public function questionstart_survey_display(
+        $qnum,
+        $response = null,
+        $questionnaire = null,
+        bool $individualresponse = false
+    ): \stdClass {
         return new \stdClass();
     }
 
