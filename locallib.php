@@ -704,7 +704,7 @@ function questionnaire_get_incomplete_users(
     // First get all users who can complete this questionnaire.
     $cap = 'mod/questionnaire:submit';
     $fields = 'u.id, u.username';
-    if (!$allusers = get_enrolled_users($context, $cap, $group, $fields, $sort)) {
+    if (!$allusers = get_enrolled_users($context, $cap, $group, $fields, $sort, null, null, true)) {
         return false;
     }
     $allusers = array_keys($allusers);
