@@ -43,7 +43,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
         if (!isset($SESSION->questionnaire) || !is_object($SESSION->questionnaire)) {
             $SESSION->questionnaire = new \stdClass();
         }
-        $SESSION->questionnaire->end = false;
     }
 
     /**
@@ -197,10 +196,10 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
     /**
      * handle_submit_action() short-circuits (returns null) when the user has already
-     * walked past the final page (SESSION->questionnaire->end == true).
+     * walked past the final page (formdata->end == 1).
      */
     public function test_handle_submit_action_short_circuits_when_past_end(): void {
-        global $PAGE, $SESSION;
+        global $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -211,10 +210,9 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
         $this->init_session();
-        $SESSION->questionnaire->end = true;
 
         $svr = new survey_view_renderer($renderer, $page);
-        $formdata = (object)['sec' => 1, 'rid' => 0];
+        $formdata = (object)['sec' => 1, 'rid' => 0, 'end' => 1];
         $method = new \ReflectionMethod($svr, 'handle_submit_action');
         $method->setAccessible(true);
 
@@ -385,7 +383,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
      * sec and clearing SESSION->end before validating the current page.
      */
     public function test_handle_prev_action_walks_back_from_past_end(): void {
-        global $PAGE, $SESSION;
+        global $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -396,16 +394,16 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
         $this->init_session();
-        $SESSION->questionnaire->end = true;
 
         $svr = new survey_view_renderer($renderer, $page);
-        // After the user walked past the last section (sec=2), pressing Prev should land them on sec=1.
-        $formdata = (object)['sec' => 2, 'rid' => 0, 'prev' => 'Prev'];
+        // After the user walked past the last section (sec=2 + end=1), pressing Prev should land them on sec=1
+        // with the end flag cleared.
+        $formdata = (object)['sec' => 2, 'rid' => 0, 'prev' => 'Prev', 'end' => 1];
         $method = new \ReflectionMethod($svr, 'handle_prev_action');
         $method->setAccessible(true);
         $method->invoke($svr, $instance, $formdata, (int)$studentid);
 
-        $this->assertFalse($SESSION->questionnaire->end);
+        $this->assertSame(0, $formdata->end);
     }
 
     /**
