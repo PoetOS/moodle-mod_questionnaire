@@ -160,8 +160,6 @@ switch ($action) {
 
         $respsuser = $questionnaire->get_responses($userid);
 
-        $SESSION->questionnaire->numrespsallparticipants = count($respsallparticipants);
-        $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
         $iscurrentgroupmember = false;
 
         // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).

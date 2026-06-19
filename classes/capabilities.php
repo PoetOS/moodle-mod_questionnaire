@@ -241,14 +241,12 @@ class capabilities {
      * @return bool
      */
     public function can_view_all_responses(?int $usernumresp = null, bool $isviewreport = false): bool {
-        global $USER, $SESSION;
+        global $USER;
 
         $numresp = $this->questionnaire->count_submissions();
         if ($usernumresp === null) {
             $usernumresp = $this->questionnaire->count_submissions($USER->id);
         }
-
-        $numselectedresps = $SESSION->questionnaire->numselectedresps ?? $numresp;
 
         $context = $this->questionnaire->context();
         $cm = $this->questionnaire->coursemodule();
@@ -259,7 +257,7 @@ class capabilities {
             : true;
 
         $grouplogic = $canviewgroups || $canviewallgroups;
-        $respslogic = ($numresp > 0 && $numselectedresps > 0) || $isviewreport;
+        $respslogic = ($numresp > 0) || $isviewreport;
 
         return $this->can_view_all_responses_anytime($grouplogic, $respslogic) ||
             $this->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $respslogic);
