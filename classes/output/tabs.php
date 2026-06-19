@@ -63,7 +63,7 @@ class tabs {
      * @param object $page Templatable page that exposes add_to_page('tabsarea', $html).
      */
     public function render(object $page): void {
-        global $CFG, $USER, $SESSION;
+        global $CFG, $USER;
 
         $questionnaire = $this->questionnaire;
         $currenttab = $this->currenttab;
@@ -160,12 +160,6 @@ class tabs {
         }
 
         $numresp = $questionnaire->count_submissions();
-        // Number of responses in currently selected group (or all participants etc.).
-        if (isset($SESSION->questionnaire->numselectedresps)) {
-            $numselectedresps = $SESSION->questionnaire->numselectedresps;
-        } else {
-            $numselectedresps = $numresp;
-        }
 
         // If questionnaire is set to separate groups, prevent user who is not member of any group
         // to view All responses.
@@ -176,7 +170,7 @@ class tabs {
         }
         $canviewallgroups = has_capability('moodle/site:accessallgroups', $questionnaire->context());
         $grouplogic = $canviewallgroups || $canviewgroups;
-        $resplogic = ($numresp > 0) && ($numselectedresps > 0);
+        $resplogic = ($numresp > 0);
 
         if ($questionnaire->capabilities()->can_view_all_responses_anytime($grouplogic, $resplogic)) {
             $argstr = 'instance=' . $questionnaire->id();

@@ -132,9 +132,7 @@ class reporter {
         string $currentgroupid = '',
         string $sort = ''
     ): void {
-        global $SESSION, $DB;
-
-        $SESSION->questionnaire->noresponses = false;
+        global $DB;
 
         $survey = $this->questionnaire->survey();
         $questions = $this->questionnaire->questions();
@@ -162,7 +160,6 @@ class reporter {
                         \core\output\notification::NOTIFY_ERROR
                     )
                 );
-                $SESSION->questionnaire->noresponses = true;
                 return;
             }
             $numresps = count($rows);

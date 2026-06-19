@@ -125,14 +125,11 @@ if (!isset($SESSION->questionnaire)) {
 // Get all responses for further use in viewbyresp and deleteall etc.
 // All participants.
 $respsallparticipants = $questionnaire->get_responses();
-$SESSION->questionnaire->numrespsallparticipants = count($respsallparticipants);
-$SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
 
 // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
 $groupmode = groups_get_activity_groupmode($cm, $course);
 $questionnairegroups = '';
 $groupscount = 0;
-$SESSION->questionnaire->respscount = 0;
 
 if ($groupmode > 0) {
     if ($groupmode == 1) {
