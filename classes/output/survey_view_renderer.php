@@ -97,7 +97,7 @@ class survey_view_renderer {
      * @return string|null Error message string, or null on success.
      */
     public function build_survey_form(questionnaire $q, int $quser, ?int $userid = null): ?string {
-        global $SESSION, $CFG;
+        global $CFG;
 
         if (!($formdata = data_submitted()) || !confirm_sesskey()) {
             $formdata = new \stdClass();
@@ -117,10 +117,6 @@ class survey_view_renderer {
         $numsections = count($questionsbysec);
         $msg = '';
         $action = $CFG->wwwroot . '/mod/questionnaire/complete.php?id=' . $q->coursemodule()->id;
-
-        if ($formdata->sec == 1) {
-            $SESSION->questionnaire->end = false;
-        }
 
         if (!empty($formdata->submit)) {
             $submitresult = $this->handle_submit_action($q, $formdata, $userid);
@@ -159,6 +155,7 @@ class survey_view_renderer {
                     'sid' => $q->surveyid(),
                     'rid' => $formdatarid,
                     'sec' => $formdata->sec,
+                    'end' => !empty($formdata->end) ? 1 : 0,
                     'sesskey' => sesskey(),
                 ]
             )
@@ -220,9 +217,7 @@ class survey_view_renderer {
      * @return string|null null = short-circuit, string = error message to render.
      */
     protected function handle_submit_action(questionnaire $q, \stdClass $formdata, ?int $userid): ?string {
-        global $SESSION;
-
-        if (isset($SESSION->questionnaire->end) && $SESSION->questionnaire->end == true) {
+        if (!empty($formdata->end)) {
             return null;
         }
         $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
@@ -268,8 +263,6 @@ class survey_view_renderer {
         ?int $userid,
         int $numsections
     ): string {
-        global $SESSION;
-
         $msg = $q->responses()->response_check_format($formdata->sec, $formdata);
         if ($msg) {
             $formdata->next = '';
@@ -278,7 +271,7 @@ class survey_view_renderer {
         }
         $nextsec = $q->submission()->next_page_action($formdata, $userid);
         if ($nextsec === false) {
-            $SESSION->questionnaire->end = true;
+            $formdata->end = 1;
             $formdata->sec = $numsections + 1;
         } else {
             $formdata->sec = $nextsec;
@@ -300,10 +293,8 @@ class survey_view_renderer {
      * @return string Error message ('' on success).
      */
     protected function handle_prev_action(questionnaire $q, \stdClass $formdata, ?int $userid): string {
-        global $SESSION;
-
-        if (isset($SESSION->questionnaire->end) && ($SESSION->questionnaire->end == true)) {
-            $SESSION->questionnaire->end = false;
+        if (!empty($formdata->end)) {
+            $formdata->end = 0;
             $formdata->sec--;
         }
         $msg = $q->responses()->response_check_format($formdata->sec, $formdata, false, true);
