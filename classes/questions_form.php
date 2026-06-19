@@ -101,16 +101,6 @@ class questions_form extends \moodleform {
 
         $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
 
-        if (isset($SESSION->questionnaire->validateresults) &&  $SESSION->questionnaire->validateresults != '') {
-            $mform->addElement(
-                'static',
-                'validateresult',
-                '',
-                '<div class="qdepend warning">' . $SESSION->questionnaire->validateresults . '</div>'
-            );
-            $SESSION->questionnaire->validateresults = '';
-        }
-
         $qnum = 0;
 
         // JR skip logic :: to prevent moving child higher than parent OR parent lower than child
