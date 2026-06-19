@@ -142,7 +142,10 @@ if ($delq) {
     survey::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
 
     if ($questionnairehasdependencies) {
-        $SESSION->questionnaire->validateresults = $questionnaire->survey()->check_page_breaks();
+        $validationmsg = $questionnaire->survey()->check_page_breaks();
+        if (!empty($validationmsg)) {
+            \core\notification::warning($validationmsg);
+        }
     }
     $reload = true;
 }
@@ -285,14 +288,20 @@ if ($action == 'main') {
                 $questionnaire->survey()->move_question($qformdata->moveq, $qpos);
             }
             if ($questionnairehasdependencies) {
-                $SESSION->questionnaire->validateresults = $questionnaire->survey()->check_page_breaks();
+                $validationmsg = $questionnaire->survey()->check_page_breaks();
+                if (!empty($validationmsg)) {
+                    \core\notification::warning($validationmsg);
+                }
             }
             // Nothing I do will seem to reload the form with new data, except for moving away from the page, so...
             redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $cm->id);
             $reload = true;
         } else if (isset($qformdata->validate)) {
             // Validates page breaks for depend questions.
-            $SESSION->questionnaire->validateresults = $questionnaire->survey()->check_page_breaks();
+            $validationmsg = $questionnaire->survey()->check_page_breaks();
+            if (!empty($validationmsg)) {
+                \core\notification::warning($validationmsg);
+            }
             $reload = true;
         } else if (isset($qformdata->deletebutton)) {
             $action = questionnaire::confirm_delete_param();
