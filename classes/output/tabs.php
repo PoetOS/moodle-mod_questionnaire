@@ -32,9 +32,7 @@ use tabobject;
 /**
  * Builds the questionnaire activity's tabbed navigation and adds it to the page.
  *
- * Replaces the legacy procedural tabs.php include. Each call site supplies the
- * literal tab name it owns, so the current tab is no longer carried between
- * requests via $SESSION->questionnaire->current_tab.
+ * Each call site supplies the literal tab name it owns.
  */
 class tabs {
     /**

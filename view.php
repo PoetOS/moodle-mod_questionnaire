@@ -30,10 +30,6 @@ require_once($CFG->libdir . '/completionlib.php');
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\output\viewpage;
 
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-
 $cmid = optional_param('id', null, PARAM_INT);    // Course Module ID.
 $qid = optional_param('a', null, PARAM_INT);      // Or questionnaire ID.
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.

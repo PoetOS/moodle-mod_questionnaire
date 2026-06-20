@@ -35,17 +35,6 @@ use mod_questionnaire\questionnaire;
  */
 final class report_view_renderer_test extends \advanced_testcase {
     /**
-     * Initialise the SESSION->questionnaire bucket that real callers (preview.php, print.php)
-     * set up before invoking the renderer.
-     */
-    private function init_session(): void {
-        global $SESSION;
-        if (!isset($SESSION->questionnaire) || !is_object($SESSION->questionnaire)) {
-            $SESSION->questionnaire = new \stdClass();
-        }
-    }
-
-    /**
      * Build a course + questionnaire with one yes/no question.
      *
      * @return array [questionnaire, student id]
@@ -92,7 +81,6 @@ final class report_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new previewpage();
-        $this->init_session();
         (new report_view_renderer($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, true);
 
@@ -113,7 +101,6 @@ final class report_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new previewpage();
-        $this->init_session();
         (new report_view_renderer($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, false);
 
@@ -140,7 +127,6 @@ final class report_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new previewpage();
-        $this->init_session();
         (new report_view_renderer($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, true);
 
@@ -168,7 +154,6 @@ final class report_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new previewpage();
-        $this->init_session();
         (new report_view_renderer($renderer, $page))
             ->render_response($instance, $rid, 'print');
 

@@ -69,9 +69,6 @@ if (!$questionnaire->capabilities()->can_edit_questions()) {
 
 $questionnairehasdependencies = $questionnaire->navigator()->has_dependencies();
 $dependants = null;
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
 $reload = false;
 $sid = $questionnaire->surveyid();
 // Process form data.

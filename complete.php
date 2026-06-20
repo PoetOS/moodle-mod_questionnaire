@@ -30,10 +30,6 @@ require_once($CFG->libdir . '/completionlib.php');
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\output\completepage;
 
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-
 $id = optional_param('id', null, PARAM_INT);    // Course Module ID.
 $a = optional_param('a', null, PARAM_INT);      // Questionnaire ID.
 $resume = optional_param('resume', null, PARAM_INT);    // Is this attempt a resume of a saved attempt?

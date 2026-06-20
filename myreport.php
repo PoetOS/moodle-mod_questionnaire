@@ -71,11 +71,6 @@ $page = new reportpage();
 $sid = $questionnaire->surveyid();
 $courseid = $questionnaire->courseid();
 
-// Tab setup.
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-
 switch ($action) {
     case 'summary':
         if (!$questionnaire->survey()) {
