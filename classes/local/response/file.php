@@ -267,6 +267,7 @@ class file extends responsetype {
      * @param int|array $rids - A single response id, or array.
      * @param string $sort - Optional display sort.
      * @param boolean $anonymous - Whether or not responses are anonymous.
+     * @param int|null $currentgroupid Active group filter id for staff respondent-link URLs.
      * @return string - Display output.
      */
     public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null) {
