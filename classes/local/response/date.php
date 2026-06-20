@@ -149,7 +149,7 @@ class date extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    public function display_results($rids = false, $sort = '', $anonymous = false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null) {
         $numresps = count($rids);
         if ($rows = $this->get_results($rids, $anonymous)) {
             $numrespondents = count($rows);

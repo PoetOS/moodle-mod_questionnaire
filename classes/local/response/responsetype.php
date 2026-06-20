@@ -130,9 +130,10 @@ abstract class responsetype {
      * @param int|array $rids - A single response id, or array.
      * @param string $sort - Optional display sort.
      * @param boolean $anonymous - Whether or not responses are anonymous.
+     * @param int|null $currentgroupid Active group filter id (text/file use it for respondent-link URLs).
      * @return string - Display output.
      */
-    abstract public function display_results($rids = false, $sort = '', $anonymous = false);
+    abstract public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null);
 
     /**
      * If the choice id needs to be transformed into a different value, override this in the child class.

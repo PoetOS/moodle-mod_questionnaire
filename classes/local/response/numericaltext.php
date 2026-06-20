@@ -56,7 +56,7 @@ class numericaltext extends text {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    public function display_results($rids = false, $sort = '', $anonymous = false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
