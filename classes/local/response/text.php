@@ -170,7 +170,14 @@ class text extends responsetype {
      * @param int|null $currentgroupid Active group filter id for staff respondent-link URLs.
      * @return \stdClass
      */
-    public function get_results_tags($weights, $participants, $respondents, $showtotals = 1, $sort = '', ?int $currentgroupid = null) {
+    public function get_results_tags(
+        $weights,
+        $participants,
+        $respondents,
+        $showtotals = 1,
+        $sort = '',
+        ?int $currentgroupid = null
+    ) {
         $pagetags = new \stdClass();
         if ($respondents == 0) {
             return $pagetags;
