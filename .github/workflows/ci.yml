@@ -76,6 +76,15 @@ jobs:
           IGNORE_PATHS: 'templates/local/mobile'
           PHPDOCCHECKER_IGNORE_PATHS: /^vendor/
 
+      - name: Guard against $SESSION->questionnaire regressions
+        if: ${{ always() }}
+        working-directory: plugin
+        run: |
+          if git grep -nE '\$SESSION->questionnaire' -- ':!.github/**'; then
+            echo "::error::Found \$SESSION->questionnaire usage. State must round-trip via forms, URL params, persistent records, or computed-on-render — never via the session object. See [[project-session-removal-plan]]."
+            exit 1
+          fi
+
       - name: PHP Lint
         if: ${{ always() }}
         run: moodle-plugin-ci phplint

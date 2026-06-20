@@ -53,18 +53,6 @@ final class report_viewer_test extends \advanced_testcase {
     }
 
     /**
-     * Initialise the SESSION->questionnaire bucket that callers (report.php) set
-     * up before invoking the controller. Call this AFTER setUser() — switching
-     * users resets the session.
-     */
-    private function init_session(): void {
-        global $SESSION;
-        if (!isset($SESSION->questionnaire) || !is_object($SESSION->questionnaire)) {
-            $SESSION->questionnaire = new \stdClass();
-        }
-    }
-
-    /**
      * Default response-status map used by the report.php caller (mirrors what the
      * production entry script supplies).
      *
@@ -92,7 +80,6 @@ final class report_viewer_test extends \advanced_testcase {
         // Use an unenrolled user — no role assignments means no caps.
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
-        $this->init_session();
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $this->expectException(\moodle_exception::class);
@@ -128,7 +115,6 @@ final class report_viewer_test extends \advanced_testcase {
         $this->setAdminUser();
 
         [$questionnaire, $url] = $this->setup_fixture();
-        $this->init_session();
 
         // Point the survey at a different course so owning_courseid() != questionnaire->course->id.
         $othercourse = $this->getDataGenerator()->create_course();

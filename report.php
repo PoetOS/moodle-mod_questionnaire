@@ -115,11 +115,6 @@ if ($outputtarget == 'print') {
     $PAGE->requires->js_init_call('M.mod_questionnaire.init_printing');
 }
 
-// Tab setup.
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-
 // Get all responses for further use in viewbyresp and deleteall etc.
 // All participants.
 $respsallparticipants = $questionnaire->get_responses();

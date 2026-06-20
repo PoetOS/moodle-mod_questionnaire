@@ -35,17 +35,6 @@ use mod_questionnaire\questionnaire;
  */
 final class survey_view_renderer_test extends \advanced_testcase {
     /**
-     * Initialise the SESSION->questionnaire bucket that real callers (view.php, complete.php)
-     * set up before invoking the renderer.
-     */
-    private function init_session(): void {
-        global $SESSION;
-        if (!isset($SESSION->questionnaire) || !is_object($SESSION->questionnaire)) {
-            $SESSION->questionnaire = new \stdClass();
-        }
-    }
-
-    /**
      * Build a course + questionnaire with one yes/no question and return both the
      * domain object and the enrolled student id.
      *
@@ -130,7 +119,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
         (new survey_view_renderer($renderer, $page))->build_view($instance, $studentid);
 
         $data = $this->page_data($page);
@@ -154,7 +142,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
         $result = (new survey_view_renderer($renderer, $page))
             ->build_survey_form($instance, $studentid, $studentid);
 
@@ -185,7 +172,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
         (new survey_view_renderer($renderer, $page))
             ->build_survey_form($instance, $studentid, $studentid);
 
@@ -209,7 +195,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
 
         $svr = new survey_view_renderer($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'end' => 1];
@@ -234,7 +219,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
 
         $svr = new survey_view_renderer($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0];
@@ -262,7 +246,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
 
         $svr = new survey_view_renderer($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'next' => 'Next'];
@@ -292,7 +275,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
 
         $svr = new survey_view_renderer($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'submit' => 'Submit Survey'];
@@ -321,7 +303,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
 
         $svr = new survey_view_renderer($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'next' => 'Next'];
@@ -365,7 +346,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
 
         $svr = new survey_view_renderer($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'prev' => 'Prev', 'q' . $qid => 'not-a-date'];
@@ -393,7 +373,6 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $this->init_session();
 
         $svr = new survey_view_renderer($renderer, $page);
         // After the user walked past the last section (sec=2 + end=1), pressing Prev should land them on sec=1
