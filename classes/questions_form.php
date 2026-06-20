@@ -52,7 +52,7 @@ class questions_form extends \moodleform {
      * Form definition.
      */
     public function definition() {
-        global $CFG, $questionnaire, $SESSION;
+        global $CFG, $questionnaire;
         global $DB;
 
         $sid = $questionnaire->surveyid();
@@ -90,9 +90,10 @@ class questions_form extends \moodleform {
         $addqgroup = [];
         $addqgroup[] =& $mform->createElement('select', 'typeid', '', $qtypes);
 
-        // The 'sticky' typeid value for further new questions.
-        if (isset($SESSION->questionnaire->typeid)) {
-                $mform->setDefault('typeid', $SESSION->questionnaire->typeid);
+        // The 'sticky' typeid value for further new questions — carried via the lasttypeid URL param.
+        $lasttypeid = optional_param('lasttypeid', null, PARAM_INT);
+        if ($lasttypeid !== null) {
+            $mform->setDefault('typeid', $lasttypeid);
         }
 
         $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
@@ -100,6 +101,10 @@ class questions_form extends \moodleform {
         $questionnairehasdependencies = $questionnaire->navigator()->has_dependencies();
 
         $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
+
+        // Carry the 'sticky' lastrequired forward so it survives the "Add selected" POST into the edit form.
+        $mform->addElement('hidden', 'lastrequired', optional_param('lastrequired', '', PARAM_ALPHA));
+        $mform->setType('lastrequired', PARAM_ALPHA);
 
         $qnum = 0;
 

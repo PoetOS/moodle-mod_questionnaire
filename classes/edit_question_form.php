@@ -40,12 +40,12 @@ class edit_question_form extends \moodleform {
      */
     public function definition() {
         // TODO - Find a way to not use globals. Maybe the base class allows more parameters to be passed?
-        global $questionnaire, $question, $SESSION;
+        global $questionnaire, $question;
 
-        // TODO - Is there a better way to do this without session global?
-        // The 'sticky' required response value for further new questions.
-        if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
-            $question->set_required_value($SESSION->questionnaire->required);
+        // The 'sticky' required response value for further new questions — carried via the lastrequired URL/POST param.
+        $lastrequired = optional_param('lastrequired', '', PARAM_ALPHA);
+        if ($lastrequired !== '' && !isset($question->qid)) {
+            $question->set_required_value($lastrequired);
         }
         if ($question->typeid() === 0) {
             throw new \moodle_exception('undefinedquestiontype', 'mod_questionnaire');
