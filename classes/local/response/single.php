@@ -240,7 +240,7 @@ class single extends responsetype {
      * @param bool $anonymous
      * @return string
      */
-    public function display_results($rids = false, $sort = '', $anonymous = false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null) {
         global $DB;
 
         $rows = $this->get_results($rids, $anonymous);

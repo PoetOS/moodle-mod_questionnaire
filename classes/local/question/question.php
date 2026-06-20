@@ -834,14 +834,15 @@ abstract class question {
      * @param bool $rids
      * @param string $sort
      * @param bool $anonymous
+     * @param int|null $currentgroupid Active group filter id for staff respondent-link URLs.
      * @return false|string
      */
-    public function display_results($rids = false, $sort = '', $anonymous = false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null) {
         if (
             isset($this->responsetype) && is_object($this->responsetype) &&
             is_subclass_of($this->responsetype, '\\mod_questionnaire\\local\\response\\responsetype')
         ) {
-            return $this->responsetype->display_results($rids, $sort, $anonymous);
+            return $this->responsetype->display_results($rids, $sort, $anonymous, $currentgroupid);
         } else {
             return false;
         }

@@ -257,7 +257,8 @@ class reporter {
                     $ridlist,
                     $sort,
                     $anonymous,
-                    $pdf
+                    $pdf,
+                    is_numeric($currentgroupid) ? (int) $currentgroupid : null
                 );
                 $this->page->add_to_page('responses', $response);
             } else {
@@ -303,7 +304,14 @@ class reporter {
                 );
                 $this->page->add_to_page(
                     'responses',
-                    $this->renderer->results_output($question, $ridlist, $sort, $anonymous)
+                    $this->renderer->results_output(
+                        $question,
+                        $ridlist,
+                        $sort,
+                        $anonymous,
+                        false,
+                        is_numeric($currentgroupid) ? (int) $currentgroupid : null
+                    )
                 );
                 $this->page->add_to_page(
                     'responses',

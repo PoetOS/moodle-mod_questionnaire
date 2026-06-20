@@ -357,10 +357,11 @@ class renderer extends \plugin_renderer_base {
      * @param string $sort The sort order being used.
      * @param string $anonymous The value of the anonymous setting.
      * @param bool $pdf
+     * @param int|null $currentgroupid Active group filter id for staff respondent-link URLs.
      * @return string The output for the page.
      */
-    public function results_output($question, $rids, $sort, $anonymous, $pdf = false) {
-        $pagetags = $question->display_results($rids, $sort, $anonymous);
+    public function results_output($question, $rids, $sort, $anonymous, $pdf = false, ?int $currentgroupid = null) {
+        $pagetags = $question->display_results($rids, $sort, $anonymous, $currentgroupid);
 
         // If the response has a template, then render it from $pagetags. If no template, then $pagetags already contains HTML.
         if (($template = $question->results_template($pdf))) {

@@ -195,7 +195,7 @@ class boolean extends responsetype {
      * @param bool $anonymous
      * @return string
      */
-    public function display_results($rids = false, $sort = '', $anonymous = false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null) {
         $stryes = get_string('yes');
         $strno = get_string('no');
 

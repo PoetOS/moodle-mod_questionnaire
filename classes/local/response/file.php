@@ -269,7 +269,7 @@ class file extends responsetype {
      * @param boolean $anonymous - Whether or not responses are anonymous.
      * @return string - Display output.
      */
-    public function display_results($rids = false, $sort = '', $anonymous = false) {
+    public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null) {
         if (is_array($rids)) {
             $prtotal = 1;
         } else if (is_int($rids)) {
@@ -278,7 +278,7 @@ class file extends responsetype {
         if ($rows = $this->get_results($rids, $anonymous)) {
             $numrespondents = count($rids);
             $numresponses = count($rows);
-            $pagetags = $this->get_results_tags($rows, $numrespondents, $numresponses, $prtotal);
+            $pagetags = $this->get_results_tags($rows, $numrespondents, $numresponses, $prtotal, '', $currentgroupid);
         } else {
             $pagetags = "";
         }
@@ -332,9 +332,10 @@ class file extends responsetype {
      * @param int $respondents Number of question respondents.
      * @param bool $showtotals
      * @param string $sort
+     * @param int|null $currentgroupid Active group filter id for staff respondent-link URLs.
      * @return \stdClass
      */
-    public function get_results_tags($weights, $participants, $respondents, $showtotals = 1, $sort = '') {
+    public function get_results_tags($weights, $participants, $respondents, $showtotals = 1, $sort = '', ?int $currentgroupid = null) {
         $pagetags = new \stdClass();
         if ($respondents == 0) {
             return $pagetags;
@@ -342,16 +343,12 @@ class file extends responsetype {
 
         // If array element is an object, outputting non-numeric responses.
         if (is_object(reset($weights))) {
-            global $CFG, $SESSION, $DB;
+            global $CFG, $DB;
             $viewsingleresponse = $this->canviewsingleresponse;
             $nonanonymous = $this->displayrespondenttype !== 'anonymous';
             if ($viewsingleresponse && $nonanonymous) {
-                $currentgroupid = '';
-                if (isset($SESSION->questionnaire->currentgroupid)) {
-                    $currentgroupid = $SESSION->questionnaire->currentgroupid;
-                }
                 $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;sid=' . $this->displaysurveysid .
-                    '&currentgroupid=' . $currentgroupid;
+                    '&currentgroupid=' . (int) $currentgroupid;
             }
             $users = [];
             $evencolor = false;
