@@ -193,6 +193,7 @@ class boolean extends responsetype {
      * @param bool $rids
      * @param string $sort
      * @param bool $anonymous
+     * @param int|null $currentgroupid Active group filter id (unused; signature must match parent).
      * @return string
      */
     public function display_results($rids = false, $sort = '', $anonymous = false, ?int $currentgroupid = null) {
