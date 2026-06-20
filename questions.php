@@ -337,23 +337,22 @@ if ($action == 'main') {
         }
 
         $questionnaire->survey()->check_page_breaks();
-        $SESSION->questionnaire->required = $qformdata->required;
-        $SESSION->questionnaire->typeid = $qformdata->typeid;
-        // Switch to main screen.
-        $action = 'main';
-        $reload = true;
-    }
 
-    // Log question created event.
-    if (isset($qformdata)) {
+        // Log question created event.
         $questiontype = \mod_questionnaire\local\question\question::qtypename($qformdata->typeid);
         $params = [
             'context' => $context,
             'courseid' => $questionnaire->courseid(),
             'other' => ['questiontype' => $questiontype],
         ];
-        $event = \mod_questionnaire\event\question_created::create($params);
-        $event->trigger();
+        \mod_questionnaire\event\question_created::create($params)->trigger();
+
+        // Back to the main screen; carry the just-used typeid/required forward as defaults for the next add.
+        redirect(new moodle_url('/mod/questionnaire/questions.php', [
+            'id' => $cm->id,
+            'lasttypeid' => (int) $qformdata->typeid,
+            'lastrequired' => $qformdata->required,
+        ]));
     }
 
     $questionsform->set_data($question->form_data());
