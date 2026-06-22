@@ -837,4 +837,95 @@ final class responsetype_test extends \advanced_testcase {
         $this->assertArrayHasKey($redid, $responses);
         $this->assertArrayHasKey($greenid, $responses);
     }
+
+    /**
+     * numericaltext::answers_from_webform() returns the parsed value for numeric input.
+     */
+    public function test_numericaltext_answers_from_webform_returns_numeric_value(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [, $question, $rid] = $this->build_data_fixture(QUESNUMERIC);
+
+        $data = (object)['rid' => $rid, 'q' . $question->id() => '12.5'];
+        $answers = numericaltext::answers_from_webform($data, $question);
+
+        $this->assertCount(1, $answers);
+        $answer = reset($answers);
+        $this->assertSame('12.5', $answer->value);
+    }
+
+    /**
+     * numericaltext::answers_from_webform() returns an empty array for non-numeric input.
+     *
+     * The is_numeric() gate also rejects "12,5" — comma-decimal input never reaches the
+     * comma-to-dot cleanup path, so the cleanup only ever runs on already-numeric strings.
+     */
+    public function test_numericaltext_answers_from_webform_rejects_non_numeric(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [, $question, $rid] = $this->build_data_fixture(QUESNUMERIC);
+
+        foreach (['hello', '12,5abc', ''] as $bad) {
+            $data = (object)['rid' => $rid, 'q' . $question->id() => $bad];
+            $this->assertSame([], numericaltext::answers_from_webform($data, $question), "input: $bad");
+        }
+    }
+
+    /**
+     * numericaltext::insert_response() writes the numeric value into questionnaire_response_text.
+     */
+    public function test_numericaltext_insert_response_writes_value(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESNUMERIC);
+
+        $rt = new numericaltext($question);
+        $insertedid = $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => '42.7',
+        ]);
+
+        $this->assertNotFalse($insertedid);
+        $row = $DB->get_record('questionnaire_response_text', ['id' => $insertedid]);
+        $this->assertSame('42.7', $row->response);
+    }
+
+    /**
+     * numericaltext::display_results() groups identical numeric responses with counts on the page tags.
+     */
+    public function test_numericaltext_display_results_groups_identical_counts(): void {
+        global $DB, $USER;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESNUMERIC);
+        $rt = new numericaltext($question);
+
+        // Three responses: 5, 5, 7 → grouped as 5:2, 7:1.
+        $rt->insert_response((object)[
+            'rid' => $rid, 'a' => $questionnaire->id(), 'q' . $question->id() => '5',
+        ]);
+        $rid2 = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(), 'userid' => $USER->id,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $rt->insert_response((object)[
+            'rid' => $rid2, 'a' => $questionnaire->id(), 'q' . $question->id() => '5',
+        ]);
+        $rid3 = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(), 'userid' => $USER->id,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $rt->insert_response((object)[
+            'rid' => $rid3, 'a' => $questionnaire->id(), 'q' . $question->id() => '7',
+        ]);
+
+        $pagetags = $rt->display_results([$rid, $rid2, $rid3]);
+        $this->assertIsObject($pagetags);
+    }
 }
