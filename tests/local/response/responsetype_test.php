@@ -928,4 +928,91 @@ final class responsetype_test extends \advanced_testcase {
         $pagetags = $rt->display_results([$rid, $rid2, $rid3]);
         $this->assertIsObject($pagetags);
     }
+
+    /**
+     * slider::response_answers_by_question() returns the answer keyed by question id, and decodes
+     * extradata json from questionnaire_question when present.
+     */
+    public function test_slider_response_answers_by_question_returns_answer_with_extradata(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESSLIDER);
+
+        // The generator does not seed extradata; set a realistic blob directly.
+        $DB->set_field('questionnaire_question', 'extradata', json_encode([
+            'minrange' => 0,
+            'maxrange' => 10,
+            'startingvalue' => 5,
+        ]), ['id' => $question->id()]);
+
+        $rt = new slider($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => '7',
+        ]);
+
+        $answers = slider::response_answers_by_question($rid);
+
+        $this->assertArrayHasKey($question->id(), $answers);
+        $this->assertSame('7', $answers[$question->id()][0]->value);
+        $this->assertObjectHasProperty('maxrange', $answers[$question->id()]['extradata']);
+        $this->assertSame(10, $answers[$question->id()]['extradata']->maxrange);
+    }
+
+    /**
+     * slider::response_answers_by_question() omits the extradata entry when the question has none.
+     */
+    public function test_slider_response_answers_by_question_no_extradata(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESSLIDER);
+
+        $rt = new slider($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => '3',
+        ]);
+
+        $answers = slider::response_answers_by_question($rid);
+
+        $this->assertArrayHasKey($question->id(), $answers);
+        $this->assertArrayNotHasKey('extradata', $answers[$question->id()]);
+    }
+
+    /**
+     * slider::get_feedback_scores() returns one row per response with the numeric score.
+     */
+    public function test_slider_get_feedback_scores_returns_score_per_response(): void {
+        global $DB, $USER;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESSLIDER);
+        $rt = new slider($question);
+
+        $rt->insert_response((object)[
+            'rid' => $rid, 'a' => $questionnaire->id(), 'q' . $question->id() => '4',
+        ]);
+        $rid2 = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(), 'userid' => $USER->id,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $rt->insert_response((object)[
+            'rid' => $rid2, 'a' => $questionnaire->id(), 'q' . $question->id() => '8',
+        ]);
+
+        $scores = $rt->get_feedback_scores([$rid, $rid2]);
+        $this->assertCount(2, $scores);
+        $byrid = [];
+        foreach ($scores as $row) {
+            $byrid[(int)$row->rid] = $row->score;
+        }
+        $this->assertSame('4', $byrid[$rid]);
+        $this->assertSame('8', $byrid[$rid2]);
+    }
 }
