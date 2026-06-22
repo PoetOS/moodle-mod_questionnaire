@@ -63,7 +63,7 @@ $currentinfo = file_prepare_draft_area(
     'feedbacknotes',
     $sdata->sid,
     ['subdirs' => true],
-    $questionnaire->survey()->feedbacknotes()
+    $questionnaire->feedback()->notes()
 );
 $sdata->feedbacknotes = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
@@ -73,14 +73,7 @@ if ($feedbackform->is_cancelled()) {
     redirect(new moodle_url('/mod/questionnaire/view.php', ['id' => $questionnaire->coursemodule()->id]));
 }
 // Confirm that feedback can be used for this questionnaire...
-// Get all questions that are valid feedback questions.
-$validquestions = false;
-foreach ($questionnaire->questions() as $question) {
-    if ($question->valid_feedback()) {
-        $validquestions = true;
-        break;
-    }
-}
+$validquestions = $questionnaire->feedback()->has_any_feedback_questions();
 
 if ($settings = $feedbackform->get_data()) {
     $controller = new feedback_settings_controller($questionnaire);

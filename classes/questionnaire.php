@@ -101,6 +101,9 @@ class questionnaire {
     /** @var submission_controller|null Lazy-loaded controller for in-progress submission flow. */
     private ?submission_controller $submission = null;
 
+    /** @var feedback|null Lazy-loaded feedback domain object. */
+    private ?feedback $feedback = null;
+
     /** @var string Course-module idnumber, used by gradebook. Set by callers that need it. */
     public string $cmidnumber = '';
 
@@ -1444,6 +1447,16 @@ class questionnaire {
     public function submission(): submission_controller {
         $this->submission ??= new submission_controller($this);
         return $this->submission;
+    }
+
+    /**
+     * Return the feedback domain object for this questionnaire.
+     *
+     * @return feedback
+     */
+    public function feedback(): feedback {
+        $this->feedback ??= new feedback($this);
+        return $this->feedback;
     }
 
     /**

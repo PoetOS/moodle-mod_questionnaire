@@ -125,7 +125,7 @@ switch ($action) {
         }
         $usergraph = get_config('questionnaire', 'usergraph');
         if ($usergraph) {
-            $charttype = $questionnaire->survey()->charttype();
+            $charttype = $questionnaire->feedback()->chart_type();
             if ($charttype) {
                 $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
 
