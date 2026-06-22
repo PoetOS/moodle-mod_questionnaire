@@ -45,6 +45,15 @@ namespace mod_questionnaire\local\response;
  */
 final class responsetype_test extends \advanced_testcase {
     /**
+     * Ensure question.php is loaded so its QUES* constants (QUESYESNO, QUESCHECK, …) are
+     * available at test-argument evaluation time, even when a test runs in isolation.
+     */
+    public static function setUpBeforeClass(): void {
+        parent::setUpBeforeClass();
+        class_exists(\mod_questionnaire\local\question\question::class);
+    }
+
+    /**
      * Build a minimal question stub with an id, suitable for instantiating a responsetype.
      *
      * @param int $id
@@ -706,5 +715,126 @@ final class responsetype_test extends \advanced_testcase {
 
         $pagetags = $rt->display_results([$rid]);
         $this->assertIsObject($pagetags);
+    }
+
+    /**
+     * multiple::insert_response() writes one questionnaire_resp_multiple row per checked choice.
+     */
+    public function test_multiple_insert_response_writes_rows_per_choice(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'Red', 'value' => null],
+            (object)['content' => 'Green', 'value' => null],
+            (object)['content' => 'Blue', 'value' => null],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESCHECK, $choices);
+
+        $choiceidsbycontent = [];
+        foreach ($question->choices as $cid => $choice) {
+            $choiceidsbycontent[$choice->content] = $cid;
+        }
+        $redid = $choiceidsbycontent['Red'];
+        $blueid = $choiceidsbycontent['Blue'];
+
+        $rt = new multiple($question);
+        // Webform format: q{qid} is an array keyed by selected choice ids.
+        $data = (object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => [$redid => $redid, $blueid => $blueid],
+        ];
+        $rt->insert_response($data);
+
+        // Exactly two rows landed in the multi table; no rows for Green.
+        $rows = $DB->get_records('questionnaire_resp_multiple', [
+            'responseid' => $rid,
+            'questionid' => $question->id(),
+        ]);
+        $this->assertCount(2, $rows);
+        $chosen = array_map(fn($r) => (int)$r->choiceid, $rows);
+        sort($chosen);
+        $expected = [$redid, $blueid];
+        sort($expected);
+        $this->assertSame($expected, $chosen);
+
+        // Sibling single table is empty — confirms make_primary_record routed to the right persistent.
+        $this->assertSame(0, $DB->count_records('questionnaire_resp_single', [
+            'responseid' => $rid,
+            'questionid' => $question->id(),
+        ]));
+    }
+
+    /**
+     * multiple::get_results() joins the resp_multiple table so each result row carries the choice content.
+     */
+    public function test_multiple_get_results_returns_choice_content(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'Red', 'value' => null],
+            (object)['content' => 'Green', 'value' => null],
+            (object)['content' => 'Blue', 'value' => null],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESCHECK, $choices);
+
+        $choiceidsbycontent = [];
+        foreach ($question->choices as $cid => $choice) {
+            $choiceidsbycontent[$choice->content] = $cid;
+        }
+
+        $rt = new multiple($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => [
+                $choiceidsbycontent['Red'] => $choiceidsbycontent['Red'],
+                $choiceidsbycontent['Green'] => $choiceidsbycontent['Green'],
+            ],
+        ]);
+
+        $results = $rt->get_results([$rid]);
+        $contents = array_map(fn($r) => $r->content ?? null, $results);
+        $this->assertContains('Red', $contents);
+        $this->assertContains('Green', $contents);
+        $this->assertNotContains('Blue', $contents);
+    }
+
+    /**
+     * multiple::response_select() returns a per-question array keyed by the chosen choice ids.
+     */
+    public function test_multiple_response_select_returns_structured_array(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'Red', 'value' => null],
+            (object)['content' => 'Green', 'value' => null],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESCHECK, $choices);
+
+        $choiceidsbycontent = [];
+        foreach ($question->choices as $cid => $choice) {
+            $choiceidsbycontent[$choice->content] = $cid;
+        }
+        $redid = $choiceidsbycontent['Red'];
+        $greenid = $choiceidsbycontent['Green'];
+
+        $rt = new multiple($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => [$redid => $redid, $greenid => $greenid],
+        ]);
+
+        $values = multiple::response_select($rid);
+        $this->assertArrayHasKey($question->id(), $values);
+        $this->assertArrayHasKey('responses', $values[$question->id()]);
+        $responses = $values[$question->id()]['responses'];
+        $this->assertArrayHasKey($redid, $responses);
+        $this->assertArrayHasKey($greenid, $responses);
     }
 }
