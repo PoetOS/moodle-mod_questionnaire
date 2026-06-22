@@ -546,4 +546,165 @@ final class responsetype_test extends \advanced_testcase {
         $contents = array_map(fn($r) => $r->content ?? null, $results);
         $this->assertContains('Two', $contents);
     }
+
+    /**
+     * rank::insert_response() writes one questionnaire_response_rank row per ranked choice.
+     */
+    public function test_rank_insert_response_writes_rows_per_choice(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'Speed', 'value' => null],
+            (object)['content' => 'Quality', 'value' => null],
+            (object)['content' => 'Price', 'value' => null],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESRATE, $choices);
+
+        // Resolve choice ids by content so the form data uses real ids.
+        $choiceidsbycontent = [];
+        foreach ($question->choices as $cid => $choice) {
+            $choiceidsbycontent[$choice->content] = $cid;
+        }
+
+        $rt = new rank($question);
+        $data = (object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() . '_' . $choiceidsbycontent['Speed'] => '1',
+            'q' . $question->id() . '_' . $choiceidsbycontent['Quality'] => '2',
+            'q' . $question->id() . '_' . $choiceidsbycontent['Price'] => '3',
+        ];
+        $rt->insert_response($data);
+
+        $rows = $DB->get_records('questionnaire_response_rank', [
+            'responseid' => $rid,
+            'questionid' => $question->id(),
+        ]);
+        $this->assertCount(3, $rows);
+        $bychoice = [];
+        foreach ($rows as $row) {
+            $bychoice[(int)$row->choiceid] = (int)$row->rankvalue;
+        }
+        $this->assertSame(1, $bychoice[$choiceidsbycontent['Speed']]);
+        $this->assertSame(2, $bychoice[$choiceidsbycontent['Quality']]);
+        $this->assertSame(3, $bychoice[$choiceidsbycontent['Price']]);
+    }
+
+    /**
+     * rank::insert_response() with "Not applicable" stores -1 (excluded from get_results averages).
+     */
+    public function test_rank_insert_response_marks_notapplicable_as_minus_one(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'Speed', 'value' => null],
+            (object)['content' => 'Quality', 'value' => null],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESRATE, $choices);
+
+        $choiceidsbycontent = [];
+        foreach ($question->choices as $cid => $choice) {
+            $choiceidsbycontent[$choice->content] = $cid;
+        }
+
+        $rt = new rank($question);
+        $data = (object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() . '_' . $choiceidsbycontent['Speed'] => '2',
+            'q' . $question->id() . '_' . $choiceidsbycontent['Quality'] => get_string('notapplicable', 'questionnaire'),
+        ];
+        $rt->insert_response($data);
+
+        $qualityrow = $DB->get_record('questionnaire_response_rank', [
+            'responseid' => $rid,
+            'choiceid' => $choiceidsbycontent['Quality'],
+        ]);
+        $this->assertEquals(-1, $qualityrow->rankvalue);
+    }
+
+    /**
+     * rank::get_results() returns one row per choice with its average rank value across responses.
+     */
+    public function test_rank_get_results_returns_averages_by_choice(): void {
+        global $DB, $USER;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'Speed', 'value' => null],
+            (object)['content' => 'Quality', 'value' => null],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESRATE, $choices);
+
+        $choiceidsbycontent = [];
+        foreach ($question->choices as $cid => $choice) {
+            $choiceidsbycontent[$choice->content] = $cid;
+        }
+        $speedid = $choiceidsbycontent['Speed'];
+        $qualityid = $choiceidsbycontent['Quality'];
+
+        $rt = new rank($question);
+
+        // Two responses: speed=1/quality=2 and speed=3/quality=4 → avg speed=2, avg quality=3.
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() . '_' . $speedid => '1',
+            'q' . $question->id() . '_' . $qualityid => '2',
+        ]);
+        $rid2 = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(), 'userid' => $USER->id,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $rt->insert_response((object)[
+            'rid' => $rid2,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() . '_' . $speedid => '3',
+            'q' . $question->id() . '_' . $qualityid => '4',
+        ]);
+
+        $results = $rt->get_results([$rid, $rid2]);
+        // Results are reindexed by content.
+        $this->assertArrayHasKey('Speed', $results);
+        $this->assertArrayHasKey('Quality', $results);
+        $this->assertEqualsWithDelta(2.0, (float)$results['Speed']->average, 0.0001);
+        $this->assertEqualsWithDelta(3.0, (float)$results['Quality']->average, 0.0001);
+        $this->assertSame(2, (int)$results['Speed']->num);
+        $this->assertSame(2, (int)$results['Quality']->num);
+    }
+
+    /**
+     * rank::display_results() returns a templatable stdClass once results exist.
+     */
+    public function test_rank_display_results_returns_tags(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'Speed', 'value' => null],
+            (object)['content' => 'Quality', 'value' => null],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESRATE, $choices);
+
+        $choiceidsbycontent = [];
+        foreach ($question->choices as $cid => $choice) {
+            $choiceidsbycontent[$choice->content] = $cid;
+        }
+
+        $rt = new rank($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() . '_' . $choiceidsbycontent['Speed'] => '1',
+            'q' . $question->id() . '_' . $choiceidsbycontent['Quality'] => '2',
+        ]);
+
+        $pagetags = $rt->display_results([$rid]);
+        $this->assertIsObject($pagetags);
+    }
 }
