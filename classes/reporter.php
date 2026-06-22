@@ -1099,19 +1099,11 @@ class reporter {
                 $this->page->add_to_page('feedbackmessages', $msgout);
             }
 
-            $survey = $this->questionnaire->survey();
-            if ($survey->feedbacknotes()) {
-                $text = file_rewrite_pluginfile_urls(
-                    $survey->feedbacknotes(),
-                    'pluginfile.php',
-                    $this->questionnaire->context()->id,
-                    'mod_questionnaire',
-                    'feedbacknotes',
-                    $this->questionnaire->surveyid()
-                );
+            $rendered = $this->questionnaire->feedback()->rendered_notes();
+            if ($rendered !== '') {
                 $this->page->add_to_page(
                     'feedbacknotes',
-                    $this->renderer->box(format_text($text, FORMAT_HTML))
+                    $this->renderer->box(format_text($rendered, FORMAT_HTML))
                 );
             }
         }
@@ -1198,8 +1190,8 @@ class reporter {
             }
         }
 
-        $survey = $this->questionnaire->survey();
-        if ($survey->feedbackscores()) {
+        $feedbackdomain = $this->questionnaire->feedback();
+        if ($feedbackdomain->show_scores()) {
             $table = new html_table();
             $table->size = [null, null];
             $table->align = ['left', 'right', 'right'];
@@ -1268,7 +1260,7 @@ class reporter {
         $alltotalscore = array_sum($allqscore);
         $allscorepercent = round($alltotalscore / $nbparticipants / $maxtotalscore * 100);
 
-        if ($survey->feedbacksections() == 1) {
+        if ($feedbackdomain->mode() == 1) {
             $sectionid = $fbsectionsnb[0];
             $sectionlabel = $fbsections[$sectionid]->sectionlabel;
             $sectionheading = $fbsections[$sectionid]->sectionheading;
@@ -1325,7 +1317,7 @@ class reporter {
                 $allscore = [$allscorepercent, 100 - $allscorepercent];
             }
             $usergraph = get_config('questionnaire', 'usergraph');
-            if ($usergraph && $survey->charttype()) {
+            if ($usergraph && $feedbackdomain->chart_type()) {
                 $this->page->add_to_page(
                     'feedbackcharts',
                     draw_chart(
@@ -1333,7 +1325,7 @@ class reporter {
                         $labels,
                         $groupname,
                         $allresponses,
-                        $survey->charttype(),
+                        $feedbackdomain->chart_type(),
                         $score,
                         $allscore,
                         $sectionlabel
@@ -1348,7 +1340,7 @@ class reporter {
                 $oppositescore = ' | ' . $score[1] . '%';
                 $oppositeallscore = ' | ' . $allscore[1] . '%';
             }
-            if ($survey->feedbackscores()) {
+            if ($feedbackdomain->show_scores()) {
                 $table = $table ?? new html_table();
                 if ($compare) {
                     $table->data[] = [$sectionlabel, $score[0] . '%' . $oppositescore, $allscore[0] . '%' . $oppositeallscore];
@@ -1478,7 +1470,7 @@ class reporter {
             default:
         }
 
-        if ($survey->feedbackscores()) {
+        if ($feedbackdomain->show_scores()) {
             foreach ($allscore as $key => $sc) {
                 if (isset($chartlabels[$key])) {
                     $lb = explode("|", $chartlabels[$key]);
@@ -1513,7 +1505,7 @@ class reporter {
             unset($allscorepercent[$val]);
         }
 
-        if ($usergraph && $survey->charttype()) {
+        if ($usergraph && $feedbackdomain->chart_type()) {
             $this->page->add_to_page(
                 'feedbackcharts',
                 draw_chart(
@@ -1521,14 +1513,14 @@ class reporter {
                     array_values($chartlabels),
                     $groupname,
                     $allresponses,
-                    $survey->charttype(),
+                    $feedbackdomain->chart_type(),
                     array_values($scorepercent),
                     array_values($allscorepercent),
                     $sectionlabel
                 )
             );
         }
-        if ($survey->feedbackscores()) {
+        if ($feedbackdomain->show_scores()) {
             $this->page->add_to_page('feedbackscores', html_writer::table($table));
         }
 

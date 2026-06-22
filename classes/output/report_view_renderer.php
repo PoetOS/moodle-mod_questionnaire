@@ -228,17 +228,12 @@ class report_view_renderer {
                 $this->page->add_to_page('feedbackmessages', $msgout);
             }
 
-            $feedbacknotes = $q->survey()->feedbacknotes();
-            if ($feedbacknotes) {
-                $text = file_rewrite_pluginfile_urls(
-                    $feedbacknotes,
-                    'pluginfile.php',
-                    $q->context()->id,
-                    'mod_questionnaire',
+            $rendered = $q->feedback()->rendered_notes();
+            if ($rendered !== '') {
+                $this->page->add_to_page(
                     'feedbacknotes',
-                    $q->surveyid()
+                    $this->renderer->box(format_text($rendered, FORMAT_HTML))
                 );
-                $this->page->add_to_page('feedbacknotes', $this->renderer->box(format_text($text, FORMAT_HTML)));
             }
         }
         $pdf = ($outputtarget == 'pdf');

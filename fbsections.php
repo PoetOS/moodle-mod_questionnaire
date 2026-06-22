@@ -52,7 +52,7 @@ if ($sectionid) {
     $feedbacksection = new mod_questionnaire\local\feedback\section($questionnaire->questions(), ['id' => $sectionid]);
 } else if (!$DB->count_records('questionnaire_fb_sections', ['surveyid' => $surveyid])) {
     // There are no sections currently, so create one.
-    if ($questionnaire->survey()->feedbacksections() == 1) {
+    if ($questionnaire->feedback()->mode() == 1) {
         $sectionlabel = get_string('feedbackglobal', 'questionnaire');
     } else {
         $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
