@@ -1015,4 +1015,77 @@ final class responsetype_test extends \advanced_testcase {
         $this->assertSame('4', $byrid[$rid]);
         $this->assertSame('8', $byrid[$rid2]);
     }
+
+    /**
+     * file::response_answers_by_question() returns the file answer keyed by question id.
+     */
+    public function test_file_response_answers_by_question_returns_rows(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+
+        // Direct insert simulates a stored file answer; we only exercise the read path here.
+        $DB->insert_record('questionnaire_response_file', (object)[
+            'responseid' => $rid,
+            'questionid' => $question->id(),
+            'fileid' => 4242,
+        ]);
+
+        $answers = file::response_answers_by_question($rid);
+
+        $this->assertArrayHasKey($question->id(), $answers);
+        $this->assertCount(1, $answers[$question->id()]);
+        $this->assertSame('4242', $answers[$question->id()][0]->value);
+    }
+
+    /**
+     * file::response_select() returns one entry per question with the fileid duplicated as content + value.
+     */
+    public function test_file_response_select_returns_structured_array(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+
+        $DB->insert_record('questionnaire_response_file', (object)[
+            'responseid' => $rid,
+            'questionid' => $question->id(),
+            'fileid' => 5151,
+        ]);
+
+        $values = file::response_select($rid);
+
+        $this->assertArrayHasKey($question->id(), $values);
+        // The response_select() method pops the last value and re-pushes it twice, so fileid appears at the tail.
+        $this->assertSame(5151, (int)end($values[$question->id()]));
+    }
+
+    /**
+     * file::delete_old_response() drops the questionnaire_response_file row.
+     */
+    public function test_file_delete_old_response_removes_record(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+
+        $DB->insert_record('questionnaire_response_file', (object)[
+            'responseid' => $rid,
+            'questionid' => $question->id(),
+            'fileid' => 9999,
+        ]);
+        $this->assertSame(1, $DB->count_records('questionnaire_response_file', [
+            'responseid' => $rid, 'questionid' => $question->id(),
+        ]));
+
+        file::delete_old_response((int)$question->id(), $rid);
+
+        $this->assertSame(0, $DB->count_records('questionnaire_response_file', [
+            'responseid' => $rid, 'questionid' => $question->id(),
+        ]));
+    }
 }
