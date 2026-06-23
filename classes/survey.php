@@ -327,39 +327,18 @@ class survey {
     }
 
     /**
-     * Get the feedback notes for this survey.
+     * Read a raw value from the survey persistent record.
      *
-     * @return string
-     */
-    public function feedbacknotes(): string {
-        return $this->surveyrecord->get('feedbacknotes') ?? '';
-    }
-
-    /**
-     * Get the number of feedback sections configured for this survey.
+     * Package-private: reserved for sibling domain classes (currently feedback)
+     * that need to read survey-stored state without exposing the persistent
+     * record. External callers must use the typed accessor methods on survey,
+     * feedback, or another domain class.
      *
-     * @return int
+     * @param string $field
+     * @return mixed
      */
-    public function feedbacksections(): int {
-        return (int) $this->surveyrecord->get('feedbacksections');
-    }
-
-    /**
-     * True if this survey is configured to display numeric feedback scores.
-     *
-     * @return bool
-     */
-    public function feedbackscores(): bool {
-        return (bool) $this->surveyrecord->get('feedbackscores');
-    }
-
-    /**
-     * Get the chart type configured for feedback display.
-     *
-     * @return string
-     */
-    public function charttype(): string {
-        return $this->surveyrecord->get('charttype') ?? '';
+    public function raw_field(string $field): mixed {
+        return $this->surveyrecord->get($field);
     }
 
     /**
@@ -935,13 +914,15 @@ class survey {
      * {@see feedback::UPDATABLE_FIELDS}. Callers wanting to update those fields
      * must go through {@see feedback::update_settings()}.
      *
+     * The $allowlist parameter is package-private: it is the override hook used
+     * by sibling domain classes (e.g. feedback) that own a subset of survey
+     * persistent fields. External callers must omit it.
+     *
      * @param array $fields Map of survey field name => value.
      * @param array|null $allowlist Override for the allowlist of writable fields.
      *  Reserved for sibling domain classes (e.g. feedback) that own a subset of
      *  survey persistent fields. External callers must omit this argument.
      * @return int|false The survey id on success, false on validation failure.
-     * @internal The $allowlist override is package-private; do not use it from
-     *  outside the domain classes.
      */
     public function update_settings(array $fields, ?array $allowlist = null): int|false {
         $allowlist ??= self::UPDATABLE_FIELDS;

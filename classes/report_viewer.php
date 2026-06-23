@@ -405,7 +405,7 @@ class report_viewer {
         if (!$usergraph) {
             return;
         }
-        $charttype = $this->questionnaire->survey()->charttype();
+        $charttype = $this->questionnaire->feedback()->chart_type();
         if (!$charttype) {
             return;
         }

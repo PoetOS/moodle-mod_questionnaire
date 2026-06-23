@@ -263,39 +263,16 @@ final class survey_test extends \advanced_testcase {
     }
 
     /**
-     * Asserts feedbacknotes() returns an empty string when the record value is null.
+     * Asserts raw_field() returns the persistent value for the named column
+     * (the package-private hook used by the feedback domain class).
      *
-     * @covers \mod_questionnaire\survey::feedbacknotes
+     * @covers \mod_questionnaire\survey::raw_field
      */
-    public function test_feedbacknotes_returns_empty_when_null(): void {
-        $this->assertSame('', $this->make_survey(['feedbacknotes' => null])->feedbacknotes());
-    }
-
-    /**
-     * Asserts feedbacksections() returns 0 when no feedback sections are configured.
-     *
-     * @covers \mod_questionnaire\survey::feedbacksections
-     */
-    public function test_feedbacksections_returns_zero_by_default(): void {
-        $this->assertSame(0, $this->make_survey()->feedbacksections());
-    }
-
-    /**
-     * Asserts feedbacksections() returns the configured count.
-     *
-     * @covers \mod_questionnaire\survey::feedbacksections
-     */
-    public function test_feedbacksections_returns_configured_value(): void {
-        $this->assertEquals(3, $this->make_survey(['feedbacksections' => 3])->feedbacksections());
-    }
-
-    /**
-     * Asserts charttype() returns an empty string when the record value is null.
-     *
-     * @covers \mod_questionnaire\survey::charttype
-     */
-    public function test_charttype_returns_empty_when_null(): void {
-        $this->assertSame('', $this->make_survey(['charttype' => null])->charttype());
+    public function test_raw_field_returns_persistent_value(): void {
+        $survey = $this->make_survey(['feedbacksections' => 3, 'charttype' => 'radar']);
+        $this->assertSame(3, (int) $survey->raw_field('feedbacksections'));
+        $this->assertSame('radar', $survey->raw_field('charttype'));
+        $this->assertNull($survey->raw_field('feedbacknotes'));
     }
 
     // Tests for boolean state methods.
