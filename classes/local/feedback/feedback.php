@@ -75,7 +75,7 @@ class feedback {
      * @return int
      */
     public function mode(): int {
-        return $this->questionnaire->survey()->feedbacksections();
+        return (int) $this->questionnaire->survey()->raw_field('feedbacksections');
     }
 
     /**
@@ -86,7 +86,7 @@ class feedback {
      * @return bool
      */
     public function show_scores(): bool {
-        return $this->questionnaire->survey()->feedbackscores();
+        return (bool) $this->questionnaire->survey()->raw_field('feedbackscores');
     }
 
     /**
@@ -95,7 +95,7 @@ class feedback {
      * @return string
      */
     public function notes(): string {
-        return $this->questionnaire->survey()->feedbacknotes();
+        return $this->questionnaire->survey()->raw_field('feedbacknotes') ?? '';
     }
 
     /**
@@ -128,7 +128,7 @@ class feedback {
      * @return string
      */
     public function chart_type(): string {
-        return $this->questionnaire->survey()->charttype();
+        return $this->questionnaire->survey()->raw_field('charttype') ?? '';
     }
 
     /**

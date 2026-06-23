@@ -85,6 +85,15 @@ jobs:
             exit 1
           fi
 
+      - name: Guard against survey feedback-accessor regressions
+        if: ${{ always() }}
+        working-directory: plugin
+        run: |
+          if git grep -nE 'survey\(\)->(feedbacknotes|feedbacksections|feedbackscores|charttype)\(' -- ':!.github/**'; then
+            echo "::error::Found a call to a survey feedback accessor that was dropped in Phase 4 of the feedback-domain-class extraction. Use \$q->feedback()->notes()/mode()/show_scores()/chart_type() instead. See [[project-feedback-domain-class-plan]]."
+            exit 1
+          fi
+
       - name: PHP Lint
         if: ${{ always() }}
         run: moodle-plugin-ci phplint

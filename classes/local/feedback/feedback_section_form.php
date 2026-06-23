@@ -61,7 +61,7 @@ class feedback_section_form extends \moodleform {
         $feedbacksection = $this->_customdata->feedbacksection;
         $validquestions = $this->_customdata->validquestions;
         $survey = $this->_customdata->survey;
-        $feedbacksections = $questionnaire->survey()->feedbacksections();
+        $feedbacksections = $questionnaire->feedback()->mode();
         $this->feedbacks = $feedbacksection->sectionfeedback;
         $this->context = $questionnaire->context();
         $mform    =& $this->_form;
@@ -120,10 +120,10 @@ class feedback_section_form extends \moodleform {
             $editoroptions
         );
         $mform->setType('sectionheading', PARAM_RAW);
-        $mform->setDefault('feedbacknotes', $questionnaire->survey()->feedbacknotes());
+        $mform->setDefault('feedbacknotes', $questionnaire->feedback()->notes());
         $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
 
-        if ($questionnaire->survey()->feedbacksections() > 0) {
+        if ($questionnaire->feedback()->mode() > 0) {
             // Sections.
             if ($survey->feedbacksections > 1) {
                 $mform->addElement(
