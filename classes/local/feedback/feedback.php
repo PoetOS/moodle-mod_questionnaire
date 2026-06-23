@@ -27,6 +27,9 @@ namespace mod_questionnaire\local\feedback;
 
 use html_table;
 use html_writer;
+use mod_questionnaire\local\db\feedback_record;
+use mod_questionnaire\local\db\feedback_section_record;
+use mod_questionnaire\local\db\response_record;
 use mod_questionnaire\questionnaire;
 use stdClass;
 
@@ -207,15 +210,18 @@ class feedback {
         require_once($CFG->libdir . '/tablelib.php');
         require_once($CFG->dirroot . '/mod/questionnaire/drawchart.php');
 
-        $sql = "SELECT * FROM {questionnaire_fb_sections} WHERE surveyid = ? AND section IS NOT NULL";
-        if (!$fbsections = $DB->get_records_sql($sql, [$this->questionnaire->surveyid()])) {
+        $fbsections = feedback_section_record::get_numbered_section_records_for_survey(
+            $this->questionnaire->surveyid()
+        );
+        if (empty($fbsections)) {
             return null;
         }
 
-        $resp = $DB->get_record('questionnaire_response', ['id' => $rid]);
+        $resp = response_record::get_record(['id' => $rid]);
         $ruser = '';
-        if (!empty($resp)) {
-            $userid = $resp->userid;
+        if ($resp !== false) {
+            $userid = (int) $resp->get('userid');
+            // The user table is Moodle core; raw $DB access is the documented convention there.
             $user = $DB->get_record('user', ['id' => $userid]);
             if (!empty($user)) {
                 if ($this->questionnaire->respondenttype() == 'anonymous') {
@@ -311,18 +317,12 @@ class feedback {
             $sectionlabel = $fbsections[$sectionid]->sectionlabel;
             $sectionheading = $fbsections[$sectionid]->sectionheading;
             $labels = [];
-            if ($feedbacks = $DB->get_records('questionnaire_feedback', ['sectionid' => $sectionid])) {
-                foreach ($feedbacks as $feedback) {
-                    if ($feedback->feedbacklabel != '') {
-                        $labels[] = $feedback->feedbacklabel;
-                    }
+            foreach (feedback_record::get_records_for_section($sectionid) as $feedback) {
+                if ($feedback->feedbacklabel != '') {
+                    $labels[] = $feedback->feedbacklabel;
                 }
             }
-            $feedback = $DB->get_record_select(
-                'questionnaire_feedback',
-                'sectionid = ? AND minscore <= ? AND ? < maxscore',
-                [$sectionid, $scorepercent, $scorepercent]
-            );
+            $feedback = feedback_record::find_for_score($sectionid, (float) $scorepercent);
 
             $sectionheading = str_replace('%', '', $sectionheading);
             $original = ['$scorepercent', '$oppositescorepercent'];
@@ -480,10 +480,9 @@ class feedback {
                 $sectionheading = format_text($sectionheading, 1, $formatoptions);
                 $feedbackmessages[] = $renderer->box_start('reportQuestionTitle');
                 $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, $formatoptions);
-                $feedback = $DB->get_record_select(
-                    'questionnaire_feedback',
-                    'sectionid = ? AND minscore <= ? AND ? < maxscore',
-                    [$feedbacksectionid, $scorepercent[$section], $scorepercent[$section]],
+                $feedback = feedback_record::find_for_score(
+                    $feedbacksectionid,
+                    (float) $scorepercent[$section],
                     'id,feedbacktext,feedbacktextformat'
                 );
                 $feedbackmessages[] = $renderer->box_end();
@@ -580,13 +579,8 @@ class feedback {
      * @return int Section id (0 if no sections exist and no feedback is configured).
      */
     public function ensure_first_section(): int {
-        global $DB;
         $surveyid = $this->questionnaire->surveyid();
-        $firstsection = (int) ($DB->get_field(
-            'questionnaire_fb_sections',
-            'MIN(section)',
-            ['surveyid' => $surveyid]
-        ) ?: 0);
+        $firstsection = feedback_section_record::min_section_for_survey($surveyid);
 
         $mode = $this->mode();
         if ($mode > 0 && $firstsection === 0) {

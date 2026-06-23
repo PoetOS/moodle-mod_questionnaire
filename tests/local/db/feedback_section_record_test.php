@@ -117,4 +117,52 @@ final class feedback_section_record_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->count_records('questionnaire_fb_sections', ['surveyid' => $sid]));
         $this->assertTrue($DB->record_exists('questionnaire_fb_sections', ['id' => $keep]));
     }
+
+    /**
+     * min_section_for_survey() returns the lowest section number, or 0 if empty.
+     */
+    public function test_min_section_for_survey(): void {
+        $this->resetAfterTest();
+        $sid = 407;
+
+        $this->assertSame(0, feedback_section_record::min_section_for_survey($sid));
+
+        $this->make_section($sid, 4);
+        $this->make_section($sid, 2);
+        $this->make_section($sid, 7);
+
+        $this->assertSame(2, feedback_section_record::min_section_for_survey($sid));
+        $this->assertSame(0, feedback_section_record::min_section_for_survey(999));
+    }
+
+    /**
+     * get_numbered_section_records_for_survey() returns stdClass rows whose section
+     * number is not null, scoped to the survey.
+     */
+    public function test_get_numbered_section_records_for_survey_filters_nulls(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $sid = 408;
+        $this->make_section($sid, 1);
+        $this->make_section($sid, 2);
+        // Insert a section with null section number — should be excluded.
+        $DB->insert_record('questionnaire_fb_sections', (object)[
+            'surveyid' => $sid,
+            'section' => null,
+            'scorecalculation' => '',
+            'sectionlabel' => 'orphan',
+            'sectionheading' => '',
+            'sectionheadingformat' => FORMAT_HTML,
+        ]);
+        // And one for a different survey, which should not appear.
+        $this->make_section(409, 1);
+
+        $rows = feedback_section_record::get_numbered_section_records_for_survey($sid);
+
+        $this->assertCount(2, $rows);
+        foreach ($rows as $row) {
+            $this->assertInstanceOf(\stdClass::class, $row);
+            $this->assertNotNull($row->section);
+        }
+    }
 }

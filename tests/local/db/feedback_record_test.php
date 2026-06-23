@@ -100,4 +100,75 @@ final class feedback_record_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->count_records('questionnaire_feedback', ['sectionid' => $target]));
         $this->assertTrue($DB->record_exists('questionnaire_feedback', ['id' => $keep]));
     }
+
+    /**
+     * get_records_for_section() returns stdClass rows scoped to the section
+     * (matches the legacy $DB->get_records shape used by the scoreboard math).
+     */
+    public function test_get_records_for_section_returns_stdclass(): void {
+        $this->resetAfterTest();
+        $target = 906;
+        $this->make_feedback($target, 0, 50);
+        $this->make_feedback($target, 50, 100);
+        $this->make_feedback(907, 0, 100);
+
+        $rows = feedback_record::get_records_for_section($target);
+
+        $this->assertCount(2, $rows);
+        foreach ($rows as $row) {
+            $this->assertInstanceOf(\stdClass::class, $row);
+            $this->assertSame($target, (int) $row->sectionid);
+        }
+    }
+
+    /**
+     * find_for_score() returns the band whose minscore ≤ score < maxscore.
+     */
+    public function test_find_for_score_returns_matching_band(): void {
+        $this->resetAfterTest();
+        $sid = 908;
+        $low  = $this->make_feedback($sid, 0, 33);
+        $mid  = $this->make_feedback($sid, 33, 66);
+        $high = $this->make_feedback($sid, 66, 100);
+
+        $match = feedback_record::find_for_score($sid, 50.0);
+        $this->assertNotNull($match);
+        $this->assertSame($mid, (int) $match->id);
+
+        // Boundary: minscore is inclusive, maxscore is exclusive.
+        $atboundary = feedback_record::find_for_score($sid, 33.0);
+        $this->assertSame($mid, (int) $atboundary->id);
+
+        // Low-end inclusive.
+        $atzero = feedback_record::find_for_score($sid, 0.0);
+        $this->assertSame($low, (int) $atzero->id);
+        $this->assertNotSame($high, (int) $atzero->id);
+    }
+
+    /**
+     * find_for_score() returns null when no band covers the score.
+     */
+    public function test_find_for_score_returns_null_when_no_band(): void {
+        $this->resetAfterTest();
+        $sid = 909;
+        $this->make_feedback($sid, 0, 50);
+
+        $this->assertNull(feedback_record::find_for_score($sid, 75.0));
+    }
+
+    /**
+     * find_for_score() honors the optional field list parameter.
+     */
+    public function test_find_for_score_with_field_subset(): void {
+        $this->resetAfterTest();
+        $sid = 910;
+        $this->make_feedback($sid, 0, 100);
+
+        $row = feedback_record::find_for_score($sid, 50.0, 'id,minscore');
+
+        $this->assertNotNull($row);
+        $this->assertObjectHasProperty('id', $row);
+        $this->assertObjectHasProperty('minscore', $row);
+        $this->assertObjectNotHasProperty('feedbacktext', $row);
+    }
 }
