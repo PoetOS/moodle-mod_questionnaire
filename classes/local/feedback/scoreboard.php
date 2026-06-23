@@ -23,12 +23,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire\feedback;
+namespace mod_questionnaire\local\feedback;
 
 /**
  * The data side of a feedback render: messages, score table, chart.
  *
- * Built by {@see \mod_questionnaire\feedback::build_scoreboard()}; consumed by
+ * Built by {@see feedback::build_scoreboard()}; consumed by
  * {@see \mod_questionnaire\reporter::response_analysis()} which applies the
  * matching `add_to_page` side effects. Each field is independent — any subset
  * may be null/empty depending on the questionnaire's feedback configuration.

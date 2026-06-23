@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for mod_questionnaire\feedback_settings_controller.
+ * Unit tests for mod_questionnaire\local\feedback\feedback_settings_controller.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -23,13 +23,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\feedback;
+
+use mod_questionnaire\questionnaire;
 
 /**
- * Unit tests for mod_questionnaire\feedback_settings_controller.
+ * Unit tests for mod_questionnaire\local\feedback\feedback_settings_controller.
  *
  * @group mod_questionnaire
- * @covers \mod_questionnaire\feedback_settings_controller
+ * @covers \mod_questionnaire\local\feedback\feedback_settings_controller
  */
 final class feedback_settings_controller_test extends \advanced_testcase {
     /**
