@@ -16,15 +16,14 @@
 
 namespace mod_questionnaire;
 
-use mod_questionnaire\local\feedback\section;
-
 /**
  * Controller for the feedback.php save / redirect flow.
  *
  * Owns the conversion from feedback form data into an explicit allowlist of
- * survey settings, the saving of the feedbacknotes editor draft area, and
- * the bootstrap of an initial feedback section when the user chose to edit
- * feedback sections immediately after saving.
+ * feedback settings, the saving of the feedbacknotes editor draft area, and
+ * the redirect to the section editor. Domain validation of the field set
+ * lives on {@see feedback::update_settings()}; section bootstrap lives on
+ * {@see feedback::ensure_first_section()}.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -46,9 +45,9 @@ class feedback_settings_controller {
     /**
      * Persist feedback settings from parsed form data.
      *
-     * Writes the feedbacknotes draft area and applies an explicit allowlist of
-     * survey fields via {@see survey::update_settings()}. Throws if the
-     * underlying update rejects the changes.
+     * Writes the feedbacknotes draft area and applies the field set via
+     * {@see feedback::update_settings()}. Throws if the underlying update
+     * rejects the changes.
      *
      * @param \stdClass $formdata Validated form data returned by feedback_form::get_data().
      * @return int Survey id on success.
@@ -67,7 +66,7 @@ class feedback_settings_controller {
             }
         }
 
-        $result = $this->questionnaire->survey()->update_settings($fields);
+        $result = $this->questionnaire->feedback()->update_settings($fields);
         if ($result === false) {
             throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
         }
@@ -75,31 +74,13 @@ class feedback_settings_controller {
     }
 
     /**
-     * Ensure a first feedback section exists for the survey.
-     *
-     * Used by the "Save settings and edit Feedback Sections" path so the
-     * user always lands on a real section editor. Returns the id of the
-     * section to redirect to (existing first section, or newly created one).
+     * Forward to {@see feedback::ensure_first_section()} for use by the
+     * "Save settings and edit Feedback Sections" path in feedback.php.
      *
      * @return int Section id (0 if no sections exist and no feedback is configured).
      */
     public function ensure_first_section(): int {
-        global $DB;
-        $surveyid = $this->questionnaire->surveyid();
-        $firstsection = (int) ($DB->get_field(
-            'questionnaire_fb_sections',
-            'MIN(section)',
-            ['surveyid' => $surveyid]
-        ) ?: 0);
-
-        $sections = $this->questionnaire->survey()->feedbacksections();
-        if ($sections > 0 && $firstsection === 0) {
-            $label = ($sections === 1)
-                ? get_string('feedbackglobal', 'questionnaire')
-                : get_string('feedbackdefaultlabel', 'questionnaire');
-            section::new_section($surveyid, $label);
-        }
-        return $firstsection;
+        return $this->questionnaire->feedback()->ensure_first_section();
     }
 
     /**

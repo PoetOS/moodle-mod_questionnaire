@@ -25,20 +25,25 @@
 
 namespace mod_questionnaire;
 
+use mod_questionnaire\local\feedback\section;
+
 /**
- * Read-side feedback domain object.
+ * Feedback domain object.
  *
- * Phase 1 of the feedback-domain-class plan: this class wraps the
- * feedback-related state that today lives directly on `survey`
- * (feedbacknotes, feedbacksections, feedbackscores, charttype) plus the
- * `questionnaire_fb_sections` collection. Write paths and the
- * `response_analysis` extraction land in later phases — for now this is
- * a pure accessor layer so call sites can stop depending on
- * `$q->survey()->feedback…()`.
+ * Wraps the feedback-related state that lives on the `questionnaire_survey`
+ * table (feedbacknotes, feedbacksections, feedbackscores, charttype) plus
+ * the `questionnaire_fb_sections` collection. The `update_settings` write
+ * path owns its own allowlist; the `response_analysis` extraction is
+ * deferred to a later phase.
  *
  * @see project-feedback-domain-class-plan
  */
 class feedback {
+    /** @var string[] Survey persistent fields owned by the feedback concern. */
+    public const UPDATABLE_FIELDS = [
+        'feedbacknotes', 'feedbacksections', 'feedbackscores', 'charttype',
+    ];
+
     /**
      * Constructor.
      *
@@ -136,5 +141,53 @@ class feedback {
             }
         }
         return false;
+    }
+
+    /**
+     * Update feedback-domain fields on the survey row.
+     *
+     * Only keys in self::UPDATABLE_FIELDS are accepted; passing anything else
+     * throws a coding_exception so form metadata cannot be smuggled onto the
+     * persistent. The actual write goes through {@see survey::update_settings()}
+     * with the feedback allowlist as the package-private override.
+     *
+     * @param array $fields Map of feedback field name => value.
+     * @return int|false Survey id on success, false on validation failure.
+     */
+    public function update_settings(array $fields): int|false {
+        foreach (array_keys($fields) as $key) {
+            if (!in_array($key, self::UPDATABLE_FIELDS, true)) {
+                throw new \coding_exception("feedback::update_settings: field '{$key}' is not updatable");
+            }
+        }
+        return $this->questionnaire->survey()->update_settings($fields, self::UPDATABLE_FIELDS);
+    }
+
+    /**
+     * Ensure a first feedback section exists for the survey.
+     *
+     * Used by the "Save settings and edit Feedback Sections" path so the
+     * user always lands on a real section editor. Returns the id of the
+     * section to redirect to (existing first section, or newly created one).
+     *
+     * @return int Section id (0 if no sections exist and no feedback is configured).
+     */
+    public function ensure_first_section(): int {
+        global $DB;
+        $surveyid = $this->questionnaire->surveyid();
+        $firstsection = (int) ($DB->get_field(
+            'questionnaire_fb_sections',
+            'MIN(section)',
+            ['surveyid' => $surveyid]
+        ) ?: 0);
+
+        $mode = $this->mode();
+        if ($mode > 0 && $firstsection === 0) {
+            $label = ($mode === 1)
+                ? get_string('feedbackglobal', 'questionnaire')
+                : get_string('feedbackdefaultlabel', 'questionnaire');
+            section::new_section($surveyid, $label);
+        }
+        return $firstsection;
     }
 }

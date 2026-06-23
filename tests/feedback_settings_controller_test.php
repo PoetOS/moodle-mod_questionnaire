@@ -76,7 +76,7 @@ final class feedback_settings_controller_test extends \advanced_testcase {
 
         $questionnaire = $this->setup_questionnaire();
         // Seed feedbacksections = 2 first.
-        $questionnaire->survey()->update_settings(['feedbacksections' => 2]);
+        $questionnaire->feedback()->update_settings(['feedbacksections' => 2]);
 
         $formdata = (object) [
             'feedbacksections' => 0,
@@ -139,7 +139,7 @@ final class feedback_settings_controller_test extends \advanced_testcase {
         global $DB;
 
         $questionnaire = $this->setup_questionnaire();
-        $questionnaire->survey()->update_settings(['feedbacksections' => 1]);
+        $questionnaire->feedback()->update_settings(['feedbacksections' => 1]);
 
         $surveyid = $questionnaire->surveyid();
         $this->assertEquals(0, $DB->count_records('questionnaire_fb_sections', ['surveyid' => $surveyid]));

@@ -55,12 +55,12 @@ final class feedback_test extends \advanced_testcase {
         $this->assertSame(0, $questionnaire->feedback()->mode());
         $this->assertFalse($questionnaire->feedback()->enabled());
 
-        $questionnaire->survey()->update_settings(['feedbacksections' => 1]);
+        $questionnaire->feedback()->update_settings(['feedbacksections' => 1]);
         $questionnaire = questionnaire::from_instanceid($questionnaire->id());
         $this->assertSame(1, $questionnaire->feedback()->mode());
         $this->assertTrue($questionnaire->feedback()->enabled());
 
-        $questionnaire->survey()->update_settings(['feedbacksections' => 5]);
+        $questionnaire->feedback()->update_settings(['feedbacksections' => 5]);
         $questionnaire = questionnaire::from_instanceid($questionnaire->id());
         $this->assertSame(5, $questionnaire->feedback()->mode());
         $this->assertTrue($questionnaire->feedback()->enabled());
@@ -71,7 +71,7 @@ final class feedback_test extends \advanced_testcase {
      */
     public function test_field_accessors_pass_through(): void {
         $questionnaire = $this->setup_questionnaire();
-        $questionnaire->survey()->update_settings([
+        $questionnaire->feedback()->update_settings([
             'feedbackscores' => 1,
             'feedbacknotes'  => '<p>Hello</p>',
             'charttype'      => 'radar',
@@ -96,7 +96,7 @@ final class feedback_test extends \advanced_testcase {
      */
     public function test_rendered_notes_rewrites_pluginfile_urls(): void {
         $questionnaire = $this->setup_questionnaire();
-        $questionnaire->survey()->update_settings([
+        $questionnaire->feedback()->update_settings([
             'feedbacknotes' => '<p>Plain text</p>',
         ]);
         $questionnaire = questionnaire::from_instanceid($questionnaire->id());
@@ -134,5 +134,79 @@ final class feedback_test extends \advanced_testcase {
     public function test_feedback_accessor_is_cached(): void {
         $questionnaire = $this->setup_questionnaire();
         $this->assertSame($questionnaire->feedback(), $questionnaire->feedback());
+    }
+
+    /**
+     * update_settings() persists allowlisted feedback fields onto the survey row.
+     */
+    public function test_update_settings_persists_allowlisted_fields(): void {
+        global $DB;
+        $questionnaire = $this->setup_questionnaire();
+
+        $result = $questionnaire->feedback()->update_settings([
+            'feedbacksections' => 3,
+            'feedbackscores'   => 1,
+            'feedbacknotes'    => '<p>Notes</p>',
+            'charttype'        => 'bipolar',
+        ]);
+
+        $this->assertSame($questionnaire->surveyid(), $result);
+        $row = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]);
+        $this->assertEquals(3, $row->feedbacksections);
+        $this->assertEquals(1, $row->feedbackscores);
+        $this->assertSame('<p>Notes</p>', $row->feedbacknotes);
+        $this->assertSame('bipolar', $row->charttype);
+    }
+
+    /**
+     * update_settings() rejects fields outside the feedback allowlist via coding_exception.
+     */
+    public function test_update_settings_rejects_unknown_field(): void {
+        $questionnaire = $this->setup_questionnaire();
+
+        $this->expectException(\coding_exception::class);
+        $questionnaire->feedback()->update_settings(['title' => 'spoof']);
+    }
+
+    /**
+     * update_settings() also rejects survey-form metadata such as 'id' or 'sid'.
+     */
+    public function test_update_settings_rejects_survey_metadata(): void {
+        $questionnaire = $this->setup_questionnaire();
+
+        $this->expectException(\coding_exception::class);
+        $questionnaire->feedback()->update_settings(['id' => 999]);
+    }
+
+    /**
+     * ensure_first_section() creates a section when feedback is enabled and none exist.
+     */
+    public function test_ensure_first_section_creates_when_missing(): void {
+        global $DB;
+        $questionnaire = $this->setup_questionnaire();
+        $questionnaire->feedback()->update_settings(['feedbacksections' => 1]);
+        $surveyid = $questionnaire->surveyid();
+        $this->assertSame(0, $DB->count_records('questionnaire_fb_sections', ['surveyid' => $surveyid]));
+
+        $result = $questionnaire->feedback()->ensure_first_section();
+
+        $this->assertSame(0, $result); // Returns 0 because no section existed before this call.
+        $this->assertSame(1, $DB->count_records('questionnaire_fb_sections', ['surveyid' => $surveyid]));
+    }
+
+    /**
+     * ensure_first_section() is a no-op when feedback is disabled.
+     */
+    public function test_ensure_first_section_no_op_when_disabled(): void {
+        global $DB;
+        $questionnaire = $this->setup_questionnaire();
+
+        $result = $questionnaire->feedback()->ensure_first_section();
+
+        $this->assertSame(0, $result);
+        $this->assertSame(0, $DB->count_records(
+            'questionnaire_fb_sections',
+            ['surveyid' => $questionnaire->surveyid()]
+        ));
     }
 }
