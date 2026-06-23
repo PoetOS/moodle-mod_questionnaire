@@ -92,4 +92,36 @@ class feedback_record extends \core\persistent {
         global $DB;
         return $DB->delete_records(static::TABLE, ['sectionid' => $sectionid]);
     }
+
+    /**
+     * Return every feedback-message row belonging to the section, as plain
+     * stdClass records (matches the shape the scoreboard math currently expects).
+     *
+     * @param int $sectionid
+     * @return \stdClass[]
+     */
+    public static function get_records_for_section(int $sectionid): array {
+        global $DB;
+        return $DB->get_records(static::TABLE, ['sectionid' => $sectionid]);
+    }
+
+    /**
+     * Find the single feedback-message row whose score band contains the
+     * given percentage. Returns null when no band matches.
+     *
+     * @param int $sectionid
+     * @param float $scorepercent
+     * @param string $fields Optional comma-separated field list (defaults to all).
+     * @return \stdClass|null
+     */
+    public static function find_for_score(int $sectionid, float $scorepercent, string $fields = '*'): ?\stdClass {
+        global $DB;
+        $row = $DB->get_record_select(
+            static::TABLE,
+            'sectionid = ? AND minscore <= ? AND ? < maxscore',
+            [$sectionid, $scorepercent, $scorepercent],
+            $fields
+        );
+        return $row ?: null;
+    }
 }

@@ -96,6 +96,36 @@ class feedback_section_record extends \core\persistent {
     }
 
     /**
+     * Return the lowest section number among feedback sections for the survey,
+     * or 0 if there are none.
+     *
+     * @param int $surveyid
+     * @return int
+     */
+    public static function min_section_for_survey(int $surveyid): int {
+        global $DB;
+        $min = $DB->get_field(static::TABLE, 'MIN(section)', ['surveyid' => $surveyid]);
+        return (int) ($min ?: 0);
+    }
+
+    /**
+     * Return every row for the survey that has a populated section number,
+     * keyed by id, as plain stdClass records (matches the legacy
+     * $DB->get_records_sql shape used by the feedback scoreboard).
+     *
+     * @param int $surveyid
+     * @return \stdClass[]
+     */
+    public static function get_numbered_section_records_for_survey(int $surveyid): array {
+        global $DB;
+        return $DB->get_records_select(
+            static::TABLE,
+            'surveyid = ? AND section IS NOT NULL',
+            [$surveyid]
+        );
+    }
+
+    /**
      * Bulk delete every feedback-section row belonging to the survey.
      *
      * @param int $surveyid
