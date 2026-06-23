@@ -29,7 +29,7 @@ namespace mod_questionnaire\local\feedback;
  * The data side of a feedback render: messages, score table, chart.
  *
  * Built by {@see feedback::build_scoreboard()}; consumed by
- * {@see \mod_questionnaire\reporter::response_analysis()} which applies the
+ * {@see \mod_questionnaire\local\report\reporter::response_analysis()} which applies the
  * matching `add_to_page` side effects. Each field is independent — any subset
  * may be null/empty depending on the questionnaire's feedback configuration.
  */

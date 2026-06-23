@@ -24,7 +24,7 @@ use mod_questionnaire\local\feedback\feedback;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question_navigator;
 use mod_questionnaire\local\response\questionnaire_responses;
-use mod_questionnaire\reporter;
+use mod_questionnaire\local\report\reporter;
 use mod_questionnaire\local\response\response;
 use mod_questionnaire\survey;
 use context_module;

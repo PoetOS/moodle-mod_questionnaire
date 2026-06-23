@@ -23,12 +23,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\report;
 
 /**
  * Unit tests for questionnaire_csvexport_test.
  * @group mod_questionnaire
- * @covers \mod_questionnaire\reporter::generate_csv
+ * @covers \mod_questionnaire\local\report\reporter::generate_csv
  */
 final class csvexport_test extends \advanced_testcase {
     public function setUp(): void {

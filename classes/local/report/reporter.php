@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\report;
 
 use mod_questionnaire\local\feedback\section;
 use mod_questionnaire\local\question\choice;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question\rate;
 use mod_questionnaire\local\response\questionnaire_responses;
+use mod_questionnaire\questionnaire;
 use html_writer;
 use html_table;
 use stdClass;

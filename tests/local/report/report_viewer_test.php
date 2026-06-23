@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for mod_questionnaire\report_viewer.
+ * Unit tests for mod_questionnaire\local\report\report_viewer.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -23,15 +23,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\report;
 
 use mod_questionnaire\output\reportpage;
+use mod_questionnaire\questionnaire;
 
 /**
- * Unit tests for mod_questionnaire\report_viewer.
+ * Unit tests for mod_questionnaire\local\report\report_viewer.
  *
  * @group mod_questionnaire
- * @covers \mod_questionnaire\report_viewer
+ * @covers \mod_questionnaire\local\report\report_viewer
  */
 final class report_viewer_test extends \advanced_testcase {
     /**

@@ -61,7 +61,7 @@ $PAGE->set_title($questionnaire->surveytitle());
 $PAGE->set_pagelayout('popup');
 echo $renderer->header();
 $page->add_to_page('closebutton', $renderer->close_window_button());
-(new \mod_questionnaire\output\report_view_renderer($renderer, $page))
+(new \mod_questionnaire\local\report\report_view_builder($renderer, $page))
     ->build_print_view($questionnaire, $courseid, '', 'print', $rid, $blankquestionnaire);
 echo $renderer->render($page);
 echo $renderer->footer();
