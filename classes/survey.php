@@ -919,7 +919,6 @@ class survey {
     private const UPDATABLE_FIELDS = [
         'name', 'realm', 'title', 'subtitle', 'info', 'theme',
         'thankspage', 'thankhead', 'thankbody', 'email', 'courseid',
-        'feedbacksections', 'feedbacknotes', 'feedbackscores', 'charttype',
     ];
 
     /**
@@ -931,12 +930,23 @@ class survey {
      * are present they are required to be non-empty; a name change also has to be
      * unique across all surveys.
      *
+     * Feedback-domain fields (feedbacknotes, feedbacksections, feedbackscores,
+     * charttype) intentionally live on a separate allowlist owned by
+     * {@see feedback::UPDATABLE_FIELDS}. Callers wanting to update those fields
+     * must go through {@see feedback::update_settings()}.
+     *
      * @param array $fields Map of survey field name => value.
+     * @param array|null $allowlist Override for the allowlist of writable fields.
+     *  Reserved for sibling domain classes (e.g. feedback) that own a subset of
+     *  survey persistent fields. External callers must omit this argument.
      * @return int|false The survey id on success, false on validation failure.
+     * @internal The $allowlist override is package-private; do not use it from
+     *  outside the domain classes.
      */
-    public function update_settings(array $fields): int|false {
+    public function update_settings(array $fields, ?array $allowlist = null): int|false {
+        $allowlist ??= self::UPDATABLE_FIELDS;
         foreach (array_keys($fields) as $key) {
-            if (!in_array($key, self::UPDATABLE_FIELDS, true)) {
+            if (!in_array($key, $allowlist, true)) {
                 throw new \coding_exception("survey::update_settings: field '{$key}' is not updatable");
             }
         }

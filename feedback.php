@@ -83,7 +83,7 @@ if ($settings = $feedbackform->get_data()) {
 
     // Handle the edit feedback sections action.
     if (isset($settings->buttongroup['feedbackeditbutton'])) {
-        $firstsection = $controller->ensure_first_section();
+        $firstsection = $questionnaire->feedback()->ensure_first_section();
         redirect(new moodle_url(
             '/mod/questionnaire/fbsections.php',
             ['id' => $questionnaire->coursemodule()->id, 'section' => $firstsection]

@@ -648,18 +648,16 @@ final class survey_test extends \advanced_testcase {
 
         $survey = survey::from_sid($sid);
         $result = $survey->update_settings([
-            'feedbacksections' => 2,
-            'feedbackscores'   => 1,
-            'feedbacknotes'    => 'Notes body',
-            'charttype'        => 'bipolar',
+            'subtitle'  => 'New subtitle',
+            'thankhead' => 'New thank head',
+            'email'     => 'sup@example.org',
         ]);
 
         $this->assertSame($sid, $result);
         $row = $DB->get_record('questionnaire_survey', ['id' => $sid]);
-        $this->assertEquals(2, $row->feedbacksections);
-        $this->assertEquals(1, $row->feedbackscores);
-        $this->assertEquals('Notes body', $row->feedbacknotes);
-        $this->assertEquals('bipolar', $row->charttype);
+        $this->assertEquals('New subtitle', $row->subtitle);
+        $this->assertEquals('New thank head', $row->thankhead);
+        $this->assertEquals('sup@example.org', $row->email);
     }
 
     /**
@@ -754,10 +752,29 @@ final class survey_test extends \advanced_testcase {
         $sid = $questionnaire->surveyid();
         $originaltitle = $DB->get_field('questionnaire_survey', 'title', ['id' => $sid]);
 
-        survey::from_sid($sid)->update_settings(['feedbacksections' => 3]);
+        survey::from_sid($sid)->update_settings(['subtitle' => 'New subtitle']);
 
         $this->assertEquals($originaltitle, $DB->get_field('questionnaire_survey', 'title', ['id' => $sid]));
-        $this->assertEquals(3, $DB->get_field('questionnaire_survey', 'feedbacksections', ['id' => $sid]));
+        $this->assertEquals('New subtitle', $DB->get_field('questionnaire_survey', 'subtitle', ['id' => $sid]));
+    }
+
+    /**
+     * Asserts update_settings() rejects feedback-domain fields: they live on
+     * {@see feedback::UPDATABLE_FIELDS} and must go through feedback::update_settings().
+     *
+     * @covers \mod_questionnaire\survey::update_settings
+     */
+    public function test_update_settings_rejects_feedback_fields(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+
+        $survey = survey::from_sid($questionnaire->surveyid());
+
+        $this->expectException(\coding_exception::class);
+        $survey->update_settings(['feedbacksections' => 3]);
     }
 
     // Tests for has_required() (pure, no DB).
