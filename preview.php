@@ -136,7 +136,7 @@ if ($canprintblank) {
     );
 }
 
-(new \mod_questionnaire\output\report_view_renderer($renderer, $page))
+(new \mod_questionnaire\local\report\report_view_builder($renderer, $page))
     ->build_print_view($questionnaire, $course->id, '', 'preview', 0, $popup);
 if ($popup) {
     $page->add_to_page('closebutton', $renderer->close_window_button());

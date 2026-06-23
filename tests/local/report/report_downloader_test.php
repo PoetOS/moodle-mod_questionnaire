@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for mod_questionnaire\report_downloader.
+ * Unit tests for mod_questionnaire\local\report\report_downloader.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -23,15 +23,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\report;
 
 use mod_questionnaire\output\reportpage;
 
 /**
- * Unit tests for mod_questionnaire\report_downloader.
+ * Unit tests for mod_questionnaire\local\report\report_downloader.
  *
  * @group mod_questionnaire
- * @covers \mod_questionnaire\report_downloader
+ * @covers \mod_questionnaire\local\report\report_downloader
  */
 final class report_downloader_test extends \advanced_testcase {
     /**

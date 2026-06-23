@@ -14,24 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\output;
+namespace mod_questionnaire\local\report;
 
+use mod_questionnaire\output\survey_view_renderer;
 use mod_questionnaire\questionnaire;
 
 /**
- * Builds the printable and preview survey views.
+ * Builds the printable and preview report views.
  *
- * Companion to {@see survey_view_renderer} for the read-only paths: the
- * print and preview pages (build_print_view) and individual response views
- * (render_response). Re-uses survey_view_renderer for the shared
- * title/respondent header.
+ * Companion to {@see \mod_questionnaire\output\survey_view_renderer} for the
+ * read-only paths: the print and preview pages (build_print_view) and
+ * individual response views (render_response). Re-uses survey_view_renderer
+ * for the shared title/respondent header. This class is a builder, not a
+ * renderer — it populates a templatable page via composition rather than
+ * extending plugin_renderer_base.
  *
  * @package mod_questionnaire
  * @copyright 2026 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-class report_view_renderer {
+class report_view_builder {
     /**
      * Constructor.
      *

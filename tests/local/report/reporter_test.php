@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for mod_questionnaire\reporter.
+ * Unit tests for mod_questionnaire\local\report\reporter.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -23,20 +23,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\report;
 
 use mod_questionnaire\output\reportpage;
+use mod_questionnaire\questionnaire;
 
 /**
- * Unit tests for mod_questionnaire\reporter.
+ * Unit tests for mod_questionnaire\local\report\reporter.
  *
  * @group mod_questionnaire
- * @covers \mod_questionnaire\reporter::add_user_responses
- * @covers \mod_questionnaire\reporter::view_all_responses
- * @covers \mod_questionnaire\reporter::view_response
- * @covers \mod_questionnaire\reporter::survey_results
- * @covers \mod_questionnaire\reporter::survey_results_navbar_alpha
- * @covers \mod_questionnaire\reporter::survey_results_navbar_student
+ * @covers \mod_questionnaire\local\report\reporter::add_user_responses
+ * @covers \mod_questionnaire\local\report\reporter::view_all_responses
+ * @covers \mod_questionnaire\local\report\reporter::view_response
+ * @covers \mod_questionnaire\local\report\reporter::survey_results
+ * @covers \mod_questionnaire\local\report\reporter::survey_results_navbar_alpha
+ * @covers \mod_questionnaire\local\report\reporter::survey_results_navbar_student
  */
 final class reporter_test extends \advanced_testcase {
     /**

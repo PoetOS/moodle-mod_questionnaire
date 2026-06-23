@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\report;
 
 use mod_questionnaire\output\pdf_factory;
+use mod_questionnaire\questionnaire;
 
 /**
  * Controller for the staff-side view arms of report.php.

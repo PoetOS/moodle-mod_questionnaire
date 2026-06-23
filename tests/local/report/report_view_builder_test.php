@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for mod_questionnaire\output\report_view_renderer.
+ * Unit tests for mod_questionnaire\local\report\report_view_builder.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -23,17 +23,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire\output;
+namespace mod_questionnaire\local\report;
 
+use mod_questionnaire\output\previewpage;
 use mod_questionnaire\questionnaire;
 
 /**
- * Unit tests for mod_questionnaire\output\report_view_renderer.
+ * Unit tests for mod_questionnaire\local\report\report_view_builder.
  *
  * @group mod_questionnaire
- * @covers \mod_questionnaire\output\report_view_renderer
+ * @covers \mod_questionnaire\local\report\report_view_builder
  */
-final class report_view_renderer_test extends \advanced_testcase {
+final class report_view_builder_test extends \advanced_testcase {
     /**
      * Build a course + questionnaire with one yes/no question.
      *
@@ -81,7 +82,7 @@ final class report_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new previewpage();
-        (new report_view_renderer($renderer, $page))
+        (new report_view_builder($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, true);
 
         $data = $this->page_data($page);
@@ -101,7 +102,7 @@ final class report_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new previewpage();
-        (new report_view_renderer($renderer, $page))
+        (new report_view_builder($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, false);
 
         $data = $this->page_data($page);
@@ -127,7 +128,7 @@ final class report_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new previewpage();
-        (new report_view_renderer($renderer, $page))
+        (new report_view_builder($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, true);
 
         $data = $this->page_data($page);
@@ -154,7 +155,7 @@ final class report_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new previewpage();
-        (new report_view_renderer($renderer, $page))
+        (new report_view_builder($renderer, $page))
             ->render_response($instance, $rid, 'print');
 
         // The 'responses' key is only present when there is at least one renderable question;

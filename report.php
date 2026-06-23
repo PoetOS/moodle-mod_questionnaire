@@ -27,9 +27,9 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
-use mod_questionnaire\report_actions;
-use mod_questionnaire\report_downloader;
-use mod_questionnaire\report_viewer;
+use mod_questionnaire\local\report\report_actions;
+use mod_questionnaire\local\report\report_downloader;
+use mod_questionnaire\local\report\report_viewer;
 use mod_questionnaire\output\reportpage;
 use mod_questionnaire\output\reportpagepdf;
 use mod_questionnaire\output\responsepagepdf;
