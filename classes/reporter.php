@@ -1200,7 +1200,7 @@ class reporter {
      * @return void
      */
     private function print_survey_end(int $section, int $numsections): void {
-        if (!$this->pages_autonumbered()) {
+        if (!$this->questionnaire->pages_autonumbered()) {
             return;
         }
         if ($numsections > 1) {
