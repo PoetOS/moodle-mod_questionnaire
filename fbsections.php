@@ -105,7 +105,7 @@ $customdata->sectionselect = $DB->get_records_menu(
     'id,sectionlabel'
 );
 
-$feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata, $renderer);
+$feedbackform = new \mod_questionnaire\local\feedback\feedback_section_form('fbsections.php', $customdata, $renderer);
 $sdata = clone($feedbacksection);
 $sdata->sid = $surveyid;
 $sdata->sectionid = $feedbacksection->id;
@@ -257,7 +257,7 @@ if ($settings = $feedbackform->get_data()) {
         // Update all feedback data.
         $feedbacksection->update();
     }
-    $feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata, $renderer);
+    $feedbackform = new \mod_questionnaire\local\feedback\feedback_section_form('fbsections.php', $customdata, $renderer);
 }
 
 // Print the page header.

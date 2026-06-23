@@ -20,6 +20,7 @@ use cm_info;
 use mod_questionnaire\local\db\dependency_record;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
+use mod_questionnaire\local\feedback\feedback;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question_navigator;
 use mod_questionnaire\local\response\questionnaire_responses;

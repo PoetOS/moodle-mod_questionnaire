@@ -28,7 +28,7 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
-use mod_questionnaire\feedback_settings_controller;
+use mod_questionnaire\local\feedback\feedback_settings_controller;
 use mod_questionnaire\output\feedbackpage;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
@@ -50,7 +50,7 @@ if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$feedbackform = new \mod_questionnaire\feedback_form('feedback.php');
+$feedbackform = new \mod_questionnaire\local\feedback\feedback_form('feedback.php');
 $sdata = $questionnaire->survey()->to_stdclass();
 $sdata->sid = $questionnaire->surveyid();
 $sdata->id = $questionnaire->coursemodule()->id;

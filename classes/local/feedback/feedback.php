@@ -23,12 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\feedback;
 
 use html_table;
 use html_writer;
-use mod_questionnaire\feedback\scoreboard;
-use mod_questionnaire\local\feedback\section;
+use mod_questionnaire\questionnaire;
 use stdClass;
 
 /**
