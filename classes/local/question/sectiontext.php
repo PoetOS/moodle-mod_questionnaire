@@ -172,24 +172,22 @@ class sectiontext extends question {
             return '';
         }
 
+        global $PAGE;
         $questionnaire = $this->questionnaire;
-
-        $compare = false;
-        $allresponses = false;
-        $currentgroupid = 0;
-        $isgroupmember = false;
         $rid = $response->id();
-        $resps = [$rid => null];
-        // For $filteredsections -> get the feedback messages only for this sections!
-        $feedbackmessages = $questionnaire->response_analysis(
+        // For $filteredsections -> get the feedback messages only for these sections!
+        $scoreboard = $questionnaire->feedback()->build_scoreboard(
             $rid,
-            $resps,
-            $compare,
-            $isgroupmember,
-            $allresponses,
-            $currentgroupid,
+            [$rid => null],
+            false,
+            false,
+            false,
+            0,
+            '',
+            $PAGE->get_renderer('mod_questionnaire'),
             $filteredsections
         );
+        $feedbackmessages = $scoreboard !== null ? $scoreboard->messages : [];
 
         // Output.
         $questiontags = new \stdClass();
