@@ -74,7 +74,7 @@ if ($resume) {
     $event->trigger();
 }
 
-(new \mod_questionnaire\output\survey_view_renderer($renderer, $page))->build_view($questionnaire, $USER->id);
+(new \mod_questionnaire\local\survey\survey_view_builder($renderer, $page))->build_view($questionnaire, $USER->id);
 
 echo $renderer->header();
 echo $renderer->render($page);

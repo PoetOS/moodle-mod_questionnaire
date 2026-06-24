@@ -38,14 +38,14 @@ class cron_task extends \core\task\scheduled_task {
      */
     public function execute() {
         global $DB;
-        $rangetimecrontask = \mod_questionnaire\survey::question_deletion_duration();
+        $rangetimecrontask = \mod_questionnaire\local\survey\survey::question_deletion_duration();
         $sql = "SELECT *
                   FROM {questionnaire_question}
                  WHERE deleted IS NOT NULL
                    AND deleted < ?";
         if ($deletequestions = $DB->get_records_sql($sql, [time() - $rangetimecrontask])) {
             foreach ($deletequestions as $question) {
-                \mod_questionnaire\survey::delete_question_permanently($question->id, $question->surveyid);
+                \mod_questionnaire\local\survey\survey::delete_question_permanently($question->id, $question->surveyid);
             }
         }
     }

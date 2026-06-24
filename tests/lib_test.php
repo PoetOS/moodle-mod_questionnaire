@@ -26,6 +26,7 @@
 namespace mod_questionnaire;
 
 use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\survey\survey;
 
 defined('MOODLE_INTERNAL') || die();
 

@@ -16,15 +16,15 @@
 
 namespace mod_questionnaire\local\report;
 
-use mod_questionnaire\output\survey_view_renderer;
+use mod_questionnaire\local\survey\survey_view_builder;
 use mod_questionnaire\questionnaire;
 
 /**
  * Builds the printable and preview report views.
  *
- * Companion to {@see \mod_questionnaire\output\survey_view_renderer} for the
+ * Companion to {@see \mod_questionnaire\local\survey\survey_view_builder} for the
  * read-only paths: the print and preview pages (build_print_view) and
- * individual response views (render_response). Re-uses survey_view_renderer
+ * individual response views (render_response). Re-uses survey_view_builder
  * for the shared title/respondent header. This class is a builder, not a
  * renderer — it populates a templatable page via composition rather than
  * extending plugin_renderer_base.
@@ -264,7 +264,7 @@ class report_view_builder {
     }
 
     /**
-     * Delegate the title / respondent / print-blank header to survey_view_renderer so
+     * Delegate the title / respondent / print-blank header to survey_view_builder so
      * the two render paths share a single implementation.
      *
      * @param questionnaire $q
@@ -286,7 +286,7 @@ class report_view_builder {
         $blankquestionnaire = false,
         $outputtarget = 'html'
     ): void {
-        (new survey_view_renderer($this->renderer, $this->page))
+        (new survey_view_builder($this->renderer, $this->page))
             ->print_survey_start($q, $message, $section, $numsections, $hasrequired, $rid, $blankquestionnaire, $outputtarget);
     }
 }

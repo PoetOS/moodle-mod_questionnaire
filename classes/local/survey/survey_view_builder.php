@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_questionnaire\output;
+namespace mod_questionnaire\local\survey;
 
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\submission_notifier;
@@ -22,17 +22,19 @@ use mod_questionnaire\submission_notifier;
 /**
  * Builds the student-facing survey-completion page.
  *
- * Takes the Moodle plugin renderer and a templatable page object, and fills the
- * page in place from data on the supplied questionnaire. Replaces the
+ * Takes the Moodle plugin renderer and a templatable page object, and fills
+ * the page in place from data on the supplied questionnaire. Replaces the
  * page-filling responsibilities that used to live on the questionnaire class
- * itself (view(), print_survey(), and their private helpers).
+ * itself (view(), print_survey(), and their private helpers). This is a
+ * builder, not a renderer — it populates a templatable page via composition
+ * rather than extending plugin_renderer_base.
  *
  * @package mod_questionnaire
  * @copyright 2026 onward Mike Churchward (mike.churchward@poetopensource.org)
  * @author Mike Churchward
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-class survey_view_renderer {
+class survey_view_builder {
     /**
      * Constructor.
      *

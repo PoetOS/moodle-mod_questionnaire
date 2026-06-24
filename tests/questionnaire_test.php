@@ -33,6 +33,7 @@ namespace mod_questionnaire;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\response\questionnaire_responses;
+use mod_questionnaire\local\survey\survey;
 
 defined('MOODLE_INTERNAL') || die();
 
