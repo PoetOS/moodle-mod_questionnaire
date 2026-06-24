@@ -42,6 +42,12 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class survey {
+    /** @var string[] Survey persistent fields that may be updated via update_settings(). */
+    private const UPDATABLE_FIELDS = [
+        'name', 'realm', 'title', 'subtitle', 'info', 'theme',
+        'thankspage', 'thankhead', 'thankbody', 'email', 'courseid',
+    ];
+
     /** @var survey_record The survey record instance. */
     protected survey_record $surveyrecord;
 
@@ -84,49 +90,7 @@ class survey {
         return new self(new survey_record(), $context);
     }
 
-    /**
-     * Return a shallow survey built from an already-loaded survey_record without loading questions.
-     *
-     * Useful for lightweight contexts such as select-list building where only survey
-     * metadata (id, name, realm, courseid) is needed and the question-loading DB query
-     * would be wasteful.
-     *
-     * @param survey_record $surveyrecord
-     * @return self
-     */
-    private static function from_record_shallow(survey_record $surveyrecord): self {
-        $instance = new self(new survey_record());
-        $instance->surveyrecord = $surveyrecord;
-        return $instance;
-    }
-
     // Survey finders.
-
-    /**
-     * Return all private surveys belonging to the given course (shallow — no questions loaded).
-     *
-     * @param int $courseid
-     * @return self[]
-     */
-    private static function get_private_for_course(int $courseid): array {
-        return array_map(
-            fn($rec) => self::from_record_shallow($rec),
-            survey_record::get_by_realm_in_course('private', $courseid)
-        );
-    }
-
-    /**
-     * Return all surveys with the given realm across all courses (shallow — no questions loaded).
-     *
-     * @param string $realm 'public' or 'template'.
-     * @return self[]
-     */
-    private static function get_by_realm(string $realm): array {
-        return array_map(
-            fn($rec) => self::from_record_shallow($rec),
-            survey_record::get_by_realm($realm)
-        );
-    }
 
     /**
      * Return private questionnaires for the given course as a labelled popup-preview select array.
@@ -178,72 +142,7 @@ class survey {
         );
     }
 
-    /**
-     * Return surveys of the given realm, scoped to a course when realm is 'private'.
-     *
-     * @param string $realm 'private', 'public', or 'template'.
-     * @param int $courseid Scope to this course when realm is 'private'; ignored otherwise.
-     * @return self[]
-     */
-    private static function get_survey_list(string $realm, int $courseid): array {
-        return ($realm === 'private' && $courseid > 0)
-            ? self::get_private_for_course($courseid)
-            : self::get_by_realm($realm);
-    }
-
-    /**
-     * Format a list of surveys as a labelled popup-preview select array for form radio buttons.
-     *
-     * Surveys with no linked questionnaire instance are skipped.
-     *
-     * @param self[] $surveys From get_survey_list().
-     * @param string $realm Key prefix (e.g. 'private-42').
-     * @param int $excludecourseid Skip items whose owning_courseid matches this value (0 = skip none).
-     * @return array
-     */
-    private static function build_survey_select_list(array $surveys, string $realm, int $excludecourseid): array {
-        global $OUTPUT, $DB;
-
-        $surveylist = [];
-        $strpreview = get_string('preview_questionnaire', 'questionnaire');
-        foreach ($surveys as $survey) {
-            $owningcourseid = $survey->owning_courseid();
-            if ($excludecourseid > 0 && $owningcourseid == $excludecourseid) {
-                continue;
-            }
-            $qrec = questionnaire_record::get_for_survey($survey->id());
-            if ($qrec === null) {
-                continue;
-            }
-            $originalcourse = $DB->get_record('course', ['id' => $owningcourseid]);
-            if (!$originalcourse) {
-                continue;
-            }
-            $sid = $survey->id();
-            $args = "sid={$sid}&popup=1&qid={$qrec->get('id')}";
-            $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
-            $action = new \popup_action('click', $link);
-            $label = $OUTPUT->action_link(
-                $link,
-                $qrec->get('name') . ' [' . $originalcourse->fullname . ']',
-                $action,
-                ['title' => $strpreview]
-            );
-            $surveylist[$realm . '-' . $sid] = $label;
-        }
-        return $surveylist;
-    }
-
     // Survey record accessors.
-
-    /**
-     * Return the underlying survey_record persistent object.
-     *
-     * @return survey_record
-     */
-    public function survey_record(): survey_record {
-        return $this->surveyrecord;
-    }
 
     /**
      * Get the survey id.
@@ -409,39 +308,6 @@ class survey {
     }
 
     // Question loading and access.
-
-    /**
-     * Load all active questions for this survey, grouped by section.
-     *
-     * @return void
-     */
-    protected function load_questions(): void {
-        $sid = $this->surveyrecord->get('id');
-        if (empty($sid)) {
-            return;
-        }
-
-        $questionrecs = question_record::get_active_for_survey($sid);
-        $sec = 1;
-        $isbreak = false;
-
-        foreach ($questionrecs as $questionrec) {
-            $rec = $questionrec->to_record();
-            $typeid = $questionrec->get('typeid');
-            $this->questions[$questionrec->get('id')] = question::question_builder($typeid, $rec, $this->context);
-
-            if ($typeid != QUESPAGEBREAK) {
-                $this->questionsbysec[$sec][] = $this->questions[$questionrec->get('id')];
-                $isbreak = false;
-            } else {
-                // No section break as first position, no two consecutive breaks.
-                if (($questionrec->get('position') != 1) && ($isbreak == false)) {
-                    $sec++;
-                    $isbreak = true;
-                }
-            }
-        }
-    }
 
     /**
      * Reload questions from the database into this instance.
@@ -894,12 +760,6 @@ class survey {
         return survey_record::create_from_sdata($sdata)->get('id');
     }
 
-    /** @var string[] Survey persistent fields that may be updated via update_settings(). */
-    private const UPDATABLE_FIELDS = [
-        'name', 'realm', 'title', 'subtitle', 'info', 'theme',
-        'thankspage', 'thankhead', 'thankbody', 'email', 'courseid',
-    ];
-
     /**
      * Update this survey from an explicit array of field => value pairs.
      *
@@ -1148,5 +1008,140 @@ class survey {
             $questions[$qrec->get('id')] = question::question_builder($qrec->get('typeid'), $qrec->to_record());
         }
         return $questions;
+    }
+
+    // Protected helpers.
+
+    /**
+     * Load all active questions for this survey, grouped by section.
+     *
+     * @return void
+     */
+    protected function load_questions(): void {
+        $sid = $this->surveyrecord->get('id');
+        if (empty($sid)) {
+            return;
+        }
+
+        $questionrecs = question_record::get_active_for_survey($sid);
+        $sec = 1;
+        $isbreak = false;
+
+        foreach ($questionrecs as $questionrec) {
+            $rec = $questionrec->to_record();
+            $typeid = $questionrec->get('typeid');
+            $this->questions[$questionrec->get('id')] = question::question_builder($typeid, $rec, $this->context);
+
+            if ($typeid != QUESPAGEBREAK) {
+                $this->questionsbysec[$sec][] = $this->questions[$questionrec->get('id')];
+                $isbreak = false;
+            } else {
+                // No section break as first position, no two consecutive breaks.
+                if (($questionrec->get('position') != 1) && ($isbreak == false)) {
+                    $sec++;
+                    $isbreak = true;
+                }
+            }
+        }
+    }
+
+    // Private helpers.
+
+    /**
+     * Return a shallow survey built from an already-loaded survey_record without loading questions.
+     *
+     * Useful for lightweight contexts such as select-list building where only survey
+     * metadata (id, name, realm, courseid) is needed and the question-loading DB query
+     * would be wasteful.
+     *
+     * @param survey_record $surveyrecord
+     * @return self
+     */
+    private static function from_record_shallow(survey_record $surveyrecord): self {
+        $instance = new self(new survey_record());
+        $instance->surveyrecord = $surveyrecord;
+        return $instance;
+    }
+
+    /**
+     * Return all private surveys belonging to the given course (shallow — no questions loaded).
+     *
+     * @param int $courseid
+     * @return self[]
+     */
+    private static function get_private_for_course(int $courseid): array {
+        return array_map(
+            fn($rec) => self::from_record_shallow($rec),
+            survey_record::get_by_realm_in_course('private', $courseid)
+        );
+    }
+
+    /**
+     * Return all surveys with the given realm across all courses (shallow — no questions loaded).
+     *
+     * @param string $realm 'public' or 'template'.
+     * @return self[]
+     */
+    private static function get_by_realm(string $realm): array {
+        return array_map(
+            fn($rec) => self::from_record_shallow($rec),
+            survey_record::get_by_realm($realm)
+        );
+    }
+
+    /**
+     * Return surveys of the given realm, scoped to a course when realm is 'private'.
+     *
+     * @param string $realm 'private', 'public', or 'template'.
+     * @param int $courseid Scope to this course when realm is 'private'; ignored otherwise.
+     * @return self[]
+     */
+    private static function get_survey_list(string $realm, int $courseid): array {
+        return ($realm === 'private' && $courseid > 0)
+            ? self::get_private_for_course($courseid)
+            : self::get_by_realm($realm);
+    }
+
+    /**
+     * Format a list of surveys as a labelled popup-preview select array for form radio buttons.
+     *
+     * Surveys with no linked questionnaire instance are skipped.
+     *
+     * @param self[] $surveys From get_survey_list().
+     * @param string $realm Key prefix (e.g. 'private-42').
+     * @param int $excludecourseid Skip items whose owning_courseid matches this value (0 = skip none).
+     * @return array
+     */
+    private static function build_survey_select_list(array $surveys, string $realm, int $excludecourseid): array {
+        global $OUTPUT, $DB;
+
+        $surveylist = [];
+        $strpreview = get_string('preview_questionnaire', 'questionnaire');
+        foreach ($surveys as $survey) {
+            $owningcourseid = $survey->owning_courseid();
+            if ($excludecourseid > 0 && $owningcourseid == $excludecourseid) {
+                continue;
+            }
+            $qrec = questionnaire_record::get_for_survey($survey->id());
+            if ($qrec === null) {
+                continue;
+            }
+            $originalcourse = $DB->get_record('course', ['id' => $owningcourseid]);
+            if (!$originalcourse) {
+                continue;
+            }
+            $sid = $survey->id();
+            $args = "sid={$sid}&popup=1&qid={$qrec->get('id')}";
+            $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
+            $action = new \popup_action('click', $link);
+            $label = $OUTPUT->action_link(
+                $link,
+                $qrec->get('name') . ' [' . $originalcourse->fullname . ']',
+                $action,
+                ['title' => $strpreview]
+            );
+            $surveylist[$realm . '-' . $sid] = $label;
+        }
+        return $surveylist;
     }
 }
