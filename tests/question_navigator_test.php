@@ -30,11 +30,12 @@ namespace mod_questionnaire;
 
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question_navigator;
+use mod_questionnaire\local\survey\survey_testable;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/questionnaire/tests/survey_testable.php');
+require_once($CFG->dirroot . '/mod/questionnaire/tests/local/survey/survey_testable.php');
 
 /**
  * Unit tests for question_navigator.

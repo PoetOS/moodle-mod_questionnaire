@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for mod_questionnaire\output\survey_view_renderer.
+ * Unit tests for mod_questionnaire\local\survey\survey_view_builder.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -23,17 +23,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire\output;
+namespace mod_questionnaire\local\survey;
 
+use mod_questionnaire\output\viewpage;
 use mod_questionnaire\questionnaire;
 
 /**
- * Unit tests for mod_questionnaire\output\survey_view_renderer.
+ * Unit tests for mod_questionnaire\local\survey\survey_view_builder.
  *
  * @group mod_questionnaire
- * @covers \mod_questionnaire\output\survey_view_renderer
+ * @covers \mod_questionnaire\local\survey\survey_view_builder
  */
-final class survey_view_renderer_test extends \advanced_testcase {
+final class survey_view_builder_test extends \advanced_testcase {
     /**
      * Build a course + questionnaire with one yes/no question and return both the
      * domain object and the enrolled student id.
@@ -93,7 +94,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        (new survey_view_renderer($renderer, $page))->build_view($instance, $studentid);
+        (new survey_view_builder($renderer, $page))->build_view($instance, $studentid);
 
         $data = $this->page_data($page);
         $this->assertObjectHasProperty('notifications', $data);
@@ -119,7 +120,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        (new survey_view_renderer($renderer, $page))->build_view($instance, $studentid);
+        (new survey_view_builder($renderer, $page))->build_view($instance, $studentid);
 
         $data = $this->page_data($page);
         $this->assertObjectHasProperty('formstart', $data);
@@ -142,7 +143,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        $result = (new survey_view_renderer($renderer, $page))
+        $result = (new survey_view_builder($renderer, $page))
             ->build_survey_form($instance, $studentid, $studentid);
 
         $this->assertNull($result);
@@ -172,7 +173,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        (new survey_view_renderer($renderer, $page))
+        (new survey_view_builder($renderer, $page))
             ->build_survey_form($instance, $studentid, $studentid);
 
         $data = $this->page_data($page);
@@ -196,7 +197,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
 
-        $svr = new survey_view_renderer($renderer, $page);
+        $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'end' => 1];
         $method = new \ReflectionMethod($svr, 'handle_submit_action');
         $method->setAccessible(true);
@@ -220,7 +221,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
 
-        $svr = new survey_view_renderer($renderer, $page);
+        $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0];
         $method = new \ReflectionMethod($svr, 'handle_resume_action');
         $method->setAccessible(true);
@@ -247,7 +248,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
 
-        $svr = new survey_view_renderer($renderer, $page);
+        $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'next' => 'Next'];
         $method = new \ReflectionMethod($svr, 'handle_next_action');
         $method->setAccessible(true);
@@ -276,7 +277,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
 
-        $svr = new survey_view_renderer($renderer, $page);
+        $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'submit' => 'Submit Survey'];
         $method = new \ReflectionMethod($svr, 'handle_submit_action');
         $method->setAccessible(true);
@@ -304,7 +305,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
 
-        $svr = new survey_view_renderer($renderer, $page);
+        $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'next' => 'Next'];
         $method = new \ReflectionMethod($svr, 'handle_next_action');
         $method->setAccessible(true);
@@ -347,7 +348,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
 
-        $svr = new survey_view_renderer($renderer, $page);
+        $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'prev' => 'Prev', 'q' . $qid => 'not-a-date'];
         $method = new \ReflectionMethod($svr, 'handle_prev_action');
         $method->setAccessible(true);
@@ -374,7 +375,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
 
-        $svr = new survey_view_renderer($renderer, $page);
+        $svr = new survey_view_builder($renderer, $page);
         // After the user walked past the last section (sec=2 + end=1), pressing Prev should land them on sec=1
         // with the end flag cleared.
         $formdata = (object)['sec' => 2, 'rid' => 0, 'prev' => 'Prev', 'end' => 1];
@@ -401,7 +402,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        (new survey_view_renderer($renderer, $page))->print_survey_end($instance, 1, 3);
+        (new survey_view_builder($renderer, $page))->print_survey_end($instance, 1, 3);
 
         $data = $this->page_data($page);
         $this->assertObjectHasProperty('pageinfo', $data);
@@ -422,7 +423,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        (new survey_view_renderer($renderer, $page))->print_survey_end($instance, 1, 1);
+        (new survey_view_builder($renderer, $page))->print_survey_end($instance, 1, 1);
 
         $data = $this->page_data($page);
         $this->assertObjectNotHasProperty('pageinfo', $data);
@@ -442,7 +443,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        (new survey_view_renderer($renderer, $page))->print_survey_end($instance, 1, 5);
+        (new survey_view_builder($renderer, $page))->print_survey_end($instance, 1, 5);
 
         $data = $this->page_data($page);
         $this->assertObjectNotHasProperty('pageinfo', $data);
@@ -462,7 +463,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        (new survey_view_renderer($renderer, $page))->goto_saved($instance);
+        (new survey_view_builder($renderer, $page))->goto_saved($instance);
 
         $data = $this->page_data($page);
         $this->assertObjectHasProperty('notifications', $data);
@@ -484,7 +485,7 @@ final class survey_view_renderer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $page = new viewpage();
-        (new survey_view_renderer($renderer, $page))->goto_thankyou($instance);
+        (new survey_view_builder($renderer, $page))->goto_thankyou($instance);
 
         $data = $this->page_data($page);
         $this->assertObjectHasProperty('title', $data);

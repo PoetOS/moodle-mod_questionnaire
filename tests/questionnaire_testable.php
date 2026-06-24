@@ -38,9 +38,9 @@ class questionnaire_testable extends questionnaire {
      * @param survey_record $surveyrecord
      */
     public function __construct(questionnaire_record $modulerecord, survey_record $surveyrecord) {
-        require_once(__DIR__ . '/survey_testable.php');
+        require_once(__DIR__ . '/local/survey/survey_testable.php');
         $this->modulerecord = $modulerecord;
-        $this->survey = new survey_testable($surveyrecord);
+        $this->survey = new \mod_questionnaire\local\survey\survey_testable($surveyrecord);
     }
 
     /**

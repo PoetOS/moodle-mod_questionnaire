@@ -19,6 +19,7 @@ namespace mod_questionnaire;
 use mod_questionnaire\local\db\dependency_record;
 use mod_questionnaire\local\db\questionnaire_record;
 use mod_questionnaire\local\db\survey_record;
+use mod_questionnaire\local\survey\survey;
 use stdClass;
 
 /**

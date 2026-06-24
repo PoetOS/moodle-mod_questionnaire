@@ -29,7 +29,7 @@ use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\question_type;
 use mod_questionnaire\local\response\questionnaire_responses;
 use mod_questionnaire\output\questionspage;
-use mod_questionnaire\survey;
+use mod_questionnaire\local\survey\survey;
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
 $action = optional_param('action', 'main', PARAM_ALPHA);   // Screen.

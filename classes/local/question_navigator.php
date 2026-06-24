@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\local;
 
-use mod_questionnaire\survey;
+use mod_questionnaire\local\survey\survey;
 use mod_questionnaire\local\question\question;
 use stdClass;
 

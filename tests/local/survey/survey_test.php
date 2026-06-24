@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for mod_questionnaire\survey.
+ * Unit tests for mod_questionnaire\local\survey\survey.
  *
  * Pure business-logic tests use survey_testable (no DB). Tests that require
  * a real survey record use the DB with resetAfterTest.
@@ -26,20 +26,20 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_questionnaire;
+namespace mod_questionnaire\local\survey;
 
 use mod_questionnaire\local\db\survey_record;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/questionnaire/tests/survey_testable.php');
+require_once($CFG->dirroot . '/mod/questionnaire/tests/local/survey/survey_testable.php');
 
 /**
- * Unit tests for mod_questionnaire\survey.
+ * Unit tests for mod_questionnaire\local\survey\survey.
  *
  * @group mod_questionnaire
- * @covers \mod_questionnaire\survey
+ * @covers \mod_questionnaire\local\survey\survey
  */
 final class survey_test extends \advanced_testcase {
     // Helpers.
@@ -166,7 +166,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts title() returns the value from the survey record.
      *
-     * @covers \mod_questionnaire\survey::title
+     * @covers \mod_questionnaire\local\survey\survey::title
      */
     public function test_title_returns_value_from_record(): void {
         $this->assertEquals('My title', $this->make_survey(['title' => 'My title'])->title());
@@ -175,7 +175,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts subtitle() returns an empty string when the record value is null.
      *
-     * @covers \mod_questionnaire\survey::subtitle
+     * @covers \mod_questionnaire\local\survey\survey::subtitle
      */
     public function test_subtitle_returns_empty_string_when_null(): void {
         $this->assertSame('', $this->make_survey(['subtitle' => null])->subtitle());
@@ -184,7 +184,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts subtitle() returns the stored value when set.
      *
-     * @covers \mod_questionnaire\survey::subtitle
+     * @covers \mod_questionnaire\local\survey\survey::subtitle
      */
     public function test_subtitle_returns_value_when_set(): void {
         $this->assertEquals('Sub', $this->make_survey(['subtitle' => 'Sub'])->subtitle());
@@ -193,7 +193,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts info() returns an empty string when the record value is null.
      *
-     * @covers \mod_questionnaire\survey::info
+     * @covers \mod_questionnaire\local\survey\survey::info
      */
     public function test_info_returns_empty_string_when_null(): void {
         $this->assertSame('', $this->make_survey(['info' => null])->info());
@@ -202,7 +202,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts realm() returns the stored realm string.
      *
-     * @covers \mod_questionnaire\survey::realm
+     * @covers \mod_questionnaire\local\survey\survey::realm
      */
     public function test_realm_returns_private_by_default(): void {
         $this->assertEquals('private', $this->make_survey()->realm());
@@ -211,7 +211,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts owning_courseid() returns the course id from the record.
      *
-     * @covers \mod_questionnaire\survey::owning_courseid
+     * @covers \mod_questionnaire\local\survey\survey::owning_courseid
      */
     public function test_owning_courseid_returns_course_id(): void {
         $this->assertEquals(42, $this->make_survey(['courseid' => 42])->owning_courseid());
@@ -220,7 +220,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts thankspage() returns an empty string when the record value is null.
      *
-     * @covers \mod_questionnaire\survey::thankspage
+     * @covers \mod_questionnaire\local\survey\survey::thankspage
      */
     public function test_thankspage_returns_empty_when_null(): void {
         $this->assertSame('', $this->make_survey(['thankspage' => null])->thankspage());
@@ -229,7 +229,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts thankhead() returns the stored value when set.
      *
-     * @covers \mod_questionnaire\survey::thankhead
+     * @covers \mod_questionnaire\local\survey\survey::thankhead
      */
     public function test_thankhead_returns_value_when_set(): void {
         $this->assertEquals('Thank you!', $this->make_survey(['thankhead' => 'Thank you!'])->thankhead());
@@ -238,7 +238,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts thankbody() returns an empty string when the record value is null.
      *
-     * @covers \mod_questionnaire\survey::thankbody
+     * @covers \mod_questionnaire\local\survey\survey::thankbody
      */
     public function test_thankbody_returns_empty_when_null(): void {
         $this->assertSame('', $this->make_survey(['thankbody' => null])->thankbody());
@@ -247,7 +247,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts email() returns an empty string when the record value is null.
      *
-     * @covers \mod_questionnaire\survey::email
+     * @covers \mod_questionnaire\local\survey\survey::email
      */
     public function test_email_returns_empty_when_null(): void {
         $this->assertSame('', $this->make_survey(['email' => null])->email());
@@ -256,7 +256,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts email() returns the stored address when set.
      *
-     * @covers \mod_questionnaire\survey::email
+     * @covers \mod_questionnaire\local\survey\survey::email
      */
     public function test_email_returns_value_when_set(): void {
         $this->assertEquals('a@b.com', $this->make_survey(['email' => 'a@b.com'])->email());
@@ -266,7 +266,7 @@ final class survey_test extends \advanced_testcase {
      * Asserts raw_field() returns the persistent value for the named column
      * (the package-private hook used by the feedback domain class).
      *
-     * @covers \mod_questionnaire\survey::raw_field
+     * @covers \mod_questionnaire\local\survey\survey::raw_field
      */
     public function test_raw_field_returns_persistent_value(): void {
         $survey = $this->make_survey(['feedbacksections' => 3, 'charttype' => 'radar']);
@@ -280,7 +280,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_public() returns false for a private-realm survey.
      *
-     * @covers \mod_questionnaire\survey::is_public
+     * @covers \mod_questionnaire\local\survey\survey::is_public
      */
     public function test_is_public_false_when_private(): void {
         $this->assertFalse($this->make_survey(['realm' => 'private'])->is_public());
@@ -289,7 +289,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_public() returns true for a public-realm survey.
      *
-     * @covers \mod_questionnaire\survey::is_public
+     * @covers \mod_questionnaire\local\survey\survey::is_public
      */
     public function test_is_public_true_when_public(): void {
         $this->assertTrue($this->make_survey(['realm' => 'public'])->is_public());
@@ -298,7 +298,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_template() returns false for a private-realm survey.
      *
-     * @covers \mod_questionnaire\survey::is_template
+     * @covers \mod_questionnaire\local\survey\survey::is_template
      */
     public function test_is_template_false_when_private(): void {
         $this->assertFalse($this->make_survey(['realm' => 'private'])->is_template());
@@ -307,7 +307,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_template() returns true for a template-realm survey.
      *
-     * @covers \mod_questionnaire\survey::is_template
+     * @covers \mod_questionnaire\local\survey\survey::is_template
      */
     public function test_is_template_true_when_template(): void {
         $this->assertTrue($this->make_survey(['realm' => 'template'])->is_template());
@@ -316,7 +316,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_public_master() returns true when public and the course id matches.
      *
-     * @covers \mod_questionnaire\survey::is_public_master
+     * @covers \mod_questionnaire\local\survey\survey::is_public_master
      */
     public function test_is_public_master_true_when_public_and_owning_course(): void {
         $survey = $this->make_survey(['realm' => 'public', 'courseid' => 5]);
@@ -326,7 +326,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_public_master() returns false when the survey is private.
      *
-     * @covers \mod_questionnaire\survey::is_public_master
+     * @covers \mod_questionnaire\local\survey\survey::is_public_master
      */
     public function test_is_public_master_false_when_private(): void {
         $survey = $this->make_survey(['realm' => 'private', 'courseid' => 5]);
@@ -336,7 +336,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_public_master() returns false when the course id does not match.
      *
-     * @covers \mod_questionnaire\survey::is_public_master
+     * @covers \mod_questionnaire\local\survey\survey::is_public_master
      */
     public function test_is_public_master_false_when_different_course(): void {
         $survey = $this->make_survey(['realm' => 'public', 'courseid' => 5]);
@@ -346,7 +346,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_owned_by_course() returns true when the course id matches.
      *
-     * @covers \mod_questionnaire\survey::is_owned_by_course
+     * @covers \mod_questionnaire\local\survey\survey::is_owned_by_course
      */
     public function test_is_owned_by_course_true_when_same(): void {
         $this->assertTrue($this->make_survey(['courseid' => 7])->is_owned_by_course(7));
@@ -355,7 +355,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts is_owned_by_course() returns false when the course id does not match.
      *
-     * @covers \mod_questionnaire\survey::is_owned_by_course
+     * @covers \mod_questionnaire\local\survey\survey::is_owned_by_course
      */
     public function test_is_owned_by_course_false_when_different(): void {
         $this->assertFalse($this->make_survey(['courseid' => 7])->is_owned_by_course(8));
@@ -366,7 +366,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts to_stdclass() returns a stdClass with the expected field values.
      *
-     * @covers \mod_questionnaire\survey::to_stdclass
+     * @covers \mod_questionnaire\local\survey\survey::to_stdclass
      */
     public function test_to_stdclass_contains_expected_fields(): void {
         $obj = $this->make_survey(['title' => 'T', 'realm' => 'public'])->to_stdclass();
@@ -380,7 +380,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_parent_positions() returns an empty array when no questions have dependencies.
      *
-     * @covers \mod_questionnaire\survey::get_parent_positions
+     * @covers \mod_questionnaire\local\survey\survey::get_parent_positions
      */
     public function test_get_parent_positions_empty_when_no_deps(): void {
         $questions = [
@@ -393,7 +393,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_parent_positions() maps child id to parent position.
      *
-     * @covers \mod_questionnaire\survey::get_parent_positions
+     * @covers \mod_questionnaire\local\survey\survey::get_parent_positions
      */
     public function test_get_parent_positions_returns_parent_position(): void {
         $dep = (object)['dependquestionid' => 1, 'dependchoiceid' => 1, 'dependlogic' => 1];
@@ -409,7 +409,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_parent_positions() uses the highest parent position when a child has multiple parents.
      *
-     * @covers \mod_questionnaire\survey::get_parent_positions
+     * @covers \mod_questionnaire\local\survey\survey::get_parent_positions
      */
     public function test_get_parent_positions_highest_parent_wins(): void {
         $dep1 = (object)['dependquestionid' => 1, 'dependchoiceid' => 1, 'dependlogic' => 1];
@@ -426,7 +426,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_child_positions() returns an empty array when no questions have dependencies.
      *
-     * @covers \mod_questionnaire\survey::get_child_positions
+     * @covers \mod_questionnaire\local\survey\survey::get_child_positions
      */
     public function test_get_child_positions_empty_when_no_deps(): void {
         $questions = [
@@ -439,7 +439,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_child_positions() maps parent id to child position.
      *
-     * @covers \mod_questionnaire\survey::get_child_positions
+     * @covers \mod_questionnaire\local\survey\survey::get_child_positions
      */
     public function test_get_child_positions_returns_child_position(): void {
         $dep = (object)['dependquestionid' => 1, 'dependchoiceid' => 1, 'dependlogic' => 1];
@@ -455,7 +455,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_child_positions() uses the lowest child position when a parent has multiple children.
      *
-     * @covers \mod_questionnaire\survey::get_child_positions
+     * @covers \mod_questionnaire\local\survey\survey::get_child_positions
      */
     public function test_get_child_positions_lowest_child_wins(): void {
         $dep = (object)['dependquestionid' => 1, 'dependchoiceid' => 1, 'dependlogic' => 1];
@@ -473,7 +473,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts from_sid() returns a zero-id survey when the given sid does not exist.
      *
-     * @covers \mod_questionnaire\survey::from_sid
+     * @covers \mod_questionnaire\local\survey\survey::from_sid
      */
     public function test_from_sid_returns_empty_survey_for_nonexistent_sid(): void {
         $survey = survey::from_sid(0);
@@ -483,7 +483,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts from_sid() returns a populated survey for a real survey id.
      *
-     * @covers \mod_questionnaire\survey::from_sid
+     * @covers \mod_questionnaire\local\survey\survey::from_sid
      */
     public function test_from_sid_returns_survey_for_real_sid(): void {
         $this->resetAfterTest();
@@ -502,7 +502,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts delete_pagebreaks() removes soft-deleted pagebreak rows while leaving other rows intact.
      *
-     * @covers \mod_questionnaire\survey::delete_pagebreaks
+     * @covers \mod_questionnaire\local\survey\survey::delete_pagebreaks
      */
     public function test_delete_pagebreaks_removes_deleted_pagebreak_questions(): void {
         global $DB;
@@ -543,7 +543,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_private_questionnaires() returns an entry keyed "private-{sid}" for a private survey.
      *
-     * @covers \mod_questionnaire\survey::get_private_questionnaires
+     * @covers \mod_questionnaire\local\survey\survey::get_private_questionnaires
      */
     public function test_get_private_questionnaires_returns_entry_for_course_survey(): void {
         $this->resetAfterTest();
@@ -562,7 +562,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_public_questionnaires() includes other-course public surveys and excludes the current course's own.
      *
-     * @covers \mod_questionnaire\survey::get_public_questionnaires
+     * @covers \mod_questionnaire\local\survey\survey::get_public_questionnaires
      */
     public function test_get_public_questionnaires_excludes_current_course(): void {
         $this->resetAfterTest();
@@ -588,7 +588,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts get_template_questionnaires() returns an entry keyed "template-{sid}" for a template survey.
      *
-     * @covers \mod_questionnaire\survey::get_template_questionnaires
+     * @covers \mod_questionnaire\local\survey\survey::get_template_questionnaires
      */
     public function test_get_template_questionnaires_returns_template_survey(): void {
         $this->resetAfterTest();
@@ -611,7 +611,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts update_settings() persists each allowlisted field onto the survey row.
      *
-     * @covers \mod_questionnaire\survey::update_settings
+     * @covers \mod_questionnaire\local\survey\survey::update_settings
      */
     public function test_update_settings_persists_allowlisted_fields(): void {
         global $DB;
@@ -640,7 +640,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts update_settings() rejects unknown / non-allowlisted fields.
      *
-     * @covers \mod_questionnaire\survey::update_settings
+     * @covers \mod_questionnaire\local\survey\survey::update_settings
      */
     public function test_update_settings_rejects_unknown_field(): void {
         $this->resetAfterTest();
@@ -659,7 +659,7 @@ final class survey_test extends \advanced_testcase {
      * Asserts update_settings() rejects a field that is not in the persistent's properties
      * (e.g. someone passing a form-only key like 'sid').
      *
-     * @covers \mod_questionnaire\survey::update_settings
+     * @covers \mod_questionnaire\local\survey\survey::update_settings
      */
     public function test_update_settings_rejects_form_metadata_field(): void {
         $this->resetAfterTest();
@@ -677,7 +677,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts update_settings() returns false when a present 'name' / 'title' / 'realm' is empty.
      *
-     * @covers \mod_questionnaire\survey::update_settings
+     * @covers \mod_questionnaire\local\survey\survey::update_settings
      */
     public function test_update_settings_returns_false_for_empty_required_field(): void {
         $this->resetAfterTest();
@@ -695,7 +695,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts update_settings() returns false when renaming to a value that collides with another survey.
      *
-     * @covers \mod_questionnaire\survey::update_settings
+     * @covers \mod_questionnaire\local\survey\survey::update_settings
      */
     public function test_update_settings_returns_false_for_duplicate_name(): void {
         $this->resetAfterTest();
@@ -716,7 +716,7 @@ final class survey_test extends \advanced_testcase {
      * Asserts update_settings() does NOT silently mutate fields that were not supplied
      * (only the named keys are written).
      *
-     * @covers \mod_questionnaire\survey::update_settings
+     * @covers \mod_questionnaire\local\survey\survey::update_settings
      */
     public function test_update_settings_does_not_touch_unsupplied_fields(): void {
         global $DB;
@@ -739,7 +739,7 @@ final class survey_test extends \advanced_testcase {
      * Asserts update_settings() rejects feedback-domain fields: they live on
      * {@see feedback::UPDATABLE_FIELDS} and must go through feedback::update_settings().
      *
-     * @covers \mod_questionnaire\survey::update_settings
+     * @covers \mod_questionnaire\local\survey\survey::update_settings
      */
     public function test_update_settings_rejects_feedback_fields(): void {
         $this->resetAfterTest();
@@ -759,7 +759,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts has_required() returns false when there are no questions.
      *
-     * @covers \mod_questionnaire\survey::has_required
+     * @covers \mod_questionnaire\local\survey\survey::has_required
      */
     public function test_has_required_false_when_no_questions(): void {
         $this->assertFalse($this->make_survey()->has_required());
@@ -769,7 +769,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts has_required() returns true across all sections when any question is required.
      *
-     * @covers \mod_questionnaire\survey::has_required
+     * @covers \mod_questionnaire\local\survey\survey::has_required
      */
     public function test_has_required_true_across_all_sections(): void {
         $survey = $this->make_survey();
@@ -783,7 +783,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts has_required() returns false across all sections when no question is required.
      *
-     * @covers \mod_questionnaire\survey::has_required
+     * @covers \mod_questionnaire\local\survey\survey::has_required
      */
     public function test_has_required_false_across_all_sections(): void {
         $survey = $this->make_survey();
@@ -797,7 +797,7 @@ final class survey_test extends \advanced_testcase {
     /**
      * Asserts has_required() scoped to a section only inspects that section.
      *
-     * @covers \mod_questionnaire\survey::has_required
+     * @covers \mod_questionnaire\local\survey\survey::has_required
      */
     public function test_has_required_per_section(): void {
         $survey = $this->make_survey();

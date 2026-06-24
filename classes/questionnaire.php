@@ -26,7 +26,7 @@ use mod_questionnaire\local\question_navigator;
 use mod_questionnaire\local\response\questionnaire_responses;
 use mod_questionnaire\local\report\reporter;
 use mod_questionnaire\local\response\response;
-use mod_questionnaire\survey;
+use mod_questionnaire\local\survey\survey;
 use context_module;
 use stdClass;
 
