@@ -65,12 +65,13 @@ class questionnaire {
 
     // Other internal constants.
 
-    /** @var int Default number of rows per pagination page. */
-    private const DEFAULT_PAGE_COUNT = 20;
     /** @var string URL parameter name for the permanent-delete confirmation action. */
     public const CONFIRM_DELETE_PERMANENTLY = 'confirmdelpermanentlyq';
     /** @var string URL parameter name for the question-restore action. */
     public const RESTORE_PARAM = 'restoreq';
+
+    /** @var int Default number of rows per pagination page. */
+    private const DEFAULT_PAGE_COUNT = 20;
 
     /** @var questionnaire_record|null The module record instance. */
     protected ?questionnaire_record $modulerecord = null;
@@ -547,15 +548,6 @@ class questionnaire {
     }
 
     /**
-     * True if the survey is a template.
-     *
-     * @return bool
-     */
-    public function survey_is_template(): bool {
-        return $this->survey->is_template();
-    }
-
-    /**
      * True if the survey is public and this questionnaire is in the owning course.
      *
      * @return bool
@@ -689,7 +681,7 @@ class questionnaire {
             $msg = $this->capabilities()->can_manage_questionnaire() ? 'removenotinuse' : 'notavail';
             return get_string($msg, 'questionnaire');
         }
-        if ($this->survey_is_template()) {
+        if ($this->survey->is_template()) {
             return get_string('templatenotviewable', 'questionnaire');
         }
         if (!$this->is_open()) {
@@ -1381,8 +1373,8 @@ class questionnaire {
             $oldquestionnaire = self::from_cmid((int)$oldcm->id);
             $oldcontext = \context_module::instance($oldcm->id);
             $newcontext = \context_module::instance($data->coursemodule);
-            $areas = $questionnaire->get_all_file_areas();
-            $oldareas = $oldquestionnaire->get_all_file_areas();
+            $areas = $questionnaire->survey()->get_all_file_areas();
+            $oldareas = $oldquestionnaire->survey()->get_all_file_areas();
             $fs = new \mod_questionnaire\file_storage();
             foreach ($areas as $area => $ids) {
                 if (is_array($ids)) {
@@ -1581,14 +1573,5 @@ class questionnaire {
             $this->responses()->commit_submission_response($rid, $userid);
         }
         return $ret;
-    }
-
-    /**
-     * Return an array describing all file areas used by this questionnaire's survey.
-     *
-     * @return array Keys are area names; values are either a single id or an array of ids.
-     */
-    public function get_all_file_areas(): array {
-        return $this->survey->get_all_file_areas();
     }
 }

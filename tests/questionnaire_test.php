@@ -239,17 +239,6 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertFalse($this->make_questionnaire([], ['realm' => 'template'])->survey_is_public());
     }
 
-    /**
-     * Asserts survey_is_template() returns correct value based on realm.
-     *
-     * @covers \mod_questionnaire\questionnaire::survey_is_template
-     */
-    public function test_survey_is_template(): void {
-        $this->assertTrue($this->make_questionnaire([], ['realm' => 'template'])->survey_is_template());
-        $this->assertFalse($this->make_questionnaire([], ['realm' => 'public'])->survey_is_template());
-        $this->assertFalse($this->make_questionnaire([], ['realm' => 'private'])->survey_is_template());
-    }
-
     // Tests for the survey_is_public_master and is_survey_owner state methods.
 
     /**
@@ -550,57 +539,6 @@ final class questionnaire_test extends \advanced_testcase {
      * which need a real course module and context. These tests should be added once the
      * generator creates instances through the full add_instance pathway.
      */
-
-    // Tests for get_all_file_areas().
-
-    /**
-     * Asserts get_all_file_areas() returns the basic area keys when no feedback sections exist.
-     *
-     * @covers \mod_questionnaire\questionnaire::get_all_file_areas
-     */
-    public function test_get_all_file_areas_basic(): void {
-        $this->resetAfterTest();
-        $sid = 1;
-        $q = $this->make_questionnaire([], ['id' => $sid]);
-        $stub = $this->make_stub_question(10, []);
-        $q->set_questions([10 => $stub]);
-        $areas = $q->get_all_file_areas();
-        $this->assertSame($sid, $areas['info']);
-        $this->assertSame($sid, $areas['thankbody']);
-        $this->assertSame($sid, $areas['feedbacknotes']);
-        $this->assertContains(10, $areas['question']);
-        $this->assertArrayNotHasKey('sectionheading', $areas);
-        $this->assertArrayNotHasKey('feedback', $areas);
-    }
-
-    /**
-     * Asserts get_all_file_areas() includes sectionheading and feedback areas when fb_sections exist.
-     *
-     * @covers \mod_questionnaire\questionnaire::get_all_file_areas
-     */
-    public function test_get_all_file_areas_with_feedback_sections(): void {
-        global $DB;
-        $this->resetAfterTest();
-        $sid = 12345;
-        $q = $this->make_questionnaire([], ['id' => $sid]);
-        $stub = $this->make_stub_question(10, []);
-        $q->set_questions([10 => $stub]);
-
-        $sectionid = $DB->insert_record('questionnaire_fb_sections', (object)[
-            'surveyid' => $sid, 'section' => 1, 'scorecalculation' => null,
-            'sectionlabel' => 'S1', 'sectionheading' => '', 'sectionheadingformat' => FORMAT_HTML,
-        ]);
-        $feedbackid = $DB->insert_record('questionnaire_feedback', (object)[
-            'sectionid' => $sectionid, 'feedbacklabel' => '', 'feedbacktext' => '',
-            'feedbacktextformat' => FORMAT_HTML, 'minscore' => 0, 'maxscore' => 100,
-        ]);
-
-        $areas = $q->get_all_file_areas();
-        $this->assertArrayHasKey('sectionheading', $areas);
-        $this->assertContains((int)$sectionid, $areas['sectionheading']);
-        $this->assertArrayHasKey('feedback', $areas);
-        $this->assertContains((int)$feedbackid, $areas['feedback']);
-    }
 
     // Helpers for dependency tests.
 
