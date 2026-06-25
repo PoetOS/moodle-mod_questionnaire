@@ -309,6 +309,10 @@ class report_downloader {
                     'email' => $email,
                     'firstname' => $email,
                     'lastname' => $email,
+                    'firstnamephonetic' => '',
+                    'lastnamephonetic' => '',
+                    'middlename' => '',
+                    'alternatename' => '',
                     'mailformat' => 1,
                 ];
                 email_to_user($user, $noreplyuser, $subjecttext, $subjecttext, '', $filepath, $filename . $ext);

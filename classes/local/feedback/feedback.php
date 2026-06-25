@@ -206,16 +206,17 @@ class feedback {
         \plugin_renderer_base $renderer,
         ?array $filteredsections = null,
     ): ?scoreboard {
-        global $DB, $CFG;
+        global $DB, $CFG, $PAGE;
         require_once($CFG->libdir . '/tablelib.php');
-        require_once($CFG->dirroot . '/mod/questionnaire/drawchart.php');
-
         $fbsections = feedback_section_record::get_numbered_section_records_for_survey(
             $this->questionnaire->surveyid()
         );
         if (empty($fbsections)) {
             return null;
         }
+        $charttitle = ($PAGE->pagetype == 'mod-questionnaire-myreport')
+            ? get_string('yourresponse', 'questionnaire')
+            : get_string('thisresponse', 'questionnaire');
 
         $resp = response_record::get_record(['id' => $rid]);
         $ruser = '';
@@ -365,7 +366,7 @@ class feedback {
             $usergraph = get_config('questionnaire', 'usergraph');
             $charthtml = null;
             if ($usergraph && $this->chart_type()) {
-                $charthtml = draw_chart(
+                $charthtml = chart_renderer::render(
                     $feedbacktype = 'global',
                     $labels,
                     $groupname,
@@ -373,7 +374,8 @@ class feedback {
                     $this->chart_type(),
                     $score,
                     $allscore,
-                    $sectionlabel
+                    $sectionlabel,
+                    $charttitle
                 );
             }
             $lb = explode("|", $sectionlabel);
@@ -554,7 +556,7 @@ class feedback {
 
         $charthtml = null;
         if ($usergraph && $this->chart_type()) {
-            $charthtml = draw_chart(
+            $charthtml = chart_renderer::render(
                 'sections',
                 array_values($chartlabels),
                 $groupname,
@@ -562,7 +564,8 @@ class feedback {
                 $this->chart_type(),
                 array_values($scorepercent),
                 array_values($allscorepercent),
-                $sectionlabel
+                $sectionlabel,
+                $charttitle
             );
         }
 
