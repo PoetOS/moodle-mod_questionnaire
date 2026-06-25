@@ -813,4 +813,81 @@ final class survey_test extends \advanced_testcase {
         $this->assertTrue($survey->has_required(2));
         $this->assertFalse($survey->has_required(99));
     }
+
+    // Tests for get_all_file_areas().
+
+    /**
+     * Build a minimal question stub that supports id().
+     *
+     * @param int $id
+     * @return object
+     */
+    private function make_question_stub(int $id): object {
+        return new class ($id) {
+            /** @var int */
+            public int $id;
+            /**
+             * Constructor.
+             * @param int $id
+             */
+            public function __construct(int $id) {
+                $this->id = $id;
+            }
+            /**
+             * Return the question id.
+             * @return int
+             */
+            public function id(): int {
+                return $this->id;
+            }
+        };
+    }
+
+    /**
+     * Asserts get_all_file_areas() returns the basic area keys when no feedback sections exist.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::get_all_file_areas
+     */
+    public function test_get_all_file_areas_basic(): void {
+        $this->resetAfterTest();
+        $sid = 1;
+        $survey = $this->make_survey(['id' => $sid]);
+        $survey->set_questions([10 => $this->make_question_stub(10)]);
+
+        $areas = $survey->get_all_file_areas();
+        $this->assertSame($sid, $areas['info']);
+        $this->assertSame($sid, $areas['thankbody']);
+        $this->assertSame($sid, $areas['feedbacknotes']);
+        $this->assertContains(10, $areas['question']);
+        $this->assertArrayNotHasKey('sectionheading', $areas);
+        $this->assertArrayNotHasKey('feedback', $areas);
+    }
+
+    /**
+     * Asserts get_all_file_areas() includes sectionheading and feedback areas when fb_sections exist.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::get_all_file_areas
+     */
+    public function test_get_all_file_areas_with_feedback_sections(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $sid = 12345;
+        $survey = $this->make_survey(['id' => $sid]);
+        $survey->set_questions([10 => $this->make_question_stub(10)]);
+
+        $sectionid = $DB->insert_record('questionnaire_fb_sections', (object)[
+            'surveyid' => $sid, 'section' => 1, 'scorecalculation' => null,
+            'sectionlabel' => 'S1', 'sectionheading' => '', 'sectionheadingformat' => FORMAT_HTML,
+        ]);
+        $feedbackid = $DB->insert_record('questionnaire_feedback', (object)[
+            'sectionid' => $sectionid, 'feedbacklabel' => '', 'feedbacktext' => '',
+            'feedbacktextformat' => FORMAT_HTML, 'minscore' => 0, 'maxscore' => 100,
+        ]);
+
+        $areas = $survey->get_all_file_areas();
+        $this->assertArrayHasKey('sectionheading', $areas);
+        $this->assertContains((int)$sectionid, $areas['sectionheading']);
+        $this->assertArrayHasKey('feedback', $areas);
+        $this->assertContains((int)$feedbackid, $areas['feedback']);
+    }
 }
