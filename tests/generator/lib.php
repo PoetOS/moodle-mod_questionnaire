@@ -193,7 +193,7 @@ class mod_questionnaire_generator extends testing_module_generator {
         }
 
         // Update questionnaire.
-        $questionnaire->add_questions();
+        $questionnaire->survey()->add_questions();
 
         return $question;
     }
