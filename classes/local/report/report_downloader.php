@@ -17,6 +17,7 @@
 namespace mod_questionnaire\local\report;
 
 use mod_questionnaire\questionnaire;
+use mod_questionnaire\submission_notifier;
 
 /**
  * Controller for the staff-side download arms of report.php.
@@ -189,7 +190,6 @@ class report_downloader {
         }
 
         if (get_config('questionnaire', 'allowemailreporting') && (!empty($emailroles) || !empty($emailextra))) {
-            require_once($CFG->dirroot . '/mod/questionnaire/savefileformat.php');
             $users = !empty($emailroles)
                 ? (new submission_notifier($this->questionnaire))->get_notifiable_users($USER->id)
                 : [];
@@ -199,7 +199,7 @@ class report_downloader {
                     'report.php',
                     ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]
                 );
-                save_as_dataformat($name, $dataformat, $columns, $output, $users, $otheremails, $thisurl);
+                $this->stream_and_email($name, $dataformat, $columns, $output, $users, $otheremails, $thisurl);
             }
             exit();
         }
@@ -211,5 +211,111 @@ class report_downloader {
             ),
             get_string('emailsnotspecified', 'questionnaire')
         );
+    }
+
+    // Private helpers.
+
+    /**
+     * Render the dataformat output, save it to a temp file, email it to each user / extra
+     * email address, then echo a redirect message.
+     *
+     * Captures \core\dataformat output via an output buffer so the rendered file body can be
+     * dispatched both as an attachment and as a redirect-message body in the same request.
+     * Required until \core\dataformat exposes a "render to file" entry point.
+     *
+     * @param string $filename Base filename without extension.
+     * @param string $dataformat Dataformat name ('csv', 'xlsx', etc.).
+     * @param array $columns Ordered map of column keys and labels.
+     * @param \Iterator $iterator Iterator over the records (usually a recordset).
+     * @param array $users Moodle user objects to email.
+     * @param array $emails Extra email addresses to email.
+     * @param \moodle_url|string $redirect URL to redirect the browser to once email is dispatched.
+     */
+    private function stream_and_email(
+        string $filename,
+        string $dataformat,
+        array $columns,
+        \Iterator $iterator,
+        array $users,
+        array $emails,
+        \moodle_url|string $redirect
+    ): void {
+        global $OUTPUT;
+
+        $classname = 'dataformat_' . $dataformat . '\writer';
+        if (!class_exists($classname)) {
+            throw new \coding_exception("Unable to locate dataformat/$dataformat/classes/writer.php");
+        }
+        $format = new $classname();
+
+        // The data format export could take a while to generate...
+        set_time_limit(0);
+
+        // Close the session so that the user's other tabs in the same session are not blocked.
+        \core\session\manager::write_close();
+
+        $format->set_filename($filename);
+        // File creation for any data format is initiated by send_http_headers(). This is required. But it also makes the browser
+        // pop a "save / open" dialogue, so we immediately retract the headers with header_remove().
+        $format->send_http_headers();
+        header_remove();
+
+        // Start capturing output to write to a file.
+        ob_start();
+        // The pair below exists to support all dataformats — see MDL-56046.
+        if (method_exists($format, 'write_header')) {
+            debugging(
+                'The function write_header() does not support multiple sheets. In order to support multiple sheets you ' .
+                'must implement start_output() and start_sheet() and remove write_header() in your dataformat.',
+                DEBUG_DEVELOPER
+            );
+            $format->write_header($columns);
+        } else {
+            $format->start_output();
+            $format->start_sheet($columns);
+        }
+        $c = 0;
+        foreach ($iterator as $row) {
+            if ($row === null) {
+                continue;
+            }
+            $format->write_record($row, $c++);
+        }
+        if (method_exists($format, 'write_footer')) {
+            debugging(
+                'The function write_footer() does not support multiple sheets. In order to support multiple sheets you ' .
+                'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.',
+                DEBUG_DEVELOPER
+            );
+            $format->write_footer($columns);
+        } else {
+            $format->close_sheet($columns);
+            $format->close_output();
+            $output = ob_get_contents();
+            $ext = $format->get_extension();
+            $filepath = make_temp_directory('mod_questionnaire') . '/' . $filename . $ext;
+            $fp = fopen($filepath, 'wb');
+            fwrite($fp, $output);
+            fclose($fp);
+            $subjecttext = get_string('summaryreportattached', 'questionnaire');
+            $noreplyuser = \core_user::get_noreply_user();
+            foreach ($users as $user) {
+                email_to_user($user, $noreplyuser, $subjecttext, $subjecttext, '', $filepath, $filename . $ext);
+            }
+            foreach ($emails as $email) {
+                $email = trim($email);
+                $user = (object)[
+                    'id' => -10,
+                    'email' => $email,
+                    'firstname' => $email,
+                    'lastname' => $email,
+                    'mailformat' => 1,
+                ];
+                email_to_user($user, $noreplyuser, $subjecttext, $subjecttext, '', $filepath, $filename . $ext);
+            }
+            unlink($filepath);
+        }
+        ob_end_clean();
+        echo $OUTPUT->redirect_message($redirect, get_string('emailssent', 'questionnaire'), 3, false);
     }
 }
