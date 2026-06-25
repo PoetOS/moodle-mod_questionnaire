@@ -59,7 +59,8 @@ final class responsetypes_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO, ['content' => 'Enter yes or no']);
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $response = $generator->create_question_response($questionnaire, $question, 'y', $userid);
 
         // Test the responses for this questionnaire.
@@ -94,7 +95,8 @@ final class responsetypes_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questiondata = ['content' => 'Enter some text', 'length' => 0, 'precise' => 5];
         $questionnaire = $generator->create_test_questionnaire($course, QUESESSAY, $questiondata);
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $response = $generator->create_question_response($questionnaire, $question, 'This is my essay.', $userid);
 
         // Test the responses for this questionnaire.
@@ -129,7 +131,8 @@ final class responsetypes_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questiondata = ['content' => 'Enter some text'];
         $questionnaire = $generator->create_test_questionnaire($course, QUESSLIDER, $questiondata);
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $response = $generator->create_question_response($questionnaire, $question, 5, $userid);
 
         // Test the responses for this questionnaire.
@@ -163,7 +166,8 @@ final class responsetypes_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course, QUESDATE, ['content' => 'Enter a date']);
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         // Date format is configured per site. This won't work unless it matches the configured format.
         $response = $generator->create_question_response($questionnaire, $question, '2015-01-27', $userid);
 
@@ -207,7 +211,8 @@ final class responsetypes_test extends \advanced_testcase {
         $questionnaire = $generator->create_test_questionnaire($course, QUESRADIO, ['content' => 'Select one'], $choicedata);
 
         // Create a response using one of the choices.
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $val = 'unknown';
         foreach ($question->choices as $cid => $choice) {
             if ($choice->content == 'Two') {
@@ -285,7 +290,8 @@ final class responsetypes_test extends \advanced_testcase {
         ];
         $questionnaire = $generator->create_test_questionnaire($course, QUESCHECK, ['content' => 'Select any'], $choicedata);
 
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $val = [];
         foreach ($question->choices as $cid => $choice) {
             if (($choice->content == 'Two') || ($choice->content == 'Three')) {
@@ -351,7 +357,8 @@ final class responsetypes_test extends \advanced_testcase {
         $questionnaire = $generator->create_test_questionnaire($course, QUESRATE, $questiondata, $choicedata);
 
         // Create a response for each choice.
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $vals = [];
         $i = 1;
         foreach ($question->choices as $cid => $choice) {
@@ -445,11 +452,13 @@ final class responsetypes_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         // Add a questionnaire that will delete old responses after one month.
         $questionnaire1 = $generator->create_test_questionnaire($course, QUESYESNO, ['content' => 'Enter yes or no']);
-        $question1 = reset($questionnaire1->questions());
+        $questions1 = $questionnaire1->questions();
+        $question1 = reset($questions1);
         $response1 = $generator->create_question_response($questionnaire1, $question1, 'y', $userid);
 
         $questionnaire2 = $generator->create_test_questionnaire($course, QUESYESNO, ['content' => 'Enter yes or no']);
-        $question2 = reset($questionnaire2->questions());
+        $questions2 = $questionnaire2->questions();
+        $question2 = reset($questions2);
         $response2 = $generator->create_question_response($questionnaire2, $question2, 'y', $userid);
 
         $this->response_tests($questionnaire1->id(), $response1->id, $userid);
