@@ -195,7 +195,8 @@ final class lib_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO, $questiondata);
 
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
 
         // Add a response for the question.
         $response = $generator->create_question_response($questionnaire, $question, 'y');
@@ -236,7 +237,8 @@ final class lib_test extends \advanced_testcase {
         $this->assertEquals(get_string("noresponses", "questionnaire"), $outline->info);
 
         // Test for a user with one response.
-        $generator->create_question_response($questionnaire, reset($questionnaire->questions()), 'y', $user->id);
+        $questions = $questionnaire->questions();
+        $generator->create_question_response($questionnaire, reset($questions), 'y', $user->id);
         $outline = questionnaire_user_outline($course, $user, null, $questionnaire);
         $this->assertEquals('1 ' . get_string("response", "questionnaire"), $outline->info);
     }

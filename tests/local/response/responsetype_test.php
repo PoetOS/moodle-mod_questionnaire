@@ -288,7 +288,8 @@ final class responsetype_test extends \advanced_testcase {
             ['content' => 'data fixture'],
             $choicedata
         );
-        $question = reset($questionnaire->questions());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
 
         // Use $USER->id so text::get_results' user join finds a row in its non-anonymous branch.
         $rid = $DB->insert_record('questionnaire_response', (object)[
