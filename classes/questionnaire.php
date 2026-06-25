@@ -385,25 +385,6 @@ class questionnaire {
     }
 
     /**
-     * Reload questions from the database into this instance.
-     *
-     * @return void
-     */
-    public function add_questions(): void {
-        $this->survey->add_questions();
-    }
-
-    /**
-     * Get question objects for a specific section.
-     *
-     * @param int $section 1-based section number.
-     * @return question[]
-     */
-    public function questions_by_section(int $section = 1): array {
-        return $this->survey->questions_by_section($section);
-    }
-
-    /**
      * Get all question arrays organised by section (keyed by 1-based section number).
      *
      * @return array
