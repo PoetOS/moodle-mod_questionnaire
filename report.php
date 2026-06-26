@@ -58,8 +58,6 @@ switch ($action) {
         $sort = 'default';
 }
 
-$usergraph = get_config('questionnaire', 'usergraph');
-
 $questionnaire = questionnaire::from_instanceid($instance);
 $course = $questionnaire->course();
 $cm = $questionnaire->coursemodule();
@@ -210,8 +208,7 @@ switch ($action) {
             $respsallparticipants,
             $sort,
             $userview,
-            $responsestatus,
-            (bool)$usergraph
+            $responsestatus
         );
         break;
 
@@ -227,7 +224,6 @@ switch ($action) {
             $rid,
             (bool)$byresponse,
             (bool)$individualresponse,
-            (bool)$usergraph,
             $userview,
             $responsestatus
         );

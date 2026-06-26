@@ -123,31 +123,8 @@ switch ($action) {
         if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
-        $usergraph = get_config('questionnaire', 'usergraph');
-        if ($usergraph) {
-            $charttype = $questionnaire->feedback()->chart_type();
-            if ($charttype) {
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
-
-                switch ($charttype) {
-                    case 'bipolar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
-                        break;
-                    case 'hbar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
-                        break;
-                    case 'radar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
-                        break;
-                    case 'rose':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
-                        break;
-                    case 'vprogress':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
-                        break;
-                }
-            }
-        }
+        // The chart_renderer queues RGraph scripts on $PAGE itself when build_scoreboard
+        // emits a chart, so no preload needed here.
         $resps = $questionnaire->get_responses($userid);
 
         // All participants.

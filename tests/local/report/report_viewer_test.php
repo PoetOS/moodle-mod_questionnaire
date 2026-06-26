@@ -98,8 +98,7 @@ final class report_viewer_test extends \advanced_testcase {
                 [],
                 'default',
                 '0',
-                $this->default_responsestatus(),
-                false
+                $this->default_responsestatus()
             );
         } finally {
             ob_end_clean();
@@ -137,7 +136,6 @@ final class report_viewer_test extends \advanced_testcase {
             0,
             0,
             [],
-            false,
             false,
             false,
             false,
