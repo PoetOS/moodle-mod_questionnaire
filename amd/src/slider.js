@@ -96,13 +96,14 @@ define([], function() {
 
         var rangeNum = max - min;
         var numSteps = rangeNum / step;
-        var middleLabel = (numSteps % 2 !== 0)
-            ? (labels.middlelabel.innerHTML
-                ? M.util.get_string('middlepartwithtwovalues', 'questionnaire', a)
-                : M.util.get_string('middlepartwithtwovaluesdefault', 'questionnaire', a))
-            : (labels.middlelabel.innerHTML
-                ? M.util.get_string('middlepart', 'questionnaire', a)
-                : M.util.get_string('middlepartdefault', 'questionnaire', a));
+        var hasMiddleLabel = !!labels.middlelabel.innerHTML;
+        var middleKey;
+        if (numSteps % 2 !== 0) {
+            middleKey = hasMiddleLabel ? 'middlepartwithtwovalues' : 'middlepartwithtwovaluesdefault';
+        } else {
+            middleKey = hasMiddleLabel ? 'middlepart' : 'middlepartdefault';
+        }
+        var middleLabel = M.util.get_string(middleKey, 'questionnaire', a);
         var leftPart = labels.leftlabel.innerHTML
             ? M.util.get_string('leftpart', 'questionnaire', a)
             : M.util.get_string('leftpartdefault', 'questionnaire', a);
