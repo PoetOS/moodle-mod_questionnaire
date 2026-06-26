@@ -281,6 +281,19 @@ class chart_renderer {
     /**
      * Build the bipolar chart primary/secondary specs and canvases.
      *
+     * @param string $canvasidprimary
+     * @param string $canvasidsecondary
+     * @param string $feedbacktype
+     * @param array $labels
+     * @param string $charttitle
+     * @param string $charttitle2
+     * @param string $charttitlefont
+     * @param int $charttitlesize
+     * @param bool $allresponses
+     * @param array|null $score
+     * @param array|null $allscore
+     * @param int $nbvalues
+     * @param int $nblabels
      * @return array [primary spec|null, secondary spec|null, primary html, secondary html]
      */
     private static function build_bipolar(
@@ -432,6 +445,20 @@ class chart_renderer {
     /**
      * Build the hbar chart primary/secondary specs and canvases.
      *
+     * @param string $canvasidprimary
+     * @param string $canvasidsecondary
+     * @param string $feedbacktype
+     * @param array $labels
+     * @param string|null $globallabel
+     * @param string $charttitle
+     * @param string $charttitle2
+     * @param string $charttitlefont
+     * @param int $charttitlesize
+     * @param bool $allresponses
+     * @param array|null $score
+     * @param array|null $allscore
+     * @param int $nbvalues
+     * @param int $nblabels
      * @return array [primary spec|null, secondary spec|null, primary html, secondary html]
      */
     private static function build_hbar(
@@ -525,6 +552,14 @@ class chart_renderer {
     /**
      * Build the radar chart primary/secondary specs and canvases.
      *
+     * @param string $canvasidprimary
+     * @param string $canvasidsecondary
+     * @param array $labels
+     * @param string $charttitle
+     * @param string $charttitle2
+     * @param bool $allresponses
+     * @param array|null $score
+     * @param array|null $allscore
      * @return array [primary spec|null, secondary spec|null, primary html, secondary html]
      */
     private static function build_radar(
@@ -577,6 +612,17 @@ class chart_renderer {
     /**
      * Build the rose chart primary/secondary specs and canvases.
      *
+     * @param string $canvasidprimary
+     * @param string $canvasidsecondary
+     * @param array $labels
+     * @param string $charttitle
+     * @param string $charttitle2
+     * @param string $charttitlefont
+     * @param int $charttitlesize
+     * @param bool $allresponses
+     * @param array|null $score
+     * @param array|null $allscore
+     * @param int $nblabels
      * @return array [primary spec|null, secondary spec|null, primary html, secondary html]
      */
     private static function build_rose(
@@ -636,6 +682,16 @@ class chart_renderer {
     /**
      * Build the vprogress chart primary/secondary specs and canvases.
      *
+     * @param string $canvasidprimary
+     * @param string $canvasidsecondary
+     * @param string|null $globallabel
+     * @param string $charttitle
+     * @param string $charttitle2
+     * @param string $charttitlefont
+     * @param int $charttitlesize
+     * @param bool $allresponses
+     * @param array|null $score
+     * @param array|null $allscore
      * @return array [primary spec|null, secondary spec|null, primary html, secondary html]
      */
     private static function build_vprogress(
