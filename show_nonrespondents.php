@@ -537,9 +537,7 @@ if (!$nonrespondents) {
 
         $page->add_to_page('formarea', html_writer::end_tag('form'));
 
-        // Include the needed js.
-        $module = ['name' => 'mod_questionnaire', 'fullpath' => '/mod/questionnaire/module.js'];
-        $PAGE->requires->js_init_call('M.mod_questionnaire.init_sendmessage', null, false, $module);
+        $PAGE->requires->js_call_amd('mod_questionnaire/sendmessage', 'init');
     }
 }
 $page->add_to_page('formarea', $renderer->box_end());
