@@ -111,12 +111,4 @@ final class form_options_test extends \advanced_testcase {
         $this->assertCount(37, $options);
         $this->assertArrayHasKey(0, $options);
     }
-
-    public function test_js_module_returns_expected_keys(): void {
-        $module = form_options::js_module();
-        $this->assertSame('mod_questionnaire', $module['name']);
-        $this->assertSame('/mod/questionnaire/module.js', $module['fullpath']);
-        $this->assertIsArray($module['requires']);
-        $this->assertIsArray($module['strings']);
-    }
 }

@@ -94,8 +94,6 @@ if (!$popup) {
     $PAGE->set_heading(format_string($course->fullname));
 }
 
-$PAGE->requires->js('/mod/questionnaire/module.js');
-
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = new \mod_questionnaire\output\previewpage();
 
