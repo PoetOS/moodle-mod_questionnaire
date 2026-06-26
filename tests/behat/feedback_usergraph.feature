@@ -59,5 +59,5 @@ Feature: When the questionnaire usergraph site setting is enabled and a feedback
     And I press "Continue"
     Then I should see "Feedback notes here"
     And I should see "Global feedback label"
-    And "//canvas[@id='cvs']" "xpath_element" should exist
+    And "//canvas[starts-with(@id, 'questionnaire-chart-')]" "xpath_element" should exist
     And I log out
