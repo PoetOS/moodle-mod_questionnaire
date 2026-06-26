@@ -152,11 +152,7 @@ class renderer extends \plugin_renderer_base {
             $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
         }
         $this->page->requires->js_call_amd('mod_questionnaire/attempt_form', 'init');
-        // Legacy module.js still hosts the global other_check() / other_rate_uncheck() functions
-        // referenced by inline onclick= attributes in question_check.mustache, question_radio.mustache,
-        // and rate question rendering. Removed in a follow-up commit once those inline handlers are
-        // migrated to data-attribute event delegation.
-        $this->page->requires->js('/mod/questionnaire/module.js');
+        $this->page->requires->js_call_amd('mod_questionnaire/survey_inputs', 'init');
         return $output;
     }
 

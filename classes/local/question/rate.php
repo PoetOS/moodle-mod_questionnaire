@@ -271,11 +271,7 @@ class rate extends question {
         } else {
             $na = '';
         }
-        if ($this->no_duplicate_choices()) {
-            $order = 'other_rate_uncheck(name, value)';
-        } else {
-            $order = '';
-        }
+        $rateuncheck = $this->no_duplicate_choices();
 
         if (!$this->no_duplicate_choices()) {
             $nbchoices = count($this->choices);
@@ -374,8 +370,8 @@ class rate extends question {
                     if (!empty($checked)) {
                         $colinput['checked'] = true;
                     }
-                    if (!empty($order)) {
-                        $colinput['onclick'] = $order;
+                    if ($rateuncheck) {
+                        $colinput['rateuncheck'] = true;
                     }
                     $colinput['label'] = $this->set_label(
                         $rowstart,
@@ -419,8 +415,8 @@ class rate extends question {
                     if (!empty($disabled)) {
                         $col['colinput']['disabled'] = true;
                     }
-                    if (!empty($order)) {
-                        $col['colinput']['onclick'] = $order;
+                    if ($rateuncheck) {
+                        $col['colinput']['rateuncheck'] = true;
                     }
                     $col['colinput']['label'] = $this->set_label($rowstart, $rendercontent, $colstart, $collabel[$j]);
                     if ($bg == 'c0 raterow') {
