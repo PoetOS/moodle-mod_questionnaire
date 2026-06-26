@@ -35,7 +35,7 @@ class mobile {
      * @return array HTML, javascript and other data
      */
     public static function mobile_view_activity($args) {
-        global $OUTPUT, $USER;
+        global $CFG, $OUTPUT, $USER;
 
         $args = (object) $args;
 
@@ -205,11 +205,11 @@ class mobile {
     /**
      * Confirms the user is logged in and has the specified capability.
      *
-     * @param \stdClass $cm
+     * @param \cm_info $cm
      * @param \context $context
      * @param string $cap
      */
-    protected static function require_capability(\stdClass $cm, \context $context, string $cap) {
+    protected static function require_capability(\cm_info $cm, \context $context, string $cap) {
         require_login($cm->course, false, $cm, true, true);
         require_capability($cap, $context);
     }
