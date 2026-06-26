@@ -42,9 +42,6 @@ jobs:
           - php: '8.2'
             moodle-branch: 'MOODLE_500_STABLE'
             database: 'pgsql'
-          - php: '8.2'
-            moodle-branch: 'MOODLE_405_STABLE'
-            database: 'pgsql'
 
     steps:
       - name: Checkout
