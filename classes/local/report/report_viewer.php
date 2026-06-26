@@ -386,5 +386,4 @@ class report_viewer {
         echo $this->renderer->render($page);
         echo $this->renderer->footer($course);
     }
-
 }
