@@ -112,7 +112,7 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 if ($outputtarget == 'print') {
     $PAGE->set_pagelayout('popup');
-    $PAGE->requires->js_init_call('M.mod_questionnaire.init_printing');
+    $PAGE->requires->js_call_amd('mod_questionnaire/printing', 'init');
 }
 
 // Get all responses for further use in viewbyresp and deleteall etc.

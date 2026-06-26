@@ -37,7 +37,7 @@ final class chart_renderer_test extends \advanced_testcase {
      * 'your response' and the group-name titles are emitted.
      */
     public function test_render_global_bipolar_emits_script_and_titles(): void {
-        // allresponses=false so the "your response" chart renders, allscore set so the
+        // Set allresponses=false so the "your response" chart renders, allscore set so the
         // group-comparison chart renders too — both titles should appear.
         $html = chart_renderer::render(
             'global',
