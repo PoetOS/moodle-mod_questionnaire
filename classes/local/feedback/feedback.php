@@ -367,6 +367,7 @@ class feedback {
             $charthtml = null;
             if ($usergraph && $this->chart_type()) {
                 $charthtml = chart_renderer::render(
+                    $PAGE,
                     $feedbacktype = 'global',
                     $labels,
                     $groupname,
@@ -557,6 +558,7 @@ class feedback {
         $charthtml = null;
         if ($usergraph && $this->chart_type()) {
             $charthtml = chart_renderer::render(
+                $PAGE,
                 'sections',
                 array_values($chartlabels),
                 $groupname,

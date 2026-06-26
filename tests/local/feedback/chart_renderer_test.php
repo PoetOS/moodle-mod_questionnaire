@@ -28,18 +28,26 @@ namespace mod_questionnaire\local\feedback;
 /**
  * Unit tests for mod_questionnaire\local\feedback\chart_renderer.
  *
+ * Asserts the canvas HTML the renderer emits. The chart spec passed to the
+ * mod_questionnaire/chart AMD module is serialised into the page's AMD
+ * init bundle and not directly introspectable from PHP — behavioural
+ * coverage of the in-browser chart rendering lives in the Behat feature
+ * feedback_usergraph.feature.
+ *
  * @group mod_questionnaire
  * @covers \mod_questionnaire\local\feedback\chart_renderer
  */
 final class chart_renderer_test extends \advanced_testcase {
     /**
-     * Render a 'global' feedbacktype + 'bipolar' chart with allscore set so both the
-     * 'your response' and the group-name titles are emitted.
+     * Render a 'global' feedbacktype + 'bipolar' chart with allscore set and
+     * assert both canvas placeholders appear in the returned HTML.
      */
-    public function test_render_global_bipolar_emits_script_and_titles(): void {
-        // Set allresponses=false so the "your response" chart renders, allscore set so the
-        // group-comparison chart renders too — both titles should appear.
+    public function test_render_global_bipolar_emits_both_canvases(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+
         $html = chart_renderer::render(
+            $PAGE,
             'global',
             [],
             'Group A',
@@ -51,18 +59,22 @@ final class chart_renderer_test extends \advanced_testcase {
             'Your response'
         );
 
-        $this->assertNotEmpty($html);
-        $this->assertStringContainsString('<script>', $html);
-        $this->assertStringContainsString('Speed', $html);
-        $this->assertStringContainsString('Group A', $html);
-        $this->assertStringContainsString('Your response', $html);
+        $this->assertStringContainsString('<canvas', $html);
+        $this->assertStringContainsString('-primary', $html);
+        $this->assertStringContainsString('-secondary', $html);
+        $this->assertStringContainsString('[No canvas support]', $html);
     }
 
     /**
-     * Render a 'sections' feedbacktype + 'radar' chart against two sections.
+     * Render a 'sections' feedbacktype + 'radar' chart with allresponses=true so only
+     * the secondary "group" canvas is emitted.
      */
-    public function test_render_sections_radar_uses_section_labels(): void {
+    public function test_render_sections_radar_allresponses_emits_secondary_only(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+
         $html = chart_renderer::render(
+            $PAGE,
             'sections',
             ['Section 1', 'Section 2'],
             'All participants',
@@ -75,16 +87,19 @@ final class chart_renderer_test extends \advanced_testcase {
         );
 
         $this->assertStringContainsString('<canvas', $html);
-        $this->assertStringContainsString('Section 1', $html);
-        $this->assertStringContainsString('Section 2', $html);
-        $this->assertStringContainsString('All participants', $html);
+        $this->assertStringContainsString('-secondary', $html);
+        $this->assertStringNotContainsString('-primary', $html);
     }
 
     /**
-     * An unrecognised charttype falls through the switch and returns an empty string.
+     * An unrecognised charttype short-circuits and returns an empty string.
      */
     public function test_render_unknown_charttype_returns_empty_string(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+
         $html = chart_renderer::render(
+            $PAGE,
             'global',
             [],
             'Group A',
