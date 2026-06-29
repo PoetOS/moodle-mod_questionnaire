@@ -546,306 +546,366 @@ class rank extends responsetype {
     private function mkresavg($sort, $stravgvalue = '') {
         global $CFG;
 
-        $stravgrank = get_string('averagerank', 'questionnaire');
-        $osgood = false;
-        if ($this->question->precise() == 3) { // Osgood's semantic differential.
-            $osgood = true;
-            $stravgrank = get_string('averageposition', 'questionnaire');
-        }
-        $stravg = '<div style="text-align:right">' . $stravgrank . $stravgvalue . '</div>';
+        $osgood = ($this->question->precise() == 3);
+        $isna = ($this->question->precise() == 1);
+        $isrestricted = ($this->question->length() < count($this->counts)) && $this->question->precise() == 2;
+        $stravgrank = $osgood
+            ? get_string('averageposition', 'questionnaire')
+            : get_string('averagerank', 'questionnaire');
 
-        $isna = $this->question->precise() == 1;
-        $isnahead = '';
-        $nbchoices = count($this->counts);
-        $isrestricted = ($this->question->length() < $nbchoices) && $this->question->precise() == 2;
+        $headers = self::build_averages_headers($isna, $osgood, $stravgrank, $stravgvalue);
 
-        if ($isna) {
-            $isnahead = get_string('notapplicable', 'questionnaire');
-        }
         $pagetags = new \stdClass();
         $pagetags->averages = new \stdClass();
+        $pagetags->averages->headers = $headers;
+        $rankcols = $this->build_rank_columns($headers[1], $isrestricted);
+        $pagetags->averages->choicelabelrow = self::build_averages_label_row($headers, $rankcols);
 
-        if ($isna) {
-            $header1 = new \stdClass();
-            $header1->text = '';
-            $header1->align = '';
-            $header2 = new \stdClass();
-            $header2->text = $stravg;
-            $header2->align = '';
-            $header3 = new \stdClass();
-            $header3->text = '&dArr;';
-            $header3->align = 'center';
-            $header4 = new \stdClass();
-            $header4->text = $isnahead;
-            $header4->align = 'right';
-        } else {
-            if ($osgood) {
-                $stravg = '<div style="text-align:center">' . $stravgrank . '</div>';
-                $header1 = new \stdClass();
-                $header1->text = '';
-                $header1->align = '';
-                $header2 = new \stdClass();
-                $header2->text = $stravg;
-                $header2->align = '';
-                $header3 = new \stdClass();
-                $header3->text = '';
-                $header3->align = 'center';
-            } else {
-                $header1 = new \stdClass();
-                $header1->text = '';
-                $header1->align = '';
-                $header2 = new \stdClass();
-                $header2->text = $stravg;
-                $header2->align = '';
-                $header3 = new \stdClass();
-                $header3->text = '&dArr;';
-                $header3->align = 'center';
-            }
-        }
-        // PDF columns are based on a 11.69in x 8.27in page. Margins are 15mm each side, or 1.1811 in total.
-        $pdfwidth = 11.69 - 1.1811;
-        if ($isna) {
-            $header1->width = '55%';
-            $header2->width = '35%';
-            $header3->width = '5%';
-            $header4->width = '5%';
-            $header1->pdfwidth = $pdfwidth * .55;
-            $header2->pdfwidth = $pdfwidth * .35;
-            $header3->pdfwidth = $pdfwidth * .05;
-            $header4->pdfwidth = $pdfwidth * .05;
-        } else if ($osgood) {
-            $header1->width = '25%';
-            $header2->width = '50%';
-            $header3->width = '25%';
-            $header1->pdfwidth = $pdfwidth * .25;
-            $header2->pdfwidth = $pdfwidth * .5;
-            $header3->pdfwidth = $pdfwidth * .25;
-        } else {
-            $header1->width = '60%';
-            $header2->width = '35%';
-            $header3->width = '5%';
-            $header1->pdfwidth = $pdfwidth * .6;
-            $header2->pdfwidth = $pdfwidth * .35;
-            $header3->pdfwidth = $pdfwidth * .05;
-        }
-        $pagetags->averages->headers = [$header1, $header2, $header3];
-        if (isset($header4)) {
-            $pagetags->averages->headers[] = $header4;
-        }
-
-        $imageurl = $CFG->wwwroot . '/mod/questionnaire/images/hbar.gif';
-        $spacerimage = $CFG->wwwroot . '/mod/questionnaire/images/hbartransp.gif';
-        $llength = $this->question->length();
-        if (!$llength) {
-            $llength = 5;
-        }
-        // Add an extra column to accomodate lower ranks in this case.
-        $llength += $isrestricted;
-        $width = 100 / $llength;
-        $n = [];
-        $nameddegrees = 0;
-        foreach ($this->question->nameddegrees as $degree) {
-            // To take into account languages filter.
-            $content = (format_text($degree, FORMAT_HTML, ['noclean' => true]));
-            $n[$nameddegrees] = $degree;
-            $nameddegrees++;
-        }
-        for ($j = 0; $j < $this->question->length(); $j++) {
-            if (isset($n[$j])) {
-                $str = $n[$j];
-            } else {
-                $str = $j + 1;
-            }
-        }
-        $rankcols = [];
-        $pdfwidth = $header2->pdfwidth / (100 / $width);
-        for ($i = 0; $i <= $llength - 1; $i++) {
-            if ($isrestricted && $i == $llength - 1) {
-                $str = "...";
-                $rankcols[] = (object)['width' => $width . '%', 'text' => '...', 'pdfwidth' => $pdfwidth];
-            } else if (isset($n[$i])) {
-                $str = $n[$i];
-                $rankcols[] = (object)['width' => $width . '%', 'text' => $n[$i], 'pdfwidth' => $pdfwidth];
-            } else {
-                $str = $i + 1;
-                $rankcols[] = (object)['width' => $width . '%', 'text' => $i + 1, 'pdfwidth' => $pdfwidth];
-            }
-        }
-        $pagetags->averages->choicelabelrow = new \stdClass();
-        $pagetags->averages->choicelabelrow->innertablewidth = $header2->pdfwidth;
-        $pagetags->averages->choicelabelrow->column1 = (object)['width' => $header1->width, 'align' => $header1->align,
-            'text' => '', 'pdfwidth' => $header1->pdfwidth];
-        $pagetags->averages->choicelabelrow->column2 = (object)['width' => $header2->width, 'align' => $header2->align,
-            'ranks' => $rankcols, 'pdfwidth' => $header2->pdfwidth];
-        $pagetags->averages->choicelabelrow->column3 = (object)['width' => $header3->width, 'align' => $header3->align,
-            'text' => '', 'pdfwidth' => $header3->pdfwidth];
-        if ($isna) {
-            $pagetags->averages->choicelabelrow->column4 = (object)['width' => $header4->width, 'align' => $header4->align,
-                'text' => '', 'pdfwidth' => $header4->pdfwidth];
-        }
-
-        switch ($sort) {
-            case 'ascending':
-                uasort($this->counts, self::class . '::sortavgasc');
-                break;
-            case 'descending':
-                uasort($this->counts, self::class . '::sortavgdesc');
-                break;
-        }
-        reset($this->counts);
+        self::sort_counts_by_avg($this->counts, $sort);
 
         if (!empty($this->counts) && is_array($this->counts)) {
+            $imageurl = $CFG->wwwroot . '/mod/questionnaire/images/hbar.gif';
+            $spacerimage = $CFG->wwwroot . '/mod/questionnaire/images/hbartransp.gif';
+            $width = 100 / ($this->effective_length($isrestricted));
+            $innertablewidth = $pagetags->averages->choicelabelrow->innertablewidth;
             $pagetags->averages->choiceaverages = [];
             foreach ($this->counts as $content => $contentobj) {
                 // Eliminate potential named degrees on Likert scale.
-                if (!preg_match("/^[0-9]{1,3}=/", $content)) {
-                    if (isset($contentobj->avg)) {
-                        $avg = $contentobj->avg;
-                        // If named degrees were used, swap averages for display.
-                        if (isset($contentobj->avgvalue)) {
-                            $avg = $contentobj->avgvalue;
-                            $avgvalue = $contentobj->avg;
-                        } else {
-                            $avgvalue = '';
-                        }
-                    } else {
-                        $avg = '';
-                    }
-                    $nbna = $contentobj->nbna;
-
-                    if ($avg) {
-                        if (($j = $avg * $width) > 0) {
-                            $marginposition = ($avg - 0.5 ) / ($this->question->length() + $isrestricted);
-                        }
-                        if (!right_to_left()) {
-                            $margin = 'margin-left:' . $marginposition * 100 . '%';
-                            $marginpdf = $marginposition * $pagetags->averages->choicelabelrow->innertablewidth;
-                        } else {
-                            $margin = 'margin-right:' . $marginposition * 100 . '%';
-                            $marginpdf = $pagetags->averages->choicelabelrow->innertablewidth -
-                                ($marginposition * $pagetags->averages->choicelabelrow->innertablewidth);
-                        }
-                    } else {
-                        $margin = '';
-                    }
-
-                    if ($osgood) {
-                        // Ensure there are two bits of content.
-                        [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
-                    } else {
-                        $contents = question::parse_choice_content($content);
-                        if ($contents->modname) {
-                            $content = $contents->text;
-                        }
-                    }
-                    if (
-                        isset($contentobj->content) &&
-                        \mod_questionnaire\local\question\choice::content_other_choice_display($contentobj->content)
-                    ) {
-                        $othertext = \mod_questionnaire\local\question\choice::content_other_choice_display($contentobj->content);
-                        $content = $othertext . ' ' . clean_text($content);
-                    }
-                    if ($osgood) {
-                        $choicecol1 = new \stdClass();
-                        $choicecol1->width = $header1->width;
-                        $choicecol1->pdfwidth = $header1->pdfwidth;
-                        $choicecol1->align = $header1->align;
-                        $choicecol1->text = '<div class="mdl-right">' .
-                            format_text($content, FORMAT_HTML, ['noclean' => true]) . '</div>';
-                        $choicecol2 = new \stdClass();
-                        $choicecol2->width = $header2->width;
-                        $choicecol2->pdfwidth = $header2->pdfwidth;
-                        $choicecol2->align = $header2->align;
-                        $choicecol2->imageurl = $imageurl;
-                        $choicecol2->spacerimage = $spacerimage;
-                        $choicecol2->margin = $margin;
-                        $choicecol2->marginpdf = $marginpdf;
-                        $choicecol3 = new \stdClass();
-                        $choicecol3->width = $header3->width;
-                        $choicecol3->pdfwidth = $header3->pdfwidth;
-                        $choicecol3->align = $header3->align;
-                        $choicecol3->text = '<div class="mdl-left">' .
-                            format_text($contentright, FORMAT_HTML, ['noclean' => true]) . '</div>';
-                        $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1, 'column2' => $choicecol2,
-                            'column3' => $choicecol3];
-                        // JR JUNE 2012 do not display meaningless average rank values for Osgood.
-                    } else if ($avg || ($nbna != 0)) {
-                        $stravgval = '';
-                        if ($avg) {
-                            if ($stravgvalue) {
-                                $stravgval = '(' . sprintf('%.1f', $avgvalue) . ')';
-                            }
-                            $stravgval = sprintf('%.1f', $avg) . '&nbsp;' . $stravgval;
-                            if ($isna) {
-                                $choicecol4 = new \stdClass();
-                                $choicecol4->width = $header4->width;
-                                $choicecol4->pdfwidth = $header4->pdfwidth;
-                                $choicecol4->align = $header4->align;
-                                $choicecol4->text = $nbna;
-                            }
-                        }
-                        $choicecol1 = new \stdClass();
-                        $choicecol1->width = $header1->width;
-                        $choicecol1->pdfwidth = $header1->pdfwidth;
-                        $choicecol1->align = $header1->align;
-                        $choicecol1->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
-                        $choicecol2 = new \stdClass();
-                        $choicecol2->width = $header2->width;
-                        $choicecol2->pdfwidth = $header2->pdfwidth;
-                        $choicecol2->align = $header2->align;
-                        $choicecol2->imageurl = $imageurl;
-                        $choicecol2->spacerimage = $spacerimage;
-                        $choicecol2->margin = $margin;
-                        $choicecol2->marginpdf = $marginpdf;
-                        $choicecol3 = new \stdClass();
-                        $choicecol3->width = $header3->width;
-                        $choicecol3->pdfwidth = $header3->pdfwidth;
-                        $choicecol3->align = $header3->align;
-                        $choicecol3->text = $stravgval;
-                        if ($avg) {
-                            if (isset($choicecol4)) {
-                                $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1,
-                                    'column2' => $choicecol2, 'column3' => $choicecol3, 'column4' => $choicecol4];
-                            } else {
-                                $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1,
-                                    'column2' => $choicecol2, 'column3' => $choicecol3];
-                            }
-                        } else {
-                            $choicecol4 = new \stdClass();
-                            $choicecol4->width = $header4->width;
-                            $choicecol4->pdfwidth = $header4->pdfwidth;
-                            $choicecol4->align = $header4->align;
-                            $choicecol4->text = $nbna;
-                            $pagetags->averages->choiceaverages[] = (object)['column1' => $choicecol1, 'column2' => $choicecol2,
-                                'column3' => $choicecol3];
-                        }
-                    }
-                } // End if named degrees.
-            } // End foreach.
-        } else {
-            $nodata1 = new \stdClass();
-            $nodata1->width = $header1->width;
-            $nodata1->align = $header1->align;
-            $nodata1->text = '';
-            $nodata2 = new \stdClass();
-            $nodata2->width = $header2->width;
-            $nodata2->align = $header2->align;
-            $nodata2->text = get_string('noresponsedata', 'mod_questionnaire');
-            $nodata3 = new \stdClass();
-            $nodata3->width = $header3->width;
-            $nodata3->align = $header3->align;
-            $nodata3->text = '';
-            if (isset($header4)) {
-                $nodata4 = new \stdClass();
-                $nodata4->width = $header4->width;
-                $nodata4->align = $header4->align;
-                $nodata4->text = '';
-                $pagetags->averages->nodata = [$nodata1, $nodata2, $nodata3, $nodata4];
-            } else {
-                $pagetags->averages->nodata = [$nodata1, $nodata2, $nodata3];
+                if (preg_match("/^[0-9]{1,3}=/", $content)) {
+                    continue;
+                }
+                $row = $this->build_averages_choice_row(
+                    $content,
+                    $contentobj,
+                    $headers,
+                    $osgood,
+                    $isna,
+                    $isrestricted,
+                    $width,
+                    $innertablewidth,
+                    $imageurl,
+                    $spacerimage,
+                    $stravgvalue
+                );
+                if ($row !== null) {
+                    $pagetags->averages->choiceaverages[] = $row;
+                }
             }
+        } else {
+            $pagetags->averages->nodata = self::build_averages_nodata($headers);
         }
         return $pagetags;
+    }
+
+    /**
+     * Build the [label, avg-chart, arrow, optional N/A] header objects with widths and pdfwidths.
+     *
+     * @param bool $isna
+     * @param bool $osgood
+     * @param string $stravgrank
+     * @param string $stravgvalue
+     * @return \stdClass[] Indexed from 1.
+     */
+    private static function build_averages_headers(bool $isna, bool $osgood, string $stravgrank, string $stravgvalue): array {
+        // PDF columns are based on a 11.69in x 8.27in page. Margins are 15mm each side, or 1.1811 in total.
+        $pdfwidth = 11.69 - 1.1811;
+        $stravg = '<div style="text-align:right">' . $stravgrank . $stravgvalue . '</div>';
+        if ($isna) {
+            $widths = ['55%', '35%', '5%', '5%'];
+            $ratios = [.55, .35, .05, .05];
+            $isnahead = get_string('notapplicable', 'questionnaire');
+            $headers = [
+                1 => (object)['text' => '', 'align' => ''],
+                2 => (object)['text' => $stravg, 'align' => ''],
+                3 => (object)['text' => '&dArr;', 'align' => 'center'],
+                4 => (object)['text' => $isnahead, 'align' => 'right'],
+            ];
+        } else if ($osgood) {
+            $widths = ['25%', '50%', '25%'];
+            $ratios = [.25, .5, .25];
+            $stravg = '<div style="text-align:center">' . $stravgrank . '</div>';
+            $headers = [
+                1 => (object)['text' => '', 'align' => ''],
+                2 => (object)['text' => $stravg, 'align' => ''],
+                3 => (object)['text' => '', 'align' => 'center'],
+            ];
+        } else {
+            $widths = ['60%', '35%', '5%'];
+            $ratios = [.6, .35, .05];
+            $headers = [
+                1 => (object)['text' => '', 'align' => ''],
+                2 => (object)['text' => $stravg, 'align' => ''],
+                3 => (object)['text' => '&dArr;', 'align' => 'center'],
+            ];
+        }
+        $i = 0;
+        foreach ($headers as $h) {
+            $h->width = $widths[$i];
+            $h->pdfwidth = $pdfwidth * $ratios[$i];
+            $i++;
+        }
+        return $headers;
+    }
+
+    /**
+     * Effective rank-axis length (number of rank columns), accounting for the
+     * +1 added when the question is "restricted" (length < #choices).
+     *
+     * @param bool $isrestricted
+     * @return int
+     */
+    private function effective_length(bool $isrestricted): int {
+        $llength = $this->question->length() ?: 5;
+        return $llength + (int)$isrestricted;
+    }
+
+    /**
+     * Build the per-rank column objects shown above the average chart.
+     *
+     * @param \stdClass $chartheader The middle (avg-chart) header used for pdfwidth scaling.
+     * @param bool $isrestricted
+     * @return \stdClass[]
+     */
+    private function build_rank_columns(\stdClass $chartheader, bool $isrestricted): array {
+        $llength = $this->effective_length($isrestricted);
+        $width = 100 / $llength;
+        $names = array_values($this->question->nameddegrees);
+        $pdfwidth = $chartheader->pdfwidth / (100 / $width);
+        $rankcols = [];
+        for ($i = 0; $i < $llength; $i++) {
+            if ($isrestricted && $i == $llength - 1) {
+                $text = '...';
+            } else if (isset($names[$i])) {
+                $text = $names[$i];
+            } else {
+                $text = $i + 1;
+            }
+            $rankcols[] = (object)['width' => $width . '%', 'text' => $text, 'pdfwidth' => $pdfwidth];
+        }
+        return $rankcols;
+    }
+
+    /**
+     * Assemble the row that labels the rank columns and slots in the headers' widths.
+     *
+     * @param array $headers
+     * @param array $rankcols
+     * @return \stdClass
+     */
+    private static function build_averages_label_row(array $headers, array $rankcols): \stdClass {
+        $row = new \stdClass();
+        $row->innertablewidth = $headers[2]->pdfwidth;
+        $row->column1 = (object)[
+            'width' => $headers[1]->width, 'align' => $headers[1]->align,
+            'text' => '', 'pdfwidth' => $headers[1]->pdfwidth,
+        ];
+        $row->column2 = (object)[
+            'width' => $headers[2]->width, 'align' => $headers[2]->align,
+            'ranks' => $rankcols, 'pdfwidth' => $headers[2]->pdfwidth,
+        ];
+        $row->column3 = (object)[
+            'width' => $headers[3]->width, 'align' => $headers[3]->align,
+            'text' => '', 'pdfwidth' => $headers[3]->pdfwidth,
+        ];
+        if (isset($headers[4])) {
+            $row->column4 = (object)[
+                'width' => $headers[4]->width, 'align' => $headers[4]->align,
+                'text' => '', 'pdfwidth' => $headers[4]->pdfwidth,
+            ];
+        }
+        return $row;
+    }
+
+    /**
+     * Sort $this->counts in place by the avg field, depending on $sort.
+     *
+     * @param array $counts
+     * @param string $sort 'ascending', 'descending', or anything else (no-op).
+     */
+    private static function sort_counts_by_avg(array &$counts, string $sort): void {
+        if ($sort === 'ascending') {
+            uasort($counts, self::class . '::sortavgasc');
+        } else if ($sort === 'descending') {
+            uasort($counts, self::class . '::sortavgdesc');
+        }
+        reset($counts);
+    }
+
+    /**
+     * Build one choice-average row, or return null when the row should be skipped
+     * (osgood charts skip zero-avg rows; normal charts skip rows with no avg and zero N/As).
+     *
+     * @param string $content
+     * @param \stdClass $contentobj
+     * @param array $headers
+     * @param bool $osgood
+     * @param bool $isna
+     * @param bool $isrestricted
+     * @param float $width
+     * @param float $innertablewidth
+     * @param string $imageurl
+     * @param string $spacerimage
+     * @param string $stravgvalue
+     * @return \stdClass|null
+     */
+    private function build_averages_choice_row(
+        string $content,
+        \stdClass $contentobj,
+        array $headers,
+        bool $osgood,
+        bool $isna,
+        bool $isrestricted,
+        float $width,
+        float $innertablewidth,
+        string $imageurl,
+        string $spacerimage,
+        string $stravgvalue
+    ): ?\stdClass {
+        // Resolve avg / avgvalue / nbna for this content.
+        $avg = '';
+        $avgvalue = '';
+        if (isset($contentobj->avg)) {
+            $avg = $contentobj->avg;
+            if (isset($contentobj->avgvalue)) {
+                $avgvalue = $contentobj->avg;
+                $avg = $contentobj->avgvalue;
+            }
+        }
+        $nbna = $contentobj->nbna;
+
+        // Compute the chart-bar margin for the average position.
+        $margin = '';
+        $marginpdf = 0;
+        if ($avg) {
+            $marginposition = ($avg - 0.5) / ($this->question->length() + (int)$isrestricted);
+            if (!right_to_left()) {
+                $margin = 'margin-left:' . $marginposition * 100 . '%';
+                $marginpdf = $marginposition * $innertablewidth;
+            } else {
+                $margin = 'margin-right:' . $marginposition * 100 . '%';
+                $marginpdf = $innertablewidth - ($marginposition * $innertablewidth);
+            }
+        }
+
+        // Split osgood "left|right" pairs; otherwise parse for embedded mod names.
+        $contentright = ' ';
+        if ($osgood) {
+            [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
+        } else {
+            $parsed = question::parse_choice_content($content);
+            if ($parsed->modname) {
+                $content = $parsed->text;
+            }
+        }
+        if (
+            isset($contentobj->content) &&
+            \mod_questionnaire\local\question\choice::content_other_choice_display($contentobj->content)
+        ) {
+            $othertext = \mod_questionnaire\local\question\choice::content_other_choice_display($contentobj->content);
+            $content = $othertext . ' ' . clean_text($content);
+        }
+
+        $chartcol = self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf);
+
+        if ($osgood) {
+            return (object)[
+                'column1' => self::make_text_column(
+                    $headers[1],
+                    '<div class="mdl-right">' . format_text($content, FORMAT_HTML, ['noclean' => true]) . '</div>'
+                ),
+                'column2' => $chartcol,
+                'column3' => self::make_text_column(
+                    $headers[3],
+                    '<div class="mdl-left">' . format_text($contentright, FORMAT_HTML, ['noclean' => true]) . '</div>'
+                ),
+            ];
+        }
+
+        // Non-osgood: skip rows that have neither an avg nor any N/A responses.
+        if (!$avg && ($nbna == 0)) {
+            return null;
+        }
+
+        $stravgval = '';
+        if ($avg) {
+            $stravgval = sprintf('%.1f', $avg) . '&nbsp;';
+            if ($stravgvalue) {
+                $stravgval .= '(' . sprintf('%.1f', $avgvalue) . ')';
+            }
+        }
+
+        $row = (object)[
+            'column1' => self::make_text_column($headers[1], format_text($content, FORMAT_HTML, ['noclean' => true])),
+            'column2' => $chartcol,
+            'column3' => self::make_text_column($headers[3], $stravgval),
+        ];
+        if ($isna) {
+            // Always emit column4 for isna; the value is nbna whether or not an avg exists.
+            $row->column4 = self::make_text_column($headers[4], $nbna);
+        }
+        return $row;
+    }
+
+    /**
+     * Build a simple text-bearing column object from a header template.
+     *
+     * @param \stdClass $header
+     * @param string $text
+     * @return \stdClass
+     */
+    private static function make_text_column(\stdClass $header, $text): \stdClass {
+        return (object)[
+            'width'    => $header->width,
+            'pdfwidth' => $header->pdfwidth,
+            'align'    => $header->align,
+            'text'     => $text,
+        ];
+    }
+
+    /**
+     * Build the chart-bar column with image + margin metadata.
+     *
+     * @param \stdClass $header
+     * @param string $imageurl
+     * @param string $spacerimage
+     * @param string $margin
+     * @param float $marginpdf
+     * @return \stdClass
+     */
+    private static function make_chart_column(
+        \stdClass $header,
+        string $imageurl,
+        string $spacerimage,
+        string $margin,
+        float $marginpdf
+    ): \stdClass {
+        return (object)[
+            'width'       => $header->width,
+            'pdfwidth'    => $header->pdfwidth,
+            'align'       => $header->align,
+            'imageurl'    => $imageurl,
+            'spacerimage' => $spacerimage,
+            'margin'      => $margin,
+            'marginpdf'   => $marginpdf,
+        ];
+    }
+
+    /**
+     * Build the "no responses" placeholder row for the averages table.
+     *
+     * @param array $headers
+     * @return \stdClass[]
+     */
+    private static function build_averages_nodata(array $headers): array {
+        $nodata = [];
+        foreach ($headers as $i => $header) {
+            $nodata[] = (object)[
+                'width' => $header->width,
+                'align' => $header->align,
+                'text'  => ($i === 2) ? get_string('noresponsedata', 'mod_questionnaire') : '',
+            ];
+        }
+        return $nodata;
     }
 
     /**
@@ -856,20 +916,61 @@ class rank extends responsetype {
      * @return \stdClass
      */
     private function mkrescount($rids, $rows, $sort) {
-        // Display number of responses to Rate questions - see http://moodle.org/mod/forum/discuss.php?d=185106.
-        global $DB;
-
         $nbresponses = count($rids);
-        // Prepare data to be displayed.
         $isrestricted = ($this->question->length() < count($this->question->choices)) && $this->question->precise() == 2;
+        $isna = ($this->question->precise() == 1);
+        $osgood = ($this->question->precise() == 3);
 
+        $choices = $this->fetch_count_choices($rids);
+        self::sort_rows_by_average($rows, $sort);
+        $ranks = $this->tally_ranks($choices, $rows);
+
+        // Strip embedded mod-name annotations from each persisted choice content.
+        foreach ($this->question->choices as $choice) {
+            $parsed = question::parse_choice_content($choice->content);
+            if ($parsed->modname) {
+                $choice->content = $parsed->text;
+            }
+        }
+
+        $pagetags = new \stdClass();
+        $pagetags->totals = new \stdClass();
+        $pagetags->totals->headers = $this->build_totals_headers($osgood, $isna, $isrestricted);
+        $pagetags->totals->choices = [];
+        foreach ($ranks as $content => $rank) {
+            // Eliminate potential named degrees on Likert scale.
+            if (preg_match("/^[0-9]{1,3}=/", $content)) {
+                continue;
+            }
+            $totalcols = $this->build_totals_choice_row(
+                $content,
+                $rank,
+                $rows,
+                $pagetags->totals->headers,
+                $osgood,
+                $isna,
+                $isrestricted,
+                $nbresponses
+            );
+            $pagetags->totals->choices[] = (object)['totalcols' => $totalcols];
+        }
+        return $pagetags;
+    }
+
+    /**
+     * Fetch the per-choice rank rows for this question, joined to "!other" override text.
+     *
+     * @param array $rids
+     * @return array
+     */
+    private function fetch_count_choices(array $rids): array {
+        global $DB;
         $rsql = '';
+        $params = [];
         if (!empty($rids)) {
             [$rsql, $params] = $DB->get_in_or_equal($rids);
             $rsql = ' AND responseid ' . $rsql;
         }
-
-        // This is questionid.
         array_push($params, $this->question->id());
         $sql = "SELECT r.id,
                        CASE
@@ -884,191 +985,197 @@ class rank extends responsetype {
                        AND o.questionid = c.questionid
                  WHERE c.questionid = ? AND (c.content != '!other' OR (o.response IS NOT NULL AND o.response <> ''))
               ORDER BY choiceid, rankvalue ASC";
-        $choices = $DB->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, $params);
+    }
 
-        // Sort rows (results) by average value.
-        if ($sort != 'default') {
-            $sortarray = [];
-            foreach ($rows as $row) {
-                foreach ($row as $key => $value) {
-                    if (!isset($sortarray[$key])) {
-                        $sortarray[$key] = [];
-                    }
-                    $sortarray[$key][] = $value;
-                }
-            }
-            $orderby = "average";
-            switch ($sort) {
-                case 'ascending':
-                    array_multisort($sortarray[$orderby], SORT_ASC, $rows);
-                    break;
-                case 'descending':
-                    array_multisort($sortarray[$orderby], SORT_DESC, $rows);
-                    break;
+    /**
+     * Sort the get_results() rows by their average field in place.
+     *
+     * @param array $rows
+     * @param string $sort 'ascending', 'descending', or anything else (no-op).
+     */
+    private static function sort_rows_by_average(array &$rows, string $sort): void {
+        if ($sort === 'default') {
+            return;
+        }
+        $sortarray = [];
+        foreach ($rows as $row) {
+            foreach ($row as $key => $value) {
+                $sortarray[$key][] = $value;
             }
         }
+        if (!isset($sortarray['average'])) {
+            return;
+        }
+        if ($sort === 'ascending') {
+            array_multisort($sortarray['average'], SORT_ASC, $rows);
+        } else if ($sort === 'descending') {
+            array_multisort($sortarray['average'], SORT_DESC, $rows);
+        }
+    }
+
+    /**
+     * Tally how many responses fell into each rank position, per choice content.
+     *
+     * Returns a nested array: [content => [rankposition(1-based) => count, ...], ...].
+     *
+     * @param array $choices Result of {@see fetch_count_choices()}.
+     * @param array $rows Result of {@see get_results()}.
+     * @return array
+     */
+    private function tally_ranks(array $choices, array $rows): array {
         $nbranks = $this->question->length();
-        $ranks = [];
         $rankvalue = [];
         if (!empty($this->question->nameddegrees)) {
             $rankvalue = array_flip(array_keys($this->question->nameddegrees));
         }
+        $ranks = [];
         foreach ($rows as $key => $row) {
             $choiceid = $row->id;
             foreach ($choices as $choice) {
-                if ($choice->choiceid == $choiceid && $choice->content === $key) {
-                    $n = 0;
-                    for ($i = 1; $i <= $nbranks; $i++) {
-                        if (
-                            (isset($rankvalue[$choice->rankvalue]) && ($rankvalue[$choice->rankvalue] == ($i - 1))) ||
-                            (empty($rankvalue) && ($choice->rankvalue == $i))
-                        ) {
-                            $n++;
-                            if (!isset($ranks[$choice->content][$i])) {
-                                $ranks[$choice->content][$i] = 0;
-                            }
-                            $ranks[$choice->content][$i] += $n;
-                        } else if (!isset($ranks[$choice->content][$i])) {
-                            $ranks[$choice->content][$i] = 0;
-                        }
+                if ($choice->choiceid != $choiceid || $choice->content !== $key) {
+                    continue;
+                }
+                for ($i = 1; $i <= $nbranks; $i++) {
+                    $hit = (isset($rankvalue[$choice->rankvalue]) && ($rankvalue[$choice->rankvalue] == ($i - 1)))
+                        || (empty($rankvalue) && ($choice->rankvalue == $i));
+                    if (!isset($ranks[$choice->content][$i])) {
+                        $ranks[$choice->content][$i] = 0;
+                    }
+                    if ($hit) {
+                        $ranks[$choice->content][$i]++;
                     }
                 }
             }
         }
+        return $ranks;
+    }
 
-        // Psettings for display.
-        $strtotal = '<strong>' . get_string('total', 'questionnaire') . '</strong>';
-        $isna = $this->question->precise() == 1;
-        $osgood = false;
-        if ($this->question->precise() == 3) { // Osgood's semantic differential.
-            $osgood = true;
-        }
-        if ($this->question->precise() == 1) {
-            $na = get_string('notapplicable', 'questionnaire');
-        } else {
-            $na = '';
-        }
-        $nameddegrees = 0;
-        $n = [];
-        foreach ($this->question->nameddegrees as $degree) {
-            $content = $degree;
-            $n[$nameddegrees] = format_text($content, FORMAT_HTML, ['noclean' => true]);
-            $nameddegrees++;
-        }
-        foreach ($this->question->choices as $choice) {
-            $contents = question::parse_choice_content($choice->content);
-            if ($contents->modname) {
-                $choice->content = $contents->text;
-            }
-        }
-
-        $pagetags = new \stdClass();
-        $pagetags->totals = new \stdClass();
-        $pagetags->totals->headers = [];
-        if ($osgood) {
-            $align = 'right';
-        } else {
-            $align = 'left';
-        }
-        $pagetags->totals->headers[] = (object)[
-            'align' => $align,
-            'text' => '<span class="smalltext">' . get_string('responses', 'questionnaire') . '</span>',
+    /**
+     * Build the header row of the counts table.
+     *
+     * @param bool $osgood
+     * @param bool $isna
+     * @param bool $isrestricted
+     * @return \stdClass[]
+     */
+    private function build_totals_headers(bool $osgood, bool $isna, bool $isrestricted): array {
+        $headers = [];
+        $headers[] = (object)[
+            'align' => $osgood ? 'right' : 'left',
+            'text'  => '<span class="smalltext">' . get_string('responses', 'questionnaire') . '</span>',
         ];
 
-        // Display the column titles.
+        $names = [];
+        foreach (array_values($this->question->nameddegrees) as $i => $degree) {
+            $names[$i] = format_text($degree, FORMAT_HTML, ['noclean' => true]);
+        }
         for ($j = 0; $j < $this->question->length(); $j++) {
-            if (isset($n[$j])) {
-                $str = $n[$j];
-            } else {
-                $str = $j + 1;
-            }
-            $pagetags->totals->headers[] = (object)['align' => 'center', 'text' => '<span class="smalltext">' . $str . '</span>'];
+            $label = $names[$j] ?? ($j + 1);
+            $headers[] = (object)['align' => 'center', 'text' => '<span class="smalltext">' . $label . '</span>'];
         }
         if ($osgood) {
-            $pagetags->totals->headers[] = (object)['align' => 'left', 'text' => ''];
+            $headers[] = (object)['align' => 'left', 'text' => ''];
         }
-        $pagetags->totals->headers[] = (object)['align' => 'center', 'text' => $strtotal];
+        $headers[] = (object)[
+            'align' => 'center',
+            'text'  => '<strong>' . get_string('total', 'questionnaire') . '</strong>',
+        ];
         if ($isrestricted) {
-            $pagetags->totals->headers[] = (object)['align' => 'center', 'text' => get_string('notapplicable', 'questionnaire')];
+            $headers[] = (object)['align' => 'center', 'text' => get_string('notapplicable', 'questionnaire')];
         }
-        if ($na) {
-            $pagetags->totals->headers[] = (object)['align' => 'center', 'text' => $na];
+        if ($isna) {
+            $headers[] = (object)['align' => 'center', 'text' => get_string('notapplicable', 'questionnaire')];
+        }
+        return $headers;
+    }
+
+    /**
+     * Build the columns of one choice row in the counts table.
+     *
+     * The headers array is iterated via reset()/next() to consume one header per emitted column.
+     *
+     * @param string $content
+     * @param array $rank
+     * @param array $rows
+     * @param array $headers
+     * @param bool $osgood
+     * @param bool $isna
+     * @param bool $isrestricted
+     * @param int $nbresponses
+     * @return \stdClass[]
+     */
+    private function build_totals_choice_row(
+        string $content,
+        array $rank,
+        array $rows,
+        array $headers,
+        bool $osgood,
+        bool $isna,
+        bool $isrestricted,
+        int $nbresponses
+    ): array {
+        $nbna = $this->counts[$content]->nbna;
+        $total = $this->counts[$content]->num;
+        $nbresp = '<strong>(' . $total . ')</strong>';
+
+        $contentright = '';
+        if ($osgood) {
+            [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
+        } else {
+            $parsed = question::parse_choice_content($content);
+            if ($parsed->modname) {
+                $content = $parsed->text;
+            }
+        }
+        if (isset($rows[$content]) && isset($rows[$content]->isother) && $rows[$content]->isother) {
+            $content = get_string('other', 'questionnaire') . ' ' . $content;
         }
 
-        // Now display the responses.
-        $pagetags->totals->choices = [];
-        foreach ($ranks as $content => $rank) {
-            $totalcols = [];
-            // Eliminate potential named degrees on Likert scale.
-            if (!preg_match("/^[0-9]{1,3}=/", $content)) {
-                // First display the list of degrees (named or un-named)
-                // number of NOT AVAILABLE responses for this possible answer.
-                $nbna = $this->counts[$content]->nbna;
-                // TOTAL number of responses for this possible answer.
-                $total = $this->counts[$content]->num;
-                $nbresp = '<strong>(' . $total . ')</strong>';
-                if ($osgood) {
-                    // Ensure there are two bits of content.
-                    [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
-                    $header = reset($pagetags->totals->headers);
-                    if (isset($rows[$content]) && isset($rows[$content]->isother) && $rows[$content]->isother) {
-                        $content = get_string('other', 'questionnaire') . ' ' . $content;
-                    }
-                    $totalcols[] = (object)['align' => $header->align,
-                        'text' => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false])];
-                } else {
-                    // Eliminate potentially short-named choices.
-                    $contents = question::parse_choice_content($content);
-                    if ($contents->modname) {
-                        $content = $contents->text;
-                    }
-                    if (isset($rows[$content]) && isset($rows[$content]->isother) && $rows[$content]->isother) {
-                        $content = get_string('other', 'questionnaire') . ' ' . $content;
-                    }
-                    $header = reset($pagetags->totals->headers);
-                    $totalcols[] = (object)['align' => $header->align,
-                        'text' => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false])];
-                }
-                // Display ranks/rates numbers.
-                $maxrank = max($rank);
-                for ($i = 1; $i <= $this->question->length(); $i++) {
-                    $percent = '';
-                    if (isset($rank[$i])) {
-                        $str = $rank[$i];
-                        if ($total !== 0 && $str !== 0) {
-                            $percent = ' (<span class="percent">' . number_format(($str * 100) / $total) . '%</span>)';
-                        }
-                        // Emphasize responses with max rank value.
-                        if ($str == $maxrank) {
-                            $str = '<strong>' . $str . '</strong>';
-                        }
-                    } else {
-                        $str = 0;
-                    }
-                    $header = next($pagetags->totals->headers);
-                    $totalcols[] = (object)['align' => $header->align, 'text' => $str . $percent];
-                }
-                if ($osgood) {
-                    $header = next($pagetags->totals->headers);
-                    $totalcols[] = (object)['align' => $header->align,
-                        'text' => format_text($contentright, FORMAT_HTML, ['noclean' => true])];
-                }
-                $header = next($pagetags->totals->headers);
-                $totalcols[] = (object)['align' => $header->align, 'text' => $nbresp];
-                if ($isrestricted) {
-                    $header = next($pagetags->totals->headers);
-                    $totalcols[] = (object)['align' => $header->align, 'text' => $nbresponses - $total];
-                }
-                if (!$osgood) {
-                    if ($na) {
-                        $header = next($pagetags->totals->headers);
-                        $totalcols[] = (object)['align' => $header->align, 'text' => $nbna];
-                    }
-                }
-            } // End named degrees.
-            $pagetags->totals->choices[] = (object)['totalcols' => $totalcols];
+        $cols = [];
+        $header = reset($headers);
+        $cols[] = (object)[
+            'align' => $header->align,
+            'text'  => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false]),
+        ];
+
+        // Rank/rate numbers.
+        $maxrank = max($rank);
+        for ($i = 1; $i <= $this->question->length(); $i++) {
+            $str = $rank[$i] ?? 0;
+            $percent = '';
+            if ($total !== 0 && $str !== 0) {
+                $percent = ' (<span class="percent">' . number_format(($str * 100) / $total) . '%</span>)';
+            }
+            if ($str == $maxrank) {
+                $str = '<strong>' . $str . '</strong>';
+            }
+            $header = next($headers);
+            $cols[] = (object)['align' => $header->align, 'text' => $str . $percent];
         }
-        return $pagetags;
+
+        if ($osgood) {
+            $header = next($headers);
+            $cols[] = (object)[
+                'align' => $header->align,
+                'text'  => format_text($contentright, FORMAT_HTML, ['noclean' => true]),
+            ];
+        }
+
+        $header = next($headers);
+        $cols[] = (object)['align' => $header->align, 'text' => $nbresp];
+
+        if ($isrestricted) {
+            $header = next($headers);
+            $cols[] = (object)['align' => $header->align, 'text' => $nbresponses - $total];
+        }
+
+        if (!$osgood && $isna) {
+            $header = next($headers);
+            $cols[] = (object)['align' => $header->align, 'text' => $nbna];
+        }
+
+        return $cols;
     }
 
     /**
