@@ -538,6 +538,24 @@ class rank extends responsetype {
     }
 
     /**
+     * True when the underlying rate question has a "Not applicable" column (precise == 1).
+     *
+     * @return bool
+     */
+    private function is_na(): bool {
+        return $this->question->precise() == 1;
+    }
+
+    /**
+     * True when the underlying rate question uses Osgood's semantic differential (precise == 3).
+     *
+     * @return bool
+     */
+    private function is_osgood(): bool {
+        return $this->question->precise() == 3;
+    }
+
+    /**
      * Return a structure for averages.
      * @param string $sort
      * @param string $stravgvalue
@@ -546,8 +564,6 @@ class rank extends responsetype {
     private function mkresavg($sort, $stravgvalue = '') {
         global $CFG;
 
-        $osgood = ($this->question->precise() == 3);
-        $isna = ($this->question->precise() == 1);
         $isrestricted = ($this->question->length() < count($this->counts)) && $this->question->precise() == 2;
 
         $headers = $this->build_averages_headers($stravgvalue);
@@ -575,8 +591,6 @@ class rank extends responsetype {
                     $content,
                     $contentobj,
                     $headers,
-                    $osgood,
-                    $isna,
                     $isrestricted,
                     $width,
                     $innertablewidth,
@@ -603,8 +617,8 @@ class rank extends responsetype {
      * @return \stdClass[] Indexed from 1.
      */
     private function build_averages_headers(string $stravgvalue): array {
-        $isna = ($this->question->precise() == 1);
-        $osgood = ($this->question->precise() == 3);
+        $isna = $this->is_na();
+        $osgood = $this->is_osgood();
         $stravgrank = $osgood
             ? get_string('averageposition', 'questionnaire')
             : get_string('averagerank', 'questionnaire');
@@ -740,8 +754,6 @@ class rank extends responsetype {
      * @param string $content
      * @param \stdClass $contentobj
      * @param array $headers
-     * @param bool $osgood
-     * @param bool $isna
      * @param bool $isrestricted
      * @param float $width
      * @param float $innertablewidth
@@ -754,8 +766,6 @@ class rank extends responsetype {
         string $content,
         \stdClass $contentobj,
         array $headers,
-        bool $osgood,
-        bool $isna,
         bool $isrestricted,
         float $width,
         float $innertablewidth,
@@ -763,6 +773,8 @@ class rank extends responsetype {
         string $spacerimage,
         string $stravgvalue
     ): ?\stdClass {
+        $osgood = $this->is_osgood();
+        $isna = $this->is_na();
         // Resolve avg / avgvalue / nbna for this content.
         $avg = '';
         $avgvalue = '';
@@ -920,8 +932,6 @@ class rank extends responsetype {
     private function mkrescount($rids, $rows, $sort) {
         $nbresponses = count($rids);
         $isrestricted = ($this->question->length() < count($this->question->choices)) && $this->question->precise() == 2;
-        $isna = ($this->question->precise() == 1);
-        $osgood = ($this->question->precise() == 3);
 
         $choices = $this->fetch_count_choices($rids);
         self::sort_rows_by_average($rows, $sort);
@@ -937,7 +947,7 @@ class rank extends responsetype {
 
         $pagetags = new \stdClass();
         $pagetags->totals = new \stdClass();
-        $pagetags->totals->headers = $this->build_totals_headers($osgood, $isna, $isrestricted);
+        $pagetags->totals->headers = $this->build_totals_headers($isrestricted);
         $pagetags->totals->choices = [];
         foreach ($ranks as $content => $rank) {
             // Eliminate potential named degrees on Likert scale.
@@ -949,8 +959,6 @@ class rank extends responsetype {
                 $rank,
                 $rows,
                 $pagetags->totals->headers,
-                $osgood,
-                $isna,
                 $isrestricted,
                 $nbresponses
             );
@@ -1056,15 +1064,13 @@ class rank extends responsetype {
     /**
      * Build the header row of the counts table.
      *
-     * @param bool $osgood
-     * @param bool $isna
      * @param bool $isrestricted
      * @return \stdClass[]
      */
-    private function build_totals_headers(bool $osgood, bool $isna, bool $isrestricted): array {
+    private function build_totals_headers(bool $isrestricted): array {
         $headers = [];
         $headers[] = (object)[
-            'align' => $osgood ? 'right' : 'left',
+            'align' => $this->is_osgood() ? 'right' : 'left',
             'text'  => '<span class="smalltext">' . get_string('responses', 'questionnaire') . '</span>',
         ];
 
@@ -1076,7 +1082,7 @@ class rank extends responsetype {
             $label = $names[$j] ?? ($j + 1);
             $headers[] = (object)['align' => 'center', 'text' => '<span class="smalltext">' . $label . '</span>'];
         }
-        if ($osgood) {
+        if ($this->is_osgood()) {
             $headers[] = (object)['align' => 'left', 'text' => ''];
         }
         $headers[] = (object)[
@@ -1086,7 +1092,7 @@ class rank extends responsetype {
         if ($isrestricted) {
             $headers[] = (object)['align' => 'center', 'text' => get_string('notapplicable', 'questionnaire')];
         }
-        if ($isna) {
+        if ($this->is_na()) {
             $headers[] = (object)['align' => 'center', 'text' => get_string('notapplicable', 'questionnaire')];
         }
         return $headers;
@@ -1101,8 +1107,6 @@ class rank extends responsetype {
      * @param array $rank
      * @param array $rows
      * @param array $headers
-     * @param bool $osgood
-     * @param bool $isna
      * @param bool $isrestricted
      * @param int $nbresponses
      * @return \stdClass[]
@@ -1112,11 +1116,11 @@ class rank extends responsetype {
         array $rank,
         array $rows,
         array $headers,
-        bool $osgood,
-        bool $isna,
         bool $isrestricted,
         int $nbresponses
     ): array {
+        $osgood = $this->is_osgood();
+        $isna = $this->is_na();
         $nbna = $this->counts[$content]->nbna;
         $total = $this->counts[$content]->num;
         $nbresp = '<strong>(' . $total . ')</strong>';
