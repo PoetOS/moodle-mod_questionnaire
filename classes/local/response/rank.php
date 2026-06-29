@@ -579,7 +579,6 @@ class rank extends responsetype {
         if (!empty($this->counts) && is_array($this->counts)) {
             $imageurl = $CFG->wwwroot . '/mod/questionnaire/images/hbar.gif';
             $spacerimage = $CFG->wwwroot . '/mod/questionnaire/images/hbartransp.gif';
-            $width = 100 / ($this->effective_length($isrestricted));
             $innertablewidth = $pagetags->averages->choicelabelrow->innertablewidth;
             $pagetags->averages->choiceaverages = [];
             foreach ($this->counts as $content => $contentobj) {
@@ -587,17 +586,26 @@ class rank extends responsetype {
                 if (preg_match("/^[0-9]{1,3}=/", $content)) {
                     continue;
                 }
-                $row = $this->build_averages_choice_row(
-                    $content,
-                    $contentobj,
-                    $headers,
-                    $isrestricted,
-                    $width,
-                    $innertablewidth,
-                    $imageurl,
-                    $spacerimage,
-                    $stravgvalue
-                );
+                $row = $this->is_osgood()
+                    ? $this->build_osgood_choice_row(
+                        $content,
+                        $contentobj,
+                        $headers,
+                        $isrestricted,
+                        $innertablewidth,
+                        $imageurl,
+                        $spacerimage
+                    )
+                    : $this->build_default_choice_row(
+                        $content,
+                        $contentobj,
+                        $headers,
+                        $isrestricted,
+                        $innertablewidth,
+                        $imageurl,
+                        $spacerimage,
+                        $stravgvalue
+                    );
                 if ($row !== null) {
                     $pagetags->averages->choiceaverages[] = $row;
                 }
@@ -748,97 +756,83 @@ class rank extends responsetype {
     }
 
     /**
-     * Build one choice-average row, or return null when the row should be skipped
-     * (osgood charts skip zero-avg rows; normal charts skip rows with no avg and zero N/As).
+     * Build the osgood-shaped choice row: left-text | chart-bar | right-text.
+     *
+     * @param string $content The osgood "left|right" label as stored in counts.
+     * @param \stdClass $contentobj The matching $this->counts entry.
+     * @param array $headers
+     * @param bool $isrestricted
+     * @param float $innertablewidth
+     * @param string $imageurl
+     * @param string $spacerimage
+     * @return \stdClass
+     */
+    private function build_osgood_choice_row(
+        string $content,
+        \stdClass $contentobj,
+        array $headers,
+        bool $isrestricted,
+        float $innertablewidth,
+        string $imageurl,
+        string $spacerimage
+    ): \stdClass {
+        [$avg, , ] = $this->resolve_choice_avg($contentobj);
+        [$margin, $marginpdf] = $this->chart_bar_position($avg, $isrestricted, $innertablewidth);
+
+        [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
+        $content = $this->maybe_prefix_other($content, $contentobj);
+
+        return (object)[
+            'column1' => self::make_text_column(
+                $headers[1],
+                '<div class="mdl-right">' . format_text($content, FORMAT_HTML, ['noclean' => true]) . '</div>'
+            ),
+            'column2' => self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf),
+            'column3' => self::make_text_column(
+                $headers[3],
+                '<div class="mdl-left">' . format_text($contentright, FORMAT_HTML, ['noclean' => true]) . '</div>'
+            ),
+        ];
+    }
+
+    /**
+     * Build the default (non-osgood) choice row, or return null when the row should
+     * be skipped (no avg AND no N/A responses to display).
      *
      * @param string $content
      * @param \stdClass $contentobj
      * @param array $headers
      * @param bool $isrestricted
-     * @param float $width
      * @param float $innertablewidth
      * @param string $imageurl
      * @param string $spacerimage
-     * @param string $stravgvalue
+     * @param string $stravgvalue Optional "(and average values)" suffix from mkresavg.
      * @return \stdClass|null
      */
-    private function build_averages_choice_row(
+    private function build_default_choice_row(
         string $content,
         \stdClass $contentobj,
         array $headers,
         bool $isrestricted,
-        float $width,
         float $innertablewidth,
         string $imageurl,
         string $spacerimage,
         string $stravgvalue
     ): ?\stdClass {
-        $osgood = $this->is_osgood();
-        $isna = $this->is_na();
-        // Resolve avg / avgvalue / nbna for this content.
-        $avg = '';
-        $avgvalue = '';
-        if (isset($contentobj->avg)) {
-            $avg = $contentobj->avg;
-            if (isset($contentobj->avgvalue)) {
-                $avgvalue = $contentobj->avg;
-                $avg = $contentobj->avgvalue;
-            }
-        }
-        $nbna = $contentobj->nbna;
+        [$avg, $avgvalue, $nbna] = $this->resolve_choice_avg($contentobj);
 
-        // Compute the chart-bar margin for the average position.
-        $margin = '';
-        $marginpdf = 0;
-        if ($avg) {
-            $marginposition = ($avg - 0.5) / ($this->question->length() + (int)$isrestricted);
-            if (!right_to_left()) {
-                $margin = 'margin-left:' . $marginposition * 100 . '%';
-                $marginpdf = $marginposition * $innertablewidth;
-            } else {
-                $margin = 'margin-right:' . $marginposition * 100 . '%';
-                $marginpdf = $innertablewidth - ($marginposition * $innertablewidth);
-            }
-        }
-
-        // Split osgood "left|right" pairs; otherwise parse for embedded mod names.
-        $contentright = ' ';
-        if ($osgood) {
-            [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
-        } else {
-            $parsed = question::parse_choice_content($content);
-            if ($parsed->modname) {
-                $content = $parsed->text;
-            }
-        }
-        if (
-            isset($contentobj->content) &&
-            \mod_questionnaire\local\question\choice::content_other_choice_display($contentobj->content)
-        ) {
-            $othertext = \mod_questionnaire\local\question\choice::content_other_choice_display($contentobj->content);
-            $content = $othertext . ' ' . clean_text($content);
-        }
-
-        $chartcol = self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf);
-
-        if ($osgood) {
-            return (object)[
-                'column1' => self::make_text_column(
-                    $headers[1],
-                    '<div class="mdl-right">' . format_text($content, FORMAT_HTML, ['noclean' => true]) . '</div>'
-                ),
-                'column2' => $chartcol,
-                'column3' => self::make_text_column(
-                    $headers[3],
-                    '<div class="mdl-left">' . format_text($contentright, FORMAT_HTML, ['noclean' => true]) . '</div>'
-                ),
-            ];
-        }
-
-        // Non-osgood: skip rows that have neither an avg nor any N/A responses.
+        // Skip rows that have neither an avg nor any N/A responses.
         if (!$avg && ($nbna == 0)) {
             return null;
         }
+
+        [$margin, $marginpdf] = $this->chart_bar_position($avg, $isrestricted, $innertablewidth);
+
+        $parsed = question::parse_choice_content($content);
+        if ($parsed->modname) {
+            $content = $parsed->text;
+        }
+        $content = $this->maybe_prefix_other($content, $contentobj);
 
         $stravgval = '';
         if ($avg) {
@@ -850,14 +844,78 @@ class rank extends responsetype {
 
         $row = (object)[
             'column1' => self::make_text_column($headers[1], format_text($content, FORMAT_HTML, ['noclean' => true])),
-            'column2' => $chartcol,
+            'column2' => self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf),
             'column3' => self::make_text_column($headers[3], $stravgval),
         ];
-        if ($isna) {
+        if ($this->is_na()) {
             // Always emit column4 for isna; the value is nbna whether or not an avg exists.
             $row->column4 = self::make_text_column($headers[4], $nbna);
         }
         return $row;
+    }
+
+    /**
+     * Resolve a counts entry into [avg, avgvalue, nbna]. When named degrees are
+     * present the persisted avg and the displayed avg are swapped.
+     *
+     * @param \stdClass $contentobj A $this->counts entry.
+     * @return array {avg: int|float|string, avgvalue: int|float|string, nbna: int}
+     */
+    private function resolve_choice_avg(\stdClass $contentobj): array {
+        $avg = '';
+        $avgvalue = '';
+        if (isset($contentobj->avg)) {
+            $avg = $contentobj->avg;
+            if (isset($contentobj->avgvalue)) {
+                $avgvalue = $contentobj->avg;
+                $avg = $contentobj->avgvalue;
+            }
+        }
+        return [$avg, $avgvalue, $contentobj->nbna];
+    }
+
+    /**
+     * Return the chart-bar margin style + pdfwidth offset for a given avg position.
+     *
+     * @param int|float|string $avg
+     * @param bool $isrestricted
+     * @param float $innertablewidth
+     * @return array {margin: string, marginpdf: float}
+     */
+    private function chart_bar_position($avg, bool $isrestricted, float $innertablewidth): array {
+        if (!$avg) {
+            return ['', 0];
+        }
+        $marginposition = ($avg - 0.5) / ($this->question->length() + (int)$isrestricted);
+        if (!right_to_left()) {
+            return [
+                'margin-left:' . $marginposition * 100 . '%',
+                $marginposition * $innertablewidth,
+            ];
+        }
+        return [
+            'margin-right:' . $marginposition * 100 . '%',
+            $innertablewidth - ($marginposition * $innertablewidth),
+        ];
+    }
+
+    /**
+     * Prefix the displayed content with the "Other:" label when the counts entry
+     * represents an "other..." response.
+     *
+     * @param string $content
+     * @param \stdClass $contentobj
+     * @return string
+     */
+    private function maybe_prefix_other(string $content, \stdClass $contentobj): string {
+        if (
+            !isset($contentobj->content) ||
+            !\mod_questionnaire\local\question\choice::content_other_choice_display($contentobj->content)
+        ) {
+            return $content;
+        }
+        $othertext = \mod_questionnaire\local\question\choice::content_other_choice_display($contentobj->content);
+        return $othertext . ' ' . clean_text($content);
     }
 
     /**
