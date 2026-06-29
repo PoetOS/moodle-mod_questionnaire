@@ -549,11 +549,8 @@ class rank extends responsetype {
         $osgood = ($this->question->precise() == 3);
         $isna = ($this->question->precise() == 1);
         $isrestricted = ($this->question->length() < count($this->counts)) && $this->question->precise() == 2;
-        $stravgrank = $osgood
-            ? get_string('averageposition', 'questionnaire')
-            : get_string('averagerank', 'questionnaire');
 
-        $headers = self::build_averages_headers($isna, $osgood, $stravgrank, $stravgvalue);
+        $headers = $this->build_averages_headers($stravgvalue);
 
         $pagetags = new \stdClass();
         $pagetags->averages = new \stdClass();
@@ -600,13 +597,18 @@ class rank extends responsetype {
     /**
      * Build the [label, avg-chart, arrow, optional N/A] header objects with widths and pdfwidths.
      *
-     * @param bool $isna
-     * @param bool $osgood
-     * @param string $stravgrank
-     * @param string $stravgvalue
+     * Shape (isna / osgood / default) is derived from $this->question->precise().
+     *
+     * @param string $stravgvalue Optional "(and average values)" suffix shown next to the chart title.
      * @return \stdClass[] Indexed from 1.
      */
-    private static function build_averages_headers(bool $isna, bool $osgood, string $stravgrank, string $stravgvalue): array {
+    private function build_averages_headers(string $stravgvalue): array {
+        $isna = ($this->question->precise() == 1);
+        $osgood = ($this->question->precise() == 3);
+        $stravgrank = $osgood
+            ? get_string('averageposition', 'questionnaire')
+            : get_string('averagerank', 'questionnaire');
+
         // PDF columns are based on a 11.69in x 8.27in page. Margins are 15mm each side, or 1.1811 in total.
         $pdfwidth = 11.69 - 1.1811;
         $stravg = '<div style="text-align:right">' . $stravgrank . $stravgvalue . '</div>';
