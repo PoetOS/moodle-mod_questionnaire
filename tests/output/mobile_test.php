@@ -37,6 +37,42 @@ namespace mod_questionnaire\output;
  */
 final class mobile_test extends \advanced_testcase {
     /**
+     * Build a questionnaire with a single yes/no question owned by the current user.
+     *
+     * @return \mod_questionnaire\questionnaire
+     */
+    private function build_questionnaire(): \mod_questionnaire\questionnaire {
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        return $generator->get_plugin_generator('mod_questionnaire')->create_test_questionnaire(
+            $course,
+            QUESYESNO,
+            ['content' => 'Yes or no?'],
+            []
+        );
+    }
+
+    /**
+     * Assert the invariant payload shape emitted by mobile_view_activity().
+     *
+     * @param array $result
+     * @return void
+     */
+    private function assert_payload_shape(array $result): void {
+        $this->assertArrayHasKey('templates', $result);
+        $this->assertArrayHasKey('javascript', $result);
+        $this->assertArrayHasKey('otherdata', $result);
+        $this->assertArrayHasKey('files', $result);
+        $this->assertIsArray($result['templates']);
+        $this->assertCount(1, $result['templates']);
+        $this->assertSame('main', $result['templates'][0]['id']);
+        $this->assertIsString($result['templates'][0]['html']);
+        $this->assertIsString($result['javascript']);
+        $this->assertIsArray($result['otherdata']);
+        $this->assertNull($result['files']);
+    }
+
+    /**
      * The default 'index' action returns a payload with the documented shape.
      */
     public function test_mobile_view_activity_index_returns_expected_payload_shape(): void {
@@ -55,18 +91,69 @@ final class mobile_test extends \advanced_testcase {
         ]);
 
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('templates', $result);
-        $this->assertArrayHasKey('javascript', $result);
-        $this->assertArrayHasKey('otherdata', $result);
-        $this->assertArrayHasKey('files', $result);
+        $this->assert_payload_shape($result);
+    }
 
-        $this->assertIsArray($result['templates']);
-        $this->assertCount(1, $result['templates']);
-        $this->assertSame('main', $result['templates'][0]['id']);
-        $this->assertIsString($result['templates'][0]['html']);
+    /**
+     * The 'respond' action returns the same payload shape when there is no in-progress response.
+     */
+    public function test_mobile_view_activity_respond_returns_payload_shape(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->build_questionnaire();
 
-        $this->assertIsString($result['javascript']);
-        $this->assertIsArray($result['otherdata']);
-        $this->assertNull($result['files']);
+        $result = mobile::mobile_view_activity([
+            'cmid'           => $questionnaire->coursemodule()->id,
+            'action'         => 'respond',
+            'pagenum'        => 1,
+            'appversioncode' => 44000,
+        ]);
+
+        $this->assert_payload_shape($result);
+    }
+
+    /**
+     * The 'review' action for a submitted response returns the expected payload shape.
+     */
+    public function test_mobile_view_activity_review_returns_payload_shape(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->build_questionnaire();
+
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $questionnaire->course()->id, 'student');
+        $submission = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->generate_response(
+            $questionnaire,
+            $questionnaire->questions(),
+            (int) $student->id,
+            true
+        );
+        $this->setUser($student);
+
+        $result = mobile::mobile_view_activity([
+            'cmid'           => $questionnaire->coursemodule()->id,
+            'action'         => 'review',
+            'submissionid'   => $submission['id'],
+            'appversioncode' => 44000,
+        ]);
+
+        $this->assert_payload_shape($result);
+    }
+
+    /**
+     * An unknown action still returns the invariant payload shape (falls through the switch).
+     */
+    public function test_mobile_view_activity_unknown_action_returns_payload_shape(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->build_questionnaire();
+
+        $result = mobile::mobile_view_activity([
+            'cmid'           => $questionnaire->coursemodule()->id,
+            'action'         => 'no-such-action',
+            'appversioncode' => 44000,
+        ]);
+
+        $this->assert_payload_shape($result);
     }
 }
