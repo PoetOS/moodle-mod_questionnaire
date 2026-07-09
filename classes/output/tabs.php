@@ -35,6 +35,24 @@ use tabobject;
  * Each call site supplies the literal tab name it owns.
  */
 class tabs {
+    /** @var array<int, tabobject> Primary tab row. */
+    private array $row = [];
+
+    /** @var array<int, tabobject> Optional second tab row. */
+    private array $row2 = [];
+
+    /** @var array<int, tabobject> Optional third tab row. */
+    private array $row3 = [];
+
+    /** @var array<int, string> Names of tabs to render inactive. */
+    private array $inactive = [];
+
+    /** @var array<int, string> Names of tabs to render activated. */
+    private array $activated = [];
+
+    /** @var string Effective tab-name passed to print_tabs; may drift from $this->currenttab. */
+    private string $activetab = '';
+
     /**
      * Constructor.
      *
@@ -61,311 +79,430 @@ class tabs {
      * @param object $page Templatable page that exposes add_to_page('tabsarea', $html).
      */
     public function render(object $page): void {
-        global $CFG, $USER;
+        global $USER;
 
-        $questionnaire = $this->questionnaire;
-        $currenttab = $this->currenttab;
-        $currentgroupid = $this->currentgroupid ?? 0;
-        $rid = $this->rid;
+        $this->row = [];
+        $this->row2 = [];
+        $this->row3 = [];
+        $this->inactive = [];
+        $this->activated = [];
+        $this->activetab = $this->currenttab;
 
-        $tabs = [];
-        $row = [];
-        $inactive = [];
-        $activated = [];
+        $this->add_settings_tab();
+        $this->add_questions_tab();
+        $this->add_feedback_tab();
+        $this->add_preview_tab();
 
-        $owner = $questionnaire->is_survey_owner();
-        if ($questionnaire->capabilities()->can_manage_questionnaire() && $owner) {
-            $row[] = new tabobject(
-                'settings',
-                $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/qsettings.php?' . 'id=' . $questionnaire->coursemodule()->id),
-                get_string('advancedsettings')
-            );
-        }
+        $usernumresp = $this->questionnaire->count_submissions($USER->id);
+        $this->add_myreport_tabs($usernumresp);
 
-        if ($questionnaire->capabilities()->can_edit_questions() && $owner) {
-            $row[] = new tabobject(
-                'questions',
-                $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' . 'id=' . $questionnaire->coursemodule()->id),
-                get_string('questions', 'questionnaire')
-            );
-        }
-
-        if ($questionnaire->capabilities()->can_edit_questions() && $owner) {
-            $row[] = new tabobject(
-                'feedback',
-                $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/feedback.php?' . 'id=' . $questionnaire->coursemodule()->id),
-                get_string('feedback')
-            );
-        }
-
-        if ($questionnaire->capabilities()->can_preview() && $owner) {
-            if (!empty($questionnaire->questions())) {
-                $previewurl = $CFG->wwwroot . htmlspecialchars(
-                    '/mod/questionnaire/preview.php?id=' . $questionnaire->coursemodule()->id
-                );
-                $row[] = new tabobject('preview', $previewurl, get_string('preview_label', 'questionnaire'));
-            }
-        }
-
-        $usernumresp = $questionnaire->count_submissions($USER->id);
-
-        if ($questionnaire->capabilities()->can_read_own_responses() && ($usernumresp > 0)) {
-            $argstr = 'instance=' . $questionnaire->id()
-                . '&user=' . $USER->id . '&group=' . $currentgroupid;
-            if ($usernumresp == 1) {
-                $argstr .= '&byresponse=1&action=vresp';
-                $yourrespstring = get_string('yourresponse', 'questionnaire');
-            } else {
-                $yourrespstring = get_string('yourresponses', 'questionnaire');
-            }
-            $row[] = new tabobject(
-                'myreport',
-                $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr),
-                $yourrespstring
-            );
-
-            if ($usernumresp > 1 && in_array($currenttab, ['mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'])) {
-                $inactive[] = 'myreport';
-                $activated[] = 'myreport';
-                $row2 = [];
-                $argstr2 = $argstr . '&action=summary';
-                $row2[] = new tabobject(
-                    'mysummary',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr2),
-                    get_string('summary', 'questionnaire')
-                );
-                $argstr2 = $argstr . '&byresponse=1&action=vresp';
-                $row2[] = new tabobject(
-                    'mybyresponse',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr2),
-                    get_string('viewindividualresponse', 'questionnaire')
-                );
-                $argstr2 = $argstr . '&byresponse=0&action=vall&group=' . $currentgroupid;
-                $row2[] = new tabobject(
-                    'myvall',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr2),
-                    get_string('myresponses', 'questionnaire')
-                );
-                if ($questionnaire->capabilities()->can_download_responses()) {
-                    $argstr2 = $argstr . '&action=dwnpg';
-                    $link = $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2);
-                    $row2[] = new tabobject('mydownloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
-                }
-            } else if (in_array($currenttab, ['mybyresponse', 'mysummary'])) {
-                $inactive[] = 'myreport';
-                $activated[] = 'myreport';
-            }
-        }
-
-        $numresp = $questionnaire->count_submissions();
-
-        // If questionnaire is set to separate groups, prevent user who is not member of any group
-        // to view All responses.
-        $canviewgroups = true;
-        $groupmode = groups_get_activity_groupmode($questionnaire->coursemodule(), $questionnaire->course());
-        if ($groupmode == 1) {
-            $canviewgroups = groups_has_membership($questionnaire->coursemodule(), $USER->id);
-        }
-        $canviewallgroups = has_capability('moodle/site:accessallgroups', $questionnaire->context());
+        [$canviewallgroups, $canviewgroups] = $this->resolve_group_visibility();
         $grouplogic = $canviewallgroups || $canviewgroups;
-        $resplogic = ($numresp > 0);
+        $resplogic = ($this->questionnaire->count_submissions() > 0);
 
-        if ($questionnaire->capabilities()->can_view_all_responses_anytime($grouplogic, $resplogic)) {
-            $argstr = 'instance=' . $questionnaire->id();
-            $row[] = new tabobject(
-                'allreport',
-                $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr . '&action=vall'),
-                get_string('viewallresponses', 'questionnaire')
+        $this->add_allreport_tabs($usernumresp, $grouplogic, $resplogic);
+        $this->add_nonrespondents_tab($canviewallgroups, $canviewgroups);
+
+        $this->emit_tabs($page);
+    }
+
+    /**
+     * Build a wwwroot-prefixed, entity-encoded querystring URL for a plugin script.
+     *
+     * @param string $script Script name relative to /mod/questionnaire/ without .php.
+     * @param string $qs Querystring without leading '?'.
+     * @return string
+     */
+    private function tab_url(string $script, string $qs): string {
+        global $CFG;
+        return $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/' . $script . '.php?' . $qs);
+    }
+
+    /**
+     * Determine whether the current user can view all-group responses and their own group.
+     *
+     * @return array{0: bool, 1: bool} [canviewallgroups, canviewgroups]
+     */
+    private function resolve_group_visibility(): array {
+        global $USER;
+        $canviewgroups = true;
+        $groupmode = groups_get_activity_groupmode(
+            $this->questionnaire->coursemodule(),
+            $this->questionnaire->course()
+        );
+        if ($groupmode == 1) {
+            $canviewgroups = groups_has_membership($this->questionnaire->coursemodule(), $USER->id);
+        }
+        $canviewallgroups = has_capability('moodle/site:accessallgroups', $this->questionnaire->context());
+        return [$canviewallgroups, $canviewgroups];
+    }
+
+    /**
+     * Add the "Advanced settings" tab if the user owns the survey and can manage it.
+     */
+    private function add_settings_tab(): void {
+        if (!$this->questionnaire->capabilities()->can_manage_questionnaire() || !$this->questionnaire->is_survey_owner()) {
+            return;
+        }
+        $this->row[] = new tabobject(
+            'settings',
+            $this->tab_url('qsettings', 'id=' . $this->questionnaire->coursemodule()->id),
+            get_string('advancedsettings')
+        );
+    }
+
+    /**
+     * Add the "Questions" tab for editors who own the survey.
+     */
+    private function add_questions_tab(): void {
+        if (!$this->questionnaire->capabilities()->can_edit_questions() || !$this->questionnaire->is_survey_owner()) {
+            return;
+        }
+        $this->row[] = new tabobject(
+            'questions',
+            $this->tab_url('questions', 'id=' . $this->questionnaire->coursemodule()->id),
+            get_string('questions', 'questionnaire')
+        );
+    }
+
+    /**
+     * Add the "Feedback" tab for editors who own the survey.
+     */
+    private function add_feedback_tab(): void {
+        if (!$this->questionnaire->capabilities()->can_edit_questions() || !$this->questionnaire->is_survey_owner()) {
+            return;
+        }
+        $this->row[] = new tabobject(
+            'feedback',
+            $this->tab_url('feedback', 'id=' . $this->questionnaire->coursemodule()->id),
+            get_string('feedback')
+        );
+    }
+
+    /**
+     * Add the "Preview" tab if the user owns the survey, can preview, and there are questions.
+     */
+    private function add_preview_tab(): void {
+        if (!$this->questionnaire->capabilities()->can_preview() || !$this->questionnaire->is_survey_owner()) {
+            return;
+        }
+        if (empty($this->questionnaire->questions())) {
+            return;
+        }
+        $this->row[] = new tabobject(
+            'preview',
+            $this->tab_url('preview', 'id=' . $this->questionnaire->coursemodule()->id),
+            get_string('preview_label', 'questionnaire')
+        );
+    }
+
+    /**
+     * Add "Your response(s)" tab and, when appropriate, the myreport sub-row.
+     *
+     * @param int $usernumresp Number of the current user's completed responses.
+     */
+    private function add_myreport_tabs(int $usernumresp): void {
+        global $USER;
+        if (!$this->questionnaire->capabilities()->can_read_own_responses() || $usernumresp <= 0) {
+            return;
+        }
+        $currentgroupid = $this->currentgroupid ?? 0;
+        $argstr = 'instance=' . $this->questionnaire->id()
+            . '&user=' . $USER->id . '&group=' . $currentgroupid;
+        if ($usernumresp == 1) {
+            $argstr .= '&byresponse=1&action=vresp';
+            $yourrespstring = get_string('yourresponse', 'questionnaire');
+        } else {
+            $yourrespstring = get_string('yourresponses', 'questionnaire');
+        }
+        $this->row[] = new tabobject(
+            'myreport',
+            $this->tab_url('myreport', $argstr),
+            $yourrespstring
+        );
+
+        $subtabs = ['mysummary', 'mybyresponse', 'myvall', 'mydownloadcsv'];
+        if ($usernumresp > 1 && in_array($this->currenttab, $subtabs)) {
+            $this->build_myreport_subrow($argstr);
+        } else if (in_array($this->currenttab, ['mybyresponse', 'mysummary'])) {
+            $this->inactive[] = 'myreport';
+            $this->activated[] = 'myreport';
+        }
+    }
+
+    /**
+     * Populate $this->row2 with the myreport sub-row (summary/byresponse/all/download).
+     *
+     * @param string $argstr Base querystring shared by all sub-tabs.
+     */
+    private function build_myreport_subrow(string $argstr): void {
+        $this->inactive[] = 'myreport';
+        $this->activated[] = 'myreport';
+        $currentgroupid = $this->currentgroupid ?? 0;
+        $this->row2[] = new tabobject(
+            'mysummary',
+            $this->tab_url('myreport', $argstr . '&action=summary'),
+            get_string('summary', 'questionnaire')
+        );
+        $this->row2[] = new tabobject(
+            'mybyresponse',
+            $this->tab_url('myreport', $argstr . '&byresponse=1&action=vresp'),
+            get_string('viewindividualresponse', 'questionnaire')
+        );
+        $this->row2[] = new tabobject(
+            'myvall',
+            $this->tab_url('myreport', $argstr . '&byresponse=0&action=vall&group=' . $currentgroupid),
+            get_string('myresponses', 'questionnaire')
+        );
+        if ($this->questionnaire->capabilities()->can_download_responses()) {
+            $this->row2[] = new tabobject(
+                'mydownloadcsv',
+                $this->tab_url('report', $argstr . '&action=dwnpg'),
+                get_string('downloadtextformat', 'questionnaire')
             );
-            if (
-                in_array(
-                    $currenttab,
-                    [
-                        'vall',
-                        'vresp',
-                        'valldefault',
-                        'vallasort',
-                        'vallarsort',
-                        'deleteall',
-                        'downloadcsv',
-                        'vrespsummary',
-                        'individualresp',
-                        'printresp',
-                        'deleteresp',
-                    ]
-                )
-            ) {
-                $inactive[] = 'allreport';
-                $activated[] = 'allreport';
-                if ($currenttab == 'vrespsummary' || $currenttab == 'valldefault') {
-                    $inactive[] = 'vresp';
-                }
-                $row2 = [];
-                $argstr2 = $argstr . '&action=vall&group=' . $currentgroupid;
-                $row2[] = new tabobject(
-                    'vall',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                    get_string('summary', 'questionnaire')
-                );
-                if ($questionnaire->capabilities()->can_view_single_response()) {
-                    $argstr2 = $argstr . '&byresponse=1&action=vresp&group=' . $currentgroupid;
-                    $row2[] = new tabobject(
-                        'vrespsummary',
-                        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                        get_string('viewbyresponse', 'questionnaire')
-                    );
-                    if ($currenttab == 'individualresp' || $currenttab == 'deleteresp') {
-                        $argstr2 = $argstr . '&byresponse=1&action=vresp';
-                        $row2[] = new tabobject(
-                            'vresp',
-                            $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                            get_string('viewindividualresponse', 'questionnaire')
-                        );
-                    }
-                }
-            }
-            if (in_array($currenttab, ['valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'])) {
-                $activated[] = 'vall';
-                $row3 = [];
+        }
+    }
 
-                $argstr2 = $argstr . '&action=vall&group=' . $currentgroupid;
-                $row3[] = new tabobject(
-                    'valldefault',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                    get_string('order_default', 'questionnaire')
-                );
-                if ($currenttab != 'downloadcsv' && $currenttab != 'deleteall') {
-                    $argstr2 = $argstr . '&action=vallasort&group=' . $currentgroupid;
-                    $row3[] = new tabobject(
-                        'vallasort',
-                        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                        get_string('order_ascending', 'questionnaire')
-                    );
-                    $argstr2 = $argstr . '&action=vallarsort&group=' . $currentgroupid;
-                    $row3[] = new tabobject(
-                        'vallarsort',
-                        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                        get_string('order_descending', 'questionnaire')
-                    );
-                }
-                if ($questionnaire->capabilities()->can_delete_responses()) {
-                    $argstr2 = $argstr . '&action=delallresp&group=' . $currentgroupid;
-                    $row3[] = new tabobject(
-                        'deleteall',
-                        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                        get_string('deleteallresponses', 'questionnaire')
-                    );
-                }
-
-                if ($questionnaire->capabilities()->can_download_responses()) {
-                    $argstr2 = $argstr . '&action=dwnpg&group=' . $currentgroupid;
-                    $link = $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2);
-                    $row3[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
-                }
-            }
-
-            if (in_array($currenttab, ['individualresp', 'deleteresp'])) {
-                $inactive[] = 'vresp';
-                if ($currenttab != 'deleteresp') {
-                    $activated[] = 'vresp';
-                }
-                if ($questionnaire->capabilities()->can_delete_responses()) {
-                    $argstr2 = $argstr . '&action=dresp&rid=' . $rid . '&individualresponse=1';
-                    $row2[] = new tabobject(
-                        'deleteresp',
-                        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                        get_string('deleteresp', 'questionnaire')
-                    );
-                }
-            }
-        } else if (
-            $questionnaire->capabilities()
+    /**
+     * Add the staff "All responses" tab and its subrows, dispatching to unrestricted vs restricted view.
+     *
+     * @param int $usernumresp Current user's own submission count (used by the restricted-view capability check).
+     * @param bool $grouplogic Whether the user has any group visibility.
+     * @param bool $resplogic Whether there are any responses at all.
+     */
+    private function add_allreport_tabs(int $usernumresp, bool $grouplogic, bool $resplogic): void {
+        if ($this->questionnaire->capabilities()->can_view_all_responses_anytime($grouplogic, $resplogic)) {
+            $this->add_unrestricted_allreport_tabs();
+            return;
+        }
+        if (
+            $this->questionnaire->capabilities()
                 ->can_view_all_responses_with_restrictions($usernumresp, $grouplogic, $resplogic)
         ) {
-            $argstr = 'instance=' . $questionnaire->id() . '&sid=' . $questionnaire->surveyid();
-            $allreporturl = $CFG->wwwroot . htmlspecialchars(
-                '/mod/questionnaire/report.php?' . $argstr . '&action=vall&group=' . $currentgroupid
-            );
-            $row[] = new tabobject(
-                'allreport',
-                $allreporturl,
-                get_string('viewallresponses', 'questionnaire')
-            );
-            if (in_array($currenttab, ['valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'])) {
-                $inactive[] = 'vall';
-                $activated[] = 'vall';
-                $row2 = [];
-                $argstr2 = $argstr . '&action=vall&group=' . $currentgroupid;
-                $row2[] = new tabobject(
-                    'valldefault',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                    get_string('summary', 'questionnaire')
-                );
-                $inactive[] = $currenttab;
-                $activated[] = $currenttab;
-                $row3 = [];
-                $argstr2 = $argstr . '&action=vall&group=' . $currentgroupid;
-                $row3[] = new tabobject(
-                    'valldefault',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                    get_string('order_default', 'questionnaire')
-                );
-                $argstr2 = $argstr . '&action=vallasort&group=' . $currentgroupid;
-                $row3[] = new tabobject(
-                    'vallasort',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                    get_string('order_ascending', 'questionnaire')
-                );
-                $argstr2 = $argstr . '&action=vallarsort&group=' . $currentgroupid;
-                $row3[] = new tabobject(
-                    'vallarsort',
-                    $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                    get_string('order_descending', 'questionnaire')
-                );
-                if ($questionnaire->capabilities()->can_delete_responses()) {
-                    $argstr2 = $argstr . '&action=delallresp';
-                    $row2[] = new tabobject(
-                        'deleteall',
-                        $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2),
-                        get_string('deleteallresponses', 'questionnaire')
-                    );
-                }
-
-                if ($questionnaire->capabilities()->can_download_responses()) {
-                    $argstr2 = $argstr . '&action=dwnpg';
-                    $link = htmlspecialchars('/mod/questionnaire/report.php?' . $argstr2);
-                    $row2[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
-                }
-                if (count($row2) <= 1) {
-                    $currenttab = 'allreport';
-                }
-            }
+            $this->add_restricted_allreport_tabs();
         }
+    }
 
-        if ($questionnaire->capabilities()->can_view_single_response() && ($canviewallgroups || $canviewgroups)) {
-            $nonrespondenturl = new moodle_url(
-                '/mod/questionnaire/show_nonrespondents.php',
-                ['id' => $questionnaire->coursemodule()->id]
-            );
-            $row[] = new tabobject(
-                'nonrespondents',
-                $nonrespondenturl->out(),
-                get_string('show_nonrespondents', 'questionnaire')
+    /**
+     * Full staff view: add the allreport tab and any active sub-rows.
+     */
+    private function add_unrestricted_allreport_tabs(): void {
+        $argstr = 'instance=' . $this->questionnaire->id();
+        $this->row[] = new tabobject(
+            'allreport',
+            $this->tab_url('report', $argstr . '&action=vall'),
+            get_string('viewallresponses', 'questionnaire')
+        );
+
+        $reportsubtabs = [
+            'vall', 'vresp', 'valldefault', 'vallasort', 'vallarsort',
+            'deleteall', 'downloadcsv', 'vrespsummary', 'individualresp',
+            'printresp', 'deleteresp',
+        ];
+        if (in_array($this->currenttab, $reportsubtabs)) {
+            $this->build_allreport_subrow($argstr);
+        }
+        if (in_array($this->currenttab, ['valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'])) {
+            $this->build_vall_sort_row($argstr);
+        }
+        if (in_array($this->currenttab, ['individualresp', 'deleteresp'])) {
+            $this->add_deleteresp_subtab($argstr);
+        }
+    }
+
+    /**
+     * Populate the report sub-row (row2) under the allreport tab.
+     *
+     * @param string $argstr Base querystring (instance=X).
+     */
+    private function build_allreport_subrow(string $argstr): void {
+        $currentgroupid = $this->currentgroupid ?? 0;
+        $this->inactive[] = 'allreport';
+        $this->activated[] = 'allreport';
+        if ($this->currenttab == 'vrespsummary' || $this->currenttab == 'valldefault') {
+            $this->inactive[] = 'vresp';
+        }
+        $this->row2[] = new tabobject(
+            'vall',
+            $this->tab_url('report', $argstr . '&action=vall&group=' . $currentgroupid),
+            get_string('summary', 'questionnaire')
+        );
+        if (!$this->questionnaire->capabilities()->can_view_single_response()) {
+            return;
+        }
+        $this->row2[] = new tabobject(
+            'vrespsummary',
+            $this->tab_url('report', $argstr . '&byresponse=1&action=vresp&group=' . $currentgroupid),
+            get_string('viewbyresponse', 'questionnaire')
+        );
+        if ($this->currenttab == 'individualresp' || $this->currenttab == 'deleteresp') {
+            $this->row2[] = new tabobject(
+                'vresp',
+                $this->tab_url('report', $argstr . '&byresponse=1&action=vresp'),
+                get_string('viewindividualresponse', 'questionnaire')
             );
         }
+    }
 
-        if ((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {
-            $tabs[] = $row;
+    /**
+     * Populate the sort-order sub-row (row3) for the vall / sort variants.
+     *
+     * @param string $argstr Base querystring (instance=X).
+     */
+    private function build_vall_sort_row(string $argstr): void {
+        $currentgroupid = $this->currentgroupid ?? 0;
+        $this->activated[] = 'vall';
 
-            if (!empty($row2) && (count($row2) > 1)) {
-                $tabs[] = $row2;
+        $this->row3[] = new tabobject(
+            'valldefault',
+            $this->tab_url('report', $argstr . '&action=vall&group=' . $currentgroupid),
+            get_string('order_default', 'questionnaire')
+        );
+        if ($this->currenttab != 'downloadcsv' && $this->currenttab != 'deleteall') {
+            $this->row3[] = new tabobject(
+                'vallasort',
+                $this->tab_url('report', $argstr . '&action=vallasort&group=' . $currentgroupid),
+                get_string('order_ascending', 'questionnaire')
+            );
+            $this->row3[] = new tabobject(
+                'vallarsort',
+                $this->tab_url('report', $argstr . '&action=vallarsort&group=' . $currentgroupid),
+                get_string('order_descending', 'questionnaire')
+            );
+        }
+        if ($this->questionnaire->capabilities()->can_delete_responses()) {
+            $this->row3[] = new tabobject(
+                'deleteall',
+                $this->tab_url('report', $argstr . '&action=delallresp&group=' . $currentgroupid),
+                get_string('deleteallresponses', 'questionnaire')
+            );
+        }
+        if ($this->questionnaire->capabilities()->can_download_responses()) {
+            $this->row3[] = new tabobject(
+                'downloadcsv',
+                $this->tab_url('report', $argstr . '&action=dwnpg&group=' . $currentgroupid),
+                get_string('downloadtextformat', 'questionnaire')
+            );
+        }
+    }
+
+    /**
+     * Add the "Delete response" sub-tab (row2) when individualresp / deleteresp is active.
+     *
+     * @param string $argstr Base querystring (instance=X).
+     */
+    private function add_deleteresp_subtab(string $argstr): void {
+        $this->inactive[] = 'vresp';
+        if ($this->currenttab != 'deleteresp') {
+            $this->activated[] = 'vresp';
+        }
+        if (!$this->questionnaire->capabilities()->can_delete_responses()) {
+            return;
+        }
+        $this->row2[] = new tabobject(
+            'deleteresp',
+            $this->tab_url('report', $argstr . '&action=dresp&rid=' . $this->rid . '&individualresponse=1'),
+            get_string('deleteresp', 'questionnaire')
+        );
+    }
+
+    /**
+     * Restricted staff view: allreport tab plus a limited set of sub-rows.
+     */
+    private function add_restricted_allreport_tabs(): void {
+        $currentgroupid = $this->currentgroupid ?? 0;
+        $argstr = 'instance=' . $this->questionnaire->id() . '&sid=' . $this->questionnaire->surveyid();
+        $this->row[] = new tabobject(
+            'allreport',
+            $this->tab_url('report', $argstr . '&action=vall&group=' . $currentgroupid),
+            get_string('viewallresponses', 'questionnaire')
+        );
+
+        if (!in_array($this->currenttab, ['valldefault', 'vallasort', 'vallarsort', 'deleteall', 'downloadcsv'])) {
+            return;
+        }
+        $this->inactive[] = 'vall';
+        $this->activated[] = 'vall';
+        $this->row2[] = new tabobject(
+            'valldefault',
+            $this->tab_url('report', $argstr . '&action=vall&group=' . $currentgroupid),
+            get_string('summary', 'questionnaire')
+        );
+        $this->inactive[] = $this->currenttab;
+        $this->activated[] = $this->currenttab;
+
+        $this->row3[] = new tabobject(
+            'valldefault',
+            $this->tab_url('report', $argstr . '&action=vall&group=' . $currentgroupid),
+            get_string('order_default', 'questionnaire')
+        );
+        $this->row3[] = new tabobject(
+            'vallasort',
+            $this->tab_url('report', $argstr . '&action=vallasort&group=' . $currentgroupid),
+            get_string('order_ascending', 'questionnaire')
+        );
+        $this->row3[] = new tabobject(
+            'vallarsort',
+            $this->tab_url('report', $argstr . '&action=vallarsort&group=' . $currentgroupid),
+            get_string('order_descending', 'questionnaire')
+        );
+        if ($this->questionnaire->capabilities()->can_delete_responses()) {
+            $this->row2[] = new tabobject(
+                'deleteall',
+                $this->tab_url('report', $argstr . '&action=delallresp'),
+                get_string('deleteallresponses', 'questionnaire')
+            );
+        }
+        if ($this->questionnaire->capabilities()->can_download_responses()) {
+            // Preserved verbatim: the original path emits a relative URL here (no wwwroot prefix).
+            $link = htmlspecialchars('/mod/questionnaire/report.php?' . $argstr . '&action=dwnpg');
+            $this->row2[] = new tabobject('downloadcsv', $link, get_string('downloadtextformat', 'questionnaire'));
+        }
+        if (count($this->row2) <= 1) {
+            $this->activetab = 'allreport';
+        }
+    }
+
+    /**
+     * Add the "Show non-respondents" tab if the user can view individual responses and any group.
+     *
+     * @param bool $canviewallgroups
+     * @param bool $canviewgroups
+     */
+    private function add_nonrespondents_tab(bool $canviewallgroups, bool $canviewgroups): void {
+        if (!$this->questionnaire->capabilities()->can_view_single_response()) {
+            return;
+        }
+        if (!($canviewallgroups || $canviewgroups)) {
+            return;
+        }
+        $nonrespondenturl = new moodle_url(
+            '/mod/questionnaire/show_nonrespondents.php',
+            ['id' => $this->questionnaire->coursemodule()->id]
+        );
+        $this->row[] = new tabobject(
+            'nonrespondents',
+            $nonrespondenturl->out(),
+            get_string('show_nonrespondents', 'questionnaire')
+        );
+    }
+
+    /**
+     * Assemble the non-empty tab rows and stamp them into the page's tabsarea.
+     *
+     * @param object $page Templatable page that exposes add_to_page('tabsarea', $html).
+     */
+    private function emit_tabs(object $page): void {
+        $tabs = [];
+        if ((count($this->row) > 1) || (!empty($this->row2) && count($this->row2) > 1)) {
+            $tabs[] = $this->row;
+            if (!empty($this->row2) && count($this->row2) > 1) {
+                $tabs[] = $this->row2;
             }
-
-            if (!empty($row3) && (count($row3) > 1)) {
-                $tabs[] = $row3;
+            if (!empty($this->row3) && count($this->row3) > 1) {
+                $tabs[] = $this->row3;
             }
-
-            $page->add_to_page('tabsarea', print_tabs($tabs, $currenttab, $inactive, $activated, true));
+            $page->add_to_page('tabsarea', print_tabs($tabs, $this->activetab, $this->inactive, $this->activated, true));
         }
     }
 }

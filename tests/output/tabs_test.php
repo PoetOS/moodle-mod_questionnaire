@@ -51,6 +51,39 @@ final class tabs_test extends \advanced_testcase {
     }
 
     /**
+     * Build a course + questionnaire with NO questions attached.
+     *
+     * @return questionnaire
+     */
+    private function build_questionnaire_no_questions(): questionnaire {
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        return $generator->get_plugin_generator('mod_questionnaire')->create_test_questionnaire($course);
+    }
+
+    /**
+     * Build a course + questionnaire configured for unlimited-per-user responses.
+     *
+     * @param int $respview Value for questionnaire->respview.
+     * @return array{0: questionnaire, 1: \stdClass} [questionnaire, course]
+     */
+    private function build_questionnaire_with_settings(int $respview = 0): array {
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $plugingen = $generator->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $plugingen->create_instance([
+            'course' => $course->id,
+            'qtype' => 5,
+            'respview' => $respview,
+        ]);
+        $plugingen->create_question(
+            $questionnaire,
+            ['typeid' => QUESYESNO, 'surveyid' => $questionnaire->surveyid(), 'name' => 'Q1', 'content' => 'Yes or no?']
+        );
+        return [\mod_questionnaire\questionnaire::from_instanceid($questionnaire->id()), $course];
+    }
+
+    /**
      * Seed a complete student response so the staff "All responses" tab path is reachable.
      *
      * @param questionnaire $questionnaire
@@ -185,5 +218,107 @@ final class tabs_test extends \advanced_testcase {
 
         // No row to print (count(row) <= 1 short-circuits).
         $this->assertSame('', $html);
+    }
+
+    /**
+     * Preview tab does not appear when the survey has zero questions.
+     */
+    public function test_preview_tab_hidden_when_no_questions(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->build_questionnaire_no_questions();
+
+        $html = $this->render_tabsarea($questionnaire, 'inactive-tab');
+
+        // Management row still shows settings, but preview.php is skipped when there are no questions.
+        $this->assertStringContainsString('qsettings.php', $html);
+        $this->assertStringNotContainsString('preview.php', $html);
+    }
+
+    /**
+     * Admin on the management row sees the non-respondents tab.
+     */
+    public function test_nonrespondents_tab_present_for_admin(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->build_questionnaire();
+
+        $html = $this->render_tabsarea($questionnaire, 'inactive-tab');
+
+        $this->assertStringContainsString('show_nonrespondents.php', $html);
+    }
+
+    /**
+     * On a vall-sort tab the row3 sub-row emits order_default / order_ascending / order_descending.
+     */
+    public function test_vall_sort_subrow_emits_order_tabs(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->build_questionnaire();
+        $this->seed_complete_response($questionnaire);
+
+        $html = $this->render_tabsarea($questionnaire, 'valldefault');
+
+        // Order-tab labels only appear from the row3 build.
+        $this->assertStringContainsString(get_string('order_default', 'questionnaire'), $html);
+        $this->assertStringContainsString(get_string('order_ascending', 'questionnaire'), $html);
+        $this->assertStringContainsString(get_string('order_descending', 'questionnaire'), $html);
+        // downloadcsv and deleteall variants of the sort-subrow.
+        $this->assertStringContainsString('action=dwnpg', $html);
+        $this->assertStringContainsString('action=delallresp', $html);
+    }
+
+    /**
+     * Student with 2+ own responses on a myreport sub-tab sees the myreport sub-row.
+     */
+    public function test_myreport_subrow_visible_for_student_with_multiple_responses(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course] = $this->build_questionnaire_with_settings();
+
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $plugingen = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        // Two completed responses for the same student — the sub-row only renders when usernumresp > 1.
+        $plugingen->generate_response($questionnaire, $questionnaire->questions(), (int) $student->id, true);
+        $plugingen->generate_response($questionnaire, $questionnaire->questions(), (int) $student->id, true);
+        $this->setUser($student);
+
+        $html = $this->render_tabsarea($questionnaire, 'myvall');
+
+        // Sub-row labels: summary / view-by-response / my-responses.
+        $this->assertStringContainsString(get_string('summary', 'questionnaire'), $html);
+        $this->assertStringContainsString(get_string('viewindividualresponse', 'questionnaire'), $html);
+        $this->assertStringContainsString(get_string('myresponses', 'questionnaire'), $html);
+        // Sub-row hrefs point at myreport.php (not report.php).
+        $this->assertStringContainsString('myreport.php', $html);
+        $this->assertStringContainsString('action=summary', $html);
+    }
+
+    /**
+     * Student with responses on a restricted questionnaire (RESPVIEW_ALWAYS, no anytime cap)
+     * hits the restricted allreport branch — distinguished by the sid= querystring arg.
+     */
+    public function test_restricted_allreport_branch_emits_sid_arg(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course] = $this->build_questionnaire_with_settings(
+            \mod_questionnaire\questionnaire::RESPVIEW_ALWAYS
+        );
+
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->generate_response(
+            $questionnaire,
+            $questionnaire->questions(),
+            (int) $student->id,
+            true
+        );
+        $this->setUser($student);
+
+        $html = $this->render_tabsarea($questionnaire, 'valldefault');
+
+        // The restricted branch is the only path that includes sid= in the allreport link.
+        $this->assertStringContainsString('sid=' . $questionnaire->surveyid(), $html);
+        // And the order sub-tabs still appear (restricted branch builds a row3).
+        $this->assertStringContainsString(get_string('order_default', 'questionnaire'), $html);
     }
 }
