@@ -145,20 +145,6 @@ abstract class question {
     /** @var \questionnaire|null The parent questionnaire object, set during rendering. */
     protected $questionnaire = null;
 
-    /**
-     * TEMPORARY: Editor-format content array set by locallib for new/edited questions.
-     * When content is assigned as ['text'=>..., 'format'=>..., 'itemid'=>...] (Moodle
-     * editor array), it cannot be stored in the persistent record because Moodle 5's
-     * persistent::get() runs clean_param() on read and rejects arrays. This property
-     * holds the array form; __get('content') returns it when set, falling back to the
-     * DB string otherwise. Cleared when the record is saved.
-     *
-     * Will be removed in Phase 22f.
-     *
-     * @var array|null
-     */
-    public $contenteditordata = null;
-
     // Class Methods.
 
     /**
@@ -198,8 +184,6 @@ abstract class question {
                 $stub = new \stdClass();
                 $stub->id = (int)$value;
                 $this->record->from_record($stub);
-            } else if ($property === 'content' && is_array($value)) {
-                $this->contenteditordata = $value;
             } else if (in_array($property, $dbfields, true)) {
                 $this->record->set($property, $value);
             } else if (property_exists($this, $property)) {
@@ -305,11 +289,11 @@ abstract class question {
     }
 
     /**
-     * Get the question content (may be array when in editor format).
-     * @return mixed
+     * Get the question content string.
+     * @return string|null
      */
-    public function content(): mixed {
-        return $this->contenteditordata ?? ($this->record ? $this->record->get('content') : null);
+    public function content(): ?string {
+        return $this->record ? (string) $this->record->get('content') : null;
     }
 
     /**
@@ -393,13 +377,11 @@ abstract class question {
     }
 
     /**
-     * Set the question content. Accepts a string value or an editor-format array.
-     * @param mixed $value
+     * Set the question content string.
+     * @param string $value
      */
-    public function set_content(mixed $value): void {
-        if (is_array($value)) {
-            $this->contenteditordata = $value;
-        } else if ($this->record) {
+    public function set_content(string $value): void {
+        if ($this->record) {
             $this->record->set('content', $value);
         } else {
             $this->preinit['content'] = $value;

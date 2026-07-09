@@ -542,15 +542,17 @@ class survey {
     }
 
     /**
-     * Prepare a question object for display in the question editing form.
+     * Prepare a question object and matching editor-content payload for the question editing form.
      *
-     * Populates draft file areas and dependency arrays expected by questions_form.
+     * Populates draft file areas and dependency arrays expected by questions_form. Returns the
+     * question alongside the Moodle editor payload (['text','format','itemid']) that the caller
+     * should splice into the form data as the 'content' field before set_data().
      *
      * @param int $qid   0 when creating a new question; the existing question id when editing.
      * @param int $qtype Question type id (used only when $qid is 0).
-     * @return question
+     * @return array{0: question, 1: array{text: string, format: int, itemid: int}}
      */
-    public function prep_question_for_form(int $qid, int $qtype): question {
+    public function prep_question_for_form(int $qid, int $qtype): array {
         $cmid = $this->context->instanceid;
         if ($qid != 0) {
             $questions = $this->questions();
@@ -568,7 +570,6 @@ class survey {
                 ['subdirs' => true],
                 $question->content()
             );
-            $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
             if (isset($question->dependencies)) {
                 foreach ($question->dependencies as $dependencies) {
                     if ($dependencies->dependandor === "and") {
@@ -597,9 +598,8 @@ class survey {
                 ['subdirs' => true],
                 ''
             );
-            $question->set_content(['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]);
         }
-        return $question;
+        return [$question, ['text' => $content, 'format' => FORMAT_HTML, 'itemid' => $draftideditor]];
     }
 
     // File areas.

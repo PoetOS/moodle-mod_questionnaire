@@ -263,7 +263,7 @@ final class tabs_test extends \advanced_testcase {
         $this->assertStringContainsString(get_string('order_default', 'questionnaire'), $html);
         $this->assertStringContainsString(get_string('order_ascending', 'questionnaire'), $html);
         $this->assertStringContainsString(get_string('order_descending', 'questionnaire'), $html);
-        // downloadcsv and deleteall variants of the sort-subrow.
+        // Download-CSV and delete-all variants of the sort-subrow.
         $this->assertStringContainsString('action=dwnpg', $html);
         $this->assertStringContainsString('action=delallresp', $html);
     }
