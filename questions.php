@@ -313,9 +313,11 @@ if ($action == 'main') {
         }
     }
 } else if ($action == 'question') {
-    $question = $questionnaire->survey()->prep_question_for_form($qid, $qtype);
+    [$question, $editorcontent] = $questionnaire->survey()->prep_question_for_form($qid, $qtype);
     $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
-    $questionsform->set_data($question->form_data());
+    $formdata = $question->form_data();
+    $formdata->content = $editorcontent;
+    $questionsform->set_data($formdata);
     if ($questionsform->is_cancelled()) {
         // Switch to main screen.
         $action = 'main';
@@ -352,7 +354,9 @@ if ($action == 'main') {
         ]));
     }
 
-    $questionsform->set_data($question->form_data());
+    $formdata = $question->form_data();
+    $formdata->content = $editorcontent;
+    $questionsform->set_data($formdata);
 }
 
 // Reload the form data if called for...
@@ -377,9 +381,11 @@ if ($reload) {
         }
         $questionsform->set_data($sdata);
     } else if ($action == 'question') {
-        $question = $questionnaire->survey()->prep_question_for_form($qid, $qtype);
+        [$question, $editorcontent] = $questionnaire->survey()->prep_question_for_form($qid, $qtype);
         $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
-        $questionsform->set_data($question->form_data());
+        $formdata = $question->form_data();
+        $formdata->content = $editorcontent;
+        $questionsform->set_data($formdata);
     }
 }
 
