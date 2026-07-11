@@ -48,6 +48,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Render the report tertiary action bar.
+     * @param report_action_bar $actionbar
+     * @return string
+     */
+    public function render_report_action_bar(report_action_bar $actionbar): string {
+        $data = $actionbar->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/report_action_bar', $data);
+    }
+
+    /**
      * Fill out the report page.
      * @param \templateable $page
      * @return string | boolean
