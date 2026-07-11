@@ -17,6 +17,7 @@
 namespace mod_questionnaire\local\report;
 
 use mod_questionnaire\output\pdf_factory;
+use mod_questionnaire\output\report_action_bar;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -26,7 +27,7 @@ use mod_questionnaire\questionnaire;
  *  - vall (and the two sort variants vallasort/vallarsort): summary view of all responses.
  *  - vresp (and the default action): per-respondent view, including PDF/print branches.
  *
- * Each method handles its own tab/scope setup, group filter UI, response collection,
+ * Each method handles its own action-bar/scope setup, group filter UI, response collection,
  * and the html / pdf rendering branches. Methods echo the page directly and return void
  * (matching the original action arms).
  *
@@ -95,15 +96,6 @@ class report_viewer {
             throw new \moodle_exception('nopermissions', 'mod_questionnaire');
         }
 
-        $currenttab = match ($action) {
-            'vallasort' => 'vallasort',
-            'vallarsort' => 'vallarsort',
-            default => 'valldefault',
-        };
-        if ($outputtarget != 'print') {
-            (new \mod_questionnaire\output\tabs($this->questionnaire, $currenttab, $currentgroupid))->render($page);
-        }
-
         $respinfo = '';
         $resps = [];
         // Enable choose_group if there are questionnaire groups and groupmode is not set to "no groups"
@@ -131,6 +123,13 @@ class report_viewer {
             }
             $respinfo .= isset($groupselect) ? ($groupselect . ' ') : '';
             $currentgroupid = groups_get_activity_group($cm);
+        }
+        if ($outputtarget == 'html') {
+            // The action bar is built after group resolution so the group id threads into its URLs.
+            $actionbar = report_action_bar::for_summary($this->questionnaire, (int) $currentgroupid, $action);
+            if ($actionbar->has_content()) {
+                $page->add_to_page('actionbar', $this->renderer->render($actionbar));
+            }
         }
         if ($currentgroupid > 0) {
             $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
@@ -241,9 +240,6 @@ class report_viewer {
             ) . '&nbsp;';
 
             $respinfo .= $this->renderer->viewresponse_print_menu($url->out(), $responsestatus, $userview);
-            $strsort = get_string('order_' . $sort, 'questionnaire');
-            $respinfo .= $strsort;
-            $respinfo .= $this->renderer->help_icon('orderresponses', 'questionnaire');
             $page->add_to_page('respondentinfo', $respinfo);
         }
 
@@ -352,14 +348,20 @@ class report_viewer {
         $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
         $PAGE->set_heading(format_string($course->fullname));
 
-        $currenttab = $individualresponse ? 'individualresp' : ($byresponse ? 'vrespsummary' : 'vresp');
         if ($outputtarget == 'html') {
-            (new \mod_questionnaire\output\tabs(
-                $this->questionnaire,
-                $currenttab,
-                $currentgroupid,
-                is_int($rid) ? $rid : null
-            ))->render($page);
+            if ($byresponse) {
+                $actionbar = report_action_bar::for_response_list($this->questionnaire, (int) $currentgroupid);
+            } else {
+                // Both the explicit individualresponse flag and the default arm show a single response.
+                $actionbar = report_action_bar::for_individual_response(
+                    $this->questionnaire,
+                    (int) $currentgroupid,
+                    is_int($rid) ? $rid : null
+                );
+            }
+            if ($actionbar->has_content()) {
+                $page->add_to_page('actionbar', $this->renderer->render($actionbar));
+            }
         }
 
         $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
