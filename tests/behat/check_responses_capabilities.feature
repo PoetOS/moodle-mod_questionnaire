@@ -32,7 +32,7 @@ Feature: Review responses with different capabilities
     Then I should see "View all responses"
     And I navigate to "View all responses" in current page administration
     Then I should see "All responses"
-    And I should see "View Default order"
+    And the field "Order Responses" matches value "View Default order"
     And I should see "Responses: 7 (Submissions: 6 | In progress: 1)"
     And I log out
 

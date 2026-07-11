@@ -82,8 +82,12 @@ class report_downloader {
         $PAGE->set_heading(format_string($course->fullname));
         echo $this->renderer->header();
 
-        $tabname = empty($user) ? 'downloadcsv' : 'mydownloadcsv';
-        (new \mod_questionnaire\output\tabs($this->questionnaire, $tabname, $currentgroupid))->render($page);
+        if (empty($user)) {
+            $actionbar = \mod_questionnaire\output\report_action_bar::for_download($this->questionnaire, (int) $currentgroupid);
+            if ($actionbar->has_content()) {
+                $page->add_to_page('actionbar', $this->renderer->render($actionbar));
+            }
+        }
 
         $groupname = '';
         if ($groupmode > 0) {

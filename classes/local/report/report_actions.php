@@ -85,8 +85,6 @@ class report_actions {
         $PAGE->set_heading(format_string($this->questionnaire->course()->fullname));
         echo $this->renderer->header();
 
-        (new \mod_questionnaire\output\tabs($this->questionnaire, 'deleteresp', $currentgroupid, $rid))->render($page);
-
         $instance = $this->questionnaire->id();
         $msg = '<div class="warning centerpara">';
         $msg .= get_string('confirmdelresp', 'questionnaire', $ruser . $timesubmitted);
@@ -203,8 +201,6 @@ class report_actions {
         $PAGE->set_title(get_string('deletingresp', 'questionnaire'));
         $PAGE->set_heading(format_string($this->questionnaire->course()->fullname));
         echo $this->renderer->header();
-
-        (new \mod_questionnaire\output\tabs($this->questionnaire, 'deleteall', $currentgroupid))->render($page);
 
         $instance = $this->questionnaire->id();
         $msg = '<div class="warning centerpara">';

@@ -26,6 +26,7 @@
     * none
 
     Context variables required for this template:
+    * actionbar - string: HTML of the tertiary action bar.
     * tabsarea - string: HTML of the tabs management area.
     * notifications - string: HTML of any notifications loaded.
     * myheaders - string: HTML of the page header.
@@ -44,6 +45,7 @@
 
     Example context (json):
     {
+        "actionbar": "<div>HTML of the action bar.</div>",
         "tabsarea": "<div>HTML of the tabs area.</div>",
         "notifications": "<div>Notification one</div>",
         "myheaders": "HTML of the page header.",
@@ -64,6 +66,7 @@
     }
     }}
 <div class="mod_questionnaire_reportpage generalbox">
+    {{#actionbar}}{{{actionbar}}}{{/actionbar}}
     {{#tabsarea}}{{{tabsarea}}}{{/tabsarea}}
     {{#notifications}}{{{notifications}}}{{/notifications}}
     <div class="box generalbox">
