@@ -50,19 +50,16 @@
         <div class="qn-info">
             <h2 class="qn-number">{{{qnum}}}</h2>
         </div>
-        {{{required}}}
     </div>
-    {{/qnum}}
-    {{^qnum}}
-        <div class="qn-legend">
-            {{{required}}}
-        </div>
     {{/qnum}}
     <div class="qn-content" {{#questionname}}data-question-name="{{questionname}}"{{/questionname}}>
         <div class="qn-question {{skippedclass}}">
-            {{#label}}<label for="{{label.for}}">{{/label}}
-            {{{qcontent}}}
-            {{#label}}</label>{{/label}}
+            {{{required}}}
+            <div class="qn-question-content">
+                {{#label}}<label for="{{label.for}}">{{/label}}
+                {{{qcontent}}}
+                {{#label}}</label>{{/label}}
+            </div>
         </div>
         <div class="qn-answer">
             {{{qformelement}}}

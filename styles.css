@@ -1,70 +1,87 @@
-/** Question editing **/
+/* Styles for mod_questionnaire.
+ *
+ * Colors reference Bootstrap/Boost theme CSS variables (with static fallbacks)
+ * so the plugin follows the active theme, including dark variants.
+ */
 
-#page-mod-questionnaire-questions .qcontainer .fitemtitle,
-#page-mod-questionnaire-questions #id_questionhdr .fitemtitle {
-    display: none;
-}
+/* Question editing (questions.php). */
 
 #page-mod-questionnaire-questions .qcontainer .qnums {
     font-weight: bold;
     float: left;
-    color: gray;
+    color: var(--bs-secondary-color, gray);
 }
 
-#page-mod-questionnaire-questions .qcontainer .qnums ~ input[type=image] {
+#page-mod-questionnaire-questions .qcontainer .qnums ~ input[type="image"] {
     max-height: 1em;
 }
 
-#page-mod-questionnaire-questions .qcontainer .fstatic {
-    width: 97%;
-    margin-right: 1em;
-    margin-left: 5px;
-    /* Set a negative margin-bottom to save some vertical space! */
-    margin-bottom: -10px;
-}
-
-#page-mod-questionnaire-questions .mform .fitem fieldset.felement {
-    margin-left: 0;
-    padding-left: 1%;
-    margin-bottom: 0;
-}
-
-#page-mod-questionnaire-preview fieldset,
-#page-mod-questionnaire-complete fieldset {
-    margin-bottom: 0;
-}
-
-#page-mod-questionnaire-questions .mform .fitem .fitemtitle {
-    text-align: left;
-    margin-left: 10px;
-    margin-bottom: 0;
-}
-
 #page-mod-questionnaire-questions .moving {
-    border: medium dotted maroon;
+    border: medium dotted var(--bs-danger, maroon);
+}
+
+#page-mod-questionnaire-questions .qn-question {
+    margin-left: 40px;
+}
+
+#page-mod-questionnaire-questions .qn-container {
+    border: 1px dotted var(--bs-border-color, gray);
+    margin-bottom: 1em;
+}
+
+#page-mod-questionnaire-questions #region-main .mform .fitem .felement {
+    margin-bottom: 0;
+}
+
+#page-mod-questionnaire-questions .qcontainer .restored-question {
+    border: 1px solid var(--bs-info, #008196);
+    background: var(--bs-warning-bg-subtle, #fff2d8);
+    color: var(--bs-body-color, #343a40);
+}
+
+#page-mod-questionnaire-questions .qcontainer .timedeletednext7days {
+    color: var(--bs-danger, #f00);
+}
+
+#page-mod-questionnaire-questions #id_deletionq .qn-question {
+    margin-left: 50px;
+}
+
+#page-mod-questionnaire-questions #fitem_id_allchoices #id_allchoices,
+#page-mod-questionnaire-questions #fitem_id_allnameddegrees #id_allnameddegrees {
+    resize: both;
 }
 
 div.qoptcontainer div.ftextarea {
     clear: both;
     float: none;
-    width: 600px;
+    width: 100%;
+    max-width: 600px;
     margin: 0 auto 10px;
 }
 
 div.qoptcontainer div.ftextarea textarea.qopts {
-    width: 600px;
+    width: 100%;
     height: 10em;
-    margin-left: 1px;
 }
 
-.response span.selected,
-.generalboxcontent span.selected {
+input[type="image"].mod_questionnaire_recycleq {
+    max-height: 1em;
+}
+
+/* Responses: selected / unselected answer text. */
+
+.response span.selected {
     font-weight: bold;
 }
 
 td.selected {
-    background-color: #e4f1fa;
-    border: 1px solid gray;
+    background-color: var(--bs-primary-bg-subtle, #e4f1fa);
+    border: 1px solid var(--bs-border-color, silver);
+}
+
+.unselected {
+    color: var(--bs-secondary-color, gray);
 }
 
 #page-mod-questionnaire-myreport div.respdate {
@@ -72,83 +89,46 @@ td.selected {
     font-weight: bold;
     margin-bottom: 6px;
     padding-top: 6px;
-    border-bottom: 1px dashed gray;
+    border-bottom: 1px dashed var(--bs-border-color, gray);
+}
+
+/* Completion / preview pages. */
+
+#page-mod-questionnaire-preview fieldset,
+#page-mod-questionnaire-complete fieldset {
+    margin-bottom: 0;
 }
 
 #page-mod-questionnaire-complete .message,
-#page-mod-questionnaire-complete .notifyproblem,
 #page-mod-questionnaire-preview .message,
-#page-mod-questionnaire-preview .notifyproblem,
 #page-mod-questionnaire-complete .thankbody,
 #page-mod-questionnaire-complete .thankhead {
-    background-color: #fff;
-    border-style: solid;
-    border-width: 2px;
+    background-color: var(--bs-body-bg, #fff);
+    border: 2px solid var(--bs-primary, blue);
     margin-bottom: 10px;
     padding: 5px;
 }
 
-#page-mod-questionnaire-complete .notifyproblem,
-#page-mod-questionnaire-preview .notifyproblem {
-    border-color: red;
-}
-
-#page-mod-questionnaire-fbsections .notifyproblem {
-    text-align: left;
-    padding: 0;
-}
-
-#page-mod-questionnaire-complete .message,
-#page-mod-questionnaire-preview .message,
-#page-mod-questionnaire-complete .thankbody,
-#page-mod-questionnaire-complete .thankhead {
-    border-color: blue;
-}
-
 .surveyPage {
-    background-color: #eee;
-    border-bottom-color: #000;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
+    background-color: var(--bs-secondary-bg, #eee);
+    border-bottom: 1px solid var(--bs-border-color, #000);
     clear: right;
     padding: 3px;
     margin-bottom: 5px;
     margin-top: 0;
 }
 
-/* alternate columns formatting */
+/* Alternate row/column shading. */
 
 #page-mod-questionnaire-complete .c0,
 #page-mod-questionnaire-preview .c0,
 #page-mod-questionnaire-print .c0,
 #page-mod-questionnaire-report .individual .c0,
 #page-mod-questionnaire-myreport .individual .c0 {
-    background-color: #fafafa;
-    border: 1px solid silver;
+    background-color: var(--bs-tertiary-bg, #fafafa);
+    border: 1px solid var(--bs-border-color, silver);
     padding-left: 5px;
     padding-right: 5px;
-}
-
-#page-mod-questionnaire-complete .raterow:hover,
-#page-mod-questionnaire-preview .raterow:hover {
-    background-color: #e4f1fa;
-}
-
-#page-mod-questionnaire-complete td.raterow:hover,
-#page-mod-questionnaire-preview td.raterow:hover {
-    border: 1px solid navy;
-}
-
-#page-mod-questionnaire-complete td.notanswered,
-#page-mod-questionnaire-preview td.notanswered {
-    /* border: none; */
-    background-color: #fafafa;
-}
-
-#page-mod-questionnaire-complete td.notcompleted,
-#page-mod-questionnaire-preview td.notcompleted {
-    border: 2px solid red;
-    background-color: #fafafa;
 }
 
 #page-mod-questionnaire-complete .c1,
@@ -156,23 +136,27 @@ td.selected {
 #page-mod-questionnaire-print .c1,
 #page-mod-questionnaire-report .individual .c1,
 #page-mod-questionnaire-myreport .individual .c1 {
-    background-color: #eee;
-    border: 1px solid silver;
+    background-color: var(--bs-secondary-bg, #eee);
+    border: 1px solid var(--bs-border-color, silver);
     padding-left: 5px;
     padding-right: 5px;
+}
+
+#page-mod-questionnaire-complete .raterow:hover,
+#page-mod-questionnaire-preview .raterow:hover {
+    background-color: var(--bs-primary-bg-subtle, #e4f1fa);
 }
 
 #page-mod-questionnaire-myreport .individualresp,
 #page-mod-questionnaire-preview .individualresp,
 #page-mod-questionnaire-print .individualresp {
-    border: #c0c0c0 1px solid;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 5px;
-    padding-bottom: 0;
+    border: 1px solid var(--bs-border-color, #c0c0c0);
+    padding: 5px 5px 0;
     margin-bottom: 10px;
     margin-top: 10px;
 }
+
+/* Print blank page. */
 
 #page-mod-questionnaire-print .printdropdown input:first-child,
 #page-mod-questionnaire-print .printdropdown label:first-of-type,
@@ -186,19 +170,10 @@ td.selected {
     height: 30px;
 }
 
-#page-mod-questionnaire-complete .notice .buttons div,
-#page-mod-questionnaire-complete .notice .buttons form {
-    display: inline;
-}
-
 @media print {
     #page-mod-questionnaire-report #print-button {
         display: none;
     }
-}
-
-#page-mod-questionnaire-complete .notice .buttons input {
-    margin-bottom: 10px;
 }
 
 .floatprinticon {
@@ -206,143 +181,87 @@ td.selected {
     float: right;
 }
 
-#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons {
-    text-align: center;
-    width: 100%;
-    position: relative;
-}
+/* Response-form control buttons: previous at the start, save/next at the end. */
 
-#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-prev {
-    float: left;
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
 }
 
 #page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-save {
-    margin-left: 20%;
+    margin-left: auto;
 }
 
-#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-prev + .control-button-save {
-    margin-left: 0;
-}
-
-#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-next,
-#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-submit {
-    float: right;
-}
-
-#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons input {
-    margin-right: 0;
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-prev + .control-button-save,
+#page-mod-questionnaire-complete .mod_questionnaire_controlbuttons .control-button-save:first-child {
+    margin-left: auto;
 }
 
 #page-mod-questionnaire-complete .mod_questionnaire_completepage .generalbox .notice {
     padding: 0.5em 0 0.5em 0;
 }
 
-/* progress bar styling */
-
-#page-mod-questionnaire-complete .questionnaire-progressbar {
-    height: 14px;
-    margin-top: 5px;
-    border: 1px solid #dedede;
-    border-radius: 5px;
-    width: auto;
-    overflow: hidden;
-}
-
-#page-mod-questionnaire-complete .questionnaire-progressbar-progress {
-    background-color: #1177d1;
-    height: 100%;
-    border-bottom-left-radius: 5px;
-    border-top-left-radius: 5px;
-}
-
-#page-mod-questionnaire-complete .questionnaire-progressbar-info {
-    float: right;
-}
-
-#page-mod-questionnaire-complete #questionnaire-progressbar-percent {
-    margin-left: 5px;
-    margin-right: 5px;
-    min-width: 25px;
-    text-align: center;
-}
-
-#page-mod-questionnaire-complete .questionnaire-progressbar-wrapper {
-    margin-top: 15px;
-    margin-bottom: 15px;
-    margin-left: 10px;
-    height: auto;
-    overflow: hidden;
+#page-mod-questionnaire-complete .notice .buttons div,
+#page-mod-questionnaire-complete .notice .buttons form {
+    display: inline;
 }
 
 #page-mod-questionnaire-complete .mod_questionnaire_completepage.generalbox .homelink ~ .homelink {
     padding-top: 10px;
 }
 
+/* Progress bar (rendered with the Bootstrap progress component). */
+
+#page-mod-questionnaire-complete .questionnaire-progressbar-wrapper {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 15px 0 15px 10px;
+}
+
+#page-mod-questionnaire-complete .questionnaire-progressbar-wrapper .progress {
+    flex: 1;
+}
+
+/* Question container: number gutter and content side by side. */
+
+.qn-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
 .qn-legend {
-    float: left;
+    flex: 0 0 auto;
     font-size: inherit;
-    width: auto;
 }
 
-/* format paragraph top and bottom margins for better vertical positioning in questions text */
-.qn-question p {
-    margin-bottom: 0.6em;
-    margin-top: 0.5em;
-}
-
-.qn-question {
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-bottom: 0.1em;
-    padding-top: 0.1em;
-    /* make background same color as quiz question text */
-    background-color: #e4f1fa;
-}
-
-#page-mod-questionnaire-questions .qn-question {
-    margin-left: 40px;
-}
-
-.unselected {
-    color: gray;
-}
-
-/*respondents list feature*/
-
-.respondentscolumn {
-    float: left;
-    margin-left: 20px;
-}
-.respondentsnavbar {
-    text-align: center;
-    padding-bottom: 5px;
-    padding-top: 5px;
-    margin-bottom: 5px;
-    background-color: #f2f2f2;
-}
-
-/* new quiz-like formatting for 2.5 */
-
-#page-mod-questionnaire-questions .qn-container {
-    border: 1px dotted gray;
-    margin-bottom: 1em;
-}
-
-.dir-rtl .qn-container {
-    text-align: right;
-}
 .qn-info {
-    float: left;
-    width: auto;
     padding: 7px;
-    background: #eee;
+    background: var(--bs-secondary-bg, #eee);
     font-weight: bold;
 }
 
 .qn-info h2.qn-number {
     margin: 0;
-    font-size: 1.5em;
+    font-size: 1.25em;
     line-height: 1.2em;
+}
+
+.qn-content {
+    flex: 1 1 auto;
+    margin-bottom: 10px;
+    min-width: 0;
+}
+
+/* Format paragraph top and bottom margins for better vertical positioning in questions text. */
+.qn-question p {
+    margin-bottom: 0.6em;
+    margin-top: 0.5em;
 }
 
 .qn-question,
@@ -351,16 +270,31 @@ td.selected {
     overflow: auto;
 }
 
-.qn-answer input[type=radio] {
+.qn-question {
+    display: flex;
+    gap: 0.25rem;
+    align-items: baseline;
+}
+
+.qn-question .qn-question-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.qn-required {
+    color: var(--bs-danger, red);
+    font-weight: bold;
+}
+
+.qn-answer input[type="radio"] {
     margin-left: 0.5em;
 }
 
-.qn-answer > label + input[type=radio] {
+.qn-answer > label + input[type="radio"] {
     margin-left: 0;
 }
 
-.qn-answer > textarea,
-.qn-content .editor_atto_wrap .editor_atto_content {
+.qn-answer > textarea {
     resize: vertical;
 }
 
@@ -374,27 +308,19 @@ td.selected {
     margin: 0;
 }
 
-.req {
-    font-size: x-small;
-}
-
 .qdepend {
-    color: red;
+    color: var(--bs-danger, red);
     padding-left: 5px;
     margin-bottom: 5px;
 }
 
 .qdepend-or {
-    color: orange;
+    color: var(--bs-warning-text-emphasis, orange);
     padding-left: 5px;
     margin-bottom: 5px;
 }
-.qn-content {
-    margin-bottom: 10px;
-    margin-left: 55px;
-}
 
-/* move horizontal radio buttons closer to their labels */
+/* Move horizontal radio buttons closer to their labels. */
 .qn-answer input[type="radio"],
 .qn-answer input[type="checkbox"] {
     margin-right: 3px;
@@ -409,24 +335,40 @@ td.selected {
     margin-right: 0.6em;
 }
 
-.hidedependquestion {
-    color: red;
-    display: none;
+.qn-indent {
+    margin-left: 20px;
 }
+
+/* Respondents list. */
+
+.respondentscolumn {
+    float: left;
+    margin-left: 20px;
+}
+
+.respondentsnavbar {
+    text-align: center;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    margin-bottom: 5px;
+    background-color: var(--bs-secondary-bg, #f2f2f2);
+}
+
+/* Feedback sections page. */
 
 #page-mod-questionnaire-fbsections .c0,
 #page-mod-questionnaire-fbsections .c1 {
-    border: 1px solid silver;
+    border: 1px solid var(--bs-border-color, silver);
     padding-left: 4px;
     padding-right: 4px;
 }
 
 #page-mod-questionnaire-fbsections .c0 {
-    background-color: #fafafa;
+    background-color: var(--bs-tertiary-bg, #fafafa);
 }
 
 #page-mod-questionnaire-fbsections .c1 {
-    background-color: #eee;
+    background-color: var(--bs-secondary-bg, #eee);
 }
 
 #page-mod-questionnaire-fbsections input[type="radio"] {
@@ -440,27 +382,31 @@ td.selected {
 #page-mod-questionnaire-fbsections .qcontainer.qcontent {
     margin-bottom: -5em;
 }
+
+/* Report page. */
+
 #page-mod-questionnaire-report div.chart {
     overflow: auto;
     margin-left: -40px;
 }
 
 #page-mod-questionnaire-report .generaltable.questionnairereport td {
-    border: 1px solid silver;
+    border: 1px solid var(--bs-border-color, silver);
 }
-#page-mod-questionnaire-report .generaltable[id]  th.qn-handcursor {
+
+#page-mod-questionnaire-report .generaltable[id] th.qn-handcursor {
     cursor: pointer;
 }
 
-#page-mod-questionnaire-report  th.c0 a span[class^='icon-container-'],
-#page-mod-questionnaire-report  th.c1 a span.icon-container-asc,
-#page-mod-questionnaire-report  th.asc a span.icon-container-desc,
-#page-mod-questionnaire-report  th.desc a span.icon-container-asc {
+#page-mod-questionnaire-report th.c0 a span[class^="icon-container-"],
+#page-mod-questionnaire-report th.c1 a span.icon-container-asc,
+#page-mod-questionnaire-report th.asc a span.icon-container-desc,
+#page-mod-questionnaire-report th.desc a span.icon-container-asc {
     display: none;
 }
 
-#page-mod-questionnaire-report  th.asc a span.icon-container-asc,
-#page-mod-questionnaire-report  th.desc a span.icon-container-desc {
+#page-mod-questionnaire-report th.asc a span.icon-container-asc,
+#page-mod-questionnaire-report th.desc a span.icon-container-desc {
     display: inline-block;
 }
 
@@ -469,35 +415,7 @@ td.selected {
     font-size: 0.75em;
 }
 
-#page-mod-questionnaire-questions #region-main .mform .fitem .felement {
-    margin-bottom: 0;
-}
-
-.qn-indent {
-    margin-left: 20px;
-}
-
-#page-mod-questionnaire-questions .qcontainer .restored-question {
-    border: 1px solid #008196;
-    background: #fff2d8;
-    color: #343a40;
-}
-
-#page-mod-questionnaire-questions .qcontainer .timedeletednext7days {
-    color: #f00;
-}
-
-#page-mod-questionnaire-questions .generalbox .modal-content {
-    border: 1px solid #b0dfeb;
-}
-
-#page-mod-questionnaire-questions #id_deletionq .qn-question {
-    margin-left: 50px;
-}
-
-input[type=image].mod_questionnaire_recycleq {
-    max-height: 1em;
-}
+/* View page. */
 
 .mod_questionnaire_flex-container {
     display: inline-flex;
@@ -510,101 +428,8 @@ input[type=image].mod_questionnaire_recycleq {
     margin-right: 10px;
 }
 
-#page-mod-questionnaire-questions #fitem_id_allchoices #id_allchoices,
-#page-mod-questionnaire-questions #fitem_id_allnameddegrees #id_allnameddegrees {
-    resize: both;
-}
-
-.path-mod-questionnaire .slidecontainer {
-    width: 100%;
-}
-
-.path-mod-questionnaire .slider {
-    -webkit-appearance: none;
-    width: 100%;
-    outline: none;
-    opacity: 0.7;
-    -webkit-transition: .2s;
-    transition: opacity .2s;
-    float: left;
-    margin-top: 40px;
-}
-.path-mod-questionnaire .slider input {
-    width: 100%;
-}
-
-.path-mod-questionnaire .slider:hover {
-    opacity: 1;
-}
-
-.path-mod-questionnaire .slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 25px;
-    background: #04aa6d;
-    cursor: pointer;
-    border-radius: 50%;
-}
-
-.path-mod-questionnaire .slider::-moz-range-thumb {
-    width: 25px;
-    height: 25px;
-    background: #04aa6d;
-    cursor: pointer;
-}
-
-.path-mod-questionnaire .question-slider {
-    display: flex;
-    align-items: baseline;
-}
-
-.path-mod-questionnaire .left-side-label {
-    text-align: right;
-    padding-right: 20px;
-    margin-top: 40px;
-    flex-grow: 1;
-}
-
-.path-mod-questionnaire .right-side-label {
-    text-align: left;
-    padding-left: 20px;
-    margin-top: 40px;
-    flex-grow: 1;
-}
-
-.path-mod-questionnaire .middle-side-content {
-    flex-grow: 8;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.path-mod-questionnaire .middle-side-label {
-    text-align: center;
-}
-
-.path-mod-questionnaire .bubble {
-    background: #000;
-    color: white;
-    padding: 3px;
-    border-radius: 10px;
-    left: 50%;
-    transform: translate(-52%, -50px);
-    position: relative;
-    text-align: center;
-    width: 40px;
-}
-.path-mod-questionnaire .bubble::after {
-    content: "";
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    left: 50%;
-}
-
 /* Rate (scale) question table. */
+
 .path-mod-questionnaire .questionnaire-rate th {
     font-weight: normal;
     padding: 0.3em 0.4em;
@@ -643,7 +468,93 @@ input[type=image].mod_questionnaire_recycleq {
 }
 
 .path-mod-questionnaire .questionnaire-rate tr.notcompleted td {
-    border: 2px solid red;
+    border: 2px solid var(--bs-danger, red);
+}
+
+/* Slider question. */
+
+.path-mod-questionnaire .slider {
+    width: 100%;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    float: left;
+    margin-top: 40px;
+}
+
+.path-mod-questionnaire .slider input {
+    width: 100%;
+}
+
+.path-mod-questionnaire .slider:hover {
+    opacity: 1;
+}
+
+.path-mod-questionnaire .slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 100%;
+    height: 25px;
+    background: var(--bs-primary, #0f6cbf);
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.path-mod-questionnaire .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: var(--bs-primary, #0f6cbf);
+    cursor: pointer;
+}
+
+.path-mod-questionnaire .question-slider {
+    display: flex;
+    align-items: baseline;
+}
+
+.path-mod-questionnaire .left-side-label {
+    text-align: right;
+    padding-right: 20px;
+    margin-top: 40px;
+    flex-grow: 1;
+}
+
+.path-mod-questionnaire .right-side-label {
+    text-align: left;
+    padding-left: 20px;
+    margin-top: 40px;
+    flex-grow: 1;
+}
+
+.path-mod-questionnaire .middle-side-content {
+    flex-grow: 8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.path-mod-questionnaire .middle-side-label {
+    text-align: center;
+}
+
+.path-mod-questionnaire .bubble {
+    background: var(--bs-emphasis-color, #000);
+    color: var(--bs-body-bg, #fff);
+    padding: 3px;
+    border-radius: 10px;
+    left: 50%;
+    transform: translate(-52%, -50px);
+    position: relative;
+    text-align: center;
+    width: 40px;
+}
+
+.path-mod-questionnaire .bubble::after {
+    content: "";
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    left: 50%;
 }
 
 /* Styles for the print blank page. */
@@ -667,25 +578,22 @@ input[type=image].mod_questionnaire_recycleq {
     appearance: none;
     height: 10px;
     border-radius: 5px;
-    background-color: #ddd;
+    background-color: var(--bs-secondary-bg, #ddd);
 }
 
 #page-mod-questionnaire-print input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
     appearance: none;
     width: 0;
     height: 0;
 }
 
 #page-mod-questionnaire-print input[type="range"]::-moz-range-thumb {
-    -webkit-appearance: none;
     appearance: none;
     width: 0;
     height: 0;
 }
 
 #page-mod-questionnaire-print input[type="range"]::-ms-thumb {
-    -webkit-appearance: none;
     appearance: none;
     width: 0;
     height: 0;
