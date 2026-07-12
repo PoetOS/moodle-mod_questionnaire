@@ -1285,7 +1285,7 @@ abstract class question {
      * @return \stdClass
      */
     public function response_output($response, $qnum = '', $questionnaire = null, bool $individualresponse = false) {
-        $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire, $individualresponse);
+        $pagetags = $this->questionstart_survey_display($qnum, $response, $questionnaire, $individualresponse, true);
         $pagetags->qformelement = $this->response_survey_display($response);
         return $pagetags;
     }
@@ -1296,13 +1296,15 @@ abstract class question {
      * @param response $response
      * @param questionnaire|null $questionnaire The parent questionnaire object.
      * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
+     * @param bool $readonly True when rendering a submitted response for review — required markers are suppressed.
      * @return \stdClass
      */
     public function questionstart_survey_display(
         $qnum,
         $response = null,
         $questionnaire = null,
-        bool $individualresponse = false
+        bool $individualresponse = false,
+        bool $readonly = false
     ): stdClass {
         global $OUTPUT, $PAGE;
 
@@ -1357,7 +1359,8 @@ abstract class question {
                 $pagetags->qnum = $qnum;
             }
             $required = '';
-            if ($this->required()) {
+            // A required marker is meaningless on a read-only review of a submitted response.
+            if ($this->required() && !$readonly) {
                 $required = html_writer::start_tag('div', ['class' => 'accesshide']);
                 $required .= get_string('required', 'questionnaire');
                 $required .= html_writer::end_tag('div');

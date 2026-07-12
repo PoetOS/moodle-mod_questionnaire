@@ -194,6 +194,50 @@ final class questiontypes_test extends \advanced_testcase {
         $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\local\\question\\yesno', ['content' => 'Enter yes or no']);
     }
 
+    /**
+     * A required question renders its required marker in the survey display tags by default.
+     *
+     * @covers \mod_questionnaire\local\question\question::questionstart_survey_display
+     */
+    public function test_questionstart_survey_display_renders_required_marker(): void {
+        $question = $this->create_required_question();
+
+        $pagetags = $question->questionstart_survey_display(1);
+
+        $this->assertStringContainsString(get_string('required', 'questionnaire'), $pagetags->required);
+    }
+
+    /**
+     * The readonly flag (used by the response-review paths) suppresses the required marker.
+     *
+     * @covers \mod_questionnaire\local\question\question::questionstart_survey_display
+     */
+    public function test_questionstart_survey_display_readonly_suppresses_required(): void {
+        $question = $this->create_required_question();
+
+        $pagetags = $question->questionstart_survey_display(1, null, null, false, true);
+
+        $this->assertSame('', $pagetags->required);
+    }
+
+    /**
+     * Build a required yes/no question for the survey-display tests.
+     *
+     * @return question
+     */
+    private function create_required_question(): question {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire(
+            $course,
+            QUESYESNO,
+            ['content' => 'Yes or no?', 'required' => 'y'],
+            []
+        );
+        $questions = $questionnaire->questions();
+        return reset($questions);
+    }
 
     // General tests to call from specific tests above.
 

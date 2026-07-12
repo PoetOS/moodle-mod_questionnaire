@@ -51,17 +51,12 @@
     {{#choices}}
         {{#horizontal}}<span style="white-space:nowrap;">{{/horizontal}}
         {{#selected}}
-            <span class="selected">
-        {{^pdf}}
-            <input type="radio" name="{{name}}" checked="checked" disabled="disabled"
-                   aria-label="{{alabel}}">{{/pdf}}
-                {{#pdf}}&#10003;{{/pdf}} {{{content}}}{{#othercontent}} <span class="response text">{{.}}</span>{{/othercontent}}
-    </span>
+            <span class="selected"><span aria-hidden="true">&#10003;</span>
+                <span class="accesshide">{{#str}} answered, mod_questionnaire {{/str}}</span>
+                {{{content}}}{{#othercontent}} <span class="response text">{{.}}</span>{{/othercontent}}</span>
         {{/selected}}
         {{^selected}}
-            <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{^pdf}}
-                <input type="radio" name="{{name}}" disabled="disabled" aria-label="{{alabel}}">{{/pdf}}
-                {{{content}}}</span>&nbsp;
+            <span class="unselected"{{#pdf}} color="gray"{{/pdf}}>{{{content}}}</span>&nbsp;
         {{/selected}}
         {{#horizontal}}</span>{{/horizontal}}
         {{^horizontal}}<br>{{/horizontal}}

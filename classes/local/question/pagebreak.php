@@ -49,13 +49,15 @@ class pagebreak extends question {
      * @param \mod_questionnaire\local\response\response $response
      * @param \questionnaire|null $questionnaire
      * @param bool $individualresponse Unused; signature must match parent.
+     * @param bool $readonly Unused; signature must match parent.
      * @return \stdClass
      */
     public function questionstart_survey_display(
         $qnum,
         $response = null,
         $questionnaire = null,
-        bool $individualresponse = false
+        bool $individualresponse = false,
+        bool $readonly = false
     ): \stdClass {
         return new \stdClass();
     }
