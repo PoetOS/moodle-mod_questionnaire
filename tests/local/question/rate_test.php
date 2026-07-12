@@ -15,12 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Canary tests for rate::question_survey_display / response_survey_display.
+ * Shape tests for rate::question_survey_display / response_survey_display.
  *
- * These tests exist to guard the return-shape of the two big render methods
- * before / after Phase E's method-length refactor. They assert on the
- * populated $choicetags / $resptags objects (via reflection since both
- * methods are protected), not the eventual mustache HTML.
+ * Originally the Phase E refactor canaries; now they pin the rebuilt template
+ * context shape (UI step 3), including the removal of the legacy hidden
+ * "-999" unanswered radios. They assert on the populated $choicetags /
+ * $resptags objects (via reflection since both methods are protected),
+ * not the eventual mustache HTML.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -85,8 +86,8 @@ final class rate_test extends \advanced_testcase {
     }
 
     /**
-     * A normal-scale rate question renders a header row with one column per rating length,
-     * and one row per choice.
+     * A normal-scale rate question renders a header column per rating degree and one
+     * row per choice, each with a radio cell per degree.
      */
     public function test_question_survey_display_normal_scale_shape(): void {
         $this->resetAfterTest();
@@ -94,16 +95,42 @@ final class rate_test extends \advanced_testcase {
         $question = $this->build_rate_question(0, ['One', 'Two', 'Three']);
         $response = response::create_from_data([]);
 
-        $choicetags = $this->invoke($question, 'question_survey_display', [$response, '', false]);
+        // Null mirrors the runtime callers (the legacy untyped signature tolerated it).
+        $choicetags = $this->invoke($question, 'question_survey_display', [$response, '', null]);
 
         $this->assertIsObject($choicetags);
         $this->assertSame('Rate these', $choicetags->qelements['caption']);
-        $this->assertCount(5, $choicetags->qelements['headerrow']['cols']);
+        $this->assertCount(5, $choicetags->qelements['headercols']);
+        $this->assertSame(5, $choicetags->qelements['numratecols']);
         $this->assertCount(3, $choicetags->qelements['rows']);
+        foreach ($choicetags->qelements['rows'] as $row) {
+            $this->assertCount(5, $row['cells']);
+        }
     }
 
     /**
-     * An N/A rate question appends an N/A column to the header row.
+     * The legacy hidden "unanswered" radio (value -999) is gone: every rendered cell
+     * carries a real rating value and nothing is pre-checked on a fresh response.
+     */
+    public function test_question_survey_display_has_no_unanswered_radios(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $question = $this->build_rate_question(0, ['One', 'Two', 'Three']);
+        $response = response::create_from_data([]);
+
+        $choicetags = $this->invoke($question, 'question_survey_display', [$response, '', false]);
+
+        foreach ($choicetags->qelements['rows'] as $row) {
+            foreach ($row['cells'] as $cell) {
+                $this->assertNotEquals(-999, $cell['value']);
+                $this->assertArrayNotHasKey('checked', $cell);
+                $this->assertNotSame('', $cell['id']);
+            }
+        }
+    }
+
+    /**
+     * An N/A rate question appends an N/A column to the header and a -1 cell per row.
      */
     public function test_question_survey_display_na_column_added_to_header(): void {
         $this->resetAfterTest();
@@ -114,10 +141,29 @@ final class rate_test extends \advanced_testcase {
         $choicetags = $this->invoke($question, 'question_survey_display', [$response, '', false]);
 
         // 5 rating columns + 1 N/A column.
-        $this->assertCount(6, $choicetags->qelements['headerrow']['cols']);
+        $this->assertCount(6, $choicetags->qelements['headercols']);
         $natext = get_string('notapplicable', 'questionnaire');
-        $lastcol = end($choicetags->qelements['headerrow']['cols']);
-        $this->assertSame($natext, $lastcol['coltext']);
+        $lastcol = end($choicetags->qelements['headercols']);
+        $this->assertSame($natext, $lastcol['text']);
+        $lastcell = end($choicetags->qelements['rows'][0]['cells']);
+        $this->assertSame(-1, $lastcell['value']);
+    }
+
+    /**
+     * An Osgood question sets the osgood flag and provides the right-side item label.
+     */
+    public function test_question_survey_display_osgood_shape(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $question = $this->build_rate_question(3, ['Cold|Hot', 'Wet|Dry']);
+        $response = response::create_from_data([]);
+
+        $choicetags = $this->invoke($question, 'question_survey_display', [$response, '', false]);
+
+        $this->assertTrue($choicetags->qelements['osgood']);
+        $this->assertSame('45%', $choicetags->qelements['itemcolwidth']);
+        $this->assertStringContainsString('Hot', $choicetags->qelements['rows'][0]['osgoodright']);
+        $this->assertStringContainsString('Cold', $choicetags->qelements['rows'][0]['itemtext']);
     }
 
     /**

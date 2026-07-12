@@ -17,138 +17,112 @@
 {{!
     @template mod_questionnaire/question_rate
 
-    Template which defines a rate type question survey display.
+    Rate (scale) question for the survey-answer page: one header row of rating
+    degrees and one radio row per item. Each radio fills its cell via its label,
+    so clicking anywhere in the cell selects it — no JavaScript involved.
 
     Classes required for JS:
     * none
 
     Data attributes required for JS:
-    * none
+    * data-questionnaire-rate-uncheck — on radios of "no duplicate choices"
+      questions; handled by mod_questionnaire/survey_inputs.
 
     Context variables required for this template:
+    * qelements - object:
+      * caption - string: plain-text question content for the table caption.
+      * twidth - string: table width hint.
+      * itemcolwidth - string: width hint for the item-label column(s).
+      * ratecolwidth - string: width hint for each rating column.
+      * numratecols - int: number of rating columns (including N/A).
+      * osgood - bool: true for Osgood scales (item text split left/right).
+      * headercols - array of {text}: rating-degree header cells.
+      * rows - array: one per item:
+        * itemtext - string: HTML of the item label.
+        * other - object (optional): {name, id, value} for an "Other" text input.
+        * notcompleted - bool: row was left unanswered on a partial submit.
+        * rowtitle - string: title attribute text for an incomplete row.
+        * cells - array of {name, value, id, checked, disabled, rateuncheck, label}.
+        * osgoodright - string (optional): HTML of the right-side Osgood label.
 
     Example context (json):
     {
-        "qelements": [
-            {
-                "twidth": "100%",
-                "headerrow": {
-                    "col1width": "100%",
-                    "colnya": 1,
-                    "cols": [
+        "qelements": {
+            "caption": "Rate these",
+            "twidth": "100%",
+            "itemcolwidth": "59%",
+            "ratecolwidth": "8%",
+            "numratecols": 5,
+            "osgood": false,
+            "headercols": [
+                {"text": "One"},
+                {"text": "Two"}
+            ],
+            "rows": [
+                {
+                    "itemtext": "Cheese",
+                    "notcompleted": false,
+                    "rowtitle": "",
+                    "cells": [
                         {
-                            "colwidth": "100%",
-                            "coltext": "<div>Header 1</div>"
-                        },
-                        {
-                            "colwidth": "100%",
-                            "coltext": "<div>Header 1</div>"
+                            "name": "q1_2",
+                            "value": 1,
+                            "id": "q1_2_1",
+                            "checked": false,
+                            "disabled": false,
+                            "rateuncheck": false,
+                            "label": "Row 2, Cheese: Column 2, One."
                         }
                     ]
-                },
-                "caption": "text",
-                "rows": [
-                    {
-                        "cols": [
-                            {
-                                "colstyle": "columnstyle",
-                                "colclass": "columnclass",
-                                "coltitle": "columntitle",
-                                "coltext": "<div>HTML of column text.</div>",
-                                "colhiddentext": "<div>HTML of column hidden text.",
-                                "colinput": {
-                                    "name": "input1",
-                                    "id": "id1",
-                                    "checked": 1,
-                                    "disabled": 0,
-                                    "onclick": "dosomething()",
-                                    "label": "<div>HTML of label</div>"
-                                }
-                            },
-                            {
-                                "colstyle": "columnstyle",
-                                "colclass": "columnclass",
-                                "coltitle": "columntitle",
-                                "coltext": "<div>HTML of column text.</div>",
-                                "colhiddentext": "<div>HTML of column hidden text.",
-                                "colinput": {
-                                    "name": "input2",
-                                    "id": "id2",
-                                    "checked": 1,
-                                    "disabled": 0,
-                                    "onclick": "dosomething()",
-                                    "label": "<div>HTML of label</div>"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "cols": [
-                            {
-                                "colstyle": "columnstyle",
-                                "colclass": "columnclass",
-                                "coltitle": "columntitle",
-                                "coltext": "<div>HTML of column text.</div>",
-                                "colhiddentext": "<div>HTML of column hidden text.",
-                                "colinput": {
-                                    "name": "input3",
-                                    "id": "id3",
-                                    "checked": 1,
-                                    "disabled": 0,
-                                    "onclick": "dosomething()",
-                                    "label": "<div>HTML of label</div>"
-                                }
-                            },
-                            {
-                                "colstyle": "columnstyle",
-                                "colclass": "columnclass",
-                                "coltitle": "columntitle",
-                                "coltext": "<div>HTML of column text.</div>",
-                                "colhiddentext": "<div>HTML of column hidden text.",
-                                "colinput": {
-                                    "name": "input4",
-                                    "id": "id4",
-                                    "checked": 1,
-                                    "disabled": 0,
-                                    "onclick": "dosomething()",
-                                    "label": "<div>HTML of label</div>"
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+                }
+            ]
+        }
     }
-    }}
-<!-- Begin HTML generated from question_rate template. -->
+}}
 {{#qelements}}
-<table style="width:{{twidth}}" class="table-reboot">
-  <caption class="accesshide">{{caption}}</caption>
-  <tbody>
-    {{#qelements.headerrow}}
-    <tr>
-      <td style="width:{{col1width}}"></td>
-      {{#colnya}}<td title="nya"></td>{{/colnya}}
-      {{#cols}}
-      <td style="width:{{colwidth}}; text-align:center;" class="smalltext">{{{coltext}}}</td>
-      {{/cols}}
-    {{/qelements.headerrow}}
-    {{#qelements.rows}}
-    <tr class="raterow">
-      {{#cols}}
-      <td {{#colstyle}}style="{{.}}"{{/colstyle}}{{#colclass}} class="{{.}}"{{/colclass}}{{#coltitle}} title="{{.}}"{{/coltitle}}
-			{{#colinput}} onclick="if('{{id}}'.length>0) document.getElementById('{{id}}').click()"{{/colinput}}>
-        {{#coltext}}{{{.}}}{{/coltext}}
-        {{#oname}}<input size="25" name="{{oname}}" id="{{oid}}" value="" type="text" />{{/oname}}
-        {{#colhiddentext}}<span class="accesshide">{{{.}}}</span>{{/colhiddentext}}
-        {{#colinput}}<input type="radio" name="{{name}}" id="{{id}}" value="{{value}}"{{#checked}} checked="checked"{{/checked}}{{#disabled}} disabled="disabled"{{/disabled}}{{#rateuncheck}} data-questionnaire-rate-uncheck{{/rateuncheck}}>
-        {{#label}}<label for="{{id}}" class="accesshide">{{{.}}}</label>{{/label}}{{/colinput}}
-      </td>
-      {{/cols}}
-    </tr>
-    {{/qelements.rows}}
-  </tbody>
-</table>
+<div class="table-responsive">
+    <table class="questionnaire-rate{{#osgood}} questionnaire-rate-osgood{{/osgood}}" style="width: {{twidth}}">
+        <caption class="accesshide">{{caption}}</caption>
+        <colgroup>
+            <col style="width: {{itemcolwidth}}">
+            <col span="{{numratecols}}" style="width: {{ratecolwidth}}">
+            {{#osgood}}<col style="width: {{itemcolwidth}}">{{/osgood}}
+        </colgroup>
+        <thead>
+            <tr>
+                <td></td>
+                {{#headercols}}
+                <th scope="col" class="questionnaire-rate-degree">{{{text}}}</th>
+                {{/headercols}}
+                {{#osgood}}<td></td>{{/osgood}}
+            </tr>
+        </thead>
+        <tbody>
+            {{#rows}}
+            <tr class="raterow{{#notcompleted}} notcompleted{{/notcompleted}}"{{#rowtitle}} title="{{.}}"{{/rowtitle}}>
+                <th scope="row" class="questionnaire-rate-item">
+                    {{{itemtext}}}
+                    {{#other}}
+                    <input type="text" class="form-control form-control-sm d-inline-block w-auto"
+                           name="{{name}}" id="{{id}}" value="{{value}}">
+                    {{/other}}
+                </th>
+                {{#cells}}
+                <td class="questionnaire-rate-cell">
+                    <label>
+                        <input type="radio" name="{{name}}" id="{{id}}" value="{{value}}"
+                               {{#checked}}checked{{/checked}} {{#disabled}}disabled{{/disabled}}
+                               {{#rateuncheck}}data-questionnaire-rate-uncheck{{/rateuncheck}}>
+                        <span class="accesshide">{{label}}</span>
+                    </label>
+                </td>
+                {{/cells}}
+                {{#osgoodright}}
+                <th scope="row" class="questionnaire-rate-item questionnaire-rate-item-right">{{{.}}}</th>
+                {{/osgoodright}}
+            </tr>
+            {{/rows}}
+        </tbody>
+    </table>
+</div>
 {{/qelements}}
-<!-- End HTML generated from question_rate template. -->

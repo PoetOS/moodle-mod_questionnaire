@@ -604,6 +604,48 @@ input[type=image].mod_questionnaire_recycleq {
     left: 50%;
 }
 
+/* Rate (scale) question table. */
+.path-mod-questionnaire .questionnaire-rate th {
+    font-weight: normal;
+    padding: 0.3em 0.4em;
+}
+
+.path-mod-questionnaire .questionnaire-rate .questionnaire-rate-degree {
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85em;
+    vertical-align: bottom;
+}
+
+.path-mod-questionnaire .questionnaire-rate .questionnaire-rate-item {
+    text-align: left;
+}
+
+.path-mod-questionnaire .questionnaire-rate-osgood .questionnaire-rate-item {
+    text-align: right;
+}
+
+.path-mod-questionnaire .questionnaire-rate-osgood .questionnaire-rate-item-right {
+    text-align: left;
+}
+
+.path-mod-questionnaire .questionnaire-rate td.questionnaire-rate-cell {
+    text-align: center;
+    padding: 0;
+}
+
+.path-mod-questionnaire .questionnaire-rate td.questionnaire-rate-cell label {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0.4em 0;
+    cursor: pointer;
+}
+
+.path-mod-questionnaire .questionnaire-rate tr.notcompleted td {
+    border: 2px solid red;
+}
+
 /* Styles for the print blank page. */
 #page-mod-questionnaire-print .slider {
     position: relative;
