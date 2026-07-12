@@ -26,7 +26,6 @@
     * none
 
     Context variables required for this template:
-    * tabsarea - string: HTML of the tabs management area.
     * heading - string: HTML of the page heading.
     * formstart - string: Form start HTML.
     * notifications - string: HTML of any notifications loaded.
@@ -41,7 +40,6 @@
 
     Example context (json):
     {
-        "tabsarea": "<div>HTML of the tabs area</div>",
         "heading": "HTML of the page heading",
         "formstart": "<form id=\"formid\" method=\"post\" action=\"index.php\">",
         "notifications": "<div>Notification one</div>",
@@ -59,7 +57,6 @@
     }
     }}
 <div class="mod_questionnaire_previewpage">
-    {{{tabsarea}}}
     <h2>{{{heading}}}</h2>
     {{{formstart}}}
     {{#notifications}}{{{.}}}{{/notifications}}

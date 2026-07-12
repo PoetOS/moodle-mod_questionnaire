@@ -404,8 +404,6 @@ $PAGE->set_title($streditquestion);
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add($streditquestion);
 echo $renderer->header();
-(new \mod_questionnaire\output\tabs($questionnaire, 'questions'))->render($page);
-
 if ($action == "confirmdelquestion" || $action == "confirmdelquestionparent") {
     $qid = key($qformdata->removebutton);
     $question = $questions[$qid];

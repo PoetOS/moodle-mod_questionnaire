@@ -68,6 +68,17 @@ $PAGE->set_heading(format_string($course->fullname));
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = new reportpage();
 
+$actionbar = \mod_questionnaire\output\report_action_bar::for_myreport(
+    $questionnaire,
+    $userid,
+    $currentgroupid,
+    $questionnaire->count_submissions($USER->id),
+    $action
+);
+if ($actionbar->has_content()) {
+    $page->add_to_page('actionbar', $renderer->render($actionbar));
+}
+
 $sid = $questionnaire->surveyid();
 $courseid = $questionnaire->courseid();
 
@@ -87,9 +98,6 @@ switch ($action) {
         // Print the page header.
         echo $renderer->header();
 
-        // Print the tabs.
-        (new \mod_questionnaire\output\tabs($questionnaire, 'mysummary', $currentgroupid))->render($page);
-
         $page->add_to_page('myheaders', $titletext);
         $questionnaire->reporter($renderer, $page)->survey_results($rids, $USER->id);
 
@@ -108,9 +116,6 @@ switch ($action) {
 
         // Print the page header.
         echo $renderer->header();
-
-        // Print the tabs.
-        (new \mod_questionnaire\output\tabs($questionnaire, 'myvall', $currentgroupid))->render($page);
 
         $page->add_to_page('myheaders', $titletext);
         $questionnaire->reporter($renderer, $page)->view_all_responses();
@@ -199,10 +204,6 @@ switch ($action) {
         // Print the page header.
         echo $renderer->header();
 
-        // Print the tabs.
-        $myrid = is_int($rid) ? $rid : null;
-        (new \mod_questionnaire\output\tabs($questionnaire, 'mybyresponse', $currentgroupid, $myrid))
-            ->render($page);
         $page->add_to_page('myheaders', $titletext);
 
         if (count($resps) > 1) {

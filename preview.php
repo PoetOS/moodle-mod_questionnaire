@@ -98,9 +98,6 @@ $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = new \mod_questionnaire\output\previewpage();
 
 echo $renderer->header();
-if (!$popup) {
-    (new \mod_questionnaire\output\tabs($questionnaire, 'preview'))->render($page);
-}
 $page->add_to_page('heading', clean_text($pq));
 
 if ($canprintblank) {

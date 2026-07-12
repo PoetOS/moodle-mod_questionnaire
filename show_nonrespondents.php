@@ -154,13 +154,10 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
 }
 
 // Get the responses of given user.
-// Print the page header.
-$PAGE->navbar->add(get_string('show_nonrespondents', 'questionnaire'));
+// Print the page header. The navbar leaf comes from the settings-navigation node.
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_title(format_string($questionnaire->name()));
 echo $renderer->header();
-
-(new \mod_questionnaire\output\tabs($questionnaire, 'nonrespondents', $currentgroupid))->render($page);
 
 $usedgroupid = false;
 $sort = '';
@@ -299,9 +296,10 @@ $datestring->sec = get_string('sec');
 $datestring->secs = get_string('secs');
 
 if (!$nonrespondents) {
+    // An empty list is a normal state, not an error.
     $page->add_to_page(
         'formarea',
-        $renderer->notification(get_string('noexistingparticipants', 'enrol'))
+        $renderer->notification(get_string('noexistingparticipants', 'enrol'), \core\output\notification::NOTIFY_INFO)
     );
 } else {
     $page->add_to_page('formarea', get_string('non_respondents', 'questionnaire'));
