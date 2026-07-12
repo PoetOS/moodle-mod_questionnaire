@@ -1306,7 +1306,7 @@ abstract class question {
         bool $individualresponse = false,
         bool $readonly = false
     ): stdClass {
-        global $OUTPUT, $PAGE;
+        global $PAGE;
 
         $pagetags = new \stdClass();
         $pagetype = $PAGE->pagetype;
@@ -1361,13 +1361,14 @@ abstract class question {
             $required = '';
             // A required marker is meaningless on a read-only review of a submitted response.
             if ($this->required() && !$readonly) {
-                $required = html_writer::start_tag('div', ['class' => 'accesshide']);
-                $required .= get_string('required', 'questionnaire');
-                $required .= html_writer::end_tag('div');
-                $required .= html_writer::empty_tag('img', ['class' => 'req', 'title' => get_string('required', 'questionnaire'),
-                    'alt' => get_string('required', 'questionnaire'), 'src' => $OUTPUT->image_url('req')]);
+                $required = html_writer::tag('span', get_string('required', 'questionnaire'), ['class' => 'accesshide']);
+                $required .= html_writer::tag(
+                    'span',
+                    '*',
+                    ['class' => 'qn-required', 'title' => get_string('required', 'questionnaire'), 'aria-hidden' => 'true']
+                );
             }
-            $pagetags->required = $required; // Need to replace this with better renderer / template?
+            $pagetags->required = $required;
         }
         // If question text is "empty", i.e. 2 non-breaking spaces were inserted, empty it.
         if ($this->content() == '<p>  </p>') {

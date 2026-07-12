@@ -600,8 +600,7 @@ class behat_mod_questionnaire extends behat_base {
         $filepickercontainer = $this->find(
             'xpath',
             "//p[contains(.,'" . $question . "')]" .
-            "//parent::div[contains(concat(' ', normalize-space(@class), ' '), ' no-overflow ')]" .
-            "//parent::div[contains(concat(' ', normalize-space(@class), ' '), ' qn-question ')]" .
+            "/ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' qn-question ')]" .
             "//following::div[contains(concat(' ', normalize-space(@class), ' '), ' qn-answer ')]" .
             "//descendant::*[@data-fieldtype = 'filemanager' or @data-fieldtype = 'filepicker']",
             $exception
