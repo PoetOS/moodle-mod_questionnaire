@@ -54,7 +54,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
       | Yes | y |
       | Question Text | Yes or no |
     Then I should see "[Yes/No] (Q4)"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     And I should see "Feedback options"
     And I set the field "id_feedbacksections" to "Global Feedback"
     And I set the field "id_feedbackscores" to "Yes"

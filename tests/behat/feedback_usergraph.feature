@@ -35,7 +35,7 @@ Feature: When the questionnaire usergraph site setting is enabled and a feedback
       | Question Text    | Pick one                 |
       | Possible answers | 1=One,2=Two,3=Three      |
     Then I should see "[Radio Buttons] (Q1)"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     And I set the field "id_feedbacksections" to "Global Feedback"
     And I set the field "id_feedbackscores" to "Yes"
     And I set the field "id_chart_type_global" to "Bipolar bars"

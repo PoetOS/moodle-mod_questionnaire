@@ -61,7 +61,7 @@ Feature: In questionnaire, personality tests can be constructed using feedback o
       | Possible answers | Clubs,Diamonds,Hearts,Spades |
       | Named degrees    | 0=Zero,2=Two,4=Four,8=Eight,16=Sixteen |
     Then I should see "[Rate (scale 1..5)] (Q5)"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     And I should see "Feedback options"
     And I set the field "id_feedbacksections" to "Feedback sections"
     And I set the field "id_feedbackscores" to "Yes"

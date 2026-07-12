@@ -37,7 +37,7 @@ Feature: In questionnaire, rate questions can be defined with scores attributed 
       | Possible answers | "Cold\|Hot","Wet\|Dry" |
       | Named degrees | 1=One,2=Two,3=Three,4=Four |
     Then I should see "[Rate (scale 1..5)] (Q7)"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     And I should see "Feedback options"
     And I should see "Display Scores"
     And I log out

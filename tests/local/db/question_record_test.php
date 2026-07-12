@@ -79,6 +79,21 @@ final class question_record_test extends \advanced_testcase {
     }
 
     /**
+     * count_active_for_survey() counts only non-deleted questions for the given survey.
+     */
+    public function test_count_active_for_survey(): void {
+        $this->resetAfterTest();
+        $sid = 8005;
+        $this->make_question($sid, 1);
+        $this->make_question($sid, 2);
+        $this->make_question($sid, 3, 1, time()); // Soft-deleted — excluded.
+        $this->make_question(8006, 1);            // Different survey — excluded.
+
+        $this->assertSame(2, question_record::count_active_for_survey($sid));
+        $this->assertSame(0, question_record::count_active_for_survey(99999));
+    }
+
+    /**
      * get_for_survey() returns every question for the survey, including soft-deleted ones.
      */
     public function test_get_for_survey_includes_deleted(): void {
