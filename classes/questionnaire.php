@@ -739,8 +739,6 @@ class questionnaire {
     ): void {
         global $USER;
 
-        $individualresponse = optional_param('individualresponse', false, PARAM_INT);
-        $rid = optional_param('rid', false, PARAM_INT); // Response id.
         $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 
         $cm = $settings->get_page()->cm;
@@ -811,7 +809,8 @@ class questionnaire {
             $questionnairenode->add_node($node, $beforekey);
         }
 
-        if (has_capability('mod/questionnaire:preview', $context)) {
+        $hasquestions = \mod_questionnaire\local\db\question_record::count_active_for_survey((int) $this->surveyid()) > 0;
+        if (has_capability('mod/questionnaire:preview', $context) && $owner && $hasquestions) {
             $url = '/mod/questionnaire/preview.php';
             $node = \navigation_node::create(
                 get_string('preview_label', 'questionnaire'),
@@ -863,52 +862,7 @@ class questionnaire {
                     null,
                     'yourresponses'
                 );
-                $myreportnode = $questionnairenode->add_node($node, $beforekey);
-
-                $urlargs = [
-                    'instance' => $this->id(),
-                    'userid' => $USER->id,
-                    'byresponse' => 0,
-                    'action' => 'summary',
-                    'group' => $currentgroupid,
-                ];
-                $myreportnode->add(get_string('summary', 'questionnaire'), new \moodle_url($url, $urlargs));
-
-                $urlargs = [
-                    'instance' => $this->id(),
-                    'userid' => $USER->id,
-                    'byresponse' => 1,
-                    'action' => 'vresp',
-                    'group' => $currentgroupid,
-                ];
-                $byresponsenode = $myreportnode->add(
-                    get_string('viewindividualresponse', 'questionnaire'),
-                    new \moodle_url($url, $urlargs)
-                );
-
-                $urlargs = [
-                    'instance' => $this->id(),
-                    'userid' => $USER->id,
-                    'byresponse' => 0,
-                    'action' => 'vall',
-                    'group' => $currentgroupid,
-                ];
-                $myreportnode->add(get_string('myresponses', 'questionnaire'), new \moodle_url($url, $urlargs));
-                if ($this->capabilities()->can_download_responses()) {
-                    $urlargs = [
-                        'instance' => $this->id(),
-                        'user' => $USER->id,
-                        'action' => 'dwnpg',
-                        'group' => $currentgroupid,
-                    ];
-                    $myreportnode->add(
-                        get_string('downloadtextformat', 'questionnaire'),
-                        new \moodle_url(
-                            '/mod/questionnaire/report.php',
-                            $urlargs
-                        )
-                    );
-                }
+                $questionnairenode->add_node($node, $beforekey);
             } else {
                 $urlargs = [
                     'instance' => $this->id(),
@@ -927,7 +881,7 @@ class questionnaire {
                     null,
                     'yourresponse'
                 );
-                $myreportnode = $questionnairenode->add_node($node, $beforekey);
+                $questionnairenode->add_node($node, $beforekey);
             }
         }
 
@@ -945,94 +899,7 @@ class questionnaire {
                 null,
                 'vall'
             );
-            $reportnode = $questionnairenode->add_node($node, $beforekey);
-
-            if ($this->capabilities()->can_view_single_response()) {
-                $summarynode = $reportnode->add(
-                    get_string('summary', 'questionnaire'),
-                    new \moodle_url(
-                        '/mod/questionnaire/report.php',
-                        ['instance' => $this->id(), 'action' => 'vall']
-                    )
-                );
-            } else {
-                $summarynode = $reportnode;
-            }
-            $summarynode->add(
-                get_string('order_default', 'questionnaire'),
-                new \moodle_url(
-                    '/mod/questionnaire/report.php',
-                    ['instance' => $this->id(), 'action' => 'vall', 'group' => $currentgroupid]
-                )
-            );
-            $summarynode->add(
-                get_string('order_ascending', 'questionnaire'),
-                new \moodle_url(
-                    '/mod/questionnaire/report.php',
-                    ['instance' => $this->id(), 'action' => 'vallasort', 'group' => $currentgroupid]
-                )
-            );
-            $summarynode->add(
-                get_string('order_descending', 'questionnaire'),
-                new \moodle_url(
-                    '/mod/questionnaire/report.php',
-                    ['instance' => $this->id(), 'action' => 'vallarsort', 'group' => $currentgroupid]
-                )
-            );
-
-            if ($this->capabilities()->can_delete_responses()) {
-                $summarynode->add(
-                    get_string('deleteallresponses', 'questionnaire'),
-                    new \moodle_url(
-                        '/mod/questionnaire/report.php',
-                        ['instance' => $this->id(), 'action' => 'delallresp', 'group' => $currentgroupid]
-                    )
-                );
-            }
-
-            if ($this->capabilities()->can_download_responses()) {
-                $summarynode->add(
-                    get_string('downloadtextformat', 'questionnaire'),
-                    new \moodle_url(
-                        '/mod/questionnaire/report.php',
-                        ['instance' => $this->id(), 'action' => 'dwnpg', 'group' => $currentgroupid]
-                    )
-                );
-            }
-            if ($this->capabilities()->can_view_single_response()) {
-                $byresponsenode = $reportnode->add(
-                    get_string('viewbyresponse', 'questionnaire'),
-                    new \moodle_url(
-                        '/mod/questionnaire/report.php',
-                        ['instance' => $this->id(), 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid]
-                    )
-                );
-
-                $byresponsenode->add(
-                    get_string('view', 'questionnaire'),
-                    new \moodle_url(
-                        '/mod/questionnaire/report.php',
-                        ['instance' => $this->id(), 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid]
-                    )
-                );
-
-                if ($individualresponse) {
-                    $byresponsenode->add(
-                        get_string('deleteresp', 'questionnaire'),
-                        new \moodle_url(
-                            '/mod/questionnaire/report.php',
-                            [
-                                'instance' => $this->id(),
-                                'action' => 'dresp',
-                                'byresponse' => 1,
-                                'rid' => $rid,
-                                'group' => $currentgroupid,
-                                'individualresponse' => 1,
-                            ]
-                        )
-                    );
-                }
-            }
+            $questionnairenode->add_node($node, $beforekey);
         }
 
         $canviewgroups = true;

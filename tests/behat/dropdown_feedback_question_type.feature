@@ -34,7 +34,7 @@ Feature: In questionnaire, dropdown questions can be defined with scores attribu
       | Question Text | Select one choice |
       | Possible answers | 1=One,2=Two,3=Three,4=Four |
     Then I should see "[Dropdown Box] (Q3)"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     And I should see "Feedback options"
     And I should see "Display Scores"
     And I log out

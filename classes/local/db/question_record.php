@@ -108,6 +108,21 @@ class question_record extends \core\persistent {
     }
 
     /**
+     * Count the non-deleted questions for a given survey.
+     *
+     * @param int $surveyid
+     * @return int
+     */
+    public static function count_active_for_survey(int $surveyid): int {
+        global $DB;
+        return $DB->count_records_select(
+            static::TABLE,
+            'surveyid = :surveyid AND deleted IS NULL',
+            ['surveyid' => $surveyid]
+        );
+    }
+
+    /**
      * Return every question record for the given survey, including soft-deleted rows.
      *
      * @param int $surveyid

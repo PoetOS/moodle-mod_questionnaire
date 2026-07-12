@@ -62,6 +62,6 @@ Feature: In questionnaire, certain questions will not activate feedback options.
       | Max. text length | 15 |
       | Question Text | Enter some text |
     Then I should see "[Text Box] (Q8)"
-    And I follow "Advanced settings"
+    And I navigate to "Advanced settings" in current page administration
     And I should not see "Feedback options"
     And I log out

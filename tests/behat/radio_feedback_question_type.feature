@@ -35,7 +35,7 @@ Feature: In questionnaire, radio questions can be defined with scores attributed
       | Question Text | Select one choice |
       | Possible answers | 1=One,2=Two,3=Three,4=Four |
     Then I should see "[Radio Buttons] (Q6)"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     And I should see "Feedback options"
     And I should see "Display Scores"
     And I log out
