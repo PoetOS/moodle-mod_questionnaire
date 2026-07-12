@@ -113,7 +113,6 @@ $PAGE->set_title(get_string('editingquestionnaire', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(get_string('editingquestionnaire', 'questionnaire'));
 echo $renderer->header();
-(new \mod_questionnaire\output\tabs($questionnaire, 'settings'))->render($page);
 $page->add_to_page('formarea', $settingsform->render());
 echo $renderer->render($page);
 echo $renderer->footer($course);

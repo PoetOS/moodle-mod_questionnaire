@@ -96,7 +96,6 @@ $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
 echo $renderer->header();
-(new \mod_questionnaire\output\tabs($questionnaire, 'feedback'))->render($page);
 if (!$validquestions) {
     $page->add_to_page('formarea', get_string('feedbackoptions_help', 'questionnaire'));
 } else {

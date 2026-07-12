@@ -265,8 +265,6 @@ $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
 echo $renderer->header();
-(new \mod_questionnaire\output\tabs($questionnaire, 'feedback'))->render($page);
-
 // Handle confirmations differently.
 if ($action == 'confirmremovequestion') {
     $sectionid = required_param('sectionid', PARAM_INT);
