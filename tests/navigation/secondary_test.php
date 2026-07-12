@@ -72,13 +72,19 @@ final class secondary_test extends \advanced_testcase {
     /**
      * Build a moodle_page for the questionnaire's view page.
      *
+     * The cm/course are re-resolved fresh: the questionnaire object's cached snapshots
+     * predate any seeded responses, and on Moodle 5.1+ a stale course record makes the
+     * resolved cm_info report not-user-visible, which empties the module settings branch.
+     *
      * @param questionnaire $questionnaire
      * @return \moodle_page
      */
     private function build_page(questionnaire $questionnaire): \moodle_page {
+        $course = get_course($questionnaire->course()->id);
+        $cminfo = get_fast_modinfo($course)->get_cm($questionnaire->coursemodule()->id);
         $page = new \moodle_page();
-        $page->set_cm($questionnaire->coursemodule(), $questionnaire->course());
-        $page->set_url('/mod/questionnaire/view.php', ['id' => $questionnaire->coursemodule()->id]);
+        $page->set_cm($cminfo, $course);
+        $page->set_url('/mod/questionnaire/view.php', ['id' => $cminfo->id]);
         return $page;
     }
 
