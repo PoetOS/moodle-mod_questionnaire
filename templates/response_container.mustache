@@ -34,19 +34,12 @@
             "class": "responseclass"
         },
         "qnum": "7",
-        "required": "<div>*</div>",
+        "required": "",
         "skippedclass": "skippedclass",
         "qcontent": "HTML for the response content",
         "responses": [
             {
                 "respdate": "Friday, 19 December 2014, 5:58pm",
-                "fieldset": {
-                    "id": "10",
-                    "class": "fieldsetclass"
-                },
-                "required": "required html",
-                "skippedclass": "skippedclass",
-                "qcontent": "HTML for the response content",
                 "qformelement": "<div>HTML for the question form element</div>"
             }
         ]
@@ -73,25 +66,7 @@
         <div class="qn-answer">
             {{#responses}}
             {{#respdate}}<div class="respdate">{{respdate}}</div>{{/respdate}}
-            <fieldset id="{{fieldset.id}}" class="{{fieldset.class}}">
-                <legend class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}} {{qlegend}}</legend>
-                <div class="qn-legend">
-                    <div class="qn-info">
-                        <div class="accesshide">{{# str }}questionnum, mod_questionnaire{{/ str}}{{{qnum}}} {{qlegend}}</div>
-                    </div>
-                    {{{required}}}
-                </div>
-                <div class="qn-content">
-                    <div class="qn-question {{skippedclass}}">
-                        {{#label}}<label for="{{label.for}}">{{/label}}
-                        {{{qcontent}}}
-                        {{#label}}</label>{{/label}}
-                    </div>
-                    <div class="qn-answer">
-                    {{{qformelement}}}
-                    </div>
-                </div>
-            </fieldset>
+            {{{qformelement}}}
             {{/responses}}
         </div>
     </div>

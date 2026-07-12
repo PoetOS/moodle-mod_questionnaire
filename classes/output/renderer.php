@@ -335,7 +335,7 @@ class renderer extends \plugin_renderer_base {
         } else {
             $qnum = 1;
             foreach ($questions as $question) {
-                $pagetags = $question->questionstart_survey_display($qnum, null, $questionnaire, $individualresponse);
+                $pagetags = $question->questionstart_survey_display($qnum, null, $questionnaire, $individualresponse, true);
                 if (empty($pagetags)) {
                     continue;
                 }
