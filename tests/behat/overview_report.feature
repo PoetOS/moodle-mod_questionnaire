@@ -78,9 +78,9 @@ Feature: Testing overview integration in mod_questionnaire
     And I navigate to "Answer the questions..." in current page administration
     And I should see "Questionnaire 1"
     And I should see "What did you think of these movies?"
-    And I click on "Row 2, Star Wars: Column 5, I liked." "radio"
-    And I click on "Row 3, Casablanca: Column 5, I liked." "radio"
-    And I click on "Row 4, Airplane: Column 5, I liked." "radio"
+    And I click on "Row 2, Star Wars: Column 4, I liked." "radio"
+    And I click on "Row 3, Casablanca: Column 4, I liked." "radio"
+    And I click on "Row 4, Airplane: Column 4, I liked." "radio"
     And I press "Submit questionnaire"
     And I am on the "Course 1" "course > activities > questionnaire" page
     Then the following should exist in the "Table listing all Questionnaire activities" table:
@@ -103,9 +103,9 @@ Feature: Testing overview integration in mod_questionnaire
     And I navigate to "Answer the questions..." in current page administration
     And I should see "Questionnaire 1"
     And I should see "What did you think of these movies?"
-    And I click on "Row 2, Star Wars: Column 5, I liked." "radio"
-    And I click on "Row 3, Casablanca: Column 5, I liked." "radio"
-    And I click on "Row 4, Airplane: Column 5, I liked." "radio"
+    And I click on "Row 2, Star Wars: Column 4, I liked." "radio"
+    And I click on "Row 3, Casablanca: Column 4, I liked." "radio"
+    And I click on "Row 4, Airplane: Column 4, I liked." "radio"
     And I press "Submit questionnaire"
     And I am on the "Course 1" "course > activities > questionnaire" page
     Then the following should exist in the "Table listing all Questionnaire activities" table:
@@ -127,9 +127,9 @@ Feature: Testing overview integration in mod_questionnaire
     And I navigate to "Answer the questions..." in current page administration
     And I should see "Questionnaire 1"
     And I should see "What did you think of these movies?"
-    And I click on "Row 2, Star Wars: Column 5, I liked." "radio"
-    And I click on "Row 3, Casablanca: Column 5, I liked." "radio"
-    And I click on "Row 4, Airplane: Column 5, I liked." "radio"
+    And I click on "Row 2, Star Wars: Column 4, I liked." "radio"
+    And I click on "Row 3, Casablanca: Column 4, I liked." "radio"
+    And I click on "Row 4, Airplane: Column 4, I liked." "radio"
     And I press "Submit questionnaire"
     And I log out
     And I log in as "student2"
@@ -138,9 +138,9 @@ Feature: Testing overview integration in mod_questionnaire
     And I navigate to "Answer the questions..." in current page administration
     And I should see "Questionnaire 1"
     And I should see "What did you think of these movies?"
-    And I click on "Row 2, Star Wars: Column 5, I liked." "radio"
-    And I click on "Row 3, Casablanca: Column 5, I liked." "radio"
-    And I click on "Row 4, Airplane: Column 5, I liked." "radio"
+    And I click on "Row 2, Star Wars: Column 4, I liked." "radio"
+    And I click on "Row 3, Casablanca: Column 4, I liked." "radio"
+    And I click on "Row 4, Airplane: Column 4, I liked." "radio"
     And I press "Submit questionnaire"
     And I log out
     And I log in as "student1"
@@ -149,9 +149,9 @@ Feature: Testing overview integration in mod_questionnaire
     And I navigate to "Answer the questions..." in current page administration
     And I should see "Questionnaire 2"
     And I should see "What did you think of these movies?"
-    And I click on "Row 2, Star Wars: Column 5, I liked." "radio"
-    And I click on "Row 3, Casablanca: Column 5, I liked." "radio"
-    And I click on "Row 4, Airplane: Column 5, I liked." "radio"
+    And I click on "Row 2, Star Wars: Column 4, I liked." "radio"
+    And I click on "Row 3, Casablanca: Column 4, I liked." "radio"
+    And I click on "Row 4, Airplane: Column 4, I liked." "radio"
     And I press "Submit questionnaire"
     And I log out
     And I am on the "Course 1" "course > activities > questionnaire" page logged in as "teacher1"

@@ -194,249 +194,51 @@ class rate extends question {
     }
 
     /**
-     * Return the context tags for the check question template.
+     * Return the context tags for the rate question template.
+     *
+     * Builds the context for templates/question_rate.mustache: a header row of rating
+     * degrees, one row per choice with a radio cell per degree, and Osgood left/right
+     * item labels when applicable. Unanswered rows submit nothing — the legacy hidden
+     * "-999" radio column is gone; completeness marking uses the absence of an answer.
+     *
      * @param \mod_questionnaire\local\response\response $response
      * @param string $descendantsdata
      * @param boolean $blankquestionnaire
-     * @return object The check question context tags.
-     *
-     * TODO: This function needs to be rewritten. It is a mess!
-     *
+     * @return object The rate question context tags.
      */
     protected function question_survey_display($response, $descendantsdata, $blankquestionnaire = false) {
+        // Some callers pass null; the untyped legacy signature tolerated it.
+        $blankquestionnaire = (bool) $blankquestionnaire;
+        $nocontent = $this->qsurvey_normalise_choices();
+
+        $qelements = $this->qsurvey_column_layout($nocontent);
+        $qelements['caption'] = strip_tags($this->content());
+        $qelements['osgood'] = $this->osgood_rate_scale();
+        [$qelements['headercols'], $collabel] = $this->qsurvey_header_columns($blankquestionnaire);
+        $qelements['numratecols'] = count($qelements['headercols']);
+
+        $notcomplete = $this->qsurvey_check_completeness($response);
+
+        $qelements['rows'] = [];
+        $rowindex = self::ROW_START;
+        foreach ($this->choices as $cid => $choice) {
+            if (!isset($choice->content)) {
+                continue;
+            }
+            $qelements['rows'][] = $this->qsurvey_build_row(
+                $cid,
+                $choice,
+                $response,
+                $collabel,
+                $notcomplete,
+                $rowindex,
+                $blankquestionnaire
+            );
+            $rowindex++;
+        }
+
         $choicetags = new \stdClass();
-        $choicetags->qelements = [];
-        $choicetags->qelements['caption'] = strip_tags($this->content());
-
-        $disabled = '';
-        if ($blankquestionnaire) {
-            $disabled = ' disabled="disabled"';
-        }
-        if (!empty($data) && (!isset($data->{'q' . $this->id()}) || !is_array($data->{'q' . $this->id()}))) {
-            $data->{'q' . $this->id()} = [];
-        }
-
-        // Check if rate question has one line only to display full width columns of choices.
-        $nocontent = false;
-        $nameddegrees = count($this->nameddegrees);
-        $n = [];
-        $v = [];
-        $maxndlen = 0;
-        foreach ($this->choices as $cid => $choice) {
-            $content = $choice->content;
-            if (!$nocontent && $content == '') {
-                $nocontent = true;
-            }
-            if ($nameddegrees == 0) {
-                // Determine if the choices have named values.
-                $contents = question::parse_choice_content($content);
-                if ($contents->modname) {
-                    $choice->content = $contents->text;
-                }
-            }
-        }
-
-        // The 0.1% right margin is needed to avoid the horizontal scrollbar in Chrome!
-        // A one-line rate question (no content) does not need to span more than 50%.
-        $width = $nocontent ? "50%" : "99.9%";
-        $choicetags->qelements['twidth'] = $width;
-        $choicetags->qelements['headerrow'] = [];
-        // If Osgood, adjust central columns to width of named degrees if any.
-        if ($this->osgood_rate_scale()) {
-            if ($maxndlen < 4) {
-                $width = 45;
-            } else if ($maxndlen < 13) {
-                $width = 40;
-            } else {
-                $width = 30;
-            }
-            $nn = 100 - ($width * 2);
-            $colwidth = ($nn / $this->length()) . '%';
-            $textalign = 'right';
-            $width = $width . '%';
-        } else if ($nocontent) {
-            $width = '0%';
-            $colwidth = (100 / $this->length()) . '%';
-            $textalign = 'right';
-        } else {
-            $width = '59%';
-            $colwidth = (40 / $this->length()) . '%';
-            $textalign = 'left';
-        }
-
-        $choicetags->qelements['headerrow']['col1width'] = $width;
-
-        if ($this->has_na_column()) {
-            $na = get_string('notapplicable', 'questionnaire');
-        } else {
-            $na = '';
-        }
-        $rateuncheck = $this->no_duplicate_choices();
-
-        if (!$this->no_duplicate_choices()) {
-            $nbchoices = count($this->choices);
-        } else { // If "No duplicate choices", can restrict nbchoices to number of rate items specified.
-            $nbchoices = $this->length();
-        }
-
-        // Display empty td for Not yet answered column.
-        if (($nbchoices > 1) && !$this->no_duplicate_choices() && !$blankquestionnaire) {
-            $choicetags->qelements['headerrow']['colnya'] = true;
-        }
-
-        $collabel = [];
-        if ($nameddegrees > 0) {
-            $currentdegree = reset($this->nameddegrees);
-        }
-        for ($j = 1; $j <= $this->length(); $j++) {
-            $col = [];
-            if (($nameddegrees > 0) && ($currentdegree !== false)) {
-                $str = format_text($currentdegree, FORMAT_HTML, ['noclean' => true]);
-                $currentdegree = next($this->nameddegrees);
-            } else {
-                $str = $j;
-            }
-            $val = $j;
-            if ($blankquestionnaire) {
-                $val = '<br />(' . $val . ')';
-            } else {
-                $val = '';
-            }
-            $col['colwidth'] = $colwidth;
-            $col['coltext'] = $str . $val;
-            $collabel[$j] = $col['coltext'];
-            $choicetags->qelements['headerrow']['cols'][] = $col;
-        }
-        if ($na) {
-            $choicetags->qelements['headerrow']['cols'][] = ['colwidth' => $colwidth, 'coltext' => $na];
-            $collabel[$j] = $na;
-        }
-
-        $num = 0;
-        foreach ($this->choices as $cid => $choice) {
-            $num += (isset($response->answers[$this->id()][$cid]) && ($response->answers[$this->id()][$cid]->value != -999));
-        }
-
-        $notcomplete = false;
-        if (($num != $nbchoices) && ($num != 0)) {
-            $this->add_notification(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
-            $notcomplete = true;
-        }
-
-        $rowstart = self::ROW_START;
-        $choicetags->qelements['rows'] = [];
-        foreach ($this->choices as $cid => $choice) {
-            $cols = [];
-            if (isset($choice->content)) {
-                $str = 'q' . "{$this->id()}_$cid";
-                $content = $choice->content;
-                $rendercontent = format_text($choice->content, FORMAT_PLAIN);
-                if ($this->osgood_rate_scale()) {
-                    [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
-                }
-                if ($choice->is_other_choice()) {
-                    $othertext = $choice->other_choice_display();
-                    $oname = $cid . '_qother';
-                    $oid = $cid . '-other';
-                    $odata = isset($response->answers[$this->id()][$cid]) ? $response->answers[$this->id()][$cid]->value : '';
-                    if (isset($odata)) {
-                        $ovalue = stripslashes($odata);
-                    }
-                    $content = $othertext;
-                    $cols[] = ['oname' => $oname, 'oid' => $oid, 'ovalue' => $ovalue,
-                            'colstyle' => 'text-align: ' . $textalign . ';',
-                            'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;'];
-                } else {
-                    $cols[] = ['colstyle' => 'text-align: ' . $textalign . ';',
-                            'coltext' => format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;'];
-                }
-
-                $bg = 'c0 raterow';
-                $hasnotansweredchoice = false;
-                if (($nbchoices > 1) && !$this->no_duplicate_choices()  && !$blankquestionnaire) {
-                    $hasnotansweredchoice = true;
-                    $checked = ' checked="checked"';
-                    $completeclass = 'notanswered';
-                    $title = '';
-                    if (
-                        $notcomplete && isset($response->answers[$this->id()][$cid]) &&
-                        ($response->answers[$this->id()][$cid]->value == -999)
-                    ) {
-                        $completeclass = 'notcompleted';
-                        $title = get_string('pleasecomplete', 'questionnaire');
-                    }
-                    // Set value of notanswered button to -999 in order to eliminate it from form submit later on.
-                    $colinput = ['name' => $str, 'value' => -999];
-                    if (!empty($checked)) {
-                        $colinput['checked'] = true;
-                    }
-                    if ($rateuncheck) {
-                        $colinput['rateuncheck'] = true;
-                    }
-                    $colinput['label'] = $this->set_label(
-                        $rowstart,
-                        $rendercontent,
-                        self::COL_START,
-                        get_string('unanswered', 'questionnaire')
-                    );
-                    $cols[] = ['colstyle' => 'width:1%;', 'colclass' => $completeclass, 'coltitle' => $title,
-                        'colinput' => $colinput];
-                }
-                if ($nameddegrees > 0) {
-                    reset($this->nameddegrees);
-                }
-                $colstart = $hasnotansweredchoice ? self::COL_START + 1 : self::COL_START;
-                for ($j = 1; $j <= $this->length() + $this->has_na_column(); $j++) {
-                    if (!isset($collabel[$j])) {
-                        // If not using this value, continue.
-                        continue;
-                    }
-                    $col = [];
-                    $checked = '';
-                    // If isna column then set na choice to -1 value. This needs work!
-                    if (!empty($this->nameddegrees) && (key($this->nameddegrees) !== null)) {
-                        $value = key($this->nameddegrees);
-                        next($this->nameddegrees);
-                    } else {
-                        $value = ($j <= $this->length() ? $j : -1);
-                    }
-                    if (isset($response->answers[$this->id()][$cid]) && ($value == $response->answers[$this->id()][$cid]->value)) {
-                        $checked = ' checked="checked"';
-                    }
-                    $col['colstyle'] = 'text-align:center';
-                    $col['colclass'] = $bg;
-                    $col['colhiddentext'] = get_string('option', 'questionnaire', $j);
-                    $col['colinput']['name'] = $str;
-                    $col['colinput']['value'] = $value;
-                    $col['colinput']['id'] = $str . '_' . $value;
-                    if (!empty($checked)) {
-                        $col['colinput']['checked'] = true;
-                    }
-                    if (!empty($disabled)) {
-                        $col['colinput']['disabled'] = true;
-                    }
-                    if ($rateuncheck) {
-                        $col['colinput']['rateuncheck'] = true;
-                    }
-                    $col['colinput']['label'] = $this->set_label($rowstart, $rendercontent, $colstart, $collabel[$j]);
-                    if ($bg == 'c0 raterow') {
-                        $bg = 'c1 raterow';
-                    } else {
-                        $bg = 'c0 raterow';
-                    }
-                    $colstart++;
-                    $cols[] = $col;
-                }
-                if ($this->osgood_rate_scale()) {
-                    $cols[] = [
-                        'coltext' => '&nbsp;' . format_text($contentright, FORMAT_HTML, ['noclean' => true]),
-                    ];
-                }
-                $choicetags->qelements['rows'][] = ['cols' => $cols];
-                $rowstart++;
-            }
-        }
-
+        $choicetags->qelements = $qelements;
         return $choicetags;
     }
 
@@ -1123,5 +925,192 @@ class rate extends question {
             'choiceanswer' => $choiceanswer,
         ];
         return get_string('accessibility:rate:choice', 'questionnaire', $a);
+    }
+
+    /**
+     * Strip named-value markup from choice contents and detect the "no content" layout.
+     *
+     * A one-line rate question (all-empty choice content) uses full-width rating columns.
+     *
+     * @return bool True when every choice has empty content.
+     */
+    private function qsurvey_normalise_choices(): bool {
+        $nocontent = false;
+        $usenameddegrees = !empty($this->nameddegrees);
+        foreach ($this->choices as $choice) {
+            if (!$nocontent && $choice->content == '') {
+                $nocontent = true;
+            }
+            if (!$usenameddegrees) {
+                // Strip legacy "value=text" named-degree markup out of the choice content.
+                $contents = question::parse_choice_content($choice->content);
+                if ($contents->modname) {
+                    $choice->content = $contents->text;
+                }
+            }
+        }
+        return $nocontent;
+    }
+
+    /**
+     * Compute the column width hints for the rate table.
+     *
+     * @param bool $nocontent True when the question is a single unlabelled rating line.
+     * @return array Partial qelements array: twidth / itemcolwidth / ratecolwidth.
+     */
+    private function qsurvey_column_layout(bool $nocontent): array {
+        if ($this->osgood_rate_scale()) {
+            // Osgood splits the item text into left/right label columns around the scale.
+            $itemwidth = 45;
+            $ratewidth = (100 - ($itemwidth * 2)) / $this->length();
+            $itemcolwidth = $itemwidth . '%';
+        } else if ($nocontent) {
+            $itemcolwidth = '0%';
+            $ratewidth = 100 / $this->length();
+        } else {
+            $itemcolwidth = '59%';
+            $ratewidth = 40 / $this->length();
+        }
+        return [
+            // A one-line rate question (no content) does not need to span more than 50%.
+            'twidth' => $nocontent ? '50%' : '100%',
+            'itemcolwidth' => $itemcolwidth,
+            'ratecolwidth' => $ratewidth . '%',
+        ];
+    }
+
+    /**
+     * Build the header column texts (rating degrees plus optional N/A column).
+     *
+     * @param bool $blankquestionnaire True on the print-blank page: degree values are shown.
+     * @return array [headercols, collabel] — template header cells and the per-column label map.
+     */
+    private function qsurvey_header_columns(bool $blankquestionnaire): array {
+        $degreelabels = array_values($this->nameddegrees);
+        $headercols = [];
+        $collabel = [];
+        for ($j = 1; $j <= $this->length(); $j++) {
+            if (isset($degreelabels[$j - 1])) {
+                $text = format_text($degreelabels[$j - 1], FORMAT_HTML, ['noclean' => true]);
+            } else {
+                $text = (string) $j;
+            }
+            if ($blankquestionnaire) {
+                $text .= '<br />(' . $j . ')';
+            }
+            $headercols[] = ['text' => $text];
+            $collabel[$j] = $text;
+        }
+        if ($this->has_na_column()) {
+            $natext = get_string('notapplicable', 'questionnaire');
+            $headercols[] = ['text' => $natext];
+            $collabel[$this->length() + 1] = $natext;
+        }
+        return [$headercols, $collabel];
+    }
+
+    /**
+     * Check whether a partially-answered response was submitted and notify if so.
+     *
+     * @param \mod_questionnaire\local\response\response $response
+     * @return bool True when the response is partially complete (some rows unanswered).
+     */
+    private function qsurvey_check_completeness($response): bool {
+        if ($this->no_duplicate_choices()) {
+            // With "no duplicate choices" the answer count is capped by the scale length.
+            $nbchoices = $this->length();
+        } else {
+            $nbchoices = count($this->choices);
+        }
+        $num = 0;
+        foreach ($this->choices as $cid => $choice) {
+            $num += (isset($response->answers[$this->id()][$cid]) && ($response->answers[$this->id()][$cid]->value != -999));
+        }
+        if (($num != $nbchoices) && ($num != 0)) {
+            $this->add_notification(get_string('checkallradiobuttons', 'questionnaire', $nbchoices));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Build one template row for a rate choice: item label, radio cells, Osgood right label.
+     *
+     * @param int $cid The choice id.
+     * @param \mod_questionnaire\local\choice\choice $choice The choice being rendered.
+     * @param \mod_questionnaire\local\response\response $response
+     * @param array $collabel Per-column header label map from qsurvey_header_columns().
+     * @param bool $notcomplete True when the submitted response is partially complete.
+     * @param int $rowindex 1-based table row position for accessibility labels.
+     * @param bool $blankquestionnaire True on the print-blank page: inputs are disabled.
+     * @return array The template row context.
+     */
+    private function qsurvey_build_row(
+        int $cid,
+        $choice,
+        $response,
+        array $collabel,
+        bool $notcomplete,
+        int $rowindex,
+        bool $blankquestionnaire
+    ): array {
+        $fieldname = 'q' . $this->id() . '_' . $cid;
+        $content = $choice->content;
+        $rendercontent = format_text($content, FORMAT_PLAIN);
+        $contentright = null;
+        if ($this->osgood_rate_scale()) {
+            [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
+        }
+
+        $row = [];
+        if ($choice->is_other_choice()) {
+            $odata = $response->answers[$this->id()][$cid]->value ?? '';
+            $row['itemtext'] = format_text($choice->other_choice_display(), FORMAT_HTML, ['noclean' => true]);
+            $row['other'] = ['name' => $cid . '_qother', 'id' => $cid . '-other', 'value' => stripslashes($odata)];
+        } else {
+            $row['itemtext'] = format_text($content, FORMAT_HTML, ['noclean' => true]);
+        }
+
+        $answer = $response->answers[$this->id()][$cid] ?? null;
+        $row['notcompleted'] = $notcomplete && ($answer === null || $answer->value == -999);
+        $row['rowtitle'] = $row['notcompleted'] ? get_string('pleasecomplete', 'questionnaire') : '';
+
+        $degreevalues = array_keys($this->nameddegrees);
+        $rateuncheck = $this->no_duplicate_choices();
+        $row['cells'] = [];
+        $colindex = self::COL_START;
+        for ($j = 1; $j <= $this->length() + $this->has_na_column(); $j++) {
+            if (!isset($collabel[$j])) {
+                continue;
+            }
+            if ($j <= $this->length()) {
+                $value = $degreevalues[$j - 1] ?? $j;
+            } else {
+                // The N/A column stores -1.
+                $value = -1;
+            }
+            $cell = [
+                'name' => $fieldname,
+                'value' => $value,
+                'id' => $fieldname . '_' . $value,
+                'label' => $this->set_label($rowindex, $rendercontent, $colindex, strip_tags($collabel[$j])),
+            ];
+            if (($answer !== null) && ($value == $answer->value)) {
+                $cell['checked'] = true;
+            }
+            if ($blankquestionnaire) {
+                $cell['disabled'] = true;
+            }
+            if ($rateuncheck) {
+                $cell['rateuncheck'] = true;
+            }
+            $row['cells'][] = $cell;
+            $colindex++;
+        }
+
+        if ($this->osgood_rate_scale()) {
+            $row['osgoodright'] = format_text($contentright, FORMAT_HTML, ['noclean' => true]);
+        }
+        return $row;
     }
 }

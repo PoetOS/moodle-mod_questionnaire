@@ -46,22 +46,22 @@ Feature: Rate scale questions can use names for degrees
     And I should see "I did not like"
     And I should see "Ehhh"
     And I should see "I liked"
-    # Check Row 2 with correct labels.
-    And "Row 2, Star Wars: Column 2, Unanswered." "radio" should exist
-    And "Row 2, Star Wars: Column 3, I did not like." "radio" should exist
-    And "Row 2, Star Wars: Column 4, Ehhh." "radio" should exist
-    And "Row 2, Star Wars: Column 5, I liked." "radio" should exist
+    # Check Row 2 with correct labels. There is no hidden "unanswered" radio any more.
+    And "Row 2, Star Wars: Column 1, Unanswered." "radio" should not exist
+    And "Row 2, Star Wars: Column 2, I did not like." "radio" should exist
+    And "Row 2, Star Wars: Column 3, Ehhh." "radio" should exist
+    And "Row 2, Star Wars: Column 4, I liked." "radio" should exist
     # Check Row 3 with correct labels.
-    And "Row 3, Casablanca: Column 2, Unanswered." "radio" should exist
-    And "Row 3, Casablanca: Column 3, I did not like." "radio" should exist
-    And "Row 3, Casablanca: Column 4, Ehhh." "radio" should exist
-    And "Row 3, Casablanca: Column 5, I liked." "radio" should exist
+    And "Row 3, Casablanca: Column 1, Unanswered." "radio" should not exist
+    And "Row 3, Casablanca: Column 2, I did not like." "radio" should exist
+    And "Row 3, Casablanca: Column 3, Ehhh." "radio" should exist
+    And "Row 3, Casablanca: Column 4, I liked." "radio" should exist
     # Check Row 4 with correct labels.
-    And "Row 4, Airplane: Column 2, Unanswered." "radio" should exist
-    And "Row 4, Airplane: Column 3, I did not like." "radio" should exist
-    And "Row 4, Airplane: Column 4, Ehhh." "radio" should exist
-    And "Row 4, Airplane: Column 5, I liked." "radio" should exist
-    And I click on "Row 2, Star Wars: Column 5, I liked." "radio"
-    And I click on "Row 3, Casablanca: Column 5, I liked." "radio"
-    And I click on "Row 4, Airplane: Column 5, I liked." "radio"
+    And "Row 4, Airplane: Column 1, Unanswered." "radio" should not exist
+    And "Row 4, Airplane: Column 2, I did not like." "radio" should exist
+    And "Row 4, Airplane: Column 3, Ehhh." "radio" should exist
+    And "Row 4, Airplane: Column 4, I liked." "radio" should exist
+    And I click on "Row 2, Star Wars: Column 4, I liked." "radio"
+    And I click on "Row 3, Casablanca: Column 4, I liked." "radio"
+    And I click on "Row 4, Airplane: Column 4, I liked." "radio"
     And I press "Submit questionnaire"
