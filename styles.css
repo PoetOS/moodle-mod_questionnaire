@@ -415,6 +415,21 @@ td.selected {
     font-size: 0.75em;
 }
 
+/* Rate-question averages: proportional bar and its scale-label row. */
+
+.path-mod-questionnaire .questionnaire-avg-bar {
+    height: 0.9rem;
+    margin-top: 0.15rem;
+}
+
+.path-mod-questionnaire .questionnaire-avg-scale td {
+    border: 0;
+    padding: 2px;
+    text-align: center;
+    font-size: 0.75em;
+    color: var(--bs-secondary-color, gray);
+}
+
 /* View page. */
 
 .mod_questionnaire_flex-container {

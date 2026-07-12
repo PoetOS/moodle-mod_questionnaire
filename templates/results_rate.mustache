@@ -26,49 +26,35 @@
     * none
 
     Context variables required for this template:
+    * averages - object: headers, a choicelabelrow (scale labels over the bar column),
+      choiceaverages rows whose column2 carries fillpercent (0-100) for the average bar,
+      and an optional nodata row.
+    * totals - object: headers plus per-choice rank-count rows.
+    * noresponses - bool: no response data at all.
 
     Example context (json):
     {
-        "responses": [
-            {
-                "response": {
-                    "text": "choice 1",
-                    "alt1": "alt1",
-                    "image1": "http://localhost/mod/questionnaire/images/hbar_1.gif",
-                    "alt2": "alt2",
-                    "width2": "28px",
-                    "image2": "http://localhost/mod/questionnaire/images/hbar.gif",
-                    "alt3": "alt3",
-                    "image3": "http://localhost/mod/questionnaire/images/hbar_r.gif",
-                    "percent": "20%",
-                    "total": 2
-                }
+        "averages": {
+            "headers": [
+                {"text": "", "align": "", "width": "60%"},
+                {"text": "Average rank", "align": "", "width": "35%"},
+                {"text": "", "align": "center", "width": "5%"}
+            ],
+            "choicelabelrow": {
+                "column1": {"align": "", "width": "60%", "text": ""},
+                "column2": {"align": "", "width": "35%", "ranks": [
+                    {"width": "20%", "text": "One"},
+                    {"width": "20%", "text": "Two"}
+                ]},
+                "column3": {"align": "center", "width": "5%", "text": ""}
             },
-            {
-                "response": {
-                    "text": "choice 2",
-                    "alt1": "alt1",
-                    "image1": "http://localhost/mod/questionnaire/images/hbar_1.gif",
-                    "alt2": "alt2",
-                    "width2": "28px",
-                    "image2": "http://localhost/mod/questionnaire/images/hbar.gif",
-                    "alt3": "alt3",
-                    "image3": "http://localhost/mod/questionnaire/images/hbar_r.gif",
-                    "percent": "20%",
-                    "total": 2
+            "choiceaverages": [
+                {
+                    "column1": {"align": "", "width": "60%", "text": "Cheese"},
+                    "column2": {"align": "", "width": "35%", "fillpercent": 60.0},
+                    "column3": {"align": "center", "width": "5%", "text": "3.0"}
                 }
-            }
-        ],
-        "total": {
-            "alt1": "alt1",
-            "image1": "http://localhost/mod/questionnaire/images/hbar_1.gif",
-            "alt2": "alt2",
-            "width2": "28px",
-            "image2": "http://localhost/mod/questionnaire/images/hbar.gif",
-            "alt3": "alt3",
-            "image3": "http://localhost/mod/questionnaire/images/hbar_r.gif",
-            "percent": "20%",
-            "total": "8/10"
+            ]
         }
     }
     }}
@@ -90,12 +76,12 @@
         <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</td>
         {{/column1}}
         {{#column2}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">
-            <table style="width:100%" cellpadding="2" cellspacing="0" border="1" class="table-reboot">
+            <td class="cell" style="text-align:{{align}}; width:{{width}};">
+            <table style="width:100%" class="table-reboot questionnaire-avg-scale">
                 <tbody>
                 <tr>
                     {{#ranks}}
-                        <td class="smalltext" style="text-align:center; width:{{width}};">{{{text}}}</td>
+                        <td style="width:{{width}};">{{{text}}}</td>
                     {{/ranks}}
                 </tr>
                 </tbody>
@@ -117,8 +103,12 @@
             <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</td>
         {{/column1}}
         {{#column2}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">
-                {{#imageurl}}<img style="height:12px; width: 6px;{{#margin}} {{margin}};{{/margin}}" alt="" src="{{imageurl}}" />{{/imageurl}}
+            <td class="cell" style="text-align:{{align}}; width:{{width}};">
+                {{#fillpercent}}
+                <div class="progress questionnaire-avg-bar" aria-hidden="true">
+                    <div class="progress-bar" role="progressbar" style="width: {{fillpercent}}%;"></div>
+                </div>
+                {{/fillpercent}}
             </td>
         {{/column2}}
         {{#column3}}

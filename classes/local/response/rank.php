@@ -570,7 +570,8 @@ class rank extends responsetype {
 
         $pagetags = new \stdClass();
         $pagetags->averages = new \stdClass();
-        $pagetags->averages->headers = $headers;
+        // Reindex from 0: mustache only iterates zero-based lists, not 1-based maps.
+        $pagetags->averages->headers = array_values($headers);
         $rankcols = $this->build_rank_columns($headers[1], $isrestricted);
         $pagetags->averages->choicelabelrow = self::build_averages_label_row($headers, $rankcols);
 
@@ -777,7 +778,7 @@ class rank extends responsetype {
         string $spacerimage
     ): \stdClass {
         [$avg, , ] = $this->resolve_choice_avg($contentobj);
-        [$margin, $marginpdf] = $this->chart_bar_position($avg, $isrestricted, $innertablewidth);
+        [$margin, $marginpdf, $fillpercent] = $this->chart_bar_position($avg, $isrestricted, $innertablewidth);
 
         [$content, $contentright] = array_merge(preg_split('/[|]/', $content), [' ']);
         $content = $this->maybe_prefix_other($content, $contentobj);
@@ -787,7 +788,7 @@ class rank extends responsetype {
                 $headers[1],
                 '<div class="mdl-right">' . format_text($content, FORMAT_HTML, ['noclean' => true]) . '</div>'
             ),
-            'column2' => self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf),
+            'column2' => self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf, $fillpercent),
             'column3' => self::make_text_column(
                 $headers[3],
                 '<div class="mdl-left">' . format_text($contentright, FORMAT_HTML, ['noclean' => true]) . '</div>'
@@ -826,7 +827,7 @@ class rank extends responsetype {
             return null;
         }
 
-        [$margin, $marginpdf] = $this->chart_bar_position($avg, $isrestricted, $innertablewidth);
+        [$margin, $marginpdf, $fillpercent] = $this->chart_bar_position($avg, $isrestricted, $innertablewidth);
 
         $parsed = question::parse_choice_content($content);
         if ($parsed->modname) {
@@ -844,7 +845,7 @@ class rank extends responsetype {
 
         $row = (object)[
             'column1' => self::make_text_column($headers[1], format_text($content, FORMAT_HTML, ['noclean' => true])),
-            'column2' => self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf),
+            'column2' => self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf, $fillpercent),
             'column3' => self::make_text_column($headers[3], $stravgval),
         ];
         if ($this->is_na()) {
@@ -875,27 +876,34 @@ class rank extends responsetype {
     }
 
     /**
-     * Return the chart-bar margin style + pdfwidth offset for a given avg position.
+     * Return the chart-bar margin style + pdfwidth offset + fill percentage for a given avg.
+     *
+     * The margin values position the legacy tick image (still used by the PDF template);
+     * fillpercent drives the proportional bar the HTML template renders.
      *
      * @param int|float|string $avg
      * @param bool $isrestricted
      * @param float $innertablewidth
-     * @return array {margin: string, marginpdf: float}
+     * @return array {margin: string, marginpdf: float, fillpercent: float}
      */
     private function chart_bar_position($avg, bool $isrestricted, float $innertablewidth): array {
         if (!$avg) {
-            return ['', 0];
+            return ['', 0, 0.0];
         }
-        $marginposition = ($avg - 0.5) / ($this->question->length() + (int)$isrestricted);
+        $length = $this->question->length() + (int)$isrestricted;
+        $fillpercent = round(min(100, ($avg / $length) * 100), 1);
+        $marginposition = ($avg - 0.5) / $length;
         if (!right_to_left()) {
             return [
                 'margin-left:' . $marginposition * 100 . '%',
                 $marginposition * $innertablewidth,
+                $fillpercent,
             ];
         }
         return [
             'margin-right:' . $marginposition * 100 . '%',
             $innertablewidth - ($marginposition * $innertablewidth),
+            $fillpercent,
         ];
     }
 
@@ -949,7 +957,8 @@ class rank extends responsetype {
         string $imageurl,
         string $spacerimage,
         string $margin,
-        float $marginpdf
+        float $marginpdf,
+        float $fillpercent = 0.0
     ): \stdClass {
         return (object)[
             'width'       => $header->width,
@@ -959,6 +968,7 @@ class rank extends responsetype {
             'spacerimage' => $spacerimage,
             'margin'      => $margin,
             'marginpdf'   => $marginpdf,
+            'fillpercent' => $fillpercent,
         ];
     }
 
