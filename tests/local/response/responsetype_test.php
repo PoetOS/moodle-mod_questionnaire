@@ -716,6 +716,15 @@ final class responsetype_test extends \advanced_testcase {
 
         $pagetags = $rt->display_results([$rid]);
         $this->assertIsObject($pagetags);
+
+        // The averages rows carry a proportional fill percentage for the HTML bar:
+        // ranks 1 and 2 on the default 5-point scale are 20% and 40%.
+        $fills = array_map(
+            fn($row) => $row->column2->fillpercent,
+            $pagetags->averages->choiceaverages
+        );
+        sort($fills);
+        $this->assertSame([20.0, 40.0], $fills);
     }
 
     /**
