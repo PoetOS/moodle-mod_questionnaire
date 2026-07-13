@@ -950,6 +950,7 @@ class rank extends responsetype {
      * @param string $spacerimage
      * @param string $margin
      * @param float $marginpdf
+     * @param float $fillpercent Proportional fill (0-100) for the HTML average bar.
      * @return \stdClass
      */
     private static function make_chart_column(
