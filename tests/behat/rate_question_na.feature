@@ -47,7 +47,7 @@ Feature: Rate scale questions have options for displaing "N/A"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
     And I navigate to "Questions" in current page administration
-    And I click on "input[title=Edit]" "css_element"
+    And I click on "Edit" "link" in the "[Rate (scale 1..5)] (Q1)" "list_item"
     And I should see "Editing Rate (scale 1..5) question"
     And I set the field "id_precise" to "1"
     And I press "Save changes"

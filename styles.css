@@ -6,59 +6,84 @@
 
 /* Question editing (questions.php). */
 
-#page-mod-questionnaire-questions .qcontainer .qnums {
-    font-weight: bold;
-    float: left;
-    color: var(--bs-secondary-color, gray);
-}
-
-#page-mod-questionnaire-questions .qcontainer .qnums ~ input[type="image"] {
-    max-height: 1em;
-}
-
-#page-mod-questionnaire-questions .moving {
-    border: medium dotted var(--bs-danger, maroon);
-}
-
-#page-mod-questionnaire-questions .qn-question {
-    margin-left: 40px;
-}
-
-/* The manage-questions rows build their own inline number/text markup (questions_form),
- * not the two-column fieldset the flex layout below targets — keep the legacy flow here. */
-#page-mod-questionnaire-questions .qn-container {
-    display: block;
-}
-
-#page-mod-questionnaire-questions .qn-info {
-    float: left;
-}
-
-#page-mod-questionnaire-questions .qn-question {
-    display: block;
-}
-
-#page-mod-questionnaire-questions .qn-container {
-    border: 1px dotted var(--bs-border-color, gray);
-    margin-bottom: 1em;
-}
-
 #page-mod-questionnaire-questions #region-main .mform .fitem .felement {
     margin-bottom: 0;
 }
 
-#page-mod-questionnaire-questions .qcontainer .restored-question {
+.qn-addbar {
+    gap: 0.5rem;
+}
+
+.qn-manage-list {
+    margin: 0;
+    padding: 0;
+}
+
+.qn-manage-row,
+.qn-pagebreak-row,
+.qn-recyclebin-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    border: 1px dotted var(--bs-border-color, gray);
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.qn-manage-row.qn-indent {
+    margin-left: 2rem;
+}
+
+.qn-manage-row.restored-question,
+.qn-pagebreak-row.restored-question {
     border: 1px solid var(--bs-info, #008196);
     background: var(--bs-warning-bg-subtle, #fff2d8);
     color: var(--bs-body-color, #343a40);
 }
 
-#page-mod-questionnaire-questions .qcontainer .timedeletednext7days {
-    color: var(--bs-danger, #f00);
+.qn-position,
+.qn-number {
+    font-weight: bold;
+    color: var(--bs-secondary-color, gray);
+    flex: 0 0 auto;
 }
 
-#page-mod-questionnaire-questions #id_deletionq .qn-question {
-    margin-left: 50px;
+.qn-manage-row .qn-body,
+.qn-recyclebin-row .qn-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.qn-manage-row .qn-label,
+.qn-recyclebin-row .qn-label {
+    font-weight: bold;
+}
+
+.qn-controls {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.qn-pagebreak-row {
+    align-items: center;
+    background: var(--bs-secondary-bg, #eee);
+}
+
+.qn-pagebreak-row .qn-pagebreak-label {
+    flex: 0 0 auto;
+    font-style: italic;
+    color: var(--bs-secondary-color, gray);
+}
+
+.qn-pagebreak-row .qn-pagebreak-rule {
+    flex: 1 1 auto;
+    margin: 0;
+}
+
+.qn-recyclebin-row .qn-timedeleted .timedeletednext7days {
+    color: var(--bs-danger, #f00);
 }
 
 #page-mod-questionnaire-questions #fitem_id_allchoices #id_allchoices,

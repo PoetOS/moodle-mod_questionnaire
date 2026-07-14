@@ -92,6 +92,7 @@ $string['checkbreaksadded'] = 'New Page Break(s) inserted at position(s):';
 $string['checkbreaksok'] = 'All the required Page breaks are present!';
 $string['checkbreaksremoved'] = 'Removed {$a} extra Page break(s).';
 $string['checknotstarted'] = 'Select not started';
+$string['checkpagebreaks'] = 'Check page break placement';
 $string['checkstarted'] = 'Select started';
 $string['cleanrecylebin'] = "Empty Questionnaire 'Recycle bin'";
 $string['clicktoswitch'] = '(click to switch)';
@@ -557,6 +558,7 @@ $string['realm_help'] = '* **There are  three types of questionnaires:**
  * Template - can be copied and edited.
  * Public - can be shared among courses.';
 $string['realm_link'] = 'mod/questionnaire/qsettings#Questionnaire_Type';
+$string['recyclebinempty'] = 'The recycle bin is empty.';
 $string['recylebindisabled'] = '<span class="timedeletednext7days">Automatic deletion is disabled</span>';
 $string['redirecturl'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['remove'] = 'Move to deletion area';

@@ -668,7 +668,7 @@ class survey {
     /**
      * Prepare a question object and matching editor-content payload for the question editing form.
      *
-     * Populates draft file areas and dependency arrays expected by questions_form. Returns the
+     * Populates draft file areas and dependency arrays expected by the question editing form. Returns the
      * question alongside the Moodle editor payload (['text','format','itemid']) that the caller
      * should splice into the form data as the 'content' field before set_data().
      *
