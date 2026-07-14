@@ -566,6 +566,9 @@ $string['removeoldresponses'] = 'Delete old responses';
 $string['removeoldresponses_help'] = 'The system can automatically remove responses after a certain length of time.';
 $string['removeoldresponsesafter'] = 'Delete old responses after';
 $string['removeoldresponsesdefault'] = 'Never remove';
+$string['reorderdependency'] = 'This order would place a question before one it depends on. Drag it to a position after its parent question.';
+$string['reordermismatch'] = 'The submitted question order does not match this questionnaire\'s current questions. Please reload the page and try again.';
+$string['reorderpagebreakfirst'] = 'A page break cannot be the first item in the questionnaire.';
 $string['required'] = 'Response is required';
 $string['required_help'] = 'If you select ***Yes***, response to this question will be required, i.e.
 the respondent will not be able to submit the questionnaire

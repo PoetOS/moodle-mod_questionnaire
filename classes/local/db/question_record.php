@@ -324,4 +324,23 @@ class question_record extends \core\persistent {
             ['surveyid' => $surveyid, 'typeid' => \mod_questionnaire\local\question_type::QUESPAGEBREAK]
         );
     }
+
+    /**
+     * Permanently delete a non-deleted (active) question row identified by id and survey.
+     *
+     * Used for page breaks, which carry no responses and so are hard-deleted immediately
+     * rather than soft-deleted into the recycle bin.
+     *
+     * @param int $questionid
+     * @param int $surveyid
+     * @return bool
+     */
+    public static function delete_active(int $questionid, int $surveyid): bool {
+        global $DB;
+        return $DB->delete_records_select(
+            static::TABLE,
+            'id = :id AND surveyid = :surveyid AND deleted IS NULL',
+            ['id' => $questionid, 'surveyid' => $surveyid]
+        );
+    }
 }

@@ -73,6 +73,21 @@ class response_record extends \core\persistent {
     }
 
     /**
+     * Bulk delete every response row belonging to the questionnaire instance.
+     *
+     * Does not touch per-type answer tables — callers that need to purge answer
+     * data must do so beforehand (or ensure no questions remain, as with the
+     * empty-survey purge in survey::soft_delete_question()).
+     *
+     * @param int $questionnaireid
+     * @return bool
+     */
+    public static function delete_for_questionnaire(int $questionnaireid): bool {
+        global $DB;
+        return $DB->delete_records(static::TABLE, ['questionnaireid' => $questionnaireid]);
+    }
+
+    /**
      * Return the response with the given id, or null if it does not exist.
      *
      * Persistent's constructor throws on a missing id; callers that want to

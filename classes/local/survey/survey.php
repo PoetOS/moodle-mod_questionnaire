@@ -22,6 +22,7 @@ use mod_questionnaire\local\db\feedback_record;
 use mod_questionnaire\local\db\feedback_section_record;
 use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\db\questionnaire_record;
+use mod_questionnaire\local\db\response_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question_type;
@@ -422,6 +423,117 @@ class survey {
             $index++;
         }
         return true;
+    }
+
+    /**
+     * Remove a question from the survey: soft-delete it (or hard-delete a page break, which
+     * carries no responses), close the position gap it leaves behind, and clean up its
+     * dependency records and response data. Purges every response for the questionnaire
+     * instance if this was the survey's last active question. Fires the question_deleted
+     * event using this survey's module context.
+     *
+     * Does not run check_page_breaks() — callers already do so themselves so they can
+     * surface the resulting message, and confirm-flow callers may want to defer it.
+     *
+     * @param int $qid Question id to remove.
+     * @param int $questionnaireid The owning questionnaire instance id (for the response purge).
+     * @return bool True if the question was found and removed.
+     */
+    public function soft_delete_question(int $qid, int $questionnaireid): bool {
+        if (!isset($this->questions[$qid])) {
+            return false;
+        }
+        $question = $this->questions[$qid];
+        $sid = $this->id();
+        $oldposition = $question->position();
+
+        if ($question->typeid() == QUESPAGEBREAK) {
+            question_record::delete_active($qid, $sid);
+        } else {
+            question_record::soft_delete($qid);
+        }
+
+        // Remove dependency records referencing this question in either direction, and
+        // drop any page break left redundant by the removal.
+        dependency_record::delete_for_question($qid);
+        self::delete_pagebreaks($sid);
+
+        // Close the position gap.
+        foreach (question_record::get_active_after_position($sid, $oldposition) as $rec) {
+            question_record::update_position((int) $rec->get('id'), $rec->get('position') - 1);
+        }
+
+        // Non-response question types (page breaks, labels) have no response data to clean up.
+        if ($question->supports_responses()) {
+            questionnaire_responses::delete_responses_for_question($qid);
+            if (question_record::count_active_for_survey($sid) == 0) {
+                response_record::delete_for_questionnaire($questionnaireid);
+            }
+        }
+
+        self::trigger_question_deleted_event(
+            $this->context->instanceid,
+            question::qtypename($question->typeid()),
+            $this->context->get_course_context()->instanceid
+        );
+
+        return true;
+    }
+
+    /**
+     * Apply a new top-to-bottom ordering to all active questions in the survey (drag-and-drop
+     * reorder). Rejects the change and throws rather than persisting a partial or invalid order.
+     *
+     * Validation, in order: the submitted id list must contain exactly the survey's current
+     * active question ids (no adds/drops); no question may be repositioned at or before any
+     * question it depends on; the first row may not be a page break. Positions are then
+     * rewritten 1..N to match the submitted order, and check_page_breaks() repairs page-break
+     * placement around the new layout.
+     *
+     * @param array $orderedids Active question ids in their new top-to-bottom order.
+     * @return string The check_page_breaks() status message ('' when no repair was needed).
+     * @throws \moodle_exception reordermismatch|reorderdependency|reorderpagebreakfirst
+     */
+    public function reorder_questions(array $orderedids): string {
+        // Cast defensively: callers may pass ids as numeric strings (e.g. exploded from a
+        // PARAM_SEQUENCE), and the strict comparison below would otherwise never match.
+        $orderedids = array_map('intval', array_values($orderedids));
+        $questions = $this->questions;
+
+        $activeids = array_keys($questions);
+        sort($activeids);
+        $submittedids = $orderedids;
+        sort($submittedids);
+        if ($activeids !== $submittedids) {
+            throw new \moodle_exception('reordermismatch', 'mod_questionnaire');
+        }
+
+        $proposedposition = [];
+        foreach ($orderedids as $index => $qid) {
+            $proposedposition[$qid] = $index + 1;
+        }
+
+        foreach ($questions as $question) {
+            foreach ($question->dependencies as $dependency) {
+                $parentid = $dependency->dependquestionid ?? 0;
+                if (empty($parentid)) {
+                    continue;
+                }
+                if ($proposedposition[$question->id()] <= $proposedposition[$parentid]) {
+                    throw new \moodle_exception('reorderdependency', 'mod_questionnaire');
+                }
+            }
+        }
+
+        if (!empty($orderedids) && $questions[$orderedids[0]]->typeid() == QUESPAGEBREAK) {
+            throw new \moodle_exception('reorderpagebreakfirst', 'mod_questionnaire');
+        }
+
+        foreach ($orderedids as $index => $qid) {
+            question_record::update_position($qid, $index + 1);
+        }
+
+        return (string) $this->check_page_breaks();
     }
 
     /**
