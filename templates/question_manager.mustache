@@ -1,0 +1,126 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_questionnaire/question_manager
+
+    The manage-questions page: add-question bar, drag-and-drop question list, recycle bin.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * data-region="question-list" on the sortable question list
+    * data-question-id and data-name on each sortable row
+    * data-region="position-badge" on each row's position number
+
+    Context variables required for this template:
+    * cmid - int: course module id.
+    * addbar - object: the add-question bar (actionurl, sesskey, lastrequired, typeoptions[]).
+    * hasquestions - bool: whether the survey has any active questions.
+    * rows - array: exported question rows (see question_row / pagebreak_row templates).
+    * recyclebin - object: exported recycle bin (see recycle_bin template).
+    * checkbreaksurl - string|null: URL to re-check page break placement, null when the survey
+    *   has no dependencies at all.
+
+    Example context (json):
+    {
+        "cmid": 2,
+        "addbar": {
+            "actionurl": "https://example.com/mod/questionnaire/questions.php?id=2",
+            "sesskey": "abc123",
+            "lastrequired": "",
+            "typeoptions": [
+                {"value": 1, "name": "Check Boxes", "selected": false},
+                {"value": 4, "name": "Yes/No", "selected": true}
+            ]
+        },
+        "hasquestions": true,
+        "rows": [
+            {
+                "id": 10,
+                "ispagebreak": false,
+                "dataname": "[Yes/No] (Demo yesno 1)",
+                "position": 1,
+                "number": 1,
+                "label": "[Yes/No] (Demo yesno 1)",
+                "movetitle": "Move [Yes/No] (Demo yesno 1)",
+                "contenthtml": "<p>Do you like Moodle?</p>",
+                "dependencyhtml": "",
+                "indent": false,
+                "restored": false,
+                "editurl": "https://example.com/mod/questionnaire/questions.php?id=2&action=question&qid=10",
+                "deleteurl": "https://example.com/mod/questionnaire/questions.php?id=2&action=confirmdelquestion&qid=10",
+                "showrequired": true,
+                "required": true,
+                "requiredlabel": "Response is required (click to switch)",
+                "requiredurl": "https://example.com/mod/questionnaire/questions.php?id=2&togglerequired=10&sesskey=abc123"
+            }
+        ],
+        "recyclebin": {
+            "hasrows": false,
+            "rows": []
+        },
+        "checkbreaksurl": null
+    }
+}}
+<div class="mod_questionnaire_question_manager">
+    <h3>{{#str}} addquestions, questionnaire {{/str}}</h3>
+    <form action="{{{addbar.actionurl}}}" method="post" class="qn-addbar form-inline mb-3">
+        <input type="hidden" name="sesskey" value="{{addbar.sesskey}}">
+        <input type="hidden" name="lastrequired" value="{{addbar.lastrequired}}">
+        <label for="id_typeid" class="mr-2">{{#str}} type, questionnaire {{/str}}</label>
+        <select id="id_typeid" name="typeid" class="custom-select mr-2">
+            {{#addbar.typeoptions}}
+            <option value="{{value}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+            {{/addbar.typeoptions}}
+        </select>
+        <button type="submit" name="addqbutton" value="1" class="btn btn-secondary">
+            {{#str}} addselqtype, questionnaire {{/str}}
+        </button>
+    </form>
+
+    {{#checkbreaksurl}}
+    <p class="qn-checkbreaks">
+        <a href="{{{checkbreaksurl}}}">{{#str}} checkpagebreaks, questionnaire {{/str}}</a>
+    </p>
+    {{/checkbreaksurl}}
+
+    {{#hasquestions}}
+    <div id="questionnaire-questionlist">
+        <ul data-region="question-list" class="list-unstyled qn-manage-list">
+            {{#rows}}
+            {{#ispagebreak}}
+            {{> mod_questionnaire/local/question_manager/pagebreak_row}}
+            {{/ispagebreak}}
+            {{^ispagebreak}}
+            {{> mod_questionnaire/local/question_manager/question_row}}
+            {{/ispagebreak}}
+            {{/rows}}
+        </ul>
+    </div>
+    {{/hasquestions}}
+    {{^hasquestions}}
+    <p>{{#str}} noneinuse, questionnaire {{/str}}</p>
+    {{/hasquestions}}
+
+    <h3>{{#str}} deletionquetions, questionnaire {{/str}}</h3>
+    <div id="questionnaire-recyclebin">
+        {{#recyclebin}}
+        {{> mod_questionnaire/local/question_manager/recycle_bin}}
+        {{/recyclebin}}
+    </div>
+</div>

@@ -112,6 +112,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Render the manage-questions list, add bar, and recycle bin.
+     * @param \mod_questionnaire\output\question_manager $manager
+     * @return string
+     */
+    public function render_question_manager(\mod_questionnaire\output\question_manager $manager) {
+        $data = $manager->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/question_manager', $data);
+    }
+
+    /**
      * Fill out the preview page.
      * @param \templateable $page
      * @return string | boolean
@@ -511,7 +521,7 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Get displayable list of parents for the question in questions_form.
+     * Get displayable list of parents for the question in the manage-questions list.
      * @param int $qid The question id.
      * @param array $dependencies Array of dependency records for a question.
      * @return string

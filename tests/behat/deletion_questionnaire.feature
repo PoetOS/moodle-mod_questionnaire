@@ -39,21 +39,21 @@ Feature: Deletion questions area
     And I should see "[Numeric] (Demo numeric 1)"
     And I should see "Demo numeric 1"
     And I should see "NA"
-    And I click on "(//input[@type='image' and @title='Move to deletion area'])[1]" "xpath_element"
+    And I click on "Move to deletion area" "link" in the "[Check Boxes] (Demo checkbox 1)" "list_item"
     And I should see "Confirm"
     And I should see "Are you sure you want to move the question at position 1 (Demo checkbox 1) to the deletion area?"
     And I press "Yes"
-    And "//*[@id='id_manageq']//*[contains(.,'[Check Boxes] (Demo checkbox 1)')]" "xpath_element" should not exist
+    And I should not see "[Check Boxes] (Demo checkbox 1)" in the "questionnaire-questionlist" "region"
     And I wait until the page is ready
-    And I click on "(//input[@type='image' and @title='Restore this question'])[2]" "xpath_element"
+    And I click on "Restore this question" "link" in the "[Numeric] (Demo numeric 1)" "list_item"
     And I wait until the page is ready
-    And "//*[@class='qn-container restored-question']" "xpath_element" should exist
-    And I click on "(//input[@type='image' and @title='Permanently delete question'])[2]" "xpath_element"
+    And "//li[contains(concat(' ', normalize-space(@class), ' '), ' restored-question ')]" "xpath_element" should exist
+    And I click on "Permanently delete question" "link" in the "[Dropdown Box] (Demo dropdown 1)" "list_item"
     And I should see "Are you sure you want to permanently delete this question?"
     And I should see "Demo dropdown 1"
     And I should see "NA"
     And I press "Yes"
-    Then "//*[@id='id_manageq']//*[contains(.,'[Dropdown Box] (Demo dropdown 1)')]" "xpath_element" should not exist
+    Then I should not see "[Dropdown Box] (Demo dropdown 1)" in the "questionnaire-recyclebin" "region"
 
   @javascript
   Scenario: Cron task for deletion questionnaire
@@ -67,16 +67,16 @@ Feature: Deletion questions area
     And I am on "Course 1" course homepage
     And I follow "My Questionnaire 1"
     Then I navigate to "Questions" in current page administration
-    Then I click on "(//input[@type='image' and @title='Move to deletion area'])[1]" "xpath_element"
+    Then I click on "Move to deletion area" "link" in the "[Check Boxes] (Demo checkbox 1)" "list_item"
     Then I press "Yes"
     And I wait "61" seconds
     Then I trigger cron
     And I am on "Course 1" course homepage
     And I follow "My Questionnaire 1"
     When I navigate to "Questions" in current page administration
-    Then "//*[@id='id_deletionq']//*[contains(.,'[Dropdown Box] (Demo dropdown 1)')]" "xpath_element" should not exist
-    And "//*[@id='id_deletionq']//*[contains(.,'[Numeric] (Demo numeric 1)')]" "xpath_element" should not exist
-    And "//*[@id='id_deletionq']//*[contains(.,'[Check Boxes] (Demo checkbox 1)')]" "xpath_element" should exist
+    Then I should not see "[Dropdown Box] (Demo dropdown 1)" in the "questionnaire-recyclebin" "region"
+    And I should not see "[Numeric] (Demo numeric 1)" in the "questionnaire-recyclebin" "region"
+    And I should see "[Check Boxes] (Demo checkbox 1)" in the "questionnaire-recyclebin" "region"
     And I navigate to "Plugins > Activity modules > Questionnaire" in site administration
     And I set the field "Delete questions older than" to "0"
     And I press "Save changes"

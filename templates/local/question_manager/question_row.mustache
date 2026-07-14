@@ -1,0 +1,106 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_questionnaire/local/question_manager/question_row
+
+    A single question row in the manage-questions list.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * data-question-id and data-name for core/sortable_list drag-and-drop
+    * data-region="position-badge" for in-place renumbering after a drop
+
+    Context variables required for this template:
+    * id - int: question id.
+    * dataname - string: accessible name used by the sortable-list move dialogue.
+    * position - int: 1-based position in the survey.
+    * number - int|string: question number bubble, blank unless the type is numbered.
+    * label - string: "[Type] (name)".
+    * movetitle - string: accessible label for the drag handle.
+    * contenthtml - string: rendered question content.
+    * dependencyhtml - string: rendered parent-dependency list, blank when none.
+    * indent - bool: whether to indent the row for a dependency.
+    * restored - bool: whether this question was just restored from the recycle bin.
+    * editurl - string: link to the question edit form.
+    * deleteurl - string: link to move the question to the deletion area.
+    * showrequired - bool: whether the required toggle applies to this question type.
+    * required - bool: current required state.
+    * requiredlabel - string: accessible label for the required toggle.
+    * requiredurl - string: link to toggle the required flag.
+
+    Example context (json):
+    {
+        "id": 10,
+        "dataname": "[Yes/No] (Demo yesno 1)",
+        "position": 1,
+        "number": 1,
+        "label": "[Yes/No] (Demo yesno 1)",
+        "movetitle": "Move [Yes/No] (Demo yesno 1)",
+        "contenthtml": "<p>Do you like Moodle?</p>",
+        "dependencyhtml": "",
+        "indent": false,
+        "restored": false,
+        "editurl": "https://example.com/mod/questionnaire/questions.php?id=2&action=question&qid=10",
+        "deleteurl": "https://example.com/mod/questionnaire/questions.php?id=2&action=confirmdelquestion&qid=10",
+        "showrequired": true,
+        "required": true,
+        "requiredlabel": "Response is required (click to switch)",
+        "requiredurl": "https://example.com/mod/questionnaire/questions.php?id=2&togglerequired=10&sesskey=abc123"
+    }
+}}
+<li
+    data-question-id="{{id}}"
+    data-name="{{dataname}}"
+    class="qn-manage-row{{#restored}} restored-question{{/restored}}{{#indent}} qn-indent{{/indent}}"
+>
+    <span class="qn-drag">
+        {{> core/drag_handle}}
+    </span>
+    <span class="qn-position">
+        {{#str}} position, questionnaire {{/str}} <span data-region="position-badge">{{position}}</span>
+    </span>
+    {{#number}}
+    <span class="qn-number">{{number}}</span>
+    {{/number}}
+    <div class="qn-body">
+        <div class="qn-label">{{label}}</div>
+        {{#dependencyhtml}}
+        <div class="qn-dependency">{{{dependencyhtml}}}</div>
+        {{/dependencyhtml}}
+        <div class="qn-content">{{{contenthtml}}}</div>
+    </div>
+    <div class="qn-controls">
+        {{#showrequired}}
+        <a href="{{{requiredurl}}}" class="qn-required-toggle" aria-label="{{requiredlabel}}" title="{{requiredlabel}}">
+            {{#required}}
+            {{#pix}} t/stop, moodle, {{requiredlabel}} {{/pix}}
+            {{/required}}
+            {{^required}}
+            {{#pix}} t/go, moodle, {{requiredlabel}} {{/pix}}
+            {{/required}}
+        </a>
+        {{/showrequired}}
+        <a href="{{{editurl}}}" aria-label="{{#str}} edit, questionnaire {{/str}} {{label}}">
+            {{#pix}} t/edit, moodle, {{#str}} edit, questionnaire {{/str}} {{/pix}}
+        </a>
+        <a href="{{{deleteurl}}}" aria-label="{{#str}} remove, questionnaire {{/str}} {{label}}">
+            {{#pix}} t/delete, moodle, {{#str}} remove, questionnaire {{/str}} {{/pix}}
+        </a>
+    </div>
+</li>

@@ -1,0 +1,77 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_questionnaire/local/question_manager/recycle_bin
+
+    The recycle bin: soft-deleted questions awaiting permanent deletion or restore.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none — the recycle bin is not part of the sortable list.
+
+    Context variables required for this template:
+    * hasrows - bool: whether there are any soft-deleted questions.
+    * rows - array: exported recycle-bin rows.
+    *   id - int: question id.
+    *   typeandname - string: "[Type] (name)".
+    *   contenthtml - string: rendered question content.
+    *   timedeletedhtml - string: deletion-countdown or disabled-bin message.
+    *   restoreurl - string: link to restore the question.
+    *   deleteurl - string: link to the permanent-delete confirmation.
+
+    Example context (json):
+    {
+        "hasrows": true,
+        "rows": [
+            {
+                "id": 12,
+                "typeandname": "[Dropdown Box] (Demo dropdown 1)",
+                "contenthtml": "<p>Pick one.</p>",
+                "timedeletedhtml": "<span class=\"timedeletednext7days\">Time of permanent deletion: night of 1 August 2026</span>",
+                "restoreurl": "https://example.com/mod/questionnaire/questions.php?id=2&restoreq=12&sesskey=abc123",
+                "deleteurl": "https://example.com/mod/questionnaire/questions.php?id=2&action=confirmdelpermanentlyq&qid=12"
+            }
+        ]
+    }
+}}
+{{#hasrows}}
+<ul class="list-unstyled qn-recyclebin-list">
+    {{#rows}}
+    <li data-question-id="{{id}}" class="qn-recyclebin-row">
+        <span class="qn-number">NA</span>
+        <div class="qn-body">
+            <div class="qn-label">{{typeandname}}</div>
+            <div class="qn-content">{{{contenthtml}}}</div>
+            <div class="qn-timedeleted">{{{timedeletedhtml}}}</div>
+        </div>
+        <div class="qn-controls">
+            <a href="{{{restoreurl}}}" aria-label="{{#str}} restorebutton, questionnaire {{/str}} {{typeandname}}">
+                {{#pix}} i/up, moodle, {{#str}} restorebutton, questionnaire {{/str}} {{/pix}}
+            </a>
+            <a href="{{{deleteurl}}}" aria-label="{{#str}} deletepermanentlybutton, questionnaire {{/str}} {{typeandname}}">
+                {{#pix}} t/delete, moodle, {{#str}} deletepermanentlybutton, questionnaire {{/str}} {{/pix}}
+            </a>
+        </div>
+    </li>
+    {{/rows}}
+</ul>
+{{/hasrows}}
+{{^hasrows}}
+<p>{{#str}} recyclebinempty, questionnaire {{/str}}</p>
+{{/hasrows}}
