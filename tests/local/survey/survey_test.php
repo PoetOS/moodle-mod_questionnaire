@@ -1054,9 +1054,10 @@ final class survey_test extends \advanced_testcase {
         $q3 = $this->add_real_question($questionnaire, 'Q3', 3);
 
         $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
-        $msg = $survey->reorder_questions([$q3, $q1, $q2]);
+        $result = $survey->reorder_questions([$q3, $q1, $q2]);
 
-        $this->assertIsString($msg);
+        $this->assertIsString($result['message']);
+        $this->assertFalse($result['structurechanged']);
         $this->assertEquals(1, $DB->get_field('questionnaire_question', 'position', ['id' => $q3]));
         $this->assertEquals(2, $DB->get_field('questionnaire_question', 'position', ['id' => $q1]));
         $this->assertEquals(3, $DB->get_field('questionnaire_question', 'position', ['id' => $q2]));
@@ -1153,8 +1154,34 @@ final class survey_test extends \advanced_testcase {
 
         $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
         // Valid order (parent still precedes child): no dependency violation, but the new
-        // adjacency may prompt check_page_breaks() to adjust breaks — either way it must run.
-        $msg = $survey->reorder_questions([$q1, $child, $q3]);
-        $this->assertIsString($msg);
+        // adjacency may prompt check_page_breaks() to adjust breaks — either way it must run
+        // and report back whether the active question set changed as a result.
+        $result = $survey->reorder_questions([$q1, $child, $q3]);
+        $this->assertIsString($result['message']);
+        $this->assertIsBool($result['structurechanged']);
+    }
+
+    /**
+     * reorder_questions() reports structurechanged = true when check_page_breaks() removes
+     * a redundant page break — the row list check_page_breaks()'s free-text message alone
+     * cannot signal, since it reports "all breaks present" even when nothing changed.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::reorder_questions
+     */
+    public function test_reorder_questions_reports_structurechanged_when_pagebreak_removed(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $q1 = $this->add_real_question($questionnaire, 'Q1', 1);
+        $pb1 = $this->add_real_question($questionnaire, 'break1', 2, QUESPAGEBREAK);
+        $pb2 = $this->add_real_question($questionnaire, 'break2', 3, QUESPAGEBREAK);
+        $q2 = $this->add_real_question($questionnaire, 'Q2', 4);
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        // Same relative order as today — the point is the redundant consecutive page break,
+        // which check_page_breaks() removes regardless of whether the order actually moved.
+        $result = $survey->reorder_questions([$q1, $pb1, $pb2, $q2]);
+
+        $this->assertTrue($result['structurechanged']);
     }
 }

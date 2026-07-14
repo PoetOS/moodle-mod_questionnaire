@@ -490,11 +490,17 @@ class survey {
      * rewritten 1..N to match the submitted order, and check_page_breaks() repairs page-break
      * placement around the new layout.
      *
+     * check_page_breaks() always returns a human-readable message — even a no-op run reports
+     * "all breaks present" — so its text cannot signal whether anything actually changed.
+     * structurechanged instead compares the active id set before and after the repair, and is
+     * what callers should use to decide whether the client's row list is now stale.
+     *
      * @param array $orderedids Active question ids in their new top-to-bottom order.
-     * @return string The check_page_breaks() status message ('' when no repair was needed).
+     * @return array{message: string, structurechanged: bool} check_page_breaks()'s message, and
+     *         whether it added or removed a page break (client must reload if so).
      * @throws \moodle_exception reordermismatch|reorderdependency|reorderpagebreakfirst
      */
-    public function reorder_questions(array $orderedids): string {
+    public function reorder_questions(array $orderedids): array {
         // Cast defensively: callers may pass ids as numeric strings (e.g. exploded from a
         // PARAM_SEQUENCE), and the strict comparison below would otherwise never match.
         $orderedids = array_map('intval', array_values($orderedids));
@@ -533,7 +539,13 @@ class survey {
             question_record::update_position($qid, $index + 1);
         }
 
-        return (string) $this->check_page_breaks();
+        $message = (string) $this->check_page_breaks();
+        $activeafter = array_keys(question_record::get_active_for_survey($this->id()));
+
+        return [
+            'message' => $message,
+            'structurechanged' => $orderedids !== $activeafter,
+        ];
     }
 
     /**

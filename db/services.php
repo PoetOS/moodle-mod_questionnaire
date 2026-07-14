@@ -42,4 +42,11 @@ $functions = [
         'capabilities' => 'mod/questionnaire:submit',
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
+    'mod_questionnaire_question_reorder' => [
+        'classname' => 'mod_questionnaire\external\question_reorder',
+        'description' => 'Saves a new drag-and-drop order for a questionnaire\'s questions.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'mod/questionnaire:editquestions',
+    ],
 ];
