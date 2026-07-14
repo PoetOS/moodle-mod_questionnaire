@@ -532,6 +532,7 @@ $string['questionnaire:submissionnotification'] = 'Receive notification for each
 $string['questionnaire:submit'] = 'Complete and submit a questionnaire';
 $string['questionnaire:view'] = 'View a questionnaire';
 $string['questionnaire:viewsingleresponse'] = 'View complete individual responses';
+$string['questionmoved'] = 'Question moved';
 $string['questionnaireadministration'] = 'Questionnaire Administration';
 $string['questionnairecloses'] = 'Questionnaire Closes';
 $string['questionnaireopens'] = 'Questionnaire Opens';
