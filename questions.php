@@ -76,72 +76,12 @@ $sid = $questionnaire->surveyid();
 // Delete question button has been pressed in questions_form AND deletion has been confirmed on the confirmation page.
 if ($delq) {
     $qid = $delq;
-    $sid = $questionnaire->surveyid();
-    $questionnaireid = $questionnaire->id();
-
-    // Need to reload questions before setting deleted question to 'y'.
-    $dbquestions = $DB->get_records_select(
-        'questionnaire_question',
-        'surveyid = :sid AND deleted IS NULL',
-        ['sid' => $sid],
-        'id'
-    );
-    if (isset($dbquestions[$qid]) && $dbquestions[$qid]->typeid == QUESPAGEBREAK) {
-        $DB->delete_records('questionnaire_question', ['id' => $qid]);
-    } else {
-        $updatesql = "UPDATE {questionnaire_question}
-                         SET deleted = ?
-                       WHERE id = ?
-                         AND surveyid = ?";
-        $DB->execute($updatesql, [time(), $qid, $sid]);
-    }
-
-    // Delete all dependency records for this question.
-    $DB->delete_records('questionnaire_dependency', ['questionid' => $qid]);
-    $DB->delete_records('questionnaire_dependency', ['dependquestionid' => $qid]);
-    // Delete all page break that references to question deleted.
-    survey::delete_pagebreaks($sid);
-
-    // Just in case the page is refreshed (F5) after a question has been deleted.
-    if (isset($dbquestions[$qid])) {
-        $select = 'surveyid = ' . $sid . ' AND deleted IS NULL AND position > ' . $dbquestions[$qid]->position;
-    } else {
-        redirect($CFG->wwwroot . '/mod/questionnaire/questions.php?id=' . $cm->id);
-    }
-
-    if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
-        foreach ($records as $record) {
-            $DB->set_field('questionnaire_question', 'position', $record->position - 1, ['id' => $record->id]);
-        }
-    }
-    // Delete section breaks without asking for confirmation.
-    // No need to delete responses to those "question types" which are not real questions.
-    if (!$questions[$qid]->supports_responses()) {
-        $reload = true;
-    } else {
-        // Delete responses to that deleted question.
-        $questionnaire->responses()->delete_responses($qid);
-
-        // If no questions left in this questionnaire, remove all responses.
-        if (
-            $DB->count_records_select(
-                'questionnaire_question',
-                'surveyid = :sid AND deleted IS NULL',
-                ['sid' => $sid]
-            ) == 0
-        ) {
-            $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
-        }
-    }
-
-    // Log question deleted event.
-    $questiontype = \mod_questionnaire\local\question\question::qtypename($questions[$qid]->typeid());
-    survey::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
-
-    if ($questionnairehasdependencies) {
-        $validationmsg = $questionnaire->survey()->check_page_breaks();
-        if (!empty($validationmsg)) {
-            \core\notification::warning($validationmsg);
+    if ($questionnaire->survey()->soft_delete_question($qid, $questionnaire->id())) {
+        if ($questionnairehasdependencies) {
+            $validationmsg = $questionnaire->survey()->check_page_breaks();
+            if (!empty($validationmsg)) {
+                \core\notification::warning($validationmsg);
+            }
         }
     }
     $reload = true;

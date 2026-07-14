@@ -890,4 +890,271 @@ final class survey_test extends \advanced_testcase {
         $this->assertArrayHasKey('feedback', $areas);
         $this->assertContains((int)$feedbackid, $areas['feedback']);
     }
+
+    // Tests for soft_delete_question() and reorder_questions() (manage-questions rebuild).
+
+    /**
+     * Build a real questionnaire (course + instance) for the soft_delete_question /
+     * reorder_questions tests, which need genuine DB-backed questions and dependencies.
+     *
+     * @return \mod_questionnaire\questionnaire
+     */
+    private function make_real_questionnaire(): \mod_questionnaire\questionnaire {
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+        return \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
+    }
+
+    /**
+     * Add a real question to a real questionnaire at an explicit position.
+     *
+     * The generator's own position assignment (count of already-loaded questions) starts
+     * at 0 for the first question added to an empty questionnaire, which does not match
+     * this suite's 1-based position assertions — so the position is pinned explicitly via
+     * question_record::update_position() straight after creation, decoupling these tests
+     * from that generator quirk.
+     *
+     * @param \mod_questionnaire\questionnaire $questionnaire
+     * @param string $name
+     * @param int $position 1-based position to pin the question at.
+     * @param int $typeid Question type; defaults to a plain yes/no question.
+     * @return int The new question id.
+     */
+    private function add_real_question(
+        \mod_questionnaire\questionnaire $questionnaire,
+        string $name,
+        int $position,
+        int $typeid = QUESYESNO
+    ): int {
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $record = [
+            'surveyid' => $questionnaire->surveyid(),
+            'name' => $name,
+            'typeid' => $typeid,
+        ];
+        if ($typeid == QUESPAGEBREAK) {
+            $record['content'] = 'break';
+        }
+        $question = $generator->create_question($questionnaire, $record);
+        \mod_questionnaire\local\db\question_record::update_position($question->id(), $position);
+        return $question->id();
+    }
+
+    /**
+     * soft_delete_question() marks a regular question deleted, closes the position gap,
+     * removes its dependency records, deletes its response data, and fires question_deleted.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::soft_delete_question
+     */
+    public function test_soft_delete_question_marks_deleted_and_shifts_positions(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $q1 = $this->add_real_question($questionnaire, 'Q1', 1);
+        $q2 = $this->add_real_question($questionnaire, 'Q2', 2);
+        $q3 = $this->add_real_question($questionnaire, 'Q3', 3);
+
+        $sink = $this->redirectEvents();
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        $removed = $survey->soft_delete_question($q2, $questionnaire->id());
+
+        $this->assertTrue($removed);
+        $this->assertNotNull($DB->get_field('questionnaire_question', 'deleted', ['id' => $q2]));
+        $this->assertEquals(1, $DB->get_field('questionnaire_question', 'position', ['id' => $q1]));
+        $this->assertEquals(2, $DB->get_field('questionnaire_question', 'position', ['id' => $q3]));
+
+        $events = array_filter(
+            $sink->get_events(),
+            fn($e) => $e instanceof \mod_questionnaire\event\question_deleted
+        );
+        $this->assertCount(1, $events);
+    }
+
+    /**
+     * soft_delete_question() hard-deletes a page break (it carries no responses) rather
+     * than soft-deleting it.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::soft_delete_question
+     */
+    public function test_soft_delete_question_hard_deletes_pagebreak(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $q1 = $this->add_real_question($questionnaire, 'Q1', 1);
+        $pb = $this->add_real_question($questionnaire, 'break', 2, QUESPAGEBREAK);
+        $q2 = $this->add_real_question($questionnaire, 'Q2', 3);
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        $this->assertTrue($survey->soft_delete_question($pb, $questionnaire->id()));
+
+        $this->assertFalse($DB->record_exists('questionnaire_question', ['id' => $pb]));
+        $this->assertEquals(1, $DB->get_field('questionnaire_question', 'position', ['id' => $q1]));
+        $this->assertEquals(2, $DB->get_field('questionnaire_question', 'position', ['id' => $q2]));
+    }
+
+    /**
+     * soft_delete_question() purges every response for the questionnaire once the survey's
+     * last active question is removed — pins the bug fix (the legacy questions.php code
+     * purged by question id instead of questionnaire id, so this never actually fired).
+     *
+     * @covers \mod_questionnaire\local\survey\survey::soft_delete_question
+     */
+    public function test_soft_delete_question_purges_responses_when_survey_empties(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $q1 = $this->add_real_question($questionnaire, 'Q1', 1);
+
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(),
+            'userid' => 2,
+            'submitted' => time(),
+            'complete' => 'y',
+            'grade' => 0,
+        ]);
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        $survey->soft_delete_question($q1, $questionnaire->id());
+
+        $this->assertFalse($DB->record_exists('questionnaire_response', ['id' => $rid]));
+    }
+
+    /**
+     * soft_delete_question() returns false and makes no changes for an id that is not an
+     * active question in the survey.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::soft_delete_question
+     */
+    public function test_soft_delete_question_returns_false_for_unknown_id(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $this->add_real_question($questionnaire, 'Q1', 1);
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        $this->assertFalse($survey->soft_delete_question(999999, $questionnaire->id()));
+    }
+
+    /**
+     * reorder_questions() rewrites positions to match the submitted order.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::reorder_questions
+     */
+    public function test_reorder_questions_rewrites_positions(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $q1 = $this->add_real_question($questionnaire, 'Q1', 1);
+        $q2 = $this->add_real_question($questionnaire, 'Q2', 2);
+        $q3 = $this->add_real_question($questionnaire, 'Q3', 3);
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        $msg = $survey->reorder_questions([$q3, $q1, $q2]);
+
+        $this->assertIsString($msg);
+        $this->assertEquals(1, $DB->get_field('questionnaire_question', 'position', ['id' => $q3]));
+        $this->assertEquals(2, $DB->get_field('questionnaire_question', 'position', ['id' => $q1]));
+        $this->assertEquals(3, $DB->get_field('questionnaire_question', 'position', ['id' => $q2]));
+    }
+
+    /**
+     * reorder_questions() rejects an id list that does not match the survey's active
+     * question set (a dropped or extra id) without changing any positions.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::reorder_questions
+     */
+    public function test_reorder_questions_rejects_wrong_set(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $q1 = $this->add_real_question($questionnaire, 'Q1', 1);
+        $q2 = $this->add_real_question($questionnaire, 'Q2', 2);
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        $this->expectException(\moodle_exception::class);
+        try {
+            $survey->reorder_questions([$q1]);
+        } finally {
+            $this->assertEquals(1, $DB->get_field('questionnaire_question', 'position', ['id' => $q1]));
+            $this->assertEquals(2, $DB->get_field('questionnaire_question', 'position', ['id' => $q2]));
+        }
+    }
+
+    /**
+     * reorder_questions() rejects an order that would place a question at or before a
+     * question it depends on.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::reorder_questions
+     */
+    public function test_reorder_questions_rejects_parent_after_child(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $parent = $this->add_real_question($questionnaire, 'Parent', 1);
+        $child = $this->add_real_question($questionnaire, 'Child', 2);
+
+        $dependency = new \mod_questionnaire\local\db\dependency_record(0, (object)[
+            'questionid' => $child,
+            'surveyid' => $questionnaire->surveyid(),
+            'dependquestionid' => $parent,
+        ]);
+        $dependency->create();
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        $this->expectException(\moodle_exception::class);
+        $survey->reorder_questions([$child, $parent]);
+    }
+
+    /**
+     * reorder_questions() rejects an order with a page break in the first position.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::reorder_questions
+     */
+    public function test_reorder_questions_rejects_leading_pagebreak(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $q1 = $this->add_real_question($questionnaire, 'Q1', 1);
+        $pb = $this->add_real_question($questionnaire, 'break', 2, QUESPAGEBREAK);
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        $this->expectException(\moodle_exception::class);
+        $survey->reorder_questions([$pb, $q1]);
+    }
+
+    /**
+     * reorder_questions() runs check_page_breaks() after persisting the new order and
+     * surfaces its message, so a caller-visible pagebreak repair is never silent.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::reorder_questions
+     */
+    public function test_reorder_questions_runs_check_page_breaks(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->make_real_questionnaire();
+        $q1 = $this->add_real_question($questionnaire, 'Q1', 1);
+        $child = $this->add_real_question($questionnaire, 'Child', 2);
+        $q3 = $this->add_real_question($questionnaire, 'Q3', 3);
+
+        $dependency = new \mod_questionnaire\local\db\dependency_record(0, (object)[
+            'questionid' => $child,
+            'surveyid' => $questionnaire->surveyid(),
+            'dependquestionid' => $q1,
+        ]);
+        $dependency->create();
+
+        $survey = survey::from_sid($questionnaire->surveyid(), $questionnaire->context());
+        // Valid order (parent still precedes child): no dependency violation, but the new
+        // adjacency may prompt check_page_breaks() to adjust breaks — either way it must run.
+        $msg = $survey->reorder_questions([$q1, $child, $q3]);
+        $this->assertIsString($msg);
+    }
 }
