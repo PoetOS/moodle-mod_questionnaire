@@ -122,7 +122,7 @@ class behat_mod_questionnaire extends behat_base {
      */
     public function i_add_a_question_and_i_fill_the_form_with($questiontype, TableNode $fielddata) {
         $validtypes = [
-            '----- Page Break -----',
+            'Page break',
             'Check Boxes',
             'Date',
             'Dropdown Box',
