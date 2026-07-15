@@ -103,12 +103,18 @@
     <div id="questionnaire-questionlist">
         <ul data-region="question-list" class="list-unstyled qn-manage-list">
             {{#rows}}
-            {{#ispagebreak}}
-            {{> mod_questionnaire/local/question_manager/pagebreak_row}}
-            {{/ispagebreak}}
-            {{^ispagebreak}}
-            {{> mod_questionnaire/local/question_manager/question_row}}
-            {{/ispagebreak}}
+            <li
+                data-question-id="{{id}}"
+                data-name="{{dataname}}"
+                class="{{#ispagebreak}}qn-pagebreak-row{{/ispagebreak}}{{^ispagebreak}}qn-manage-row{{#indent}} qn-indent{{/indent}}{{/ispagebreak}}{{#restored}} restored-question{{/restored}}"
+            >
+                {{#ispagebreak}}
+                {{> mod_questionnaire/local/question_manager/pagebreak_row}}
+                {{/ispagebreak}}
+                {{^ispagebreak}}
+                {{> mod_questionnaire/local/question_manager/question_row}}
+                {{/ispagebreak}}
+            </li>
             {{/rows}}
         </ul>
     </div>
