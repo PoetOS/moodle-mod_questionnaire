@@ -102,7 +102,12 @@ function(SortableList, Ajax, Notification, Str, Toast) {
                         return null;
                     }
                     renumberPositions(listElement);
-                    return Str.get_string('questionmoved', 'mod_questionnaire').then(Toast.add);
+                    return Str.get_string('questionmoved', 'mod_questionnaire');
+                }).then(function(string) {
+                    if (string) {
+                        Toast.add(string);
+                    }
+                    return null;
                 }).catch(function(error) {
                     Notification.exception(error);
                     window.location.reload();
