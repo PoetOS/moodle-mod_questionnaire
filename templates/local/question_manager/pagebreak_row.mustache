@@ -17,52 +17,41 @@
 {{!
     @template mod_questionnaire/local/question_manager/pagebreak_row
 
-    A page-break row in the manage-questions list: a slim separator, no content, no number,
-    no edit link (there is nothing to edit) and no required toggle.
+    The inner content of a page-break row in the manage-questions list: a slim separator,
+    no content, no number, no edit link (there is nothing to edit) and no required toggle.
+    The enclosing <li> (data-question-id, data-name, class) is rendered by the parent
+    question_manager template, since every row needs it regardless of type.
 
     Classes required for JS:
     * none
 
     Data attributes required for JS:
-    * data-question-id and data-name for core/sortable_list drag-and-drop
     * data-region="position-badge" for in-place renumbering after a drop
 
     Context variables required for this template:
-    * id - int: question id.
-    * dataname - string: accessible name used by the sortable-list move dialogue.
     * position - int: 1-based position in the survey.
     * label - string: "[Page break]".
     * movetitle - string: accessible label for the drag handle.
-    * restored - bool: whether this row was just restored from the recycle bin.
     * deleteurl - string: link to delete the page break immediately (no confirmation needed).
 
     Example context (json):
     {
-        "id": 11,
-        "dataname": "[Page break]",
         "position": 2,
         "label": "[Page break]",
         "movetitle": "Move [Page break]",
-        "restored": false,
         "deleteurl": "https://example.com/mod/questionnaire/questions.php?id=2&delq=11&sesskey=abc123"
     }
 }}
-<li
-    data-question-id="{{id}}"
-    data-name="{{dataname}}"
-    class="qn-pagebreak-row{{#restored}} restored-question{{/restored}}"
->
-    <span class="qn-drag">
-        {{> core/drag_handle}}
-    </span>
-    <span class="qn-position">
-        {{#str}} position, questionnaire {{/str}} <span data-region="position-badge">{{position}}</span>
-    </span>
-    <span class="qn-pagebreak-label">{{label}}</span>
-    <hr class="qn-pagebreak-rule">
-    <div class="qn-controls">
-        <a href="{{{deleteurl}}}" aria-label="{{#str}} remove, questionnaire {{/str}} {{label}}">
-            {{#pix}} t/delete, moodle, {{#str}} remove, questionnaire {{/str}} {{/pix}}
-        </a>
-    </div>
-</li>
+<span class="qn-drag">
+    {{> core/drag_handle}}
+</span>
+<span class="qn-position">
+    {{#str}} position, questionnaire {{/str}} <span data-region="position-badge">{{position}}</span>
+</span>
+<span class="qn-pagebreak-label">{{label}}</span>
+<hr class="qn-pagebreak-rule">
+<div class="qn-controls">
+    <a href="{{{deleteurl}}}" aria-label="{{#str}} remove, questionnaire {{/str}} {{label}}">
+        {{#pix}} t/delete, moodle, {{#str}} remove, questionnaire {{/str}} {{/pix}}
+    </a>
+</div>
