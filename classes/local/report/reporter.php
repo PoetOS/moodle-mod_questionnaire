@@ -1084,6 +1084,12 @@ class reporter {
         int $currentgroupid = 0,
         string $outputtarget = 'html'
     ): void {
+        if (
+            !$this->questionnaire->capabilities()->can_view_all_responses(null, true) ||
+            ($rid && !$this->questionnaire->capabilities()->can_view_response((int)$rid, true))
+        ) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
         $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
 
         $i = 0;
