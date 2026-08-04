@@ -89,8 +89,10 @@ if ($outputtarget == 'pdf') {
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = context_module::instance($cm->id);
-if (!$questionnaire->can_view_all_responses(null, true) && !$individualresponse) {
-    // Should never happen, unless called directly by a snoop...
+if (
+    !$questionnaire->can_view_all_responses(null, true) &&
+    !($individualresponse && $questionnaire->can_view_response($rid))
+) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
@@ -903,7 +905,7 @@ switch ($action) {
             if ($outputtarget == 'html') {
                 $questionnaire->survey_results_navbar_alpha($rid, $currentgroupid, $cm, $byresponse);
             }
-            if (!$byresponse) { // Show respondents individual responses.
+            if (!$byresponse && $questionnaire->can_view_response($rid)) { // Show respondents individual responses.
                 $questionnaire->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
             echo $questionnaire->renderer->header();
