@@ -282,6 +282,13 @@ class report_viewer {
     ): void {
         global $PAGE;
 
+        if (
+            !$this->questionnaire->capabilities()->can_view_all_responses(null, true) ||
+            ($rid && !$this->questionnaire->capabilities()->can_view_response((int)$rid, true))
+        ) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
+
         $course = $this->questionnaire->course();
         $cm = $this->questionnaire->coursemodule();
 
