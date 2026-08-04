@@ -214,7 +214,6 @@ final class custom_completion_test extends \advanced_testcase {
         // Mock the return of magic getter for the customdata attribute.
         $mockcminfo->expects($this->any())
             ->method('get_custom_data')
-            ->with('customdata')
             ->willReturn($customdataval);
 
         $customcompletion = new custom_completion($mockcminfo, 1);
