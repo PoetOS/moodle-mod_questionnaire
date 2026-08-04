@@ -89,8 +89,10 @@ if ($outputtarget == 'pdf') {
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = context_module::instance($cm->id);
-if (!$questionnaire->can_view_all_responses(null, true) &&
-        !($individualresponse && $questionnaire->can_view_response($rid))) {
+if (
+    !$questionnaire->can_view_all_responses(null, true) &&
+    !($individualresponse && $questionnaire->can_view_response($rid))
+) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
