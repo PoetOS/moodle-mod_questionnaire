@@ -25,10 +25,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025041402;
-$plugin->requires  = 2025041400.00; // Moodle 5.0 and up.
+$plugin->version   = 2026050100.02;
+$plugin->requires  = 2024100712.02; // Moodle 5.0 and up.
 
 $plugin->component = 'mod_questionnaire';
 
-$plugin->release   = '5.0.3 (Build - 2026052200)';
-$plugin->maturity = MATURITY_STABLE;
+$plugin->release   = '5.2.0 (Build - 2026041400)';
+$plugin->maturity = MATURITY_ALPHA;

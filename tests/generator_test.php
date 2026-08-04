@@ -55,18 +55,18 @@ final class generator_test extends \advanced_testcase {
         $questionnaire = $generator->create_instance(['course' => $course->id]);
         $this->assertEquals(1, $DB->count_records('questionnaire'));
 
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-        $this->assertEquals($questionnaire->id, $cm->instance);
+        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id());
+        $this->assertEquals($questionnaire->id(), $cm->instance);
         $this->assertEquals('questionnaire', $cm->modname);
         $this->assertEquals($course->id, $cm->course);
 
         $context = \context_module::instance($cm->id);
-        $this->assertEquals($questionnaire->cmid, $context->instanceid);
+        $this->assertEquals($questionnaire->coursemodule()->id, $context->instanceid);
 
-        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]);
-        $this->assertEquals($survey->id, $questionnaire->sid);
-        $this->assertEquals($questionnaire->name, $survey->name);
-        $this->assertEquals($questionnaire->name, $survey->title);
+        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]);
+        $this->assertEquals($survey->id, $questionnaire->surveyid());
+        $this->assertEquals($questionnaire->name(), $survey->name);
+        $this->assertEquals($questionnaire->name(), $survey->title);
 
         // Should test creating a public questionnaire, template questionnaire and creating one from a template.
 
@@ -90,20 +90,18 @@ final class generator_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(['course' => $course->id]);
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
-        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, false);
 
         $newcontent = [
             'title' => 'New title',
             'email' => 'test@email.com',
             'subtitle' => 'New subtitle',
             'info' => 'New info',
-            'thanks_page' => 'http://thankurl.com',
-            'thank_head' => 'New thank header',
-            'thank_body' => 'New thank body',
+            'thankspage' => 'http://thankurl.com',
+            'thankhead' => 'New thank header',
+            'thankbody' => 'New thank body',
         ];
         $sid = $generator->create_content($questionnaire, $newcontent);
-        $this->assertEquals($sid, $questionnaire->sid);
+        $this->assertEquals($sid, $questionnaire->surveyid());
         $survey = $DB->get_record('questionnaire_survey', ['id' => $sid]);
         foreach ($newcontent as $name => $value) {
             $this->assertEquals($survey->{$name}, $value);

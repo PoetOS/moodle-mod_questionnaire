@@ -20,7 +20,7 @@
     Template which defines a radio button type question survey display.
 
     Classes required for JS:
-    * /mod/questionnaire/module.js
+    * none
 
     Data attributes required for JS:
     * none
@@ -72,7 +72,7 @@
                 {{#choice.onclick}}onclick="{{choice.onclick}}"{{/choice.onclick}} aria-label="{{alabel}}">
             <label for="{{choice.id}}">{{{choice.label}}}</label>
         {{#choice.oname}}
-                <input size="25" name="{{choice.oname}}" id="{{choice.oid}}" onclick="other_check(name)"
+                <input size="25" name="{{choice.oname}}" id="{{choice.oid}}" data-questionnaire-other-check
                        value="{{choice.ovalue}}" type="text" aria-label="{{aolabel}}">
                 <label for="{{choice.oid}}" class="accesshide">{{{choice.olabel}}}</label>&nbsp;
         {{/choice.oname}}

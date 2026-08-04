@@ -18,12 +18,9 @@ declare(strict_types=1);
 
 namespace mod_questionnaire\completion;
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
-
 use coding_exception;
 use core_completion\activity_custom_completion;
+use mod_questionnaire\questionnaire;
 use moodle_exception;
 
 /**
@@ -45,9 +42,8 @@ class custom_completion extends activity_custom_completion {
      */
     public function get_state(string $rule): int {
         $this->validate_rule($rule);
-        $userid = $this->userid;
-        $cm = $this->cm;
-        $status = questionnaire_get_completion_state($cm, $userid, $rule);
+        $questionnaire = questionnaire::from_cm($this->cm);
+        $status = $questionnaire->completionsubmit() && $questionnaire->user_has_submitted($this->userid);
         return $status ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
     }
 

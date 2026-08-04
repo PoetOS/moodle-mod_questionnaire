@@ -24,7 +24,9 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\reportpage;
 
 $instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $userid = optional_param('user', $USER->id, PARAM_INT);
@@ -33,23 +35,17 @@ $byresponse = optional_param('byresponse', 0, PARAM_INT);
 $action = optional_param('action', 'summary', PARAM_ALPHA);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
-if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $instance])) {
-    throw new \moodle_exception('incorrectquestionnaire', 'mod_questionnaire');
-}
-if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
-    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-}
-if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
+$questionnaire = questionnaire::from_instanceid($instance);
+$course = $questionnaire->course();
+$cm = $questionnaire->coursemodule();
 
 require_course_login($course, true, $cm);
-$context = context_module::instance($cm->id);
-$questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
+
 // Should never happen, unless called directly by a snoop...
-if (!has_capability('mod/questionnaire:readownresponses', $context) || $userid != $USER->id) {
+if (!$questionnaire->capabilities()->can_read_own_responses() || $userid != $USER->id) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
+
 $url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/myreport.php', ['instance' => $instance]);
 if (isset($userid)) {
     $url->param('userid', $userid);
@@ -57,40 +53,29 @@ if (isset($userid)) {
 if (isset($byresponse)) {
     $url->param('byresponse', $byresponse);
 }
-
 if (isset($currentgroupid)) {
     $url->param('group', $currentgroupid);
 }
-
 if (isset($action)) {
     $url->param('action', $action);
 }
 
 $PAGE->set_url($url);
-$PAGE->set_context($context);
+$PAGE->set_context($questionnaire->context());
 $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\reportpage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new reportpage();
 
-$sid = $questionnaire->survey->id;
-$courseid = $course->id;
-
-// Tab setup.
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-$SESSION->questionnaire->current_tab = 'myreport';
+$sid = $questionnaire->surveyid();
+$courseid = $questionnaire->courseid();
 
 switch ($action) {
     case 'summary':
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
-        $SESSION->questionnaire->current_tab = 'mysummary';
         $resps = $questionnaire->get_responses($userid);
         $rids = array_keys($resps);
         if (count($resps) > 1) {
@@ -100,71 +85,46 @@ switch ($action) {
         }
 
         // Print the page header.
-        echo $questionnaire->renderer->header();
+        echo $renderer->header();
 
         // Print the tabs.
-        include('tabs.php');
+        (new \mod_questionnaire\output\tabs($questionnaire, 'mysummary', $currentgroupid))->render($page);
 
-        $questionnaire->page->add_to_page('myheaders', $titletext);
-        $questionnaire->survey_results($rids, $USER->id);
+        $page->add_to_page('myheaders', $titletext);
+        $questionnaire->reporter($renderer, $page)->survey_results($rids, $USER->id);
 
-        echo $questionnaire->renderer->render($questionnaire->page);
+        echo $renderer->render($page);
 
         // Finish the page.
-        echo $questionnaire->renderer->footer($course);
+        echo $renderer->footer($course);
         break;
 
     case 'vall':
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
-        $SESSION->questionnaire->current_tab = 'myvall';
-        $questionnaire->add_user_responses($userid);
+        $questionnaire->reporter($renderer, $page)->add_user_responses($userid);
         $titletext = get_string('myresponses', 'questionnaire');
 
         // Print the page header.
-        echo $questionnaire->renderer->header();
+        echo $renderer->header();
 
         // Print the tabs.
-        include('tabs.php');
+        (new \mod_questionnaire\output\tabs($questionnaire, 'myvall', $currentgroupid))->render($page);
 
-        $questionnaire->page->add_to_page('myheaders', $titletext);
-        $questionnaire->view_all_responses();
-        echo $questionnaire->renderer->render($questionnaire->page);
+        $page->add_to_page('myheaders', $titletext);
+        $questionnaire->reporter($renderer, $page)->view_all_responses();
+        echo $renderer->render($page);
         // Finish the page.
-        echo $questionnaire->renderer->footer($course);
+        echo $renderer->footer($course);
         break;
 
     case 'vresp':
-        if (empty($questionnaire->survey)) {
+        if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
-        $SESSION->questionnaire->current_tab = 'mybyresponse';
-        $usergraph = get_config('questionnaire', 'usergraph');
-        if ($usergraph) {
-            $charttype = $questionnaire->survey->chart_type;
-            if ($charttype) {
-                $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
-
-                switch ($charttype) {
-                    case 'bipolar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.bipolar.js');
-                        break;
-                    case 'hbar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.hbar.js');
-                        break;
-                    case 'radar':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.radar.js');
-                        break;
-                    case 'rose':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.rose.js');
-                        break;
-                    case 'vprogress':
-                        $PAGE->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.vprogress.js');
-                        break;
-                }
-            }
-        }
+        // The chart_renderer queues RGraph scripts on $PAGE itself when build_scoreboard
+        // emits a chart, so no preload needed here.
         $resps = $questionnaire->get_responses($userid);
 
         // All participants.
@@ -172,8 +132,6 @@ switch ($action) {
 
         $respsuser = $questionnaire->get_responses($userid);
 
-        $SESSION->questionnaire->numrespsallparticipants = count($respsallparticipants);
-        $SESSION->questionnaire->numselectedresps = $SESSION->questionnaire->numrespsallparticipants;
         $iscurrentgroupmember = false;
 
         // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
@@ -188,7 +146,7 @@ switch ($action) {
             if ($groupmode == 1) {
                 $questionnairegroups = groups_get_all_groups($course->id, $userid);
             }
-            if ($groupmode == 2 || $questionnaire->canviewallgroups) {
+            if ($groupmode == 2 || $questionnaire->capabilities()->can_view_all_groups()) {
                 $questionnairegroups = groups_get_all_groups($course->id);
             }
 
@@ -201,7 +159,7 @@ switch ($action) {
                 if ($groupscount === 0 && $groupmode == 1) {
                     $currentgroupid = 0;
                 }
-                if ($groupmode == 1 && !$questionnaire->canviewallgroups && $currentgroupid == 0) {
+                if ($groupmode == 1 && !$questionnaire->capabilities()->can_view_all_groups() && $currentgroupid == 0) {
                     $currentgroupid = $firstgroupid;
                 }
                 // If currentgroup is All Participants, current user is of course member of that "group"!
@@ -213,7 +171,7 @@ switch ($action) {
             } else {
                 // Groupmode = separate groups but user is not member of any group
                 // and does not have moodle/site:accessallgroups capability -> refuse view responses.
-                if (!$questionnaire->canviewallgroups) {
+                if (!$questionnaire->capabilities()->can_view_all_groups()) {
                     $currentgroupid = 0;
                 }
             }
@@ -239,15 +197,17 @@ switch ($action) {
 
         $compare = false;
         // Print the page header.
-        echo $questionnaire->renderer->header();
+        echo $renderer->header();
 
         // Print the tabs.
-        include('tabs.php');
-        $questionnaire->page->add_to_page('myheaders', $titletext);
+        $myrid = is_int($rid) ? $rid : null;
+        (new \mod_questionnaire\output\tabs($questionnaire, 'mybyresponse', $currentgroupid, $myrid))
+            ->render($page);
+        $page->add_to_page('myheaders', $titletext);
 
         if (count($resps) > 1) {
             $userresps = $resps;
-            $questionnaire->survey_results_navbar_student($rid, $userid, $instance, $userresps);
+            $questionnaire->reporter($renderer, $page)->survey_results_navbar_student($rid, $userid, $instance, $userresps);
         }
         $resps = [];
         // Determine here which "global" responses should get displayed for comparison with current user.
@@ -266,10 +226,11 @@ switch ($action) {
             $resps = $respsallparticipants;
         }
         $compare = true;
-        $questionnaire->view_response($rid, null, $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
+        $questionnaire->reporter($renderer, $page)
+            ->view_response($rid, '', $resps, $compare, $iscurrentgroupmember, false, $currentgroupid);
         // Finish the page.
-        echo $questionnaire->renderer->render($questionnaire->page);
-        echo $questionnaire->renderer->footer($course);
+        echo $renderer->render($page);
+        echo $renderer->footer($course);
         break;
 
     case get_string('return', 'questionnaire'):

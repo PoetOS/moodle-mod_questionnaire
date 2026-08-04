@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\output;
 
-use mod_questionnaire\question\question;
+use mod_questionnaire\local\question\question;
 
 /**
  * Contains class mod_questionnaire\output\renderer
@@ -151,7 +151,8 @@ class renderer extends \plugin_renderer_base {
         foreach ($hiddeninputs as $name => $value) {
             $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
         }
-        $this->page->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
+        $this->page->requires->js_call_amd('mod_questionnaire/attempt_form', 'init');
+        $this->page->requires->js_call_amd('mod_questionnaire/survey_inputs', 'init');
         return $output;
     }
 
@@ -221,16 +222,33 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question for a survey.
-     * @param \mod_questionnaire\question\question $question The question object.
-     * @param \mod_questionnaire\responsetype\response\response $response Any current response data.
+     * @param \mod_questionnaire\local\question\question $question The question object.
+     * @param \mod_questionnaire\local\response\response $response Any current response data.
      * @param int $qnum The question number.
      * @param boolean $blankquestionnaire Used for printing a blank one.
      * @param array $dependants Array of all questions/choices depending on $question.
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      */
-    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants = []) {
+    public function question_output(
+        $question,
+        $response,
+        $qnum,
+        $blankquestionnaire,
+        $dependants = [],
+        $questionnaire = null,
+        bool $individualresponse = false
+    ) {
 
-        $pagetags = $question->question_output($response, $blankquestionnaire, $dependants, $qnum);
+        $pagetags = $question->question_output(
+            $response,
+            $blankquestionnaire,
+            $dependants,
+            $qnum,
+            $questionnaire,
+            $individualresponse
+        );
 
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -244,22 +262,31 @@ class renderer extends \plugin_renderer_base {
                 $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
             }
         }
-        $pagetags->questionname = $question->name;
+        $pagetags->questionname = $question->name();
 
         return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }
 
     /**
      * Render a question response.
-     * @param \mod_questionnaire\question\question $question The question object.
-     * @param \mod_questionnaire\responsetype\response\response $response The response object.
+     * @param \mod_questionnaire\local\question\question $question The question object.
+     * @param \mod_questionnaire\local\response\response $response The response object.
      * @param int $qnum The question number.
      * @param bool $pdf
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      * @throws \moodle_exception
      */
-    public function response_output($question, $response, $qnum = null, $pdf = false) {
-        $pagetags = $question->response_output($response, $qnum);
+    public function response_output(
+        $question,
+        $response,
+        $qnum = null,
+        $pdf = false,
+        $questionnaire = null,
+        bool $individualresponse = false
+    ) {
+        $pagetags = $question->response_output($response, $qnum, $questionnaire, $individualresponse);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -287,26 +314,29 @@ class renderer extends \plugin_renderer_base {
      * Render all responses for a question.
      * @param array|string $responses
      * @param array $questions
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      */
-    public function all_response_output($responses, $questions = null) {
+    public function all_response_output($responses, $questions = null, $questionnaire = null, bool $individualresponse = false) {
         $output = '';
         if (is_string($responses)) {
             $output .= $responses;
         } else {
             $qnum = 1;
             foreach ($questions as $question) {
-                if (empty($pagetags = $question->questionstart_survey_display($qnum))) {
+                $pagetags = $question->questionstart_survey_display($qnum, null, $questionnaire, $individualresponse);
+                if (empty($pagetags)) {
                     continue;
                 }
                 foreach ($responses as $response) {
-                    $resptags = $question->response_output($response);
+                    $resptags = $question->response_output($response, '', $questionnaire, $individualresponse);
                     // If the response has a template, then render it from the 'qformelement' context.
                     // If no template, then 'qformelement' already contains HTML.
                     if (($template = $question->response_template())) {
                         $resptags->qformelement = $this->render_from_template($template, $resptags->qformelement);
                     }
-                    $resptags->respdate = userdate($response->submitted);
+                    $resptags->respdate = userdate($response->submitted_at());
                     $pagetags->responses[] = $resptags;
                 }
                 $qnum++;
@@ -323,10 +353,11 @@ class renderer extends \plugin_renderer_base {
      * @param string $sort The sort order being used.
      * @param string $anonymous The value of the anonymous setting.
      * @param bool $pdf
+     * @param int|null $currentgroupid Active group filter id for staff respondent-link URLs.
      * @return string The output for the page.
      */
-    public function results_output($question, $rids, $sort, $anonymous, $pdf = false) {
-        $pagetags = $question->display_results($rids, $sort, $anonymous);
+    public function results_output($question, $rids, $sort, $anonymous, $pdf = false, ?int $currentgroupid = null) {
+        $pagetags = $question->display_results($rids, $sort, $anonymous, $currentgroupid);
 
         // If the response has a template, then render it from $pagetags. If no template, then $pagetags already contains HTML.
         if (($template = $question->results_template($pdf))) {
@@ -476,7 +507,7 @@ class renderer extends \plugin_renderer_base {
      * @return string
      */
     public function get_dependency_html($qid, $dependencies) {
-        $html = '';
+        $context = ['dependencies' => []];
         foreach ($dependencies as $dependency) {
             switch ($dependency->dependlogic) {
                 case 0:
@@ -488,23 +519,24 @@ class renderer extends \plugin_renderer_base {
                 default:
                     $logic = '';
             }
-
-            // TODO - Move the HTML generation to the renderer.
-            if ($dependency->dependandor == "and") {
-                $html .= '<div id="qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' .
-                    $dependency->dependchoiceid . '" class="qdepend">' . '<strong>' .
-                    get_string('dependquestion', 'questionnaire') . '</strong> : ' .
-                    get_string('position', 'questionnaire') . ' ' .
-                    $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
+            if ($dependency->dependandor == 'and') {
+                $divid = 'qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' . $dependency->dependchoiceid;
+                $divclass = 'qdepend';
             } else {
-                $html .= '<div id="qdepend_or_' . $qid . '_' . $dependency->dependquestionid . '_' .
-                    $dependency->dependchoiceid . '" class="qdepend-or">' . '<strong>' .
-                    get_string('dependquestion', 'questionnaire') . '</strong> : ' .
-                    get_string('position', 'questionnaire') . ' ' .
-                    $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
+                $divid = 'qdepend_or_' . $qid . '_' . $dependency->dependquestionid . '_' . $dependency->dependchoiceid;
+                $divclass = 'qdepend-or';
             }
+            $context['dependencies'][] = [
+                'divid' => $divid,
+                'divclass' => $divclass,
+                'dependquestion' => get_string('dependquestion', 'questionnaire'),
+                'position' => get_string('position', 'questionnaire'),
+                'parentposition' => $dependency->parentposition,
+                'parent' => $dependency->parent,
+                'logicstr' => $logic,
+            ];
         }
-        return $html;
+        return $this->output->render_from_template('mod_questionnaire/dependencylist', $context);
     }
 
     /**

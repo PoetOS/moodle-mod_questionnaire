@@ -25,15 +25,14 @@
 
 namespace mod_questionnaire;
 
-use mod_questionnaire\question\question;
+use mod_questionnaire\local\question\question;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/generator_test.php');
 require_once($CFG->dirroot . '/mod/questionnaire/tests/questiontypes_test.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php');
 
 /**
  * Unit tests for questionnaire_responsetypes_testcase.
@@ -46,7 +45,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\yesno
+     * @covers \mod_questionnaire\local\question\yesno
      */
     public function test_create_response_boolean(): void {
         global $DB;
@@ -60,18 +59,19 @@ final class responsetypes_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO, ['content' => 'Enter yes or no']);
-        $question = reset($questionnaire->questions);
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $response = $generator->create_question_response($questionnaire, $question, 'y', $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $response->id, $userid);
+        $this->response_tests($questionnaire->id(), $response->id, $userid);
 
         // Retrieve the specific boolean response.
-        $booleanresponses = $DB->get_records('questionnaire_response_bool', ['response_id' => $response->id]);
+        $booleanresponses = $DB->get_records('questionnaire_response_bool', ['responseid' => $response->id]);
         $this->assertEquals(1, count($booleanresponses));
         $booleanresponse = reset($booleanresponses);
-        $this->assertEquals($question->id, $booleanresponse->question_id);
-        $this->assertEquals('y', $booleanresponse->choice_id);
+        $this->assertEquals($question->id(), $booleanresponse->questionid);
+        $this->assertEquals('y', $booleanresponse->choiceid);
     }
 
     /**
@@ -80,7 +80,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\essay
+     * @covers \mod_questionnaire\local\question\essay
      */
     public function test_create_response_text(): void {
         global $DB;
@@ -95,17 +95,18 @@ final class responsetypes_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questiondata = ['content' => 'Enter some text', 'length' => 0, 'precise' => 5];
         $questionnaire = $generator->create_test_questionnaire($course, QUESESSAY, $questiondata);
-        $question = reset($questionnaire->questions);
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $response = $generator->create_question_response($questionnaire, $question, 'This is my essay.', $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $response->id, $userid);
+        $this->response_tests($questionnaire->id(), $response->id, $userid);
 
         // Retrieve the specific text response.
-        $textresponses = $DB->get_records('questionnaire_response_text', ['response_id' => $response->id]);
+        $textresponses = $DB->get_records('questionnaire_response_text', ['responseid' => $response->id]);
         $this->assertEquals(1, count($textresponses));
         $textresponse = reset($textresponses);
-        $this->assertEquals($question->id, $textresponse->question_id);
+        $this->assertEquals($question->id(), $textresponse->questionid);
         $this->assertEquals('This is my essay.', $textresponse->response);
     }
 
@@ -115,7 +116,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\slider
+     * @covers \mod_questionnaire\local\question\slider
      */
     public function test_create_response_slider(): void {
         global $DB;
@@ -130,17 +131,18 @@ final class responsetypes_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questiondata = ['content' => 'Enter some text'];
         $questionnaire = $generator->create_test_questionnaire($course, QUESSLIDER, $questiondata);
-        $question = reset($questionnaire->questions);
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $response = $generator->create_question_response($questionnaire, $question, 5, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $response->id, $userid);
+        $this->response_tests($questionnaire->id(), $response->id, $userid);
 
         // Retrieve the specific text response.
-        $textresponses = $DB->get_records('questionnaire_response_text', ['response_id' => $response->id]);
+        $textresponses = $DB->get_records('questionnaire_response_text', ['responseid' => $response->id]);
         $this->assertEquals(1, count($textresponses));
         $textresponse = reset($textresponses);
-        $this->assertEquals($question->id, $textresponse->question_id);
+        $this->assertEquals($question->id(), $textresponse->questionid);
         $this->assertEquals(5, $textresponse->response);
     }
 
@@ -150,7 +152,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\date
+     * @covers \mod_questionnaire\local\question\date
      */
     public function test_create_response_date(): void {
         global $DB;
@@ -164,18 +166,19 @@ final class responsetypes_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course, QUESDATE, ['content' => 'Enter a date']);
-        $question = reset($questionnaire->questions);
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         // Date format is configured per site. This won't work unless it matches the configured format.
         $response = $generator->create_question_response($questionnaire, $question, '2015-01-27', $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $response->id, $userid);
+        $this->response_tests($questionnaire->id(), $response->id, $userid);
 
         // Retrieve the specific date response.
-        $dateresponses = $DB->get_records('questionnaire_response_date', ['response_id' => $response->id]);
+        $dateresponses = $DB->get_records('questionnaire_response_date', ['responseid' => $response->id]);
         $this->assertEquals(1, count($dateresponses));
         $dateresponse = reset($dateresponses);
-        $this->assertEquals($question->id, $dateresponse->question_id);
+        $this->assertEquals($question->id(), $dateresponse->questionid);
         // The date is always stored in the database in the same way.
         $this->assertEquals('2015-01-27', $dateresponse->response);
     }
@@ -186,7 +189,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\radio
+     * @covers \mod_questionnaire\local\question\radio
      */
     public function test_create_response_single(): void {
         global $DB;
@@ -208,7 +211,8 @@ final class responsetypes_test extends \advanced_testcase {
         $questionnaire = $generator->create_test_questionnaire($course, QUESRADIO, ['content' => 'Select one'], $choicedata);
 
         // Create a response using one of the choices.
-        $question = reset($questionnaire->questions);
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $val = 'unknown';
         foreach ($question->choices as $cid => $choice) {
             if ($choice->content == 'Two') {
@@ -218,14 +222,14 @@ final class responsetypes_test extends \advanced_testcase {
         $response = $generator->create_question_response($questionnaire, $question, $val, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $response->id, $userid);
+        $this->response_tests($questionnaire->id(), $response->id, $userid);
 
         // Retrieve the specific single response.
-        $singresponses = $DB->get_records('questionnaire_resp_single', ['response_id' => $response->id]);
+        $singresponses = $DB->get_records('questionnaire_resp_single', ['responseid' => $response->id]);
         $this->assertEquals(1, count($singresponses));
         $singresponse = reset($singresponses);
-        $this->assertEquals($question->id, $singresponse->question_id);
-        $this->assertEquals($val, $singresponse->choice_id);
+        $this->assertEquals($question->id(), $singresponse->questionid);
+        $this->assertEquals($val, $singresponse->choiceid);
 
         // Create another response using the '!other' choice.
         foreach ($question->choices as $cid => $choice) {
@@ -233,29 +237,29 @@ final class responsetypes_test extends \advanced_testcase {
                 $val = $cid;
             }
         }
-        $vals = ['q' . $question->id => $val,
-                 'q' . $question->id . \mod_questionnaire\question\choice::id_other_choice_name($val) => 'Forty-four'];
+        $vals = ['q' . $question->id() => $val,
+                 'q' . $question->id() . \mod_questionnaire\local\question\choice::id_other_choice_name($val) => 'Forty-four'];
         $userid = 2;
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $response->id, $userid, 1, 2);
+        $this->response_tests($questionnaire->id(), $response->id, $userid, 1, 2);
 
         // Retrieve the specific single response.
-        $singresponses = $DB->get_records('questionnaire_resp_single', ['response_id' => $response->id]);
+        $singresponses = $DB->get_records('questionnaire_resp_single', ['responseid' => $response->id]);
         $this->assertEquals(1, count($singresponses));
         $singresponse = reset($singresponses);
-        $this->assertEquals($question->id, $singresponse->question_id);
-        $this->assertEquals($val, $singresponse->choice_id);
+        $this->assertEquals($question->id(), $singresponse->questionid);
+        $this->assertEquals($val, $singresponse->choiceid);
 
         // Retrieve the 'other' response data.
         $otherresponses = $DB->get_records(
             'questionnaire_response_other',
-            ['response_id' => $response->id, 'question_id' => $question->id]
+            ['responseid' => $response->id, 'questionid' => $question->id()]
         );
         $this->assertEquals(1, count($otherresponses));
         $otherresponse = reset($otherresponses);
-        $this->assertEquals($val, $otherresponse->choice_id);
+        $this->assertEquals($val, $otherresponse->choiceid);
         $this->assertEquals('Forty-four', $otherresponse->response);
     }
 
@@ -265,7 +269,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\rate
+     * @covers \mod_questionnaire\local\question\rate
      */
     public function test_create_response_multiple(): void {
         global $DB;
@@ -286,41 +290,42 @@ final class responsetypes_test extends \advanced_testcase {
         ];
         $questionnaire = $generator->create_test_questionnaire($course, QUESCHECK, ['content' => 'Select any'], $choicedata);
 
-        $question = reset($questionnaire->questions);
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $val = [];
         foreach ($question->choices as $cid => $choice) {
             if (($choice->content == 'Two') || ($choice->content == 'Three')) {
                 $val[$cid] = $cid;
             } else if ($choice->content == '!other=Another number') {
                 $val[$cid] = $cid;
-                $val[\mod_questionnaire\question\choice::id_other_choice_name($cid)] = 'Forty-four';
+                $val[\mod_questionnaire\local\question\choice::id_other_choice_name($cid)] = 'Forty-four';
                 $ocid = $cid;
             }
         }
-        $vals = ['q' . $question->id => $val];
+        $vals = ['q' . $question->id() => $val];
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $response->id, $userid);
+        $this->response_tests($questionnaire->id(), $response->id, $userid);
 
         // Retrieve the specific multiples responses.
-        $multresponses = $DB->get_records('questionnaire_resp_multiple', ['response_id' => $response->id]);
+        $multresponses = $DB->get_records('questionnaire_resp_multiple', ['responseid' => $response->id]);
         $this->assertEquals(3, count($multresponses));
         $multresponse = reset($multresponses);
-        $this->assertEquals($question->id, $multresponse->question_id);
-        $this->assertEquals(reset($val), $multresponse->choice_id);
+        $this->assertEquals($question->id(), $multresponse->questionid);
+        $this->assertEquals(reset($val), $multresponse->choiceid);
         $multresponse = next($multresponses);
-        $this->assertEquals($question->id, $multresponse->question_id);
-        $this->assertEquals(next($val), $multresponse->choice_id);
+        $this->assertEquals($question->id(), $multresponse->questionid);
+        $this->assertEquals(next($val), $multresponse->choiceid);
 
         // Retrieve the specific other response.
         $otherresponses = $DB->get_records(
             'questionnaire_response_other',
-            ['response_id' => $response->id, 'question_id' => $question->id]
+            ['responseid' => $response->id, 'questionid' => $question->id()]
         );
         $this->assertEquals(1, count($otherresponses));
         $otherresponse = reset($otherresponses);
-        $this->assertEquals($ocid, $otherresponse->choice_id);
+        $this->assertEquals($ocid, $otherresponse->choiceid);
         $this->assertEquals('Forty-four', $otherresponse->response);
     }
 
@@ -330,7 +335,7 @@ final class responsetypes_test extends \advanced_testcase {
      * @return void
      * @throws dml_exception
      *
-     * @covers \mod_questionnaire\question\rate
+     * @covers \mod_questionnaire\local\question\rate
      */
     public function test_create_response_rank(): void {
         global $DB;
@@ -352,24 +357,25 @@ final class responsetypes_test extends \advanced_testcase {
         $questionnaire = $generator->create_test_questionnaire($course, QUESRATE, $questiondata, $choicedata);
 
         // Create a response for each choice.
-        $question = reset($questionnaire->questions);
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
         $vals = [];
         $i = 1;
         foreach ($question->choices as $cid => $choice) {
             $vals[$cid] = $i;
-            $vals['q' . $question->id . '_' . $cid] = $i++;
+            $vals['q' . $question->id() . '_' . $cid] = $i++;
         }
         $response = $generator->create_question_response($questionnaire, $question, $vals, $userid);
 
         // Test the responses for this questionnaire.
-        $this->response_tests($questionnaire->id, $response->id, $userid);
+        $this->response_tests($questionnaire->id(), $response->id, $userid);
 
         // Retrieve the specific rank response.
-        $multresponses = $DB->get_records('questionnaire_response_rank', ['response_id' => $response->id]);
+        $multresponses = $DB->get_records('questionnaire_response_rank', ['responseid' => $response->id]);
         $this->assertEquals(3, count($multresponses));
         foreach ($multresponses as $multresponse) {
-            $this->assertEquals($question->id, $multresponse->question_id);
-            $this->assertEquals($vals[$multresponse->choice_id], $multresponse->rankvalue);
+            $this->assertEquals($question->id(), $multresponse->questionid);
+            $this->assertEquals($vals[$multresponse->choiceid], $multresponse->rankvalue);
         }
     }
 
@@ -389,17 +395,14 @@ final class responsetypes_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(['course' => $course->id]);
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
-        $questiondata['type_id'] = $qtype;
-        $questiondata['surveyid'] = $questionnaire->sid;
+        $questiondata['typeid'] = $qtype;
+        $questiondata['surveyid'] = $questionnaire->surveyid();
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $generator->create_question($questionnaire, $questiondata, $choicedata);
 
-        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, true);
-
-        return $questionnaire;
+        return \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
     }
 
     /**
@@ -434,7 +437,7 @@ final class responsetypes_test extends \advanced_testcase {
     /**
      * Tests that an old boolean response is deleted correctly.
      *
-     * @covers \mod_questionnaire\responsetype\boolean
+     * @covers \mod_questionnaire\local\response\boolean
      */
     public function test_create_old_response_boolean(): void {
         global $DB;
@@ -449,22 +452,24 @@ final class responsetypes_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         // Add a questionnaire that will delete old responses after one month.
         $questionnaire1 = $generator->create_test_questionnaire($course, QUESYESNO, ['content' => 'Enter yes or no']);
-        $question1 = reset($questionnaire1->questions);
+        $questions1 = $questionnaire1->questions();
+        $question1 = reset($questions1);
         $response1 = $generator->create_question_response($questionnaire1, $question1, 'y', $userid);
 
         $questionnaire2 = $generator->create_test_questionnaire($course, QUESYESNO, ['content' => 'Enter yes or no']);
-        $question2 = reset($questionnaire2->questions);
+        $questions2 = $questionnaire2->questions();
+        $question2 = reset($questions2);
         $response2 = $generator->create_question_response($questionnaire2, $question2, 'y', $userid);
 
-        $this->response_tests($questionnaire1->id, $response1->id, $userid);
-        $this->response_tests($questionnaire2->id, $response2->id, $userid);
+        $this->response_tests($questionnaire1->id(), $response1->id, $userid);
+        $this->response_tests($questionnaire2->id(), $response2->id, $userid);
 
         // Set the removeafterfield for questionnaires.
         $newquestionairre1 = new \stdClass();
-        $newquestionairre1->id = $questionnaire1->id;
+        $newquestionairre1->id = $questionnaire1->id();
         $newquestionairre1->removeafter = 2592000;
         $newquestionairre2 = new \stdClass();
-        $newquestionairre2->id = $questionnaire2->id;
+        $newquestionairre2->id = $questionnaire2->id();
         $newquestionairre2->removeafter = 2592000;
         $DB->update_record('questionnaire', $newquestionairre1);
         $DB->update_record('questionnaire', $newquestionairre2);
@@ -476,13 +481,13 @@ final class responsetypes_test extends \advanced_testcase {
         $booleanresponses2->submitted = $booleanresponses2->submitted - 2592000 - 86400;
         $DB->update_record('questionnaire_response', $booleanresponses1);
         $DB->update_record('questionnaire_response', $booleanresponses2);
-        questionnaire_delete_old_responses();
+        \mod_questionnaire\local\response\questionnaire_responses::delete_old_responses();
         $responseresult1 = $DB->record_exists('questionnaire_response', ['id' => $response1->id]);
         $responseresult2 = $DB->record_exists('questionnaire_response', ['id' => $response2->id]);
         $this->assertEmpty($responseresult1);
         $this->assertEmpty($responseresult2);
-        $boolresponseresult1 = $DB->record_exists('questionnaire_response_bool', ['response_id' => $response1->id]);
-        $boolresponseresult2 = $DB->record_exists('questionnaire_response_bool', ['response_id' => $response2->id]);
+        $boolresponseresult1 = $DB->record_exists('questionnaire_response_bool', ['responseid' => $response1->id]);
+        $boolresponseresult2 = $DB->record_exists('questionnaire_response_bool', ['responseid' => $response2->id]);
         $this->assertEmpty($boolresponseresult1);
         $this->assertEmpty($boolresponseresult2);
     }

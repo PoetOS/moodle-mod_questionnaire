@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\task;
-defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
 /**
  * A schedule task for mod_questionnaire cron.
  *
@@ -40,14 +38,14 @@ class cron_task extends \core\task\scheduled_task {
      */
     public function execute() {
         global $DB;
-        $rangetimecrontask = questionnaire_get_range_time_permanently();
+        $rangetimecrontask = \mod_questionnaire\local\survey\survey::question_deletion_duration();
         $sql = "SELECT *
                   FROM {questionnaire_question}
                  WHERE deleted IS NOT NULL
                    AND deleted < ?";
         if ($deletequestions = $DB->get_records_sql($sql, [time() - $rangetimecrontask])) {
             foreach ($deletequestions as $question) {
-                questionnaire_delete_permanently_questions($question->id, $question->surveyid);
+                \mod_questionnaire\local\survey\survey::delete_question_permanently($question->id, $question->surveyid);
             }
         }
     }

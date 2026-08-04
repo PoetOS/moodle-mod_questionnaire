@@ -24,7 +24,9 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\output\feedbackpage;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $section = optional_param('section', 1, PARAM_INT);
@@ -35,65 +37,47 @@ $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $action = optional_param('action', '', PARAM_ALPHA);
 $sectionid = optional_param('sectionid', 0, PARAM_INT);
 
-if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
-
-if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
-    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-}
-
-if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
+$questionnaire = questionnaire::from_cmid($id);
 
 // Needed here for forced language courses.
-require_course_login($course, true, $cm);
-$context = context_module::instance($cm->id);
+require_course_login($questionnaire->course(), true, $questionnaire->coursemodule());
 
-$url = new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $id]);
-$PAGE->set_url($url);
-$PAGE->set_context($context);
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
+$PAGE->set_url(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $id]));
+$PAGE->set_context($questionnaire->context());
 
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+$surveyid = $questionnaire->surveyid();
 
 if ($sectionid) {
     // Get the specified section by its id.
-    $feedbacksection = new mod_questionnaire\feedback\section($questionnaire->questions, ['id' => $sectionid]);
-} else if (!$DB->count_records('questionnaire_fb_sections', ['surveyid' => $questionnaire->sid])) {
+    $feedbacksection = new mod_questionnaire\local\feedback\section($questionnaire->questions(), ['id' => $sectionid]);
+} else if (!$DB->count_records('questionnaire_fb_sections', ['surveyid' => $surveyid])) {
     // There are no sections currently, so create one.
-    if ($questionnaire->survey->feedbacksections == 1) {
+    if ($questionnaire->feedback()->mode() == 1) {
         $sectionlabel = get_string('feedbackglobal', 'questionnaire');
     } else {
         $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
     }
-    $feedbacksection = mod_questionnaire\feedback\section::new_section($questionnaire->sid, $sectionlabel);
+    $feedbacksection = mod_questionnaire\local\feedback\section::new_section($surveyid, $sectionlabel);
 } else {
     // Get the specified section by section number.
-    $feedbacksection = new mod_questionnaire\feedback\section(
-        $questionnaire->questions,
-        ['surveyid' => $questionnaire->survey->id, 'sectionnum' => $section]
+    $feedbacksection = new mod_questionnaire\local\feedback\section(
+        $questionnaire->questions(),
+        ['surveyid' => $surveyid, 'sectionnum' => $section]
     );
 }
 
 // Get all questions that are valid feedback questions.
 $validquestions = [];
-foreach ($questionnaire->questions as $question) {
+foreach ($questionnaire->questions() as $question) {
     if ($question->valid_feedback()) {
-        $validquestions[$question->id] = $question->name;
+        $validquestions[$question->id()] = $question->name();
     }
 }
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\feedbackpage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new feedbackpage();
 
-$SESSION->questionnaire->current_tab = 'feedback';
-
-if (!$questionnaire->capabilities->editquestions) {
+if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
@@ -106,31 +90,31 @@ if ($action == 'removequestion') {
     $sectionid = required_param('sectionid', PARAM_INT);
     if ($sectionid == $feedbacksection->id) {
         $feedbacksection->delete();
-        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id]));
+        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $questionnaire->coursemodule()->id]));
     }
 }
 
 $customdata = new stdClass();
 $customdata->feedbacksection = $feedbacksection;
 $customdata->validquestions = $validquestions;
-$customdata->survey = $questionnaire->survey;
+$customdata->survey = $questionnaire->survey()->to_stdclass();
 $customdata->sectionselect = $DB->get_records_menu(
     'questionnaire_fb_sections',
-    ['surveyid' => $questionnaire->survey->id],
+    ['surveyid' => $surveyid],
     'section',
     'id,sectionlabel'
 );
 
-$feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata);
+$feedbackform = new \mod_questionnaire\local\feedback\feedback_section_form('fbsections.php', $customdata, $renderer);
 $sdata = clone($feedbacksection);
-$sdata->sid = $questionnaire->survey->id;
+$sdata->sid = $surveyid;
 $sdata->sectionid = $feedbacksection->id;
-$sdata->id = $cm->id;
+$sdata->id = $questionnaire->coursemodule()->id;
 
 $draftideditor = file_get_submitted_draft_itemid('sectionheading');
 $currentinfo = file_prepare_draft_area(
     $draftideditor,
-    $context->id,
+    $questionnaire->context()->id,
     'mod_questionnaire',
     'sectionheading',
     $feedbacksection->id,
@@ -142,7 +126,7 @@ $sdata->sectionheading = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'item
 $feedbackform->set_data($sdata);
 
 if ($feedbackform->is_cancelled()) {
-    redirect(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $cm->id]));
+    redirect(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $questionnaire->coursemodule()->id]));
 }
 
 if ($settings = $feedbackform->get_data()) {
@@ -154,18 +138,22 @@ if ($settings = $feedbackform->get_data()) {
             redirect(
                 new moodle_url(
                     '/mod/questionnaire/fbsections.php',
-                    ['id' => $cm->id, 'sectionid' => $settings->navigatesections]
+                    ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $settings->navigatesections]
                 )
             );
         }
     } else if (isset($settings->addnewsection)) {
-        $newsection = mod_questionnaire\feedback\section::new_section($questionnaire->survey->id, $settings->newsectionlabel);
-        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'sectionid' => $newsection->id]));
+        $newsection = mod_questionnaire\local\feedback\section::new_section($surveyid, $settings->newsectionlabel);
+        redirect(new moodle_url(
+            '/mod/questionnaire/fbsections.php',
+            ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $newsection->id]
+        ));
     } else if (isset($fullform->confirmdeletesection)) {
         redirect(
             new moodle_url(
                 '/mod/questionnaire/fbsections.php',
-                ['id' => $cm->id, 'sectionid' => $feedbacksection->id, 'action' => 'confirmdeletesection']
+                ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $feedbacksection->id,
+                    'action' => 'confirmdeletesection']
             )
         );
     } else if (isset($fullform->confirmremovequestion)) {
@@ -173,14 +161,15 @@ if ($settings = $feedbackform->get_data()) {
         redirect(
             new moodle_url(
                 '/mod/questionnaire/fbsections.php',
-                ['id' => $cm->id, 'sectionid' => $settings->sectionid, 'action' => 'confirmremovequestion', 'qid' => $qid]
+                ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $settings->sectionid,
+                    'action' => 'confirmremovequestion', 'qid' => $qid]
             )
         );
     } else if (isset($settings->addquestion)) {
         $scorecalculation = [];
         // Check for added question.
         if (isset($settings->addquestionselect) && ($settings->addquestionselect != 0)) {
-            if ($questionnaire->questions[$settings->addquestionselect]->supports_feedback_scores()) {
+            if ($questionnaire->questions()[$settings->addquestionselect]->supports_feedback_scores()) {
                 $scorecalculation[$settings->addquestionselect] = 1;
             } else {
                 $scorecalculation[$settings->addquestionselect] = -1;
@@ -203,7 +192,7 @@ if ($settings = $feedbackform->get_data()) {
         $feedbacksection->sectionlabel = $settings->sectionlabel;
         $feedbacksection->sectionheading = file_save_draft_area_files(
             (int)$settings->sectionheading['itemid'],
-            $context->id,
+            $questionnaire->context()->id,
             'mod_questionnaire',
             'sectionheading',
             $feedbacksection->id,
@@ -255,7 +244,7 @@ if ($settings = $feedbackform->get_data()) {
 
             $feedbacktext = file_save_draft_area_files(
                 (int)$settings->feedbacktext[$i]['itemid'],
-                $context->id,
+                $questionnaire->context()->id,
                 'mod_questionnaire',
                 'feedback',
                 $fbid,
@@ -268,46 +257,46 @@ if ($settings = $feedbackform->get_data()) {
         // Update all feedback data.
         $feedbacksection->update();
     }
-    $feedbackform = new \mod_questionnaire\feedback_section_form('fbsections.php', $customdata);
+    $feedbackform = new \mod_questionnaire\local\feedback\feedback_section_form('fbsections.php', $customdata, $renderer);
 }
 
 // Print the page header.
 $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
-$PAGE->set_heading(format_string($course->fullname));
+$PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
-echo $questionnaire->renderer->header();
-require('tabs.php');
+echo $renderer->header();
+(new \mod_questionnaire\output\tabs($questionnaire, 'feedback'))->render($page);
 
 // Handle confirmations differently.
 if ($action == 'confirmremovequestion') {
     $sectionid = required_param('sectionid', PARAM_INT);
     $qid = required_param('qid', PARAM_INT);
     $msgargs = new stdClass();
-    $msgargs->qname = $questionnaire->questions[$qid]->name;
+    $msgargs->qname = $questionnaire->questions()[$qid]->name();
     $msgargs->sname = $feedbacksection->sectionlabel;
     $msg = '<div class="warning centerpara"><p>' . get_string('confirmremovequestion', 'questionnaire', $msgargs) . '</p></div>';
-    $args = ['id' => $questionnaire->cm->id, 'sectionid' => $sectionid];
+    $args = ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $sectionid];
     $urlno = new moodle_url('/mod/questionnaire/fbsections.php', $args);
     $args['action'] = 'removequestion';
     $args['qid'] = $qid;
     $urlyes = new moodle_url('/mod/questionnaire/fbsections.php', $args);
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
-    $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
+    $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
 } else if ($action == 'confirmdeletesection') {
     $sectionid = required_param('sectionid', PARAM_INT);
     $msg = '<div class="warning centerpara"><p>' .
         get_string('confirmdeletesection', 'questionnaire', $feedbacksection->sectionlabel) . '</p></div>';
-    $args = ['id' => $questionnaire->cm->id, 'sectionid' => $sectionid];
+    $args = ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $sectionid];
     $urlno = new moodle_url('/mod/questionnaire/fbsections.php', $args);
     $args['action'] = 'deletesection';
     $urlyes = new moodle_url('/mod/questionnaire/fbsections.php', $args);
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
-    $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->confirm($msg, $buttonyes, $buttonno));
+    $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
 } else {
-    $questionnaire->page->add_to_page('formarea', $feedbackform->render());
+    $page->add_to_page('formarea', $feedbackform->render());
 }
 
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($course);
+echo $renderer->render($page);
+echo $renderer->footer($questionnaire->course());

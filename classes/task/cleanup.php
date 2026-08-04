@@ -38,13 +38,10 @@ class cleanup extends \core\task\scheduled_task {
      * Execute method.
      */
     public function execute() {
-        global $CFG;
-        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-
-        questionnaire_cleanup();
+        \mod_questionnaire\local\survey\survey::cleanup_orphans();
         $isautodelete = (bool) get_config('questionnaire', 'autodeleteresponse');
         if ($isautodelete) {
-            questionnaire_delete_old_responses();
+            \mod_questionnaire\local\response\questionnaire_responses::delete_old_responses();
         }
     }
 }

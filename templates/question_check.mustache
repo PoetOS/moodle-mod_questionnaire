@@ -20,7 +20,7 @@
     Template which defines a check type question survey display.
 
     Classes required for JS:
-    * /mod/questionnaire/module.js
+    * none
 
     Data attributes required for JS:
     * none
@@ -59,7 +59,7 @@
         <input id="{{choice.id}}" value="{{choice.value}}" name="{{choice.name}}" type="checkbox"
                {{#choice.checked}}checked="checked"{{/choice.checked}} aria-label="{{choice.alabel}}">
         <label for="{{choice.id}}">{{{choice.label}}}</label>
-        {{#choice.oname}}<input size="25" name="{{choice.oname}}" onclick="other_check(name)" value="{{choice.ovalue}}"
+        {{#choice.oname}}<input size="25" name="{{choice.oname}}" data-questionnaire-other-check value="{{choice.ovalue}}"
                                 type="text">{{/choice.oname}}
         <br>
     {{/choice}}

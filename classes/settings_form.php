@@ -32,22 +32,22 @@ class settings_form extends \moodleform {
      * Defines the form.
      */
     public function definition() {
-        global $questionnaire, $questionnairerealms;
+        global $questionnaire;
 
         $mform    =& $this->_form;
 
         $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
 
-        $capabilities = questionnaire_load_capabilities($questionnaire->cm->id);
-        if (!$capabilities->createtemplates) {
-            unset($questionnairerealms['template']);
+        $realms = \mod_questionnaire\form_options::realm();
+        if (!$questionnaire->capabilities()->can_create_templates()) {
+            unset($realms['template']);
         }
-        if (!$capabilities->createpublic) {
-            unset($questionnairerealms['public']);
+        if (!$questionnaire->capabilities()->can_create_public()) {
+            unset($realms['public']);
         }
-        if (isset($questionnairerealms['public']) || isset($questionnairerealms['template'])) {
-            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $questionnairerealms);
-            $mform->setDefault('realm', $questionnaire->survey->realm);
+        if (isset($realms['public']) || isset($realms['template'])) {
+            $mform->addElement('select', 'realm', get_string('realm', 'questionnaire'), $realms);
+            $mform->setDefault('realm', $questionnaire->survey()->realm());
             $mform->addHelpButton('realm', 'realm', 'questionnaire');
         } else {
             $mform->addElement('hidden', 'realm', 'private');
@@ -55,40 +55,40 @@ class settings_form extends \moodleform {
         $mform->setType('realm', PARAM_RAW);
 
         $mform->addElement('text', 'title', get_string('title', 'questionnaire'), ['size' => '60']);
-        $mform->setDefault('title', $questionnaire->survey->title);
+        $mform->setDefault('title', $questionnaire->surveytitle());
         $mform->setType('title', PARAM_TEXT);
         $mform->addRule('title', null, 'required', null, 'client');
         $mform->addHelpButton('title', 'title', 'questionnaire');
 
         $mform->addElement('text', 'subtitle', get_string('subtitle', 'questionnaire'), ['size' => '60']);
-        $mform->setDefault('subtitle', $questionnaire->survey->subtitle);
+        $mform->setDefault('subtitle', $questionnaire->surveysubtitle());
         $mform->setType('subtitle', PARAM_TEXT);
         $mform->addHelpButton('subtitle', 'subtitle', 'questionnaire');
 
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
         $mform->addElement('editor', 'info', get_string('additionalinfo', 'questionnaire'), null, $editoroptions);
-        $mform->setDefault('info', $questionnaire->survey->info);
+        $mform->setDefault('info', $questionnaire->surveyinfo());
         $mform->setType('info', PARAM_RAW);
         $mform->addHelpButton('info', 'additionalinfo', 'questionnaire');
 
         $mform->addElement('header', 'submithdr', get_string('submitoptions', 'questionnaire'));
 
-        $mform->addElement('text', 'thanks_page', get_string('url', 'questionnaire'), ['size' => '60']);
-        $mform->setType('thanks_page', PARAM_TEXT);
-        $mform->setDefault('thanks_page', $questionnaire->survey->thanks_page);
-        $mform->addHelpButton('thanks_page', 'url', 'questionnaire');
+        $mform->addElement('text', 'thankspage', get_string('url', 'questionnaire'), ['size' => '60']);
+        $mform->setType('thankspage', PARAM_TEXT);
+        $mform->setDefault('thankspage', $questionnaire->survey()->thankspage());
+        $mform->addHelpButton('thankspage', 'url', 'questionnaire');
 
         $mform->addElement('static', 'confmes', get_string('confalts', 'questionnaire'));
         $mform->addHelpButton('confmes', 'confpage', 'questionnaire');
 
-        $mform->addElement('text', 'thank_head', get_string('headingtext', 'questionnaire'), ['size' => '30']);
-        $mform->setType('thank_head', PARAM_TEXT);
-        $mform->setDefault('thank_head', $questionnaire->survey->thank_head);
+        $mform->addElement('text', 'thankhead', get_string('headingtext', 'questionnaire'), ['size' => '30']);
+        $mform->setType('thankhead', PARAM_TEXT);
+        $mform->setDefault('thankhead', $questionnaire->survey()->thankhead());
 
         $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
-        $mform->addElement('editor', 'thank_body', get_string('bodytext', 'questionnaire'), null, $editoroptions);
-        $mform->setType('thank_body', PARAM_RAW);
-        $mform->setDefault('thank_body', $questionnaire->survey->thank_body);
+        $mform->addElement('editor', 'thankbody', get_string('bodytext', 'questionnaire'), null, $editoroptions);
+        $mform->setType('thankbody', PARAM_RAW);
+        $mform->setDefault('thankbody', $questionnaire->survey()->thankbody());
 
         $allowemailreporting = get_config('questionnaire', 'allowemailreporting');
         if (!$allowemailreporting) {
@@ -98,7 +98,7 @@ class settings_form extends \moodleform {
         }
         $mform->addElement('text', 'email', get_string('email', 'questionnaire'), $attributes);
         $mform->setType('email', PARAM_TEXT);
-        $mform->setDefault('email', $questionnaire->survey->email);
+        $mform->setDefault('email', $questionnaire->survey()->email());
         $mform->addHelpButton('email', 'sendemail', 'questionnaire');
 
         // Hidden fields.

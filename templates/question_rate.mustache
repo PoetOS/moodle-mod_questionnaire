@@ -20,7 +20,7 @@
     Template which defines a rate type question survey display.
 
     Classes required for JS:
-    * /mod/questionnaire/module.js
+    * none
 
     Data attributes required for JS:
     * none
@@ -142,7 +142,7 @@
         {{#coltext}}{{{.}}}{{/coltext}}
         {{#oname}}<input size="25" name="{{oname}}" id="{{oid}}" value="" type="text" />{{/oname}}
         {{#colhiddentext}}<span class="accesshide">{{{.}}}</span>{{/colhiddentext}}
-        {{#colinput}}<input type="radio" name="{{name}}" id="{{id}}" value="{{value}}"{{#checked}} checked="checked"{{/checked}}{{#disabled}} disabled="disabled"{{/disabled}}{{#onclick}} onclick="{{.}}"{{/onclick}}>
+        {{#colinput}}<input type="radio" name="{{name}}" id="{{id}}" value="{{value}}"{{#checked}} checked="checked"{{/checked}}{{#disabled}} disabled="disabled"{{/disabled}}{{#rateuncheck}} data-questionnaire-rate-uncheck{{/rateuncheck}}>
         {{#label}}<label for="{{id}}" class="accesshide">{{{.}}}</label>{{/label}}{{/colinput}}
       </td>
       {{/cols}}

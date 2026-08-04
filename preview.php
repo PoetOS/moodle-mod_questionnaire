@@ -24,7 +24,8 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire as questionnaire_class;
 
 $id = optional_param('id', 0, PARAM_INT);
 $sid = optional_param('sid', 0, PARAM_INT);
@@ -33,44 +34,33 @@ $qid = optional_param('qid', 0, PARAM_INT);
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if ($id) {
-    if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-    }
-
-    if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
-        throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-    }
-
-    if (!$questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
-        throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-    }
+    // Normal module instance.
+    $questionnaire = questionnaire_class::from_cmid($id);
+    $course = $questionnaire->course();
+    $cm = $questionnaire->coursemodule();
 } else {
-    if (!$survey = $DB->get_record("questionnaire_survey", ["id" => $sid])) {
+    // Survey-only (template/public preview from "Add questionnaire" page).
+    if (!$survey = $DB->get_record('questionnaire_survey', ['id' => $sid])) {
         throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
     }
-    if (! $course = $DB->get_record("course", ["id" => $survey->courseid])) {
+    if (!$course = $DB->get_record('course', ['id' => $survey->courseid])) {
         throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
     }
-    // Dummy questionnaire object.
-    $questionnaire = new stdClass();
-    $questionnaire->id = 0;
-    $questionnaire->course = $course->id;
-    $questionnaire->name = $survey->title;
-    $questionnaire->sid = $sid;
-    $questionnaire->resume = 0;
-    // Dummy cm object.
-    if (!empty($qid)) {
-        $cm = get_coursemodule_from_instance('questionnaire', $qid, $course->id);
+    $cm = !empty($qid) ? get_coursemodule_from_instance('questionnaire', $qid, $course->id) : false;
+    if ($cm) {
+        $questionnaire = questionnaire_class::from_cmid($cm->id);
     } else {
-        $cm = false;
+        $questionnaire = questionnaire_class::from_survey($sid, $course);
     }
 }
+$canpreview = $questionnaire->capabilities()->can_preview();
+$canprintblank = $questionnaire->capabilities()->can_print_blank();
 
 // Check login and get context.
 // Do not require login if this questionnaire is viewed from the Add questionnaire page
 // to enable teachers to view template or public questionnaires located in a course where they are not enroled.
 if (!$popup) {
-    require_login($course->id, false, $cm);
+    require_login($course->id, false, $cm ?: null);
 }
 $context = $cm ? context_module::instance($cm->id) : false;
 
@@ -82,29 +72,15 @@ if ($sid) {
     $url->param('sid', $sid);
 }
 $PAGE->set_url($url);
+$PAGE->set_context($context ?: context_course::instance($course->id));
+if ($cm) {
+    $PAGE->set_cm($cm);
+}
 
-$PAGE->set_context($context);
-$PAGE->set_cm($cm);   // CONTRIB-5872 - I don't know why this is needed.
-
-$questionnaire = new questionnaire($course, $cm, $qid, $questionnaire);
-
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\previewpage());
-
-$canpreview = (!isset($questionnaire->capabilities) &&
-               has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
-              (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
 if (!$canpreview && !$popup) {
     // Should never happen, unless called directly by a snoop...
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
-
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-$SESSION->questionnaire->current_tab = new stdClass();
-$SESSION->questionnaire->current_tab = 'preview';
 
 $qp = get_string('preview_questionnaire', 'questionnaire');
 $pq = get_string('previewing', 'questionnaire');
@@ -118,26 +94,21 @@ if (!$popup) {
     $PAGE->set_heading(format_string($course->fullname));
 }
 
-// Include the needed js.
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = new \mod_questionnaire\output\previewpage();
 
-
-$PAGE->requires->js('/mod/questionnaire/module.js');
-// Print the tabs.
-
-
-echo $questionnaire->renderer->header();
+echo $renderer->header();
 if (!$popup) {
-    require('tabs.php');
+    (new \mod_questionnaire\output\tabs($questionnaire, 'preview'))->render($page);
 }
-$questionnaire->page->add_to_page('heading', clean_text($pq));
+$page->add_to_page('heading', clean_text($pq));
 
-if ($questionnaire->capabilities->printblank) {
+if ($canprintblank) {
     // Open print friendly as popup window.
-
     $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
     $title = get_string('printblanktooltip', 'questionnaire');
-    $url = '/mod/questionnaire/print.php?qid=' . $questionnaire->id . '&amp;rid=0&amp;' . 'courseid=' .
-            $questionnaire->course->id . '&amp;sec=1';
+    $url = '/mod/questionnaire/print.php?qid=' . $questionnaire->id() . '&amp;rid=0&amp;' . 'courseid=' .
+            $course->id . '&amp;sec=1';
     $options = [
         'menubar' => true,
         'location' => false,
@@ -151,9 +122,9 @@ if ($questionnaire->capabilities->printblank) {
     $link = new moodle_url($url);
     $action = new popup_action('click', $link, $name, $options);
     $class = "floatprinticon";
-    $questionnaire->page->add_to_page(
+    $page->add_to_page(
         'printblank',
-        $questionnaire->renderer->action_link(
+        $renderer->action_link(
             $link,
             $linkname,
             $action,
@@ -162,20 +133,22 @@ if ($questionnaire->capabilities->printblank) {
         )
     );
 }
-$questionnaire->survey_print_render($course->id, '', 'preview', $rid = 0, $popup);
+
+(new \mod_questionnaire\local\report\report_view_builder($renderer, $page))
+    ->build_print_view($questionnaire, $course->id, '', 'preview', 0, $popup);
 if ($popup) {
-    $questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
+    $page->add_to_page('closebutton', $renderer->close_window_button());
 }
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($course);
+echo $renderer->render($page);
+echo $renderer->footer($course);
 
-// Log this questionnaire preview.
-$context = context_module::instance($questionnaire->cm->id);
-$anonymous = $questionnaire->respondenttype == 'anonymous';
-
-$event = \mod_questionnaire\event\questionnaire_previewed::create([
-    'objectid' => $questionnaire->id,
-    'anonymous' => $anonymous,
-    'context' => $context,
-]);
-$event->trigger();
+// Log this questionnaire preview (skip in survey-only mode — no real module instance).
+if ($questionnaire->id() > 0) {
+    $anonymous = $questionnaire->respondenttype() == 'anonymous';
+    $event = \mod_questionnaire\event\questionnaire_previewed::create([
+        'objectid' => $questionnaire->id(),
+        'anonymous' => $anonymous,
+        'context' => $questionnaire->context(),
+    ]);
+    $event->trigger();
+}

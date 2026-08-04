@@ -25,57 +25,43 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire;
 
 $qid = required_param('qid', PARAM_INT);
 $rid = required_param('rid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
 $sec = required_param('sec', PARAM_INT);
-$null = null;
-$referer = $CFG->wwwroot . '/mod/questionnaire/report.php';
+$referer = '/mod/questionnaire/report.php';
 
-if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $qid])) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
-if (! $course = $DB->get_record("course", ["id" => $questionnaire->course])) {
-    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-}
-if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, $course->id)) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
+$questionnaire = questionnaire::from_instanceid($qid);
 
 // Check login and get context.
 require_login($courseid);
 
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
-
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-if (!empty($rid)) {
-    $questionnaire->add_page(new \mod_questionnaire\output\reportpage());
-} else {
-    $questionnaire->add_page(new \mod_questionnaire\output\previewpage());
-}
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = !empty($rid)
+    ? new \mod_questionnaire\output\reportpage()
+    : new \mod_questionnaire\output\previewpage();
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
-if (!($questionnaire->capabilities->view && (($rid == 0) || $questionnaire->can_view_response($rid)))) {
+if (!($questionnaire->capabilities()->can_view() && (($rid == 0) || $questionnaire->capabilities()->can_view_response($rid)))) {
     // Should never happen, unless called directly by a snoop...
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
-$blankquestionnaire = true;
-if ($rid != 0) {
-    $blankquestionnaire = false;
-}
-$url = new moodle_url($CFG->wwwroot . '/mod/questionnaire/print.php');
+$blankquestionnaire = ($rid == 0);
+
+$url = new moodle_url('/mod/questionnaire/print.php');
 $url->param('qid', $qid);
 $url->param('rid', $rid);
 $url->param('courseid', $courseid);
 $url->param('sec', $sec);
 $PAGE->set_url($url);
-$PAGE->set_title($questionnaire->survey->title);
+$PAGE->set_title($questionnaire->surveytitle());
 $PAGE->set_pagelayout('popup');
-echo $questionnaire->renderer->header();
-$questionnaire->page->add_to_page('closebutton', $questionnaire->renderer->close_window_button());
-$questionnaire->survey_print_render($courseid, '', 'print', $rid, $blankquestionnaire);
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer();
+echo $renderer->header();
+$page->add_to_page('closebutton', $renderer->close_window_button());
+(new \mod_questionnaire\local\report\report_view_builder($renderer, $page))
+    ->build_print_view($questionnaire, $courseid, '', 'print', $rid, $blankquestionnaire);
+echo $renderer->render($page);
+echo $renderer->footer();
