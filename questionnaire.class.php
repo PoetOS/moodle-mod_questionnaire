@@ -2454,7 +2454,8 @@ class questionnaire {
                             } else {
                                 $rating = $this->responses[$rid]->answers[$question->id][$cid]->value;
                             }
-                            $response->answers[] = $question->choices[$cid]->content . ' = ' . $rating;
+                            $response->answers[] = $question->choices[$cid]->content . ' = ' .
+                                ($rating != QUESRATEUNANSWERED ? $rating : '');
                         }
                     }
                 }
@@ -3477,7 +3478,8 @@ class questionnaire {
 
         for ($c = $nbinfocols; $c < $numrespcols; $c++) {
             if (isset($row[$c])) {
-                $positioned[] = $row[$c];
+                // Ignore if value means this is a not yet answered choice.
+                $positioned[] = $row[$c] != QUESRATEUNANSWERED ? $row[$c] : null;
             } else if (isset($questionsbyposition[$c])) {
                 $question = $questionsbyposition[$c];
                 $qtype = intval($question->type_id);

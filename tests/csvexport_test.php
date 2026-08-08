@@ -76,17 +76,19 @@ final class csvexport_test extends \advanced_testcase {
             $questionnaireinst = new \questionnaire($course, $cm, 0, $questionnaire);
 
             // Test for only complete responses.
+            $expectedoutput = $this->expected_complete_output();
             $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 0));
-            $this->assertEquals(count($newoutput), count($this->expected_complete_output()));
+            $this->assertEquals(count($newoutput), count($expectedoutput));
             foreach ($newoutput as $key => $output) {
-                $this->assertEquals($this->expected_complete_output()[$key], $output);
+                $this->assertEquals($expectedoutput[$key], $output, "Output #$key");
             }
 
             // Test for all responses.
+            $expectedoutput = $this->expected_incomplete_output();
             $newoutput = $this->get_csv_text($questionnaireinst->generate_csv(0, '', '', 0, 0, 1));
-            $this->assertEquals(count($newoutput), count($this->expected_incomplete_output()));
+            $this->assertEquals(count($newoutput), count($expectedoutput));
             foreach ($newoutput as $key => $output) {
-                $this->assertEquals($this->expected_incomplete_output()[$key], $output);
+                $this->assertEquals($expectedoutput[$key], $output, "Output #$key");
             }
         }
     }
@@ -243,6 +245,6 @@ final class csvexport_test extends \advanced_testcase {
             "		Test course 1			Testy Lastname4	username4	y	Test answer	Some header textSome paragraph text	83	" .
             "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1	1	2	3	4	5	1	2	3	4		5",
             "		Test course 1			Testy Lastname5	username5	n	Test answer	Some header textSome paragraph text	83	" .
-            "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1	1	2	3	4	5	1	2	3	4		5"];
+            "27/12/2017	wind	three	0	0	0	0	0	0	0	0	0	1											5"];
     }
 }

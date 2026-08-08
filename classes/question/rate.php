@@ -315,7 +315,8 @@ class rate extends question {
 
         $num = 0;
         foreach ($this->choices as $cid => $choice) {
-            $num += (isset($response->answers[$this->id][$cid]) && ($response->answers[$this->id][$cid]->value != -999));
+            $num += (isset($response->answers[$this->id][$cid]) &&
+                $response->answers[$this->id][$cid]->value != QUESRATEUNANSWERED);
         }
 
         $notcomplete = false;
@@ -361,13 +362,13 @@ class rate extends question {
                     $title = '';
                     if (
                         $notcomplete && isset($response->answers[$this->id][$cid]) &&
-                        ($response->answers[$this->id][$cid]->value == -999)
+                        $response->answers[$this->id][$cid]->value == QUESRATEUNANSWERED
                     ) {
                         $completeclass = 'notcompleted';
                         $title = get_string('pleasecomplete', 'questionnaire');
                     }
-                    // Set value of notanswered button to -999 in order to eliminate it from form submit later on.
-                    $colinput = ['name' => $str, 'value' => -999];
+                    // Set value of notanswered button in order to eliminate it from form submit later on.
+                    $colinput = ['name' => $str, 'value' => QUESRATEUNANSWERED];
                     if (!empty($checked)) {
                         $colinput['checked'] = true;
                     }
@@ -624,8 +625,8 @@ class rate extends question {
                 if (isset($answers[$cid]) && !empty($answers[$cid]) && ($answers[$cid]->value == $na)) {
                     $answers[$cid]->value = -1;
                 }
-                // If choice value == -999 this is a not yet answered choice.
-                $num += (isset($answers[$cid]) && ($answers[$cid]->value != -999));
+                // Ignore if value means this is a not yet answered choice.
+                $num += (isset($answers[$cid]) && $answers[$cid]->value != QUESRATEUNANSWERED);
             }
             $nbchoices -= $nameddegrees;
         }
@@ -675,8 +676,8 @@ class rate extends question {
                 if (isset($answers[$cid]) && ($answers[$cid]->value == $na)) {
                     $answers[$cid]->value = -1;
                 }
-                // If choice value == -999 this is a not yet answered choice.
-                $num += (isset($answers[$cid]) && ($answers[$cid]->value != -999));
+                // Ignore if value means this is a not yet answered choice.
+                $num += (isset($answers[$cid]) && $answers[$cid]->value != QUESRATEUNANSWERED);
             }
             $nbchoices -= $nameddegrees;
         }

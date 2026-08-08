@@ -448,11 +448,11 @@ class behat_mod_questionnaire extends behat_base {
             ["", "6", "13", "18", "-1"],
             ["", "6", "13", "19", "1"],
             ["", "6", "13", "20", "-1"],
-            ["", "7", "13", "16", "-999"],
-            ["", "7", "13", "17", "-999"],
-            ["", "7", "13", "18", "-999"],
-            ["", "7", "13", "19", "-999"],
-            ["", "7", "13", "20", "-999"],
+            ["", "7", "13", "16", QUESRATEUNANSWERED],
+            ["", "7", "13", "17", QUESRATEUNANSWERED],
+            ["", "7", "13", "18", QUESRATEUNANSWERED],
+            ["", "7", "13", "19", QUESRATEUNANSWERED],
+            ["", "7", "13", "20", QUESRATEUNANSWERED],
         ];
         $this->add_data(
             $responserank,
