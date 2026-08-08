@@ -288,6 +288,7 @@ function draw_chart(
                     $maxlen = $labellen;
                 }
             }
+            $output = [];
             foreach ($labels as $value) {
                 $output[] = '"' . $value . '"';
             }
