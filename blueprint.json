@@ -1,0 +1,44 @@
+{
+  "$schema": "https://ateeducacion.github.io/moodle-playground/assets/blueprints/blueprint-schema.json",
+  "preferredVersions": {
+    "php": "8.3",
+    "moodle": "5.1"
+  },
+  "landingPage": "/mod/questionnaire/preview.php?id=2",
+  "constants": {
+    "ADMIN_USER": "admin",
+    "ADMIN_PASS": "test",
+    "ADMIN_EMAIL": "admin@example.com"
+  },
+  "steps": [
+    {
+      "step": "installMoodle",
+      "options": {
+        "adminUser": "{{ADMIN_USER}}",
+        "adminPass": "{{ADMIN_PASS}}",
+        "adminEmail": "{{ADMIN_EMAIL}}",
+        "siteName": "Questionnaire Module Demo",
+        "locale": "en",
+        "timezone": "Europe/Madrid"
+      }
+    },
+    {
+      "step": "login",
+      "username": "{{ADMIN_USER}}"
+    },
+    {
+      "step": "installMoodlePlugin",
+      "pluginType": "mod",
+      "pluginName": "questionnaire",
+      "url": "https://github.com/PoetOS/moodle-mod_questionnaire/archive/refs/heads/MOODLE_500_STABLE.zip"
+    },
+    {
+      "step": "runPhpCode",
+      "code": "if (!defined('CLI_SCRIPT')) { define('CLI_SCRIPT', true); }\nrequire('/www/moodle/config.php');\nrequire_once($CFG->dirroot . '/course/lib.php');\nrequire_once($CFG->dirroot . '/mod/questionnaire/lib.php');\ntry {\n    global $DB, $USER, $CFG;\n    $USER = get_admin();\n\n    // Create the demo category and course from PHP so the setup is self-contained.\n    $category = $DB->get_record('course_categories', ['name' => 'Demo Courses']);\n    if (!$category) {\n        $category = \\core_course_category::create((object) ['name' => 'Demo Courses']);\n    }\n    $categoryid = is_object($category) ? $category->id : $category;\n\n    $course = $DB->get_record('course', ['shortname' => 'questionnaire-demo']);\n    if (!$course) {\n        $course = create_course((object) [\n            'fullname' => 'Questionnaire Demo',\n            'shortname' => 'questionnaire-demo',\n            'category' => $categoryid,\n            'summary' => 'Demo course with a preconfigured Questionnaire activity, ready to preview at a glance.',\n            'summaryformat' => FORMAT_HTML,\n        ]);\n    }\n\n    // Enrol the admin as editing teacher (needed for the questionnaire preview and My courses).\n    $manual = enrol_get_plugin('manual');\n    $manualinstance = null;\n    foreach (enrol_get_instances($course->id, false) as $inst) {\n        if ($inst->enrol === 'manual') {\n            $manualinstance = $inst;\n            break;\n        }\n    }\n    if (!$manualinstance && $manual) {\n        $manualid = $manual->add_default_instance($course);\n        $manualinstance = $manualid ? $DB->get_record('enrol', ['id' => $manualid]) : null;\n    }\n    $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);\n    if ($manual && $manualinstance && $teacherrole) {\n        $manual->enrol_user($manualinstance, $USER->id, $teacherrole->id);\n    }\n\n    // Create the questionnaire activity with three sample questions.\n    if (!$DB->record_exists('questionnaire', ['course' => $course->id, 'name' => 'Course feedback survey'])) {\n        $moduleid = $DB->get_field('modules', 'id', ['name' => 'questionnaire'], MUST_EXIST);\n\n        // 1. Create the course module first (placeholder instance).\n        $newcm = (object) [\n            'course' => $course->id,\n            'module' => $moduleid,\n            'instance' => 0,\n            'section' => 0,\n            'added' => time(),\n            'visible' => 1,\n            'visibleoncoursepage' => 1,\n            'visibleold' => 1,\n            'groupmode' => 0,\n            'groupingid' => 0,\n        ];\n        $cmid = add_course_module($newcm);\n\n        // 2. Create the questionnaire instance. create='new-0' + empty sid makes\n        //    questionnaire_add_instance() create the backing survey automatically.\n        $qdata = (object) [\n            'course' => $course->id,\n            'coursemodule' => $cmid,\n            'cmidnumber' => '',\n            'name' => 'Course feedback survey',\n            'intro' => '<p>A short sample survey. This preview shows all of its questions at a glance.</p>',\n            'introformat' => FORMAT_HTML,\n            'qtype' => 0,\n            'respondenttype' => 'fullname',\n            'resp_eligible' => 'all',\n            'resp_view' => 0,\n            'opendate' => 0,\n            'closedate' => 0,\n            'resume' => 0,\n            'navigate' => 0,\n            'grade' => 0,\n            'sid' => 0,\n            'completionsubmit' => 0,\n            'autonum' => 3,\n            'create' => 'new-0',\n            'timemodified' => time(),\n        ];\n        $instanceid = questionnaire_add_instance($qdata);\n\n        // 3. Link the course module to the new instance and place it in the section.\n        $DB->set_field('course_modules', 'instance', $instanceid, ['id' => $cmid]);\n        course_add_cm_to_section($course->id, $cmid, 0);\n\n        // 4. Add sample questions into the survey (active questions have deleted = NULL).\n        $survey = $DB->get_record('questionnaire', ['id' => $instanceid], '*', MUST_EXIST);\n        $sid = $survey->sid;\n\n        // Q1 - Yes/No (type_id 1).\n        $DB->insert_record('questionnaire_question', (object) [\n            'surveyid' => $sid, 'name' => 'Q1', 'type_id' => 1,\n            'content' => 'Do you enjoy using Moodle?', 'position' => 1,\n            'required' => 'y', 'length' => 0, 'precise' => 0,\n        ]);\n\n        // Q2 - Radio Buttons (type_id 4) with choices.\n        $q2id = $DB->insert_record('questionnaire_question', (object) [\n            'surveyid' => $sid, 'name' => 'Q2', 'type_id' => 4,\n            'content' => 'Which is your favourite colour?', 'position' => 2,\n            'required' => 'y', 'length' => 0, 'precise' => 0,\n        ]);\n        foreach (['Red', 'Green', 'Blue', 'Yellow'] as $choice) {\n            $DB->insert_record('questionnaire_quest_choice', (object) [\n                'question_id' => $q2id, 'content' => $choice, 'value' => null,\n            ]);\n        }\n\n        // Q3 - Text Box (type_id 2).\n        $DB->insert_record('questionnaire_question', (object) [\n            'surveyid' => $sid, 'name' => 'Q3', 'type_id' => 2,\n            'content' => 'Any comments or suggestions?', 'position' => 3,\n            'required' => 'n', 'length' => 0, 'precise' => 0,\n        ]);\n\n        rebuild_course_cache($course->id, true);\n    }\n\n    if (!$DB->record_exists('questionnaire', ['course' => $course->id, 'name' => 'Course feedback survey'])) {\n        throw new \\RuntimeException('The Questionnaire activity is missing after provisioning.');\n    }\n\n    echo \"Provisioned mod_questionnaire demo on course 'questionnaire-demo' with 3 sample questions.\\n\";\n} catch (\\Throwable $e) {\n    fwrite(STDERR, 'mod_questionnaire demo provisioning failed: ' . $e->getMessage() . \"\\n\");\n}\n"
+    },
+    {
+      "step": "setLandingPage",
+      "path": "/mod/questionnaire/preview.php?id=2"
+    }
+  ]
+}

@@ -6,6 +6,17 @@ The questionnaire module allows you to construct questionnaires (surveys) from a
 variety of question type. It was originally based on phpESP, and Open Source
 survey tool.
 
+
+## Try in Moodle Playground
+
+Click the badge below to open this plugin instantly in
+[Moodle Playground](https://moodle-playground.com) — a full Moodle site
+running in the browser, with no local install. The demo includes a
+"Questionnaire Demo" course with a sample "Course feedback survey"
+(Yes/No, multiple-choice and text-box questions) and opens on its preview.
+
+<a href="https://moodle-playground.com/?blueprint-url=https://raw.githubusercontent.com/PoetOS/moodle-mod_questionnaire/refs/heads/MOODLE_500_STABLE/blueprint.json" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/ateeducacion/action-moodle-playground-pr-preview/refs/heads/main/assets/playground-preview-button.svg" alt="Preview in Moodle Playground" width="200"></a>
+
 ## Developers Note
 
 There is no main branch. Questionnaire is maintained in MOODLE_XXX_STABLE
