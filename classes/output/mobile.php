@@ -153,7 +153,12 @@ class mobile {
 
             case 'review':
                 // If reviewing a submission.
-                if ($questionnaire->capabilities->readownresponses && isset($args->submissionid) && !empty($args->submissionid)) {
+                if (
+                    $questionnaire->capabilities->readownresponses &&
+                    isset($args->submissionid) &&
+                    !empty($args->submissionid) &&
+                    $questionnaire->can_view_response($args->submissionid)
+                ) {
                     $questionnaire->add_response($args->submissionid);
                     $response = $questionnaire->responses[$args->submissionid];
                     $qnum = 1;
