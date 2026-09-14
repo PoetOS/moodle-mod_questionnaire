@@ -137,7 +137,7 @@ class rank extends responsetype {
                     $otherrecord->response_id = $response->id;
                     $otherrecord->question_id = $this->question->id;
                     $otherrecord->choice_id = $answer->choiceid;
-                    $otherrecord->response = $responsedata->{$answer->choiceid . '_qother'};
+                    $otherrecord->response = clean_text($responsedata->{$answer->choiceid . '_qother'});
                     $DB->insert_record('questionnaire_response_other', $otherrecord);
                 }
             }
