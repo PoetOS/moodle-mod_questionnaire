@@ -110,6 +110,7 @@ class external extends external_api {
         $action,
         $responses
     ) {
+        global $USER;
         self::validate_parameters(
             self::submit_questionnaire_response_parameters(),
             [
@@ -133,6 +134,12 @@ class external extends external_api {
         self::validate_context($context);
 
         require_capability('mod/questionnaire:submit', $context);
+
+        // Verify response ownership to prevent tampering.
+        $userid = $USER->id;
+        if (!$questionnaire->is_response_owner($rid, $userid)) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
 
         $result = $questionnaire->save_mobile_data($userid, $sec, $completed, $rid, $submit, $action, $responses);
         $result['submitted'] = true;
