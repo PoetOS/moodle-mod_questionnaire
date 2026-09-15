@@ -737,6 +737,32 @@ class questionnaire {
     }
 
     /**
+     * True if the response belongs to the given user and questionnaire.
+     * Prevents unauthorized write/submit/delete regardless of view permissions.
+     *
+     * @param int $rid The response id.
+     * @param int $userid The user id.
+     * @return bool
+     */
+    public function is_response_owner($rid, $userid) {
+        global $DB;
+
+        // If no existing response is specified, a new one is created for the user.
+        if (empty($rid)) {
+            return true;
+        }
+
+        $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
+        if (empty($response)) {
+            return false;
+        }
+        if ($response->questionnaireid != $this->id) {
+            return false;
+        }
+        return ($response->userid == $userid);
+    }
+
+    /**
      * True if the user can view the responses to this questionnaire, and there are valid responses.
      *
      * @param null|int $usernumresp
