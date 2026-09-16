@@ -45,7 +45,8 @@ class mobile {
         $rid = isset($args->rid) ? $args->rid : 0;
         $action = isset($args->action) ? $args->action : 'index';
         $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
-        $userid = isset($args->userid) ? $args->userid : $USER->id;
+        // Verify response ownership to prevent tampering.
+        $userid = $USER->id;
         $submit = isset($args->submit) ? $args->submit : false;
         $completed = isset($args->completed) ? $args->completed : false;
 
@@ -87,6 +88,10 @@ class mobile {
             case 'nextpage':
             case 'previouspage':
                 if (!$data['notifications']) {
+                    // Ensure any existing response id being written to actually belongs to this user.
+                    if (!$questionnaire->is_response_owner($rid, $userid)) {
+                        throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+                    }
                     $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
                 }
 
@@ -153,7 +158,12 @@ class mobile {
 
             case 'review':
                 // If reviewing a submission.
-                if ($questionnaire->capabilities->readownresponses && isset($args->submissionid) && !empty($args->submissionid)) {
+                if (
+                    $questionnaire->capabilities->readownresponses &&
+                    isset($args->submissionid) &&
+                    !empty($args->submissionid) &&
+                    $questionnaire->can_view_response($args->submissionid)
+                ) {
                     $questionnaire->add_response($args->submissionid);
                     $response = $questionnaire->responses[$args->submissionid];
                     $qnum = 1;
