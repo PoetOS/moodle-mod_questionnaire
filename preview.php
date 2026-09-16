@@ -66,11 +66,16 @@ if ($id) {
     }
 }
 
-// Check login and get context.
-// Do not require login if this questionnaire is viewed from the Add questionnaire page
-// to enable teachers to view template or public questionnaires located in a course where they are not enroled.
+// The popup preview link (from the "Add questionnaire" page) always passes sid for a public/template
+// survey, never id. Restrict the popup case to exactly that, so it can't be used for any other cmid/survey.
+$popup = $popup && !$id && isset($survey) && in_array($survey->realm, ['public', 'template']);
+
+// Check login and get context. Popup previews skip the enrolment check (teacher may not be enrolled
+// in the survey's original course) but still need a logged-in user.
 if (!$popup) {
     require_login($course->id, false, $cm);
+} else {
+    require_login();
 }
 $context = $cm ? context_module::instance($cm->id) : false;
 

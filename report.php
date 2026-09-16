@@ -324,6 +324,7 @@ switch ($action) {
         break;
 
     case 'dvresp': // Delete single response. Do it!
+        require_sesskey();
         require_capability('mod/questionnaire:deleteresponses', $context);
 
         if (empty($questionnaire->survey)) {
@@ -383,6 +384,7 @@ switch ($action) {
         break;
 
     case 'dvallresp': // Delete all responses in questionnaire (or group). Do it!
+        require_sesskey();
         require_capability('mod/questionnaire:deleteresponses', $context);
 
         if (empty($questionnaire->survey)) {
