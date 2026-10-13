@@ -515,15 +515,16 @@ final class questionnaire_responses_test extends \advanced_testcase {
      * Build a fixture with a Q1, pagebreak, Q2, pagebreak, Q3 layout at explicit positions 1..5.
      * Inserts questions directly via $DB so positions are deterministic for section-math tests.
      *
+     * @param array $instancefields Extra questionnaire instance settings (e.g. ['navigate' => 1]).
      * @return array [questionnaire, [q1id, q2id, q3id]]
      */
-    private function build_three_section_questionnaire(): array {
+    private function build_three_section_questionnaire(array $instancefields = []): array {
         global $DB;
         $this->setAdminUser();
         $generator = $this->getDataGenerator();
         $course = $generator->create_course();
         $questionnaire = $generator->get_plugin_generator('mod_questionnaire')
-            ->create_instance(['course' => $course->id]);
+            ->create_instance(array_merge(['course' => $course->id], $instancefields));
         $sid = $questionnaire->surveyid();
 
         $mkrow = function (int $surveyid, int $position, int $typeid, string $name) use ($DB): int {
@@ -556,14 +557,15 @@ final class questionnaire_responses_test extends \advanced_testcase {
      *
      * @param int $responseid
      * @param int $questionid
+     * @param string $choice 'y' or 'n'.
      * @return void
      */
-    private function insert_bool_answer(int $responseid, int $questionid): void {
+    private function insert_bool_answer(int $responseid, int $questionid, string $choice = 'y'): void {
         global $DB;
         $DB->insert_record('questionnaire_response_bool', (object)[
             'responseid' => $responseid,
             'questionid' => $questionid,
-            'choiceid'   => 'y',
+            'choiceid'   => $choice,
         ]);
     }
 
@@ -602,5 +604,120 @@ final class questionnaire_responses_test extends \advanced_testcase {
         $r3 = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id);
         $this->insert_bool_answer($r3->id(), $qids[2]);
         $this->assertSame(3, $questionnaire->responses()->response_select_max_sec($r3->id()));
+    }
+
+    // Tests for delete_unfulfilled_dependent_answers().
+
+    /**
+     * Build the three-section layout with Q2 shown only when Q1 = Yes and Q3 shown only
+     * when Q2 = Yes, plus an empty response from a student.
+     *
+     * @param bool $branching True to enable branching (navigate) on the questionnaire.
+     * @return array [questionnaire, [q1id, q2id, q3id], int response id]
+     */
+    private function build_dependency_chain(bool $branching = true): array {
+        global $DB;
+        [$questionnaire, $qids] = $this->build_three_section_questionnaire(['navigate' => $branching ? 1 : 0]);
+        foreach ([[$qids[1], $qids[0]], [$qids[2], $qids[1]]] as [$child, $parent]) {
+            // Yes/no choice 0 is 'y'; dependlogic 1 is "this answer given".
+            $DB->insert_record('questionnaire_dependency', (object)[
+                'questionid' => $child,
+                'surveyid' => $questionnaire->surveyid(),
+                'dependquestionid' => $parent,
+                'dependchoiceid' => 0,
+                'dependlogic' => 1,
+                'dependandor' => 'and',
+            ]);
+        }
+        $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
+        $student = $this->getDataGenerator()->create_user();
+        $response = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id);
+        return [$questionnaire, $qids, $response->id()];
+    }
+
+    /**
+     * True if the response holds a yes/no answer to the question.
+     *
+     * @param int $rid
+     * @param int $qid
+     * @return bool
+     */
+    private function has_bool_answer(int $rid, int $qid): bool {
+        global $DB;
+        return $DB->record_exists('questionnaire_response_bool', ['responseid' => $rid, 'questionid' => $qid]);
+    }
+
+    /**
+     * Asserts delete_unfulfilled_dependent_answers() removes the answer to a question whose
+     * dependency is not fulfilled, and leaves its parent's answer alone.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::delete_unfulfilled_dependent_answers
+     */
+    public function test_delete_unfulfilled_dependent_answers_removes_unfulfilled(): void {
+        $this->resetAfterTest();
+        [$questionnaire, [$q1, $q2], $rid] = $this->build_dependency_chain();
+        $this->insert_bool_answer($rid, $q1, 'n');
+        $this->insert_bool_answer($rid, $q2, 'n');
+
+        $questionnaire->responses()->delete_unfulfilled_dependent_answers($rid);
+
+        $this->assertTrue($this->has_bool_answer($rid, $q1));
+        $this->assertFalse($this->has_bool_answer($rid, $q2));
+    }
+
+    /**
+     * Asserts delete_unfulfilled_dependent_answers() keeps answers whose dependencies hold.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::delete_unfulfilled_dependent_answers
+     */
+    public function test_delete_unfulfilled_dependent_answers_keeps_fulfilled(): void {
+        $this->resetAfterTest();
+        [$questionnaire, [$q1, $q2, $q3], $rid] = $this->build_dependency_chain();
+        $this->insert_bool_answer($rid, $q1, 'y');
+        $this->insert_bool_answer($rid, $q2, 'y');
+        $this->insert_bool_answer($rid, $q3, 'n');
+
+        $questionnaire->responses()->delete_unfulfilled_dependent_answers($rid);
+
+        $this->assertTrue($this->has_bool_answer($rid, $q1));
+        $this->assertTrue($this->has_bool_answer($rid, $q2));
+        $this->assertTrue($this->has_bool_answer($rid, $q3));
+    }
+
+    /**
+     * Asserts delete_unfulfilled_dependent_answers() cascades down a dependency chain: Q2's
+     * answer of Yes would satisfy Q3, but Q2 itself is removed because Q1 = No, so Q3 goes too.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::delete_unfulfilled_dependent_answers
+     */
+    public function test_delete_unfulfilled_dependent_answers_cascades(): void {
+        $this->resetAfterTest();
+        [$questionnaire, [$q1, $q2, $q3], $rid] = $this->build_dependency_chain();
+        $this->insert_bool_answer($rid, $q1, 'n');
+        $this->insert_bool_answer($rid, $q2, 'y');
+        $this->insert_bool_answer($rid, $q3, 'y');
+
+        $questionnaire->responses()->delete_unfulfilled_dependent_answers($rid);
+
+        $this->assertTrue($this->has_bool_answer($rid, $q1));
+        $this->assertFalse($this->has_bool_answer($rid, $q2));
+        $this->assertFalse($this->has_bool_answer($rid, $q3));
+    }
+
+    /**
+     * Asserts delete_unfulfilled_dependent_answers() changes nothing when branching is
+     * disabled, since every question is then shown regardless of its dependencies.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::delete_unfulfilled_dependent_answers
+     */
+    public function test_delete_unfulfilled_dependent_answers_ignored_without_branching(): void {
+        $this->resetAfterTest();
+        [$questionnaire, [$q1, $q2], $rid] = $this->build_dependency_chain(false);
+        $this->insert_bool_answer($rid, $q1, 'n');
+        $this->insert_bool_answer($rid, $q2, 'y');
+
+        $questionnaire->responses()->delete_unfulfilled_dependent_answers($rid);
+
+        $this->assertTrue($this->has_bool_answer($rid, $q2));
     }
 }

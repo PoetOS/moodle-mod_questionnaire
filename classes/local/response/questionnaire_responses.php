@@ -469,6 +469,7 @@ class questionnaire_responses {
      * @param int $quser
      */
     public function commit_submission_response($rid, $quser) {
+        $this->delete_unfulfilled_dependent_answers((int)$rid);
         $this->response_commit($rid);
 
         \mod_questionnaire\gradebook::update_grades($this->questionnaire, $quser);
@@ -498,8 +499,6 @@ class questionnaire_responses {
      * @param int|null $sec If provided, only delete answers in that section.
      */
     public function response_delete($rid, $sec = null) {
-        global $DB;
-
         if (empty($rid)) {
             return;
         }
@@ -519,16 +518,52 @@ class questionnaire_responses {
             }
             if (empty($qids)) {
                 return;
-            } else {
-                [$qsql, $params] = $DB->get_in_or_equal($qids);
-                $qsql = ' AND questionid ' . $qsql;
             }
+            $this->delete_answer_rows((int)$rid, $qids);
         } else {
-            $qsql = '';
-            $params = [];
+            $this->delete_answer_rows((int)$rid);
         }
+    }
 
-        $select = 'responseid = \'' . $rid . '\' ' . $qsql;
+    /**
+     * Delete answers to questions whose dependencies the response does not fulfil.
+     *
+     * Pages skipped by branching are never saved again, so an answer given before its parent
+     * answer changed would otherwise remain. Answers are kept until submission so that
+     * changing the parent answer back redisplays them. Questions are visited in survey order,
+     * so chained dependents cascade: once a parent's answers are removed, its own dependents
+     * see that when they are checked.
+     *
+     * @param int $rid
+     */
+    public function delete_unfulfilled_dependent_answers(int $rid): void {
+        if (empty($rid) || !$this->questionnaire->has_dependencies()) {
+            return;
+        }
+        $questions = $this->questionnaire->questions();
+        foreach ($questions as $question) {
+            if (!$question->dependency_fulfilled($rid, $questions)) {
+                $this->delete_answer_rows($rid, [$question->id()]);
+            }
+        }
+    }
+
+    /**
+     * Delete a response's answer rows from every answer table.
+     *
+     * @param int $rid
+     * @param array|null $qids Only delete answers to these question ids; null for all answers.
+     */
+    private function delete_answer_rows(int $rid, ?array $qids = null): void {
+        global $DB;
+
+        $select = 'responseid = ?';
+        $params = [$rid];
+        if ($qids !== null) {
+            [$qsql, $qparams] = $DB->get_in_or_equal($qids);
+            $select .= ' AND questionid ' . $qsql;
+            $params = array_merge($params, $qparams);
+        }
         foreach (
             [
                 'response_bool',
