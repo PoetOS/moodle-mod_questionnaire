@@ -172,6 +172,69 @@ final class reporter_test extends \advanced_testcase {
     }
 
     /**
+     * view_response() lets a student view their own response without any
+     * view-all-responses rights (the myreport.php path).
+     */
+    public function test_view_response_allows_own_response(): void {
+        [$questionnaire, $studentid] = $this->setup_fixture();
+        $rid = $this->seed_complete_response($questionnaire, $studentid);
+
+        $this->setUser($studentid);
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        [$reporter, $page] = $this->build_reporter($questionnaire);
+
+        $reporter->view_response($rid, '', [$rid => null]);
+
+        global $PAGE;
+        $data = $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
+        $this->assertNotEmpty($data->responses);
+    }
+
+    /**
+     * view_response() throws nopermissions when a student asks for another
+     * student's response.
+     */
+    public function test_view_response_rejects_other_users_response(): void {
+        [$questionnaire, $studentid] = $this->setup_fixture();
+        $otherrid = $this->seed_complete_response($questionnaire, $studentid);
+
+        $snoop = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($snoop->id, $questionnaire->courseid(), 'student');
+        $this->seed_complete_response($questionnaire, (int) $snoop->id);
+
+        $this->setUser($snoop);
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        [$reporter] = $this->build_reporter($questionnaire);
+
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessageMatches('/permission|nopermissions/i');
+        $reporter->view_response($otherrid, '', [$otherrid => null]);
+    }
+
+    /**
+     * view_response() throws nopermissions for a response that belongs to a
+     * different questionnaire, even for a user who can read all responses.
+     */
+    public function test_view_response_rejects_response_from_other_questionnaire(): void {
+        [$questionnaire, $studentid] = $this->setup_fixture();
+        $plugin = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $otherquestionnaire = $plugin->create_test_questionnaire(
+            $questionnaire->course(),
+            QUESYESNO,
+            ['content' => 'Another yes or no?'],
+            []
+        );
+        $foreignrid = $this->seed_complete_response($otherquestionnaire, $studentid);
+
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        [$reporter] = $this->build_reporter($questionnaire);
+
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessageMatches('/permission|nopermissions/i');
+        $reporter->view_response($foreignrid, '', [$foreignrid => null]);
+    }
+
+    /**
      * survey_results() short-circuits silently when the survey has no questions.
      */
     public function test_survey_results_no_questions_short_circuits(): void {

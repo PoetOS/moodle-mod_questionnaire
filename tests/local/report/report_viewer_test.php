@@ -106,10 +106,12 @@ final class report_viewer_test extends \advanced_testcase {
     }
 
     /**
-     * view_individual_response() throws surveyowner when the survey is owned by
-     * a different course than the questionnaire instance.
+     * view_individual_response() refuses access when the survey is owned by a
+     * different course than the questionnaire instance. Both view-all paths
+     * require survey ownership, so the permission gate fires before the
+     * surveyowner check.
      */
-    public function test_view_individual_response_throws_when_survey_not_owned_by_course(): void {
+    public function test_view_individual_response_denied_when_survey_not_owned_by_course(): void {
         global $DB, $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -128,7 +130,7 @@ final class report_viewer_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessageMatches('/owner|surveyowner/i');
+        $this->expectExceptionMessageMatches('/permission|nopermissions/i');
         (new report_viewer($questionnaire, $renderer))->view_individual_response(
             new reportpage(),
             'html',
@@ -139,6 +141,84 @@ final class report_viewer_test extends \advanced_testcase {
             false,
             false,
             false,
+            '0',
+            $this->default_responsestatus()
+        );
+    }
+
+    /**
+     * view_individual_response() throws nopermissions for a user who can view
+     * their own response but not all responses — report.php is not the
+     * own-response path.
+     */
+    public function test_view_individual_response_requires_view_all_capability(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $url] = $this->setup_fixture();
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $questionnaire->courseid(), 'student');
+        $rid = $DB->insert_record('questionnaire_response', [
+            'questionnaireid' => $questionnaire->id(),
+            'submitted' => time(),
+            'complete' => 'y',
+            'userid' => $student->id,
+        ]);
+
+        $this->setUser($student);
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessageMatches('/permission|nopermissions/i');
+        (new report_viewer($questionnaire, $renderer))->view_individual_response(
+            new reportpage(),
+            'html',
+            $url,
+            0,
+            0,
+            [],
+            $rid,
+            false,
+            true,
+            '0',
+            $this->default_responsestatus()
+        );
+    }
+
+    /**
+     * view_individual_response() throws nopermissions when the requested
+     * response belongs to a different questionnaire, even for an admin.
+     */
+    public function test_view_individual_response_rejects_response_from_other_questionnaire(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $url] = $this->setup_fixture();
+        $otherquestionnaire = $this->getDataGenerator()
+            ->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $questionnaire->courseid()]);
+        $foreignrid = $DB->insert_record('questionnaire_response', [
+            'questionnaireid' => $otherquestionnaire->id(),
+            'submitted' => time(),
+            'complete' => 'y',
+            'userid' => $this->getDataGenerator()->create_user()->id,
+        ]);
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessageMatches('/permission|nopermissions/i');
+        (new report_viewer($questionnaire, $renderer))->view_individual_response(
+            new reportpage(),
+            'html',
+            $url,
+            0,
+            0,
+            [],
+            $foreignrid,
+            false,
+            true,
             '0',
             $this->default_responsestatus()
         );

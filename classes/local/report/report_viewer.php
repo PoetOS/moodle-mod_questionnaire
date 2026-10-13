@@ -284,7 +284,7 @@ class report_viewer {
 
         if (
             !$this->questionnaire->capabilities()->can_view_all_responses(null, true) ||
-            ($rid && !$this->questionnaire->capabilities()->can_view_response((int)$rid, true))
+            ($rid && !$this->questionnaire->capabilities()->can_view_response((int)$rid))
         ) {
             throw new \moodle_exception('nopermissions', 'mod_questionnaire');
         }
