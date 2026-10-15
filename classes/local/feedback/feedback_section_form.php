@@ -56,8 +56,7 @@ class feedback_section_form extends \moodleform {
      * Form definition.
      */
     public function definition() {
-        global $questionnaire;
-
+        $questionnaire = $this->_customdata->questionnaire;
         $feedbacksection = $this->_customdata->feedbacksection;
         $validquestions = $this->_customdata->validquestions;
         $survey = $this->_customdata->survey;

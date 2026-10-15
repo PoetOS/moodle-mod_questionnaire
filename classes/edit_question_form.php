@@ -37,16 +37,14 @@ require_once($CFG->libdir . '/formslib.php');
 class edit_question_form extends \moodleform {
     /**
      * Form definition.
+     *
+     * Expects $customdata['questionnaire'] and $customdata['question'] to hold the questionnaire and the question being
+     * edited.
      */
     public function definition() {
-        // TODO - Find a way to not use globals. Maybe the base class allows more parameters to be passed?
-        global $questionnaire, $question;
+        $questionnaire = $this->_customdata['questionnaire'];
+        $question = $this->_customdata['question'];
 
-        // The 'sticky' required response value for further new questions — carried via the lastrequired URL/POST param.
-        $lastrequired = optional_param('lastrequired', '', PARAM_ALPHA);
-        if ($lastrequired !== '' && !isset($question->qid)) {
-            $question->set_required_value($lastrequired);
-        }
         if ($question->typeid() === 0) {
             throw new \moodle_exception('undefinedquestiontype', 'mod_questionnaire');
         }

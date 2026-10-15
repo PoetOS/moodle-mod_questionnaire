@@ -95,6 +95,7 @@ if ($action == 'removequestion') {
 }
 
 $customdata = new stdClass();
+$customdata->questionnaire = $questionnaire;
 $customdata->feedbacksection = $feedbacksection;
 $customdata->validquestions = $validquestions;
 $customdata->survey = $questionnaire->survey()->to_stdclass();

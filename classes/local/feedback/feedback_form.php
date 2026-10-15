@@ -32,9 +32,11 @@ require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
 class feedback_form extends \moodleform {
     /**
      * Defition of the form.
+     *
+     * Expects $customdata['questionnaire'] to hold the questionnaire being edited.
      */
     public function definition() {
-        global $questionnaire;
+        $questionnaire = $this->_customdata['questionnaire'];
 
         $mform =& $this->_form;
 

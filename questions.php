@@ -148,7 +148,14 @@ if (optional_param('addqbutton', 0, PARAM_INT)) {
 
 if ($action == 'question') {
     [$question, $editorcontent] = $questionnaire->survey()->prep_question_for_form($qid, $qtype);
-    $questionsform = new \mod_questionnaire\edit_question_form('questions.php');
+    // The 'sticky' required response value for further new questions.
+    if ($lastrequired !== '' && !isset($question->qid)) {
+        $question->set_required_value($lastrequired);
+    }
+    $questionsform = new \mod_questionnaire\edit_question_form('questions.php', [
+        'questionnaire' => $questionnaire,
+        'question' => $question,
+    ]);
     $formdata = $question->form_data();
     $formdata->content = $editorcontent;
     $questionsform->set_data($formdata);

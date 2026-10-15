@@ -50,7 +50,7 @@ if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$feedbackform = new \mod_questionnaire\local\feedback\feedback_form('feedback.php');
+$feedbackform = new \mod_questionnaire\local\feedback\feedback_form('feedback.php', ['questionnaire' => $questionnaire]);
 $sdata = $questionnaire->survey()->to_stdclass();
 $sdata->sid = $questionnaire->surveyid();
 $sdata->id = $questionnaire->coursemodule()->id;

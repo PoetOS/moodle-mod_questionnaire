@@ -58,7 +58,7 @@ if (!$questionnaire->capabilities()->can_manage_questionnaire()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$settingsform = new \mod_questionnaire\settings_form('qsettings.php');
+$settingsform = new \mod_questionnaire\settings_form('qsettings.php', ['questionnaire' => $questionnaire]);
 $sdata = $questionnaire->survey()->to_stdclass();
 $sdata->sid = $questionnaire->surveyid();
 $sdata->id = $cm->id;
