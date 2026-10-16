@@ -117,7 +117,6 @@ class yesno extends question {
      * @throws \coding_exception
      */
     protected function question_survey_display($response, $dependants = [], $blankquestionnaire = false) {
-        global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
 
         $stryes = get_string('yes');
         $strno = get_string('no');
@@ -140,7 +139,7 @@ class yesno extends question {
         $choicetags->qelements->choice = [];
 
         foreach ($options as $value => $label) {
-            $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
+            $htmlid = self::next_choice_id();
             $option = new \stdClass();
             $option->name = $name;
             $option->id = $htmlid;
@@ -161,7 +160,7 @@ class yesno extends question {
         // CONTRIB-846.
         if (!$this->required()) {
             $id = '';
-            $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
+            $htmlid = self::next_choice_id();
             $content = get_string('noanswer', 'questionnaire');
             $option = new \stdClass();
             $option->name = $name;

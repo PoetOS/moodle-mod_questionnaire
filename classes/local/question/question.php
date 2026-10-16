@@ -51,9 +51,6 @@ define('QUESFILE', 12);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
 
-global $idcounter;
-$idcounter = 0;
-
 /**
  * Class for describing a question
  *
@@ -90,6 +87,9 @@ abstract class question {
      * @var array
      */
     private array $preinit = [];
+
+    /** @var int Running count of the choice options rendered in this request, used to give each a unique HTML id. */
+    private static int $choiceidcounter = 0;
 
     /** @var array $choices Array holding any choices for this question. */
     public $choices = [];
@@ -670,6 +670,15 @@ abstract class question {
             $contents->modname = substr($content, 0, $pos);
         }
         return $contents;
+    }
+
+    /**
+     * Return the next unique HTML id for a rendered choice option.
+     *
+     * @return string An id of the form auto-rbNNNN, unique within the current request.
+     */
+    protected static function next_choice_id(): string {
+        return 'auto-rb' . sprintf('%04d', ++self::$choiceidcounter);
     }
 
     /**

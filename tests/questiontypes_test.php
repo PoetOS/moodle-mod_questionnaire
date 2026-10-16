@@ -221,6 +221,48 @@ final class questiontypes_test extends \advanced_testcase {
     }
 
     /**
+     * Choice options rendered by radio and yes/no questions get HTML ids that stay unique across questions
+     * and across repeated renders of the same question in one request.
+     *
+     * @covers \mod_questionnaire\local\question\question::next_choice_id
+     * @covers \mod_questionnaire\local\question\radio::question_survey_display
+     * @covers \mod_questionnaire\local\question\yesno::question_survey_display
+     */
+    public function test_choice_ids_are_unique(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire(
+            $course,
+            QUESRADIO,
+            ['content' => 'Choose one'],
+            [(object) ['content' => 'One', 'value' => 1], (object) ['content' => 'Two', 'value' => 2]]
+        );
+        $generator->create_question(
+            $questionnaire,
+            ['surveyid' => $questionnaire->surveyid(), 'name' => 'Q2', 'typeid' => QUESYESNO, 'content' => 'Yes or no?']
+        );
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+
+        $ids = [];
+        foreach ([1, 2] as $render) {
+            foreach ($questionnaire->questions() as $question) {
+                $tags = $question->question_output(new \stdClass(), false);
+                $elements = is_array($tags->qformelement->qelements) ?
+                    array_column($tags->qformelement->qelements, 'choice') : $tags->qformelement->qelements->choice;
+                foreach ($elements as $element) {
+                    $this->assertMatchesRegularExpression('/^auto-rb\d{4,}$/', $element->id);
+                    $ids[] = $element->id;
+                }
+            }
+        }
+
+        // Two radio choices + yes + no, rendered twice; any optional "no answer" buttons only add to the count.
+        $this->assertGreaterThanOrEqual(8, count($ids));
+        $this->assertSame($ids, array_unique($ids));
+    }
+
+    /**
      * Build a required yes/no question for the survey-display tests.
      *
      * @return question

@@ -88,9 +88,6 @@ class radio extends question {
      *
      */
     protected function question_survey_display($response, $dependants = [], $blankquestionnaire = false) {
-        // Radio buttons.
-        global $idcounter;  // To make sure all radio buttons have unique ids. // JR 20 NOV 2007.
-
         $otherempty = false;
         $horizontal = $this->length();
         $ischecked = false;
@@ -105,7 +102,7 @@ class radio extends question {
             }
 
             if (!$choice->is_other_choice()) { // This is a normal radio button.
-                $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
+                $htmlid = self::next_choice_id();
 
                 $radio->name = 'q' . $this->id();
                 $radio->id = $htmlid;
@@ -128,7 +125,7 @@ class radio extends question {
                 $othertext = $choice->other_choice_display();
                 $cname = choice::id_other_choice_name($id);
                 $odata = isset($response->answers[$this->id()][$id]) ? $response->answers[$this->id()][$id]->value : '';
-                $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
+                $htmlid = self::next_choice_id();
 
                 $radio->name = 'q' . $this->id();
                 $radio->id = $htmlid;
@@ -156,7 +153,7 @@ class radio extends question {
         // CONTRIB-846.
         if (!$this->required()) {
             $radio = new \stdClass();
-            $htmlid = 'auto-rb' . sprintf('%04d', ++$idcounter);
+            $htmlid = self::next_choice_id();
             if ($horizontal) {
                 $radio->horizontal = $horizontal;
             }
