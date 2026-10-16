@@ -33,8 +33,6 @@ use mod_questionnaire\questionnaire;
 use html_writer;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
 // Constants.
 define('QUESCHOOSE', 0);
 define('QUESYESNO', 1);
