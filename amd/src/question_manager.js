@@ -20,8 +20,9 @@
  * the mod_questionnaire_question_reorder AJAX external. The server is the source of truth
  * for whether an order is valid (a question cannot be dropped at or before one it depends
  * on) — sortable_list has no way to block an individual drop target, so a rejected drop
- * shows the server's error and reloads to restore the true order. A drop that is accepted
- * but triggers a page-break repair also reloads, so position numbers never lie.
+ * moves the row back to where it came from and shows the server's reason in an alert. A
+ * drop that is accepted but triggers a page-break repair reloads, so position numbers never
+ * lie.
  *
  * Keyboard reordering comes for free from core/drag_handle + core/sortable_list's built-in
  * move dialogue; no separate up/down control is needed.
@@ -38,6 +39,12 @@ function(SortableList, Ajax, Notification, Str, Toast) {
         row: '[data-question-id]',
         positionBadge: '[data-region="position-badge"]'
     };
+
+    /**
+     * Error codes the reorder external raises for an order it refuses. These are expected
+     * outcomes of a bad drop, so they get a plain alert rather than the exception dialogue.
+     */
+    var REJECTION_CODES = ['reorderdependency', 'reorderpagebreakfirst', 'reordermismatch'];
 
     /**
      * Read the current top-to-bottom question id order from the DOM.
@@ -67,6 +74,20 @@ function(SortableList, Ajax, Notification, Str, Toast) {
         });
     };
 
+    /**
+     * Put a dropped row back where it was picked up from.
+     *
+     * @param {Object} info The sortable_list drop event detail (jQuery-wrapped elements).
+     */
+    var revertMove = function(info) {
+        var row = info.element[0];
+        if (info.sourceNextElement.length) {
+            info.sourceNextElement[0].before(row);
+        } else {
+            info.sourceList[0].append(row);
+        }
+    };
+
     return {
         /**
          * Attach the drag-and-drop reorder behaviour to the question list.
@@ -85,7 +106,8 @@ function(SortableList, Ajax, Notification, Str, Toast) {
             };
 
             document.addEventListener(SortableList.EVENTS.elementDrop, function(event) {
-                if (!event.detail.positionChanged) {
+                var info = event.detail;
+                if (!info.positionChanged) {
                     return;
                 }
 
@@ -109,8 +131,11 @@ function(SortableList, Ajax, Notification, Str, Toast) {
                     }
                     return null;
                 }).catch(function(error) {
-                    Notification.exception(error);
-                    window.location.reload();
+                    revertMove(info);
+                    if (REJECTION_CODES.indexOf(error.errorcode) !== -1) {
+                        return Notification.alert(Str.get_string('error', 'moodle'), error.message);
+                    }
+                    return Notification.exception(error);
                 });
             });
         }
