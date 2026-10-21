@@ -177,8 +177,8 @@ final class survey_view_builder_test extends \advanced_testcase {
             ->build_survey_form($instance, $studentid, $studentid);
 
         $data = $this->page_data($page);
-        $this->assertObjectHasProperty('title', $data);
-        $this->assertStringContainsString('My Survey Title', $data->title);
+        $this->assertObjectHasProperty('surveyheader', $data);
+        $this->assertStringContainsString('My Survey Title', $data->surveyheader->title);
     }
 
     /**
@@ -488,7 +488,157 @@ final class survey_view_builder_test extends \advanced_testcase {
         (new survey_view_builder($renderer, $page))->goto_thankyou($instance);
 
         $data = $this->page_data($page);
-        $this->assertObjectHasProperty('title', $data);
+        $thankhead = $instance->survey()->thankhead() ?: get_string('thank_head', 'questionnaire');
+        $this->assertEquals(format_string($thankhead), $data->surveyheader->title);
         $this->assertObjectHasProperty('continue', $data);
+    }
+
+    /**
+     * print_survey_start() puts the survey title, subtitle and information in the header on section 1 only.
+     */
+    public function test_print_survey_start_header_on_first_section_only(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance] = $this->build_fixture();
+        $DB->update_record('questionnaire_survey', (object)[
+            'id' => $instance->surveyid(),
+            'title' => 'Header title',
+            'subtitle' => 'Header subtitle',
+            'info' => '<p>Header info</p>',
+        ]);
+        $instance = questionnaire::from_instanceid($instance->id());
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1);
+        $header = $this->page_data($page)->surveyheader;
+        $this->assertEquals('Header title', $header->title);
+        $this->assertEquals('Header subtitle', $header->subtitle);
+        $this->assertStringContainsString('Header info', $header->info);
+        $this->assertNull($header->respondent);
+        $this->assertNull($header->printblank);
+
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 2);
+        $header = $this->page_data($page)->surveyheader;
+        $this->assertNull($header->title);
+        $this->assertNull($header->info);
+    }
+
+    /**
+     * print_survey_start() adds an error message as a notification.
+     */
+    public function test_print_survey_start_writes_message(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance] = $this->build_fixture();
+        $page = new completepage();
+        (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))
+            ->print_survey_start($instance, 'Something went wrong', 1);
+
+        $this->assertStringContainsString('Something went wrong', $this->page_data($page)->message);
+    }
+
+    /**
+     * print_survey_start() offers the print-blank link only for a blank questionnaire on section 1.
+     */
+    public function test_print_survey_start_print_blank_link(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance] = $this->build_fixture();
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1, '', true);
+        $printblank = $this->page_data($page)->surveyheader->printblank;
+        $this->assertStringContainsString('/mod/questionnaire/print.php', $printblank);
+        $this->assertStringContainsString(get_string('printblank', 'questionnaire'), $printblank);
+
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1, '', false);
+        $this->assertNull($this->page_data($page)->surveyheader->printblank);
+    }
+
+    /**
+     * Viewing a named response shows the respondent, a print icon on HTML pages, and logs response_viewed.
+     */
+    public function test_print_survey_start_named_respondent(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $response = $generator->generate_response($instance, $instance->questions(), $studentid);
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+
+        $sink = $this->redirectEvents();
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1, $response['id']);
+        $events = array_filter($sink->get_events(), fn($e) => $e instanceof \mod_questionnaire\event\response_viewed);
+        $sink->close();
+
+        $respondent = $this->page_data($page)->surveyheader->respondent;
+        $this->assertEquals(fullname(\core_user::get_user($studentid)), $respondent->name);
+        $this->assertNotNull($respondent->submitted);
+        $this->assertStringContainsString('target=print', $respondent->printlink);
+        $this->assertCount(1, $events);
+        $this->assertEquals($studentid, reset($events)->relateduserid);
+
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1, $response['id'], false, 'pdf');
+        $this->assertNull($this->page_data($page)->surveyheader->respondent->printlink);
+    }
+
+    /**
+     * An anonymous questionnaire shows the anonymous marker, no submission time, and logs nothing.
+     */
+    public function test_print_survey_start_anonymous_respondent(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $response = $generator->generate_response($instance, $instance->questions(), $studentid);
+        $DB->set_field('questionnaire', 'respondenttype', 'anonymous', ['id' => $instance->id()]);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $sink = $this->redirectEvents();
+        $page = new completepage();
+        (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))
+            ->print_survey_start($instance, '', 1, $response['id']);
+        $events = array_filter($sink->get_events(), fn($e) => $e instanceof \mod_questionnaire\event\response_viewed);
+        $sink->close();
+
+        $respondent = $this->page_data($page)->surveyheader->respondent;
+        $this->assertEquals('- ' . get_string('anonymous', 'questionnaire') . ' -', $respondent->name);
+        $this->assertNull($respondent->submitted);
+        $this->assertEmpty($events);
+    }
+
+    /**
+     * A blank questionnaire never shows the respondent line, even with a response id.
+     */
+    public function test_print_survey_start_blank_hides_respondent(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $response = $generator->generate_response($instance, $instance->questions(), $studentid);
+
+        $page = new completepage();
+        (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))
+            ->print_survey_start($instance, '', 1, $response['id'], true);
+
+        $this->assertNull($this->page_data($page)->surveyheader->respondent);
     }
 }

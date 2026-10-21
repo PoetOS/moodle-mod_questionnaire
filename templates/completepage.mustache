@@ -28,10 +28,7 @@
     Context variables required for this template: (Note sections have been used to allow non-inclusion)
     * notifications - string: HTML of any notifications loaded.
     * respondentinfo - string: HTML of any specific response/respondent information.
-    * title - string: Text title of the questionnaire.
-    * printblank - string: HTML of optional print blank questionnaire control.
-    * subtitle - string: Optional text subtitle.
-    * addinfo - string: Optional HTML additional information.
+    * surveyheader - object: survey_header export, rendered by the mod_questionnaire/survey_header partial.
     * message - string: Any message HTML text.
     * formstart - string: Form start HTML.
     * questions - array: Array of questions HTML.
@@ -43,9 +40,11 @@
     {
         "notifications": "<div>Notification one</div>",
         "respondentinfo": "<div>This is respondent information</div>",
-        "title": "Test Questionnaire",
-        "subtitle": "This is a subtitle",
-        "addinfo": "<div>This is additional information.</div>",
+        "surveyheader": {
+            "title": "Test Questionnaire",
+            "subtitle": "This is a subtitle",
+            "info": "<div>This is additional information.</div>"
+        },
         "message": "<div>This is a message.</div>",
         "formstart": "<form id=\"formid\" method=\"post\" action=\"index.php\">",
         "questions": [
@@ -60,10 +59,8 @@
 <div class="mod_questionnaire_completepage generalbox">
     {{#notifications}}{{{.}}}{{/notifications}}
     {{{respondentinfo}}}
-    {{#title}}<h3 class="surveyTitle">{{.}}</h3>{{/title}}{{{printblank}}}
-    {{#subtitle}}<h4 class="surveySubTitle">{{.}}</h4>{{/subtitle}}
+    {{#surveyheader}}{{> mod_questionnaire/survey_header}}{{/surveyheader}}
     {{#progressbar}}<div class="progressbar">{{{.}}}</div>{{/progressbar}}
-    {{#addinfo}}<div class="addInfo">{{{.}}}</div>{{/addinfo}}
     {{#message}}<div class="message">{{{.}}}</div>{{/message}}
     {{#continue}}{{{continue}}}{{/continue}}
     <div class="generalbox">

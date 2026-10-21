@@ -132,8 +132,8 @@ final class report_view_builder_test extends \advanced_testcase {
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, true);
 
         $data = $this->page_data($page);
-        $this->assertObjectHasProperty('title', $data);
-        $this->assertStringContainsString('Print Preview Title', $data->title);
+        $this->assertObjectHasProperty('surveyheader', $data);
+        $this->assertStringContainsString('Print Preview Title', $data->surveyheader->title);
     }
 
     /**

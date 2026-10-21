@@ -90,8 +90,6 @@ class report_view_builder {
             return false;
         }
 
-        $hasrequired = $q->survey()->has_required();
-
         $i = 1;
         for ($j = 2; $j <= $section; $j++) {
             $i += count($questionsbysec[$j - 1]);
@@ -129,7 +127,7 @@ class report_view_builder {
             }
         }
 
-        $this->build_header($q, $message, 1, 1, $hasrequired, '');
+        $this->build_header($q, $message, 1, '');
 
         if (($referer == 'preview') && $q->has_dependencies()) {
             $allqdependants = $q->navigator()->get_dependants_and_choices();
@@ -213,7 +211,7 @@ class report_view_builder {
         $currentgroupid = 0,
         $outputtarget = 'html'
     ): void {
-        $this->build_header($q, '', 1, 1, 0, $rid, false, $outputtarget);
+        $this->build_header($q, '', 1, $rid, false, $outputtarget);
 
         $i = 0;
         $q->add_response($rid);
@@ -273,8 +271,6 @@ class report_view_builder {
      * @param questionnaire $q
      * @param string $message
      * @param int $section
-     * @param int $numsections
-     * @param bool $hasrequired
      * @param int|string $rid
      * @param bool $blankquestionnaire
      * @param string $outputtarget
@@ -283,13 +279,11 @@ class report_view_builder {
         questionnaire $q,
         $message,
         $section,
-        $numsections,
-        $hasrequired,
         $rid = '',
         $blankquestionnaire = false,
         $outputtarget = 'html'
     ): void {
         (new survey_view_builder($this->renderer, $this->page))
-            ->print_survey_start($q, $message, $section, $numsections, $hasrequired, $rid, $blankquestionnaire, $outputtarget);
+            ->print_survey_start($q, $message, $section, $rid, $blankquestionnaire, $outputtarget);
     }
 }

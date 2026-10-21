@@ -21,6 +21,8 @@ use mod_questionnaire\local\question\choice;
 use mod_questionnaire\local\question\question;
 use mod_questionnaire\local\question\rate;
 use mod_questionnaire\local\response\questionnaire_responses;
+use mod_questionnaire\local\survey\survey_view_builder;
+use mod_questionnaire\output\survey_header;
 use mod_questionnaire\questionnaire;
 use html_writer;
 use html_table;
@@ -94,7 +96,7 @@ class reporter {
      * @return void
      */
     public function view_all_responses(): void {
-        $this->print_survey_start('', 1, 1, 0);
+        (new survey_view_builder($this->renderer, $this->page))->print_survey_start($this->questionnaire, '', 1);
 
         $loadedresponses = $this->responsecollection()->get_loaded_responses();
         if (!empty($loadedresponses)) {
@@ -112,8 +114,6 @@ class reporter {
                 $this->renderer->all_response_output(get_string('noresponses', 'questionnaire'))
             );
         }
-
-        $this->print_survey_end(1, 1);
     }
 
     /**
@@ -198,23 +198,10 @@ class reporter {
             }
         }
 
-        if ($survey->title() !== '') {
-            $this->page->add_to_page('title', format_string($survey->title()));
-        }
-        if ($survey->subtitle() !== '') {
-            $this->page->add_to_page('subtitle', format_string($survey->subtitle()));
-        }
-        if ($survey->info() !== '') {
-            $infotext = file_rewrite_pluginfile_urls(
-                $survey->info(),
-                'pluginfile.php',
-                $this->questionnaire->context()->id,
-                'mod_questionnaire',
-                'info',
-                $this->questionnaire->surveyid()
-            );
-            $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
-        }
+        $this->page->add_to_page(
+            'surveyheader',
+            survey_header::for_survey($this->questionnaire)->export_for_template($this->renderer)
+        );
 
         $qnum = 0;
         $anonymous = $this->questionnaire->respondenttype() == 'anonymous';
@@ -1088,7 +1075,8 @@ class reporter {
         if (!$this->questionnaire->capabilities()->can_view_response($rid)) {
             throw new \moodle_exception('nopermissions', 'mod_questionnaire');
         }
-        $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
+        (new survey_view_builder($this->renderer, $this->page))
+            ->print_survey_start($this->questionnaire, '', 1, $rid, false, $outputtarget);
 
         $i = 0;
         $responses = $this->responsecollection();
@@ -1195,225 +1183,6 @@ class reporter {
     private function responsecollection(): questionnaire_responses {
         $this->responsecollection ??= $this->questionnaire->responses();
         return $this->responsecollection;
-    }
-
-    /**
-     * Render the page/section count footer into the page (no-op when autonumbering is off).
-     *
-     * @param int $section Current section number.
-     * @param int $numsections Total number of sections.
-     * @return void
-     */
-    private function print_survey_end(int $section, int $numsections): void {
-        if (!$this->questionnaire->pages_autonumbered()) {
-            return;
-        }
-        if ($numsections > 1) {
-            $a = new stdClass();
-            $a->page = $section;
-            $a->totpages = $numsections;
-            $this->page->add_to_page(
-                'pageinfo',
-                $this->renderer->container(
-                    get_string('pageof', 'questionnaire', $a) . '&nbsp;&nbsp;',
-                    'surveyPage'
-                )
-            );
-        }
-    }
-
-    /**
-     * Render the survey header (respondent info, title, subtitle, description) into the page.
-     *
-     * Triggers a response_viewed event when the respondenttype is 'fullname'.
-     *
-     * @param string $message Error message to display (empty string = none).
-     * @param int $section Current page/section number.
-     * @param int $numsections Total number of pages/sections.
-     * @param int $hasrequired Whether the survey has required questions (unused; kept for signature compat).
-     * @param int|string $rid Response id ('' for blank/preview display).
-     * @param bool $blankquestionnaire True when displaying a blank preview.
-     * @param string $outputtarget 'html' or 'pdf'.
-     * @return void
-     */
-    private function print_survey_start(
-        string $message,
-        int $section,
-        int $numsections,
-        int $hasrequired,
-        $rid = '',
-        bool $blankquestionnaire = false,
-        string $outputtarget = 'html'
-    ): void {
-        global $CFG, $DB;
-        require_once($CFG->libdir . '/filelib.php');
-
-        $userid = '';
-        $resp = '';
-        $groupname = '';
-        $currentgroupid = 0;
-        $timesubmitted = '';
-        if ($rid) {
-            $courseid = $this->questionnaire->course()->id;
-            if ($resp = $DB->get_record('questionnaire_response', ['id' => $rid])) {
-                if ($this->questionnaire->respondenttype() == 'fullname') {
-                    $userid = $resp->userid;
-                    if (groups_get_activity_groupmode($this->questionnaire->coursemodule(), $this->questionnaire->course())) {
-                        if ($groups = groups_get_all_groups($courseid, $resp->userid)) {
-                            if (count($groups) == 1) {
-                                $group = current($groups);
-                                $currentgroupid = $group->id;
-                                $groupname = ' (' . get_string('group') . ': ' . $group->name . ')';
-                            } else {
-                                $groupname = ' (' . get_string('groups') . ': ';
-                                foreach ($groups as $group) {
-                                    $groupname .= $group->name . ', ';
-                                }
-                                $groupname = substr($groupname, 0, strlen($groupname) - 2) . ')';
-                            }
-                        } else {
-                            $groupname = ' (' . get_string('groupnonmembers') . ')';
-                        }
-                    }
-
-                    $params = [
-                        'objectid' => $this->questionnaire->surveyid(),
-                        'context' => $this->questionnaire->context(),
-                        'courseid' => $this->questionnaire->course()->id,
-                        'relateduserid' => $userid,
-                        'other' => ['action' => 'vresp', 'currentgroupid' => $currentgroupid, 'rid' => $rid],
-                    ];
-                    $event = \mod_questionnaire\event\response_viewed::create($params);
-                    $event->trigger();
-                }
-            }
-        }
-        $ruser = '';
-        if ($resp && !$blankquestionnaire) {
-            if ($userid) {
-                if ($user = $DB->get_record('user', ['id' => $userid])) {
-                    $ruser = fullname($user);
-                }
-            }
-            if ($this->questionnaire->respondenttype() == 'anonymous') {
-                $ruser = '- ' . get_string('anonymous', 'questionnaire') . ' -';
-            } else {
-                if ($resp->submitted) {
-                    $timesubmitted = '&nbsp;' . get_string('submitted', 'questionnaire') . '&nbsp;' . userdate($resp->submitted);
-                }
-            }
-        }
-        if ($ruser) {
-            $respinfo = '';
-            if ($outputtarget == 'html') {
-                $linkname = get_string('print', 'mod_questionnaire');
-                $link = new \moodle_url(
-                    '/mod/questionnaire/report.php',
-                    [
-                        'action'             => 'vresp',
-                        'instance'           => $this->questionnaire->id(),
-                        'target'             => 'print',
-                        'individualresponse' => 1,
-                        'rid'                => $rid,
-                    ]
-                );
-                $htmlicon = new \pix_icon('t/print', $linkname);
-                $options = [
-                    'menubar'    => true,
-                    'location'   => false,
-                    'scrollbars' => true,
-                    'resizable'  => true,
-                    'height'     => 600,
-                    'width'      => 800,
-                    'title'      => $linkname,
-                ];
-                $name = 'popup';
-                $action = new \popup_action('click', $link, $name, $options);
-                $respinfo .= $this->renderer->action_link(
-                    $link,
-                    null,
-                    $action,
-                    ['title' => $linkname],
-                    $htmlicon
-                ) . '&nbsp;';
-            }
-            $respinfo .= get_string('respondent', 'questionnaire') . ': <strong>' . $ruser . '</strong>';
-            if ($this->questionnaire->survey_is_public()) {
-                $coursename = '';
-                $sql = 'SELECT q.id, q.course, c.fullname ' .
-                       'FROM {questionnaire_response} qr ' .
-                       'INNER JOIN {questionnaire} q ON qr.questionnaireid = q.id ' .
-                       'INNER JOIN {course} c ON q.course = c.id ' .
-                       'WHERE qr.id = ? AND qr.complete = ? ';
-                if ($record = $DB->get_record_sql($sql, [$rid, 'y'])) {
-                    $coursename = $record->fullname;
-                }
-                $respinfo .= ' ' . get_string('course') . ': ' . $coursename;
-            }
-            $respinfo .= $groupname;
-            $respinfo .= $timesubmitted;
-            $this->page->add_to_page(
-                'respondentinfo',
-                $this->renderer->respondent_info($respinfo)
-            );
-        }
-
-        if ($this->questionnaire->capabilities()->can_print_blank() && $blankquestionnaire && $section == 1) {
-            $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
-            $title = get_string('printblanktooltip', 'questionnaire');
-            $url = '/mod/questionnaire/print.php?qid=' . $this->questionnaire->id() .
-                   '&amp;rid=0&amp;courseid=' . $this->questionnaire->course()->id . '&amp;sec=1';
-            $options = [
-                'menubar'    => true,
-                'location'   => false,
-                'scrollbars' => true,
-                'resizable'  => true,
-                'height'     => 600,
-                'width'      => 800,
-                'title'      => $title,
-            ];
-            $name = 'popup';
-            $link = new \moodle_url($url);
-            $action = new \popup_action('click', $link, $name, $options);
-            $class = "floatprinticon";
-            $this->page->add_to_page(
-                'printblank',
-                $this->renderer->action_link(
-                    $link,
-                    $linkname,
-                    $action,
-                    ['class' => $class, 'title' => $title],
-                    new \pix_icon('t/print', $title)
-                )
-            );
-        }
-        if ($section == 1) {
-            $survey = $this->questionnaire->survey();
-            if ($survey->title() !== '') {
-                $this->page->add_to_page('title', format_string($survey->title()));
-            }
-            if ($survey->subtitle() !== '') {
-                $this->page->add_to_page('subtitle', format_string($survey->subtitle()));
-            }
-            if ($survey->info() !== '') {
-                $infotext = file_rewrite_pluginfile_urls(
-                    $survey->info(),
-                    'pluginfile.php',
-                    $this->questionnaire->context()->id,
-                    'mod_questionnaire',
-                    'info',
-                    $this->questionnaire->surveyid()
-                );
-                $this->page->add_to_page('addinfo', format_text($infotext, FORMAT_HTML, ['noclean' => true]));
-            }
-        }
-
-        if ($message) {
-            $this->page->add_to_page(
-                'message',
-                $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR)
-            );
-        }
     }
 
     /**

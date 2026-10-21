@@ -29,10 +29,7 @@
     * heading - string: HTML of the page heading.
     * formstart - string: Form start HTML.
     * notifications - string: HTML of any notifications loaded.
-    * title - string: Text title of the questionnaire.
-    * printblank - string: HTML of optional print blank questionnaire control.
-    * subtitle - string: Optional text subtitle.
-    * addinfo - string: Optional HTML additional information.
+    * surveyheader - object: survey_header export, rendered by the mod_questionnaire/survey_header partial.
     * message - string: Any message HTML text.
     * questions - array: Array of questions HTML.
     * formend - string: Form end HTML.
@@ -43,10 +40,11 @@
         "heading": "HTML of the page heading",
         "formstart": "<form id=\"formid\" method=\"post\" action=\"index.php\">",
         "notifications": "<div>Notification one</div>",
-        "title": "Test Questionnaire",
-        "printblank": "<div>HTML of the print blank control.</div>",
-        "subtitle": "This is a subtitle",
-        "addinfo": "<div>This is additional information.</div>",
+        "surveyheader": {
+            "title": "Test Questionnaire",
+            "subtitle": "This is a subtitle",
+            "info": "<div>This is additional information.</div>"
+        },
         "message": "<div>This is a message.</div>",
         "questions": [
             "<div>Question 1 HTML</div>",
@@ -61,9 +59,7 @@
     {{{formstart}}}
     {{#notifications}}{{{.}}}{{/notifications}}
     <div class="box generalbox">
-        <h3 class="surveyTitle">{{{title}}}</h3>{{{printblank}}}
-        {{#subtitle}}<h4 class="surveySubTitle">{{.}}</h4>{{/subtitle}}
-        {{#addinfo}}<div class="addInfo">{{{.}}}</div>{{/addinfo}}
+        {{#surveyheader}}{{> mod_questionnaire/survey_header}}{{/surveyheader}}
         {{#message}}{{{.}}}{{/message}}
         {{#questions}}{{{.}}}{{/questions}}
     </div>

@@ -152,14 +152,6 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Render the respondent information line.
-     * @param string $text The respondent information.
-     */
-    public function respondent_info($text) {
-        return \html_writer::tag('span', $text, ['class' => 'respondentinfo']);
-    }
-
-    /**
      * Render the completion form start HTML.
      * @param string $action The action URL.
      * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
