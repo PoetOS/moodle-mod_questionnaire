@@ -69,92 +69,20 @@ $PAGE->set_title(format_string($questionnaire->name()));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
-$page = new viewpage();
 
-// No need to print out intro or name in Moodle 4 and above.
-$cm = $questionnaire->coursemodule();
-$currentgroupid = groups_get_activity_group($cm);
+$currentgroupid = groups_get_activity_group($questionnaire->coursemodule());
 if (!groups_is_member($currentgroupid, $USER->id)) {
     $currentgroupid = 0;
 }
-
-$message = $questionnaire->user_access_messages($USER->id);
-if ($message !== null) {
-    $page->add_to_page('message', $message);
-} else if ($questionnaire->capabilities()->user_can_take($USER->id)) {
-    if ($questionnaire->questions()) { // Sanity check.
-        if (!$questionnaire->user_has_saved_response($USER->id)) {
-            $page->add_to_page(
-                'complete',
-                '<a href="' . $CFG->wwwroot .
-                    htmlspecialchars('/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->coursemodule()->id) .
-                    '" class="btn btn-primary">' . get_string('answerquestions', 'questionnaire') . '</a>'
-            );
-        } else {
-            $resumesurvey = get_string('resumesurvey', 'questionnaire');
-            $page->add_to_page(
-                'complete',
-                '<a href="' .
-                    $CFG->wwwroot . htmlspecialchars(
-                        '/mod/questionnaire/complete.php?' . 'id=' . $questionnaire->coursemodule()->id . '&resume=1'
-                    ) .
-                    '" title="' . $resumesurvey . '" class="btn btn-primary">' . $resumesurvey . '</a>'
-            );
-        }
-    } else {
-        $page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
-    }
-}
-
-if ($questionnaire->capabilities()->can_edit_questions() && !$questionnaire->questions() && $questionnaire->is_active()) {
-    $page->add_to_page(
-        'complete',
-        '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/questions.php?' .
-            'id=' . $questionnaire->coursemodule()->id) . '" class="btn btn-primary">' .
-            get_string('addquestions', 'questionnaire') . '</a>'
-    );
-}
-
-// Time zone message (if required).
-if ($message === null && $questionnaire->is_open() && !$questionnaire->is_closed()) {
-    $info = $questionnaire->view_information();
-    $page->add_to_page('info', $questionnaire->access_messages($info));
-}
-
+$guestcancelurl = null;
 if (isguestuser()) {
-    $guestno = html_writer::tag('p', get_string('noteligible', 'questionnaire'));
-    $liketologin = html_writer::tag('p', get_string('liketologin'));
-    $page->add_to_page(
-        'guestuser',
-        $renderer->confirm($guestno . "\n\n" . $liketologin . "\n", get_login_url(), get_local_referer(false))
-    );
+    $referer = get_local_referer(false);
+    $guestcancelurl = $referer
+        ? new moodle_url($referer)
+        : new moodle_url('/course/view.php', ['id' => $questionnaire->courseid()]);
 }
 
-$usernumresp = $questionnaire->count_submissions($USER->id);
-
-if ($questionnaire->capabilities()->can_read_own_responses() && ($usernumresp > 0)) {
-    $argstr = 'instance=' . $questionnaire->id() . '&user=' . $USER->id;
-    if ($usernumresp > 1) {
-        $titletext = get_string('viewyourresponses', 'questionnaire', $usernumresp);
-    } else {
-        $titletext = get_string('yourresponse', 'questionnaire');
-        $argstr .= '&byresponse=1&action=vresp';
-    }
-    $page->add_to_page(
-        'yourresponse',
-        '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr) .
-            '" class="btn btn-primary">' . $titletext . '</a>'
-    );
-}
-
-if ($questionnaire->capabilities()->can_view_all_responses($usernumresp)) {
-    $argstr = 'instance=' . $questionnaire->id() . '&group=' . $currentgroupid;
-    $page->add_to_page(
-        'allresponses',
-        '<a href="' . $CFG->wwwroot . htmlspecialchars('/mod/questionnaire/report.php?' . $argstr) .
-            '" class="btn btn-primary">' . get_string('viewallresponses', 'questionnaire') . '</a>'
-    );
-}
+$page = new viewpage($questionnaire, $USER->id, (int)$currentgroupid, $guestcancelurl);
 
 echo $renderer->header();
 echo $renderer->render($page);

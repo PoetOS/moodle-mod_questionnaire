@@ -630,20 +630,6 @@ class questionnaire {
     }
 
     /**
-     * Render an array of info messages as HTML paragraphs.
-     *
-     * @param array $messages
-     * @return string
-     */
-    public function access_messages(array $messages): string {
-        $output = '';
-        foreach ($messages as $message) {
-            $output .= \html_writer::tag('p', $message) . "\n";
-        }
-        return $output;
-    }
-
-    /**
      * Return a human-readable message explaining why the user cannot access this questionnaire,
      * or null if access is permitted.
      *

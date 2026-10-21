@@ -466,19 +466,6 @@ td.selected {
     color: var(--bs-secondary-color, gray);
 }
 
-/* View page. */
-
-.mod_questionnaire_flex-container {
-    display: inline-flex;
-}
-
-#page-mod-questionnaire-view .mod_questionnaire_viewpage div.complete,
-#page-mod-questionnaire-view .mod_questionnaire_viewpage div.yourresponse,
-#page-mod-questionnaire-view .mod_questionnaire_viewpage div.allresponses {
-    flex-grow: 1;
-    margin-right: 10px;
-}
-
 /* Rate (scale) question table. */
 
 .path-mod-questionnaire .questionnaire-rate th {

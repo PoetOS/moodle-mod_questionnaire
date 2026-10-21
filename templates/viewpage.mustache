@@ -17,7 +17,8 @@
 {{!
     @template mod_questionnaire/viewpage
 
-    Template which defines a questionnaire view page.
+    The questionnaire landing page: access message, action buttons, open/close information
+    and the log-in prompt for guests.
 
     Classes required for JS:
     * none
@@ -26,35 +27,45 @@
     * none
 
     Context variables required for this template:
-    * questionnairename - string: The name of the questionnaire (no HTML).
-    * intro - string: The intro text (may have HTML).
-    * message - string: Any message text.
-    * complete - string: The text and link to complete the questionnaire.
-    * guestuser - string: Any content for a guest user.
-    * yourresponse - string: Content for responses by you.
-    * allresponses - string: Content for responses by other users.
+    * message - string|null: Why the user cannot answer, or that there are no questions (plain text).
+    * hasactions - bool: Whether any action buttons are offered.
+    * actions - array: Action buttons, each with url and label.
+    * hasinfo - bool: Whether any information lines are shown.
+    * info - array: Attempts allowed / opened at / closes at lines (plain text).
+    * guestconfirm - string|null: Rendered log-in confirmation for guests (HTML).
 
     Example context (json):
     {
-        "questionnairename": "Questionnaire One",
-        "intro": "HTML of the intro text.",
-        "message": "HTML of the message text.",
-        "complete": "HTML of the completion notice and link.",
-        "info": "HTML of the info text.",
-        "guestuser": "HTML of guest user content.",
-        "yourresponse": "HTML for your responses link.",
-        "allresponses": "HTML for all responses link."
+        "message": null,
+        "hasactions": true,
+        "actions": [
+            {"url": "https://example.com/mod/questionnaire/complete.php?id=2", "label": "Answer the questions..."},
+            {"url": "https://example.com/mod/questionnaire/report.php?instance=1&group=0", "label": "View all responses"}
+        ],
+        "hasinfo": true,
+        "info": ["Attempts allowed: once", "Closes at Friday, 30 October 2026, 5:00 PM"],
+        "guestconfirm": null
     }
-    }}
+}}
 <div class="mod_questionnaire_viewpage">
-    <h2>{{questionnairename}}</h2>
-    {{#intro}}<div class="intro">{{{intro}}}</div>{{/intro}}
-    {{#message}}<div class="message">{{{message}}}</div>{{/message}}
-    <div class="mod_questionnaire_flex-container">
-        {{#complete}}<div class="complete">{{{complete}}}</div>{{/complete}}
-        {{#guestuser}}<div class="guestuser">{{{guestuser}}}</div>{{/guestuser}}
-        {{#yourresponse}}<div class="yourresponse">{{{yourresponse}}}</div>{{/yourresponse}}
-        {{#allresponses}}<div class="allresponses">{{{allresponses}}}</div>{{/allresponses}}
+    {{#message}}
+    <div class="message mb-3">{{message}}</div>
+    {{/message}}
+    {{#guestconfirm}}
+    <div class="guestuser mb-3">{{{guestconfirm}}}</div>
+    {{/guestconfirm}}
+    {{#hasactions}}
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        {{#actions}}
+        <a href="{{url}}" class="btn btn-primary">{{label}}</a>
+        {{/actions}}
     </div>
-    {{#info}}<div class="info">{{{info}}}</div>{{/info}}
+    {{/hasactions}}
+    {{#hasinfo}}
+    <ul class="info list-unstyled">
+        {{#info}}
+        <li>{{.}}</li>
+        {{/info}}
+    </ul>
+    {{/hasinfo}}
 </div>
