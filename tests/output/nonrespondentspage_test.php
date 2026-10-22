@@ -166,6 +166,37 @@ final class nonrespondentspage_test extends \advanced_testcase {
     }
 
     /**
+     * A viewer without the message capability sees the list but no form, select buttons or recipient choice.
+     */
+    public function test_list_without_message_capability(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $questionnaire = $this->build_questionnaire('fullname', true);
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
+        assign_capability('mod/questionnaire:message', CAP_PROHIBIT, $roleid, $questionnaire->context()->id);
+        $table = new nonrespondents_table($questionnaire, new moodle_url('/mod/questionnaire/show_nonrespondents.php'));
+        $table->setup();
+        $student = $this->getDataGenerator()->create_and_enrol($this->course, 'student', ['firstname' => 'Pat']);
+        $table->add_user($DB->get_record('user', ['id' => $student->id]), false);
+
+        $page = new nonrespondentspage($questionnaire, 1);
+        $page->set_table($table, true);
+        $data = $page->export_for_template($this->renderer());
+        $html = $this->renderer()->render_from_template('mod_questionnaire/nonrespondentspage', $data);
+
+        $this->assertNotEmpty($data->table);
+        $this->assertFalse($data->canmessage);
+        $this->assertFalse($data->selectbuttons);
+        $this->assertFalse($data->statusbuttons);
+        $this->assertEmpty($data->recipients);
+        $this->assertStringContainsString('id="showentrytable"', $html);
+        $this->assertStringContainsString('Pat', $html);
+        $this->assertStringNotContainsString('usercheckbox', $html);
+        $this->assertStringNotContainsString('questionnaire_sendmessageform', $html);
+        $this->assertStringNotContainsString('id="checkall"', $html);
+    }
+
+    /**
      * set_submission() redisplays the subject, message and error.
      */
     public function test_submission_is_redisplayed(): void {
