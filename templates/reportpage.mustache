@@ -31,12 +31,14 @@
     * myheaders - string: HTML of the page header.
     * navigationbar - string: HTML of the response navigation controls.
     * respondentinfo - string: HTML of any specific response/respondent information.
+    * responsecount - object|null: label and count (plain text) of the responses summarised.
     * surveyheader - object: survey_header export, rendered by the mod_questionnaire/survey_header partial.
     * feedbackcharts - string: HTML of any chart displays.
     * feedbackscores - string: HTML of any feedback scores.
     * feedbackmessages - string: HTML of any feedback messages.
     * feedbacknotes - string: HTML of any feedback notes.
     * responses - array: Array of responses HTML.
+    * questionresults - array: Results summary per question: qnum (int|null), qcontent and results (HTML).
     * bottomnavigationbar - string: HTML of the bottom response navigation controls.
 
     Example context (json):
@@ -46,6 +48,7 @@
         "myheaders": "HTML of the page header.",
         "navigationbar": "<div>HTML of the navigation bar.</div>",
         "respondentinfo": "<div>This is respondent information HTML</div>",
+        "responsecount": {"label": "Responses", "count": "2 (Submissions: 2 | In progress: 0)"},
         "surveyheader": {
             "title": "Test Questionnaire",
             "subtitle": "This is a subtitle",
@@ -59,6 +62,9 @@
             "Response 1 HTML",
             "Response 2 HTML"
         ],
+        "questionresults": [
+            {"qnum": 1, "qcontent": "<p>Do you own a car?</p>", "results": "<div>Results HTML</div>"}
+        ],
         "bottomnavigationbar": "Navigation bar HTML"
     }
     }}
@@ -69,6 +75,7 @@
         {{#myheaders}}<h2>{{{.}}}</h2>{{/myheaders}}
         {{#navigationbar}}<div class="box respondentsnavbar">{{{.}}}</div>{{/navigationbar}}
         {{{respondentinfo}}}
+        {{#responsecount}}<span class="responsecount">{{label}}: <strong>{{count}}</strong></span>{{/responsecount}}
         {{#surveyheader}}{{> mod_questionnaire/survey_header}}{{/surveyheader}}
         {{#feedbackcharts}}{{{.}}}{{/feedbackcharts}}
         {{#feedbackscores}}{{{.}}}{{/feedbackscores}}
@@ -78,6 +85,15 @@
         {{/feedbackmessages}}
         {{#feedbacknotes}}{{{.}}}{{/feedbacknotes}}
         {{#responses}}{{{.}}}{{/responses}}
+        {{#questionresults}}
+        <div class="qn-container">
+            {{#qnum}}<div class="qn-info"><h2 class="qn-number">{{.}}</h2></div>{{/qnum}}
+            <div class="qn-content">
+                <div class="qn-question">{{{qcontent}}}</div>
+                {{{results}}}
+            </div>
+        </div>
+        {{/questionresults}}
         {{#bottomnavigationbar}}<div class="box respondentsnavbar">{{{.}}}</div>{{/bottomnavigationbar}}
         {{#printparam}}
             <button id="print-button" class="btn btn-primary" title="{{#str}}print, mod_questionnaire{{/str}}">

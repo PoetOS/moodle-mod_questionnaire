@@ -45,11 +45,11 @@ class reportpage implements \renderable, \templatable {
 
     /**
      * Add data for export.
-     * @param string $element The index for the data.
-     * @param string $content The content for the index.
+     * @param string $element The index for the data; 'responses' and 'questionresults' collect a list.
+     * @param mixed $content The content for the index.
      */
     public function add_to_page($element, $content) {
-        if ($element === 'responses') {
+        if (in_array($element, ['responses', 'questionresults'])) {
             $this->data->{$element}[] = $content;
         } else {
             $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);

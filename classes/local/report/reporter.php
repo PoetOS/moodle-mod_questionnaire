@@ -119,11 +119,15 @@ class reporter {
     /**
      * Render aggregate survey results into the page object.
      *
+     * Adds the response count (responsecount) and one entry per question (questionresults) with its number, text and
+     * rendered results; the HTML and PDF report templates lay them out.
+     *
      * @param array|string $rids Response id(s) to show ('' or [] = all responses).
      * @param int|false $uid User id filter (false = all users).
      * @param bool $pdf True when rendering to PDF.
      * @param string $currentgroupid Active group filter ('0' or a group id).
      * @param string $sort Column sort direction for results tables.
+     * @param string $userview The 'responsestats' filter: '' or '0' for all responses, 'y' submitted, 'n' in progress.
      * @return void
      */
     public function survey_results(
@@ -131,21 +135,17 @@ class reporter {
         $uid = false,
         bool $pdf = false,
         string $currentgroupid = '',
-        string $sort = ''
+        string $sort = '',
+        string $userview = ''
     ): void {
-        global $DB;
-
-        $survey = $this->questionnaire->survey();
         $questions = $this->questionnaire->questions();
-
-        if (empty($survey) || empty($questions)) {
+        if (empty($this->questionnaire->survey()) || empty($questions)) {
             return;
         }
 
         if (!empty($rids)) {
             $ridlist = $rids;
         } else {
-            $userview = optional_param('responsestats', 0, PARAM_ALPHA);
             if ($uid !== false) {
                 $rows = $this->questionnaire->get_responses($uid);
             } else if ($currentgroupid == 0) {
@@ -163,39 +163,8 @@ class reporter {
                 );
                 return;
             }
-            $numresps = count($rows);
-            $respondentstring = get_string('responses', 'questionnaire');
-            if ($userview === 'y') {
-                $respondentstring = get_string('submissions', 'questionnaire');
-            }
-            if (!$userview) {
-                $completedcount = 0;
-                $inprogresscount = 0;
-                foreach ($rows as $row) {
-                    if ($row->complete === 'y') {
-                        $completedcount++;
-                    } else if ($row->complete === 'n') {
-                        $inprogresscount++;
-                    }
-                }
-                $numresps .= ' ' . get_string(
-                    'responses_breakdown',
-                    'questionnaire',
-                    [
-                        'responses'  => $completedcount,
-                        'incomplete' => $inprogresscount,
-                    ]
-                );
-            }
-            $respondentinfo = ' ' . $respondentstring . ': <strong>' . $numresps . '</strong>';
-            $this->page->add_to_page('respondentinfo', $respondentinfo);
-            if (empty($rows)) {
-                return;
-            }
-            $ridlist = [];
-            foreach ($rows as $row) {
-                $ridlist[] = $row->id;
-            }
+            $this->page->add_to_page('responsecount', $this->response_count($rows, $userview));
+            $ridlist = array_values(array_map(fn($row) => $row->id, $rows));
         }
 
         $this->page->add_to_page(
@@ -203,12 +172,12 @@ class reporter {
             survey_header::for_survey($this->questionnaire)->export_for_template($this->renderer)
         );
 
-        $qnum = 0;
         $anonymous = $this->questionnaire->respondenttype() == 'anonymous';
-
+        $groupid = is_numeric($currentgroupid) ? (int)$currentgroupid : null;
         $viewsingleresponse = $this->questionnaire->capabilities()->can_view_single_response();
         $respondenttype = $this->questionnaire->respondenttype();
         $surveyid = $this->questionnaire->surveyid();
+        $qnum = 0;
         foreach ($questions as $question) {
             if (isset($question->responsetype) && is_object($question->responsetype)) {
                 $question->responsetype->set_display_context($viewsingleresponse, $respondenttype, $surveyid);
@@ -219,97 +188,11 @@ class reporter {
             if ($question->is_numbered()) {
                 $qnum++;
             }
-            $displaycontent = $question->content();
-            if ($displaycontent == '<p>  </p>') {
-                $displaycontent = '';
-            }
-            if ($pdf) {
-                $response = new stdClass();
-                if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
-                    $response->qnum = $qnum;
-                }
-                $response->qcontent = format_text(
-                    file_rewrite_pluginfile_urls(
-                        $displaycontent,
-                        'pluginfile.php',
-                        $question->context->id,
-                        'mod_questionnaire',
-                        'question',
-                        $question->id()
-                    ),
-                    FORMAT_HTML,
-                    ['noclean' => true]
-                );
-                $response->results = $this->renderer->results_output(
-                    $question,
-                    $ridlist,
-                    $sort,
-                    $anonymous,
-                    $pdf,
-                    is_numeric($currentgroupid) ? (int) $currentgroupid : null
-                );
-                $this->page->add_to_page('responses', $response);
-            } else {
-                $this->page->add_to_page(
-                    'responses',
-                    $this->renderer->container_start('qn-container')
-                );
-                if ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) {
-                    $this->page->add_to_page(
-                        'responses',
-                        $this->renderer->container_start('qn-info')
-                    );
-                    $this->page->add_to_page(
-                        'responses',
-                        $this->renderer->heading($qnum, 2, 'qn-number')
-                    );
-                    $this->page->add_to_page(
-                        'responses',
-                        $this->renderer->container_end()
-                    );
-                }
-                $this->page->add_to_page(
-                    'responses',
-                    $this->renderer->container_start('qn-content')
-                );
-                $this->page->add_to_page(
-                    'responses',
-                    $this->renderer->container(
-                        format_text(
-                            file_rewrite_pluginfile_urls(
-                                $displaycontent,
-                                'pluginfile.php',
-                                $question->context->id,
-                                'mod_questionnaire',
-                                'question',
-                                $question->id()
-                            ),
-                            FORMAT_HTML,
-                            ['noclean' => true]
-                        ),
-                        'qn-question'
-                    )
-                );
-                $this->page->add_to_page(
-                    'responses',
-                    $this->renderer->results_output(
-                        $question,
-                        $ridlist,
-                        $sort,
-                        $anonymous,
-                        false,
-                        is_numeric($currentgroupid) ? (int) $currentgroupid : null
-                    )
-                );
-                $this->page->add_to_page(
-                    'responses',
-                    $this->renderer->container_end()
-                );
-                $this->page->add_to_page(
-                    'responses',
-                    $this->renderer->container_end()
-                );
-            }
+            $this->page->add_to_page('questionresults', [
+                'qnum' => ($this->questionnaire->questions_autonumbered() && $question->is_numbered()) ? $qnum : null,
+                'qcontent' => $this->question_text($question),
+                'results' => $this->renderer->results_output($question, $ridlist, $sort, $anonymous, $pdf, $groupid),
+            ]);
         }
     }
 
@@ -1183,6 +1066,52 @@ class reporter {
     private function responsecollection(): questionnaire_responses {
         $this->responsecollection ??= $this->questionnaire->responses();
         return $this->responsecollection;
+    }
+
+    /**
+     * The response count line of the results summary.
+     *
+     * All responses (no userview filter) also break the count down into submitted and in progress.
+     *
+     * @param stdClass[] $rows Response rows with a complete flag ('y' or 'n').
+     * @param string $userview The 'responsestats' filter.
+     * @return array label and count (plain text).
+     */
+    private function response_count(array $rows, string $userview): array {
+        $count = (string)count($rows);
+        if (!$userview) {
+            $complete = array_count_values(array_map(fn($row) => $row->complete, $rows));
+            $count .= ' ' . get_string('responses_breakdown', 'questionnaire', [
+                'responses' => $complete['y'] ?? 0,
+                'incomplete' => $complete['n'] ?? 0,
+            ]);
+        }
+        return [
+            'label' => get_string(($userview === 'y') ? 'submissions' : 'responses', 'questionnaire'),
+            'count' => $count,
+        ];
+    }
+
+    /**
+     * A question's text, formatted for the results summary; a blank question (two non-breaking spaces) shows nothing.
+     *
+     * @param question $question
+     * @return string
+     */
+    private function question_text(question $question): string {
+        $content = $question->content();
+        if ($content == '<p>  </p>') {
+            return '';
+        }
+        $content = file_rewrite_pluginfile_urls(
+            $content,
+            'pluginfile.php',
+            $question->context->id,
+            'mod_questionnaire',
+            'question',
+            $question->id()
+        );
+        return format_text($content, FORMAT_HTML, ['noclean' => true]);
     }
 
     /**

@@ -179,7 +179,7 @@ class report_viewer {
             $respinfo .= $strsort;
             $page->add_to_page('respondentinfo', $respinfo);
             $this->questionnaire->reporter($this->renderer, $page)
-                ->survey_results('', false, true, $currentgroupid, $sort);
+                ->survey_results('', false, true, $currentgroupid, $sort, $userview);
             $html = $this->renderer->render($page);
 
             // Suppress warnings: TCPF library bug at line 16749 where 'text-align' is not an array.
@@ -244,7 +244,7 @@ class report_viewer {
         }
 
         $this->questionnaire->reporter($this->renderer, $page)
-            ->survey_results('', false, false, $currentgroupid, $sort);
+            ->survey_results('', false, false, $currentgroupid, $sort, $userview);
 
         echo $this->renderer->header();
         echo $this->renderer->render($page);

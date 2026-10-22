@@ -390,23 +390,107 @@ final class reporter_test extends \advanced_testcase {
     }
 
     /**
-     * survey_results() with completed responses populates a respondent-count header.
+     * survey_results() over all responses counts them, broken down into submitted and in progress.
      */
-    public function test_survey_results_with_responses_renders_header(): void {
+    public function test_survey_results_counts_responses(): void {
+        global $PAGE;
+        [$questionnaire, $studentid] = $this->setup_fixture();
+        $this->seed_complete_response($questionnaire, $studentid);
+        $other = $this->getDataGenerator()->create_and_enrol($questionnaire->course(), 'student');
+        $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')
+            ->generate_response($questionnaire, $questionnaire->questions(), $other->id, false);
+
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        [$reporter, $page] = $this->build_reporter($questionnaire);
+        $reporter->survey_results();
+
+        $data = $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
+        $breakdown = get_string('responses_breakdown', 'questionnaire', ['responses' => 1, 'incomplete' => 1]);
+        $this->assertEquals(
+            ['label' => get_string('responses', 'questionnaire'), 'count' => '2 ' . $breakdown],
+            $data->responsecount
+        );
+        $this->assertObjectNotHasProperty('respondentinfo', $data);
+    }
+
+    /**
+     * survey_results() filtered to submissions labels the count as submissions, without a breakdown.
+     */
+    public function test_survey_results_counts_submissions(): void {
+        global $PAGE;
         [$questionnaire, $studentid] = $this->setup_fixture();
         $this->seed_complete_response($questionnaire, $studentid);
 
         $questionnaire = questionnaire::from_instanceid($questionnaire->id());
         [$reporter, $page] = $this->build_reporter($questionnaire);
+        $reporter->survey_results('', false, false, '0', '', 'y');
 
+        $data = $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
+        $this->assertEquals(['label' => get_string('submissions', 'questionnaire'), 'count' => '1'], $data->responsecount);
+    }
+
+    /**
+     * survey_results() adds one entry per question with its number, formatted text and results.
+     */
+    public function test_survey_results_adds_question_results(): void {
+        global $PAGE;
+        [$questionnaire, $studentid] = $this->setup_fixture();
+        $this->seed_complete_response($questionnaire, $studentid);
+
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        [$reporter, $page] = $this->build_reporter($questionnaire);
         $reporter->survey_results();
 
-        global $PAGE;
-        $data = $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
-        $this->assertObjectHasProperty('respondentinfo', $data);
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $data = $page->export_for_template($renderer);
+        $this->assertCount(1, $data->questionresults);
+        $this->assertEquals(1, $data->questionresults[0]['qnum']);
+        $this->assertStringContainsString('Yes or no?', $data->questionresults[0]['qcontent']);
+        $this->assertIsString($data->questionresults[0]['results']);
+        $this->assertObjectHasProperty('surveyheader', $data);
+
+        $html = $renderer->render($page);
+        $this->assertStringContainsString('<h2 class="qn-number">1</h2>', $html);
+        $this->assertStringContainsString('<div class="qn-question">Yes or no?</div>', $html);
         $this->assertStringContainsString(
-            get_string('responses', 'questionnaire'),
-            $data->respondentinfo
+            get_string('responses', 'questionnaire') . ': <strong>1 ',
+            $html
         );
+    }
+
+    /**
+     * The PDF report template lays out the same response count and question results.
+     */
+    public function test_survey_results_pdf(): void {
+        global $PAGE;
+        [$questionnaire, $studentid] = $this->setup_fixture();
+        $this->seed_complete_response($questionnaire, $studentid);
+
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new \mod_questionnaire\output\reportpagepdf();
+        (new reporter($questionnaire, $renderer, $page))->survey_results('', false, true, '0');
+
+        $html = $renderer->render($page);
+        $this->assertStringContainsString(get_string('responses', 'questionnaire') . ': <strong>1 ', $html);
+        $this->assertStringContainsString('font-size: large;">1</span>', $html);
+        $this->assertStringContainsString('Yes or no?', $html);
+    }
+
+    /**
+     * Without question autonumbering, the results entries carry no number.
+     */
+    public function test_survey_results_without_autonumbering(): void {
+        global $DB, $PAGE;
+        [$questionnaire, $studentid] = $this->setup_fixture();
+        $this->seed_complete_response($questionnaire, $studentid);
+        $DB->set_field('questionnaire', 'autonum', 0, ['id' => $questionnaire->id()]);
+
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        [$reporter, $page] = $this->build_reporter($questionnaire);
+        $reporter->survey_results();
+
+        $data = $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
+        $this->assertNull($data->questionresults[0]['qnum']);
     }
 }
