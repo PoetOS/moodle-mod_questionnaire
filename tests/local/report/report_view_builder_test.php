@@ -124,6 +124,34 @@ final class report_view_builder_test extends \advanced_testcase {
     }
 
     /**
+     * The preview page's survey header carries the print-blank link; the blank print view's header does not.
+     *
+     * The link must be in the header itself: the old page-level printblank key only showed through Mustache 2's
+     * fallback to the parent context for a null header field, which Mustache 3 (Moodle 5.2) no longer does.
+     */
+    public function test_build_print_view_print_blank_link(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, ] = $this->build_fixture();
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+
+        $page = new previewpage();
+        (new report_view_builder($renderer, $page))
+            ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, false);
+        $data = $this->page_data($page);
+        $this->assertStringContainsString('/mod/questionnaire/print.php', $data->surveyheader->printblank);
+        $this->assertObjectNotHasProperty('printblank', $data);
+        $this->assertStringContainsString(get_string('printblank', 'questionnaire'), $renderer->render($page));
+
+        $page = new previewpage();
+        (new report_view_builder($renderer, $page))
+            ->build_print_view($instance, $instance->courseid(), '', 'print', 0, true);
+        $this->assertNull($this->page_data($page)->surveyheader->printblank);
+    }
+
+    /**
      * build_print_view() writes the survey title via the shared header helper.
      */
     public function test_build_print_view_writes_title(): void {

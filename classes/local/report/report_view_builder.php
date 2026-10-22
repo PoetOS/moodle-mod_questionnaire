@@ -127,7 +127,8 @@ class report_view_builder {
             }
         }
 
-        $this->build_header($q, $message, 1, '');
+        // The preview page offers the print-blank link; the blank print view itself does not.
+        $this->build_header($q, $message, 1, '', $referer == 'preview');
 
         if (($referer == 'preview') && $q->has_dependencies()) {
             $allqdependants = $q->navigator()->get_dependants_and_choices();

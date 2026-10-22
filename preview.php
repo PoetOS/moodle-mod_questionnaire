@@ -54,7 +54,6 @@ if ($id) {
     }
 }
 $canpreview = $questionnaire->capabilities()->can_preview();
-$canprintblank = $questionnaire->capabilities()->can_print_blank();
 
 // Check login and get context.
 // Do not require login if this questionnaire is viewed from the Add questionnaire page
@@ -99,37 +98,6 @@ $page = new \mod_questionnaire\output\previewpage();
 
 echo $renderer->header();
 $page->add_to_page('heading', clean_text($pq));
-
-if ($canprintblank) {
-    // Open print friendly as popup window.
-    $linkname = '&nbsp;' . get_string('printblank', 'questionnaire');
-    $title = get_string('printblanktooltip', 'questionnaire');
-    $url = '/mod/questionnaire/print.php?qid=' . $questionnaire->id() . '&amp;rid=0&amp;' . 'courseid=' .
-            $course->id . '&amp;sec=1';
-    $options = [
-        'menubar' => true,
-        'location' => false,
-        'scrollbars' => true,
-        'resizable' => true,
-        'height' => 600,
-        'width' => 800,
-        'title' => $title,
-    ];
-    $name = 'popup';
-    $link = new moodle_url($url);
-    $action = new popup_action('click', $link, $name, $options);
-    $class = "floatprinticon";
-    $page->add_to_page(
-        'printblank',
-        $renderer->action_link(
-            $link,
-            $linkname,
-            $action,
-            ['class' => $class, 'title' => $title],
-            new pix_icon('t/print', $title)
-        )
-    );
-}
 
 (new \mod_questionnaire\local\report\report_view_builder($renderer, $page))
     ->build_print_view($questionnaire, $course->id, '', 'preview', 0, $popup);
