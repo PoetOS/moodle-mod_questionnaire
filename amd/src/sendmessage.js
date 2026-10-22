@@ -18,8 +18,8 @@
  *
  * Replaces the legacy YUI M.mod_questionnaire.init_sendmessage callback.
  * Wires #checkall / #checknone / #checknotstarted / #checkstarted to the
- * .usercheckbox checkboxes; each checkbox's `alt` attribute holds 0 for
- * "not started" and 1 for "started".
+ * .usercheckbox checkboxes; each checkbox's `data-started` attribute holds 0
+ * for "not started" and 1 for "started".
  *
  * @module     mod_questionnaire/sendmessage
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -65,10 +65,10 @@ define([], function() {
                 return false;
             });
             bind('checknotstarted', function(box) {
-                return box.getAttribute('alt') === '0';
+                return box.dataset.started === '0';
             });
             bind('checkstarted', function(box) {
-                return box.getAttribute('alt') === '1';
+                return box.dataset.started === '1';
             });
         }
     };

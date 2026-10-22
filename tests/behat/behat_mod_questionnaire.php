@@ -75,6 +75,7 @@ class behat_mod_questionnaire extends behat_base {
      * | preview           | Questionnaire name                          | The questionnaire preview page (preview.php)          |
      * | questions         | Questionnaire name                          | The questionnaire questions page (questions.php)      |
      * | advsettings       | Questionnaire name                          | The advanced settings page (questions.php)            |
+     * | nonrespondents    | Questionnaire name                          | The non-respondents page (show_nonrespondents.php)    |
      *
      * @param string $type identifies which type of page this is, e.g. 'preview'.
      * @param string $identifier identifies the particular page, e.g. 'Test questionnaire > preview > Attempt 1'.
@@ -104,6 +105,12 @@ class behat_mod_questionnaire extends behat_base {
             case 'advsettings':
                 return new moodle_url(
                     '/mod/questionnaire/qsettings.php',
+                    ['id' => $this->get_cm_by_questionnaire_name($identifier)->id]
+                );
+
+            case 'nonrespondents':
+                return new moodle_url(
+                    '/mod/questionnaire/show_nonrespondents.php',
                     ['id' => $this->get_cm_by_questionnaire_name($identifier)->id]
                 );
 

@@ -835,11 +835,9 @@ class questionnaire_responses {
         $sql = "SELECT userid FROM {questionnaire_response}
                  WHERE questionnaireid = :questionnaireid AND complete = :complete
                  GROUP BY userid";
-        if (!$completedusers = $DB->get_records_sql($sql, $params)) {
-            return $allusers;
+        if ($completedusers = $DB->get_records_sql($sql, $params)) {
+            $allusers = array_values(array_diff($allusers, array_keys($completedusers)));
         }
-        $completedusers = array_keys($completedusers);
-        $allusers = array_diff($allusers, $completedusers);
         if (($startpage !== false) && ($pagecount !== false)) {
             $allusers = array_slice($allusers, $startpage, $pagecount);
         }

@@ -17,22 +17,124 @@
 {{!
     @template mod_questionnaire/nonrespondentspage
 
-    Template which defines a questionnaire completion page.
+    The non-respondents page: who has not submitted, and the form for messaging them.
 
     Classes required for JS:
-    * none
+    * usercheckbox - the per-user select checkboxes (mod_questionnaire/sendmessage).
 
     Data attributes required for JS:
-    * none
+    * data-started on each usercheckbox: 1 when the user has a saved response, else 0.
 
     Context variables required for this template:
-    * formarea - string: HTML of the management form.
+    * groupselect - string: Rendered group selector (HTML), or empty.
+    * empty - bool: No non-respondents.
+    * count - int: Number of non-respondents.
+    * anonymous - bool: The questionnaire is anonymous (counts only, no user list).
+    * table - string|null: Rendered user list (HTML), named questionnaires only.
+    * pagingtoggle - object|null: url and label of the show-all / show-per-page link.
+    * canmessage - bool: Show the message form.
+    * selectbuttons - bool: Show the select all / deselect all buttons.
+    * statusbuttons - bool: Show the select started / not started buttons.
+    * hasrecipients - bool: Show the anonymous recipient choice.
+    * recipients - array: value, id, label and checked for each recipient radio.
+    * error - string|null: Validation error.
+    * formaction, cmid, sesskey - form plumbing.
+    * subject, message - values to redisplay.
+    * messageid - string: Id of the message textarea (the editor attaches to it).
+    * messageformat - int: Text format of the message.
 
     Example context (json):
     {
-        "formarea": "<div>HTML of the form area</div>"
+        "groupselect": "",
+        "empty": false,
+        "count": 1,
+        "anonymous": true,
+        "table": null,
+        "pagingtoggle": null,
+        "canmessage": true,
+        "selectbuttons": false,
+        "statusbuttons": false,
+        "hasrecipients": true,
+        "recipients": [
+            {"value": "none", "id": "questionnaire_recipients_none", "label": "None", "checked": true},
+            {"value": "all", "id": "questionnaire_recipients_all", "label": "All", "checked": false}
+        ],
+        "error": null,
+        "formaction": "https://example.com/mod/questionnaire/show_nonrespondents.php",
+        "cmid": 2,
+        "sesskey": "abc123",
+        "subject": "",
+        "message": "",
+        "messageid": "questionnaire_message",
+        "messageformat": 1
     }
-    }}
-<div class="mod_questionnaire_nonrespondentspage generalbox">
-    {{{formarea}}}
+}}
+<div class="mod_questionnaire_nonrespondentspage">
+    {{{groupselect}}}
+    {{#empty}}
+    <div class="alert alert-info" role="status">{{#str}} noexistingparticipants, enrol {{/str}}</div>
+    {{/empty}}
+    {{^empty}}
+    <p>
+        {{#str}} non_respondents, questionnaire {{/str}} ({{count}})
+        {{#anonymous}}[{{#str}} anonymous, questionnaire {{/str}}]{{/anonymous}}
+    </p>
+    {{#canmessage}}
+    <form action="{{formaction}}" method="post" id="questionnaire_sendmessageform">
+        <input type="hidden" name="id" value="{{cmid}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <input type="hidden" name="action" value="sendmessage">
+        <input type="hidden" name="format" value="{{messageformat}}">
+    {{/canmessage}}
+        {{{table}}}
+        {{#pagingtoggle}}
+        <div class="showall"><a href="{{url}}">{{label}}</a></div>
+        {{/pagingtoggle}}
+        {{#selectbuttons}}
+        <div class="d-flex flex-wrap gap-2 my-3">
+            <button type="button" id="checkall" class="btn btn-secondary">{{#str}} selectall {{/str}}</button>
+            <button type="button" id="checknone" class="btn btn-secondary">{{#str}} deselectall {{/str}}</button>
+            {{#statusbuttons}}
+            <button type="button" id="checkstarted" class="btn btn-secondary">{{#str}} checkstarted, questionnaire {{/str}}</button>
+            <button type="button" id="checknotstarted" class="btn btn-secondary">{{#str}} checknotstarted, questionnaire {{/str}}</button>
+            {{/statusbuttons}}
+        </div>
+        {{/selectbuttons}}
+    {{#canmessage}}
+        {{#hasrecipients}}
+        <fieldset class="mb-3">
+            <legend class="h5">{{#str}} send_message_to, questionnaire {{/str}}</legend>
+            {{#recipients}}
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="selectedanonymous" value="{{value}}" id="{{id}}"{{#checked}} checked{{/checked}}>
+                <label class="form-check-label" for="{{id}}">{{label}}</label>
+            </div>
+            {{/recipients}}
+        </fieldset>
+        {{/hasrecipients}}
+        <fieldset>
+            <legend class="h5">{{#str}} send_message, questionnaire {{/str}}</legend>
+            {{#error}}
+            <div class="alert alert-danger" role="alert">{{.}}</div>
+            {{/error}}
+            <div class="mb-3">
+                <label for="questionnaire_subject" class="form-label">{{#str}} subject, questionnaire {{/str}}</label>
+                <input type="text" id="questionnaire_subject" class="form-control" maxlength="255" name="subject" value="{{subject}}">
+            </div>
+            <div class="mb-3">
+                <label for="{{messageid}}" class="form-label">{{#str}} messagebody {{/str}}</label>
+                <textarea id="{{messageid}}" name="message" class="form-control" rows="10" cols="60">{{message}}</textarea>
+            </div>
+            <button type="submit" name="send_message" class="btn btn-primary">{{#str}} send, questionnaire {{/str}}</button>
+        </fieldset>
+    </form>
+    {{/canmessage}}
+    {{/empty}}
 </div>
+{{#canmessage}}
+{{#js}}
+    require(['mod_questionnaire/sendmessage'], function(SendMessage) {
+        SendMessage.init();
+    });
+{{/js}}
+{{/canmessage}}

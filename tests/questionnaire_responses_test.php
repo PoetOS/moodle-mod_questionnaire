@@ -344,9 +344,6 @@ final class questionnaire_responses_test extends \advanced_testcase {
     /**
      * Asserts get_incomplete_users() supports paging via startpage and pagecount parameters.
      *
-     * The internal early-return path (no completions yet) skips paging, so a completed
-     * response must exist before the paging slice can be exercised.
-     *
      * @covers \mod_questionnaire\local\response\questionnaire_responses::get_incomplete_users
      */
     public function test_get_incomplete_users_supports_paging(): void {
@@ -368,7 +365,7 @@ final class questionnaire_responses_test extends \advanced_testcase {
             $students[] = $student;
         }
 
-        // One student completes — triggers the completion-check path that applies paging.
+        // One student completes, leaving four non-respondents to page through.
         $DB->insert_record('questionnaire_response', (object)[
             'questionnaireid' => $questionnaire->id(),
             'userid' => $students[0]->id,
@@ -387,6 +384,35 @@ final class questionnaire_responses_test extends \advanced_testcase {
         $this->assertIsArray($page1);
         $this->assertCount(2, $page1);
         // No overlap between pages.
+        $this->assertEmpty(array_intersect($page0, $page1));
+    }
+
+    /**
+     * Asserts get_incomplete_users() pages the list even when nobody has completed yet.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::get_incomplete_users
+     */
+    public function test_get_incomplete_users_pages_without_completions(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $questionnaire = $generator
+            ->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id]);
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        for ($i = 0; $i < 3; $i++) {
+            $generator->enrol_user($generator->create_user()->id, $course->id, $studentrole->id);
+        }
+
+        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id(), $course->id, false, MUST_EXIST);
+        $page0 = questionnaire_responses::get_incomplete_users($cm, $questionnaire->surveyid(), false, '', 0, 2);
+        $page1 = questionnaire_responses::get_incomplete_users($cm, $questionnaire->surveyid(), false, '', 2, 2);
+
+        $this->assertCount(2, $page0);
+        $this->assertCount(1, $page1);
         $this->assertEmpty(array_intersect($page0, $page1));
     }
 

@@ -320,6 +320,7 @@ $string['maxrange_help'] = 'Set the maximum value of the range on the right-hand
 $string['maxtextlength'] = 'Max. text length';
 $string['maxtextlength_help'] = 'For the Text Box question type, enter the Input Box length and the Maximum text length of text to be entered by respondent.
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
+$string['messagefieldsrequired'] = 'Please enter both a subject and a message.';
 $string['messageprovider:message'] = 'Questionnaire reminder';
 $string['messageprovider:notification'] = 'Questionnaire submission';
 $string['middlepart'] = ', {$a->centreval} is {$a->middlelabel}';
