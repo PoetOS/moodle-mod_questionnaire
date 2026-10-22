@@ -86,14 +86,23 @@ final class report_view_builder_test extends \advanced_testcase {
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, true);
 
         $data = $this->page_data($page);
-        $this->assertObjectHasProperty('formstart', $data);
+        $this->assertStringContainsString(
+            '/mod/questionnaire/preview.php?id=' . $instance->coursemodule()->id,
+            $data->form['action']
+        );
         $this->assertObjectHasProperty('questions', $data);
+        $this->assertObjectNotHasProperty('previewbuttons', $data);
+
+        // The form is closed even without the preview buttons.
+        $html = $renderer->render($page);
+        $this->assertStringContainsString('<form id="phpesp_response"', $html);
+        $this->assertStringContainsString('</form>', $html);
     }
 
     /**
      * build_print_view() in preview mode (not blank) appends the preview-submit form end.
      */
-    public function test_build_print_view_preview_adds_formend(): void {
+    public function test_build_print_view_preview_adds_buttons(): void {
         global $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -106,7 +115,12 @@ final class report_view_builder_test extends \advanced_testcase {
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, false);
 
         $data = $this->page_data($page);
-        $this->assertObjectHasProperty('formend', $data);
+        $this->assertEquals(get_string('submitpreview', 'questionnaire'), $data->previewbuttons['submitlabel']);
+        $this->assertEquals($data->form['action'], $data->previewbuttons['reseturl']);
+        $this->assertEquals(sesskey(), $data->previewbuttons['sesskey']);
+
+        $html = $renderer->render($page);
+        $this->assertStringContainsString('name="submit" value="' . get_string('submitpreview', 'questionnaire') . '"', $html);
     }
 
     /**

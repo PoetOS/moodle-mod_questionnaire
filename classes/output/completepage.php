@@ -45,14 +45,14 @@ class completepage implements \renderable, \templatable {
 
     /**
      * Add data for export.
-     * @param string $element The index for the data.
-     * @param string $content The content for the index.
+     * @param string $element The index for the data; 'questions' and 'links' collect a list.
+     * @param mixed $content The content for the index.
      */
     public function add_to_page($element, $content) {
-        if ($element !== 'questions') {
-            $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
-        } else {
+        if (in_array($element, ['questions', 'links'])) {
             $this->data->{$element}[] = $content;
+        } else {
+            $this->data->{$element} = empty($this->data->{$element}) ? $content : ($this->data->{$element} . $content);
         }
     }
 

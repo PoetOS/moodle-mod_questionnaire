@@ -27,18 +27,18 @@
 
     Context variables required for this template:
     * heading - string: HTML of the page heading.
-    * formstart - string: Form start HTML.
+    * form - object|null: action and hidden (name/value pairs) of the preview form.
     * notifications - string: HTML of any notifications loaded.
     * surveyheader - object: survey_header export, rendered by the mod_questionnaire/survey_header partial.
     * message - string: Any message HTML text.
     * questions - array: Array of questions HTML.
-    * formend - string: Form end HTML.
+    * previewbuttons - object|null: submitlabel, reseturl, resetlabel and sesskey for submitting a preview.
     * closebutton - string: Close button HTML.
 
     Example context (json):
     {
         "heading": "HTML of the page heading",
-        "formstart": "<form id=\"formid\" method=\"post\" action=\"index.php\">",
+        "form": {"action": "https://example.com/mod/questionnaire/preview.php?id=2", "hidden": []},
         "notifications": "<div>Notification one</div>",
         "surveyheader": {
             "title": "Test Questionnaire",
@@ -50,19 +50,46 @@
             "<div>Question 1 HTML</div>",
             "<div>Question 2 HTML</div>"
         ],
-        "formend": "</form>",
+        "previewbuttons": {
+            "submitlabel": "Submit preview",
+            "reseturl": "https://example.com/mod/questionnaire/preview.php?id=2",
+            "resetlabel": "Reset",
+            "sesskey": "abc123"
+        },
         "closebutton": "<div>close button HTML</div>"
     }
     }}
 <div class="mod_questionnaire_previewpage">
     <h2>{{{heading}}}</h2>
-    {{{formstart}}}
+    {{#form}}
+    <form id="phpesp_response" method="post" action="{{action}}">
+        {{#hidden}}
+        <input type="hidden" name="{{name}}" value="{{value}}">
+        {{/hidden}}
+    {{/form}}
     {{#notifications}}{{{.}}}{{/notifications}}
     <div class="box generalbox">
         {{#surveyheader}}{{> mod_questionnaire/survey_header}}{{/surveyheader}}
         {{#message}}{{{.}}}{{/message}}
         {{#questions}}{{{.}}}{{/questions}}
     </div>
-    {{{formend}}}
+    {{#previewbuttons}}
+    <div>
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <input type="submit" name="submit" value="{{submitlabel}}" class="btn btn-primary">
+        <a href="{{reseturl}}" class="btn btn-secondary me-1">{{resetlabel}}</a>
+    </div>
+    {{/previewbuttons}}
+    {{#form}}
+    </form>
+    {{/form}}
 </div>
 {{#closebutton}}{{{.}}}{{/closebutton}}
+{{#form}}
+{{#js}}
+    require(['mod_questionnaire/attempt_form', 'mod_questionnaire/survey_inputs'], function(AttemptForm, SurveyInputs) {
+        AttemptForm.init();
+        SurveyInputs.init();
+    });
+{{/js}}
+{{/form}}

@@ -147,62 +147,21 @@ class survey_view_builder {
             $q->add_response($formdata->rid);
         }
 
-        $formdatareferer = !empty($formdata->referer) ? htmlspecialchars($formdata->referer) : '';
-        $formdatarid = isset($formdata->rid) ? $formdata->rid : '0';
-        $this->page->add_to_page(
-            'formstart',
-            $this->renderer->complete_formstart(
-                $action,
-                [
-                    'referer' => $formdatareferer,
-                    'a' => $q->id(),
-                    'sid' => $q->surveyid(),
-                    'rid' => $formdatarid,
-                    'sec' => $formdata->sec,
-                    'end' => !empty($formdata->end) ? 1 : 0,
-                    'sesskey' => sesskey(),
-                ]
-            )
-        );
+        $this->page->add_to_page('form', self::form_data($action, [
+            'referer' => $formdata->referer ?? '',
+            'a' => $q->id(),
+            'sid' => $q->surveyid(),
+            'rid' => $formdata->rid ?? 0,
+            'sec' => $formdata->sec,
+            'end' => !empty($formdata->end) ? 1 : 0,
+            'sesskey' => sesskey(),
+        ]));
         if ($q->questions() && $numsections) {
             $this->survey_render($q, $formdata, $formdata->sec, $msg);
-            $controlbuttons = [];
-            if ($formdata->sec > 1) {
-                $controlbuttons['prev'] = [
-                    'type' => 'submit',
-                    'class' => 'btn btn-secondary control-button-prev',
-                    'value' => '<< ' . get_string('previouspage', 'questionnaire'),
-                ];
-            }
-            if ($q->resume()) {
-                $controlbuttons['resume'] = [
-                    'type' => 'submit',
-                    'class' => 'btn btn-secondary control-button-save',
-                    'value' => get_string('save_and_exit', 'questionnaire'),
-                ];
-            }
-            if ($formdata->sec == $numsections) {
-                $controlbuttons['submittype'] = ['type' => 'hidden', 'value' => 'Submit Survey'];
-                $controlbuttons['submit'] = [
-                    'type' => 'submit',
-                    'class' => 'btn btn-primary control-button-submit',
-                    'value' => get_string('submitsurvey', 'questionnaire'),
-                ];
-            } else {
-                $controlbuttons['next'] = [
-                    'type' => 'submit',
-                    'class' => 'btn btn-secondary control-button-next',
-                    'value' => get_string('nextpage', 'questionnaire') . ' >>',
-                ];
-            }
-            $this->page->add_to_page('controlbuttons', $this->renderer->complete_controlbuttons($controlbuttons));
+            $this->page->add_to_page('controlbuttons', $this->control_buttons($q, $formdata->sec, $numsections));
         } else {
-            $this->page->add_to_page(
-                'controlbuttons',
-                $this->renderer->complete_controlbuttons(get_string('noneinuse', 'questionnaire'))
-            );
+            $this->page->add_to_page('noquestions', get_string('noneinuse', 'questionnaire'));
         }
-        $this->page->add_to_page('formend', $this->renderer->complete_formend());
 
         return $msg ?: null;
     }
@@ -456,6 +415,57 @@ class survey_view_builder {
     }
 
     /**
+     * The response form's action and hidden fields, for the page template.
+     *
+     * @param string $action
+     * @param array $hidden Name => value.
+     * @return array
+     */
+    private static function form_data(string $action, array $hidden): array {
+        return [
+            'action' => $action,
+            'hidden' => array_map(
+                fn($name, $value) => ['name' => $name, 'value' => $value],
+                array_keys($hidden),
+                array_values($hidden)
+            ),
+        ];
+    }
+
+    /**
+     * The response form's buttons for this section: previous, save and exit, and next or submit.
+     *
+     * @param questionnaire $q
+     * @param int $section
+     * @param int $numsections
+     * @return array[] Each with type, name, class and value.
+     */
+    private function control_buttons(questionnaire $q, int $section, int $numsections): array {
+        $buttons = [];
+        if ($section > 1) {
+            $buttons[] = ['prev', 'btn btn-secondary control-button-prev', '<< ' . get_string('previouspage', 'questionnaire')];
+        }
+        if ($q->resume()) {
+            $buttons[] = ['resume', 'btn btn-secondary control-button-save', get_string('save_and_exit', 'questionnaire')];
+        }
+        if ($section == $numsections) {
+            $buttons[] = ['submit', 'btn btn-primary control-button-submit', get_string('submitsurvey', 'questionnaire')];
+        } else {
+            $buttons[] = ['next', 'btn btn-secondary control-button-next', get_string('nextpage', 'questionnaire') . ' >>'];
+        }
+        $buttons = array_map(fn($button) => [
+            'type' => 'submit',
+            'name' => $button[0],
+            'class' => $button[1],
+            'value' => $button[2],
+        ], $buttons);
+        if ($section == $numsections) {
+            $buttons[] = ['type' => 'hidden', 'name' => 'submittype', 'class' => '', 'value' => 'Submit Survey'];
+        }
+        return $buttons;
+    }
+
+    /**
      * Render the page-number footer for paginated surveys.
      *
      * @param questionnaire $q
@@ -558,7 +568,7 @@ class survey_view_builder {
      * @return void
      */
     public function goto_saved(questionnaire $q): void {
-        global $CFG, $USER;
+        global $USER;
 
         $resumesurvey = get_string('resumesurvey', 'questionnaire');
         $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>' . $resumesurvey . '</strong>');
@@ -567,13 +577,11 @@ class survey_view_builder {
             'notifications',
             $this->renderer->notification($savedprogress, \core\output\notification::NOTIFY_SUCCESS)
         );
-        $this->page->add_to_page(
-            'respondentinfo',
-            $this->renderer->homelink(
-                $CFG->wwwroot . '/course/view.php?id=' . $q->courseid(),
-                get_string('backto', 'moodle', $q->course()->fullname)
-            )
-        );
+        $coursename = format_string($q->course()->fullname, true, ['context' => \context_course::instance($q->courseid())]);
+        $this->page->add_to_page('links', [
+            'url' => (new \moodle_url('/course/view.php', ['id' => $q->courseid()]))->out(false),
+            'label' => get_string('backto', 'moodle', $coursename),
+        ]);
 
         if (
             $q->resume()
@@ -582,14 +590,13 @@ class survey_view_builder {
             && $q->questions()
             && $q->user_has_saved_response($USER->id)
         ) {
-            $this->page->add_to_page(
-                'respondentinfo',
-                $this->renderer->homelink(
-                    $CFG->wwwroot . '/mod/questionnaire/complete.php?' .
-                        'id=' . $q->coursemodule()->id . '&resume=1',
-                    $resumesurvey
-                )
-            );
+            $this->page->add_to_page('links', [
+                'url' => (new \moodle_url('/mod/questionnaire/complete.php', [
+                    'id' => $q->coursemodule()->id,
+                    'resume' => 1,
+                ]))->out(false),
+                'label' => $resumesurvey,
+            ]);
         }
     }
 

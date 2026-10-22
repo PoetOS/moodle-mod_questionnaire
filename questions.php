@@ -27,9 +27,9 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question
 
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\question_type;
-use mod_questionnaire\local\response\questionnaire_responses;
 use mod_questionnaire\output\questionspage;
 use mod_questionnaire\output\question_manager;
+use mod_questionnaire\output\question_delete_confirmation;
 use mod_questionnaire\local\survey\survey;
 
 $id = required_param('id', PARAM_INT);                 // Course module ID.
@@ -214,62 +214,21 @@ if ($action == 'question') {
     $page->add_to_page('formarea', $questionsform->render());
 } else if ($action == 'confirmdelquestion') {
     $qid = required_param('qid', PARAM_INT);
-    $questions = $questionnaire->questions();
-    $question = $questions[$qid];
-
-    $countresps = questionnaire_responses::count_for_question($qid, $question->typeid());
-
-    // If question text is "empty", i.e. 2 non-breaking spaces were inserted, do not display any question text.
-    $displaycontent = $question->content();
-    if ($displaycontent == '<p>  </p>') {
-        $displaycontent = '';
-    }
-
-    $qname = $question->name() ? ' (' . $question->name() . ')' : '';
-    $pos = $question->position() . $qname;
-
-    $msg = '<div class="warning centerpara"><p>' . get_string('confirmdelquestion', 'questionnaire', $pos) . '</p>';
-    if ($countresps !== 0) {
-        $msg .= '<p>' . get_string('confirmdelquestionresps', 'questionnaire', $countresps) . '</p>';
-    }
-    $msg .= '</div>';
-    $msg .= '<div class="qn-container">' . get_string('position', 'questionnaire') . ' ' . $pos .
-        '<div class="qn-question">' . $displaycontent . '</div></div>';
-
-    if ($questionnairehasdependencies) {
-        $dependants = $questionnaire->navigator()->get_all_dependants($qid);
-        if (!(empty($dependants->directs) && empty($dependants->indirects))) {
-            $strnum = get_string('position', 'questionnaire');
-            $msg .= $renderer->dependency_warnings($dependants->directs, 'directwarnings', $strnum);
-            $msg .= $renderer->dependency_warnings($dependants->indirects, 'indirectwarnings', $strnum);
-        }
-    }
-
     $urlno = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
     $urlyes = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id, 'delq' => $qid, 'sesskey' => sesskey()]);
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
+    $msg = $renderer->render(new question_delete_confirmation($questionnaire, $qid));
     $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
 } else if ($action === questionnaire::confirm_delete_param()) {
     $qid = required_param('qid', PARAM_INT);
-    $deletequestions = $questionnaire->survey()->get_delete_questions();
-    $questiondelete = $deletequestions[$qid];
-    $countresps = questionnaire_responses::count_for_question($qid, $questiondelete->typeid());
-
     $urlno = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id]);
     $urlyes = new moodle_url('/mod/questionnaire/questions.php', [
         'id' => $cm->id, 'delpermanentlyq' => $qid, 'sesskey' => sesskey(),
     ]);
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
-    $msg = '<div class="warning centerpara"><p>' . get_string('confirmdelpermanentlyq', 'questionnaire') . '</p>';
-    if ($countresps !== 0) {
-        $msg .= '<p>' . get_string('confirmdelquestionresps', 'questionnaire', $countresps) . '</p>';
-    }
-    $msg .= '</div>';
-    $msg .= '<div class="qn-container">NA (' . $questiondelete->name() . ')
-             <div class="qn-question">' . $questiondelete->content() . '</div></div>';
-
+    $msg = $renderer->render(new question_delete_confirmation($questionnaire, $qid, true));
     $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
 } else {
     $manager = new question_manager($questionnaire, $restoredqid, $lasttypeid, $lastrequired);

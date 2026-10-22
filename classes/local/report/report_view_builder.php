@@ -72,8 +72,6 @@ class report_view_builder {
         $rid = 0,
         $blankquestionnaire = false
     ) {
-        global $CFG;
-
         if (!empty($rid)) {
             if (!$q->capabilities()->can_view_response($rid)) {
                 throw new \moodle_exception('nopermissions', 'mod_questionnaire');
@@ -95,9 +93,11 @@ class report_view_builder {
             $i += count($questionsbysec[$j - 1]);
         }
 
-        $action = $CFG->wwwroot . '/mod/questionnaire/preview.php?' .
-            ($q->coursemodule() ? 'id=' . $q->coursemodule()->id : 'sid=' . $q->surveyid());
-        $this->page->add_to_page('formstart', $this->renderer->complete_formstart($action));
+        $previewurl = new \moodle_url(
+            '/mod/questionnaire/preview.php',
+            $q->coursemodule() ? ['id' => $q->coursemodule()->id] : ['sid' => $q->surveyid()]
+        );
+        $this->page->add_to_page('form', ['action' => $previewurl->out(false), 'hidden' => []]);
 
         $formdata = new \stdClass();
         $errors = 1;
@@ -148,9 +148,7 @@ class report_view_builder {
         foreach ($questionsbysec as $sec) {
             $output = '';
             if ($numsections > 1) {
-                $output .= $this->renderer->print_preview_pagenumber(
-                    get_string('page', 'questionnaire') . ' ' . $page
-                );
+                $output .= $this->renderer->container(get_string('page', 'questionnaire') . ' ' . $page, 'surveyPage');
                 $page++;
             }
             foreach ($sec as $question) {
@@ -173,16 +171,12 @@ class report_view_builder {
         }
 
         if ($referer == 'preview' && !$blankquestionnaire) {
-            $url = $CFG->wwwroot . '/mod/questionnaire/preview.php?' .
-                ($q->coursemodule() ? 'id=' . $q->coursemodule()->id : 'sid=' . $q->surveyid());
-            $this->page->add_to_page(
-                'formend',
-                $this->renderer->print_preview_formend(
-                    $url,
-                    get_string('submitpreview', 'questionnaire'),
-                    get_string('reset')
-                )
-            );
+            $this->page->add_to_page('previewbuttons', [
+                'submitlabel' => get_string('submitpreview', 'questionnaire'),
+                'reseturl' => $previewurl->out(false),
+                'resetlabel' => get_string('reset'),
+                'sesskey' => sesskey(),
+            ]);
         }
     }
 

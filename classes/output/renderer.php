@@ -152,54 +152,6 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Render the completion form start HTML.
-     * @param string $action The action URL.
-     * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_formstart($action, $hiddeninputs = []) {
-        $output = '';
-        $output .= \html_writer::start_tag('form', ['id' => 'phpesp_response', 'method' => 'post', 'action' => $action]) . "\n";
-        foreach ($hiddeninputs as $name => $value) {
-            $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
-        }
-        $this->page->requires->js_call_amd('mod_questionnaire/attempt_form', 'init');
-        $this->page->requires->js_call_amd('mod_questionnaire/survey_inputs', 'init');
-        return $output;
-    }
-
-    /**
-     * Render the completion form end HTML.
-     * @param array $inputs Type/attribute array of inputs and values used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_formend($inputs = []) {
-        $output = '';
-        foreach ($inputs as $type => $attributes) {
-            $output .= \html_writer::empty_tag('input', array_merge(['type' => $type], $attributes)) . "\n";
-        }
-        $output .= \html_writer::end_tag('form') . "\n";
-        return $output;
-    }
-
-    /**
-     * Render the completion form control buttons.
-     * @param array|string $inputs Name/(Type/attribute) array of input types and values used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_controlbuttons($inputs = null) {
-        $output = '';
-        if (is_array($inputs)) {
-            foreach ($inputs as $name => $attributes) {
-                $output .= \html_writer::empty_tag('input', array_merge(['name' => $name], $attributes)) . ' ';
-            }
-        } else if (is_string($inputs)) {
-            $output .= \html_writer::tag('p', $inputs);
-        }
-        return $output;
-    }
-
-    /**
      * Calculate the progress and return it.
      * @param int $section
      * @param array $questionsbysec
@@ -406,111 +358,6 @@ class renderer extends \plugin_renderer_base {
         return $this->render_from_template('mod_questionnaire/responselist', $navbar);
     }
 
-    /**
-     * Render a print/preview page number line.
-     * @param string $content The content to render.
-     * @return string The rendered HTML.
-     */
-    public function print_preview_pagenumber($content) {
-        return \html_writer::tag('div', $content, ['class' => 'surveyPage']);
-    }
-
-    /**
-     * Render the print/preview completion form end HTML.
-     * @param string $url The url to call.
-     * @param string $submitstr The submit text.
-     * @param string $resetstr The reset text.
-     * @return string The output for the page.
-     */
-    public function print_preview_formend($url, $submitstr, $resetstr) {
-        $output = '';
-        $output .= \html_writer::start_tag('div');
-        $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr,
-            'class' => 'btn btn-primary']);
-        $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
-        $output .= ' ';
-        $output .= \html_writer::tag('a', $resetstr, ['href' => $url, 'class' => 'btn btn-secondary me-1']);
-        $output .= \html_writer::end_tag('div') . "\n";
-        $output .= \html_writer::end_tag('form') . "\n";
-        return $output;
-    }
-
-    /**
-     * Render the back to home link on the save page.
-     * @param string $url The url to link to.
-     * @param string $text The text to apply the link to.
-     * @return string The rendered HTML.
-     */
-    public function homelink($url, $text) {
-        $output = '';
-        $output .= \html_writer::start_tag('div', ['class' => 'homelink']);
-        $output .= \html_writer::tag('a', $text, ['href' => $url, 'class' => 'btn btn-primary']);
-        $output .= \html_writer::end_tag('div');
-        return $output;
-    }
-
-
-    /**
-     * Generate and return any dependency warnings.
-     * @param array $children
-     * @param string $langstring
-     * @param int $strnum
-     * @return string
-     */
-    public function dependency_warnings($children, $langstring, $strnum) {
-        $msg = '<div class="warning">' . get_string($langstring, 'questionnaire') . '</div><br />';
-        foreach ($children as $child) {
-            $loopindicator = [];
-            foreach ($child as $subchild) {
-                $childname = '';
-                if ($subchild->name) {
-                    $childname = ' (' . $subchild->name . ')';
-                }
-
-                // Add conditions.
-                switch ($subchild->dependlogic) {
-                    case 0:
-                        $logic = get_string('notset', 'questionnaire');
-                        break;
-                    case 1:
-                        $logic = get_string('set', 'questionnaire');
-                        break;
-                    default:
-                        $logic = '';
-                }
-
-                // Different colouring for and/or.
-                switch ($subchild->dependandor) {
-                    case 'or':
-                        $color = 'qdepend-or';
-                        break;
-                    case 'and':
-                        $color = "qdepend";
-                        break;
-                    default:
-                        $color = "";
-                }
-
-                if (!in_array($subchild->qdependquestion, $loopindicator)) {
-                    $msg .= '<div class = "qn-container">' . $strnum . ' ' . $subchild->position . $childname .
-                        '<br/><span class="' . $color . '"><strong>' .
-                        get_string('dependquestion', 'questionnaire') . '</strong>' .
-                        ' (' . $strnum . ' ' . $subchild->parentposition . ') ' .
-                        '&nbsp;:&nbsp;' . $subchild->parent . ' ' . $logic . '</span>';
-                } else {
-                    $msg .= '<br/><span class="' . $color . '"><strong>' .
-                        get_string('dependquestion', 'questionnaire') . '</strong>' .
-                        ' (' . $strnum . ' ' . $subchild->parentposition . ') ' .
-                        '&nbsp;:&nbsp;' . $subchild->parent . ' ' . $logic . '</span>';
-                }
-                $loopindicator[] = $subchild->qdependquestion;
-            }
-            $msg .= '<div class="qn-question">' .
-                $subchild->content .
-                '</div></div>';
-        }
-        return $msg;
-    }
 
     /**
      * Get displayable list of parents for the question in the manage-questions list.
@@ -549,26 +396,6 @@ class renderer extends \plugin_renderer_base {
             ];
         }
         return $this->output->render_from_template('mod_questionnaire/dependencylist', $context);
-    }
-
-    /**
-     * Helper method dealing with the fact we can not just fetch the output of flexible_table
-     *
-     * @param flexible_table $table
-     * @param boolean $buffering True if already buffering.
-     * @return string HTML
-     */
-    public function flexible_table(\flexible_table $table, $buffering = false) {
-
-        $o = '';
-        if (!$buffering) {
-            ob_start();
-        }
-        $table->finish_output();
-        $o = ob_get_contents();
-        ob_end_clean();
-
-        return $o;
     }
 
     /**

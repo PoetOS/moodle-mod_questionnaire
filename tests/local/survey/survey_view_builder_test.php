@@ -102,7 +102,7 @@ final class survey_view_builder_test extends \advanced_testcase {
             get_string('templatenotviewable', 'questionnaire'),
             $data->notifications
         );
-        $this->assertObjectNotHasProperty('formstart', $data);
+        $this->assertObjectNotHasProperty('form', $data);
     }
 
     /**
@@ -123,14 +123,13 @@ final class survey_view_builder_test extends \advanced_testcase {
         (new survey_view_builder($renderer, $page))->build_view($instance, $studentid);
 
         $data = $this->page_data($page);
-        $this->assertObjectHasProperty('formstart', $data);
+        $this->assertObjectHasProperty('form', $data);
         $this->assertObjectHasProperty('controlbuttons', $data);
-        $this->assertObjectHasProperty('formend', $data);
     }
 
     /**
-     * build_survey_form() returns null and populates formstart/controlbuttons/formend
-     * when questions exist.
+     * build_survey_form() returns null and populates the form (action and hidden fields) and its buttons
+     * when questions exist; a one-page survey gets a submit button and no previous/next.
      */
     public function test_build_survey_form_with_questions(): void {
         global $PAGE;
@@ -148,9 +147,67 @@ final class survey_view_builder_test extends \advanced_testcase {
 
         $this->assertNull($result);
         $data = $this->page_data($page);
-        $this->assertObjectHasProperty('formstart', $data);
-        $this->assertObjectHasProperty('controlbuttons', $data);
-        $this->assertObjectHasProperty('formend', $data);
+        $this->assertStringContainsString(
+            '/mod/questionnaire/complete.php?id=' . $instance->coursemodule()->id,
+            $data->form['action']
+        );
+        $hidden = array_column($data->form['hidden'], 'value', 'name');
+        $this->assertEqualsCanonicalizing(['referer', 'a', 'sid', 'rid', 'sec', 'end', 'sesskey'], array_keys($hidden));
+        $this->assertEquals($instance->id(), $hidden['a']);
+        $this->assertEquals(sesskey(), $hidden['sesskey']);
+        $buttons = array_column($data->controlbuttons, 'type', 'name');
+        $this->assertEquals(['submit' => 'submit', 'submittype' => 'hidden'], $buttons);
+        $this->assertObjectNotHasProperty('noquestions', $data);
+    }
+
+    /**
+     * The rendered completion page opens and closes the response form around the questions and buttons.
+     */
+    public function test_build_survey_form_renders_form(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->build_survey_form($instance, $studentid, $studentid);
+        $html = $renderer->render($page);
+
+        $this->assertStringContainsString('<form id="phpesp_response" method="post"', $html);
+        $this->assertStringContainsString('</form>', $html);
+        $this->assertStringContainsString('name="sesskey" value="' . sesskey() . '"', $html);
+        $submit = get_string('submitsurvey', 'questionnaire');
+        $this->assertStringContainsString(
+            'name="submit" class="btn btn-primary control-button-submit" value="' . $submit . '"',
+            $html
+        );
+        $this->assertStringContainsString('Yes or no?', $html);
+    }
+
+    /**
+     * build_survey_form() on a questionnaire without questions shows the none-in-use message instead of buttons.
+     */
+    public function test_build_survey_form_without_questions(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $instance = questionnaire::from_instanceid($generator->create_instance(['course' => $course->id])->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->build_survey_form($instance, 0);
+
+        $data = $this->page_data($page);
+        $this->assertEquals(get_string('noneinuse', 'questionnaire'), $data->noquestions);
+        $this->assertObjectNotHasProperty('controlbuttons', $data);
+        $this->assertObjectHasProperty('form', $data);
     }
 
     /**
@@ -450,7 +507,7 @@ final class survey_view_builder_test extends \advanced_testcase {
     }
 
     /**
-     * goto_saved() adds a save-progress notification and a back-to-course homelink.
+     * goto_saved() adds a save-progress notification and a back-to-course link.
      */
     public function test_goto_saved_writes_savedprogress_notification(): void {
         global $PAGE;
@@ -468,7 +525,42 @@ final class survey_view_builder_test extends \advanced_testcase {
         $data = $this->page_data($page);
         $this->assertObjectHasProperty('notifications', $data);
         $this->assertStringContainsString('progress has been saved', $data->notifications);
-        $this->assertObjectHasProperty('respondentinfo', $data);
+        $this->assertCount(1, $data->links);
+        $this->assertEquals(
+            (new \moodle_url('/course/view.php', ['id' => $instance->courseid()]))->out(false),
+            $data->links[0]['url']
+        );
+        $this->assertEquals(get_string('backto', 'moodle', $instance->course()->fullname), $data->links[0]['label']);
+    }
+
+    /**
+     * goto_saved() adds a resume link when the user has a saved response to come back to.
+     */
+    public function test_goto_saved_adds_resume_link(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $DB->set_field('questionnaire', 'resume', 1, ['id' => $instance->id()]);
+        $instance = questionnaire::from_instanceid($instance->id());
+        $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')
+            ->generate_response($instance, $instance->questions(), $studentid, false);
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = new completepage();
+        (new survey_view_builder($renderer, $page))->goto_saved($instance);
+
+        $data = $this->page_data($page);
+        $this->assertCount(2, $data->links);
+        $this->assertEquals(
+            (new \moodle_url('/mod/questionnaire/complete.php', ['id' => $instance->coursemodule()->id, 'resume' => 1]))
+                ->out(false),
+            $data->links[1]['url']
+        );
+        $this->assertEquals(get_string('resumesurvey', 'questionnaire'), $data->links[1]['label']);
     }
 
     /**
