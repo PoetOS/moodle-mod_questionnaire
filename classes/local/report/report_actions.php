@@ -54,12 +54,12 @@ class report_actions {
      *
      * Side effects: sets $PAGE title/heading, echoes header/page/footer.
      *
-     * @param object $page Templatable page object (reportpage).
+     * @param \mod_questionnaire\output\page $page The page that output is added to.
      * @param int $rid Response id to delete.
      * @param int $currentgroupid Group filter context.
      * @return void
      */
-    public function confirm_delete_response(object $page, int $rid, int $currentgroupid): void {
+    public function confirm_delete_response(\mod_questionnaire\output\page $page, int $rid, int $currentgroupid): void {
         global $PAGE;
 
         require_capability('mod/questionnaire:deleteresponses', $this->questionnaire->context());
@@ -176,7 +176,7 @@ class report_actions {
      *
      * Renders nothing if there are no participants to delete (mirrors original arm behaviour).
      *
-     * @param object $page Templatable page object (reportpage).
+     * @param \mod_questionnaire\output\page $page The page that output is added to.
      * @param int $groupmode Activity group mode (0/1/2).
      * @param int $currentgroupid Active group filter.
      * @param string $groupname Pre-formatted group label for the confirm message.
@@ -184,7 +184,7 @@ class report_actions {
      * @return void
      */
     public function confirm_delete_all_responses(
-        object $page,
+        \mod_questionnaire\output\page $page,
         int $groupmode,
         int $currentgroupid,
         string $groupname,

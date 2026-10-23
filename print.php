@@ -41,8 +41,8 @@ require_login($courseid);
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = !empty($rid)
-    ? new \mod_questionnaire\output\reportpage()
-    : new \mod_questionnaire\output\previewpage();
+    ? \mod_questionnaire\output\page::report()
+    : \mod_questionnaire\output\page::preview();
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 if (!($questionnaire->capabilities()->can_view() && (($rid == 0) || $questionnaire->capabilities()->can_view_response($rid)))) {

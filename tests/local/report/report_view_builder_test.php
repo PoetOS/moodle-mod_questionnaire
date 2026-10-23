@@ -25,7 +25,7 @@
 
 namespace mod_questionnaire\local\report;
 
-use mod_questionnaire\output\previewpage;
+use mod_questionnaire\output\page;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -60,12 +60,12 @@ final class report_view_builder_test extends \advanced_testcase {
     }
 
     /**
-     * Read the data backing a previewpage so tests can assert on the keys the renderer wrote.
+     * Read the data backing a page so tests can assert on the keys the renderer wrote.
      *
-     * @param previewpage $page
+     * @param page $page
      * @return \stdClass
      */
-    private function page_data(previewpage $page): \stdClass {
+    private function page_data(page $page): \stdClass {
         global $PAGE;
         return $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
     }
@@ -81,7 +81,7 @@ final class report_view_builder_test extends \advanced_testcase {
         [$instance, ] = $this->build_fixture();
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new previewpage();
+        $page = page::preview();
         (new report_view_builder($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, true);
 
@@ -110,7 +110,7 @@ final class report_view_builder_test extends \advanced_testcase {
         [$instance, ] = $this->build_fixture();
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new previewpage();
+        $page = page::preview();
         (new report_view_builder($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, false);
 
@@ -137,7 +137,7 @@ final class report_view_builder_test extends \advanced_testcase {
         [$instance, ] = $this->build_fixture();
         $renderer = $PAGE->get_renderer('mod_questionnaire');
 
-        $page = new previewpage();
+        $page = page::preview();
         (new report_view_builder($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, false);
         $data = $this->page_data($page);
@@ -145,7 +145,7 @@ final class report_view_builder_test extends \advanced_testcase {
         $this->assertObjectNotHasProperty('printblank', $data);
         $this->assertStringContainsString(get_string('printblank', 'questionnaire'), $renderer->render($page));
 
-        $page = new previewpage();
+        $page = page::preview();
         (new report_view_builder($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'print', 0, true);
         $this->assertNull($this->page_data($page)->surveyheader->printblank);
@@ -169,7 +169,7 @@ final class report_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new previewpage();
+        $page = page::preview();
         (new report_view_builder($renderer, $page))
             ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, true);
 
@@ -196,7 +196,7 @@ final class report_view_builder_test extends \advanced_testcase {
         ]);
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new previewpage();
+        $page = page::preview();
         (new report_view_builder($renderer, $page))
             ->render_response($instance, $rid, 'print');
 

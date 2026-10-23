@@ -29,7 +29,7 @@ require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\feedback\feedback_settings_controller;
-use mod_questionnaire\output\feedbackpage;
+use mod_questionnaire\output\page;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
@@ -44,7 +44,7 @@ $PAGE->set_url(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $id]))
 $PAGE->set_context($questionnaire->context());
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
-$page = new feedbackpage();
+$page = page::settings();
 
 if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');

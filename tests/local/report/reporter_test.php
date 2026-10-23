@@ -25,7 +25,7 @@
 
 namespace mod_questionnaire\local\report;
 
-use mod_questionnaire\output\reportpage;
+use mod_questionnaire\output\page;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -91,12 +91,12 @@ final class reporter_test extends \advanced_testcase {
      * Build a reporter with a renderer + page wired up for the page-side methods.
      *
      * @param questionnaire $questionnaire
-     * @return array [reporter, reportpage]
+     * @return array [reporter, page]
      */
     private function build_reporter(questionnaire $questionnaire): array {
         global $PAGE;
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new reportpage();
+        $page = page::report();
         return [new reporter($questionnaire, $renderer, $page), $page];
     }
 
@@ -468,7 +468,7 @@ final class reporter_test extends \advanced_testcase {
 
         $questionnaire = questionnaire::from_instanceid($questionnaire->id());
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new \mod_questionnaire\output\reportpagepdf();
+        $page = page::report_pdf();
         (new reporter($questionnaire, $renderer, $page))->survey_results('', false, true, '0');
 
         $html = $renderer->render($page);

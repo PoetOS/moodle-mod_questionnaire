@@ -30,9 +30,7 @@ use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\report\report_actions;
 use mod_questionnaire\local\report\report_downloader;
 use mod_questionnaire\local\report\report_viewer;
-use mod_questionnaire\output\reportpage;
-use mod_questionnaire\output\reportpagepdf;
-use mod_questionnaire\output\responsepagepdf;
+use mod_questionnaire\output\page;
 
 $instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $action = optional_param('action', 'vall', PARAM_ALPHA);
@@ -66,9 +64,9 @@ require_course_login($course, true, $cm);
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 if ($outputtarget == 'pdf') {
-    $page = ($action == 'vresp') ? new responsepagepdf() : new reportpagepdf();
+    $page = ($action == 'vresp') ? page::response_pdf() : page::report_pdf();
 } else { // Default to HTML.
-    $page = new reportpage();
+    $page = page::report();
 }
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
@@ -113,6 +111,7 @@ $PAGE->set_context($context);
 if ($outputtarget == 'print') {
     $PAGE->set_pagelayout('popup');
     $PAGE->requires->js_call_amd('mod_questionnaire/printing', 'init');
+    $page->add_to_page('printparam', true);
 }
 
 // Get all responses for further use in viewbyresp and deleteall etc.

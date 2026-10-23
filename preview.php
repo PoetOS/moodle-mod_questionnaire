@@ -94,7 +94,7 @@ if (!$popup) {
 }
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
-$page = new \mod_questionnaire\output\previewpage();
+$page = \mod_questionnaire\output\page::preview();
 
 echo $renderer->header();
 $page->add_to_page('heading', clean_text($pq));

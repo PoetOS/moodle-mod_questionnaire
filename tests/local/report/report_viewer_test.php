@@ -25,7 +25,7 @@
 
 namespace mod_questionnaire\local\report;
 
-use mod_questionnaire\output\reportpage;
+use mod_questionnaire\output\page;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -88,7 +88,7 @@ final class report_viewer_test extends \advanced_testcase {
         ob_start();
         try {
             (new report_viewer($questionnaire, $renderer))->view_all_responses(
-                new reportpage(),
+                page::report(),
                 'vall',
                 'html',
                 $url,
@@ -132,7 +132,7 @@ final class report_viewer_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         $this->expectExceptionMessageMatches('/permission|nopermissions/i');
         (new report_viewer($questionnaire, $renderer))->view_individual_response(
-            new reportpage(),
+            page::report(),
             'html',
             $url,
             0,
@@ -172,7 +172,7 @@ final class report_viewer_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         $this->expectExceptionMessageMatches('/permission|nopermissions/i');
         (new report_viewer($questionnaire, $renderer))->view_individual_response(
-            new reportpage(),
+            page::report(),
             'html',
             $url,
             0,
@@ -210,7 +210,7 @@ final class report_viewer_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         $this->expectExceptionMessageMatches('/permission|nopermissions/i');
         (new report_viewer($questionnaire, $renderer))->view_individual_response(
-            new reportpage(),
+            page::report(),
             'html',
             $url,
             0,

@@ -439,10 +439,10 @@ class questionnaire {
      * CSV-only callers (e.g. submission_notifier) may omit both arguments.
      *
      * @param \plugin_renderer_base|null $renderer Renderer used by render-path methods.
-     * @param object|null $page Templatable page used by render-path methods.
+     * @param \mod_questionnaire\output\page|null $page The page that output is added to.
      * @return reporter
      */
-    public function reporter(?\plugin_renderer_base $renderer = null, ?object $page = null): reporter {
+    public function reporter(?\plugin_renderer_base $renderer = null, ?\mod_questionnaire\output\page $page = null): reporter {
         $this->reporter ??= new reporter($this, $renderer, $page);
         return $this->reporter;
     }

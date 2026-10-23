@@ -28,7 +28,7 @@ require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
 
 use mod_questionnaire\questionnaire;
-use mod_questionnaire\output\completepage;
+use mod_questionnaire\output\page;
 
 $id = optional_param('id', null, PARAM_INT);    // Course Module ID.
 $a = optional_param('a', null, PARAM_INT);      // Questionnaire ID.
@@ -57,7 +57,7 @@ $PAGE->set_title(format_string($questionnaire->name()));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
-$page = new completepage();
+$page = page::complete();
 
 // Mark as viewed.
 $completion = new completion_info($questionnaire->course());

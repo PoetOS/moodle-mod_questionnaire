@@ -25,7 +25,7 @@
 
 namespace mod_questionnaire\local\report;
 
-use mod_questionnaire\output\reportpage;
+use mod_questionnaire\output\page;
 
 /**
  * Unit tests for mod_questionnaire\local\report\report_downloader.
@@ -54,7 +54,7 @@ final class report_downloader_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $this->expectException(\required_capability_exception::class);
         (new report_downloader($questionnaire, $renderer))
-            ->show_download_options(new reportpage(), 0, 0, [], 0);
+            ->show_download_options(page::report(), 0, 0, [], 0);
     }
 
     /**
@@ -76,7 +76,7 @@ final class report_downloader_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $this->expectException(\required_capability_exception::class);
         (new report_downloader($questionnaire, $renderer))
-            ->download_responses(new reportpage(), 0, 0);
+            ->download_responses(page::report(), 0, 0);
     }
 
     /**
@@ -102,7 +102,7 @@ final class report_downloader_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         try {
             (new report_downloader($questionnaire, $renderer))
-                ->download_responses(new reportpage(), 0, 0);
+                ->download_responses(page::report(), 0, 0);
         } finally {
             unset($_POST['emailreport']);
         }

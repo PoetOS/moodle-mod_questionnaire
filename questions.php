@@ -27,7 +27,7 @@ require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question
 
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\question_type;
-use mod_questionnaire\output\questionspage;
+use mod_questionnaire\output\page;
 use mod_questionnaire\output\question_manager;
 use mod_questionnaire\output\question_delete_confirmation;
 use mod_questionnaire\local\survey\survey;
@@ -62,7 +62,7 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
-$page = new questionspage();
+$page = page::questions();
 
 if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');

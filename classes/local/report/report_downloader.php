@@ -57,7 +57,7 @@ class report_downloader {
      * Side effects: sets $PAGE title/heading, echoes header / page / footer,
      * triggers all_responses_saved_as_text, and exit()s.
      *
-     * @param object $page Templatable report page.
+     * @param \mod_questionnaire\output\page $page The page that output is added to.
      * @param int $groupmode Activity groupmode (0 = none, 1 = separate, 2 = visible).
      * @param int $currentgroupid Active group filter.
      * @param array $questionnairegroups Available groups (id => obj) — used to label the selected group.
@@ -65,7 +65,7 @@ class report_downloader {
      * @return void
      */
     public function show_download_options(
-        object $page,
+        \mod_questionnaire\output\page $page,
         int $groupmode,
         int $currentgroupid,
         array $questionnairegroups,
@@ -151,12 +151,12 @@ class report_downloader {
      *  - Redirects back to the options page with an error if email was selected
      *    but no recipients were specified.
      *
-     * @param object $page Templatable report page (the reporter needs it).
+     * @param \mod_questionnaire\output\page $page The page that output is added to.
      * @param int $currentgroupid Active group filter (echoed in redirect URLs).
      * @param int $user User filter (passed through to generate_csv).
      * @return void
      */
-    public function download_responses(object $page, int $currentgroupid, int $user): void {
+    public function download_responses(\mod_questionnaire\output\page $page, int $currentgroupid, int $user): void {
         global $CFG, $USER;
 
         require_capability('mod/questionnaire:downloadresponses', $this->questionnaire->context());

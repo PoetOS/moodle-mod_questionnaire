@@ -25,7 +25,7 @@
 
 namespace mod_questionnaire\local\survey;
 
-use mod_questionnaire\output\completepage;
+use mod_questionnaire\output\page;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -62,13 +62,13 @@ final class survey_view_builder_test extends \advanced_testcase {
     }
 
     /**
-     * Expose the protected stdClass that backs the completepage so tests can read back
+     * Expose the protected stdClass that backs the page so tests can read back
      * the keys the renderer added.
      *
-     * @param completepage $page
+     * @param page $page
      * @return \stdClass
      */
-    private function page_data(completepage $page): \stdClass {
+    private function page_data(page $page): \stdClass {
         global $PAGE;
         return $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
     }
@@ -93,7 +93,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->build_view($instance, $studentid);
 
         $data = $this->page_data($page);
@@ -119,7 +119,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->build_view($instance, $studentid);
 
         $data = $this->page_data($page);
@@ -141,7 +141,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         $result = (new survey_view_builder($renderer, $page))
             ->build_survey_form($instance, $studentid, $studentid);
 
@@ -173,7 +173,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->build_survey_form($instance, $studentid, $studentid);
         $html = $renderer->render($page);
 
@@ -201,7 +201,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($generator->create_instance(['course' => $course->id])->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->build_survey_form($instance, 0);
 
         $data = $this->page_data($page);
@@ -229,7 +229,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))
             ->build_survey_form($instance, $studentid, $studentid);
 
@@ -252,7 +252,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
 
         $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'end' => 1];
@@ -276,7 +276,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
 
         $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0];
@@ -303,7 +303,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
 
         $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'next' => 'Next'];
@@ -332,7 +332,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
 
         $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'submit' => 'Submit Survey'];
@@ -360,7 +360,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
 
         $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'next' => 'Next'];
@@ -403,7 +403,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $qid = $DB->get_field('questionnaire_question', 'id', ['surveyid' => $instance->surveyid()]);
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
 
         $svr = new survey_view_builder($renderer, $page);
         $formdata = (object)['sec' => 1, 'rid' => 0, 'prev' => 'Prev', 'q' . $qid => 'not-a-date'];
@@ -430,7 +430,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
 
         $svr = new survey_view_builder($renderer, $page);
         // After the user walked past the last section (sec=2 + end=1), pressing Prev should land them on sec=1
@@ -458,7 +458,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_end($instance, 1, 3);
 
         $data = $this->page_data($page);
@@ -479,7 +479,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_end($instance, 1, 1);
 
         $data = $this->page_data($page);
@@ -499,7 +499,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_end($instance, 1, 5);
 
         $data = $this->page_data($page);
@@ -519,7 +519,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->goto_saved($instance);
 
         $data = $this->page_data($page);
@@ -550,7 +550,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->goto_saved($instance);
 
         $data = $this->page_data($page);
@@ -576,7 +576,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->goto_thankyou($instance);
 
         $data = $this->page_data($page);
@@ -603,7 +603,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
         $renderer = $PAGE->get_renderer('mod_questionnaire');
 
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1);
         $header = $this->page_data($page)->surveyheader;
         $this->assertEquals('Header title', $header->title);
@@ -612,7 +612,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $this->assertNull($header->respondent);
         $this->assertNull($header->printblank);
 
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 2);
         $header = $this->page_data($page)->surveyheader;
         $this->assertNull($header->title);
@@ -628,7 +628,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $this->setAdminUser();
 
         [$instance] = $this->build_fixture();
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))
             ->print_survey_start($instance, 'Something went wrong', 1);
 
@@ -646,13 +646,13 @@ final class survey_view_builder_test extends \advanced_testcase {
         [$instance] = $this->build_fixture();
         $renderer = $PAGE->get_renderer('mod_questionnaire');
 
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1, '', true);
         $printblank = $this->page_data($page)->surveyheader->printblank;
         $this->assertStringContainsString('/mod/questionnaire/print.php', $printblank);
         $this->assertStringContainsString(get_string('printblank', 'questionnaire'), $printblank);
 
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1, '', false);
         $this->assertNull($this->page_data($page)->surveyheader->printblank);
     }
@@ -671,7 +671,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
 
         $sink = $this->redirectEvents();
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1, $response['id']);
         $events = array_filter($sink->get_events(), fn($e) => $e instanceof \mod_questionnaire\event\response_viewed);
         $sink->close();
@@ -683,7 +683,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $this->assertCount(1, $events);
         $this->assertEquals($studentid, reset($events)->relateduserid);
 
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($renderer, $page))->print_survey_start($instance, '', 1, $response['id'], false, 'pdf');
         $this->assertNull($this->page_data($page)->surveyheader->respondent->printlink);
     }
@@ -703,7 +703,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $instance = questionnaire::from_instanceid($instance->id());
 
         $sink = $this->redirectEvents();
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))
             ->print_survey_start($instance, '', 1, $response['id']);
         $events = array_filter($sink->get_events(), fn($e) => $e instanceof \mod_questionnaire\event\response_viewed);
@@ -727,7 +727,7 @@ final class survey_view_builder_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $response = $generator->generate_response($instance, $instance->questions(), $studentid);
 
-        $page = new completepage();
+        $page = page::complete();
         (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))
             ->print_survey_start($instance, '', 1, $response['id'], true);
 

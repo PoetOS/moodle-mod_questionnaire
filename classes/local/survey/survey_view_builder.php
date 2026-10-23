@@ -41,13 +41,13 @@ class survey_view_builder {
      * Constructor.
      *
      * @param \plugin_renderer_base $renderer The plugin's Moodle renderer.
-     * @param object $page A templatable page object (completepage, previewpage, etc.) with an add_to_page() method.
+     * @param \mod_questionnaire\output\page $page The page that output is added to.
      */
     public function __construct(
         /** @var \plugin_renderer_base The plugin's Moodle renderer. */
         protected readonly \plugin_renderer_base $renderer,
-        /** @var object A templatable page object (completepage, previewpage, etc.). */
-        protected readonly object $page,
+        /** @var \mod_questionnaire\output\page The page that output is added to. */
+        protected readonly \mod_questionnaire\output\page $page,
     ) {
     }
 

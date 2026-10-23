@@ -26,7 +26,7 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
-use mod_questionnaire\output\feedbackpage;
+use mod_questionnaire\output\page;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $section = optional_param('section', 1, PARAM_INT);
@@ -75,7 +75,7 @@ foreach ($questionnaire->questions() as $question) {
 }
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
-$page = new feedbackpage();
+$page = page::settings();
 
 if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');

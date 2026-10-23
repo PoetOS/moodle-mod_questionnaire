@@ -48,8 +48,8 @@ class reporter {
     /** @var \plugin_renderer_base|null The plugin renderer used for HTML output paths. */
     private ?\plugin_renderer_base $renderer;
 
-    /** @var object|null The templatable page that HTML output is written into. */
-    private ?object $page;
+    /** @var \mod_questionnaire\output\page|null The page that output is added to. */
+    private ?\mod_questionnaire\output\page $page;
 
     /** @var questionnaire_responses|null Cached response collection shared across methods. */
     private ?questionnaire_responses $responsecollection = null;
@@ -64,12 +64,12 @@ class reporter {
      *
      * @param questionnaire $questionnaire
      * @param \plugin_renderer_base|null $renderer Required by render-path methods.
-     * @param object|null $page Templatable page required by render-path methods.
+     * @param \mod_questionnaire\output\page|null $page The page that output is added to.
      */
     public function __construct(
         questionnaire $questionnaire,
         ?\plugin_renderer_base $renderer = null,
-        ?object $page = null,
+        ?\mod_questionnaire\output\page $page = null,
     ) {
         $this->questionnaire = $questionnaire;
         $this->renderer = $renderer;

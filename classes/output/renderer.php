@@ -38,16 +38,6 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Fill out the questionnaire (complete) page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_completepage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/completepage', $data);
-    }
-
-    /**
      * Render the report tertiary action bar.
      * @param report_action_bar $actionbar
      * @return string
@@ -55,60 +45,6 @@ class renderer extends \plugin_renderer_base {
     public function render_report_action_bar(report_action_bar $actionbar): string {
         $data = $actionbar->export_for_template($this);
         return $this->render_from_template('mod_questionnaire/report_action_bar', $data);
-    }
-
-    /**
-     * Fill out the report page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_reportpage($page) {
-        $data = $page->export_for_template($this);
-        $printparam = optional_param('target', '', PARAM_TEXT);
-
-        $data->printparam = $printparam == 'print';
-
-        return $this->render_from_template('mod_questionnaire/reportpage', $data);
-    }
-
-    /**
-     * Fill out the PDF report page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_reportpagepdf($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/reportpagepdf', $data);
-    }
-
-    /**
-     * Fill out the qsettings page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_qsettingspage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/qsettingspage', $data);
-    }
-
-    /**
-     * Fill out the feedback page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_feedbackpage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/qsettingspage', $data);
-    }
-
-    /**
-     * Fill out the questions page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_questionspage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/questionspage', $data);
     }
 
     /**
@@ -122,16 +58,6 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Fill out the preview page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_previewpage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/previewpage', $data);
-    }
-
-    /**
      * Fill out the non-respondents page.
      * @param \templateable $page
      * @return string | boolean
@@ -139,16 +65,6 @@ class renderer extends \plugin_renderer_base {
     public function render_nonrespondentspage($page) {
         $data = $page->export_for_template($this);
         return $this->render_from_template('mod_questionnaire/nonrespondentspage', $data);
-    }
-
-    /**
-     * Fill out the fbsections page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_fbsectionspage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/fbsectionspage', $data);
     }
 
     /**
@@ -357,7 +273,6 @@ class renderer extends \plugin_renderer_base {
     public function responselist($navbar) {
         return $this->render_from_template('mod_questionnaire/responselist', $navbar);
     }
-
 
     /**
      * Get displayable list of parents for the question in the manage-questions list.

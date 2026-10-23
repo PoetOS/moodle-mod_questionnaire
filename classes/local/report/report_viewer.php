@@ -54,7 +54,7 @@ class report_viewer {
     /**
      * Render the "view all responses" page (vall / vallasort / vallarsort arms).
      *
-     * @param object $page Templatable report page.
+     * @param \mod_questionnaire\output\page $page The page that output is added to.
      * @param string $action One of 'vall', 'vallasort', 'vallarsort'.
      * @param string $outputtarget 'html', 'pdf', or 'print'.
      * @param \moodle_url $url Base URL for the current page (used by group select and action links).
@@ -68,7 +68,7 @@ class report_viewer {
      * @return void
      */
     public function view_all_responses(
-        object $page,
+        \mod_questionnaire\output\page $page,
         string $action,
         string $outputtarget,
         \moodle_url $url,
@@ -254,7 +254,7 @@ class report_viewer {
     /**
      * Render the "view individual response" page (vresp / default arm).
      *
-     * @param object $page Templatable report page.
+     * @param \mod_questionnaire\output\page $page The page that output is added to.
      * @param string $outputtarget 'html' or 'pdf'.
      * @param \moodle_url $url Base URL for the current page.
      * @param int $groupmode Activity group mode.
@@ -268,7 +268,7 @@ class report_viewer {
      * @return void
      */
     public function view_individual_response(
-        object $page,
+        \mod_questionnaire\output\page $page,
         string $outputtarget,
         \moodle_url $url,
         int $groupmode,

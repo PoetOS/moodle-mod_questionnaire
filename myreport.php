@@ -26,7 +26,7 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
-use mod_questionnaire\output\reportpage;
+use mod_questionnaire\output\page;
 
 $instance = required_param('instance', PARAM_INT);   // Questionnaire ID.
 $userid = optional_param('user', $USER->id, PARAM_INT);
@@ -66,7 +66,7 @@ $PAGE->set_title(get_string('questionnairereport', 'questionnaire'));
 $PAGE->set_heading(format_string($course->fullname));
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
-$page = new reportpage();
+$page = page::report();
 
 $actionbar = \mod_questionnaire\output\report_action_bar::for_myreport(
     $questionnaire,
