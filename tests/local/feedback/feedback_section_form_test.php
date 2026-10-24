@@ -38,6 +38,40 @@ final class feedback_section_form_test extends \advanced_testcase {
      * Asserts definition() reads the questionnaire from customdata for the context and feedback mode.
      */
     public function test_definition_uses_customdata_questionnaire(): void {
+        [$form, $questionnaire] = $this->create_form();
+        $mform = (new \ReflectionProperty(\moodleform::class, '_form'))->getValue($form);
+
+        $this->assertEquals($questionnaire->context(), $form->context);
+        // Mode 1 (global feedback) labels the content header with the global heading.
+        $this->assertEquals(
+            get_string('feedbackglobalheading', 'questionnaire'),
+            $mform->getElement('contenthdr')->_text
+        );
+    }
+
+    /**
+     * A boundary that is neither a number nor a percentage is reported with the questionnaire's own string.
+     */
+    public function test_validation_rejects_unrecognised_boundary(): void {
+        [$form] = $this->create_form();
+
+        $errors = $form->validation(
+            ['feedbackboundaries' => ['abc%'], 'feedbacktext' => [['text' => 'A'], ['text' => 'B']]],
+            []
+        );
+
+        $this->assertSame(
+            get_string('feedbackerrorboundaryformat', 'questionnaire', 1),
+            $errors['feedbackboundaries[0]']
+        );
+    }
+
+    /**
+     * Build a section form for a global-feedback questionnaire.
+     *
+     * @return array The form and its questionnaire.
+     */
+    private function create_form(): array {
         global $PAGE;
 
         $this->resetAfterTest();
@@ -58,13 +92,6 @@ final class feedback_section_form_test extends \advanced_testcase {
         $customdata->sectionselect = [];
 
         $form = new feedback_section_form('fbsections.php', $customdata, $PAGE->get_renderer('mod_questionnaire'));
-        $mform = (new \ReflectionProperty(\moodleform::class, '_form'))->getValue($form);
-
-        $this->assertEquals($questionnaire->context(), $form->context);
-        // Mode 1 (global feedback) labels the content header with the global heading.
-        $this->assertEquals(
-            get_string('feedbackglobalheading', 'questionnaire'),
-            $mform->getElement('contenthdr')->_text
-        );
+        return [$form, $questionnaire];
     }
 }

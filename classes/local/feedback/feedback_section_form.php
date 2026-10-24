@@ -133,8 +133,6 @@ class feedback_section_form extends \moodleform {
                 $qvalid = $validquestions;
                 if (!empty($feedbacksection->scorecalculation)) {
                     $rsrc = $this->renderer->image_url('t/delete');
-                    $strremove = get_string('remove', 'questionnaire');
-                    $rextra = ['alt' => $strremove, 'title' => $strremove];
                     $counter = 1;
                     foreach ($feedbacksection->scorecalculation as $qid => $score) {
                         unset($qvalid[$qid]);
@@ -148,8 +146,8 @@ class feedback_section_form extends \moodleform {
                                 'value="' . $score . '">';
                         }
                         $questionactions[] = $mform->createElement('html', $weight);
-                        $rextra['value'] = $qid;
-                        unset($rextra['style']);
+                        $strremove = get_string('removefromsection', 'questionnaire', $questionnaire->questions()[$qid]->name());
+                        $rextra = ['alt' => $strremove, 'title' => $strremove, 'value' => $qid];
                         $questionactions[] = $mform->createElement('image', 'confirmremovequestion[' . $qid . ']', $rsrc, $rextra);
 
                         $mform->addGroup($questionactions, '', $questionnaire->questions()[$qid]->name());
@@ -295,7 +293,7 @@ class feedback_section_form extends \moodleform {
                 if (is_numeric($boundary)) {
                     $boundary = $boundary * 100 / 100.0;
                 } else {
-                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryformat', 'quiz', $i + 1);
+                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryformat', 'questionnaire', $i + 1);
                 }
             }
             if (is_numeric($boundary) && $boundary <= 0) {

@@ -83,10 +83,12 @@ if (!$questionnaire->capabilities()->can_edit_questions()) {
 
 // Handle confirmed actions that impact display immediately.
 if ($action == 'removequestion') {
+    require_sesskey();
     $sectionid = required_param('sectionid', PARAM_INT);
     $qid = required_param('qid', PARAM_INT);
     $feedbacksection->remove_question($qid);
 } else if ($action == 'deletesection') {
+    require_sesskey();
     $sectionid = required_param('sectionid', PARAM_INT);
     if ($sectionid == $feedbacksection->id) {
         $feedbacksection->delete();

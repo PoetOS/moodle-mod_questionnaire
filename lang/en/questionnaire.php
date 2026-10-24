@@ -564,6 +564,7 @@ $string['recylebindisabled'] = '<span class="timedeletednext7days">Automatic del
 $string['redirecturl'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['remove'] = 'Move to deletion area';
 $string['removeallquestionnaireattempts'] = 'Delete all questionnaire responses';
+$string['removefromsection'] = 'Remove {$a} from this section';
 $string['removenotinuse'] = 'This questionnaire used to depend on a Public questionnaire which has been deleted.
 It can no longer be used and should be deleted.';
 $string['removeoldresponses'] = 'Delete old responses';
