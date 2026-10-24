@@ -58,7 +58,7 @@
                     <a href="#"
                        title="{{#str}} respondent, mod_questionnaire {{/str}}"
                        role="link"
-                       aria-label="{{#str}} respondent, mod_questionnaire {{/str}}" onclick="return false;">
+                       aria-label="{{#str}} respondent, mod_questionnaire {{/str}}">
                         {{#str}} respondent, mod_questionnaire {{/str}}
                         <span class="icon-container-asc">
                             {{#pix}} t/sort_asc, moodle, {{#str}} sortbyx {{/str}}{{/pix}}
@@ -73,12 +73,15 @@
                 {{/sortresponse}}
                 {{#tableid}}
                 <div class="frtlst">{{#str}} firstname {{/str}}/{{#str}} lastname {{/str}}</div>
+                {{/tableid}}
+        </th>
+            {{#tableid}}
                 <th class="header c1 {{#tableid}}qn-handcursor{{/tableid}} desc" style="text-align:center;" scope="col" data-value="{{#str}} date {{/str}}">
                     {{#sortresponse}}
                         <a href="#"
                            title="{{#str}} date {{/str}}"
                            role="link"
-                           aria-label="{{#str}} date {{/str}}" onclick="return false;">
+                           aria-label="{{#str}} date {{/str}}">
                             {{#str}} date {{/str}}
                             <span class="icon-container-asc">
                                 {{#pix}} t/sort_asc, moodle, {{#str}} sortbyx {{/str}}{{/pix}}
@@ -93,7 +96,6 @@
                     {{/sortresponse}}
                 </th>
             {{/tableid}}
-        </th>
         <th class="header c2 lastcol" style="text-align:right;" scope="col">{{#str}} response, mod_questionnaire{{/str}}</th>
     </tr>
     </thead>
@@ -129,6 +131,6 @@
 </table>
 {{/responses.0}}
 {{^responses}}
-    <p class="generaltable">&nbsp;{{#str}} noresponsedata, questionnaire{{/str}}</p>
+    <p class="generaltable">{{#str}} noresponsedata, questionnaire{{/str}}</p>
 {{/responses}}
 <!-- End HTML generated from results_choice template. -->

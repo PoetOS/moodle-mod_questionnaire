@@ -38,6 +38,7 @@ use mod_questionnaire\questionnaire;
  * @covers \mod_questionnaire\local\report\reporter::survey_results
  * @covers \mod_questionnaire\local\report\reporter::survey_results_navbar_alpha
  * @covers \mod_questionnaire\local\report\reporter::survey_results_navbar_student
+ * @covers \mod_questionnaire\local\report\reporter::response_analysis
  */
 final class reporter_test extends \advanced_testcase {
     /**
@@ -492,5 +493,91 @@ final class reporter_test extends \advanced_testcase {
 
         $data = $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
         $this->assertNull($data->questionresults[0]['qnum']);
+    }
+
+    /**
+     * Build a questionnaire with two scored feedback sections: "Alpha" scores 100% and "Beta" 50% for one response.
+     *
+     * @return array [questionnaire, array responses keyed by id]
+     */
+    private function setup_scored_sections(): array {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $plugin = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $instance = $plugin->create_instance(['course' => $course->id]);
+        $questionnaire = questionnaire::from_instanceid($instance->id());
+        $DB->update_record('questionnaire_survey', (object) [
+            'id' => $questionnaire->surveyid(), 'feedbacksections' => 2, 'feedbackscores' => 1,
+        ]);
+
+        // The generated response picks each question's last choice: the top score for Q1, half of it for Q2.
+        $choices = ['Q1' => [[1, 'Low'], [2, 'High']], 'Q2' => [[2, 'High'], [1, 'Low']]];
+        $qids = [];
+        foreach ($choices as $name => $values) {
+            $question = $plugin->create_question(
+                $questionnaire,
+                ['surveyid' => $questionnaire->surveyid(), 'name' => $name, 'typeid' => QUESRADIO, 'required' => 'y'],
+                array_map(fn($choice) => (object) ['value' => $choice[0], 'content' => $choice[1]], $values)
+            );
+            $qids[$name] = $question->id();
+        }
+        foreach (['Alpha' => 'Q1', 'Beta' => 'Q2'] as $label => $name) {
+            (new \mod_questionnaire\local\db\feedback_section_record(0, (object) [
+                'surveyid' => $questionnaire->surveyid(),
+                'section' => $label == 'Alpha' ? 1 : 2,
+                'scorecalculation' => serialize([$qids[$name] => 1]),
+                'sectionlabel' => $label,
+                'sectionheading' => $label,
+            ]))->create();
+        }
+
+        $questionnaire = questionnaire::from_instanceid($instance->id());
+        $student = $this->getDataGenerator()->create_user();
+        $this->seed_complete_response($questionnaire, (int) $student->id);
+        $PAGE->set_context($questionnaire->context());
+
+        $questionnaire = questionnaire::from_instanceid($instance->id());
+        return [$questionnaire, $questionnaire->get_responses()];
+    }
+
+    /**
+     * Feedback scores follow section order by default; the vallasort / vallarsort actions sort them by score.
+     */
+    public function test_response_analysis_sorts_scores(): void {
+        [$questionnaire, $resps] = $this->setup_scored_sections();
+        $order = function (string $sortaction) use ($questionnaire, $resps): array {
+            global $PAGE;
+            $page = page::report();
+            (new reporter($questionnaire, $PAGE->get_renderer('mod_questionnaire'), $page))
+                ->response_analysis(0, $resps, false, false, true, 0, null, $sortaction);
+            $scores = $page->export_for_template($PAGE->get_renderer('mod_questionnaire'))->feedbackscores;
+            return [strpos($scores, 'Alpha'), strpos($scores, 'Beta')];
+        };
+
+        [$alpha, $beta] = $order('');
+        $this->assertLessThan($beta, $alpha);
+        [$alpha, $beta] = $order('vallasort');
+        $this->assertLessThan($alpha, $beta);
+        [$alpha, $beta] = $order('vallarsort');
+        $this->assertLessThan($beta, $alpha);
+    }
+
+    /**
+     * Without feedback sections there is nothing to analyse.
+     */
+    public function test_response_analysis_without_feedback(): void {
+        global $PAGE;
+        [$questionnaire, $studentid] = $this->setup_fixture();
+        $this->seed_complete_response($questionnaire, $studentid);
+        $page = page::report();
+
+        $result = (new reporter($questionnaire, $PAGE->get_renderer('mod_questionnaire'), $page))
+            ->response_analysis(0, $questionnaire->get_responses(), false, false, true, 0, null, 'vallasort');
+
+        $this->assertSame('', $result);
+        $this->assertObjectNotHasProperty('feedbackscores', $page->export_for_template($PAGE->get_renderer('mod_questionnaire')));
     }
 }

@@ -150,7 +150,7 @@ class report_viewer {
         }
         if (!empty($resps)) {
             $feedbackmessages = $this->questionnaire->reporter($this->renderer, $page)
-                ->response_analysis(0, $resps, false, false, true, $currentgroupid);
+                ->response_analysis(0, $resps, false, false, true, $currentgroupid, null, $action);
             if ($feedbackmessages) {
                 $msgout = '';
                 foreach ($feedbackmessages as $msg) {

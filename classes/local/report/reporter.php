@@ -1021,6 +1021,7 @@ class reporter {
      * @param bool $allresponses True when all responses are included (not just one).
      * @param int $currentgroupid Active group filter id (0 = all).
      * @param array|null $filteredsections Restrict output to these section numbers (null = all).
+     * @param string $sortaction Report action; 'vallasort' / 'vallarsort' sort the feedback scores.
      * @return array|string Feedback message strings, or '' when no feedback is configured.
      */
     public function response_analysis(
@@ -1030,9 +1031,9 @@ class reporter {
         bool $isgroupmember,
         bool $allresponses,
         int $currentgroupid,
-        ?array $filteredsections = null
+        ?array $filteredsections = null,
+        string $sortaction = ''
     ) {
-        $action = optional_param('action', 'vall', PARAM_ALPHA);
         $scoreboard = $this->questionnaire->feedback()->build_scoreboard(
             $rid,
             $resps,
@@ -1040,7 +1041,7 @@ class reporter {
             $isgroupmember,
             $allresponses,
             $currentgroupid,
-            $action,
+            $sortaction,
             $this->renderer,
             $filteredsections
         );

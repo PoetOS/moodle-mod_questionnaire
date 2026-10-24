@@ -35,7 +35,6 @@
                 "id": "choiceid1",
                 "name": "choiceid1",
                 "class": "classname",
-                "onchange": "dosomething()",
                 "options": [
                     {
                         "selected": 1,
@@ -58,14 +57,15 @@
     {{#isprint}}
         <div class="printdropdown">
             {{#choice.options}}
-                <input id="{{value}}" value="{{choice.value}}" {{#selected}}checked="checked"{{/selected}} name="{{choice.name}}" type="checkbox" aria-label="{{label}}"/>
-                <label for="{{value}}">{{label}}</label>
-                <br/>
+                <div>
+                    <input id="{{value}}" value="{{choice.value}}" {{#selected}}checked="checked"{{/selected}} name="{{choice.name}}" type="checkbox" aria-label="{{label}}"/>
+                    <label for="{{value}}">{{label}}</label>
+                </div>
             {{/choice.options}}
         </div>
     {{/isprint}}
     {{^isprint}}
-        <select id="{{choice.id}}" name="{{choice.name}}" class="{{choice.class}}" {{#choice.onchange}}onchange="{{.}}"{{/choice.onchange}}>
+        <select id="{{choice.id}}" name="{{choice.name}}" class="{{choice.class}}">
             {{#choice.options}}
                 <option {{#selected}}selected="selected" {{/selected}}value="{{value}}">{{label}}</option>
             {{/choice.options}}
