@@ -641,7 +641,7 @@ class questionnaire {
         }
 
         $attempt = reset($attempts);
-        $timenow = time();
+        $timenow = \core\di::get(\core\clock::class)->time();
 
         switch ($this->qtype) {
             case QUESTIONNAIREUNLIMITED:
@@ -662,8 +662,9 @@ class questionnaire {
                 break;
 
             case QUESTIONNAIREWEEKLY:
-                $attemptyear = date('Y', $attempt->submitted);
-                $currentyear = date('Y', $timenow);
+                // Use the ISO-8601 year ('o') to match the ISO-8601 week number ('W').
+                $attemptyear = date('o', $attempt->submitted);
+                $currentyear = date('o', $timenow);
                 $attemptweekofyear = date('W', $attempt->submitted);
                 $currentweekofyear = date('W', $timenow);
                 $cantake = (($attemptyear < $currentyear) ||
