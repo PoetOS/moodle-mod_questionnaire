@@ -104,6 +104,39 @@ final class report_downloader_test extends \advanced_testcase {
     }
 
     /**
+     * download_responses redirects to dwnpg when the roles option finds nobody to notify and no extra
+     * addresses are given, rather than emailing a blank address.
+     */
+    public function test_download_responses_redirects_when_roles_find_no_one(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $qdg = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $qdg->create_and_fully_populate(1, 1, 1, 1);
+        $questionnaires = $qdg->questionnaires();
+        $questionnaire = reset($questionnaires);
+        $PAGE->set_context($questionnaire->context());
+        set_config('allowemailreporting', 1, 'questionnaire');
+        $sink = $this->redirectEmails();
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        try {
+            (new report_downloader($questionnaire, $renderer))->download_responses(
+                page::report(),
+                0,
+                0,
+                new download_options('csv', emailreport: true, emailroles: true, emailextra: ' ')
+            );
+            $this->fail('Expected a redirect back to the download options.');
+        } catch (\moodle_exception $e) {
+            // Under PHPUnit, redirect() throws; before the fix this path called exit() instead.
+            $this->assertSame('redirecterrordetected', $e->errorcode);
+        }
+        $this->assertSame(0, $sink->count());
+    }
+
+    /**
      * stream_and_email() emails the dataformat file to each user, redirects, and cleans up
      * the temp file. Invoked via reflection because the method is private.
      *

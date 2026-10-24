@@ -63,4 +63,16 @@ final class download_options_test extends \advanced_testcase {
         $this->assertTrue($options->emailroles);
         $this->assertSame('a@example.com,b@example.com', $options->emailextra);
     }
+
+    /**
+     * Extra addresses are trimmed, and blank entries (an empty field, stray commas) are dropped.
+     */
+    public function test_extra_emails(): void {
+        $this->assertSame([], (new download_options())->extra_emails());
+        $this->assertSame([], (new download_options(emailextra: ' , ,'))->extra_emails());
+        $this->assertSame(
+            ['a@example.com', 'b@example.com'],
+            (new download_options(emailextra: ' a@example.com, ,b@example.com,'))->extra_emails()
+        );
+    }
 }

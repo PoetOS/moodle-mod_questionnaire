@@ -56,4 +56,13 @@ final class download_options {
         public readonly string $emailextra = '',
     ) {
     }
+
+    /**
+     * The extra email addresses, trimmed, without blank entries.
+     *
+     * @return array
+     */
+    public function extra_emails(): array {
+        return array_values(array_filter(array_map('trim', explode(',', $this->emailextra)), fn($email) => $email !== ''));
+    }
 }

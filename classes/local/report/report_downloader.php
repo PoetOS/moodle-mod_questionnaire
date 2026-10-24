@@ -190,28 +190,19 @@ class report_downloader {
             exit();
         }
 
-        if (get_config('questionnaire', 'allowemailreporting') && ($options->emailroles || $options->emailextra !== '')) {
+        $optionsurl = new \moodle_url('report.php', ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]);
+        if (get_config('questionnaire', 'allowemailreporting')) {
             $users = $options->emailroles
                 ? (new submission_notifier($this->questionnaire))->get_notifiable_users($USER->id)
                 : [];
-            $otheremails = explode(',', $options->emailextra);
+            $otheremails = $options->extra_emails();
             if (!empty($users) || !empty($otheremails)) {
-                $thisurl = new \moodle_url(
-                    'report.php',
-                    ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]
-                );
-                $this->stream_and_email($name, $dataformat, $columns, $output, $users, $otheremails, $thisurl);
+                $this->stream_and_email($name, $dataformat, $columns, $output, $users, $otheremails, $optionsurl);
+                exit();
             }
-            exit();
         }
 
-        redirect(
-            new \moodle_url(
-                'report.php',
-                ['instance' => $instance, 'action' => 'dwnpg', 'group' => $currentgroupid]
-            ),
-            get_string('emailsnotspecified', 'questionnaire')
-        );
+        redirect($optionsurl, get_string('emailsnotspecified', 'questionnaire'));
     }
 
     // Private helpers.
