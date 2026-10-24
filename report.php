@@ -27,6 +27,7 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\report\download_options;
 use mod_questionnaire\local\report\report_actions;
 use mod_questionnaire\local\report\report_downloader;
 use mod_questionnaire\local\report\report_viewer;
@@ -116,7 +117,7 @@ if ($outputtarget == 'print') {
 
 // Get all responses for further use in viewbyresp and deleteall etc.
 // All participants.
-$respsallparticipants = $questionnaire->get_responses();
+$respsallparticipants = $questionnaire->get_responses(false, 0, $userview);
 
 // Available group modes (0 = no groups; 1 = separate groups; 2 = visible groups).
 $groupmode = groups_get_activity_groupmode($cm, $course);
@@ -191,8 +192,18 @@ switch ($action) {
         break;
 
     case 'dfs':
+        $options = new download_options(
+            optional_param('downloadformat', '', PARAM_ALPHA),
+            optional_param('choicecodes', 0, PARAM_BOOL),
+            optional_param('choicetext', 0, PARAM_BOOL),
+            optional_param('complete', 0, PARAM_BOOL),
+            optional_param('rankaverages', 0, PARAM_BOOL),
+            optional_param('emailreport', '', PARAM_ALPHA) !== '',
+            optional_param('emailroles', 0, PARAM_BOOL),
+            optional_param('emailextra', '', PARAM_RAW)
+        );
         (new report_downloader($questionnaire, $renderer))
-            ->download_responses($page, $currentgroupid, (int)$user);
+            ->download_responses($page, $currentgroupid, (int)$user, $options);
         break;
 
     case 'vall':         // View all responses.

@@ -76,7 +76,7 @@ final class report_downloader_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $this->expectException(\required_capability_exception::class);
         (new report_downloader($questionnaire, $renderer))
-            ->download_responses(page::report(), 0, 0);
+            ->download_responses(page::report(), 0, 0, new download_options());
     }
 
     /**
@@ -95,17 +95,12 @@ final class report_downloader_test extends \advanced_testcase {
         $PAGE->set_context($questionnaire->context());
 
         // Force the email branch with no recipients and no allowemailreporting config.
-        $_POST['emailreport'] = 'send';
         set_config('allowemailreporting', 0, 'questionnaire');
 
         $renderer = $PAGE->get_renderer('mod_questionnaire');
         $this->expectException(\moodle_exception::class);
-        try {
-            (new report_downloader($questionnaire, $renderer))
-                ->download_responses(page::report(), 0, 0);
-        } finally {
-            unset($_POST['emailreport']);
-        }
+        (new report_downloader($questionnaire, $renderer))
+            ->download_responses(page::report(), 0, 0, new download_options('csv', emailreport: true));
     }
 
     /**

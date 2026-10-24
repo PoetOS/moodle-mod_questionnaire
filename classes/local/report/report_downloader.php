@@ -142,8 +142,7 @@ class report_downloader {
     /**
      * Generate and deliver a dataformat export (dfs action arm).
      *
-     * Reads dataformat-related parameters directly from the request, since they
-     * are tightly coupled to the download form posted from show_download_options().
+     * The download form's choices (posted from show_download_options()) come in as $options.
      *
      * Three terminal paths:
      *  - Streams the file via core\dataformat::download_data (then exit()).
@@ -154,9 +153,15 @@ class report_downloader {
      * @param \mod_questionnaire\output\page $page The page that output is added to.
      * @param int $currentgroupid Active group filter (echoed in redirect URLs).
      * @param int $user User filter (passed through to generate_csv).
+     * @param download_options $options The choices posted from the download form.
      * @return void
      */
-    public function download_responses(\mod_questionnaire\output\page $page, int $currentgroupid, int $user): void {
+    public function download_responses(
+        \mod_questionnaire\output\page $page,
+        int $currentgroupid,
+        int $user,
+        download_options $options
+    ): void {
         global $CFG, $USER;
 
         require_capability('mod/questionnaire:downloadresponses', $this->questionnaire->context());
@@ -165,39 +170,31 @@ class report_downloader {
         $name = clean_param($this->questionnaire->name(), PARAM_FILE);
         $name = preg_replace('/[^A-Z0-9]+/i', '_', trim($name));
 
-        $choicecodes = optional_param('choicecodes', '0', PARAM_INT);
-        $choicetext = optional_param('choicetext', '0', PARAM_INT);
-        $showincompletes = optional_param('complete', '0', PARAM_INT);
-        $rankaverages = optional_param('rankaverages', '0', PARAM_INT);
-        $dataformat = optional_param('downloadformat', '', PARAM_ALPHA);
-        $emailroles = optional_param('emailroles', 0, PARAM_INT);
-        $emailextra = optional_param('emailextra', '', PARAM_RAW);
-
+        $dataformat = $options->dataformat;
         $output = $this->questionnaire->reporter($this->renderer, $page)->generate_csv(
             $currentgroupid,
             '',
             $user,
-            $choicecodes,
-            $choicetext,
-            $showincompletes,
-            $rankaverages
+            (int) $options->choicecodes,
+            (int) $options->choicetext,
+            (int) $options->showincompletes,
+            (int) $options->rankaverages
         );
 
         $columns = $output[0];
         unset($output[0]);
 
         $instance = $this->questionnaire->id();
-        $emailreport = optional_param('emailreport', '', PARAM_ALPHA);
-        if (empty($emailreport)) {
+        if (!$options->emailreport) {
             \core\dataformat::download_data($name, $dataformat, $columns, $output);
             exit();
         }
 
-        if (get_config('questionnaire', 'allowemailreporting') && (!empty($emailroles) || !empty($emailextra))) {
-            $users = !empty($emailroles)
+        if (get_config('questionnaire', 'allowemailreporting') && ($options->emailroles || $options->emailextra !== '')) {
+            $users = $options->emailroles
                 ? (new submission_notifier($this->questionnaire))->get_notifiable_users($USER->id)
                 : [];
-            $otheremails = explode(',', $emailextra);
+            $otheremails = explode(',', $options->emailextra);
             if (!empty($users) || !empty($otheremails)) {
                 $thisurl = new \moodle_url(
                     'report.php',

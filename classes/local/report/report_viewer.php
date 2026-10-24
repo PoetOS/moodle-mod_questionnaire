@@ -141,7 +141,7 @@ class report_viewer {
             if ($currentgroupid == 0) {
                 $resps = $respsallparticipants;
             } else {
-                if (!($resps = $this->questionnaire->get_responses(false, $currentgroupid))) {
+                if (!($resps = $this->questionnaire->get_responses(false, $currentgroupid, $userview))) {
                     $resps = '';
                 }
             }

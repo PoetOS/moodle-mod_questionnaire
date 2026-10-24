@@ -147,9 +147,10 @@ class questionnaire_responses {
      *
      * @param int|bool $userid
      * @param int $groupid
+     * @param string $status The 'responsestats' filter: '' or '0' for all, 'n' in progress, anything else submitted.
      * @return array
      */
-    public function get_responses($userid = false, $groupid = 0) {
+    public function get_responses($userid = false, $groupid = 0, string $status = '') {
         global $DB;
 
         $params = [];
@@ -182,8 +183,7 @@ class questionnaire_responses {
             $params['userid'] = $userid;
         }
 
-        $status = optional_param('responsestats', '0', PARAM_ALPHANUM);
-        if ($status) {
+        if ($status !== '' && $status !== '0') {
             $status = ($status === 'n') ? 'n' : 'y';
             $sql .= ' AND r.complete = :status';
             $params['status'] = $status;

@@ -147,11 +147,9 @@ class reporter {
             $ridlist = $rids;
         } else {
             if ($uid !== false) {
-                $rows = $this->questionnaire->get_responses($uid);
-            } else if ($currentgroupid == 0) {
-                $rows = $this->questionnaire->get_responses();
+                $rows = $this->questionnaire->get_responses($uid, 0, $userview);
             } else {
-                $rows = $this->questionnaire->get_responses(false, (int)$currentgroupid);
+                $rows = $this->questionnaire->get_responses(false, (int) $currentgroupid, $userview);
             }
             if (!$rows) {
                 $this->page->add_to_page(

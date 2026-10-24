@@ -468,6 +468,30 @@ final class questionnaire_test extends \advanced_testcase {
         $this->assertCount(2, $q->get_responses(false));
     }
 
+    /**
+     * Asserts get_responses() filters by completion status when the responsestats filter is given.
+     *
+     * @covers \mod_questionnaire\questionnaire::get_responses
+     */
+    public function test_get_responses_filtered_by_status(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 77774;
+        $q = $this->make_questionnaire(['id' => $qid]);
+        foreach (['y', 'y', 'n'] as $userid => $complete) {
+            $DB->insert_record('questionnaire_response', (object)[
+                'questionnaireid' => $qid, 'userid' => $userid + 1,
+                'submitted' => time(), 'complete' => $complete, 'grade' => 0,
+            ]);
+        }
+        $this->assertCount(3, $q->get_responses(false, 0, ''));
+        $this->assertCount(3, $q->get_responses(false, 0, '0'));
+        $this->assertCount(2, $q->get_responses(false, 0, 'y'));
+        $this->assertCount(1, $q->get_responses(false, 0, 'n'));
+        $this->assertCount(1, $q->get_responses(3, 0, 'n'));
+        $this->assertCount(0, $q->get_responses(3, 0, 'y'));
+    }
+
     // Tests for get_latest_responseid().
 
     /**

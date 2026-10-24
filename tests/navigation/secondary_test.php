@@ -222,4 +222,29 @@ final class secondary_test extends \advanced_testcase {
         $this->assertNotFalse($yourresponses);
         $this->assertFalse($yourresponses->has_children());
     }
+
+    /**
+     * The group passed in from the request is carried into the your-response link.
+     */
+    public function test_settings_nav_carries_request_group(): void {
+        $this->resetAfterTest();
+        $questionnaire = $this->build_questionnaire();
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $questionnaire->course()->id, 'student');
+        $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->generate_response(
+            $questionnaire,
+            $questionnaire->questions(),
+            (int) $student->id,
+            true
+        );
+        $this->setUser($student);
+        $settingsnav = $this->build_settings_nav($questionnaire);
+        $node = \navigation_node::create('Questionnaire');
+
+        $questionnaire->extend_settings_navigation($settingsnav, $node, 7);
+
+        $yourresponse = $node->find('yourresponse', \navigation_node::TYPE_SETTING);
+        $this->assertNotFalse($yourresponse);
+        $this->assertEquals(7, $yourresponse->action->get_param('group'));
+    }
 }

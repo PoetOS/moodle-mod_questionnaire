@@ -717,15 +717,15 @@ class questionnaire {
      *
      * @param \settings_navigation $settings The settings navigation object.
      * @param \navigation_node $questionnairenode The node to add module settings to.
+     * @param int $currentgroupid The group id from the request, or 0 to use the activity's current group.
      * @return void
      */
     public function extend_settings_navigation(
         \settings_navigation $settings,
-        \navigation_node $questionnairenode
+        \navigation_node $questionnairenode,
+        int $currentgroupid = 0
     ): void {
         global $USER;
-
-        $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
 
         $cm = $settings->get_page()->cm;
         $context = $cm->context;
@@ -736,7 +736,7 @@ class questionnaire {
         // Treat an unlinked or orphaned survey row as "owned" — same fallback as the legacy code.
         $owner = ($this->survey()->id() == 0) ? true : $this->survey()->is_owned_by_course((int) $courseid);
 
-        // On view page, currentgroupid is not yet sent as an optional_param, so get it.
+        // On the view page no group is sent with the request, so use the activity's current group.
         $groupmode = groups_get_activity_groupmode($cm, $course);
         if ($groupmode > 0 && $currentgroupid == 0) {
             $currentgroupid = groups_get_activity_group($this->coursemodule());
@@ -1326,10 +1326,11 @@ class questionnaire {
      *
      * @param int|false $userid  Limit to this user, or false for all users.
      * @param int $groupid       Limit to this group (0 = no filter).
+     * @param string $status     The 'responsestats' filter: '' or '0' for all, 'n' in progress, anything else submitted.
      * @return array
      */
-    public function get_responses($userid = false, int $groupid = 0): array {
-        return $this->responses()->get_responses($userid, $groupid);
+    public function get_responses($userid = false, int $groupid = 0, string $status = ''): array {
+        return $this->responses()->get_responses($userid, $groupid, $status);
     }
 
     /**
