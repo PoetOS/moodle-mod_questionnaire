@@ -61,7 +61,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $user = $DB->get_record('user', ['firstname' => 'Testy']);
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
-        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
+        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id(), 'questionnaire', $questionnaire->courseid());
 
         $contextlist = provider::get_contexts_for_userid($user->id);
         // Check that we only get back one context.
@@ -87,7 +87,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $user = $DB->get_record('user', ['firstname' => 'Testy']);
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
-        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
+        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id(), 'questionnaire', $questionnaire->courseid());
         $cmcontext = \context_module::instance($cm->id);
 
         $userlist = new \core_privacy\local\request\userlist($cmcontext, 'mod_questionnaire');
@@ -120,7 +120,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $user = $DB->get_record('user', ['firstname' => 'Testy']);
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
-        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
+        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id(), 'questionnaire', $questionnaire->courseid());
         $cmcontext = \context_module::instance($cm->id);
 
         $writer = \core_privacy\local\request\writer::with_context($cmcontext);
@@ -130,8 +130,8 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         provider::export_user_data($approvedlist);
         $data = $writer->get_data([]);
 
-        $this->assertStringContainsString($questionnaire->name, strip_tags($data->name));
-        $this->assertEquals($questionnaire->intro, strip_tags($data->intro));
+        $this->assertStringContainsString($questionnaire->name(), strip_tags($data->name));
+        $this->assertEquals($questionnaire->intro(), strip_tags($data->intro));
         $this->assertNotEmpty($data->responses[0]['questions']);
         $this->assertEquals('1. Text Box 1000', $data->responses[0]['questions'][1]->questionname);
         $this->assertEquals('Test answer', $data->responses[0]['questions'][1]->answers[0]);
@@ -157,7 +157,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $user = $DB->get_record('user', ['username' => 'username1']);
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
-        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
+        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id(), 'questionnaire', $questionnaire->courseid());
         $cmcontext = \context_module::instance($cm->id);
 
         // Get all accounts. There should be two.
@@ -183,7 +183,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $user = $DB->get_record('user', ['username' => 'username1']);
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
-        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
+        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id(), 'questionnaire', $questionnaire->courseid());
         $cmcontext = \context_module::instance($cm->id);
 
         // Get all accounts. There should be two.
@@ -215,7 +215,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $user3 = $DB->get_record('user', ['username' => 'username3']);
         $questionnaires = $qdg->questionnaires();
         $questionnaire = current($questionnaires);
-        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id, 'questionnaire', $questionnaire->course);
+        [$course, $cm] = get_course_and_cm_from_instance($questionnaire->id(), 'questionnaire', $questionnaire->courseid());
         $cmcontext = \context_module::instance($cm->id);
 
         $approveduserlist = new \core_privacy\local\request\approved_userlist($cmcontext, 'questionnaire', [$user->id, $user3->id]);

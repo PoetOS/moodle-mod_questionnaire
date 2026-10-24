@@ -92,6 +92,7 @@ $string['checkbreaksadded'] = 'New Page Break(s) inserted at position(s):';
 $string['checkbreaksok'] = 'All the required Page breaks are present!';
 $string['checkbreaksremoved'] = 'Removed {$a} extra Page break(s).';
 $string['checknotstarted'] = 'Select not started';
+$string['checkpagebreaks'] = 'Check page break placement';
 $string['checkstarted'] = 'Select started';
 $string['cleanrecylebin'] = "Empty Questionnaire 'Recycle bin'";
 $string['clicktoswitch'] = '(click to switch)';
@@ -319,6 +320,7 @@ $string['maxrange_help'] = 'Set the maximum value of the range on the right-hand
 $string['maxtextlength'] = 'Max. text length';
 $string['maxtextlength_help'] = 'For the Text Box question type, enter the Input Box length and the Maximum text length of text to be entered by respondent.
 Default values are 20 characters for the Input Box width and 25 characters for the maximum length of text entered.';
+$string['messagefieldsrequired'] = 'Please enter both a subject and a message.';
 $string['messageprovider:message'] = 'Questionnaire reminder';
 $string['messageprovider:notification'] = 'Questionnaire submission';
 $string['middlepart'] = ', {$a->centreval} is {$a->middlelabel}';
@@ -514,6 +516,7 @@ $string['qtypemonthly'] = 'respond monthly';
 $string['qtypeonce'] = 'respond once';
 $string['qtypeunlimited'] = 'respond many';
 $string['qtypeweekly'] = 'respond weekly';
+$string['questionmoved'] = 'Question moved';
 $string['questionnaire:addinstance'] = 'Add a new questionnaire';
 $string['questionnaire:copysurveys'] = 'Copy template and private questionnaires';
 $string['questionnaire:createpublic'] = 'Create public questionnaires';
@@ -556,6 +559,7 @@ $string['realm_help'] = '* **There are  three types of questionnaires:**
  * Template - can be copied and edited.
  * Public - can be shared among courses.';
 $string['realm_link'] = 'mod/questionnaire/qsettings#Questionnaire_Type';
+$string['recyclebinempty'] = 'The recycle bin is empty.';
 $string['recylebindisabled'] = '<span class="timedeletednext7days">Automatic deletion is disabled</span>';
 $string['redirecturl'] = 'The URL to which a user is redirected after completing this questionnaire.';
 $string['remove'] = 'Move to deletion area';
@@ -566,6 +570,9 @@ $string['removeoldresponses'] = 'Delete old responses';
 $string['removeoldresponses_help'] = 'The system can automatically remove responses after a certain length of time.';
 $string['removeoldresponsesafter'] = 'Delete old responses after';
 $string['removeoldresponsesdefault'] = 'Never remove';
+$string['reorderdependency'] = 'This order would place a question before one it depends on. Drag it to a position after its parent question.';
+$string['reordermismatch'] = 'The submitted question order does not match this questionnaire\'s current questions. Please reload the page and try again.';
+$string['reorderpagebreakfirst'] = 'A page break cannot be the first item in the questionnaire.';
 $string['required'] = 'Response is required';
 $string['required_help'] = 'If you select ***Yes***, response to this question will be required, i.e.
 the respondent will not be able to submit the questionnaire
@@ -621,8 +628,8 @@ $string['savesettings'] = 'Save settings';
 $string['search:activity'] = 'Questionnaire - activity information';
 $string['search:question'] = 'Questionnaire - questions';
 $string['section'] = 'Description';
-$string['sectionbreak'] = '----- Page Break -----';
-$string['sectionbreak_help'] = '----- Page Break -----';
+$string['sectionbreak'] = 'Page break';
+$string['sectionbreak_help'] = 'Page break';
 $string['sectionsnotset'] = 'You must select at least ONE question per section!<br />Section(s) not selected: {$a}';
 $string['sectiontext'] = 'Label';
 $string['sectiontext_help'] = 'This is not a question but a (short) text which will be displayed to introduce a series of questions.';

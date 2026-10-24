@@ -37,17 +37,15 @@ require_once($CFG->libdir . '/formslib.php');
 class edit_question_form extends \moodleform {
     /**
      * Form definition.
+     *
+     * Expects $customdata['questionnaire'] and $customdata['question'] to hold the questionnaire and the question being
+     * edited.
      */
     public function definition() {
-        // TODO - Find a way to not use globals. Maybe the base class allows more parameters to be passed?
-        global $questionnaire, $question, $SESSION;
+        $questionnaire = $this->_customdata['questionnaire'];
+        $question = $this->_customdata['question'];
 
-        // TODO - Is there a better way to do this without session global?
-        // The 'sticky' required response value for further new questions.
-        if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
-            $question->required = $SESSION->questionnaire->required;
-        }
-        if (!isset($question->type_id)) {
+        if ($question->typeid() === 0) {
             throw new \moodle_exception('undefinedquestiontype', 'mod_questionnaire');
         }
 
@@ -69,7 +67,7 @@ class edit_question_form extends \moodleform {
         $errors = parent::validation($data, $files);
 
         // If this is a rate question.
-        if ($data['type_id'] == QUESRATE) {
+        if ($data['typeid'] == QUESRATE) {
             if ($data['length'] < 2) {
                 $errors["length"] = get_string('notenoughscaleitems', 'questionnaire');
             }
@@ -90,7 +88,7 @@ class edit_question_form extends \moodleform {
         }
 
         // If this is a slider question.
-        if ($data['type_id'] == QUESSLIDER) {
+        if ($data['typeid'] == QUESSLIDER) {
             if (
                 isset($data['minrange']) &&
                 isset($data['maxrange']) &&

@@ -408,7 +408,6 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
 
         // Replace the = separator with :: separator in quest_choice content.
         // This fixes radio button options using old "value"="display" formats.
-        require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
         $choices = $DB->get_recordset('questionnaire_quest_choice', null);
         $total = $DB->count_records('questionnaire_quest_choice');
         if ($total > 0) {
@@ -419,7 +418,7 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
                     ($choice->value == null || $choice->value == 'NULL') &&
                     !preg_match("/^([0-9]{1,3}=.*|!other=.*)$/", $choice->content)
                 ) {
-                    $content = questionnaire_choice_values($choice->content);
+                    $content = \mod_questionnaire\local\question\question::parse_choice_content($choice->content);
                     if (strpos($content->text, '=')) {
                         $newcontent = str_replace('=', '::', $content->text);
                         $choice->content = $newcontent;
@@ -836,7 +835,7 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         }
 
         // Need to move rank named degree choices to the new field.
-        \mod_questionnaire\question\rate::move_all_nameddegree_choices();
+        \mod_questionnaire\local\question\rate::move_all_nameddegree_choices();
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2018110103, 'questionnaire');
@@ -1090,49 +1089,389 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2025041400.03, 'questionnaire');
     }
 
-    return true;
-}
+    if ($oldversion < 2025111100.01) {
+        // Setup table for renaming fields.
+        $table = new xmldb_table('questionnaire');
 
-/**
- * Supporting functions used once.
- * @return bool
- */
-function questionnaire_upgrade_2007120101() {
-    global $DB;
-
-    $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
-    $status = true;
-
-    // Shorten table names to bring them in accordance with the XML DB schema.
-    $qtable = new xmldb_table('questionnaire_question_choice');
-    $dbman->rename_table($qtable, 'questionnaire_quest_choice', false);
-    unset($qtable);
-
-    $qtable = new xmldb_table('questionnaire_response_multiple');
-    $dbman->rename_table($qtable, 'questionnaire_resp_multiple', false);
-    unset($qtable);
-
-    $qtable = new xmldb_table('questionnaire_response_single');
-    $dbman->rename_table($qtable, 'questionnaire_resp_single', false);
-    unset($qtable);
-
-    // Upgrade the questionnaire_question_type table to use typeid.
-    $table = new xmldb_table('questionnaire_question_type');
-    $field = new xmldb_field('typeid');
-    $field->set_attributes(XMLDB_TYPE_CHAR, '20', true, true, false, false, null, '0', 'id');
-    $dbman->add_field($table, $field);
-    if (($numrecs = $dbman->count_records('questionnaire_question_type')) > 0) {
-        $recstart = 0;
-        $recstoget = 100;
-        while ($recstart < $numrecs) {
-            if ($records = $dbman->get_records('questionnaire_question_type', [], '', '*', $recstart, $recstoget)) {
-                foreach ($records as $record) {
-                    $dbman->set_field('questionnaire_question_type', 'typeid', $record->id, ['id' => $record->id]);
-                }
-            }
-            $recstart += $recstoget;
+        // Rename field resp_eligible on table questionnaire to respeligible.
+        $field = new xmldb_field('resp_eligible', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'all', 'respondenttype');
+        // Launch rename field respeligible.
+        $dbman->rename_field($table, $field, 'respeligible');
+        // Define index respview (not unique) to be dropped form questionnaire.
+        $index = new xmldb_index('respview', XMLDB_INDEX_NOTUNIQUE, ['resp_view']);
+        // Conditionally launch drop index respview.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
         }
+
+        // Rename field resp_view on table questionnaire to respview.
+        $field = new xmldb_field('resp_view', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'respeligible');
+        // Launch rename field resp_view.
+        $dbman->rename_field($table, $field, 'respview');
+        // Define index respview (not unique) to be added to questionnaire.
+        $index = new xmldb_index('respview', XMLDB_INDEX_NOTUNIQUE, ['respview']);
+        // Conditionally launch add index respview.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Setup table for renaming fields.
+        $table = new xmldb_table('questionnaire_survey');
+
+        // Rename field thanks_page on table questionnaire_survey to thankspage.
+        $field = new xmldb_field('thanks_page', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'theme');
+        // Launch rename field thankspage.
+        $dbman->rename_field($table, $field, 'thankspage');
+
+        // Rename field thanks_page on table questionnaire_survey to thankspage.
+        $field = new xmldb_field('thank_head', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'thankspage');
+        // Launch rename field thank_head.
+        $dbman->rename_field($table, $field, 'thankhead');
+
+        // Rename field thank_body on table questionnaire_survey to thankbody.
+        $field = new xmldb_field('thank_body', XMLDB_TYPE_TEXT, null, null, null, null, null, 'thankhead');
+        // Launch rename field thank_body.
+        $dbman->rename_field($table, $field, 'thankbody');
+
+        // Rename field chart_type on table questionnaire_survey to charttype.
+        $field = new xmldb_field('chart_type', XMLDB_TYPE_CHAR, '64', null, null, null, null, 'feedbackscores');
+        // Launch rename field chart_type.
+        $dbman->rename_field($table, $field, 'charttype');
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2025111100.01, 'questionnaire');
     }
 
-    return $status;
+    if ($oldversion < 2025111100.02) {
+        $table = new xmldb_table('questionnaire_question');
+
+        // Rename the field from type_id to typeid.
+        $field = new xmldb_field('type_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        if ($dbman->field_exists($table, 'type_id')) {
+            $dbman->rename_field($table, $field, 'typeid');
+        }
+
+        // Rename the field from result_id to resultid.
+        $field = new xmldb_field('result_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        if ($dbman->field_exists($table, 'result_id')) {
+            $dbman->rename_field($table, $field, 'resultid');
+        }
+
+        upgrade_mod_savepoint(true, 2025111100.02, 'questionnaire');
+    }
+
+    if ($oldversion < 2025111100.03) {
+        $table = new xmldb_table('questionnaire_question_type');
+
+        // Rename field has_choices on table questionnaire_question_type to haschoices.
+        if ($dbman->field_exists($table, 'has_choices')) {
+            $field = new xmldb_field('has_choices', XMLDB_TYPE_CHAR, '1', null, XMLDB_NOTNULL, null, 'y', 'type');
+            $dbman->rename_field($table, $field, 'haschoices');
+        }
+
+        // Rename field response_table on table questionnaire_question_type to responsetable.
+        if ($dbman->field_exists($table, 'response_table')) {
+            $field = new xmldb_field('response_table', XMLDB_TYPE_CHAR, '32', null, null, null, null, 'haschoices');
+            $dbman->rename_field($table, $field, 'responsetable');
+        }
+
+        upgrade_mod_savepoint(true, 2025111100.03, 'questionnaire');
+    }
+
+    if ($oldversion < 2025111100.04) {
+        // Rename field question_id on table questionnaire_quest_choice to questionid.
+        $table = new xmldb_table('questionnaire_quest_choice');
+        if ($dbman->field_exists($table, 'question_id')) {
+            // Launch drop key questionid.
+            $key = new xmldb_key('questionid', XMLDB_KEY_FOREIGN, ['question_id'], 'questionnaire_question', ['id']);
+            $dbman->drop_key($table, $key);
+
+            $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $dbman->rename_field($table, $field, 'questionid');
+
+            // Launch add key questionid.
+            $key = new xmldb_key('questionid', XMLDB_KEY_FOREIGN, ['questionid'], 'questionnaire_question', ['id']);
+            $dbman->add_key($table, $key);
+        }
+
+        upgrade_mod_savepoint(true, 2025111100.04, 'questionnaire');
+    }
+
+    if ($oldversion < 2025111100.05) {
+        // Rename underscore fields and appropriate indeces.
+
+        // Update questionnaire_response_bool table.
+        $table = new xmldb_table('questionnaire_response_bool');
+
+        // Define index response_question (not unique) to be dropped form questionnaire_response_bool.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id']);
+        // Conditionally launch drop index response_question.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+        // Rename field response_id on table questionnaire_response_bool to responseid.
+        $field = new xmldb_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        if ($dbman->field_exists($table, 'response_id')) {
+            // Launch rename field response_id.
+            $dbman->rename_field($table, $field, 'responseid');
+        }
+
+        // Rename field question_id on table questionnaire_response_bool to questionid.
+        $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responseid');
+        if ($dbman->field_exists($table, 'question_id')) {
+            // Launch rename field question_id.
+            $dbman->rename_field($table, $field, 'questionid');
+        }
+
+        // Rename field choice_id on table questionnaire_response_bool to choiceid.
+        $field = new xmldb_field('choice_id', XMLDB_TYPE_CHAR, '1', null, XMLDB_NOTNULL, null, 'y', 'questionid');
+        if ($dbman->field_exists($table, 'choice_id')) {
+            // Launch rename field choice_id.
+            $dbman->rename_field($table, $field, 'choiceid');
+        }
+
+        // Define index response_question (not unique) to be added to questionnaire_response_bool.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['responseid', 'questionid']);
+        // Conditionally launch add index response_question.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Update questionnaire_response_date table.
+        $table = new xmldb_table('questionnaire_response_date');
+
+        // Define index response_question (not unique) to be dropped form questionnaire_response_date.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id']);
+        // Conditionally launch drop index response_question.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Rename field response_id on table questionnaire_response_bool to responseid.
+        $field = new xmldb_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        if ($dbman->field_exists($table, 'response_id')) {
+            // Launch rename field response_id.
+            $dbman->rename_field($table, $field, 'responseid');
+        }
+
+        // Rename field question_id on table questionnaire_response_bool to questionid.
+        $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responseid');
+        if ($dbman->field_exists($table, 'question_id')) {
+            // Launch rename field question_id.
+            $dbman->rename_field($table, $field, 'questionid');
+        }
+
+        // Define index response_question (not unique) to be added to questionnaire_response_date.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['responseid', 'questionid']);
+        // Conditionally launch add index response_question.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Rename field response_id on table questionnaire_resp_multiple to responseid.
+        $table = new xmldb_table('questionnaire_resp_multiple');
+
+        // Define index response_question (not unique) to be dropped form questionnaire_resp_multiple.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id', 'choice_id']);
+        // Conditionally launch drop index response_question.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Launch rename field response_id.
+        $field = new xmldb_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        if ($dbman->field_exists($table, 'response_id')) {
+            $dbman->rename_field($table, $field, 'responseid');
+        }
+
+        // Launch rename field question_id.
+        $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responseid');
+        if ($dbman->field_exists($table, 'question_id')) {
+            $dbman->rename_field($table, $field, 'questionid');
+        }
+
+        // Launch rename field choice_id.
+        $field = new xmldb_field('choice_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'questionid');
+        if ($dbman->field_exists($table, 'choice_id')) {
+            $dbman->rename_field($table, $field, 'choiceid');
+        }
+
+        // Define index response_question (not unique) to be added to questionnaire_resp_multiple.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['responseid', 'questionid', 'choiceid']);
+        // Conditionally launch add index response_question.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Rename field response_id on table questionnaire_response_other to responseid.
+        $table = new xmldb_table('questionnaire_response_other');
+
+        // Define index response_question (not unique) to be dropped form questionnaire_response_other.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id', 'choice_id']);
+        // Conditionally launch drop index response_question.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Launch rename field response_id.
+        $field = new xmldb_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        if ($dbman->field_exists($table, 'response_id')) {
+            $dbman->rename_field($table, $field, 'responseid');
+        }
+
+        // Launch rename field question_id.
+        $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responseid');
+        if ($dbman->field_exists($table, 'question_id')) {
+            $dbman->rename_field($table, $field, 'questionid');
+        }
+
+        // Launch rename field choice_id.
+        $field = new xmldb_field('choice_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'questionid');
+        if ($dbman->field_exists($table, 'choice_id')) {
+            $dbman->rename_field($table, $field, 'choiceid');
+        }
+
+        // Define index response_question (not unique) to be added to questionnaire_response_other.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['responseid', 'questionid', 'choiceid']);
+        // Conditionally launch add index response_question.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Rename field response_id on table questionnaire_response_rank to responseid.
+        $table = new xmldb_table('questionnaire_response_rank');
+
+        // Define index response_question (not unique) to be dropped form questionnaire_response_rank.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id', 'choice_id']);
+        // Conditionally launch drop index response_question.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Launch rename field response_id.
+        $field = new xmldb_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        if ($dbman->field_exists($table, 'response_id')) {
+            $dbman->rename_field($table, $field, 'responseid');
+        }
+
+        // Launch rename field question_id.
+        $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responseid');
+        if ($dbman->field_exists($table, 'question_id')) {
+            $dbman->rename_field($table, $field, 'questionid');
+        }
+
+        // Launch rename field choice_id.
+        $field = new xmldb_field('choice_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'questionid');
+        if ($dbman->field_exists($table, 'choice_id')) {
+            $dbman->rename_field($table, $field, 'choiceid');
+        }
+
+        // Define index response_question (not unique) to be added to questionnaire_resp_multiple.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['responseid', 'questionid', 'choiceid']);
+        // Conditionally launch add index response_question.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Update questionnaire_resp_single table.
+        $table = new xmldb_table('questionnaire_resp_single');
+
+        // Define index response_question (not unique) to be dropped form questionnaire_resp_single.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id']);
+        // Conditionally launch drop index response_question.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Rename field response_id on table questionnaire_response_bool to responseid.
+        $field = new xmldb_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        if ($dbman->field_exists($table, 'response_id')) {
+            // Launch rename field response_id.
+            $dbman->rename_field($table, $field, 'responseid');
+        }
+
+        // Rename field question_id on table questionnaire_response_bool to questionid.
+        $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responseid');
+        if ($dbman->field_exists($table, 'question_id')) {
+            // Launch rename field question_id.
+            $dbman->rename_field($table, $field, 'questionid');
+        }
+
+        // Launch rename field choice_id.
+        $field = new xmldb_field('choice_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'questionid');
+        if ($dbman->field_exists($table, 'choice_id')) {
+            $dbman->rename_field($table, $field, 'choiceid');
+        }
+
+        // Define index response_question (not unique) to be added to questionnaire_resp_single.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['responseid', 'questionid']);
+        // Conditionally launch add index response_question.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Rename field response_id on table questionnaire_response_text to responseid.
+        $table = new xmldb_table('questionnaire_response_text');
+
+        // Define index response_question (not unique) to be dropped form questionnaire_response_text.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id']);
+        // Conditionally launch drop index response_question.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Launch rename field response_id.
+        $field = new xmldb_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        if ($dbman->field_exists($table, 'response_id')) {
+            $dbman->rename_field($table, $field, 'responseid');
+        }
+
+        // Launch rename field question_id.
+        $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responseid');
+        if ($dbman->field_exists($table, 'question_id')) {
+            $dbman->rename_field($table, $field, 'questionid');
+        }
+
+        // Define index response_question (not unique) to be added to questionnaire_response_text.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['responseid', 'questionid']);
+        // Conditionally launch add index response_question.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Update questionnaire_response_file table.
+        $table = new xmldb_table('questionnaire_response_file');
+
+        // Define index response_question (not unique) to be dropped form questionnaire_response_file.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['response_id', 'question_id']);
+        // Conditionally launch drop index response_question.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Rename field response_id on table questionnaire_response_bool to responseid.
+        $field = new xmldb_field('response_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        if ($dbman->field_exists($table, 'response_id')) {
+            // Launch rename field response_id.
+            $dbman->rename_field($table, $field, 'responseid');
+        }
+
+        // Rename field question_id on table questionnaire_response_bool to questionid.
+        $field = new xmldb_field('question_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responseid');
+        if ($dbman->field_exists($table, 'question_id')) {
+            // Launch rename field question_id.
+            $dbman->rename_field($table, $field, 'questionid');
+        }
+
+        // Define index response_question (not unique) to be added to questionnaire_response_file.
+        $index = new xmldb_index('response_question', XMLDB_INDEX_NOTUNIQUE, ['responseid', 'questionid']);
+        // Conditionally launch add index response_question.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        upgrade_mod_savepoint(true, 2025111100.05, 'questionnaire');
+    }
+
+    return true;
 }

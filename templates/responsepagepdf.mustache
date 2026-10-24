@@ -21,21 +21,17 @@
     translated into a PDF file by the TCPDF library.
 
     Classes required for JS:
-    * /mod/questionnaire/module.js
+    * none
 
     Data attributes required for JS:
     * none
 
     Context variables required for this template:
-    * tabsarea - string: HTML of the tabs management area.
     * notifications - string: HTML of any notifications loaded.
     * myheaders - string: HTML of the page header.
     * navigationbar - string: HTML of the response navigation controls.
     * respondentinfo - string: HTML of any specific response/respondent information.
-    * title - string: Text title of the questionnaire.
-    * printblank - string: HTML of optional print blank questionnaire control.
-    * subtitle - string: Optional text subtitle.
-    * addinfo - string: Optional HTML additional information.
+    * surveyheader - object: survey_header export, rendered by the mod_questionnaire/survey_header partial.
     * feedbackcharts - string: HTML of any chart displays.
     * feedbackscores - string: HTML of any feedback scores.
     * feedbackmessages - string: HTML of any feedback messages.
@@ -48,9 +44,11 @@
         "notifications": "<div>Notification one</div>",
         "myheaders": "HTML of the page header.",
         "respondentinfo": "<div>This is respondent information HTML</div>",
-        "title": "Test Questionnaire HTML",
-        "subtitle": "This is a subtitle HTML",
-        "addinfo": "<div>This is additional information HTML.</div>",
+        "surveyheader": {
+            "title": "Test Questionnaire",
+            "subtitle": "This is a subtitle",
+            "info": "<div>This is additional information.</div>"
+        },
         "feedbackcharts": "<div>Feedback charts HTML.</div>",
         "feedbackscores": "<div>Feedback scores HTML.</div>",
         "feedbackmessages": "<div>Feedback messages HTML.</div>",
@@ -67,9 +65,7 @@
     }}<div class="box generalbox">{{!
         }}{{#myheaders}}<h2>{{{.}}}</h2>{{/myheaders}}{{!
         }}{{{respondentinfo}}}
-        {{#title}}<h3 class="surveyTitle">{{{.}}}</h3>{{{printblank}}}{{/title}}
-        {{#subtitle}}<h4 class="surveySubTitle">{{{.}}}</h4>{{/subtitle}}
-        {{#addinfo}}<div class="addInfo">{{{.}}}</div>{{/addinfo}}
+        {{#surveyheader}}{{> mod_questionnaire/survey_header}}{{/surveyheader}}
         {{#feedbackcharts}}{{{.}}}{{/feedbackcharts}}
         {{#feedbackscores}}{{{.}}}{{/feedbackscores}}
         {{#feedbackmessages}}

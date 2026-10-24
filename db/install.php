@@ -33,91 +33,91 @@ function xmldb_questionnaire_install() {
     $questiontype = new stdClass();
     $questiontype->typeid = 1;
     $questiontype->type = 'Yes/No';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = 'response_bool';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = 'response_bool';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 2;
     $questiontype->type = 'Text Box';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = 'response_text';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = 'response_text';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 3;
     $questiontype->type = 'Essay Box';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = 'response_text';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = 'response_text';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 4;
     $questiontype->type = 'Radio Buttons';
-    $questiontype->has_choices = 'y';
-    $questiontype->response_table = 'resp_single';
+    $questiontype->haschoices = 'y';
+    $questiontype->responsetable = 'resp_single';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 5;
     $questiontype->type = 'Check Boxes';
-    $questiontype->has_choices = 'y';
-    $questiontype->response_table = 'resp_multiple';
+    $questiontype->haschoices = 'y';
+    $questiontype->responsetable = 'resp_multiple';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 6;
     $questiontype->type = 'Dropdown Box';
-    $questiontype->has_choices = 'y';
-    $questiontype->response_table = 'resp_single';
+    $questiontype->haschoices = 'y';
+    $questiontype->responsetable = 'resp_single';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 8;
     $questiontype->type = 'Rate (scale 1..5)';
-    $questiontype->has_choices = 'y';
-    $questiontype->response_table = 'response_rank';
+    $questiontype->haschoices = 'y';
+    $questiontype->responsetable = 'response_rank';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 9;
     $questiontype->type = 'Date';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = 'response_date';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = 'response_date';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 10;
     $questiontype->type = 'Numeric';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = 'response_text';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = 'response_text';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 11;
     $questiontype->type = 'Slider';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = 'response_text';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = 'response_text';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 12;
     $questiontype->type = 'File';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = 'response_file';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = 'response_file';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 99;
     $questiontype->type = 'Page Break';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = '';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = '';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 
     $questiontype = new stdClass();
     $questiontype->typeid = 100;
     $questiontype->type = 'Section Text';
-    $questiontype->has_choices = 'n';
-    $questiontype->response_table = '';
+    $questiontype->haschoices = 'n';
+    $questiontype->responsetable = '';
     $id = $DB->insert_record('questionnaire_question_type', $questiontype);
 }

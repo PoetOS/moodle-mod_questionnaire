@@ -20,65 +20,51 @@
     Template which defines a results display for responses with defined choices.
 
     Classes required for JS:
-    * /mod/questionnaire/module.js
+    * none
 
     Data attributes required for JS:
     * none
 
     Context variables required for this template:
+    * averages - object: headers, a choicelabelrow (scale labels over the bar column),
+      choiceaverages rows whose column2 carries fillpercent (0-100) for the average bar,
+      and an optional nodata row.
+    * totals - object: headers plus per-choice rank-count rows.
+    * noresponses - bool: no response data at all.
 
     Example context (json):
     {
-        "responses": [
-            {
-                "response": {
-                    "text": "choice 1",
-                    "alt1": "alt1",
-                    "image1": "http://localhost/mod/questionnaire/images/hbar_1.gif",
-                    "alt2": "alt2",
-                    "width2": "28px",
-                    "image2": "http://localhost/mod/questionnaire/images/hbar.gif",
-                    "alt3": "alt3",
-                    "image3": "http://localhost/mod/questionnaire/images/hbar_r.gif",
-                    "percent": "20%",
-                    "total": 2
-                }
+        "averages": {
+            "headers": [
+                {"text": "", "align": "", "width": "60%"},
+                {"text": "Average rank", "align": "", "width": "35%"},
+                {"text": "", "align": "center", "width": "5%"}
+            ],
+            "choicelabelrow": {
+                "column1": {"align": "", "width": "60%", "text": ""},
+                "column2": {"align": "", "width": "35%", "ranks": [
+                    {"width": "20%", "text": "One"},
+                    {"width": "20%", "text": "Two"}
+                ]},
+                "column3": {"align": "center", "width": "5%", "text": ""}
             },
-            {
-                "response": {
-                    "text": "choice 2",
-                    "alt1": "alt1",
-                    "image1": "http://localhost/mod/questionnaire/images/hbar_1.gif",
-                    "alt2": "alt2",
-                    "width2": "28px",
-                    "image2": "http://localhost/mod/questionnaire/images/hbar.gif",
-                    "alt3": "alt3",
-                    "image3": "http://localhost/mod/questionnaire/images/hbar_r.gif",
-                    "percent": "20%",
-                    "total": 2
+            "choiceaverages": [
+                {
+                    "column1": {"align": "", "width": "60%", "text": "Cheese"},
+                    "column2": {"align": "", "width": "35%", "fillpercent": 60.0},
+                    "column3": {"align": "center", "width": "5%", "text": "3.0"}
                 }
-            }
-        ],
-        "total": {
-            "alt1": "alt1",
-            "image1": "http://localhost/mod/questionnaire/images/hbar_1.gif",
-            "alt2": "alt2",
-            "width2": "28px",
-            "image2": "http://localhost/mod/questionnaire/images/hbar.gif",
-            "alt3": "alt3",
-            "image3": "http://localhost/mod/questionnaire/images/hbar_r.gif",
-            "percent": "20%",
-            "total": "8/10"
+            ]
         }
     }
     }}
-<!-- Begin HTML generated from results_choice template. -->
+<!-- Begin HTML generated from results_rate template. -->
 {{#averages}}
 <table class="generaltable table-reboot">
     <thead>
     <tr>
         {{#headers}}
-        <th class="header" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</th>
+        <th class="header" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};" scope="col">{{{text}}}</th>
         {{/headers}}
     </tr>
     </thead>
@@ -87,15 +73,15 @@
     {{#choicelabelrow}}
     <tr class="">
         {{#column1}}
-        <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</td>
+        <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">{{{text}}}</td>
         {{/column1}}
         {{#column2}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">
-            <table style="width:100%" cellpadding="2" cellspacing="0" border="1" class="table-reboot">
+            <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">
+            <table style="width:100%" class="table-reboot questionnaire-avg-scale">
                 <tbody>
                 <tr>
                     {{#ranks}}
-                        <td class="smalltext" style="text-align:center; width:{{width}};">{{{text}}}</td>
+                        <td style="width:{{width}};">{{{text}}}</td>
                     {{/ranks}}
                 </tr>
                 </tbody>
@@ -103,10 +89,10 @@
             </td>
         {{/column2}}
         {{#column3}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</td>
+            <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">{{{text}}}</td>
         {{/column3}}
         {{#column4}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</td>
+            <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">{{{text}}}</td>
         {{/column4}}
     </tr>
     {{/choicelabelrow}}
@@ -114,25 +100,29 @@
     {{#choiceaverages}}
     <tr class="">
         {{#column1}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</td>
+            <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">{{{text}}}</td>
         {{/column1}}
         {{#column2}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">
-                {{#imageurl}}<img style="height:12px; width: 6px;{{#margin}} {{margin}};{{/margin}}" alt="" src="{{imageurl}}" />{{/imageurl}}
+            <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">
+                {{#fillpercent}}
+                <div class="progress questionnaire-avg-bar" aria-hidden="true">
+                    <div class="progress-bar" role="progressbar" style="width: {{fillpercent}}%;"></div>
+                </div>
+                {{/fillpercent}}
             </td>
         {{/column2}}
         {{#column3}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</td>
+            <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">{{{text}}}</td>
         {{/column3}}
         {{#column4}}
-            <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{{text}}}</td>
+            <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">{{{text}}}</td>
         {{/column4}}
     </tr>
     {{/choiceaverages}}
     {{#nodata.0}}
         <tr class="">
             {{#nodata}}
-                <td class="cell" style="text-align:{{align}}; width:{{width}};" scope="col">{{text}}</td>
+                <td class="cell" style="{{#align}}text-align:{{align}}; {{/align}}width:{{width}};">{{text}}</td>
             {{/nodata}}
         </tr>
     {{/nodata.0}}
@@ -144,7 +134,7 @@
     <thead>
     <tr>
         {{#headers}}
-            <th class="header" style="text-align:{{align}};" scope="col">{{{text}}}</th>
+            <th class="header"{{#align}} style="text-align:{{align}};"{{/align}} scope="col">{{{text}}}</th>
         {{/headers}}
     </tr>
     </thead>
@@ -152,7 +142,7 @@
     {{#choices}}
     <tr>
         {{#totalcols}}
-            <td class="cell" style="text-align:{{align}};">{{{text}}}</td>
+            <td class="cell"{{#align}} style="text-align:{{align}};"{{/align}}>{{{text}}}</td>
         {{/totalcols}}
     </tr>
     {{/choices}}
@@ -162,4 +152,4 @@
 {{#noresponses}}
     <p class="generaltable">{{# str }}noresponsedata, mod_questionnaire{{/ str }}</p>
 {{/noresponses}}
-<!-- End HTML generated from results_choice template. -->
+<!-- End HTML generated from results_rate template. -->

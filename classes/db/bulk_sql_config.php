@@ -71,7 +71,7 @@ class bulk_sql_config {
      */
     public function get_extra_select() {
         return [
-            'choice_id' => $this->usechoiceid,
+            'choiceid' => $this->usechoiceid,
             'response' => $this->useresponse,
             'rankvalue' => $this->userank,
         ];

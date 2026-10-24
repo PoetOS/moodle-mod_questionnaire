@@ -25,13 +25,12 @@
 
 namespace mod_questionnaire;
 
-use mod_questionnaire\question\question;
+use mod_questionnaire\local\question\question;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php');
 
 /**
  * Unit tests for questionnaire_questiontypes_testcase.
@@ -48,7 +47,7 @@ final class questiontypes_test extends \advanced_testcase {
     public function test_create_question_checkbox(): void {
         $this->create_test_question_with_choices(
             QUESCHECK,
-            '\\mod_questionnaire\\question\\check',
+            '\\mod_questionnaire\\local\\question\\check',
             ['content' => 'Check one']
         );
     }
@@ -61,7 +60,7 @@ final class questiontypes_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_date(): void {
-        $this->create_test_question(QUESDATE, '\\mod_questionnaire\\question\\date', ['content' => 'Enter a date']);
+        $this->create_test_question(QUESDATE, '\\mod_questionnaire\\local\\question\\date', ['content' => 'Enter a date']);
     }
 
     /**
@@ -72,7 +71,11 @@ final class questiontypes_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_dropdown(): void {
-        $this->create_test_question_with_choices(QUESDROP, '\\mod_questionnaire\\question\\drop', ['content' => 'Select one']);
+        $this->create_test_question_with_choices(
+            QUESDROP,
+            '\\mod_questionnaire\\local\\question\\drop',
+            ['content' => 'Select one']
+        );
     }
 
     /**
@@ -88,7 +91,7 @@ final class questiontypes_test extends \advanced_testcase {
             'length' => 0,
             'precise' => 5,
         ];
-        $this->create_test_question(QUESESSAY, '\\mod_questionnaire\\question\\essay', $questiondata);
+        $this->create_test_question(QUESESSAY, '\\mod_questionnaire\\local\\question\\essay', $questiondata);
     }
 
     /**
@@ -101,7 +104,7 @@ final class questiontypes_test extends \advanced_testcase {
     public function test_create_question_sectiontext(): void {
         $this->create_test_question(
             QUESSECTIONTEXT,
-            '\\mod_questionnaire\\question\\sectiontext',
+            '\\mod_questionnaire\\local\\question\\sectiontext',
             ['name' => null, 'content' => 'This a section label.']
         );
     }
@@ -119,7 +122,7 @@ final class questiontypes_test extends \advanced_testcase {
             'length' => 10,
             'precise' => 0,
         ];
-        $this->create_test_question(QUESNUMERIC, '\\mod_questionnaire\\question\\numerical', $questiondata);
+        $this->create_test_question(QUESNUMERIC, '\\mod_questionnaire\\local\\question\\numerical', $questiondata);
     }
 
     /**
@@ -130,7 +133,11 @@ final class questiontypes_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_radiobuttons(): void {
-        $this->create_test_question_with_choices(QUESRADIO, '\\mod_questionnaire\\question\\radio', ['content' => 'Choose one']);
+        $this->create_test_question_with_choices(
+            QUESRADIO,
+            '\\mod_questionnaire\\local\\question\\radio',
+            ['content' => 'Choose one']
+        );
     }
 
     /**
@@ -141,7 +148,11 @@ final class questiontypes_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_ratescale(): void {
-        $this->create_test_question_with_choices(QUESRATE, '\\mod_questionnaire\\question\\rate', ['content' => 'Rate these']);
+        $this->create_test_question_with_choices(
+            QUESRATE,
+            '\\mod_questionnaire\\local\\question\\rate',
+            ['content' => 'Rate these']
+        );
     }
 
     /**
@@ -157,7 +168,7 @@ final class questiontypes_test extends \advanced_testcase {
             'length' => 20,
             'precise' => 25,
         ];
-        $this->create_test_question(QUESTEXT, '\\mod_questionnaire\\question\\text', $questiondata);
+        $this->create_test_question(QUESTEXT, '\\mod_questionnaire\\local\\question\\text', $questiondata);
     }
 
     /**
@@ -169,7 +180,7 @@ final class questiontypes_test extends \advanced_testcase {
      */
     public function test_create_question_slider(): void {
         $questiondata = ['content' => 'Enter a number'];
-        $this->create_test_question(QUESSLIDER, '\\mod_questionnaire\\question\\slider', $questiondata);
+        $this->create_test_question(QUESSLIDER, '\\mod_questionnaire\\local\\question\\slider', $questiondata);
     }
 
     /**
@@ -180,9 +191,95 @@ final class questiontypes_test extends \advanced_testcase {
      * @covers \mod_questionnaire\questiontypes_test::create_test_question
      */
     public function test_create_question_yesno(): void {
-        $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\question\\yesno', ['content' => 'Enter yes or no']);
+        $this->create_test_question(QUESYESNO, '\\mod_questionnaire\\local\\question\\yesno', ['content' => 'Enter yes or no']);
     }
 
+    /**
+     * A required question renders its required marker in the survey display tags by default.
+     *
+     * @covers \mod_questionnaire\local\question\question::questionstart_survey_display
+     */
+    public function test_questionstart_survey_display_renders_required_marker(): void {
+        $question = $this->create_required_question();
+
+        $pagetags = $question->questionstart_survey_display(1);
+
+        $this->assertStringContainsString(get_string('required', 'questionnaire'), $pagetags->required);
+    }
+
+    /**
+     * The readonly flag (used by the response-review paths) suppresses the required marker.
+     *
+     * @covers \mod_questionnaire\local\question\question::questionstart_survey_display
+     */
+    public function test_questionstart_survey_display_readonly_suppresses_required(): void {
+        $question = $this->create_required_question();
+
+        $pagetags = $question->questionstart_survey_display(1, null, null, false, true);
+
+        $this->assertSame('', $pagetags->required);
+    }
+
+    /**
+     * Choice options rendered by radio and yes/no questions get HTML ids that stay unique across questions
+     * and across repeated renders of the same question in one request.
+     *
+     * @covers \mod_questionnaire\local\question\question::next_choice_id
+     * @covers \mod_questionnaire\local\question\radio::question_survey_display
+     * @covers \mod_questionnaire\local\question\yesno::question_survey_display
+     */
+    public function test_choice_ids_are_unique(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire(
+            $course,
+            QUESRADIO,
+            ['content' => 'Choose one'],
+            [(object) ['content' => 'One', 'value' => 1], (object) ['content' => 'Two', 'value' => 2]]
+        );
+        $generator->create_question(
+            $questionnaire,
+            ['surveyid' => $questionnaire->surveyid(), 'name' => 'Q2', 'typeid' => QUESYESNO, 'content' => 'Yes or no?']
+        );
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+
+        $ids = [];
+        foreach ([1, 2] as $render) {
+            foreach ($questionnaire->questions() as $question) {
+                $tags = $question->question_output(new \stdClass(), false);
+                $elements = is_array($tags->qformelement->qelements) ?
+                    array_column($tags->qformelement->qelements, 'choice') : $tags->qformelement->qelements->choice;
+                foreach ($elements as $element) {
+                    $this->assertMatchesRegularExpression('/^auto-rb\d{4,}$/', $element->id);
+                    $ids[] = $element->id;
+                }
+            }
+        }
+
+        // Two radio choices + yes + no, rendered twice; any optional "no answer" buttons only add to the count.
+        $this->assertGreaterThanOrEqual(8, count($ids));
+        $this->assertSame($ids, array_unique($ids));
+    }
+
+    /**
+     * Build a required yes/no question for the survey-display tests.
+     *
+     * @return question
+     */
+    private function create_required_question(): question {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire(
+            $course,
+            QUESYESNO,
+            ['content' => 'Yes or no?', 'required' => 'y'],
+            []
+        );
+        $questions = $questionnaire->questions();
+        return reset($questions);
+    }
 
     // General tests to call from specific tests above.
 
@@ -201,20 +298,19 @@ final class questiontypes_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(['course' => $course->id]);
-        $cm = get_coursemodule_from_instance('questionnaire', $questionnaire->id);
 
-        $questiondata['type_id'] = $qtype;
-        $questiondata['surveyid'] = $questionnaire->sid;
+        $questiondata['typeid'] = $qtype;
+        $questiondata['surveyid'] = $questionnaire->surveyid();
         $questiondata['name'] = isset($questiondata['name']) ? $questiondata['name'] : 'Q1';
         $questiondata['content'] = isset($questiondata['content']) ? $questiondata['content'] : 'Test content';
         $question = $generator->create_question($questionnaire, $questiondata, $choicedata);
         $this->assertInstanceOf($questionclass, $question);
-        $this->assertTrue($question->id > 0);
+        $this->assertTrue($question->id() > 0);
 
         // Question object retrieved from the database should have correct data.
-        $this->assertEquals($question->type_id, $qtype);
+        $this->assertEquals($question->typeid(), $qtype);
         foreach ($questiondata as $property => $value) {
-            $this->assertEquals($question->$property, $value);
+            $this->assertEquals($question->$property(), $value);
         }
         if ($question->has_choices()) {
             $this->assertEquals('array', gettype($question->choices));
@@ -229,13 +325,14 @@ final class questiontypes_test extends \advanced_testcase {
         }
 
         // Questionnaire object should now have question record(s).
-        $questionnaire = new \questionnaire($course, $cm, $questionnaire->id, null, true);
-        $this->assertTrue($DB->record_exists('questionnaire_question', ['id' => $question->id]));
-        $this->assertEquals('array', gettype($questionnaire->questions));
-        $this->assertTrue(array_key_exists($question->id, $questionnaire->questions));
-        $this->assertEquals(1, count($questionnaire->questions));
-        if ($questionnaire->questions[$question->id]->has_choices()) {
-            $this->assertEquals(count($choicedata), count($questionnaire->questions[$question->id]->choices));
+        $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
+        $this->assertTrue($DB->record_exists('questionnaire_question', ['id' => $question->id()]));
+        $questions = $questionnaire->questions();
+        $this->assertEquals('array', gettype($questions));
+        $this->assertTrue(array_key_exists($question->id(), $questions));
+        $this->assertEquals(1, count($questions));
+        if ($questions[$question->id()]->has_choices()) {
+            $this->assertEquals(count($choicedata), count($questions[$question->id()]->choices));
         }
     }
 

@@ -1,0 +1,63 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_questionnaire/survey_header
+
+    The block above a survey's questions or responses. Page templates include it inside a
+    surveyheader section, so the partial's context is the survey_header export.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * respondent - object|null: name, course, groups, submitted (all plain text) and printlink (HTML).
+    * title - string|null: Formatted title (HTML from format_string()).
+    * printblank - string|null: Rendered print-blank-questionnaire link (HTML).
+    * subtitle - string|null: Formatted subtitle (HTML from format_string()).
+    * info - string|null: Formatted additional information (HTML from format_text()).
+
+    Example context (json):
+    {
+        "respondent": {
+            "name": "Student One",
+            "course": null,
+            "groups": "Group: Group A",
+            "submitted": "Tuesday, 20 October 2026, 10:15 AM",
+            "printlink": null
+        },
+        "title": "Course evaluation",
+        "printblank": null,
+        "subtitle": "Spring term",
+        "info": "<p>Please answer every question.</p>"
+    }
+}}
+{{#respondent}}
+<div class="respondentinfo">
+    {{#printlink}}{{{.}}}{{/printlink}}
+    {{#str}} respondent, questionnaire {{/str}}: <strong>{{name}}</strong>
+    {{#course}}{{#str}} course {{/str}}: {{.}}{{/course}}
+    {{#groups}}({{.}}){{/groups}}
+    {{#submitted}}{{#str}} submitted, questionnaire {{/str}} {{.}}{{/submitted}}
+</div>
+{{/respondent}}
+{{#title}}<h3 class="surveyTitle">{{{.}}}</h3>{{/title}}
+{{#printblank}}{{{.}}}{{/printblank}}
+{{#subtitle}}<h4 class="surveySubTitle">{{{.}}}</h4>{{/subtitle}}
+{{#info}}<div class="addInfo">{{{.}}}</div>{{/info}}

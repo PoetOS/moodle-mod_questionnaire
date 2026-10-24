@@ -42,8 +42,8 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             'introformat',
             'qtype',
             'respondenttype',
-            'resp_eligible',
-            'resp_view',
+            'respeligible',
+            'respview',
             'notifications',
             'opendate',
             'closedate',
@@ -69,13 +69,13 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             'subtitle',
             'info',
             'theme',
-            'thanks_page',
-            'thank_head',
-            'thank_body',
+            'thankspage',
+            'thankhead',
+            'thankbody',
             'feedbacksections',
             'feedbacknotes',
             'feedbackscores',
-            'chart_type',
+            'charttype',
         ]);
 
         $questions = new backup_nested_element('questions');
@@ -83,8 +83,8 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
         $question = new backup_nested_element('question', ['id'], [
             'surveyid',
             'name',
-            'type_id',
-            'result_id',
+            'typeid',
+            'resultid',
             'length',
             'precise',
             'position',
@@ -96,7 +96,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $questchoices = new backup_nested_element('quest_choices');
 
-        $questchoice = new backup_nested_element('quest_choice', ['id'], ['question_id', 'content', 'value']);
+        $questchoice = new backup_nested_element('quest_choice', ['id'], ['questionid', 'content', 'value']);
 
         $questdependencies = new backup_nested_element('quest_dependencies');
 
@@ -143,53 +143,53 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
 
         $responsebools = new backup_nested_element('response_bools');
 
-        $responsebool = new backup_nested_element('response_bool', ['id'], ['response_id', 'question_id', 'choice_id']);
+        $responsebool = new backup_nested_element('response_bool', ['id'], ['responseid', 'questionid', 'choiceid']);
 
         $responsedates = new backup_nested_element('response_dates');
 
-        $responsedate = new backup_nested_element('response_date', ['id'], ['response_id', 'question_id', 'response']);
+        $responsedate = new backup_nested_element('response_date', ['id'], ['responseid', 'questionid', 'response']);
 
         $responsefiles = new backup_nested_element('response_files');
 
-        $responsefile = new backup_nested_element('response_file', ['id'], ['response_id', 'question_id', 'fileid']);
+        $responsefile = new backup_nested_element('response_file', ['id'], ['responseid', 'questionid', 'fileid']);
 
         $responsemultiples = new backup_nested_element('response_multiples');
 
         $responsemultiple = new backup_nested_element('response_multiple', ['id'], [
-            'response_id',
-            'question_id',
-            'choice_id',
+            'responseid',
+            'questionid',
+            'choiceid',
         ]);
 
         $responseothers = new backup_nested_element('response_others');
 
         $responseother = new backup_nested_element('response_other', ['id'], [
-            'response_id',
-            'question_id',
-            'choice_id',
+            'responseid',
+            'questionid',
+            'choiceid',
             'response',
         ]);
 
         $responseranks = new backup_nested_element('response_ranks');
 
         $responserank = new backup_nested_element('response_rank', ['id'], [
-            'response_id',
-            'question_id',
-            'choice_id',
+            'responseid',
+            'questionid',
+            'choiceid',
             'rankvalue',
         ]);
 
         $responsesingles = new backup_nested_element('response_singles');
 
         $responsesingle = new backup_nested_element('response_single', ['id'], [
-            'response_id',
-            'question_id',
-            'choice_id',
+            'responseid',
+            'questionid',
+            'choiceid',
         ]);
 
         $responsetexts = new backup_nested_element('response_texts');
 
-        $responsetext = new backup_nested_element('response_text', ['id'], ['response_id', 'question_id', 'response']);
+        $responsetext = new backup_nested_element('response_text', ['id'], ['responseid', 'questionid', 'response']);
 
         // Build the tree.
         $questionnaire->add_child($surveys);
@@ -255,21 +255,21 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             $question->set_source_table('questionnaire_question', ['surveyid' => backup::VAR_PARENTID]);
             $fbsection->set_source_table('questionnaire_fb_sections', ['surveyid' => backup::VAR_PARENTID]);
             $feedback->set_source_table('questionnaire_feedback', ['sectionid' => backup::VAR_PARENTID]);
-            $questchoice->set_source_table('questionnaire_quest_choice', ['question_id' => backup::VAR_PARENTID], 'id ASC');
+            $questchoice->set_source_table('questionnaire_quest_choice', ['questionid' => backup::VAR_PARENTID], 'id ASC');
             $questdependency->set_source_table('questionnaire_dependency', ['questionid' => backup::VAR_PARENTID]);
 
             // All the rest of elements only happen if we are including user info.
             if ($userinfo) {
                 $response->set_source_table('questionnaire_response', ['questionnaireid' => backup::VAR_PARENTID]);
-                $responsebool->set_source_table('questionnaire_response_bool', ['response_id' => backup::VAR_PARENTID]);
-                $responsedate->set_source_table('questionnaire_response_date', ['response_id' => backup::VAR_PARENTID]);
-                $responsefile->set_source_table('questionnaire_response_file', ['response_id' => backup::VAR_PARENTID]);
+                $responsebool->set_source_table('questionnaire_response_bool', ['responseid' => backup::VAR_PARENTID]);
+                $responsedate->set_source_table('questionnaire_response_date', ['responseid' => backup::VAR_PARENTID]);
+                $responsefile->set_source_table('questionnaire_response_file', ['responseid' => backup::VAR_PARENTID]);
                 $responsefile->annotate_files('mod_questionnaire', 'response_file', null);
-                $responsemultiple->set_source_table('questionnaire_resp_multiple', ['response_id' => backup::VAR_PARENTID]);
-                $responseother->set_source_table('questionnaire_response_other', ['response_id' => backup::VAR_PARENTID]);
-                $responserank->set_source_table('questionnaire_response_rank', ['response_id' => backup::VAR_PARENTID]);
-                $responsesingle->set_source_table('questionnaire_resp_single', ['response_id' => backup::VAR_PARENTID]);
-                $responsetext->set_source_table('questionnaire_response_text', ['response_id' => backup::VAR_PARENTID]);
+                $responsemultiple->set_source_table('questionnaire_resp_multiple', ['responseid' => backup::VAR_PARENTID]);
+                $responseother->set_source_table('questionnaire_response_other', ['responseid' => backup::VAR_PARENTID]);
+                $responserank->set_source_table('questionnaire_response_rank', ['responseid' => backup::VAR_PARENTID]);
+                $responsesingle->set_source_table('questionnaire_resp_single', ['responseid' => backup::VAR_PARENTID]);
+                $responsetext->set_source_table('questionnaire_response_text', ['responseid' => backup::VAR_PARENTID]);
             }
 
             // Define id annotations.
