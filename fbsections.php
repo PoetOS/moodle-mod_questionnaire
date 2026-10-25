@@ -26,10 +26,11 @@
 require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\feedback\feedback_section_controller;
+use mod_questionnaire\local\feedback\feedback_section_form;
 use mod_questionnaire\output\page;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
-$action = optional_param('action', '', PARAM_ALPHA);
 $sectionid = optional_param('sectionid', 0, PARAM_INT);
 
 $questionnaire = questionnaire::from_cmid($id);
@@ -37,12 +38,14 @@ $questionnaire = questionnaire::from_cmid($id);
 // Needed here for forced language courses.
 require_course_login($questionnaire->course(), true, $questionnaire->coursemodule());
 
-$PAGE->set_url(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $id]));
+$PAGE->set_url(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $id, 'sectionid' => $sectionid]));
 $PAGE->set_context($questionnaire->context());
 
-$surveyid = $questionnaire->surveyid();
-$overviewurl = new moodle_url('/mod/questionnaire/feedback.php', ['id' => $id]);
+if (!$questionnaire->capabilities()->can_edit_questions()) {
+    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+}
 
+$overviewurl = new moodle_url('/mod/questionnaire/feedback.php', ['id' => $id]);
 if ($sectionid) {
     $feedbacksection = $questionnaire->feedback()->section($sectionid);
 } else {
@@ -54,39 +57,10 @@ if ($sectionid) {
     $feedbacksection = reset($sections);
 }
 
-// Get all questions that are valid feedback questions.
-$validquestions = [];
-foreach ($questionnaire->questions() as $question) {
-    if ($question->valid_feedback()) {
-        $validquestions[$question->id()] = $question->name();
-    }
-}
-
-$renderer = $PAGE->get_renderer('mod_questionnaire');
-$page = page::settings();
-
-if (!$questionnaire->capabilities()->can_edit_questions()) {
-    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
-}
-
-// Handle confirmed actions that impact display immediately.
-if ($action == 'removequestion') {
-    require_sesskey();
-    $qid = required_param('qid', PARAM_INT);
-    $feedbacksection->remove_question($qid);
-}
-
-$customdata = new stdClass();
-$customdata->questionnaire = $questionnaire;
-$customdata->feedbacksection = $feedbacksection;
-$customdata->validquestions = $validquestions;
-$customdata->survey = $questionnaire->survey()->to_stdclass();
-
-$feedbackform = new \mod_questionnaire\local\feedback\feedback_section_form('fbsections.php', $customdata, $renderer);
-$sdata = clone($feedbacksection);
-$sdata->sid = $surveyid;
-$sdata->sectionid = $feedbacksection->id;
-$sdata->id = $questionnaire->coursemodule()->id;
+$feedbackform = new feedback_section_form(
+    new moodle_url('/mod/questionnaire/fbsections.php'),
+    ['questionnaire' => $questionnaire, 'section' => $feedbacksection]
+);
 
 $draftideditor = file_get_submitted_draft_itemid('sectionheading');
 $currentinfo = file_prepare_draft_area(
@@ -98,145 +72,27 @@ $currentinfo = file_prepare_draft_area(
     ['subdirs' => true],
     $feedbacksection->sectionheading
 );
-$sdata->sectionheading = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
-
-$feedbackform->set_data($sdata);
+$feedbackform->set_data([
+    'id' => $id,
+    'sectionid' => $feedbacksection->id,
+    'sectionlabel' => $feedbacksection->sectionlabel,
+    'sectionheading' => ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor],
+]);
 
 if ($feedbackform->is_cancelled()) {
     redirect($overviewurl);
 }
-
-if ($settings = $feedbackform->get_data()) {
-    // Because formslib doesn't support 'numeric' or 'image' inputs, the results won't show up in the $feedbackform object.
-    $fullform = data_submitted();
-
-    if (isset($fullform->confirmremovequestion)) {
-        $qid = key($fullform->confirmremovequestion);
-        redirect(
-            new moodle_url(
-                '/mod/questionnaire/fbsections.php',
-                ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $settings->sectionid,
-                    'action' => 'confirmremovequestion', 'qid' => $qid]
-            )
-        );
-    } else if (isset($settings->addquestion)) {
-        $scorecalculation = [];
-        // Check for added question.
-        if (isset($settings->addquestionselect) && ($settings->addquestionselect != 0)) {
-            if ($questionnaire->questions()[$settings->addquestionselect]->supports_feedback_scores()) {
-                $scorecalculation[$settings->addquestionselect] = 1;
-            } else {
-                $scorecalculation[$settings->addquestionselect] = -1;
-            }
-        }
-        // Get all current asigned questions.
-        if (isset($fullform->weight)) {
-            foreach ($fullform->weight as $qid => $value) {
-                $scorecalculation[$qid] = $value;
-            }
-        }
-        // Update the section with question weights.
-        $feedbacksection->set_new_scorecalculation($scorecalculation);
-    } else if (isset($settings->submitbutton)) {
-        if (isset($fullform->weight)) {
-            $feedbacksection->scorecalculation = $fullform->weight;
-        } else {
-            $feedbacksection->scorecalculation = [];
-        }
-        $feedbacksection->sectionlabel = $settings->sectionlabel;
-        $feedbacksection->sectionheading = file_save_draft_area_files(
-            (int)$settings->sectionheading['itemid'],
-            $questionnaire->context()->id,
-            'mod_questionnaire',
-            'sectionheading',
-            $feedbacksection->id,
-            ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0],
-            $settings->sectionheading['text']
-        );
-        $feedbacksection->sectionheadingformat = $settings->sectionheading['format'];
-
-        // May have changed the weights, so update the data.
-        if (isset($fullform->weight)) {
-            $customdata->feedbacksection->scorecalculation = $fullform->weight;
-        }
-
-        // Save current section's feedbacks
-        // first delete all existing feedbacks for this section - if any - because we never know whether editing feedbacks will
-        // have more or less texts, so it's easiest to delete all and start afresh.
-        $feedbacksection->delete_sectionfeedback();
-
-        $i = 0;
-        while (!empty($settings->feedbackboundaries[$i])) {
-            $boundary = trim($settings->feedbackboundaries[$i]);
-            if (strlen($boundary) > 0 && $boundary[strlen($boundary) - 1] == '%') {
-                $boundary = trim(substr($boundary, 0, -1));
-            }
-            $settings->feedbackboundaries[$i] = $boundary;
-            $i += 1;
-        }
-        $numboundaries = $i;
-        $settings->feedbackboundaries[-1] = 101;
-        $settings->feedbackboundaries[$numboundaries] = 0;
-        $settings->feedbackboundarycount = $numboundaries;
-
-        // Now set up new section feedback records for each saved boundary.
-        for ($i = 0; $i <= $settings->feedbackboundarycount; $i++) {
-            $feedback = new stdClass();
-            $feedback->sectionid = $feedbacksection->id;
-            if (isset($settings->feedbacklabel[$i])) {
-                $feedback->feedbacklabel = $settings->feedbacklabel[$i];
-            } else {
-                $feedback->feedbacklabel = null;
-            }
-            $feedback->feedbacktext = '';
-            $feedback->feedbacktextformat = $settings->feedbacktext[$i]['format'];
-            $feedback->minscore = $settings->feedbackboundaries[$i];
-            $feedback->maxscore = $settings->feedbackboundaries[$i - 1];
-
-            $fbid = $feedbacksection->load_sectionfeedback($feedback);
-
-            $feedbacktext = file_save_draft_area_files(
-                (int)$settings->feedbacktext[$i]['itemid'],
-                $questionnaire->context()->id,
-                'mod_questionnaire',
-                'feedback',
-                $fbid,
-                ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0],
-                $settings->feedbacktext[$i]['text']
-            );
-            $feedbacksection->sectionfeedback[$fbid]->feedbacktext = $feedbacktext;
-        }
-
-        // Update all feedback data.
-        $feedbacksection->update();
-    }
-    $feedbackform = new \mod_questionnaire\local\feedback\feedback_section_form('fbsections.php', $customdata, $renderer);
+if ($formdata = $feedbackform->get_data()) {
+    (new feedback_section_controller($questionnaire, $feedbacksection))->save($formdata);
+    redirect($overviewurl, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 
-// Print the page header.
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = page::settings();
 $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
 echo $renderer->header();
-// Handle confirmations differently.
-if ($action == 'confirmremovequestion') {
-    $sectionid = required_param('sectionid', PARAM_INT);
-    $qid = required_param('qid', PARAM_INT);
-    $msgargs = new stdClass();
-    $msgargs->qname = $questionnaire->questions()[$qid]->name();
-    $msgargs->sname = $feedbacksection->sectionlabel;
-    $msg = '<div class="warning centerpara"><p>' . get_string('confirmremovequestion', 'questionnaire', $msgargs) . '</p></div>';
-    $args = ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $sectionid];
-    $urlno = new moodle_url('/mod/questionnaire/fbsections.php', $args);
-    $args['action'] = 'removequestion';
-    $args['qid'] = $qid;
-    $urlyes = new moodle_url('/mod/questionnaire/fbsections.php', $args);
-    $buttonyes = new single_button($urlyes, get_string('yes'));
-    $buttonno = new single_button($urlno, get_string('no'));
-    $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
-} else {
-    $page->add_to_page('formarea', $feedbackform->render());
-}
-
+$page->add_to_page('formarea', $feedbackform->render());
 echo $renderer->render($page);
 echo $renderer->footer($questionnaire->course());

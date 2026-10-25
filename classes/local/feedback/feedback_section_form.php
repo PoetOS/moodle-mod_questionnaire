@@ -16,13 +16,18 @@
 
 namespace mod_questionnaire\local\feedback;
 
+use html_writer;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
 
 /**
- * Print the form to add or edit a questionnaire-instance
+ * The feedback section editor: the section's label and heading, which questions count towards it
+ * and with what weight (sections mode only), and its messages as score ranges.
+ *
+ * Expects $customdata['questionnaire'] (the questionnaire) and $customdata['section'] (the section being edited).
  *
  * @package mod_questionnaire
  * @copyright  2016 Mike Churchward (mike.churchward@poetgroup.org)
@@ -30,52 +35,27 @@ require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 class feedback_section_form extends \moodleform {
-    /** @var mixed $feedbacks */
-    protected $feedbacks;
-    /**
-     * @var \context $context The used context.
-     */
+    /** @var \context The questionnaire's context. */
     public $context;
-
-    /** @var \plugin_renderer_base The plugin renderer used by definition(). */
-    protected \plugin_renderer_base $renderer;
-
-    /**
-     * Constructor — accepts the standard moodleform args plus the plugin renderer.
-     *
-     * @param mixed $action
-     * @param mixed $customdata
-     * @param \plugin_renderer_base $renderer The plugin renderer.
-     */
-    public function __construct($action, $customdata, \plugin_renderer_base $renderer) {
-        $this->renderer = $renderer;
-        parent::__construct($action, $customdata);
-    }
 
     /**
      * Form definition.
      */
     public function definition() {
-        $questionnaire = $this->_customdata->questionnaire;
-        $feedbacksection = $this->_customdata->feedbacksection;
-        $validquestions = $this->_customdata->validquestions;
-        $survey = $this->_customdata->survey;
-        $feedbacksections = $questionnaire->feedback()->mode();
-        $this->feedbacks = $feedbacksection->sectionfeedback;
+        $questionnaire = $this->_customdata['questionnaire'];
+        $section = $this->_customdata['section'];
         $this->context = $questionnaire->context();
-        $mform    =& $this->_form;
+        $mform = $this->_form;
 
-        if ($feedbacksections == 1) {
-            $label = get_string('feedbackglobal', 'questionnaire');
-            $feedbackheading = get_string('feedbackglobalheading', 'questionnaire');
-            $feedbackmessages = get_string('feedbackglobalmessages', 'questionnaire');
+        if ($questionnaire->feedback()->mode() == 1) {
+            $heading = get_string('feedbackglobalheading', 'questionnaire');
+            $messagesheading = get_string('feedbackglobalmessages', 'questionnaire');
         } else {
-            $label = $feedbacksection->sectionlabel;
-            $feedbackheading = get_string('feedbacksectionheading', 'questionnaire', $label);
-            $feedbackmessages = get_string('feedbackmessages', 'questionnaire', $label);
+            $heading = get_string('feedbacksectionheading', 'questionnaire', format_string($section->sectionlabel));
+            $messagesheading = get_string('feedbackmessages', 'questionnaire', format_string($section->sectionlabel));
         }
 
-        $mform->addElement('header', 'contenthdr', $feedbackheading);
+        $mform->addElement('header', 'contenthdr', $heading);
         $mform->addElement(
             'text',
             'sectionlabel',
@@ -86,172 +66,78 @@ class feedback_section_form extends \moodleform {
         $mform->addRule('sectionlabel', null, 'required', null, 'client');
         $mform->addHelpButton('sectionlabel', 'feedbacksectionlabel', 'questionnaire');
 
-        $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true];
         $mform->addElement(
             'editor',
             'sectionheading',
             get_string('feedbacksectionheadingtext', 'questionnaire'),
             null,
-            $editoroptions
+            ['maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext' => true]
         );
         $mform->setType('sectionheading', PARAM_RAW);
-        $mform->setDefault('feedbacknotes', $questionnaire->feedback()->notes());
         $mform->addHelpButton('sectionheading', 'feedbackheading', 'questionnaire');
 
-        if ($questionnaire->feedback()->mode() > 0) {
-            // Sections.
-            if ($survey->feedbacksections > 1) {
-                $mform->addElement(
-                    'header',
-                    'fbsection_' . $feedbacksection->id,
-                    get_string('feedbacksectionquestions', 'questionnaire', $label)
-                );
-                $qvalid = $validquestions;
-                if (!empty($feedbacksection->scorecalculation)) {
-                    $rsrc = $this->renderer->image_url('t/delete');
-                    $counter = 1;
-                    foreach ($feedbacksection->scorecalculation as $qid => $score) {
-                        unset($qvalid[$qid]);
-                        $questionactions = [];
-                        if ((int)$score !== -1) {
-                            $weight = '<input type="number" style="width: 4em;" id="weight' . $counter . '" ' .
-                                'name="weight[' . $qid . ']" min="0.0" max="1.0" step="0.01" ' .
-                                'value="' . $score . '">';
-                        } else {
-                            $weight = '<input type="hidden" id="weight' . $counter . '" name="weight[' . $qid . ']" ' .
-                                'value="' . $score . '">';
-                        }
-                        $questionactions[] = $mform->createElement('html', $weight);
-                        $strremove = get_string('removefromsection', 'questionnaire', $questionnaire->questions()[$qid]->name());
-                        $rextra = ['alt' => $strremove, 'title' => $strremove, 'value' => $qid];
-                        $questionactions[] = $mform->createElement('image', 'confirmremovequestion[' . $qid . ']', $rsrc, $rextra);
-
-                        $mform->addGroup($questionactions, '', $questionnaire->questions()[$qid]->name());
-                        $counter++;
-                    }
-                }
-                if (!empty($qvalid)) {
-                    // Merge arrays maintaining keys.
-                    $qselect = [];
-                    $qselect[] = $mform->createElement(
-                        'select',
-                        'addquestionselect',
-                        get_string('addquestiontosection', 'questionnaire'),
-                        $qvalid
-                    );
-                    $qselect[] = $mform->createElement('submit', 'addquestion', get_string('addquestion', 'questionnaire'));
-                    $mform->addGroup($qselect, '', get_string('addquestiontosection', 'questionnaire'));
-                }
-            }
+        if ($questionnaire->feedback()->mode() > 1) {
+            $this->add_question_fields($questionnaire, $section);
         }
 
-        // FEEDBACK FIELDS.
-
-        $mform->addElement('header', 'feedbackhdr', $feedbackmessages);
+        $mform->addElement('header', 'feedbackhdr', $messagesheading);
         $mform->addHelpButton('feedbackhdr', 'feedback', 'questionnaire');
+        $mform->setExpanded('feedbackhdr');
+        $this->add_range_fields($questionnaire, count($section->sectionfeedback));
 
-        $mform->addElement('static', 'scoreboundarystatic1', get_string('feedbackscoreboundary', 'questionnaire'), '100%');
-
-        $repeatarray = [];
-        $repeatedoptions = [];
-
-        $repeatarray[] = $mform->createElement(
-            'editor',
-            'feedbacktext',
-            get_string('feedback', 'questionnaire'),
-            null,
-            ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context()]
-        );
-        $repeatarray[] = $mform->createElement(
-            'text',
-            'feedbackboundaries',
-            get_string('feedbackscoreboundary', 'questionnaire'),
-            ['size' => 10]
-        );
-        $repeatedoptions['feedbacklabel']['type'] = PARAM_RAW;
-        $repeatedoptions['feedbacktext']['type'] = PARAM_RAW;
-        $repeatedoptions['feedbackboundaries']['type'] = PARAM_RAW;
-
-        $numfeedbacks = max(count($this->feedbacks) * 1, 3);
-
-        $nextel = $this->repeat_elements(
-            $repeatarray,
-            $numfeedbacks - 1,
-            $repeatedoptions,
-            'boundary_repeats',
-            'boundary_add_fields',
-            2,
-            get_string('feedbackaddmorefeedbacks', 'questionnaire'),
-            true
-        );
-
-        // Put some extra elements in before the button.
-        $mform->insertElementBefore(
-            $mform->createElement(
-                'editor',
-                "feedbacktext[$nextel]",
-                get_string('feedback', 'questionnaire'),
-                null,
-                ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context()]
-            ),
-            'boundary_add_fields'
-        );
-        $mform->insertElementBefore(
-            $mform->createElement(
-                'static',
-                'scoreboundarystatic2',
-                get_string('feedbackscoreboundary', 'questionnaire'),
-                '0%'
-            ),
-            'boundary_add_fields'
-        );
-
-        // Hidden fields.
         $mform->addElement('hidden', 'id', 0);
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'sectionid', 0);
         $mform->setType('sectionid', PARAM_INT);
 
-        // Buttons.
-        $buttonarray = [];
-        $buttonarray[] = $mform->createElement('submit', 'submitbutton', get_string('savechanges'));
-        $buttonarray[] = $mform->createElement('cancel');
-        $mform->addGroup($buttonarray, 'buttonar', '', ' ', false);
-        $mform->closeHeaderBefore('buttonar');
+        $this->add_action_buttons();
     }
 
     /**
-     * Form preprocessing.
-     * @param array $toform
+     * Fill in each range's "from" value from the boundary of the range above it.
      */
-    public function data_preprocessing(&$toform) {
-        if (count($this->feedbacks)) {
-            $key = 0;
-            foreach ($this->feedbacks as $feedback) {
-                $draftid = file_get_submitted_draft_itemid('feedbacktext[' . $key . ']');
-                $toform['feedbacktext[' . $key . ']']['text'] = file_prepare_draft_area(
-                    $draftid,
-                    $this->context->id,
-                    'mod_questionnaire', // Component.
-                    'feedback',
-                    !empty($feedback->id) ? (int)$feedback->id : null,
-                    null,
-                    $feedback->feedbacktext
-                );
-                $toform['feedbacktext[' . $key . ']']['format'] = 1;
-                $toform['feedbacklabel[' . $key . ']'] = $feedback->feedbacklabel;
-                $toform['feedbacktext[' . $key . ']']['itemid'] = $draftid;
-
-                if ($feedback->minscore > 0) {
-                    $toform['feedbackboundaries[' . $key . ']'] = (100.0 * $feedback->minscore / 100 ) . '%';
-                }
-                $key++;
-            }
+    public function definition_after_data() {
+        $mform = $this->_form;
+        $from = '100%';
+        foreach ($this->range_indexes() as $i) {
+            $mform->getElement("rangestart[$i]")->setText($this->range_start_html($from));
+            $boundary = self::parse_boundary((string) $mform->getElementValue("feedbackboundaries[$i]"));
+            $from = ($boundary === null) ? '…' : format_float($boundary, -1) . '%';
         }
     }
 
     /**
-     * Form validation.
+     * Load the section's existing data, including each range's message draft area and boundary.
+     *
+     * @param array|\stdClass $defaultvalues
+     */
+    public function set_data($defaultvalues) {
+        $defaultvalues = (array) $defaultvalues;
+        $key = 0;
+        foreach ($this->_customdata['section']->sectionfeedback as $feedback) {
+            $draftid = file_get_submitted_draft_itemid("feedbacktext[$key]");
+            $defaultvalues["feedbacktext[$key]"] = [
+                'text' => file_prepare_draft_area(
+                    $draftid,
+                    $this->context->id,
+                    'mod_questionnaire',
+                    'feedback',
+                    (int) $feedback->id,
+                    null,
+                    $feedback->feedbacktext
+                ),
+                'format' => FORMAT_HTML,
+                'itemid' => $draftid,
+            ];
+            $defaultvalues["feedbackboundaries[$key]"] = ($feedback->minscore > 0) ? format_float($feedback->minscore, -1) : '';
+            $key++;
+        }
+        parent::set_data($defaultvalues);
+    }
+
+    /**
+     * Form validation: weights, and range boundaries that step down from 100% in order.
+     *
      * @param array $data
      * @param array $files
      * @return array
@@ -259,66 +145,176 @@ class feedback_section_form extends \moodleform {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        // Check the boundary value is a number or a percentage, and in range.
-        $i = 0;
-        while (!empty($data['feedbackboundaries'][$i])) {
-            $boundary = trim($data['feedbackboundaries'][$i]);
-            if (strlen($boundary) > 0 && $boundary[strlen($boundary) - 1] == '%') {
-                $boundary = trim(substr($boundary, 0, -1));
-                if (is_numeric($boundary)) {
-                    $boundary = $boundary * 100 / 100.0;
-                } else {
-                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryformat', 'questionnaire', $i + 1);
-                }
+        foreach ($data['include'] ?? [] as $qid => $included) {
+            $weight = $data['weight'][$qid] ?? null;
+            if ($included && (!is_numeric($weight) || $weight <= 0 || $weight > 1)) {
+                $errors["questiongroup_$qid"] = get_string('feedbackweighterror', 'questionnaire');
             }
-            if (is_numeric($boundary) && $boundary <= 0) {
-                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryoutofrange', 'questionnaire', $i + 1);
-            }
-            if (
-                is_numeric($boundary) && $i > 0 &&
-                $boundary >= $data['feedbackboundaries'][$i - 1]
-            ) {
-                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrororder', 'questionnaire', $i + 1);
-            }
-            $data['feedbackboundaries'][$i] = $boundary;
-            $i += 1;
         }
-        $numboundaries = $i;
 
-        // Check there is nothing in the remaining unused fields.
-        if (!empty($data['feedbackboundaries'])) {
-            for ($i = $numboundaries; $i < count($data['feedbackboundaries']); $i += 1) {
-                if (
-                    !empty($data['feedbackboundaries'][$i]) &&
-                    trim($data['feedbackboundaries'][$i]) != ''
-                ) {
-                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorjunkinboundary', 'questionnaire', $i + 1);
-                }
-            }
+        // Ranges below the last one with a boundary or a message are unused and ignored.
+        $rows = [];
+        foreach (array_keys($data['feedbacktext'] ?? []) as $i) {
+            $text = trim(strip_tags($data['feedbacktext'][$i]['text'] ?? ''));
+            $boundary = trim($data['feedbackboundaries'][$i] ?? '');
+            $rows[$i] = ($text !== '' || $boundary !== '');
         }
-        for ($i = $numboundaries + 1; $i < count($data['feedbacktext']); $i += 1) {
-            if (
-                !empty($data['feedbacktext'][$i]['text']) &&
-                trim($data['feedbacktext'][$i]['text']) != ''
-            ) {
-                $errors["feedbacktext[$i]"] = get_string('feedbackerrorjunkinfeedback', 'questionnaire', $i + 1);
+        while (!empty($rows) && !end($rows)) {
+            array_pop($rows);
+        }
+
+        $previous = 100.0;
+        $last = array_key_last($rows);
+        foreach (array_keys($rows) as $i) {
+            $value = trim($data['feedbackboundaries'][$i] ?? '');
+            if ($value === '') {
+                if ($i !== $last) {
+                    $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundarymissing', 'questionnaire');
+                }
+                continue;
+            }
+            $boundary = self::parse_boundary($value);
+            if ($boundary === null) {
+                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryformat', 'questionnaire');
+            } else if ($boundary <= 0 || $boundary >= 100) {
+                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrorboundaryoutofrange', 'questionnaire');
+            } else if ($boundary >= $previous) {
+                $errors["feedbackboundaries[$i]"] = get_string('feedbackerrororder', 'questionnaire');
+            } else {
+                $previous = $boundary;
             }
         }
         return $errors;
     }
 
     /**
-     * Load in existing data as form defaults. Usually new entry defaults are stored directly in
-     * form definition (new entry form); this function is used to load in data where values
-     * already exist and data is being edited (edit entry form).
+     * Read a range boundary as a percentage: a number, optionally followed by '%'.
      *
-     * @param array $defaultvalues
+     * @param string $value
+     * @return float|null The percentage, or null when the value is empty or not a number.
      */
-    public function set_data($defaultvalues) {
-        if (is_object($defaultvalues)) {
-            $defaultvalues = (array)$defaultvalues;
+    public static function parse_boundary(string $value): ?float {
+        $value = trim($value);
+        if (str_ends_with($value, '%')) {
+            $value = trim(substr($value, 0, -1));
         }
-        $this->data_preprocessing($defaultvalues);
-        parent::set_data($defaultvalues);
+        $value = unformat_float($value, true);
+        return is_numeric($value) ? (float) $value : null;
+    }
+
+    /**
+     * The indexes of the range rows on the form, in order (deleted rows have no elements).
+     *
+     * @return int[]
+     */
+    protected function range_indexes(): array {
+        $mform = $this->_form;
+        $indexes = [];
+        $repeats = (int) $mform->getElementValue('range_repeats');
+        for ($i = 0; $i < $repeats; $i++) {
+            if ($mform->elementExists("rangestart[$i]")) {
+                $indexes[] = $i;
+            }
+        }
+        return $indexes;
+    }
+
+    /**
+     * The include checkbox and weight for each question that can be used for feedback.
+     *
+     * @param \mod_questionnaire\questionnaire $questionnaire
+     * @param section $section
+     */
+    protected function add_question_fields($questionnaire, section $section): void {
+        $mform = $this->_form;
+        $mform->addElement(
+            'header',
+            'questionshdr',
+            get_string('feedbacksectionquestions', 'questionnaire', format_string($section->sectionlabel))
+        );
+        $mform->setExpanded('questionshdr');
+        $mform->addElement('static', 'questionsintro', '', get_string('feedbackquestionsintro', 'questionnaire'));
+
+        foreach ($questionnaire->questions() as $question) {
+            if (!$question->valid_feedback()) {
+                continue;
+            }
+            $qid = $question->id();
+            $name = format_string($question->name());
+            $weight = $section->scorecalculation[$qid] ?? null;
+            $include = get_string('feedbackincludequestion', 'questionnaire');
+            $weightlabel = html_writer::span(get_string('feedbackweight', 'questionnaire'), 'ms-3');
+            $weightfor = get_string('feedbackweightfor', 'questionnaire', $name);
+            $group = [
+                $mform->createElement('advcheckbox', "include[$qid]", '', $include),
+                $mform->createElement('static', "weightlabel[$qid]", '', $weightlabel),
+                $mform->createElement('text', "weight[$qid]", $weightfor, ['size' => 4]),
+            ];
+            $mform->addGroup($group, "questiongroup_$qid", $name, ' ', false);
+            $mform->setType("weight[$qid]", PARAM_RAW_TRIMMED);
+            $mform->setDefault("include[$qid]", $weight !== null ? 1 : 0);
+            // Scoring treats an empty or zero weight as 1, so show that.
+            $mform->setDefault("weight[$qid]", empty($weight) || $weight == section::NOSCORE ? '1' : format_float($weight, -1));
+            $mform->hideIf("weightlabel[$qid]", "include[$qid]", 'notchecked');
+            $mform->hideIf("weight[$qid]", "include[$qid]", 'notchecked');
+        }
+    }
+
+    /**
+     * The repeated range rows: where the range starts, where it ends, its message and a remove button.
+     *
+     * @param \mod_questionnaire\questionnaire $questionnaire
+     * @param int $existing The number of ranges the section already has.
+     */
+    protected function add_range_fields($questionnaire, int $existing): void {
+        global $PAGE;
+        $mform = $this->_form;
+        $mform->addElement('static', 'rangesintro', '', get_string('feedbackrangesintro', 'questionnaire'));
+
+        $rangerow = [
+            $mform->createElement('static', 'rangestart', get_string('feedbackrange', 'questionnaire', '{no}'), ''),
+            $mform->createElement('text', 'feedbackboundaries', get_string('feedbackrangeend', 'questionnaire'), ['size' => 6]),
+            $mform->createElement(
+                'editor',
+                'feedbacktext',
+                get_string('feedbackrangemessage', 'questionnaire'),
+                null,
+                ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context()]
+            ),
+            $mform->createElement(
+                'submit',
+                'removerange',
+                get_string('feedbackremoverange', 'questionnaire'),
+                [],
+                false,
+                ['customclassoverride' => 'btn-outline-danger']
+            ),
+        ];
+        $options = [
+            'feedbacktext' => ['type' => PARAM_RAW],
+            'feedbackboundaries' => ['type' => PARAM_RAW_TRIMMED],
+        ];
+        $this->repeat_elements(
+            $rangerow,
+            max($existing, 3),
+            $options,
+            'range_repeats',
+            'addrange',
+            1,
+            get_string('feedbackaddrange', 'questionnaire'),
+            true,
+            'removerange'
+        );
+        $PAGE->requires->js_call_amd('mod_questionnaire/feedback_ranges', 'init', [$mform->getAttribute('id')]);
+    }
+
+    /**
+     * The "From X%" text shown at the start of a range.
+     *
+     * @param string $from The formatted percentage the range starts at, or '…' when not known yet.
+     * @return string
+     */
+    protected function range_start_html(string $from): string {
+        return get_string('feedbackrangefrom', 'questionnaire', '<span data-region="rangefrom">' . s($from) . '</span>');
     }
 }

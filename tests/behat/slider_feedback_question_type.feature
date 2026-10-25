@@ -76,8 +76,6 @@ Feature: In questionnaire, slider questions can be defined with scores attribute
     And I press "Save settings"
     And I click on "Edit" "link" in the "[New section]" "table_row"
     Then I should see "[New section] section questions"
-    And I follow "[New section] section questions"
-    Then I should see "Add question to section"
     And I should not see "Q1"
     And I should see "Q2"
     And I log out

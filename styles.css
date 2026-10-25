@@ -407,11 +407,6 @@ td.selected {
     background-color: var(--bs-secondary-bg, #eee);
 }
 
-#page-mod-questionnaire-fbsections input[type="image"] {
-    width: 1em;
-    height: 1em;
-}
-
 #page-mod-questionnaire-fbsections input[type="radio"] {
     margin-right: 0;
 }

@@ -35,22 +35,46 @@ Feature: Teachers can remove questions from a feedback section and delete feedba
     And I set the field "id_feedbacksections" to "Feedback sections"
     And I press "Save settings"
     And I click on "Edit" "link" in the "[New section]" "table_row"
-    And I expand all fieldsets
-    And I set the field "addquestionselect" to "Q1"
-    And I press "Add question..."
-    And I expand all fieldsets
-    And I set the field "addquestionselect" to "Q2"
-    And I press "Add question..."
+    And I click on "Include" "checkbox" in the "Q1" "form_row"
+    And I click on "Include" "checkbox" in the "Q2" "form_row"
+    And I press "Save changes"
 
   @javascript
-  Scenario: Remove a question from a feedback section after confirming.
-    When I expand all fieldsets
-    And I press "Remove Q1 from this section"
-    Then I should see "Are you sure you want to remove question \"Q1\" from section \"[New section]\"?"
-    And I press "Yes"
-    And I expand all fieldsets
-    And the "addquestionselect" select box should contain "Q1"
-    And the "addquestionselect" select box should not contain "Q2"
+  Scenario: Choose the questions and weights that count towards a section.
+    Then I should see "2" in the "[New section]" "table_row"
+    And I click on "Edit" "link" in the "[New section]" "table_row"
+    And I click on "Include" "checkbox" in the "Q1" "form_row"
+    And I set the field "Weight for Q2" to "1.5"
+    And I press "Save changes"
+    And I should see "Enter a weight greater than 0 and no more than 1."
+    And I set the field "Weight for Q2" to "0.5"
+    And I press "Save changes"
+    And I should see "1" in the "[New section]" "table_row"
+    And I click on "Edit" "link" in the "[New section]" "table_row"
+    And the field "Weight for Q2" matches value "0.5"
+
+  @javascript
+  Scenario: Enter a section's messages as score ranges.
+    When I click on "Edit" "link" in the "[New section]" "table_row"
+    Then I should see "From 100%" in the "Range 1" "form_row"
+    And I set the field "id_feedbackboundaries_0" to "60"
+    And I should see "From 60%" in the "Range 2" "form_row"
+    And I set the field "id_feedbacktext_0" to "High scores"
+    And I set the field "id_feedbackboundaries_1" to "70"
+    And I set the field "id_feedbacktext_1" to "Low scores"
+    And I press "Save changes"
+    And I should see "The boundary must be lower than the one in the range above."
+    And I set the field "id_feedbackboundaries_1" to ""
+    And I press "Save changes"
+    And I should see "2" in the "[New section]" "table_row"
+    And I click on "Edit" "link" in the "[New section]" "table_row"
+    And the field "id_feedbackboundaries_0" matches value "60"
+    And I should see "From 60%" in the "Range 2" "form_row"
+    And I press "Add a range"
+    And I should see "Range 4"
+    And I press "Remove this range"
+    And I should not see "Range 1"
+    And I should see "Range 2"
 
   @javascript
   Scenario: Add and delete a feedback section from the feedback page.

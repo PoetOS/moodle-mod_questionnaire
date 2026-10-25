@@ -198,20 +198,6 @@ class section {
     }
 
     /**
-     * Removes the question from this section and updates the database.
-     *
-     * @param int $qid The question id and index.
-     * @throws \dml_exception
-     * @throws coding_exception
-     */
-    public function remove_question($qid) {
-        if (isset($this->scorecalculation[$qid])) {
-            unset($this->scorecalculation[$qid]);
-            $this->set_new_scorecalculation();
-        }
-    }
-
-    /**
      * Deletes this section from the database. Object is invalid after that.
      * This will also adjust the section numbers so that they are sequential and begin at 1.
      */
