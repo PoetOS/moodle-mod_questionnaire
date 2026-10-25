@@ -89,7 +89,6 @@ final class feedback_section_form_test extends \advanced_testcase {
         $customdata->feedbacksection = section::new_section($questionnaire->surveyid(), 'Global');
         $customdata->validquestions = [];
         $customdata->survey = $questionnaire->survey()->to_stdclass();
-        $customdata->sectionselect = [];
 
         $form = new feedback_section_form('fbsections.php', $customdata, $PAGE->get_renderer('mod_questionnaire'));
         return [$form, $questionnaire];

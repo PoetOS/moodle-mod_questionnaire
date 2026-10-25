@@ -131,23 +131,7 @@ class feedback_form extends \moodleform {
         $mform->addElement('hidden', 'courseid', '');
         $mform->setType('courseid', PARAM_RAW);
 
-        // Can't seem to disable or hide one button in the group, so create two different button sets and hide one.
-        $buttongroup = [];
-        $buttongroup[] = $mform->createElement('submit', 'feedbacksettingsbutton1', get_string('savesettings', 'questionnaire'));
-        $buttongroup[] = $mform->createElement('submit', 'feedbackeditbutton', get_string('feedbackeditsections', 'questionnaire'));
-        $mform->addGroup($buttongroup, 'buttongroup');
-        if (moodle_major_version() == '3.3') {
-            $mform->disabledIf('buttongroup', 'feedbacksections', 'eq', 0);
-        } else {
-            $mform->hideIf('buttongroup', 'feedbacksections', 'eq', 0);
-        }
-
-        $mform->addElement('submit', 'feedbacksettingsbutton2', get_string('savesettings', 'questionnaire'));
-        if (moodle_major_version() == '3.3') {
-            $mform->disabledIf('feedbacksettingsbutton2', 'feedbacksections', 'neq', 0);
-        } else {
-            $mform->hideIf('feedbacksettingsbutton2', 'feedbacksections', 'neq', 0);
-        }
+        $this->add_action_buttons(true, get_string('savesettings', 'questionnaire'));
     }
 
     /**

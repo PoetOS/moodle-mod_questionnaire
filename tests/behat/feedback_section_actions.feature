@@ -33,7 +33,8 @@ Feature: Teachers can remove questions from a feedback section and delete feedba
       | Possible answers | 1=One,2=Two |
     And I navigate to "Feedback" in current page administration
     And I set the field "id_feedbacksections" to "Feedback sections"
-    And I press "Save settings and edit Feedback Sections"
+    And I press "Save settings"
+    And I click on "Edit" "link" in the "[New section]" "table_row"
     And I expand all fieldsets
     And I set the field "addquestionselect" to "Q1"
     And I press "Add question..."
@@ -52,11 +53,27 @@ Feature: Teachers can remove questions from a feedback section and delete feedba
     And the "addquestionselect" select box should not contain "Q2"
 
   @javascript
-  Scenario: Delete a feedback section after confirming.
-    When I set the field "newsectionlabel" to "Second section"
+  Scenario: Add and delete a feedback section from the feedback page.
+    When I navigate to "Feedback" in current page administration
+    And I set the field "New section label" to "Second section"
     And I press "Add new section"
-    And I press "Delete this section"
+    Then I should see "Second section section heading"
+    And I navigate to "Feedback" in current page administration
+    And I click on "Delete" "link" in the "Second section" "table_row"
     Then I should see "Are you sure you want to delete feedback section \"Second section\"?"
     And I press "Yes"
-    And the "navigatesections" select box should contain "[New section]"
-    And the "navigatesections" select box should not contain "Second section"
+    And I should see "Feedback section deleted."
+    And "[New section]" "table_row" should exist
+    And "Second section" "table_row" should not exist
+
+  @javascript
+  Scenario: Global feedback keeps the sections from sections mode but only lists the first.
+    When I navigate to "Feedback" in current page administration
+    And I set the field "New section label" to "Second section"
+    And I press "Add new section"
+    And I navigate to "Feedback" in current page administration
+    And I set the field "id_feedbacksections" to "Global Feedback"
+    And I press "Save settings"
+    Then I should see "1 more section(s) from Feedback sections mode are kept but not used by Global Feedback."
+    And "[New section]" "table_row" should exist
+    And "Second section" "table_row" should not exist

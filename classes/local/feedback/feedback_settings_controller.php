@@ -23,7 +23,7 @@ use mod_questionnaire\questionnaire;
  *
  * Owns the conversion from feedback form data into an explicit allowlist of
  * feedback settings, the saving of the feedbacknotes editor draft area, and
- * the redirect to the section editor. Domain validation of the field set
+ * creating the first section after a save. Domain validation of the field set
  * lives on {@see feedback::update_settings()}; section bootstrap lives on
  * {@see feedback::ensure_first_section()}.
  *
@@ -76,8 +76,8 @@ class feedback_settings_controller {
     }
 
     /**
-     * Forward to {@see feedback::ensure_first_section()} for use by the
-     * "Save settings and edit Feedback Sections" path in feedback.php.
+     * Forward to {@see feedback::ensure_first_section()}, called by feedback.php after saving
+     * so the chosen feedback mode has a section to edit.
      *
      * @return int Section id (0 if no sections exist and no feedback is configured).
      */

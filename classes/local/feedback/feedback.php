@@ -575,11 +575,40 @@ class feedback {
     }
 
     /**
+     * The survey's feedback sections in section order, keyed by section id.
+     *
+     * @return section[]
+     */
+    public function sections(): array {
+        $sections = [];
+        $records = feedback_section_record::get_for_survey($this->questionnaire->surveyid(), 'section');
+        foreach ($records as $record) {
+            $id = (int) $record->get('id');
+            $sections[$id] = new section($this->questionnaire->questions(), ['id' => $id]);
+        }
+        return $sections;
+    }
+
+    /**
+     * Load one of this survey's feedback sections.
+     *
+     * @param int $sectionid The section id.
+     * @return section
+     * @throws \invalid_parameter_exception If the section does not belong to this survey.
+     */
+    public function section(int $sectionid): section {
+        $record = feedback_section_record::get_record(['id' => $sectionid, 'surveyid' => $this->questionnaire->surveyid()]);
+        if (!$record) {
+            throw new \invalid_parameter_exception('No feedback section with that id in this questionnaire.');
+        }
+        return new section($this->questionnaire->questions(), ['id' => $sectionid]);
+    }
+
+    /**
      * Ensure a first feedback section exists for the survey.
      *
-     * Used by the "Save settings and edit Feedback Sections" path so the
-     * user always lands on a real section editor. Returns the id of the
-     * section to redirect to (existing first section, or newly created one).
+     * Called after the feedback settings are saved, so a feedback mode always
+     * has a section to edit. Returns the lowest existing section number.
      *
      * @return int Section id (0 if no sections exist and no feedback is configured).
      */

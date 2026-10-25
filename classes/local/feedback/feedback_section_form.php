@@ -65,30 +65,6 @@ class feedback_section_form extends \moodleform {
         $this->context = $questionnaire->context();
         $mform    =& $this->_form;
 
-        if ($survey->feedbacksections > 1) {
-            $mform->addElement('header', 'feedbacksectionsheader', get_string('feedbacksections', 'questionnaire'));
-            $sselectgroup = [];
-            $sselect = $mform->createElement(
-                'select',
-                'navigatesections',
-                get_string('navigatetosection', 'questionnaire'),
-                $this->_customdata->sectionselect
-            );
-            $sselect->setSelected($feedbacksection->id);
-            $sselectgroup[] = $sselect;
-            $sselectgroup[] = $mform->createElement('submit', 'gotosection', get_string('navigatetosection', 'questionnaire'));
-            $mform->addGroup($sselectgroup, '');
-            $addnewsectionarray = [];
-            $addnewsectionarray[] = $mform->createElement(
-                'text',
-                'newsectionlabel',
-                get_string('feedbacksectionlabel', 'questionnaire')
-            );
-            $mform->setType('newsectionlabel', PARAM_TEXT);
-            $addnewsectionarray[] = $mform->createElement('submit', 'addnewsection', get_string('addnewsection', 'questionnaire'));
-            $mform->addGroup($addnewsectionarray, '', get_string('feedbacksectionlabel', 'questionnaire'));
-        }
-
         if ($feedbacksections == 1) {
             $label = get_string('feedbackglobal', 'questionnaire');
             $feedbackheading = get_string('feedbackglobalheading', 'questionnaire');
@@ -239,7 +215,6 @@ class feedback_section_form extends \moodleform {
         // Buttons.
         $buttonarray = [];
         $buttonarray[] = $mform->createElement('submit', 'submitbutton', get_string('savechanges'));
-        $buttonarray[] = $mform->createElement('submit', 'confirmdeletesection', get_string('deletesection', 'questionnaire'));
         $buttonarray[] = $mform->createElement('cancel');
         $mform->addGroup($buttonarray, 'buttonar', '', ' ', false);
         $mform->closeHeaderBefore('buttonar');

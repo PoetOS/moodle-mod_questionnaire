@@ -211,4 +211,35 @@ final class feedback_test extends \advanced_testcase {
             ['surveyid' => $questionnaire->surveyid()]
         ));
     }
+
+    /**
+     * sections() returns the survey's sections in section order, keyed by id.
+     */
+    public function test_sections_in_section_order(): void {
+        $questionnaire = $this->setup_questionnaire();
+        $this->assertSame([], $questionnaire->feedback()->sections());
+
+        $first = section::new_section($questionnaire->surveyid(), 'First');
+        $second = section::new_section($questionnaire->surveyid(), 'Second');
+
+        $sections = $questionnaire->feedback()->sections();
+        $this->assertSame([$first->id, $second->id], array_keys($sections));
+        $this->assertSame(['First', 'Second'], array_column(array_values($sections), 'sectionlabel'));
+    }
+
+    /**
+     * section() loads one of this survey's sections and rejects another survey's.
+     */
+    public function test_section_belongs_to_survey(): void {
+        $questionnaire = $this->setup_questionnaire();
+        $own = section::new_section($questionnaire->surveyid(), 'Own');
+        $course = $this->getDataGenerator()->create_course();
+        $other = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id]);
+        $foreign = section::new_section($other->surveyid(), 'Foreign');
+
+        $this->assertSame('Own', $questionnaire->feedback()->section($own->id)->sectionlabel);
+        $this->expectException(\invalid_parameter_exception::class);
+        $questionnaire->feedback()->section($foreign->id);
+    }
 }

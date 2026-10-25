@@ -29,18 +29,21 @@ require_once("../../config.php");
 
 use mod_questionnaire\questionnaire;
 use mod_questionnaire\local\feedback\feedback_settings_controller;
+use mod_questionnaire\local\feedback\section;
+use mod_questionnaire\output\feedback_overview;
 use mod_questionnaire\output\page;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
-$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $action = optional_param('action', '', PARAM_ALPHA);
+$sectionid = optional_param('sectionid', 0, PARAM_INT);
 
 $questionnaire = questionnaire::from_cmid($id);
 
 // Needed here for forced language courses.
 require_course_login($questionnaire->course(), true, $questionnaire->coursemodule());
 
-$PAGE->set_url(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $id]));
+$pageurl = new moodle_url('/mod/questionnaire/feedback.php', ['id' => $id]);
+$PAGE->set_url($pageurl);
 $PAGE->set_context($questionnaire->context());
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
@@ -48,6 +51,16 @@ $page = page::settings();
 
 if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+}
+
+if ($action == 'addsection') {
+    require_sesskey();
+    $newsection = section::new_section($questionnaire->surveyid(), optional_param('sectionlabel', '', PARAM_TEXT));
+    redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $id, 'sectionid' => $newsection->id]));
+} else if ($action == 'deletesection') {
+    require_sesskey();
+    $questionnaire->feedback()->section($sectionid)->delete();
+    redirect($pageurl, get_string('feedbacksectiondeleted', 'questionnaire'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 
 $feedbackform = new \mod_questionnaire\local\feedback\feedback_form('feedback.php', ['questionnaire' => $questionnaire]);
@@ -72,23 +85,12 @@ $feedbackform->set_data($sdata);
 if ($feedbackform->is_cancelled()) {
     redirect(new moodle_url('/mod/questionnaire/view.php', ['id' => $questionnaire->coursemodule()->id]));
 }
-// Confirm that feedback can be used for this questionnaire...
-$validquestions = $questionnaire->feedback()->has_any_feedback_questions();
 
 if ($settings = $feedbackform->get_data()) {
     $controller = new feedback_settings_controller($questionnaire);
-    if (isset($settings->feedbacksettingsbutton1) || isset($settings->feedbacksettingsbutton2) || isset($settings->buttongroup)) {
-        $controller->save($settings);
-    }
-
-    // Handle the edit feedback sections action.
-    if (isset($settings->buttongroup['feedbackeditbutton'])) {
-        $firstsection = $questionnaire->feedback()->ensure_first_section();
-        redirect(new moodle_url(
-            '/mod/questionnaire/fbsections.php',
-            ['id' => $questionnaire->coursemodule()->id, 'section' => $firstsection]
-        ));
-    }
+    $controller->save($settings);
+    $controller->ensure_first_section();
+    redirect($pageurl, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 
 // Print the page header.
@@ -96,10 +98,16 @@ $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
 $PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
 echo $renderer->header();
-if (!$validquestions) {
-    $page->add_to_page('formarea', get_string('feedbackoptions_help', 'questionnaire'));
+if ($action == 'confirmdeletesection') {
+    $feedbacksection = $questionnaire->feedback()->section($sectionid);
+    $message = get_string('confirmdeletesection', 'questionnaire', format_string($feedbacksection->sectionlabel));
+    $urlyes = new moodle_url($pageurl, ['action' => 'deletesection', 'sectionid' => $sectionid]);
+    $page->add_to_page('formarea', $renderer->confirm($message, new single_button($urlyes, get_string('yes')), $pageurl));
 } else {
-    $page->add_to_page('formarea', $feedbackform->render());
+    if ($questionnaire->feedback()->has_any_feedback_questions()) {
+        $page->add_to_page('formarea', $feedbackform->render());
+    }
+    $page->add_to_page('formarea', $renderer->render(new feedback_overview($questionnaire)));
 }
 echo $renderer->render($page);
 echo $renderer->footer($questionnaire->course());

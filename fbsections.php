@@ -29,11 +29,6 @@ use mod_questionnaire\questionnaire;
 use mod_questionnaire\output\page;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
-$section = optional_param('section', 1, PARAM_INT);
-if ($section == 0) {
-    $section = 1;
-}
-$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $action = optional_param('action', '', PARAM_ALPHA);
 $sectionid = optional_param('sectionid', 0, PARAM_INT);
 
@@ -46,24 +41,17 @@ $PAGE->set_url(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $id]
 $PAGE->set_context($questionnaire->context());
 
 $surveyid = $questionnaire->surveyid();
+$overviewurl = new moodle_url('/mod/questionnaire/feedback.php', ['id' => $id]);
 
 if ($sectionid) {
-    // Get the specified section by its id.
-    $feedbacksection = new mod_questionnaire\local\feedback\section($questionnaire->questions(), ['id' => $sectionid]);
-} else if (!$DB->count_records('questionnaire_fb_sections', ['surveyid' => $surveyid])) {
-    // There are no sections currently, so create one.
-    if ($questionnaire->feedback()->mode() == 1) {
-        $sectionlabel = get_string('feedbackglobal', 'questionnaire');
-    } else {
-        $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
-    }
-    $feedbacksection = mod_questionnaire\local\feedback\section::new_section($surveyid, $sectionlabel);
+    $feedbacksection = $questionnaire->feedback()->section($sectionid);
 } else {
-    // Get the specified section by section number.
-    $feedbacksection = new mod_questionnaire\local\feedback\section(
-        $questionnaire->questions(),
-        ['surveyid' => $surveyid, 'sectionnum' => $section]
-    );
+    // Without a section id, edit the first section; sections are only created from the feedback page.
+    $sections = $questionnaire->feedback()->sections();
+    if (empty($sections)) {
+        redirect($overviewurl);
+    }
+    $feedbacksection = reset($sections);
 }
 
 // Get all questions that are valid feedback questions.
@@ -84,16 +72,8 @@ if (!$questionnaire->capabilities()->can_edit_questions()) {
 // Handle confirmed actions that impact display immediately.
 if ($action == 'removequestion') {
     require_sesskey();
-    $sectionid = required_param('sectionid', PARAM_INT);
     $qid = required_param('qid', PARAM_INT);
     $feedbacksection->remove_question($qid);
-} else if ($action == 'deletesection') {
-    require_sesskey();
-    $sectionid = required_param('sectionid', PARAM_INT);
-    if ($sectionid == $feedbacksection->id) {
-        $feedbacksection->delete();
-        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $questionnaire->coursemodule()->id]));
-    }
 }
 
 $customdata = new stdClass();
@@ -101,12 +81,6 @@ $customdata->questionnaire = $questionnaire;
 $customdata->feedbacksection = $feedbacksection;
 $customdata->validquestions = $validquestions;
 $customdata->survey = $questionnaire->survey()->to_stdclass();
-$customdata->sectionselect = $DB->get_records_menu(
-    'questionnaire_fb_sections',
-    ['surveyid' => $surveyid],
-    'section',
-    'id,sectionlabel'
-);
 
 $feedbackform = new \mod_questionnaire\local\feedback\feedback_section_form('fbsections.php', $customdata, $renderer);
 $sdata = clone($feedbacksection);
@@ -129,37 +103,14 @@ $sdata->sectionheading = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'item
 $feedbackform->set_data($sdata);
 
 if ($feedbackform->is_cancelled()) {
-    redirect(new moodle_url('/mod/questionnaire/feedback.php', ['id' => $questionnaire->coursemodule()->id]));
+    redirect($overviewurl);
 }
 
 if ($settings = $feedbackform->get_data()) {
     // Because formslib doesn't support 'numeric' or 'image' inputs, the results won't show up in the $feedbackform object.
     $fullform = data_submitted();
 
-    if (isset($settings->gotosection)) {
-        if ($settings->navigatesections != $feedbacksection->id) {
-            redirect(
-                new moodle_url(
-                    '/mod/questionnaire/fbsections.php',
-                    ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $settings->navigatesections]
-                )
-            );
-        }
-    } else if (isset($settings->addnewsection)) {
-        $newsection = mod_questionnaire\local\feedback\section::new_section($surveyid, $settings->newsectionlabel);
-        redirect(new moodle_url(
-            '/mod/questionnaire/fbsections.php',
-            ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $newsection->id]
-        ));
-    } else if (isset($fullform->confirmdeletesection)) {
-        redirect(
-            new moodle_url(
-                '/mod/questionnaire/fbsections.php',
-                ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $feedbacksection->id,
-                    'action' => 'confirmdeletesection']
-            )
-        );
-    } else if (isset($fullform->confirmremovequestion)) {
+    if (isset($fullform->confirmremovequestion)) {
         $qid = key($fullform->confirmremovequestion);
         redirect(
             new moodle_url(
@@ -204,8 +155,7 @@ if ($settings = $feedbackform->get_data()) {
         );
         $feedbacksection->sectionheadingformat = $settings->sectionheading['format'];
 
-        // May have changed the section label and weights, so update the data.
-        $customdata->sectionselect[$feedbacksection->id] = $settings->sectionlabel;
+        // May have changed the weights, so update the data.
         if (isset($fullform->weight)) {
             $customdata->feedbacksection->scorecalculation = $fullform->weight;
         }
@@ -280,17 +230,6 @@ if ($action == 'confirmremovequestion') {
     $urlno = new moodle_url('/mod/questionnaire/fbsections.php', $args);
     $args['action'] = 'removequestion';
     $args['qid'] = $qid;
-    $urlyes = new moodle_url('/mod/questionnaire/fbsections.php', $args);
-    $buttonyes = new single_button($urlyes, get_string('yes'));
-    $buttonno = new single_button($urlno, get_string('no'));
-    $page->add_to_page('formarea', $renderer->confirm($msg, $buttonyes, $buttonno));
-} else if ($action == 'confirmdeletesection') {
-    $sectionid = required_param('sectionid', PARAM_INT);
-    $msg = '<div class="warning centerpara"><p>' .
-        get_string('confirmdeletesection', 'questionnaire', $feedbacksection->sectionlabel) . '</p></div>';
-    $args = ['id' => $questionnaire->coursemodule()->id, 'sectionid' => $sectionid];
-    $urlno = new moodle_url('/mod/questionnaire/fbsections.php', $args);
-    $args['action'] = 'deletesection';
     $urlyes = new moodle_url('/mod/questionnaire/fbsections.php', $args);
     $buttonyes = new single_button($urlyes, get_string('yes'));
     $buttonno = new single_button($urlno, get_string('no'));
