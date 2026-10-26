@@ -73,6 +73,7 @@
             <div class="alert alert-warning">{{.}}</div>
         {{/unusednotice}}
         {{#hassections}}
+            <div class="table-responsive">
             <table class="generaltable table-sm">
                 <thead>
                     <tr>
@@ -98,6 +99,7 @@
                     {{/sections}}
                 </tbody>
             </table>
+            </div>
         {{/hassections}}
         {{^hassections}}
             <p>{{#str}} feedbacknosections, questionnaire {{/str}}</p>
