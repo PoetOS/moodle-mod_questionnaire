@@ -190,6 +190,26 @@ final class response_record_test extends \advanced_testcase {
     }
 
     /**
+     * is_users_incomplete_response() is true only for the user's own incomplete response to that questionnaire.
+     */
+    public function test_is_users_incomplete_response(): void {
+        $this->resetAfterTest();
+        $qid = 9051;
+        $userid = 74;
+
+        $own = $this->make_response($qid, $userid, 'n');
+        $complete = $this->make_response($qid, $userid, 'y');
+        $otheruser = $this->make_response($qid, $userid + 1, 'n');
+        $otherquestionnaire = $this->make_response($qid + 1, $userid, 'n');
+
+        $this->assertTrue(response_record::is_users_incomplete_response($own, $qid, $userid));
+        $this->assertFalse(response_record::is_users_incomplete_response($complete, $qid, $userid));
+        $this->assertFalse(response_record::is_users_incomplete_response($otheruser, $qid, $userid));
+        $this->assertFalse(response_record::is_users_incomplete_response($otherquestionnaire, $qid, $userid));
+        $this->assertFalse(response_record::is_users_incomplete_response(0, $qid, $userid));
+    }
+
+    /**
      * get_latest_incomplete() returns the most recent incomplete response, or null.
      */
     public function test_get_latest_incomplete(): void {

@@ -53,6 +53,60 @@ final class mobile_test extends \advanced_testcase {
     }
 
     /**
+     * Build a questionnaire (as admin) with one text question and the given number of enrolled students.
+     *
+     * @param int $count
+     * @return array The questionnaire followed by the student records.
+     */
+    private function questionnaire_with_students(int $count): array {
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_test_questionnaire(
+            $course,
+            QUESTEXT,
+            ['content' => 'Your answer?'],
+            []
+        );
+        $students = [];
+        for ($i = 0; $i < $count; $i++) {
+            $students[] = $this->getDataGenerator()->create_and_enrol($questionnaire->course(), 'student');
+        }
+        return array_merge([$questionnaire], $students);
+    }
+
+    /**
+     * Generate a response by the given user, answering every question.
+     *
+     * @param \mod_questionnaire\questionnaire $questionnaire
+     * @param \stdClass $user
+     * @param bool $complete
+     * @return int The response id.
+     */
+    private function make_response(\mod_questionnaire\questionnaire $questionnaire, \stdClass $user, bool $complete): int {
+        $response = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->generate_response(
+            $questionnaire,
+            $questionnaire->questions(),
+            (int)$user->id,
+            $complete
+        );
+        return (int)$response['id'];
+    }
+
+    /**
+     * Call mobile_view_activity() for the questionnaire with the given extra args.
+     *
+     * @param \mod_questionnaire\questionnaire $questionnaire
+     * @param array $args
+     * @return array
+     */
+    private function view(\mod_questionnaire\questionnaire $questionnaire, array $args): array {
+        return mobile::mobile_view_activity(array_merge([
+            'cmid' => $questionnaire->coursemodule()->id,
+            'appversioncode' => 44000,
+        ], $args));
+    }
+
+    /**
      * Assert the invariant payload shape emitted by mobile_view_activity().
      *
      * @param array $result
@@ -138,6 +192,90 @@ final class mobile_test extends \advanced_testcase {
         ]);
 
         $this->assert_payload_shape($result);
+    }
+
+    /**
+     * Reviewing returns the answers of the student's own submission.
+     *
+     * @covers \mod_questionnaire\output\mobile::handle_review_action
+     */
+    public function test_review_returns_own_answers(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $student] = $this->questionnaire_with_students(1);
+        $own = $this->make_response($questionnaire, $student, true);
+        $this->setUser($student);
+
+        $result = $this->view($questionnaire, ['action' => 'review', 'submissionid' => $own]);
+
+        $this->assertNotEmpty($result['otherdata']);
+    }
+
+    /**
+     * Reviewing another student's submission returns none of their answers.
+     *
+     * @covers \mod_questionnaire\output\mobile::handle_review_action
+     */
+    public function test_review_rejects_another_students_submission(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $student, $victim] = $this->questionnaire_with_students(2);
+        $this->make_response($questionnaire, $student, true);
+        $victimrid = $this->make_response($questionnaire, $victim, true);
+        $this->setUser($student);
+
+        $result = $this->view($questionnaire, ['action' => 'review', 'submissionid' => $victimrid]);
+
+        $this->assertSame([], $result['otherdata']);
+    }
+
+    /**
+     * Continuing another student's in-progress response is refused.
+     *
+     * @covers \mod_questionnaire\output\mobile::handle_page_action
+     */
+    public function test_page_action_rejects_another_students_response(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $student, $victim] = $this->questionnaire_with_students(2);
+        $victimrid = $this->make_response($questionnaire, $victim, false);
+        $this->setUser($student);
+
+        $this->expectException(\moodle_exception::class);
+        $this->view($questionnaire, ['action' => 'submit', 'submit' => 1, 'rid' => $victimrid]);
+    }
+
+    /**
+     * A userid in the args is ignored: the submission is saved for the current user.
+     *
+     * @covers \mod_questionnaire\output\mobile::mobile_view_activity
+     */
+    public function test_submit_ignores_userid_arg(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$questionnaire, $student, $victim] = $this->questionnaire_with_students(2);
+        $this->setUser($student);
+
+        $this->view($questionnaire, ['action' => 'submit', 'submit' => 1, 'rid' => 0, 'userid' => $victim->id]);
+
+        $this->assertFalse($DB->record_exists('questionnaire_response', ['userid' => $victim->id]));
+        $this->assertTrue($DB->record_exists('questionnaire_response', ['userid' => $student->id, 'complete' => 'y']));
+    }
+
+    /**
+     * A user who can view but not submit cannot save a response through the app, even by naming a user who can.
+     *
+     * @covers \mod_questionnaire\output\mobile::handle_page_action
+     */
+    public function test_submit_needs_submit_capability(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$questionnaire, $viewer, $victim] = $this->questionnaire_with_students(2);
+        $roleid = $this->getDataGenerator()->create_role(['shortname' => 'qviewer']);
+        assign_capability('mod/questionnaire:submit', CAP_PROHIBIT, $roleid, $questionnaire->context()->id);
+        role_assign($roleid, $viewer->id, $questionnaire->context()->id);
+        $this->setUser($viewer);
+
+        $this->view($questionnaire, ['action' => 'submit', 'submit' => 1, 'rid' => 0, 'userid' => $victim->id]);
+
+        $this->assertFalse($DB->record_exists('questionnaire_response', []));
     }
 
     /**

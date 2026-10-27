@@ -537,6 +537,62 @@ final class questionnaire_test extends \advanced_testcase {
     }
 
     /**
+     * Asserts require_own_incomplete_response() accepts 0 and the user's own in-progress response.
+     *
+     * @covers \mod_questionnaire\questionnaire::require_own_incomplete_response
+     */
+    public function test_require_own_incomplete_response_accepts_new_and_own(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 66670;
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $questionnaire = $this->make_questionnaire(['id' => $qid]);
+
+        $questionnaire->require_own_incomplete_response(0, 1);
+        $questionnaire->require_own_incomplete_response((int)$rid, 1);
+        $this->addToAssertionCount(2);
+    }
+
+    /**
+     * Asserts require_own_incomplete_response() rejects another user's response.
+     *
+     * @covers \mod_questionnaire\questionnaire::require_own_incomplete_response
+     */
+    public function test_require_own_incomplete_response_rejects_other_users_response(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 66671;
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 2,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+
+        $this->expectException(\moodle_exception::class);
+        $this->make_questionnaire(['id' => $qid])->require_own_incomplete_response((int)$rid, 1);
+    }
+
+    /**
+     * Asserts require_own_incomplete_response() rejects the user's own completed response.
+     *
+     * @covers \mod_questionnaire\questionnaire::require_own_incomplete_response
+     */
+    public function test_require_own_incomplete_response_rejects_complete_response(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $qid = 66672;
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $qid, 'userid' => 1,
+            'submitted' => time(), 'complete' => 'y', 'grade' => 0,
+        ]);
+
+        $this->expectException(\moodle_exception::class);
+        $this->make_questionnaire(['id' => $qid])->require_own_incomplete_response((int)$rid, 1);
+    }
+
+    /**
      * Asserts get_latest_responseid() returns the most recently submitted incomplete response.
      *
      * @covers \mod_questionnaire\questionnaire::get_latest_responseid
