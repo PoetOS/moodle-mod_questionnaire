@@ -1344,6 +1344,24 @@ class questionnaire {
     }
 
     /**
+     * Throw unless the response id is 0 (a new response) or the user's own in-progress response to this questionnaire.
+     *
+     * Use this before continuing a response whose id came from the client.
+     *
+     * @param int $rid
+     * @param int $userid
+     * @throws \moodle_exception
+     */
+    public function require_own_incomplete_response(int $rid, int $userid): void {
+        if (
+            !empty($rid) &&
+            !\mod_questionnaire\local\db\response_record::is_users_incomplete_response($rid, $this->id(), $userid)
+        ) {
+            throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
+        }
+    }
+
+    /**
      * Process a mobile-app submission and return a result array.
      *
      * Handles next/previous page navigation and final submission from the mobile app.

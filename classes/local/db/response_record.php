@@ -143,6 +143,21 @@ class response_record extends \core\persistent {
     }
 
     /**
+     * True if the response is an in-progress (incomplete) response by the given user to the given questionnaire.
+     *
+     * @param int $rid
+     * @param int $questionnaireid
+     * @param int $userid
+     * @return bool
+     */
+    public static function is_users_incomplete_response(int $rid, int $questionnaireid, int $userid): bool {
+        return static::record_exists_select(
+            'id = :id AND questionnaireid = :questionnaireid AND userid = :userid AND complete = :complete',
+            ['id' => $rid, 'questionnaireid' => $questionnaireid, 'userid' => $userid, 'complete' => 'n']
+        );
+    }
+
+    /**
      * Count complete responses for one questionnaire instance.
      *
      * @param int $questionnaireid Restrict to this instance.

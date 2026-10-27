@@ -41,10 +41,11 @@ class mobile {
 
         $versionname = $args->appversioncode >= 44000 ? 'latest' : 'ionic5';
         $cmid = $args->cmid;
-        $rid = isset($args->rid) ? $args->rid : 0;
+        $rid = (int)($args->rid ?? 0);
         $action = isset($args->action) ? $args->action : 'index';
         $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
-        $userid = isset($args->userid) ? $args->userid : $USER->id;
+        // Always the current user; any userid in the args is ignored.
+        $userid = (int)$USER->id;
         $submit = isset($args->submit) ? $args->submit : false;
         $completed = isset($args->completed) ? $args->completed : false;
 
@@ -185,6 +186,7 @@ class mobile {
         $responses = [];
         $template = "mod_questionnaire/local/mobile/$versionname/main_index_page";
         $result = '';
+        $questionnaire->require_own_incomplete_response($rid, $userid);
         if (!$data['notifications'] && in_array($action, ['submit', 'nextpage', 'previouspage'], true)) {
             $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
         }
@@ -268,14 +270,12 @@ class mobile {
         string $versionname
     ): array {
         $template = "mod_questionnaire/local/mobile/$versionname/main_index_page";
-        if (
-            !$questionnaire->capabilities()->can_read_own_responses() ||
-            empty($args->submissionid ?? null)
-        ) {
+        $submissionid = (int)($args->submissionid ?? 0);
+        if (empty($submissionid) || !$questionnaire->capabilities()->can_view_response($submissionid)) {
             return [$data, $template, $responses];
         }
-        $questionnaire->add_response($args->submissionid);
-        $response = $questionnaire->responses()->get_response($args->submissionid);
+        $questionnaire->add_response($submissionid);
+        $response = $questionnaire->responses()->get_response($submissionid);
         $qnum = 1;
         $pagequestions = [];
         foreach ($questionnaire->questions() as $question) {
