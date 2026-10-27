@@ -208,7 +208,6 @@ class reporter {
         bool $byresponse
     ): void {
         global $CFG;
-        require_once($CFG->dirroot . '/user/lib.php');
 
         $isfullname = $this->questionnaire->respondenttype() !== 'anonymous';
         if ($isfullname) {
@@ -226,9 +225,15 @@ class reporter {
 
         $users = [];
         if ($isfullname) {
-            $userids = array_filter(array_map(fn($r) => (int)$r->userid, $responses));
+            $userids = array_values(array_unique(array_filter(array_map(fn($r) => (int)$r->userid, $responses))));
             if (!empty($userids)) {
-                $users = user_get_users_by_id(array_values(array_unique($userids)));
+                if (method_exists(\core\user::class, 'get_users_by_id')) {
+                    $users = \core\user::get_users_by_id($userids);
+                } else {
+                    // Before Moodle 5.3.
+                    require_once($CFG->dirroot . '/user/lib.php');
+                    $users = user_get_users_by_id($userids);
+                }
             }
         }
 
