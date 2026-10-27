@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\generator;
 
-use mod_questionnaire\question\choice;
+use mod_questionnaire\local\question\choice;
 
 /**
  * Question response rank class

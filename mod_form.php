@@ -17,8 +17,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
 /**
  * print the form to add or edit a questionnaire-instance
@@ -34,9 +32,10 @@ class mod_questionnaire_mod_form extends moodleform_mod {
      */
     protected function definition() {
         global $COURSE, $CFG;
-        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $autonumbering;
 
-        $questionnaire = new questionnaire($COURSE, $this->_cm, $this->_instance, null);
+        $surveyid = !empty($this->_instance)
+            ? \mod_questionnaire\questionnaire::from_instanceid($this->_instance)->surveyid()
+            : null;
 
         $mform    =& $this->_form;
 
@@ -54,17 +53,32 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
-        $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnairetypes);
+        $mform->addElement(
+            'select',
+            'qtype',
+            get_string('qtype', 'questionnaire'),
+            \mod_questionnaire\form_options::response_frequency()
+        );
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
 
         $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->setType('cannotchangerespondenttype', PARAM_INT);
-        $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $questionnairerespondents);
+        $mform->addElement(
+            'select',
+            'respondenttype',
+            get_string('respondenttype', 'questionnaire'),
+            \mod_questionnaire\form_options::respondent_type()
+        );
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
 
-        $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
-        $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
+        $mform->addElement(
+            'select',
+            'respview',
+            get_string('responseview', 'questionnaire'),
+            \mod_questionnaire\form_options::response_viewer()
+        );
+        $mform->addHelpButton('respview', 'responseview', 'questionnaire');
 
         $notificationoptions = [
             0 => get_string('no'),
@@ -82,7 +96,12 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
         $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
 
-        $mform->addElement('select', 'autonum', get_string('autonumbering', 'questionnaire'), $autonumbering);
+        $mform->addElement(
+            'select',
+            'autonum',
+            get_string('autonumbering', 'questionnaire'),
+            \mod_questionnaire\form_options::auto_numbering()
+        );
         $mform->addHelpButton('autonum', 'autonumbering', 'questionnaire');
         // Default = autonumber both questions and pages.
         $mform->setDefault('autonum', 3);
@@ -96,18 +115,14 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         }
         $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);
 
-        if (empty($questionnaire->sid)) {
-            if (!isset($questionnaire->id)) {
-                $questionnaire->id = 0;
-            }
-
+        if (empty($surveyid)) {
             $mform->addElement('header', 'contenthdr', get_string('contentoptions', 'questionnaire'));
             $mform->addHelpButton('contenthdr', 'createcontent', 'questionnaire');
 
             $mform->addElement('radio', 'create', get_string('createnew', 'questionnaire'), '', 'new-0');
 
             // Retrieve existing private questionnaires from current course.
-            $surveys = questionnaire_get_survey_select($COURSE->id, 'private');
+            $surveys = \mod_questionnaire\local\survey\survey::get_private_questionnaires($COURSE->id);
             if (!empty($surveys)) {
                 $prelabel = get_string('useprivate', 'questionnaire');
                 foreach ($surveys as $value => $label) {
@@ -116,7 +131,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
                 }
             }
             // Retrieve existing template questionnaires from this site.
-            $surveys = questionnaire_get_survey_select($COURSE->id, 'template');
+            $surveys = \mod_questionnaire\local\survey\survey::get_template_questionnaires($COURSE->id);
             if (!empty($surveys)) {
                 $prelabel = get_string('usetemplate', 'questionnaire');
                 foreach ($surveys as $value => $label) {
@@ -133,7 +148,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             }
 
             // Retrieve existing public questionnaires from this site.
-            $surveys = questionnaire_get_survey_select($COURSE->id, 'public');
+            $surveys = \mod_questionnaire\local\survey\survey::get_public_questionnaires($COURSE->id);
             if (!empty($surveys)) {
                 $prelabel = get_string('usepublic', 'questionnaire');
                 foreach ($surveys as $value => $label) {
@@ -165,7 +180,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             );
             $mform->addHelpButton('removeafter', 'removeoldresponses', 'questionnaire');
             // Just set default value when creating a new questionare.
-            if (empty($questionnaire->sid)) {
+            if (empty($surveyid)) {
                 $defaultconfig = get_config('questionnaire', 'removeoldresponses');
                 $mform->setDefault('removeafter', $defaultconfig);
             }

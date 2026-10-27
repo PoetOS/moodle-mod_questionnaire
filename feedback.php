@@ -26,151 +26,88 @@
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+
+use mod_questionnaire\questionnaire;
+use mod_questionnaire\local\feedback\feedback_settings_controller;
+use mod_questionnaire\local\feedback\section;
+use mod_questionnaire\output\feedback_overview;
+use mod_questionnaire\output\page;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
-$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 $action = optional_param('action', '', PARAM_ALPHA);
+$sectionid = optional_param('sectionid', 0, PARAM_INT);
 
-if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
-
-if (! $course = $DB->get_record("course", ["id" => $cm->course])) {
-    throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
-}
-
-if (! $questionnaire = $DB->get_record("questionnaire", ["id" => $cm->instance])) {
-    throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
-}
+$questionnaire = questionnaire::from_cmid($id);
 
 // Needed here for forced language courses.
-require_course_login($course, true, $cm);
-$context = context_module::instance($cm->id);
+require_course_login($questionnaire->course(), true, $questionnaire->coursemodule());
 
-$PAGE->set_url(new moodle_url($CFG->wwwroot . '/mod/questionnaire/feedback.php', ['id' => $id]));
-$PAGE->set_context($context);
-if (!isset($SESSION->questionnaire)) {
-    $SESSION->questionnaire = new stdClass();
-}
-$questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
+$pageurl = new moodle_url('/mod/questionnaire/feedback.php', ['id' => $id]);
+$PAGE->set_url($pageurl);
+$PAGE->set_context($questionnaire->context());
 
-// Add renderer and page objects to the questionnaire object for display use.
-$questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
-$questionnaire->add_page(new \mod_questionnaire\output\feedbackpage());
+$renderer = $PAGE->get_renderer('mod_questionnaire');
+$page = page::settings();
 
-$SESSION->questionnaire->current_tab = 'feedback';
-
-if (!$questionnaire->capabilities->editquestions) {
+if (!$questionnaire->capabilities()->can_edit_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$feedbackform = new \mod_questionnaire\feedback_form('feedback.php');
-$sdata = clone($questionnaire->survey);
-$sdata->sid = $questionnaire->survey->id;
-$sdata->id = $cm->id;
+if ($action == 'addsection') {
+    require_sesskey();
+    $newsection = section::new_section($questionnaire->surveyid(), optional_param('sectionlabel', '', PARAM_TEXT));
+    redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $id, 'sectionid' => $newsection->id]));
+} else if ($action == 'deletesection') {
+    require_sesskey();
+    $questionnaire->feedback()->section($sectionid)->delete();
+    redirect($pageurl, get_string('feedbacksectiondeleted', 'questionnaire'), null, \core\output\notification::NOTIFY_SUCCESS);
+}
+
+$feedbackform = new \mod_questionnaire\local\feedback\feedback_form('feedback.php', ['questionnaire' => $questionnaire]);
+$sdata = $questionnaire->survey()->to_stdclass();
+$sdata->sid = $questionnaire->surveyid();
+$sdata->id = $questionnaire->coursemodule()->id;
 
 $draftideditor = file_get_submitted_draft_itemid('feedbacknotes');
 $currentinfo = file_prepare_draft_area(
     $draftideditor,
-    $context->id,
+    $questionnaire->context()->id,
     'mod_questionnaire',
     'feedbacknotes',
     $sdata->sid,
     ['subdirs' => true],
-    $questionnaire->survey->feedbacknotes
+    $questionnaire->feedback()->notes()
 );
 $sdata->feedbacknotes = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
 $feedbackform->set_data($sdata);
 
 if ($feedbackform->is_cancelled()) {
-    redirect(new moodle_url('/mod/questionnaire/view.php', ['id' => $questionnaire->cm->id]));
-}
-// Confirm that feedback can be used for this questionnaire...
-// Get all questions that are valid feedback questions.
-$validquestions = false;
-foreach ($questionnaire->questions as $question) {
-    if ($question->valid_feedback()) {
-        $validquestions = true;
-        break;
-    }
+    redirect(new moodle_url('/mod/questionnaire/view.php', ['id' => $questionnaire->coursemodule()->id]));
 }
 
 if ($settings = $feedbackform->get_data()) {
-    if (isset($settings->feedbacksettingsbutton1) || isset($settings->feedbacksettingsbutton2) || isset($settings->buttongroup)) {
-        if (isset($settings->feedbackscores)) {
-            $sdata->feedbackscores = $settings->feedbackscores;
-        } else {
-            $sdata->feedbackscores = 0;
-        }
-
-        if (isset($settings->feedbacknotes)) {
-            $sdata->fbnotesitemid = $settings->feedbacknotes['itemid'];
-            $sdata->fbnotesformat = $settings->feedbacknotes['format'];
-            $sdata->feedbacknotes = $settings->feedbacknotes['text'];
-            $sdata->feedbacknotes = file_save_draft_area_files(
-                $sdata->fbnotesitemid,
-                $context->id,
-                'mod_questionnaire',
-                'feedbacknotes',
-                $sdata->id,
-                ['subdirs' => true],
-                $sdata->feedbacknotes
-            );
-        } else {
-            $sdata->feedbacknotes = '';
-        }
-
-        if ($settings->feedbacksections > 0) {
-            $sdata->feedbacksections = $settings->feedbacksections;
-            $usergraph = get_config('questionnaire', 'usergraph');
-            if ($usergraph) {
-                if ($settings->feedbacksections == 1) {
-                    $sdata->chart_type = $settings->chart_type_global;
-                } else if ($settings->feedbacksections == 2) {
-                    $sdata->chart_type = $settings->chart_type_two_sections;
-                } else if ($settings->feedbacksections > 2) {
-                    $sdata->chart_type = $settings->chart_type_sections;
-                }
-            }
-        } else {
-            $sdata->feedbacksections = 0;
-        }
-        $sdata->courseid = $settings->courseid;
-        if (!($sid = $questionnaire->survey_update($sdata))) {
-            throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
-        }
-    }
-
-    // Handle the edit feedback sections action.
-    if (isset($settings->buttongroup['feedbackeditbutton'])) {
-        // Create a single section for Global Feedback if not existent.
-        if (!($firstsection = $DB->get_field('questionnaire_fb_sections', 'MIN(section)', ['surveyid' => $questionnaire->sid]))) {
-            $firstsection = 0;
-        }
-        if (($sdata->feedbacksections > 0) && ($firstsection == 0)) {
-            if ($sdata->feedbacksections == 1) {
-                $sectionlabel = get_string('feedbackglobal', 'questionnaire');
-            } else {
-                $sectionlabel = get_string('feedbackdefaultlabel', 'questionnaire');
-            }
-            $feedbacksection = mod_questionnaire\feedback\section::new_section($questionnaire->sid, $sectionlabel);
-        }
-        redirect(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $cm->id, 'section' => $firstsection]));
-    }
+    $controller = new feedback_settings_controller($questionnaire);
+    $controller->save($settings);
+    $controller->ensure_first_section();
+    redirect($pageurl, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 
 // Print the page header.
 $PAGE->set_title(get_string('editingfeedback', 'questionnaire'));
-$PAGE->set_heading(format_string($course->fullname));
+$PAGE->set_heading(format_string($questionnaire->course()->fullname));
 $PAGE->navbar->add(get_string('editingfeedback', 'questionnaire'));
-echo $questionnaire->renderer->header();
-require('tabs.php');
-if (!$validquestions) {
-    $questionnaire->page->add_to_page('formarea', get_string('feedbackoptions_help', 'questionnaire'));
+echo $renderer->header();
+if ($action == 'confirmdeletesection') {
+    $feedbacksection = $questionnaire->feedback()->section($sectionid);
+    $message = get_string('confirmdeletesection', 'questionnaire', format_string($feedbacksection->sectionlabel));
+    $urlyes = new moodle_url($pageurl, ['action' => 'deletesection', 'sectionid' => $sectionid]);
+    $page->add_to_page('formarea', $renderer->confirm($message, new single_button($urlyes, get_string('yes')), $pageurl));
 } else {
-    $questionnaire->page->add_to_page('formarea', $feedbackform->render());
+    if ($questionnaire->feedback()->has_any_feedback_questions()) {
+        $page->add_to_page('formarea', $feedbackform->render());
+    }
+    $page->add_to_page('formarea', $renderer->render(new feedback_overview($questionnaire)));
 }
-echo $questionnaire->renderer->render($questionnaire->page);
-echo $questionnaire->renderer->footer($course);
+echo $renderer->render($page);
+echo $renderer->footer($questionnaire->course());

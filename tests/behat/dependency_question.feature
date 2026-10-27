@@ -74,7 +74,7 @@ Feature: Questions can be defined to be dependent on answers to multiple previou
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire 2"
     And I navigate to "Questions" in current page administration
-    And I set the field "id_type_id" to "Dropdown Box"
+    And I set the field "id_typeid" to "Dropdown Box"
     And I press "Add selected question type"
     And I set the field "Question Name" to "Q1"
     And I set the field "No" to "n"

@@ -18,7 +18,7 @@ namespace mod_questionnaire\courseformat;
 
 use cm_info;
 use core\output\pix_icon;
-use mod_questionnaire\manager;
+use mod_questionnaire\questionnaire;
 use core\activity_dates;
 use core\output\action_link;
 use core_calendar\output\humandate;
@@ -34,10 +34,8 @@ use core_courseformat\local\overview\overviewitem;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class overview extends \core_courseformat\activityoverviewbase {
-    /**
-     * @var manager the questionnaire manager.
-     */
-    private manager $manager;
+    /** @var questionnaire The questionnaire domain object for this activity. */
+    private questionnaire $questionnaire;
 
     /**
      * Constructor.
@@ -51,7 +49,7 @@ class overview extends \core_courseformat\activityoverviewbase {
         protected readonly \core\output\renderer_helper $rendererhelper,
     ) {
         parent::__construct($cm);
-        $this->manager = manager::create_from_coursemodule($cm);
+        $this->questionnaire = questionnaire::from_cm($cm);
     }
 
     #[\Override]
@@ -89,7 +87,7 @@ class overview extends \core_courseformat\activityoverviewbase {
             return null;
         }
 
-        $currentanswerscount = $this->manager->count_all_users_answered();
+        $currentanswerscount = $this->questionnaire->responses()->count_distinct_responders();
 
         if (
             class_exists(button::class) &&
@@ -129,11 +127,13 @@ class overview extends \core_courseformat\activityoverviewbase {
      * @return overviewitem|null An overview item or null for teachers.
      */
     private function get_extra_status_for_user(): ?overviewitem {
+        global $USER;
+
         if (has_capability('mod/questionnaire:viewsingleresponse', $this->cm->context)) {
             return null;
         }
 
-        $status = $this->manager->has_answered();
+        $status = $this->questionnaire->user_has_submitted($USER->id);
         $statustext = get_string('notanswered', 'questionnaire');
         if ($status) {
             $statustext = get_string('answered', 'questionnaire');
@@ -170,7 +170,7 @@ class overview extends \core_courseformat\activityoverviewbase {
         } else {
             $groupids = [];
         }
-        $studentswhoresponded = $this->manager->count_all_users_answered($groupids);
+        $studentswhoresponded = $this->questionnaire->responses()->count_distinct_responders($groupids);
 
         return new overviewitem(
             name: get_string('studentwhoresponded', 'questionnaire'),

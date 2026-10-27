@@ -32,7 +32,7 @@ Feature: Review responses with different capabilities
     Then I should see "View all responses"
     And I navigate to "View all responses" in current page administration
     Then I should see "All responses"
-    And I should see "View Default order"
+    And the field "Order Responses" matches value "View Default order"
     And I should see "Responses: 7 (Submissions: 6 | In progress: 1)"
     And I log out
 
@@ -84,7 +84,7 @@ Feature: Review responses with different capabilities
       | mod/questionnaire:readallresponseanytime | Prohibit |
       | mod/questionnaire:readallresponses | Allow |
     And the following "activities" exist:
-      | activity | name | description | course | idnumber | resp_view |
+      | activity | name | description | course | idnumber | respview |
       | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 | 0 |
       | questionnaire | Test questionnaire 2 | Test questionnaire 2 description | C1 | questionnaire2 | 3 |
     And "Test questionnaire" has questions and responses

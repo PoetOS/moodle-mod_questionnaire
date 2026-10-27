@@ -36,12 +36,17 @@ $services = [
 
 $functions = [
     'mod_questionnaire_submit_questionnaire_response' => [
-        'classname' => 'mod_questionnaire\external',
-        'methodname' => 'submit_questionnaire_response',
-        'classpath' => 'mod/questionnaire/externallib.php',
+        'classname' => 'mod_questionnaire\external\submit_questionnaire_response',
         'description' => 'Questionnaire submit',
         'type' => 'write',
         'capabilities' => 'mod/questionnaire:submit',
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
+    'mod_questionnaire_question_reorder' => [
+        'classname' => 'mod_questionnaire\external\question_reorder',
+        'description' => 'Saves a new drag-and-drop order for a questionnaire\'s questions.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'mod/questionnaire:editquestions',
     ],
 ];

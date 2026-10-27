@@ -24,12 +24,12 @@
  */
 namespace mod_questionnaire;
 
+use mod_questionnaire\local\survey\survey;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
-require_once($CFG->dirroot . '/mod/questionnaire/questionnaire.class.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php');
 
 /**
  * Unit tests for questionnaire_deletion_question_testcase.
@@ -68,7 +68,7 @@ final class deletion_question_test extends \advanced_testcase {
     public function test_restore_deleted_question(): void {
         global $DB;
         $question = $DB->get_record_select('questionnaire_question', 'name = ?', ['DEMODATE1']);
-        questionnaire_restore_deleted_question($question->id, $question->surveyid);
+        survey::restore_deleted_question($question->id, $question->surveyid);
         $question = $DB->get_record('questionnaire_question', ['id' => $question->id]);
         $this->assertEquals($question->position, 1);
     }
@@ -83,7 +83,7 @@ final class deletion_question_test extends \advanced_testcase {
     public function test_delete_permanently_question(): void {
         global $DB;
         $question = $DB->get_record_select('questionnaire_question', 'name = ?', ['DEMODATE1']);
-        questionnaire_delete_permanently_questions($question->id, $question->surveyid);
+        survey::delete_question_permanently($question->id, $question->surveyid);
         $question = $DB->get_record('questionnaire_question', ['id' => $question->id]);
         $this->assertEquals($question, false);
     }
@@ -99,8 +99,8 @@ final class deletion_question_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_instance(['course' => $course->id]);
-        $qdata['type_id'] = $qtype;
-        $qdata['surveyid'] = $questionnaire->sid;
+        $qdata['typeid'] = $qtype;
+        $qdata['surveyid'] = $questionnaire->surveyid();
         $qdata['name'] = isset($qdata['name']) ? $qdata['name'] : 'Q1';
         $qdata['content'] = isset($qdata['content']) ? $qdata['content'] : 'Test content';
         $qdata['position'] = isset($qdata['position']) ? $qdata['position'] : 1;

@@ -20,7 +20,7 @@
     Template which defines a yes/no type question survey display.
 
     Classes required for JS:
-    * /mod/questionnaire/module.js
+    * none
 
     Data attributes required for JS:
     * none
@@ -37,7 +37,6 @@
                     "name": "q23",
                     "checked": 1,
                     "disabled": "",
-                    "onclick": "dosomething()",
                     "label": "Yes",
                     "alabel": "Some question Yes"
                 },
@@ -47,7 +46,6 @@
                     "name": "q23",
                     "checked": 0,
                     "disabled": "",
-                    "onclick": "dosomething()",
                     "label": "No",
                     "alabel": "Some question No"
                 }
@@ -59,7 +57,7 @@
 {{#qelements}}
     {{#choice}}
         <input id="{{id}}" value="{{value}}" name="{{name}}" type="radio"
-               {{#checked}}checked="checked"{{/checked}} {{#disabled}}disabled="disabled"{{/disabled}} {{#onclick}}onclick="{{onclick}}"{{/onclick}}
+               {{#checked}}checked="checked"{{/checked}} {{#disabled}}disabled="disabled"{{/disabled}}
                aria-label="{{alabel}}">
         <label for="{{id}}">{{{label}}}</label>
     {{/choice}}

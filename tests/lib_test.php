@@ -25,13 +25,14 @@
 
 namespace mod_questionnaire;
 
-use mod_questionnaire\question\question;
+use mod_questionnaire\local\question\question;
+use mod_questionnaire\local\survey\survey;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
-require_once($CFG->dirroot . '/mod/questionnaire/classes/question/question.php');
+require_once($CFG->dirroot . '/mod/questionnaire/classes/local/question/question.php');
 
 /**
  * Unit tests for questionnaire_lib_testcase.
@@ -94,17 +95,17 @@ final class lib_test extends \advanced_testcase {
         $questdata->introformat = FORMAT_HTML;
         $questdata->qtype = 1;
         $questdata->respondenttype = 'anonymous';
-        $questdata->resp_eligible = 'none';
-        $questdata->resp_view = 2;
+        $questdata->respeligible = 'none';
+        $questdata->respview = 2;
         $questdata->opendate = 99;
         $questdata->closedate = 50;
         $questdata->resume = 1;
         $questdata->navigate = 1;
         $questdata->grade = 100;
-        $questdata->sid = 1;
         $questdata->timemodified = 3;
         $questdata->completionsubmit = 1;
         $questdata->autonum = 1;
+        $questdata->create = 'new-0';
 
         // Call add_instance with the data.
         $this->assertTrue(questionnaire_add_instance($questdata) > 0);
@@ -127,9 +128,9 @@ final class lib_test extends \advanced_testcase {
         /** @var mod_questionnaire_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         /** @var questionnaire $questionnaire */
-        $questionnaire = $generator->create_instance(['course' => $course->id, 'sid' => 1]);
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
 
-        $qid = $questionnaire->id;
+        $qid = $questionnaire->id();
         $this->assertTrue($qid > 0);
 
         // Change all the default values.
@@ -137,17 +138,16 @@ final class lib_test extends \advanced_testcase {
         $qrow = $DB->get_record('questionnaire', ['id' => $qid]);
         $qrow->qtype = 1;
         $qrow->respondenttype = 'anonymous';
-        $qrow->resp_eligible = 'none';
-        $qrow->resp_view = 2;
+        $qrow->respeligible = 'none';
+        $qrow->respview = 2;
         $qrow->opendate = 99;
         $qrow->closedate = 50;
         $qrow->resume = 1;
         $qrow->navigate = 1;
         $qrow->grade = 100;
-        $qrow->timemodified = 3;
         $qrow->completionsubmit = 1;
         $qrow->autonum = 1;
-        $qrow->coursemodule = $questionnaire->cm->id;
+        $qrow->coursemodule = $questionnaire->coursemodule()->id;
 
         // Moodle update form passes "instance" instead of "id" to [mod]_update_instance.
         $qrow->instance = $qid;
@@ -160,15 +160,14 @@ final class lib_test extends \advanced_testcase {
         $this->assertNotEmpty($questrecord);
         $this->assertEquals($qrow->qtype, $questrecord->qtype);
         $this->assertEquals($qrow->respondenttype, $questrecord->respondenttype);
-        $this->assertEquals($qrow->resp_eligible, $questrecord->resp_eligible);
-        $this->assertEquals($qrow->resp_view, $questrecord->resp_view);
+        $this->assertEquals($qrow->respeligible, $questrecord->respeligible);
+        $this->assertEquals($qrow->respview, $questrecord->respview);
         $this->assertEquals($qrow->opendate, $questrecord->opendate);
         $this->assertEquals($qrow->closedate, $questrecord->closedate);
         $this->assertEquals($qrow->resume, $questrecord->resume);
         $this->assertEquals($qrow->navigate, $questrecord->navigate);
         $this->assertEquals($qrow->grade, $questrecord->grade);
         $this->assertEquals($qrow->sid, $questrecord->sid);
-        $this->assertEquals($qrow->timemodified, $questrecord->timemodified);
         $this->assertEquals($qrow->completionsubmit, $questrecord->completionsubmit);
         $this->assertEquals($qrow->autonum, $questrecord->autonum);
     }
@@ -196,22 +195,23 @@ final class lib_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course, QUESYESNO, $questiondata);
 
-        $question = reset($questionnaire->questions);
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
 
         // Add a response for the question.
         $response = $generator->create_question_response($questionnaire, $question, 'y');
 
         // Get records for database deletion confirmation.
-        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]);
+        $survey = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]);
 
         // Now delete it all.
-        $this->assertTrue(questionnaire_delete_instance($questionnaire->id));
-        $this->assertEmpty($DB->get_record('questionnaire', ['id' => $questionnaire->id]));
-        $this->assertEmpty($DB->get_record('questionnaire_survey', ['id' => $questionnaire->sid]));
+        $this->assertTrue(questionnaire_delete_instance($questionnaire->id()));
+        $this->assertEmpty($DB->get_record('questionnaire', ['id' => $questionnaire->id()]));
+        $this->assertEmpty($DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]));
         $this->assertEmpty($DB->get_records('questionnaire_question', ['surveyid' => $survey->id]));
-        $this->assertEmpty($DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaire->id]));
-        $this->assertEmpty($DB->get_records('questionnaire_response_bool', ['response_id' => $response->id]));
-        $this->assertEmpty($DB->get_records('event', ["modulename" => 'questionnaire', "instance" => $questionnaire->id]));
+        $this->assertEmpty($DB->get_records('questionnaire_response', ['questionnaireid' => $questionnaire->id()]));
+        $this->assertEmpty($DB->get_records('questionnaire_response_bool', ['responseid' => $response->id]));
+        $this->assertEmpty($DB->get_records('event', ["modulename" => 'questionnaire', "instance" => $questionnaire->id()]));
     }
 
     /**
@@ -237,7 +237,8 @@ final class lib_test extends \advanced_testcase {
         $this->assertEquals(get_string("noresponses", "questionnaire"), $outline->info);
 
         // Test for a user with one response.
-        $generator->create_question_response($questionnaire, reset($questionnaire->questions), 'y', $user->id);
+        $questions = $questionnaire->questions();
+        $generator->create_question_response($questionnaire, reset($questions), 'y', $user->id);
         $outline = questionnaire_user_outline($course, $user, null, $questionnaire);
         $this->assertEquals('1 ' . get_string("response", "questionnaire"), $outline->info);
     }
@@ -338,8 +339,8 @@ final class lib_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course);
-        $questionnaire->cmidnumber = $questionnaire->cm->idnumber;
-        $questionnaire->courseid = $questionnaire->course->id;
+        $questionnaire->cmidnumber = $questionnaire->coursemodule()->idnumber;
+        $questionnaire->courseid = $questionnaire->course()->id;
         $this->assertEquals(GRADE_UPDATE_OK, questionnaire_grade_item_update($questionnaire));
     }
 
@@ -348,7 +349,7 @@ final class lib_test extends \advanced_testcase {
      *
      * @return void
      *
-     * @covers \questionnaire_restore_deleted_question
+     * @covers \mod_questionnaire\questionnaire::restore_deleted_question
      */
     public function test_questionnaire_restore_deleted_question(): void {
         global $DB;
@@ -357,28 +358,28 @@ final class lib_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
         $questionnaire = $generator->create_test_questionnaire($course);
-        $sid = $questionnaire->sid;
+        $sid = $questionnaire->surveyid();
 
         // Add three questions.
         $q1 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 1, 'deleted' => null, 'content' => 'Q1']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 1, 'deleted' => null, 'content' => 'Q1']);
         $q2 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 2, 'deleted' => null, 'content' => 'Q2']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 2, 'deleted' => null, 'content' => 'Q2']);
         $q3 = $DB->insert_record('questionnaire_question', [
-            'surveyid' => $sid, 'type_id' => 1, 'position' => 3, 'deleted' => null, 'content' => 'Q3']);
+            'surveyid' => $sid, 'typeid' => 1, 'position' => 3, 'deleted' => null, 'content' => 'Q3']);
 
         // Delete Q2 and Q3.
         $DB->set_field('questionnaire_question', 'deleted', 1234567890, ['id' => $q2]);
         $DB->set_field('questionnaire_question', 'deleted', 1234567891, ['id' => $q3]);
 
         // Restore Q2.
-        questionnaire_restore_deleted_question($q2, $sid);
+        survey::restore_deleted_question($q2, $sid);
         $restoredq2 = $DB->get_record('questionnaire_question', ['id' => $q2]);
         $this->assertNull($restoredq2->deleted);
         $this->assertEquals(2, $restoredq2->position); // Should be after Q1.
 
         // Restore Q3.
-        questionnaire_restore_deleted_question($q3, $sid);
+        survey::restore_deleted_question($q3, $sid);
         $restoredq3 = $DB->get_record('questionnaire_question', ['id' => $q3]);
         $this->assertNull($restoredq3->deleted);
         $this->assertEquals(3, $restoredq3->position); // Should be after Q2.

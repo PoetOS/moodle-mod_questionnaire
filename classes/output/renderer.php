@@ -16,7 +16,7 @@
 
 namespace mod_questionnaire\output;
 
-use mod_questionnaire\question\question;
+use mod_questionnaire\local\question\question;
 
 /**
  * Contains class mod_questionnaire\output\renderer
@@ -38,77 +38,23 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Fill out the questionnaire (complete) page.
-     * @param \templateable $page
-     * @return string | boolean
+     * Render the report tertiary action bar.
+     * @param report_action_bar $actionbar
+     * @return string
      */
-    public function render_completepage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/completepage', $data);
+    public function render_report_action_bar(report_action_bar $actionbar): string {
+        $data = $actionbar->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/report_action_bar', $data);
     }
 
     /**
-     * Fill out the report page.
-     * @param \templateable $page
-     * @return string | boolean
+     * Render the manage-questions list, add bar, and recycle bin.
+     * @param \mod_questionnaire\output\question_manager $manager
+     * @return string
      */
-    public function render_reportpage($page) {
-        $data = $page->export_for_template($this);
-        $printparam = optional_param('target', '', PARAM_TEXT);
-
-        $data->printparam = $printparam == 'print';
-
-        return $this->render_from_template('mod_questionnaire/reportpage', $data);
-    }
-
-    /**
-     * Fill out the PDF report page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_reportpagepdf($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/reportpagepdf', $data);
-    }
-
-    /**
-     * Fill out the qsettings page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_qsettingspage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/qsettingspage', $data);
-    }
-
-    /**
-     * Fill out the feedback page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_feedbackpage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/qsettingspage', $data);
-    }
-
-    /**
-     * Fill out the questions page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_questionspage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/questionspage', $data);
-    }
-
-    /**
-     * Fill out the preview page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_previewpage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/previewpage', $data);
+    public function render_question_manager(\mod_questionnaire\output\question_manager $manager) {
+        $data = $manager->export_for_template($this);
+        return $this->render_from_template('mod_questionnaire/question_manager', $data);
     }
 
     /**
@@ -119,71 +65,6 @@ class renderer extends \plugin_renderer_base {
     public function render_nonrespondentspage($page) {
         $data = $page->export_for_template($this);
         return $this->render_from_template('mod_questionnaire/nonrespondentspage', $data);
-    }
-
-    /**
-     * Fill out the fbsections page.
-     * @param \templateable $page
-     * @return string | boolean
-     */
-    public function render_fbsectionspage($page) {
-        $data = $page->export_for_template($this);
-        return $this->render_from_template('mod_questionnaire/fbsectionspage', $data);
-    }
-
-    /**
-     * Render the respondent information line.
-     * @param string $text The respondent information.
-     */
-    public function respondent_info($text) {
-        return \html_writer::tag('span', $text, ['class' => 'respondentinfo']);
-    }
-
-    /**
-     * Render the completion form start HTML.
-     * @param string $action The action URL.
-     * @param array $hiddeninputs Name/value pairs of hidden inputs used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_formstart($action, $hiddeninputs = []) {
-        $output = '';
-        $output .= \html_writer::start_tag('form', ['id' => 'phpesp_response', 'method' => 'post', 'action' => $action]) . "\n";
-        foreach ($hiddeninputs as $name => $value) {
-            $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]) . "\n";
-        }
-        $this->page->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
-        return $output;
-    }
-
-    /**
-     * Render the completion form end HTML.
-     * @param array $inputs Type/attribute array of inputs and values used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_formend($inputs = []) {
-        $output = '';
-        foreach ($inputs as $type => $attributes) {
-            $output .= \html_writer::empty_tag('input', array_merge(['type' => $type], $attributes)) . "\n";
-        }
-        $output .= \html_writer::end_tag('form') . "\n";
-        return $output;
-    }
-
-    /**
-     * Render the completion form control buttons.
-     * @param array|string $inputs Name/(Type/attribute) array of input types and values used by the form.
-     * @return string The output for the page.
-     */
-    public function complete_controlbuttons($inputs = null) {
-        $output = '';
-        if (is_array($inputs)) {
-            foreach ($inputs as $name => $attributes) {
-                $output .= \html_writer::empty_tag('input', array_merge(['name' => $name], $attributes)) . ' ';
-            }
-        } else if (is_string($inputs)) {
-            $output .= \html_writer::tag('p', $inputs);
-        }
-        return $output;
     }
 
     /**
@@ -221,16 +102,33 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render a question for a survey.
-     * @param \mod_questionnaire\question\question $question The question object.
-     * @param \mod_questionnaire\responsetype\response\response $response Any current response data.
+     * @param \mod_questionnaire\local\question\question $question The question object.
+     * @param \mod_questionnaire\local\response\response $response Any current response data.
      * @param int $qnum The question number.
      * @param boolean $blankquestionnaire Used for printing a blank one.
      * @param array $dependants Array of all questions/choices depending on $question.
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      */
-    public function question_output($question, $response, $qnum, $blankquestionnaire, $dependants = []) {
+    public function question_output(
+        $question,
+        $response,
+        $qnum,
+        $blankquestionnaire,
+        $dependants = [],
+        $questionnaire = null,
+        bool $individualresponse = false
+    ) {
 
-        $pagetags = $question->question_output($response, $blankquestionnaire, $dependants, $qnum);
+        $pagetags = $question->question_output(
+            $response,
+            $blankquestionnaire,
+            $dependants,
+            $qnum,
+            $questionnaire,
+            $individualresponse
+        );
 
         // If the question has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -244,22 +142,31 @@ class renderer extends \plugin_renderer_base {
                 $pagetags->notifications = $this->notification($notification, \core\output\notification::NOTIFY_ERROR);
             }
         }
-        $pagetags->questionname = $question->name;
+        $pagetags->questionname = $question->name();
 
         return $this->render_from_template('mod_questionnaire/question_container', $pagetags);
     }
 
     /**
      * Render a question response.
-     * @param \mod_questionnaire\question\question $question The question object.
-     * @param \mod_questionnaire\responsetype\response\response $response The response object.
+     * @param \mod_questionnaire\local\question\question $question The question object.
+     * @param \mod_questionnaire\local\response\response $response The response object.
      * @param int $qnum The question number.
      * @param bool $pdf
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      * @throws \moodle_exception
      */
-    public function response_output($question, $response, $qnum = null, $pdf = false) {
-        $pagetags = $question->response_output($response, $qnum);
+    public function response_output(
+        $question,
+        $response,
+        $qnum = null,
+        $pdf = false,
+        $questionnaire = null,
+        bool $individualresponse = false
+    ) {
+        $pagetags = $question->response_output($response, $qnum, $questionnaire, $individualresponse);
 
         // If the response has a template, then render it from the 'qformelement' context. If no template, then 'qformelement'
         // already contains HTML.
@@ -287,26 +194,29 @@ class renderer extends \plugin_renderer_base {
      * Render all responses for a question.
      * @param array|string $responses
      * @param array $questions
+     * @param \questionnaire|null $questionnaire The parent questionnaire object.
+     * @param bool $individualresponse True when rendering a single individual response (mybyresponse / individualresp).
      * @return string The output for the page.
      */
-    public function all_response_output($responses, $questions = null) {
+    public function all_response_output($responses, $questions = null, $questionnaire = null, bool $individualresponse = false) {
         $output = '';
         if (is_string($responses)) {
             $output .= $responses;
         } else {
             $qnum = 1;
             foreach ($questions as $question) {
-                if (empty($pagetags = $question->questionstart_survey_display($qnum))) {
+                $pagetags = $question->questionstart_survey_display($qnum, null, $questionnaire, $individualresponse, true);
+                if (empty($pagetags)) {
                     continue;
                 }
                 foreach ($responses as $response) {
-                    $resptags = $question->response_output($response);
+                    $resptags = $question->response_output($response, '', $questionnaire, $individualresponse);
                     // If the response has a template, then render it from the 'qformelement' context.
                     // If no template, then 'qformelement' already contains HTML.
                     if (($template = $question->response_template())) {
                         $resptags->qformelement = $this->render_from_template($template, $resptags->qformelement);
                     }
-                    $resptags->respdate = userdate($response->submitted);
+                    $resptags->respdate = userdate($response->submitted_at());
                     $pagetags->responses[] = $resptags;
                 }
                 $qnum++;
@@ -323,10 +233,11 @@ class renderer extends \plugin_renderer_base {
      * @param string $sort The sort order being used.
      * @param string $anonymous The value of the anonymous setting.
      * @param bool $pdf
+     * @param int|null $currentgroupid Active group filter id for staff respondent-link URLs.
      * @return string The output for the page.
      */
-    public function results_output($question, $rids, $sort, $anonymous, $pdf = false) {
-        $pagetags = $question->display_results($rids, $sort, $anonymous);
+    public function results_output($question, $rids, $sort, $anonymous, $pdf = false, ?int $currentgroupid = null) {
+        $pagetags = $question->display_results($rids, $sort, $anonymous, $currentgroupid);
 
         // If the response has a template, then render it from $pagetags. If no template, then $pagetags already contains HTML.
         if (($template = $question->results_template($pdf))) {
@@ -364,119 +275,13 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Render a print/preview page number line.
-     * @param string $content The content to render.
-     * @return string The rendered HTML.
-     */
-    public function print_preview_pagenumber($content) {
-        return \html_writer::tag('div', $content, ['class' => 'surveyPage']);
-    }
-
-    /**
-     * Render the print/preview completion form end HTML.
-     * @param string $url The url to call.
-     * @param string $submitstr The submit text.
-     * @param string $resetstr The reset text.
-     * @return string The output for the page.
-     */
-    public function print_preview_formend($url, $submitstr, $resetstr) {
-        $output = '';
-        $output .= \html_writer::start_tag('div');
-        $output .= \html_writer::empty_tag('input', ['type' => 'submit', 'name' => 'submit', 'value' => $submitstr,
-            'class' => 'btn btn-primary']);
-        $output .= \html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
-        $output .= ' ';
-        $output .= \html_writer::tag('a', $resetstr, ['href' => $url, 'class' => 'btn btn-secondary me-1']);
-        $output .= \html_writer::end_tag('div') . "\n";
-        $output .= \html_writer::end_tag('form') . "\n";
-        return $output;
-    }
-
-    /**
-     * Render the back to home link on the save page.
-     * @param string $url The url to link to.
-     * @param string $text The text to apply the link to.
-     * @return string The rendered HTML.
-     */
-    public function homelink($url, $text) {
-        $output = '';
-        $output .= \html_writer::start_tag('div', ['class' => 'homelink']);
-        $output .= \html_writer::tag('a', $text, ['href' => $url, 'class' => 'btn btn-primary']);
-        $output .= \html_writer::end_tag('div');
-        return $output;
-    }
-
-
-    /**
-     * Generate and return any dependency warnings.
-     * @param array $children
-     * @param string $langstring
-     * @param int $strnum
-     * @return string
-     */
-    public function dependency_warnings($children, $langstring, $strnum) {
-        $msg = '<div class="warning">' . get_string($langstring, 'questionnaire') . '</div><br />';
-        foreach ($children as $child) {
-            $loopindicator = [];
-            foreach ($child as $subchild) {
-                $childname = '';
-                if ($subchild->name) {
-                    $childname = ' (' . $subchild->name . ')';
-                }
-
-                // Add conditions.
-                switch ($subchild->dependlogic) {
-                    case 0:
-                        $logic = get_string('notset', 'questionnaire');
-                        break;
-                    case 1:
-                        $logic = get_string('set', 'questionnaire');
-                        break;
-                    default:
-                        $logic = '';
-                }
-
-                // Different colouring for and/or.
-                switch ($subchild->dependandor) {
-                    case 'or':
-                        $color = 'qdepend-or';
-                        break;
-                    case 'and':
-                        $color = "qdepend";
-                        break;
-                    default:
-                        $color = "";
-                }
-
-                if (!in_array($subchild->qdependquestion, $loopindicator)) {
-                    $msg .= '<div class = "qn-container">' . $strnum . ' ' . $subchild->position . $childname .
-                        '<br/><span class="' . $color . '"><strong>' .
-                        get_string('dependquestion', 'questionnaire') . '</strong>' .
-                        ' (' . $strnum . ' ' . $subchild->parentposition . ') ' .
-                        '&nbsp;:&nbsp;' . $subchild->parent . ' ' . $logic . '</span>';
-                } else {
-                    $msg .= '<br/><span class="' . $color . '"><strong>' .
-                        get_string('dependquestion', 'questionnaire') . '</strong>' .
-                        ' (' . $strnum . ' ' . $subchild->parentposition . ') ' .
-                        '&nbsp;:&nbsp;' . $subchild->parent . ' ' . $logic . '</span>';
-                }
-                $loopindicator[] = $subchild->qdependquestion;
-            }
-            $msg .= '<div class="qn-question">' .
-                $subchild->content .
-                '</div></div>';
-        }
-        return $msg;
-    }
-
-    /**
-     * Get displayable list of parents for the question in questions_form.
+     * Get displayable list of parents for the question in the manage-questions list.
      * @param int $qid The question id.
      * @param array $dependencies Array of dependency records for a question.
      * @return string
      */
     public function get_dependency_html($qid, $dependencies) {
-        $html = '';
+        $context = ['dependencies' => []];
         foreach ($dependencies as $dependency) {
             switch ($dependency->dependlogic) {
                 case 0:
@@ -488,43 +293,24 @@ class renderer extends \plugin_renderer_base {
                 default:
                     $logic = '';
             }
-
-            // TODO - Move the HTML generation to the renderer.
-            if ($dependency->dependandor == "and") {
-                $html .= '<div id="qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' .
-                    $dependency->dependchoiceid . '" class="qdepend">' . '<strong>' .
-                    get_string('dependquestion', 'questionnaire') . '</strong> : ' .
-                    get_string('position', 'questionnaire') . ' ' .
-                    $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
+            if ($dependency->dependandor == 'and') {
+                $divid = 'qdepend_' . $qid . '_' . $dependency->dependquestionid . '_' . $dependency->dependchoiceid;
+                $divclass = 'qdepend';
             } else {
-                $html .= '<div id="qdepend_or_' . $qid . '_' . $dependency->dependquestionid . '_' .
-                    $dependency->dependchoiceid . '" class="qdepend-or">' . '<strong>' .
-                    get_string('dependquestion', 'questionnaire') . '</strong> : ' .
-                    get_string('position', 'questionnaire') . ' ' .
-                    $dependency->parentposition . ' (' . $dependency->parent . ') ' . $logic . '</div>';
+                $divid = 'qdepend_or_' . $qid . '_' . $dependency->dependquestionid . '_' . $dependency->dependchoiceid;
+                $divclass = 'qdepend-or';
             }
+            $context['dependencies'][] = [
+                'divid' => $divid,
+                'divclass' => $divclass,
+                'dependquestion' => get_string('dependquestion', 'questionnaire'),
+                'position' => get_string('position', 'questionnaire'),
+                'parentposition' => $dependency->parentposition,
+                'parent' => $dependency->parent,
+                'logicstr' => $logic,
+            ];
         }
-        return $html;
-    }
-
-    /**
-     * Helper method dealing with the fact we can not just fetch the output of flexible_table
-     *
-     * @param flexible_table $table
-     * @param boolean $buffering True if already buffering.
-     * @return string HTML
-     */
-    public function flexible_table(\flexible_table $table, $buffering = false) {
-
-        $o = '';
-        if (!$buffering) {
-            ob_start();
-        }
-        $table->finish_output();
-        $o = ob_get_contents();
-        ob_end_clean();
-
-        return $o;
+        return $this->output->render_from_template('mod_questionnaire/dependencylist', $context);
     }
 
     /**

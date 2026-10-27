@@ -24,7 +24,7 @@ Feature: In questionnaire, slider questions can be defined with scores attribute
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test questionnaire"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     Then I should not see "Display Scores"
     And I navigate to "Questions" in current page administration
     Then I should see "Add questions"
@@ -40,7 +40,7 @@ Feature: In questionnaire, slider questions can be defined with scores attribute
       | Slider increment value       | 1                      |
     Then I should see " [Slider] (Q1)"
     And I should see "Slider question test"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     Then I should not see "Display Scores"
     And I navigate to "Questions" in current page administration
     Then I should see "Add questions"
@@ -67,16 +67,15 @@ Feature: In questionnaire, slider questions can be defined with scores attribute
       | Slider increment value       | 1                      |
     Then I should see " [Slider] (Q3)"
     And I should see "Slider question test"
-    And I follow "Feedback"
+    And I navigate to "Feedback" in current page administration
     And I should see "Feedback options"
     And I should see "Display Scores"
     And I set the field "id_feedbacksections" to "Feedback sections"
     And I set the field "id_feedbackscores" to "Yes"
     And I set the field "id_feedbacknotes" to "These are the main Feedback notes"
-    And I press "Save settings and edit Feedback Sections"
+    And I press "Save settings"
+    And I click on "Edit" "link" in the "[New section]" "table_row"
     Then I should see "[New section] section questions"
-    And I follow "[New section] section questions"
-    Then I should see "Add question to section"
     And I should not see "Q1"
     And I should see "Q2"
     And I log out

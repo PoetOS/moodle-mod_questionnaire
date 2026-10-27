@@ -1,0 +1,79 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_questionnaire/question_delete_confirmation
+
+    The message in the question deletion confirmation dialogue: what will be deleted, and which dependencies go with it.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * warnings - array: Warning lines (plain text).
+    * label - string: Position (or NA) and name of the question being deleted.
+    * content - string: Formatted question text (HTML).
+    * dependencygroups - array: heading and questions for direct and indirect dependants. Each question has a label,
+      content (HTML) and conditions; each condition has class, parentposition, parent (formatted) and logic.
+
+    Example context (json):
+    {
+        "warnings": ["Are you sure you want to move the question at position 1 (Q1) to the deletion area?"],
+        "label": "Position 1 (Q1)",
+        "content": "<p>Do you own a car?</p>",
+        "dependencygroups": [
+            {
+                "heading": "Direct dependencies to this question will be removed. This will affect:",
+                "questions": [
+                    {
+                        "label": "Position 2 (Q2)",
+                        "content": "<p>What colour is the car?</p>",
+                        "conditions": [
+                            {"class": "qdepend", "parentposition": 1, "parent": "Q1->Yes", "logic": "set"}
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}}
+<div class="warning centerpara">
+    {{#warnings}}<p>{{.}}</p>{{/warnings}}
+</div>
+<div class="qn-container">
+    {{{label}}}
+    <div class="qn-question">{{{content}}}</div>
+</div>
+{{#dependencygroups}}
+<div class="warning">{{heading}}</div>
+{{#questions}}
+<div class="qn-container">
+    <div>
+        {{{label}}}
+        {{#conditions}}
+        <div class="{{class}}">
+            <strong>{{#str}} dependquestion, questionnaire {{/str}}</strong>
+            ({{#str}} position, questionnaire {{/str}} {{parentposition}}) : {{{parent}}} {{logic}}
+        </div>
+        {{/conditions}}
+    </div>
+    <div class="qn-question">{{{content}}}</div>
+</div>
+{{/questions}}
+{{/dependencygroups}}
