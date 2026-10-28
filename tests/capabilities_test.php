@@ -449,4 +449,102 @@ final class capabilities_test extends \advanced_testcase {
         $this->assertTrue($instance->capabilities()->can_view_single_response($teacher->id));
         $this->assertFalse($instance->capabilities()->can_view_single_response($student->id));
     }
+
+    /**
+     * Build a questionnaire with a file question and a student's uploaded file answer.
+     *
+     * Others may never view responses (the generator default), so only the response-anytime capability lets staff in.
+     *
+     * @return array [questionnaire, owner, response id, response file record id]
+     */
+    private function make_file_answer(): array {
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_test_questionnaire(
+            $course,
+            QUESFILE,
+            ['content' => 'Upload a file'],
+            null
+        );
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
+
+        $owner = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $this->setUser($owner);
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), $owner->id)->id();
+        $draftitemid = file_get_unused_draft_itemid();
+        get_file_storage()->create_file_from_string([
+            'contextid' => \context_user::instance($owner->id)->id,
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => $draftitemid,
+            'filepath' => '/',
+            'filename' => 'answer.txt',
+        ], 'answer');
+        $recordid = $question->insert_response((object)['rid' => $rid, 'q' . $question->id() => $draftitemid]);
+        return [$questionnaire, $owner, $rid, $recordid];
+    }
+
+    /**
+     * Only the owner, once they have submitted, and staff who may read responses can view an uploaded response file.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_response_file
+     */
+    public function test_can_view_response_file(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $owner, $rid, $recordid] = $this->make_file_answer();
+        $course = $questionnaire->course();
+        $classmate = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+
+        $this->setUser($owner);
+        $this->assertFalse($questionnaire->capabilities()->can_view_response_file($recordid));
+        $questionnaire->responses()->response_commit($rid);
+        $this->assertTrue($questionnaire->capabilities()->can_view_response_file($recordid));
+
+        $this->setUser($classmate);
+        $this->assertFalse($questionnaire->capabilities()->can_view_response_file($recordid));
+
+        $this->setUser($teacher);
+        $this->assertTrue($questionnaire->capabilities()->can_view_response_file($recordid));
+        $this->assertFalse($questionnaire->capabilities()->can_view_response_file($recordid + 1000));
+    }
+
+    /**
+     * Another questionnaire's response file cannot be viewed through this questionnaire.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_response_file
+     */
+    public function test_can_view_response_file_refuses_other_questionnaires_file(): void {
+        $this->resetAfterTest();
+        [, , , $recordid] = $this->make_file_answer();
+        $this->setAdminUser();
+        $other = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $this->getDataGenerator()->create_course()->id]);
+        $this->assertFalse($other->capabilities()->can_view_response_file($recordid));
+    }
+
+    /**
+     * The pluginfile callback refuses another student's response file, even when the file name is known.
+     *
+     * @covers ::questionnaire_pluginfile
+     */
+    public function test_pluginfile_refuses_another_students_response_file(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/questionnaire/lib.php');
+        $this->resetAfterTest();
+        [$questionnaire, , , $recordid] = $this->make_file_answer();
+        $this->setUser($this->getDataGenerator()->create_and_enrol($questionnaire->course(), 'student'));
+
+        $this->assertFalse(questionnaire_pluginfile(
+            $questionnaire->course(),
+            $questionnaire->coursemodule(),
+            $questionnaire->context(),
+            'response_file',
+            [$recordid, 'answer.txt'],
+            true,
+            []
+        ));
+    }
 }

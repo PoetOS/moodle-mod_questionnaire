@@ -364,4 +364,15 @@ class capabilities {
 
         return false;
     }
+
+    /**
+     * True if the current user can view the uploaded file of the specified response file record.
+     *
+     * @param int $responsefileid The questionnaire_response_file id.
+     * @return bool
+     */
+    public function can_view_response_file(int $responsefileid): bool {
+        $record = \mod_questionnaire\local\db\response_file_record::get_record(['id' => $responsefileid]);
+        return $record && $this->can_view_response((int)$record->get('responseid'));
+    }
 }

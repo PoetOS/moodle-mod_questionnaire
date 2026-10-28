@@ -347,7 +347,8 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
             return false;
         }
     } else if ($filearea == 'response_file') {
-        if (!$DB->record_exists('questionnaire_response_file', ['id' => $componentid])) {
+        $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($cm->instance);
+        if (!$questionnaire->capabilities()->can_view_response_file($componentid)) {
             return false;
         }
     } else {
