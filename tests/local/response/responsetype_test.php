@@ -1074,28 +1074,35 @@ final class responsetype_test extends \advanced_testcase {
     }
 
     /**
-     * file::delete_old_response() drops the questionnaire_response_file row.
+     * file::delete_old_response() drops the questionnaire_response_file row and its stored file.
      */
     public function test_file_delete_old_response_removes_record(): void {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        [, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+        $contextid = $questionnaire->context()->id;
 
-        $DB->insert_record('questionnaire_response_file', (object)[
+        $recordid = $DB->insert_record('questionnaire_response_file', (object)[
             'responseid' => $rid,
             'questionid' => $question->id(),
             'fileid' => 9999,
         ]);
+        $fs = get_file_storage();
+        $fs->create_file_from_string([
+            'contextid' => $contextid, 'component' => 'mod_questionnaire', 'filearea' => 'response_file',
+            'itemid' => $recordid, 'filepath' => '/', 'filename' => 'answer.txt',
+        ], 'answer');
         $this->assertSame(1, $DB->count_records('questionnaire_response_file', [
             'responseid' => $rid, 'questionid' => $question->id(),
         ]));
 
-        file::delete_old_response((int)$question->id(), $rid);
+        file::delete_old_response((int)$question->id(), $rid, $contextid);
 
         $this->assertSame(0, $DB->count_records('questionnaire_response_file', [
             'responseid' => $rid, 'questionid' => $question->id(),
         ]));
+        $this->assertTrue($fs->is_area_empty($contextid, 'mod_questionnaire', 'response_file', $recordid));
     }
 }
