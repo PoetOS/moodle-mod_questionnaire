@@ -127,7 +127,10 @@ class report_actions {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         } else if (!$rid) {
             throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
-        } else if (!($response = response_record::get_or_null($rid))) {
+        } else if (
+            !($response = response_record::get_or_null($rid)) ||
+            ((int)$response->get('questionnaireid') !== $this->questionnaire->id())
+        ) {
             throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
         }
 

@@ -559,6 +559,38 @@ class behat_mod_questionnaire extends behat_base {
         }
     }
     /**
+     * Open a report.php action URL directly, without a session key as a forged link would, and check it is refused.
+     *
+     * Behat fails any step that ends on an error page, so this step checks the refusal itself and then returns to
+     * the questionnaire's view page.
+     *
+     * @Then /^opening the "(dvresp|dvallresp|dfs)" report action for questionnaire "([^"]*)" without a session key is refused$/
+     * @param string $action
+     * @param string $name questionnaire name.
+     */
+    public function opening_report_action_without_sesskey_is_refused(string $action, string $name): void {
+        global $DB;
+        $questionnaire = $this->get_questionnaire_by_name($name);
+        $params = ['instance' => $questionnaire->id, 'action' => $action];
+        if ($action === 'dvresp') {
+            $rids = $DB->get_fieldset_select('questionnaire_response', 'id', 'questionnaireid = ?', [$questionnaire->id]);
+            $params['rid'] = reset($rids);
+        } else if ($action === 'dfs') {
+            $params['downloadformat'] = 'csv';
+        }
+        $url = new moodle_url('/mod/questionnaire/report.php', $params);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+
+        $page = $this->getSession()->getPage();
+        if (!$page->find('xpath', "//div[@data-rel='fatalerror']") || !str_contains($page->getText(), 'sesskey')) {
+            throw new ExpectationException("The '{$action}' action was not refused for a missing session key", $this->getSession());
+        }
+
+        $cm = $this->get_cm_by_questionnaire_name($name);
+        $this->getSession()->visit($this->locate_path('/mod/questionnaire/view.php?id=' . $cm->id));
+    }
+
+    /**
      * Get a questionnaire by name.
      *
      * @param string $name questionnaire name.

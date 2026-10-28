@@ -178,10 +178,12 @@ switch ($action) {
         break;
 
     case 'dvresp': // Delete single response. Do it!
+        require_sesskey();
         (new report_actions($questionnaire, $renderer))->delete_response((int)$rid);
         break;
 
     case 'dvallresp': // Delete all responses in questionnaire (or group). Do it!
+        require_sesskey();
         (new report_actions($questionnaire, $renderer))
             ->delete_all_responses($groupmode, $currentgroupid, $respsallparticipants);
         break;
@@ -192,6 +194,7 @@ switch ($action) {
         break;
 
     case 'dfs':
+        require_sesskey();
         $options = new download_options(
             optional_param('downloadformat', '', PARAM_ALPHA),
             optional_param('choicecodes', 0, PARAM_BOOL),
