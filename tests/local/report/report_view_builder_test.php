@@ -124,6 +124,62 @@ final class report_view_builder_test extends \advanced_testcase {
     }
 
     /**
+     * A previewer's own submission (with a valid session key) is checked and reported.
+     */
+    public function test_build_print_view_checks_previewers_submission(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        [$instance, ] = $this->build_fixture();
+
+        $data = $this->preview_with_post($instance, ['sesskey' => sesskey()]);
+
+        $this->assertObjectHasProperty('message', $data);
+    }
+
+    /**
+     * A POST without a valid session key, such as one from another site, is ignored.
+     */
+    public function test_build_print_view_ignores_post_without_sesskey(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        [$instance, ] = $this->build_fixture();
+
+        $data = $this->preview_with_post($instance, ['sesskey' => 'forged']);
+
+        $this->assertObjectNotHasProperty('message', $data);
+    }
+
+    /**
+     * A POST from a user without the preview capability is ignored.
+     */
+    public function test_build_print_view_ignores_post_without_preview_capability(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        [$instance, $studentid] = $this->build_fixture();
+        $this->setUser($studentid);
+
+        $data = $this->preview_with_post($instance, ['sesskey' => sesskey()]);
+
+        $this->assertObjectNotHasProperty('message', $data);
+    }
+
+    /**
+     * Render the preview page for a POST of the preview form with the given fields.
+     *
+     * @param questionnaire $instance
+     * @param array $post
+     * @return \stdClass The page data.
+     */
+    private function preview_with_post(questionnaire $instance, array $post): \stdClass {
+        global $PAGE;
+        $_POST = array_merge(['submit' => get_string('submitpreview', 'questionnaire')], $post);
+        $page = page::preview();
+        (new report_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))
+            ->build_print_view($instance, $instance->courseid(), '', 'preview', 0, false);
+        return $this->page_data($page);
+    }
+
+    /**
      * The preview page's survey header carries the print-blank link; the blank print view's header does not.
      *
      * The link must be in the header itself: the old page-level printblank key only showed through Mustache 2's

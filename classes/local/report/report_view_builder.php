@@ -101,7 +101,8 @@ class report_view_builder {
 
         $formdata = new \stdClass();
         $errors = 1;
-        if (data_submitted()) {
+        // Only a previewer's own form (with its session key) may be checked; ignore any other POST.
+        if (data_submitted() && confirm_sesskey() && $q->capabilities()->can_preview()) {
             $formdata = data_submitted();
             $formdata->rid = $formdata->rid ?? 0;
             $q->responses()->add_response_from_formdata($formdata);
