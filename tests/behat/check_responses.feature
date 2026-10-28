@@ -142,3 +142,24 @@ Feature: Review responses
     Given I follow "List of responses"
     When I follow "Admin User"
     Then ".qn-number" "css_element" should not exist
+
+  Scenario: Response deletion and download links without a session key are refused
+    Given the following "users" exist:
+      | username | firstname | lastname | email |
+      | teacher1 | Teacher | 1 | teacher1@example.com |
+    And the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 1 | C1 | 0 |
+    And the following "course enrolments" exist:
+      | user | course | role |
+      | teacher1 | C1 | editingteacher |
+    And the following "activities" exist:
+      | activity | name | description | course | idnumber |
+      | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
+    And "Test questionnaire" has questions and responses
+    And I log in as "teacher1"
+    Then opening the "dvallresp" report action for questionnaire "Test questionnaire" without a session key is refused
+    And opening the "dvresp" report action for questionnaire "Test questionnaire" without a session key is refused
+    And opening the "dfs" report action for questionnaire "Test questionnaire" without a session key is refused
+    And I navigate to "View all responses" in current page administration
+    And I should see "Responses: 7 (Submissions: 6 | In progress: 1)"

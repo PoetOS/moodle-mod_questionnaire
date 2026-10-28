@@ -92,6 +92,38 @@ final class report_actions_test extends \advanced_testcase {
     }
 
     /**
+     * delete_response refuses a response that belongs to another questionnaire and leaves it in place.
+     */
+    public function test_delete_response_rejects_other_questionnaires_response(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+        $other = $generator->create_instance(['course' => $this->getDataGenerator()->create_course()->id]);
+        $PAGE->set_context($questionnaire->context());
+
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $other->id(),
+            'userid' => 2,
+            'submitted' => time(),
+            'complete' => 'y',
+            'grade' => 0,
+        ]);
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        try {
+            (new report_actions($questionnaire, $renderer))->delete_response($rid);
+            $this->fail('Expected moodle_exception');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('invalidresponserecord', $e->errorcode);
+        }
+        $this->assertTrue($DB->record_exists('questionnaire_response', ['id' => $rid]));
+    }
+
+    /**
      * delete_all_responses removes every passed response and fires all_responses_deleted.
      */
     public function test_delete_all_responses_removes_records_and_redirects(): void {
