@@ -298,6 +298,7 @@ $string['incorrectquestionnaire'] = 'Questionnaire is incorrect';
 $string['indirectwarnings'] = 'This list shows the indirect dependent questions and the remaining dependencies for direct dependent questions:';
 $string['invalidincrement'] = 'Note that the value increments must be lower than the maximum value. For example, if a scale of 1-10, the increment value would probably be 1.';
 $string['invalidminmaxrange'] = 'This question type supports an absolute maximum range of -100 to +100. We expect the vast majority of questionnaire designs to use a range of 1-10 or -10 to +10.';
+$string['invalidquestion'] = 'Invalid question specified.';
 $string['invalidrange'] = 'The maximum slider value must be greater than the minimum slider value.';
 $string['invalidresponse'] = 'Invalid response specified.';
 $string['invalidresponserecord'] = 'Invalid response record specified.';

@@ -591,6 +591,68 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * From one questionnaire's question page, try to permanently delete a question of another questionnaire using a
+     * valid session key, as a forged link would, and check it is refused and the question's answers are untouched.
+     *
+     * Behat fails any step that ends on an error page, so this step checks the refusal itself and then returns to
+     * the acting questionnaire's view page.
+     *
+     * @Then /^permanently deleting a question of questionnaire "([^"]*)" from questionnaire "([^"]*)" is refused$/
+     * @param string $targetname name of the questionnaire that owns the question.
+     * @param string $name name of the questionnaire whose question page is used.
+     */
+    public function permanently_deleting_other_question_is_refused(string $targetname, string $name): void {
+        global $DB;
+        $target = $this->get_questionnaire_by_name($targetname);
+        $qids = $DB->get_fieldset_select(
+            'questionnaire_question',
+            'id',
+            'surveyid = ? AND typeid <> ? ORDER BY id',
+            [$target->sid, \mod_questionnaire\local\question_type::QUESPAGEBREAK]
+        );
+        $qid = reset($qids);
+        $answers = $this->count_answers_for_question($qid);
+
+        $cm = $this->get_cm_by_questionnaire_name($name);
+        $this->getSession()->visit($this->locate_path('/mod/questionnaire/view.php?id=' . $cm->id));
+        if (!preg_match('/"sesskey":"([^"]+)"/', $this->getSession()->getPage()->getContent(), $matches)) {
+            throw new ExpectationException('No session key found on the page', $this->getSession());
+        }
+        $url = new moodle_url(
+            '/mod/questionnaire/questions.php',
+            ['id' => $cm->id, 'delpermanentlyq' => $qid, 'sesskey' => $matches[1]]
+        );
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+
+        $page = $this->getSession()->getPage();
+        if (
+            !$page->find('xpath', "//div[@data-rel='fatalerror']") ||
+            !str_contains($page->getText(), get_string('invalidquestion', 'mod_questionnaire'))
+        ) {
+            throw new ExpectationException('Deleting another questionnaire\'s question was not refused', $this->getSession());
+        }
+        if (!$DB->record_exists('questionnaire_question', ['id' => $qid]) || $this->count_answers_for_question($qid) !== $answers) {
+            throw new ExpectationException('Another questionnaire\'s question or its answers were changed', $this->getSession());
+        }
+
+        $this->getSession()->visit($this->locate_path('/mod/questionnaire/view.php?id=' . $cm->id));
+    }
+
+    /**
+     * Count the answer rows stored for a question across all response tables.
+     *
+     * @param int $qid question id.
+     * @return int
+     */
+    protected function count_answers_for_question(int $qid): int {
+        global $DB;
+        $tables = ['questionnaire_response_bool', 'questionnaire_response_date', 'questionnaire_resp_multiple',
+            'questionnaire_response_other', 'questionnaire_response_rank', 'questionnaire_resp_single',
+            'questionnaire_response_text', 'questionnaire_response_file'];
+        return array_sum(array_map(fn($table) => $DB->count_records($table, ['questionid' => $qid]), $tables));
+    }
+
+    /**
      * Get a questionnaire by name.
      *
      * @param string $name questionnaire name.

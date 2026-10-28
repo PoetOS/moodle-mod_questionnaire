@@ -1838,7 +1838,8 @@ abstract class question {
         } else {
             // Create new question:
             // Need to update any image content after the question is created, so create then update the content.
-            $formdata->surveyid = $formdata->sid;
+            // Never trust the posted survey id; new questions always belong to this questionnaire's survey.
+            $formdata->surveyid = $questionnaire->surveyid();
             $fields = ['surveyid', 'name', 'typeid', 'length', 'precise', 'required', 'position', 'extradata'];
             $questionrecord = new \stdClass();
             foreach ($fields as $f) {
@@ -1975,7 +1976,7 @@ abstract class question {
                 // New dependencies.
                 $dependencyrecord = new \stdClass();
                 $dependencyrecord->questionid = $this->qid;
-                $dependencyrecord->surveyid = $formdata->sid;
+                $dependencyrecord->surveyid = $questionnaire->surveyid();
                 $dependencyrecord->dependquestionid = $formdata->dependquestion[$nidx];
                 $dependencyrecord->dependchoiceid = $formdata->dependchoice[$nidx];
                 $dependencyrecord->dependlogic = $formdata->dependlogic_cleaned[$nidx];
