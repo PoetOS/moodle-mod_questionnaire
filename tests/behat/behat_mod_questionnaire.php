@@ -653,6 +653,53 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Visit a questionnaire's popup preview or blank print page directly, as a typed or shared link would.
+     *
+     * @Given /^I visit the (popup preview|blank print) page of questionnaire "([^"]*)"$/
+     * @param string $page
+     * @param string $name questionnaire name.
+     */
+    public function i_visit_questionnaire_page_directly(string $page, string $name): void {
+        $questionnaire = $this->get_questionnaire_by_name($name);
+        if ($page === 'popup preview') {
+            $cm = $this->get_cm_by_questionnaire_name($name);
+            $url = new moodle_url('/mod/questionnaire/preview.php', ['id' => $cm->id, 'popup' => 1]);
+        } else {
+            $url = new moodle_url(
+                '/mod/questionnaire/print.php',
+                ['qid' => $questionnaire->id, 'rid' => 0, 'courseid' => $questionnaire->course, 'sec' => 1]
+            );
+        }
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+    }
+
+    /**
+     * Open the "Add questionnaire" form's survey preview of a questionnaire for another course, and check it is refused.
+     *
+     * Behat fails any step that ends on an error page, so this step checks the refusal itself and then returns to
+     * the course page.
+     *
+     * @Then /^previewing questionnaire "([^"]*)" for adding to course "([^"]*)" is refused$/
+     * @param string $name questionnaire name.
+     * @param string $coursename full name of the course the questionnaire would be added to.
+     */
+    public function previewing_for_adding_is_refused(string $name, string $coursename): void {
+        global $DB;
+        $questionnaire = $this->get_questionnaire_by_name($name);
+        $courseid = $DB->get_field('course', 'id', ['fullname' => $coursename], MUST_EXIST);
+        $url = new moodle_url(
+            '/mod/questionnaire/preview.php',
+            ['sid' => $questionnaire->sid, 'popup' => 1, 'qid' => $questionnaire->id, 'courseid' => $courseid]
+        );
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+
+        if (!$this->getSession()->getPage()->find('xpath', "//div[@data-rel='fatalerror']")) {
+            throw new ExpectationException("Previewing '{$name}' for '{$coursename}' was not refused", $this->getSession());
+        }
+        $this->getSession()->visit($this->locate_path('/course/view.php?id=' . $courseid));
+    }
+
+    /**
      * Get a questionnaire by name.
      *
      * @param string $name questionnaire name.

@@ -105,7 +105,8 @@ class survey {
         return self::build_survey_select_list(
             self::get_survey_list('private', $courseid),
             'private',
-            0
+            0,
+            $courseid
         );
     }
 
@@ -123,6 +124,7 @@ class survey {
         return self::build_survey_select_list(
             self::get_survey_list('public', 0),
             'public',
+            $courseid,
             $courseid
         );
     }
@@ -132,14 +134,15 @@ class survey {
      *
      * Keys are "template-{survey_id}"; values are popup-preview action-link strings.
      *
-     * @param int $courseid Passed for consistency; not used for filtering.
+     * @param int $courseid The current course id, which the preview links are checked against.
      * @return array
      */
     public static function get_template_questionnaires(int $courseid): array {
         return self::build_survey_select_list(
             self::get_survey_list('template', 0),
             'template',
-            0
+            0,
+            $courseid
         );
     }
 
@@ -296,6 +299,17 @@ class survey {
      */
     public function is_public_master(int $questionnairecouseid): bool {
         return $this->is_public() && ($this->owning_courseid() == $questionnairecouseid);
+    }
+
+    /**
+     * True if the "Add questionnaire" form in the given course offers this survey to copy: a template, a public
+     * survey, or one of that course's own surveys.
+     *
+     * @param int $courseid The course the questionnaire is being added to.
+     * @return bool
+     */
+    public function can_be_copied_into(int $courseid): bool {
+        return $this->is_template() || $this->is_public() || ($this->owning_courseid() === $courseid);
     }
 
     /**
@@ -1241,9 +1255,15 @@ class survey {
      * @param self[] $surveys From get_survey_list().
      * @param string $realm Key prefix (e.g. 'private-42').
      * @param int $excludecourseid Skip items whose owning_courseid matches this value (0 = skip none).
+     * @param int $courseid The course the questionnaire is being added to; the preview checks access against it.
      * @return array
      */
-    private static function build_survey_select_list(array $surveys, string $realm, int $excludecourseid): array {
+    private static function build_survey_select_list(
+        array $surveys,
+        string $realm,
+        int $excludecourseid,
+        int $courseid
+    ): array {
         global $OUTPUT, $DB;
 
         $surveylist = [];
@@ -1262,8 +1282,9 @@ class survey {
                 continue;
             }
             $sid = $survey->id();
-            $args = "sid={$sid}&popup=1&qid={$qrec->get('id')}";
-            $link = new \moodle_url("/mod/questionnaire/preview.php?{$args}");
+            $link = new \moodle_url('/mod/questionnaire/preview.php', [
+                'sid' => $sid, 'popup' => 1, 'qid' => $qrec->get('id'), 'courseid' => $courseid,
+            ]);
             $action = new \popup_action('click', $link);
             $label = $OUTPUT->action_link(
                 $link,
