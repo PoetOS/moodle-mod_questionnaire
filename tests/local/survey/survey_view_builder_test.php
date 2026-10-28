@@ -106,6 +106,53 @@ final class survey_view_builder_test extends \advanced_testcase {
     }
 
     /**
+     * Submitting with another student's response id in the form saves the submitter's own
+     * response and leaves the other student's response untouched.
+     */
+    public function test_build_view_submit_ignores_posted_rid(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $victim = $this->getDataGenerator()->create_and_enrol($instance->course(), 'student');
+        $victimrid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $instance->id(), 'userid' => $victim->id,
+            'submitted' => time(), 'complete' => 'n', 'grade' => 0,
+        ]);
+        $questions = $instance->questions();
+        $question = reset($questions);
+        $DB->insert_record('questionnaire_response_bool', (object)[
+            'responseid' => $victimrid, 'questionid' => $question->id(), 'choiceid' => 'y',
+        ]);
+
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+        $_POST = [
+            'sesskey' => sesskey(),
+            'a' => $instance->id(),
+            'sec' => 1,
+            'rid' => $victimrid,
+            'submit' => 'Submit',
+            'submittype' => 'Submit Survey',
+            'q' . $question->id() => 'n',
+        ];
+
+        $page = page::complete();
+        (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))->build_view($instance, $studentid);
+
+        $this->assertSame('n', $DB->get_field('questionnaire_response', 'complete', ['id' => $victimrid]));
+        $this->assertSame(
+            'y',
+            $DB->get_field('questionnaire_response_bool', 'choiceid', ['responseid' => $victimrid])
+        );
+        $this->assertTrue($DB->record_exists(
+            'questionnaire_response',
+            ['questionnaireid' => $instance->id(), 'userid' => $studentid, 'complete' => 'y']
+        ));
+    }
+
+    /**
      * build_view() falls through to build_survey_form when access is allowed, populating
      * the standard form keys.
      */
