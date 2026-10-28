@@ -30,14 +30,13 @@ use mod_questionnaire\questionnaire;
 
 $qid = required_param('qid', PARAM_INT);
 $rid = required_param('rid', PARAM_INT);
-$courseid = required_param('courseid', PARAM_INT);
 $sec = required_param('sec', PARAM_INT);
 $referer = '/mod/questionnaire/report.php';
 
 $questionnaire = questionnaire::from_instanceid($qid);
 
 // Check login and get context.
-require_login($courseid);
+require_login($questionnaire->course(), false, $questionnaire->coursemodule());
 
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = !empty($rid)
@@ -54,7 +53,6 @@ $blankquestionnaire = ($rid == 0);
 $url = new moodle_url('/mod/questionnaire/print.php');
 $url->param('qid', $qid);
 $url->param('rid', $rid);
-$url->param('courseid', $courseid);
 $url->param('sec', $sec);
 $PAGE->set_url($url);
 $PAGE->set_title($questionnaire->surveytitle());
@@ -62,6 +60,6 @@ $PAGE->set_pagelayout('popup');
 echo $renderer->header();
 $page->add_to_page('closebutton', $renderer->close_window_button());
 (new \mod_questionnaire\local\report\report_view_builder($renderer, $page))
-    ->build_print_view($questionnaire, $courseid, '', 'print', $rid, $blankquestionnaire);
+    ->build_print_view($questionnaire, $questionnaire->courseid(), '', 'print', $rid, $blankquestionnaire);
 echo $renderer->render($page);
 echo $renderer->footer();

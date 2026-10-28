@@ -1250,4 +1250,52 @@ final class survey_test extends \advanced_testcase {
             $this->assertTrue($DB->record_exists('questionnaire_dependency', ['questionid' => $qid]));
         }
     }
+
+    /**
+     * Data provider for can_be_copied_into(): realm, owning course, and whether course 5 may copy it.
+     *
+     * @return array
+     */
+    public static function can_be_copied_into_provider(): array {
+        return [
+            'template in another course' => ['template', 9, true],
+            'public in another course' => ['public', 9, true],
+            'private in the same course' => ['private', 5, true],
+            'private in another course' => ['private', 9, false],
+        ];
+    }
+
+    /**
+     * can_be_copied_into() allows exactly the surveys the "Add questionnaire" form offers.
+     *
+     * @dataProvider can_be_copied_into_provider
+     * @covers \mod_questionnaire\local\survey\survey::can_be_copied_into
+     * @param string $realm
+     * @param int $owningcourseid
+     * @param bool $expected
+     */
+    public function test_can_be_copied_into(string $realm, int $owningcourseid, bool $expected): void {
+        $survey = $this->make_survey(['realm' => $realm, 'courseid' => $owningcourseid]);
+        $this->assertSame($expected, $survey->can_be_copied_into(5));
+    }
+
+    /**
+     * The "Add questionnaire" form's preview links name the course the questionnaire is being added to.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::get_template_questionnaires
+     */
+    public function test_template_preview_links_carry_adding_course(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $template = $this->make_real_questionnaire();
+        $record = new survey_record($template->surveyid());
+        $record->set('realm', 'template');
+        $record->update();
+        $addingcourse = $this->getDataGenerator()->create_course();
+
+        $links = survey::get_template_questionnaires((int)$addingcourse->id);
+
+        $this->assertArrayHasKey('template-' . $template->surveyid(), $links);
+        $this->assertStringContainsString('courseid=' . $addingcourse->id, $links['template-' . $template->surveyid()]);
+    }
 }
