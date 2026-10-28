@@ -32,44 +32,46 @@ class file extends responsetype {
     /**
      * Provide an array of answer objects from web form data for the question.
      *
+     * The posted value is the current user's draft item id. Only that user's own draft area is read, and nothing is
+     * saved here; the answer value is the id of the uploaded draft file, which insert_response() stores.
+     *
      * @param \stdClass $responsedata All of the responsedata as an object.
      * @param \mod_questionnaire\local\question\question $question
      * @return array \mod_questionnaire\local\response\answer\answer An array of answer objects.
      */
     public static function answers_from_webform($responsedata, $question) {
         $answers = [];
-        if (isset($responsedata->{'q' . $question->id()}) && (strlen($responsedata->{'q' . $question->id()}) > 0)) {
-            $val = $responsedata->{'q' . $question->id()};
+        $draftfile = self::draft_file((int)($responsedata->{'q' . $question->id()} ?? 0));
+        if ($draftfile !== null) {
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id();
-
-            file_save_draft_area_files(
-                $val,
-                $question->context->id,
-                'mod_questionnaire',
-                'response_file',
-                $val,
-                \mod_questionnaire\local\question\file::get_file_manager_option()
-            );
-            $fs = get_file_storage();
-            $files = $fs->get_area_files(
-                $question->context->id,
-                'mod_questionnaire',
-                'response_file',
-                $val,
-                "itemid, filepath, filename",
-                false
-            );
-            if (!empty($files)) {
-                $file = reset($files);
-                $record->value = $file->get_id();
-                $answers[] = answer\answer::create_from_data($record);
-            } else {
-                self::delete_old_response((int)$question->id(), (int)$record->responseid);
-            }
+            $record->value = $draftfile->get_id();
+            $answers[] = answer\answer::create_from_data($record);
         }
         return $answers;
+    }
+
+    /**
+     * Return the uploaded file in the current user's draft area with the given item id, if there is one.
+     *
+     * @param int $draftitemid
+     * @return \stored_file|null
+     */
+    protected static function draft_file(int $draftitemid): ?\stored_file {
+        global $USER;
+        if ($draftitemid <= 0) {
+            return null;
+        }
+        $files = get_file_storage()->get_area_files(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            $draftitemid,
+            'itemid, filepath, filename',
+            false
+        );
+        return empty($files) ? null : reset($files);
     }
 
     /**
@@ -127,28 +129,21 @@ class file extends responsetype {
     }
 
     /**
-     * Delete old entries from the questionnaire_response_file table and also the corresponding entries
-     * in the files table.
+     * Delete old entries from the questionnaire_response_file table and also their stored files.
+     *
      * @param int $questionid
      * @param int $responseid
+     * @param int $contextid The questionnaire's module context id.
      * @return void
-     * @throws \dml_exception
      */
-    public static function delete_old_response(int $questionid, int $responseid) {
-        global $DB;
-        // Check if we have an old response file from a former attempt.
+    public static function delete_old_response(int $questionid, int $responseid, int $contextid) {
+        $fs = get_file_storage();
         $existing = \mod_questionnaire\local\db\response_file_record::get_records([
             'responseid' => $responseid,
             'questionid' => $questionid,
         ]);
         foreach ($existing as $rec) {
-            // Delete all referenced entries in the {files} table, then the response row.
-            // The {files} table is a Moodle core table — must remain a raw DB call.
-            $DB->delete_records('files', [
-                'component' => 'mod_questionnaire',
-                'filearea'  => 'response_file',
-                'itemid'    => $rec->get('id'),
-            ]);
+            $fs->delete_area_files($contextid, 'mod_questionnaire', 'response_file', $rec->get('id'));
             $rec->delete();
         }
     }
@@ -156,85 +151,64 @@ class file extends responsetype {
     /**
      * Insert a provided response to the question.
      *
+     * The uploaded draft file is saved under the id of the new questionnaire_response_file record. A posted
+     * file field with no uploaded file removes any earlier file answer.
+     *
      * @param \mod_questionnaire\local\response\response|\stdClass $responsedata
      * @return bool|int
-     * @throws \dml_exception
      */
     public function insert_response($responsedata) {
-        global $DB;
-
+        $qid = (int)$this->question->id();
         if (!$responsedata instanceof \mod_questionnaire\local\response\response) {
             $response = \mod_questionnaire\local\response\response::response_from_webform(
                 $responsedata,
                 [$this->question]
             );
+            $posted = isset($responsedata->{'q' . $qid});
         } else {
             $response = $responsedata;
+            $posted = false;
+        }
+        if (empty($response)) {
+            return false;
         }
 
-        if (!empty($response) && isset($response->answers[$this->question->id()][0])) {
-            $fileid = intval(clean_text($response->answers[$this->question->id()][0]->value));
-
-            // Delete any previous attempts.
-            self::delete_old_response((int)$this->question->id(), (int)$response->id());
-
-            $rec = new \mod_questionnaire\local\db\response_file_record();
-            $rec->set('responseid', $response->id());
-            $rec->set('questionid', $this->question->id());
-            $rec->set('fileid', $fileid);
-            $rec->create();
-            $recordid = $rec->get('id');
-
-            if ($recordid) {
-                // When saving the draft file, the itemid was the same as the draftitemid. This must now
-                // be corrected to the primary key of questionnaire_response_file.id for a correct reference.
-                // The {files} table is Moodle core — these operations must remain raw DB calls.
-                $olditem = $DB->get_record('files', ['id' => $fileid], 'itemid');
-                if (!$olditem) {
-                    return false;
-                }
-                $siblings = $DB->get_records('files', [
-                    'component' => 'mod_questionnaire',
-                    'filearea'  => 'response_file',
-                    'itemid'    => $olditem->itemid,
-                ]);
-                foreach ($siblings as $sibling) {
-                    if (!self::fix_file_itemid($recordid, $sibling)) {
-                        return false;
-                    }
-                }
-                return $recordid;
+        $contextid = $this->question->context->id;
+        $answer = $response->answers[$qid][0] ?? null;
+        $draftfile = $answer ? get_file_storage()->get_file_by_id((int)$answer->value) : false;
+        if (!$draftfile || !self::draft_file($draftfile->get_itemid())) {
+            if ($posted) {
+                // The user removed their file.
+                self::delete_old_response($qid, (int)$response->id(), $contextid);
             }
+            return false;
         }
-        return false;
-    }
 
-    /**
-     * Update records in the table file with the new given itemid. To do this, the pathnamehash
-     * needs to be recalculated as well.
-     * @param int $recordid
-     * @param \stdClass $filerecord
-     * @return bool
-     * @throws \dml_exception
-     */
-    public static function fix_file_itemid(int $recordid, \stdClass $filerecord): bool {
-        global $DB;
-        if ((int)$filerecord->itemid === $recordid) {
-            return true; // Reference is already good, nothing to do.
-        }
-        $fs = get_file_storage();
-        $file = $fs->get_file_instance($filerecord);
-        $newhash = $fs->get_pathname_hash(
-            $filerecord->contextid,
-            $filerecord->component,
-            $filerecord->filearea,
+        // Replace any previous attempt.
+        self::delete_old_response($qid, (int)$response->id(), $contextid);
+
+        $rec = new \mod_questionnaire\local\db\response_file_record();
+        $rec->set('responseid', $response->id());
+        $rec->set('questionid', $qid);
+        $rec->create();
+        $recordid = (int)$rec->get('id');
+
+        file_save_draft_area_files(
+            $draftfile->get_itemid(),
+            $contextid,
+            'mod_questionnaire',
+            'response_file',
             $recordid,
-            $file->get_filepath(),
-            $file->get_filename()
+            \mod_questionnaire\local\question\file::get_file_manager_option()
         );
-        $filerecord->itemid = $recordid;
-        $filerecord->pathnamehash = $newhash;
-        return $DB->update_record('files', $filerecord);
+        $files = get_file_storage()->get_area_files($contextid, 'mod_questionnaire', 'response_file', $recordid, 'id', false);
+        if (empty($files)) {
+            $rec->delete();
+            return false;
+        }
+        $rec->set('fileid', reset($files)->get_id());
+        $rec->update();
+        return $recordid;
     }
 
     /**
