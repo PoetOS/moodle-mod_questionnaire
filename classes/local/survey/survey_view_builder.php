@@ -76,9 +76,8 @@ class survey_view_builder {
             isset($viewform->submit) && isset($viewform->submittype) &&
             ($viewform->submittype == "Submit Survey") && empty($msg)
         ) {
-            if (!empty($viewform->rid)) {
-                $viewform->rid = (int)$viewform->rid;
-            }
+            // Never trust the posted response id; continue the user's own in-progress response.
+            $viewform->rid = $q->get_latest_responseid($userid);
             if (!empty($viewform->sec)) {
                 $viewform->sec = (int)$viewform->sec;
             }
