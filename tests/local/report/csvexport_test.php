@@ -117,6 +117,71 @@ final class csvexport_test extends \advanced_testcase {
     }
 
     /**
+     * Data provider for the user detail columns test: whether the questionnaire is anonymous.
+     *
+     * @return array
+     */
+    public static function user_details_provider(): array {
+        return [
+            'named' => [false],
+            'anonymous' => [true],
+        ];
+    }
+
+    /**
+     * Anonymous exports keep the user detail columns but leave them empty; named exports fill them.
+     *
+     * @dataProvider user_details_provider
+     * @param bool $anonymous
+     */
+    public function test_csvexport_user_details(bool $anonymous): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('downloadoptions', 'response,institution,department,group,useridnumber,fullname', 'questionnaire');
+
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        $generator = $dg->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance([
+            'course' => $course->id,
+            'groupmode' => SEPARATEGROUPS,
+            'respondenttype' => $anonymous ? 'anonymous' : 'fullname',
+        ]);
+        $generator->create_question($questionnaire, [
+            'surveyid' => $questionnaire->surveyid(),
+            'name' => 'Q1',
+            'typeid' => QUESTEXT,
+            'content' => 'Your name?',
+        ]);
+        $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
+
+        $student = $dg->create_and_enrol($course, 'student', [
+            'idnumber' => 'ID-777',
+            'institution' => 'Institution X',
+            'department' => 'Department Y',
+        ]);
+        $group = $dg->create_group(['courseid' => $course->id, 'name' => 'Group Z']);
+        $dg->create_group_member(['groupid' => $group->id, 'userid' => $student->id]);
+        $generator->generate_response($questionnaire, $questionnaire->questions(), $student->id);
+
+        $output = $questionnaire->reporter()->generate_csv(0, '', '', 0, 0, 0);
+
+        $this->assertCount(2, $output);
+        foreach (['institution', 'department', 'group'] as $column) {
+            $this->assertContains(get_string($column), $output[0]);
+        }
+        $this->assertContains(get_string('useridnumber', 'questionnaire'), $output[0]);
+        foreach (['ID-777', 'Institution X', 'Department Y', 'Group Z'] as $detail) {
+            if ($anonymous) {
+                $this->assertNotContains($detail, $output[1]);
+            } else {
+                $this->assertContains($detail, $output[1]);
+            }
+        }
+        $this->assertCount(count($output[0]), $output[1]);
+    }
+
+    /**
      * Tests the CSV export with identity fields for a questionnaire.
      *
      * @param object $course
