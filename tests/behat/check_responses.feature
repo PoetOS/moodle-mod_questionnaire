@@ -163,3 +163,30 @@ Feature: Review responses
     And opening the "dfs" report action for questionnaire "Test questionnaire" without a session key is refused
     And I navigate to "View all responses" in current page administration
     And I should see "Responses: 7 (Submissions: 6 | In progress: 1)"
+
+  Scenario: A question of another course's questionnaire cannot be permanently deleted
+    Given the following "users" exist:
+      | username | firstname | lastname | email |
+      | teacher1 | Teacher | 1 | teacher1@example.com |
+      | teacher2 | Teacher | 2 | teacher2@example.com |
+    And the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 1 | C1 | 0 |
+      | Course 2 | C2 | 0 |
+    And the following "course enrolments" exist:
+      | user | course | role |
+      | teacher1 | C1 | editingteacher |
+      | teacher2 | C2 | editingteacher |
+    And the following "activities" exist:
+      | activity | name | description | course | idnumber |
+      | questionnaire | Test questionnaire | Test questionnaire description | C1 | questionnaire0 |
+      | questionnaire | Other questionnaire | Other questionnaire description | C2 | questionnaire1 |
+    And "Test questionnaire" has questions and responses
+    And I log in as "teacher2"
+    Then permanently deleting a question of questionnaire "Test questionnaire" from questionnaire "Other questionnaire" is refused
+    And I log out
+    And I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test questionnaire"
+    And I navigate to "View all responses" in current page administration
+    And I should see "Responses: 7 (Submissions: 6 | In progress: 1)"

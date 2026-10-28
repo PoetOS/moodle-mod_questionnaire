@@ -1184,4 +1184,70 @@ final class survey_test extends \advanced_testcase {
 
         $this->assertTrue($result['structurechanged']);
     }
+
+    /**
+     * Build a questionnaire with one text question, one submitted answer to it, and one dependency row on it.
+     *
+     * @return array [questionnaire, question id]
+     */
+    private function make_answered_text_question(): array {
+        global $DB;
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire($course, QUESTEXT, ['content' => 'Your name?']);
+        $questions = $questionnaire->questions();
+        $qid = (int)array_key_first($questions);
+        $generator->generate_response($questionnaire, $questions, $this->getDataGenerator()->create_user()->id);
+        $DB->insert_record('questionnaire_dependency', (object)[
+            'questionid' => $qid,
+            'surveyid' => $questionnaire->surveyid(),
+            'dependquestionid' => $qid + 1000,
+            'dependchoiceid' => 0,
+            'dependlogic' => 1,
+            'dependandor' => 'and',
+        ]);
+        return [$questionnaire, $qid];
+    }
+
+    /**
+     * delete_question_permanently() removes a soft-deleted question of the survey with its answers and dependencies.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::delete_question_permanently
+     */
+    public function test_delete_question_permanently_purges_own_soft_deleted_question(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        [$questionnaire, $qid] = $this->make_answered_text_question();
+        \mod_questionnaire\local\db\question_record::soft_delete($qid);
+
+        $this->assertTrue(survey::delete_question_permanently($qid, $questionnaire->surveyid()));
+
+        $this->assertFalse($DB->record_exists('questionnaire_question', ['id' => $qid]));
+        $this->assertFalse($DB->record_exists('questionnaire_response_text', ['questionid' => $qid]));
+        $this->assertFalse($DB->record_exists('questionnaire_dependency', ['questionid' => $qid]));
+    }
+
+    /**
+     * delete_question_permanently() leaves another survey's question, answers and dependencies alone,
+     * whether that question is active or soft-deleted.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::delete_question_permanently
+     */
+    public function test_delete_question_permanently_ignores_other_surveys_question(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $mine = $this->make_real_questionnaire();
+        [, $activeqid] = $this->make_answered_text_question();
+        [, $deletedqid] = $this->make_answered_text_question();
+        \mod_questionnaire\local\db\question_record::soft_delete($deletedqid);
+
+        foreach ([$activeqid, $deletedqid] as $qid) {
+            $this->assertFalse(survey::delete_question_permanently($qid, $mine->surveyid()));
+            $this->assertTrue($DB->record_exists('questionnaire_question', ['id' => $qid]));
+            $this->assertTrue($DB->record_exists('questionnaire_response_text', ['questionid' => $qid]));
+            $this->assertTrue($DB->record_exists('questionnaire_dependency', ['questionid' => $qid]));
+        }
+    }
 }

@@ -832,13 +832,20 @@ class survey {
     /**
      * Permanently delete a soft-deleted question and all its associated response data.
      *
+     * Nothing is removed unless the question is soft-deleted in the given survey.
+     *
      * @param int $qid Question id.
      * @param int $sid Survey id.
+     * @return bool True if the question was deleted.
      */
-    public static function delete_question_permanently(int $qid, int $sid): void {
+    public static function delete_question_permanently(int $qid, int $sid): bool {
+        if (!question_record::get_soft_deleted($qid, $sid)) {
+            return false;
+        }
         question_record::delete_soft_deleted($qid, $sid);
         questionnaire_responses::delete_responses_for_question($qid);
         dependency_record::delete_for_question($qid);
+        return true;
     }
 
     /**

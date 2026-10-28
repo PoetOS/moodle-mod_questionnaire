@@ -90,11 +90,12 @@ if ($delpermanentlyq) {
     require_sesskey();
     $deletequestions = $questionnaire->survey()->get_delete_questions();
     $deletedquestion = $deletequestions[$delpermanentlyq] ?? null;
-    survey::delete_question_permanently($delpermanentlyq, $questionnaire->surveyid());
-    if ($deletedquestion !== null) {
-        $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid());
-        survey::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
+    if ($deletedquestion === null) {
+        throw new \moodle_exception('invalidquestion', 'mod_questionnaire');
     }
+    survey::delete_question_permanently($delpermanentlyq, $questionnaire->surveyid());
+    $questiontype = \mod_questionnaire\local\question\question::qtypename($deletedquestion->typeid());
+    survey::trigger_question_deleted_event($cm->id, $questiontype, $questionnaire->courseid());
     redirect($mainurl);
 }
 
