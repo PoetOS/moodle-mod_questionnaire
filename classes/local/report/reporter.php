@@ -1177,7 +1177,7 @@ class reporter {
         if (groups_get_activity_groupmode($cm, $course)) {
             if ($currentgroupid > 0) {
                 $groupname = groups_get_group_name($currentgroupid);
-            } else {
+            } else if (!$isanonymous) {
                 if ($user->id) {
                     if ($groups = groups_get_all_groups($courseid, $user->id)) {
                         foreach ($groups as $group) {
@@ -1196,12 +1196,19 @@ class reporter {
                 $anonumap[$user->id] = count($anonumap) + 1;
             }
             $fullname = get_string('anonymous', 'questionnaire') . $anonumap[$user->id];
+            // Keep the columns, but leave out anything that identifies the respondent.
             $username = '';
             $uid = '';
+            $institution = '';
+            $department = '';
+            $idnumber = '';
         } else {
             $uid = $user->id;
             $fullname = fullname($user);
             $username = $user->username;
+            $institution = $user->institution;
+            $department = $user->department;
+            $idnumber = $user->idnumber;
         }
 
         if (in_array('response', $options)) {
@@ -1212,10 +1219,10 @@ class reporter {
             array_push($positioned, $submitted);
         }
         if (in_array('institution', $options)) {
-            array_push($positioned, $user->institution);
+            array_push($positioned, $institution);
         }
         if (in_array('department', $options)) {
-            array_push($positioned, $user->department);
+            array_push($positioned, $department);
         }
         if (in_array('course', $options)) {
             array_push($positioned, $coursename);
@@ -1227,7 +1234,7 @@ class reporter {
             array_push($positioned, $uid);
         }
         if (in_array('useridnumber', $options)) {
-            array_push($positioned, $user->idnumber);
+            array_push($positioned, $idnumber);
         }
         if (in_array('fullname', $options)) {
             array_push($positioned, $fullname);
