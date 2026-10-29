@@ -746,7 +746,7 @@ class questionnaire_responses {
         $DB->delete_records('questionnaire_response_rank', ['questionid' => $qid]);
         $DB->delete_records('questionnaire_resp_single', ['questionid' => $qid]);
         $DB->delete_records('questionnaire_response_text', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_response_file', ['questionid' => $qid]);
+        self::delete_response_files('questionid', [$qid]);
         return true;
     }
 
@@ -789,7 +789,7 @@ class questionnaire_responses {
         $DB->delete_records('questionnaire_response_rank', ['responseid' => $rid]);
         $DB->delete_records('questionnaire_resp_single', ['responseid' => $rid]);
         $DB->delete_records('questionnaire_response_text', ['responseid' => $rid]);
-        $DB->delete_records('questionnaire_response_file', ['responseid' => $rid]);
+        self::delete_response_files('responseid', [$rid]);
 
         $status = $status && $DB->delete_records('questionnaire_response', ['id' => $rid]);
 
@@ -805,26 +805,6 @@ class questionnaire_responses {
         }
 
         return $status;
-    }
-
-    /**
-     * Delete all response data for a given question id.
-     * @param int $qid
-     * @return bool
-     */
-    public function delete_responses($qid) {
-        global $DB;
-
-        $DB->delete_records('questionnaire_response_bool', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_response_date', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_resp_multiple', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_response_other', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_response_rank', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_resp_single', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_response_text', ['questionid' => $qid]);
-        $DB->delete_records('questionnaire_response_file', ['questionid' => $qid]);
-
-        return true;
     }
 
     // Private helpers.
@@ -934,6 +914,7 @@ class questionnaire_responses {
                 foreach ($responsetables as $tablename) {
                     $DB->delete_records_list($tablename, 'responseid', $oldresponsesid);
                 }
+                self::delete_response_files('responseid', $oldresponsesid);
                 $DB->delete_records_list('questionnaire_response', 'id', $oldresponsesid);
                 if (!PHPUNIT_TEST) {
                     mtrace("\nCompleted deleting $count old responses requests");
@@ -942,6 +923,43 @@ class questionnaire_responses {
                 debugging('Error: ' . $ex->getMessage(), DEBUG_DEVELOPER);
             }
         }
+    }
+
+    /**
+     * Delete response file records, and their stored files, whose response or question id is in a list.
+     *
+     * Each file is stored in the context of the questionnaire its response belongs to; a public survey's
+     * question can have answers in several questionnaires.
+     *
+     * @param string $field Either 'responseid' or 'questionid'.
+     * @param array $ids The response or question ids.
+     */
+    private static function delete_response_files(string $field, array $ids): void {
+        global $DB;
+
+        if (empty($ids) || !in_array($field, ['responseid', 'questionid'])) {
+            return;
+        }
+        [$insql, $params] = $DB->get_in_or_equal($ids);
+        $records = $DB->get_records_sql(
+            "SELECT rf.id, r.questionnaireid
+               FROM {questionnaire_response_file} rf
+               JOIN {questionnaire_response} r ON r.id = rf.responseid
+              WHERE rf.{$field} {$insql}",
+            $params
+        );
+        $fs = get_file_storage();
+        $contextids = [];
+        foreach ($records as $record) {
+            if (!array_key_exists($record->questionnaireid, $contextids)) {
+                $cm = get_coursemodule_from_instance('questionnaire', $record->questionnaireid);
+                $contextids[$record->questionnaireid] = $cm ? \context_module::instance($cm->id)->id : null;
+            }
+            if ($contextids[$record->questionnaireid] !== null) {
+                $fs->delete_area_files($contextids[$record->questionnaireid], 'mod_questionnaire', 'response_file', $record->id);
+            }
+        }
+        $DB->delete_records_select('questionnaire_response_file', "{$field} {$insql}", $params);
     }
 
     /**

@@ -21,6 +21,8 @@ use core_privacy\local\request\contextlist;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\writer;
+use mod_questionnaire\local\db\response_file_record;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -95,6 +97,25 @@ class provider implements
             'questionid' => 'privacy:metadata:questionnaire_resp_single:question_id',
             'choiceid' => 'privacy:metadata:questionnaire_resp_single:choice_id',
         ], 'privacy:metadata:questionnaire_resp_single');
+
+        $collection->add_database_table('questionnaire_response_file', [
+            'responseid' => 'privacy:metadata:questionnaire_response_file:response_id',
+            'questionid' => 'privacy:metadata:questionnaire_response_file:question_id',
+            'fileid' => 'privacy:metadata:questionnaire_response_file:file_id',
+        ], 'privacy:metadata:questionnaire_response_file');
+
+        // Files uploaded as answers are stored by the files subsystem.
+        $collection->add_subsystem_link('core_files', [], 'privacy:metadata:core_files');
+
+        // Submission notifications are sent to selected course users through the messaging subsystem.
+        $collection->add_subsystem_link('core_message', [], 'privacy:metadata:core_message');
+
+        // Submitted responses can be emailed to the addresses configured in the survey settings.
+        $collection->add_external_location_link('email', [
+            'fullname' => 'privacy:metadata:email:fullname',
+            'submitted' => 'privacy:metadata:email:submitted',
+            'response' => 'privacy:metadata:email:response',
+        ], 'privacy:metadata:email');
 
         return $collection;
     }
@@ -207,6 +228,7 @@ class provider implements
                 'lastsaved' => \core_privacy\local\request\transform::datetime($response->lastsaved),
                 'questions' => $questionnaire->get_structured_response($response->responseid),
             ];
+            self::export_response_files(\context_module::instance($response->cmid), (int)$response->responseid);
         }
         $responses->close();
 
@@ -290,6 +312,24 @@ class provider implements
             foreach ($responses as $response) {
                 $qresponses->delete_response($response);
             }
+        }
+    }
+
+    /**
+     * Export the files uploaded as answers in a response.
+     *
+     * @param \context $context The questionnaire's module context.
+     * @param int $responseid
+     */
+    protected static function export_response_files(\context $context, int $responseid): void {
+        $subcontext = [get_string('responses', 'questionnaire'), $responseid];
+        foreach (response_file_record::get_for_response($responseid) as $record) {
+            writer::with_context($context)->export_area_files(
+                $subcontext,
+                'mod_questionnaire',
+                'response_file',
+                $record->get('id')
+            );
         }
     }
 }
