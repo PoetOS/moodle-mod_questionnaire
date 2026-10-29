@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/upgradelib.php');
+
 /**
  * The module upgrade function.
  * @param int $oldversion
@@ -1471,6 +1475,12 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         }
 
         upgrade_mod_savepoint(true, 2025111100.05, 'questionnaire');
+    }
+
+    if ($oldversion < 2026113100.01) {
+        // Store the question recycle-bin duration under the plugin's own config.
+        questionnaire_upgrade_move_question_deletion_duration();
+        upgrade_mod_savepoint(true, 2026113100.01, 'questionnaire');
     }
 
     return true;

@@ -834,13 +834,13 @@ class survey {
     /**
      * Return the configured duration (in seconds) before soft-deleted questions are permanently removed.
      *
-     * The value comes from the questionnaire_questiondeletion plugin config. Callers should not need
+     * The value comes from the questionnaire/questiondeletionduration setting. Callers should not need
      * to know the config key — use this method instead.
      *
      * @return string|false Duration string, or false if not configured.
      */
     public static function question_deletion_duration() {
-        return get_config('questionnaire_questiondeletion', 'duration');
+        return get_config('questionnaire', 'questiondeletionduration');
     }
 
     /**

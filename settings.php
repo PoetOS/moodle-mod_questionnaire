@@ -81,7 +81,7 @@ if ($ADMIN->fulltree) {
 
     $settings->add(
         new admin_setting_configduration(
-            'questionnaire_questiondeletion/duration',
+            'questionnaire/questiondeletionduration',
             get_string('deletequestionsolderthan', 'questionnaire'),
             get_string('deletesettingdescription', 'questionnaire'),
             7 * 86400
