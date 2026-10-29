@@ -271,9 +271,11 @@ class file extends responsetype {
         global $DB;
 
         $rsql = '';
+        $params = [$this->question->id()];
         if (!empty($rids)) {
-            [$rsql, $params] = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $rsql = ' AND responseid ' . $rsql;
+            $params = array_merge($params, $rparams);
         }
 
         if ($anonymous) {
@@ -281,7 +283,7 @@ class file extends responsetype {
                 'r.questionnaireid, r.id AS rid ' .
                 'FROM {' . static::response_table() . '} t, ' .
                 '{questionnaire_response} r ' .
-                'WHERE questionid=' . $this->question->id() . $rsql .
+                'WHERE questionid = ?' . $rsql .
                 ' AND t.responseid = r.id ' .
                 'ORDER BY r.submitted DESC';
         } else {
@@ -291,7 +293,7 @@ class file extends responsetype {
                 'FROM {' . static::response_table() . '} t, ' .
                 '{questionnaire_response} r, ' .
                 '{user} u ' .
-                'WHERE questionid=' . $this->question->id() . $rsql .
+                'WHERE questionid = ?' . $rsql .
                 ' AND t.responseid = r.id' .
                 ' AND u.id = r.userid ' .
                 'ORDER BY u.lastname, u.firstname, r.submitted';
