@@ -62,6 +62,7 @@ Feature: Deletion questions area
     And I navigate to "Server > Tasks > Scheduled tasks" in site administration
     And I click on "Empty Questionnaire 'Recycle bin'" "link"
     And I set the field "id_minute" to "*/1"
+    And I set the field "id_hour" to "*"
     And I set the field "id_day" to "*"
     And I press "Save changes"
     And I am on "Course 1" course homepage

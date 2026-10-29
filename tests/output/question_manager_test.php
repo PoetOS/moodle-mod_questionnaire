@@ -212,7 +212,7 @@ final class question_manager_test extends \advanced_testcase {
     public function test_export_recyclebin_rows_for_deleted_question(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('duration', 0, 'questionnaire_questiondeletion');
+        set_config('questiondeletionduration', 0, 'questionnaire');
         [$questionnaire, $qid] = $this->build_questionnaire_with_question();
         $questionnaire->survey()->soft_delete_question($qid, $questionnaire->id());
         $questionnaire = questionnaire::from_instanceid($questionnaire->id());
@@ -238,7 +238,7 @@ final class question_manager_test extends \advanced_testcase {
     public function test_export_recyclebin_shows_countdown_when_duration_set(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('duration', WEEKSECS, 'questionnaire_questiondeletion');
+        set_config('questiondeletionduration', WEEKSECS, 'questionnaire');
         [$questionnaire, $qid] = $this->build_questionnaire_with_question();
         $questionnaire->survey()->soft_delete_question($qid, $questionnaire->id());
         $questionnaire = questionnaire::from_instanceid($questionnaire->id());

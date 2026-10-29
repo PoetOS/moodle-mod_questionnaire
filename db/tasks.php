@@ -40,9 +40,9 @@ $tasks = [
     [
         'classname' => 'mod_questionnaire\task\cron_task',
         'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
-        'day' => '*/7',
+        'minute' => 'R',
+        'hour' => 'R',
+        'day' => '*',
         'month' => '*',
         'dayofweek' => '*',
     ],
