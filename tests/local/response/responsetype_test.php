@@ -1105,4 +1105,78 @@ final class responsetype_test extends \advanced_testcase {
         ]));
         $this->assertTrue($fs->is_area_empty($contextid, 'mod_questionnaire', 'response_file', $recordid));
     }
+
+    /**
+     * text::get_results() without response ids returns every answer to the question.
+     */
+    public function test_text_get_results_without_rids(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+        (new text($question))->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => 'hello world',
+        ]);
+
+        foreach ([false, true] as $anonymous) {
+            $results = (new text($question))->get_results(false, $anonymous);
+            $this->assertSame(['hello world'], array_values(array_map(fn($r) => $r->response, $results)));
+        }
+    }
+
+    /**
+     * file::get_results() returns the question's file answers, with or without response ids.
+     */
+    public function test_file_get_results_with_and_without_rids(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+        // Direct insert simulates a stored file answer; we only exercise the read path here.
+        $DB->insert_record('questionnaire_response_file', (object)[
+            'responseid' => $rid,
+            'questionid' => $question->id(),
+            'fileid' => 4242,
+        ]);
+        $DB->insert_record('questionnaire_response_file', (object)[
+            'responseid' => $rid,
+            'questionid' => $question->id() + 1000,
+            'fileid' => 4343,
+        ]);
+
+        $rt = new file($question);
+        foreach ([[$rid], false] as $rids) {
+            foreach ([false, true] as $anonymous) {
+                $results = $rt->get_results($rids, $anonymous);
+                $this->assertSame(['4242'], array_values(array_map(fn($r) => (string)$r->fileid, $results)));
+            }
+        }
+    }
+
+    /**
+     * single::display_results() counts the question's respondents and shows the chosen answer.
+     */
+    public function test_single_display_results_counts_respondents(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $choices = [
+            (object)['content' => 'One', 'value' => 1],
+            (object)['content' => 'Two', 'value' => 2],
+        ];
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESRADIO, $choices);
+        $twoid = array_search('Two', array_map(fn($choice) => $choice->content, $question->choices));
+
+        $rt = new single($question);
+        $rt->insert_response((object)[
+            'rid' => $rid,
+            'a' => $questionnaire->id(),
+            'q' . $question->id() => $twoid,
+        ]);
+
+        $this->assertStringContainsString('Two', json_encode($rt->display_results([$rid])));
+    }
 }

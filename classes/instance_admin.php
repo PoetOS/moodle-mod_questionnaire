@@ -223,10 +223,10 @@ class instance_admin {
                 foreach ($resps as $response) {
                     $questionnaire->responses()->delete_response($response);
                 }
-                // Remove this questionnaire's grades (and feedback) from gradebook (if any).
-                $select = "itemmodule = 'questionnaire' AND iteminstance = ?";
-                if ($itemid = $DB->get_record_select('grade_items', $select, [$instance->id], 'id')) {
-                    $DB->delete_records_select('grade_grades', 'itemid = ' . $itemid->id);
+                // Remove this questionnaire's grades (and feedback) through the gradebook API, if it is graded.
+                if ($instance->grade != 0) {
+                    $instance->cmidnumber = $questionnaire->coursemodule()->idnumber;
+                    gradebook::grade_item_update($instance, 'reset');
                 }
             }
             $status[] = [

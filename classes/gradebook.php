@@ -40,7 +40,7 @@ class gradebook {
     public static function get_user_grades(object $questionnaire, int $userid = 0): array {
         global $DB;
         $qid = ($questionnaire instanceof questionnaire) ? $questionnaire->id() : $questionnaire->id;
-        $params = [];
+        $params = [$qid];
         $usersql = '';
         if (!empty($userid)) {
             $usersql = "AND u.id = ?";
@@ -49,7 +49,7 @@ class gradebook {
 
         $sql = "SELECT r.id, u.id AS userid, r.grade AS rawgrade, r.submitted AS dategraded, r.submitted AS datesubmitted
                 FROM {user} u, {questionnaire_response} r
-                WHERE u.id = r.userid AND r.questionnaireid = $qid AND r.complete = 'y' $usersql";
+                WHERE u.id = r.userid AND r.questionnaireid = ? AND r.complete = 'y' $usersql";
         return $DB->get_records_sql($sql, $params) ?? [];
     }
 

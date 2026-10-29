@@ -253,15 +253,17 @@ class single extends responsetype {
         $numresps = count($rids);
 
         $rsql = '';
+        $params = [$this->question->id()];
         if (!empty($rids)) {
-            [$rsql, $params] = $DB->get_in_or_equal($rids);
+            [$rsql, $rparams] = $DB->get_in_or_equal($rids);
             $rsql = ' AND responseid ' . $rsql;
+            $params = array_merge($params, $rparams);
         }
 
         $responsecountsql = 'SELECT COUNT(DISTINCT r.responseid) ' .
                 'FROM {' . $this->response_table() . '} r, ' .
                 '{questionnaire_response} qr ' .
-                'WHERE questionid = ' . $this->question->id() . $rsql .
+                'WHERE questionid = ?' . $rsql .
                 ' AND r.responseid = qr.id ';
         $numrespondents = $DB->count_records_sql($responsecountsql, $params);
 

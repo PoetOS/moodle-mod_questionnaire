@@ -277,4 +277,35 @@ final class instance_admin_test extends \advanced_testcase {
         $this->assertSame([], $status);
         $this->assertEquals(1, $DB->count_records('questionnaire_response', ['questionnaireid' => $questionnaire->id()]));
     }
+
+    /**
+     * reset_userdata() removes a graded questionnaire's grades through the gradebook API, so the removal is recorded.
+     */
+    public function test_reset_userdata_resets_grades_through_gradebook(): void {
+        global $CFG, $DB;
+        require_once($CFG->libdir . '/gradelib.php');
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()
+            ->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id, 'grade' => 10]);
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $instance = $DB->get_record('questionnaire', ['id' => $questionnaire->id()]);
+        $instance->cmidnumber = '';
+        gradebook::grade_item_update($instance, [$student->id => (object)['userid' => $student->id, 'rawgrade' => 7]]);
+        $itemid = $DB->get_field('grade_items', 'id', ['itemmodule' => 'questionnaire', 'iteminstance' => $questionnaire->id()]);
+        $this->assertEquals(1, $DB->count_records('grade_grades', ['itemid' => $itemid]));
+
+        instance_admin::reset_userdata((object)['courseid' => $course->id, 'reset_questionnaire' => 1]);
+
+        $this->assertEquals(0, $DB->count_records('grade_grades', ['itemid' => $itemid]));
+        $this->assertTrue($DB->record_exists('grade_grades_history', [
+            'itemid' => $itemid,
+            'userid' => $student->id,
+            'action' => GRADE_HISTORY_DELETE,
+            'source' => 'reset',
+        ]));
+    }
 }
