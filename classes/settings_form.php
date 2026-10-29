@@ -76,7 +76,8 @@ class settings_form extends \moodleform {
         $mform->addElement('header', 'submithdr', get_string('submitoptions', 'questionnaire'));
 
         $mform->addElement('text', 'thankspage', get_string('url', 'questionnaire'), ['size' => '60']);
-        $mform->setType('thankspage', PARAM_TEXT);
+        // Validated as a URL in validation(), so a bad URL is reported rather than silently dropped.
+        $mform->setType('thankspage', PARAM_RAW_TRIMMED);
         $mform->setDefault('thankspage', $questionnaire->survey()->thankspage());
         $mform->addHelpButton('thankspage', 'url', 'questionnaire');
 
@@ -135,6 +136,10 @@ class settings_form extends \moodleform {
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+        $thankspage = trim($data['thankspage'] ?? '');
+        if ($thankspage !== '' && clean_param($thankspage, PARAM_URL) !== $thankspage) {
+            $errors['thankspage'] = get_string('invalidurl', 'error');
+        }
         return $errors;
     }
 }

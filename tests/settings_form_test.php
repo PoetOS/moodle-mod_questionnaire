@@ -54,4 +54,47 @@ final class settings_form_test extends \advanced_testcase {
         $this->assertEquals('select', $mform->getElementType('realm'));
         $this->assertEquals([$questionnaire->survey()->realm()], $mform->getElement('realm')->getValue());
     }
+
+    /**
+     * Data provider for the thank-you URL validation test: value and whether it is accepted.
+     *
+     * @return array
+     */
+    public static function thankspage_validation_provider(): array {
+        return [
+            'empty' => ['', true],
+            'absolute url' => ['https://example.com/thanks', true],
+            'relative url' => ['view.php', true],
+            'javascript' => ['javascript:alert(1)', false],
+            'quote' => ['https://example.com/"+alert(1)+"', false],
+        ];
+    }
+
+    /**
+     * validation() reports a thank-you URL that is not a valid URL.
+     *
+     * @dataProvider thankspage_validation_provider
+     * @param string $thankspage
+     * @param bool $valid
+     */
+    public function test_validation_checks_thankspage(string $thankspage, bool $valid): void {
+        global $PAGE;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()
+            ->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id]);
+        $PAGE->set_context($questionnaire->context());
+
+        $form = new settings_form('qsettings.php', ['questionnaire' => $questionnaire]);
+        $errors = $form->validation(['thankspage' => $thankspage], []);
+
+        if ($valid) {
+            $this->assertArrayNotHasKey('thankspage', $errors);
+        } else {
+            $this->assertEquals(get_string('invalidurl', 'error'), $errors['thankspage']);
+        }
+    }
 }

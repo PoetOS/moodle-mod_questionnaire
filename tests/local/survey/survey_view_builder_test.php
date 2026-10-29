@@ -780,4 +780,42 @@ final class survey_view_builder_test extends \advanced_testcase {
 
         $this->assertNull($this->page_data($page)->surveyheader->respondent);
     }
+
+    /**
+     * goto_thankyou() redirects to a valid thank-you URL.
+     */
+    public function test_goto_thankyou_redirects_to_thanks_url(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $DB->set_field('questionnaire_survey', 'thankspage', 'https://example.com/thanks', ['id' => $instance->surveyid()]);
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        // Redirects are refused under PHPUnit, so the refusal shows redirect() was called.
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('redirecterrordetected', 'error'));
+        (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), page::complete()))->goto_thankyou($instance);
+    }
+
+    /**
+     * goto_thankyou() shows the thank-you page instead of redirecting to an invalid stored URL.
+     */
+    public function test_goto_thankyou_ignores_invalid_thanks_url(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$instance, $studentid] = $this->build_fixture();
+        $DB->set_field('questionnaire_survey', 'thankspage', 'javascript:alert(1)', ['id' => $instance->surveyid()]);
+        $this->setUser($studentid);
+        $instance = questionnaire::from_instanceid($instance->id());
+
+        $page = page::complete();
+        (new survey_view_builder($PAGE->get_renderer('mod_questionnaire'), $page))->goto_thankyou($instance);
+
+        $this->assertObjectHasProperty('continue', $this->page_data($page));
+    }
 }
