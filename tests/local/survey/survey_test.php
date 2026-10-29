@@ -1298,4 +1298,28 @@ final class survey_test extends \advanced_testcase {
         $this->assertArrayHasKey('template-' . $template->surveyid(), $links);
         $this->assertStringContainsString('courseid=' . $addingcourse->id, $links['template-' . $template->surveyid()]);
     }
+
+    /**
+     * The "Add questionnaire" form's survey picker formats the questionnaire and course names.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::get_template_questionnaires
+     */
+    public function test_template_picker_formats_names(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course(['fullname' => 'Course & <i>Two</i>']);
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_instance(['course' => $course->id]);
+        $generator->create_content($questionnaire, ['realm' => 'template']);
+        // Names with markup can arrive through imports and web services.
+        $DB->set_field('questionnaire', 'name', 'Quiz & <b>One</b>', ['id' => $questionnaire->id()]);
+
+        $links = survey::get_template_questionnaires((int)$this->getDataGenerator()->create_course()->id);
+
+        $label = $links['template-' . $questionnaire->surveyid()];
+        $this->assertStringContainsString('Quiz &amp; One [Course &amp; Two]', $label);
+        $this->assertStringNotContainsString('<b>', $label);
+        $this->assertStringNotContainsString('<i>', $label);
+    }
 }

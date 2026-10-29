@@ -333,14 +333,15 @@ class reporter {
         } else {
             $resparr = [];
             for ($i = 0; $i < $total; $i++) {
+                $respurl = new \moodle_url($url, ['rid' => $rids[$i]]);
                 if ($isfullname) {
-                    $responsedate = userdate($ridssub[$i]);
-                    $resparr[] = '<a title = "' . $responsedate . '" href="' . $url . '&amp;rid=' .
-                        $rids[$i] . '&amp;individualresponse=1" >' . $ridsuserfullname[$i] . '</a> ';
+                    $resparr[] = \html_writer::link(
+                        $respurl,
+                        s($ridsuserfullname[$i]),
+                        ['title' => userdate($ridssub[$i])]
+                    ) . ' ';
                 } else {
-                    $resparr[] = '<a title = "" href="' . $url . '&amp;rid=' .
-                        $rids[$i] . '&amp;individualresponse=1" >' .
-                        get_string('response', 'questionnaire') . ($i + 1) . '</a> ';
+                    $resparr[] = \html_writer::link($respurl, get_string('response', 'questionnaire') . ($i + 1)) . ' ';
                 }
             }
             $entries = count($resparr);

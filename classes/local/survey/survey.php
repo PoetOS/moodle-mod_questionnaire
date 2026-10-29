@@ -1286,9 +1286,11 @@ class survey {
                 'sid' => $sid, 'popup' => 1, 'qid' => $qrec->get('id'), 'courseid' => $courseid,
             ]);
             $action = new \popup_action('click', $link);
+            $formatoptions = ['context' => \context_course::instance($originalcourse->id)];
             $label = $OUTPUT->action_link(
                 $link,
-                $qrec->get('name') . ' [' . $originalcourse->fullname . ']',
+                format_string($qrec->get('name'), true, $formatoptions) . ' [' .
+                    format_string($originalcourse->fullname, true, $formatoptions) . ']',
                 $action,
                 ['title' => $strpreview]
             );

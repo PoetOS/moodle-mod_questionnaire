@@ -337,6 +337,29 @@ final class reporter_test extends \advanced_testcase {
     }
 
     /**
+     * survey_results_navbar_alpha() escapes respondent names in the respondents list.
+     */
+    public function test_survey_results_navbar_alpha_escapes_respondent_names(): void {
+        global $DB;
+        [$questionnaire] = $this->setup_fixture();
+        $student = $this->getDataGenerator()->create_and_enrol($questionnaire->course(), 'student');
+        // Names with markup can arrive through auth sync and web services.
+        $DB->set_field('user', 'firstname', '<b>Bold</b> & Co', ['id' => $student->id]);
+        $rid = $this->seed_complete_response($questionnaire, (int)$student->id);
+
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        [$reporter, $page] = $this->build_reporter($questionnaire);
+
+        $reporter->survey_results_navbar_alpha($rid, 0, true);
+
+        global $PAGE;
+        $data = $page->export_for_template($PAGE->get_renderer('mod_questionnaire'));
+        $html = var_export($data->responses, true);
+        $this->assertStringContainsString('&lt;b&gt;Bold&lt;/b&gt; &amp; Co', $html);
+        $this->assertStringNotContainsString('<b>Bold</b>', $html);
+    }
+
+    /**
      * survey_results_navbar_student() writes the nav into both navigationbar slots
      * when the student has multiple responses.
      */

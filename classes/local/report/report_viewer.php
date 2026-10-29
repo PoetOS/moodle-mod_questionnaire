@@ -132,7 +132,7 @@ class report_viewer {
             }
         }
         if ($currentgroupid > 0) {
-            $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
+            $groupname = get_string('group') . ': <strong>' . $this->group_name($currentgroupid) . '</strong>';
         } else {
             $groupname = '<strong>' . $responsestatus[$userview] . '</strong>';
         }
@@ -170,7 +170,7 @@ class report_viewer {
         if ($outputtarget == 'pdf') {
             $pdf = pdf_factory::create();
             if ($currentgroupid > 0) {
-                $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
+                $groupname = get_string('group') . ': <strong>' . $this->group_name($currentgroupid) . '</strong>';
             } else {
                 $groupname = '<strong>' . $responsestatus[$userview] . '</strong>';
             }
@@ -348,7 +348,7 @@ class report_viewer {
             $page->add_to_page(
                 'respondentinfo',
                 get_string('group') . ' <strong>' .
-                    groups_get_group_name($currentgroupid) . '</strong>: ' . get_string('noresponses', 'questionnaire')
+                    $this->group_name($currentgroupid) . '</strong>: ' . get_string('noresponses', 'questionnaire')
             );
         }
 
@@ -371,7 +371,7 @@ class report_viewer {
             }
         }
 
-        $groupname = get_string('group') . ': <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
+        $groupname = get_string('group') . ': <strong>' . $this->group_name($currentgroupid) . '</strong>';
         if ($currentgroupid == 0) {
             $groupname = $responsestatus[$userview];
         }
@@ -394,5 +394,15 @@ class report_viewer {
         echo $this->renderer->header();
         echo $this->renderer->render($page);
         echo $this->renderer->footer($course);
+    }
+
+    /**
+     * Return a group's name formatted for display in this questionnaire's context.
+     *
+     * @param int $groupid
+     * @return string
+     */
+    private function group_name(int $groupid): string {
+        return format_string((string)groups_get_group_name($groupid), true, ['context' => $this->questionnaire->context()]);
     }
 }
