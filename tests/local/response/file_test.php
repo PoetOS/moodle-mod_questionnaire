@@ -126,6 +126,78 @@ final class file_test extends \advanced_testcase {
     }
 
     /**
+     * Deleting a response removes its uploaded file as well as the response file record.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::delete_response
+     */
+    public function test_delete_response_removes_stored_file(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $question] = $this->make_file_questionnaire();
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $rid = $this->make_response($questionnaire, $user->id);
+        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'mine.txt');
+
+        $questionnaire->responses()->delete_response((object)['id' => $rid, 'userid' => $user->id]);
+
+        $this->assertNull($this->stored_file($questionnaire, $recordid));
+        $this->assertFalse(response_file_record::record_exists($recordid));
+    }
+
+    /**
+     * Purging a question's answers removes the uploaded files from every questionnaire using the survey.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::delete_responses_for_question
+     */
+    public function test_delete_responses_for_question_removes_stored_files(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $question] = $this->make_file_questionnaire();
+        $other = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_instance([
+            'course' => $this->getDataGenerator()->create_course()->id,
+            'sid' => $questionnaire->surveyid(),
+        ]);
+        $otherquestions = $other->questions();
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $first = $this->upload_answer($questionnaire, $question, $this->make_response($questionnaire, $user->id), 'one.txt');
+        $second = $this->upload_answer($other, reset($otherquestions), $this->make_response($other, $user->id), 'two.txt');
+        $this->assertNotNull($this->stored_file($other, $second));
+
+        questionnaire_responses::delete_responses_for_question($question->id());
+
+        $this->assertNull($this->stored_file($questionnaire, $first));
+        $this->assertNull($this->stored_file($other, $second));
+        $this->assertFalse(response_file_record::record_exists($first));
+        $this->assertFalse(response_file_record::record_exists($second));
+    }
+
+    /**
+     * Responses past the retention period lose their uploaded files and response file records.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::delete_old_responses
+     */
+    public function test_delete_old_responses_removes_stored_files(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$questionnaire, $question] = $this->make_file_questionnaire();
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $rid = $this->make_response($questionnaire, $user->id);
+        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'old.txt');
+        $DB->set_field('questionnaire', 'removeafter', HOURSECS, ['id' => $questionnaire->id()]);
+        $DB->update_record('questionnaire_response', (object)[
+            'id' => $rid,
+            'complete' => 'y',
+            'submitted' => time() - (2 * HOURSECS),
+        ]);
+
+        questionnaire_responses::delete_old_responses();
+
+        $this->assertNull($this->stored_file($questionnaire, $recordid));
+        $this->assertFalse(response_file_record::record_exists($recordid));
+    }
+
+    /**
      * Build a questionnaire with one file question.
      *
      * @return array [questionnaire, question]

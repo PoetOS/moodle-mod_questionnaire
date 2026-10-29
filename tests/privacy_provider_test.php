@@ -228,4 +228,83 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         // Get all accounts. There should be one now.
         $this->assertCount(1, $DB->get_records('questionnaire_response', []));
     }
+
+    /**
+     * The metadata declares uploaded answer files, notification messages and report emails.
+     *
+     * @covers \mod_questionnaire\privacy\provider::get_metadata
+     */
+    public function test_get_metadata_declares_files_messages_and_email(): void {
+        $collection = provider::get_metadata(new \core_privacy\local\metadata\collection('mod_questionnaire'));
+        $names = array_map(fn($item) => $item->get_name(), $collection->get_collection());
+
+        $this->assertContains('questionnaire_response_file', $names);
+        $this->assertContains('core_files', $names);
+        $this->assertContains('core_message', $names);
+        $this->assertContains('email', $names);
+    }
+
+    /**
+     * Exporting a user's data includes the files they uploaded as answers.
+     *
+     * @covers \mod_questionnaire\privacy\provider::export_user_data
+     */
+    public function test_export_user_data_includes_uploaded_files(): void {
+        [$questionnaire, $user, $rid, $recordid] = $this->make_file_answer();
+        $context = $questionnaire->context();
+
+        $approvedlist = new \core_privacy\local\request\approved_contextlist($user, 'mod_questionnaire', [$context->id]);
+        provider::export_user_data($approvedlist);
+
+        $subcontext = [get_string('responses', 'questionnaire'), $rid];
+        $files = \core_privacy\local\request\writer::with_context($context)->get_files($subcontext);
+        $this->assertArrayHasKey('mine.txt', $files);
+    }
+
+    /**
+     * Deleting a user's data removes the files they uploaded as answers.
+     *
+     * @covers \mod_questionnaire\privacy\provider::delete_data_for_user
+     */
+    public function test_delete_data_for_user_removes_uploaded_files(): void {
+        [$questionnaire, $user, $rid, $recordid] = $this->make_file_answer();
+        $context = $questionnaire->context();
+
+        $approvedlist = new \core_privacy\local\request\approved_contextlist($user, 'mod_questionnaire', [$context->id]);
+        provider::delete_data_for_user($approvedlist);
+
+        $this->assertTrue(get_file_storage()->is_area_empty($context->id, 'mod_questionnaire', 'response_file', $recordid));
+        $this->assertFalse(\mod_questionnaire\local\db\response_file_record::record_exists($recordid));
+    }
+
+    /**
+     * Create a questionnaire with a file question and a response in which a new user uploaded 'mine.txt'.
+     *
+     * @return array [questionnaire, user, response id, response file record id]
+     */
+    private function make_file_answer(): array {
+        global $USER;
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_test_questionnaire(
+            $this->getDataGenerator()->create_course(),
+            QUESFILE,
+            ['content' => 'Upload a file']
+        );
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), $user->id)->id();
+        $draftitemid = file_get_unused_draft_itemid();
+        get_file_storage()->create_file_from_string([
+            'contextid' => \context_user::instance($USER->id)->id,
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => $draftitemid,
+            'filepath' => '/',
+            'filename' => 'mine.txt',
+        ], 'mine');
+        $recordid = $question->insert_response((object)['rid' => $rid, 'q' . $question->id() => $draftitemid]);
+        $this->setAdminUser();
+        return [$questionnaire, $user, $rid, $recordid];
+    }
 }
