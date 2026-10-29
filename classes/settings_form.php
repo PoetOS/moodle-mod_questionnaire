@@ -54,7 +54,7 @@ class settings_form extends \moodleform {
         } else {
             $mform->addElement('hidden', 'realm', 'private');
         }
-        $mform->setType('realm', PARAM_RAW);
+        $mform->setType('realm', PARAM_ALPHA);
 
         $mform->addElement('text', 'title', get_string('title', 'questionnaire'), ['size' => '60']);
         $mform->setDefault('title', $questionnaire->surveytitle());
@@ -108,10 +108,6 @@ class settings_form extends \moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'sid', 0);
         $mform->setType('sid', PARAM_INT);
-        $mform->addElement('hidden', 'name', '');
-        $mform->setType('name', PARAM_TEXT);
-        $mform->addElement('hidden', 'courseid', '');
-        $mform->setType('courseid', PARAM_RAW);
 
         // Buttons.
 

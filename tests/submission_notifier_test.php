@@ -140,6 +140,7 @@ final class submission_notifier_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
+        set_config('allowemailreporting', 1, 'questionnaire');
 
         [$questionnaire, $student] = $this->setup_with_student();
         // Add an email recipient list to the survey row.
@@ -163,6 +164,26 @@ final class submission_notifier_test extends \advanced_testcase {
         $addresses = array_map(fn($m) => $m->to, $emails);
         $this->assertContains('first@example.com', $addresses);
         $this->assertContains('second@example.com', $addresses);
+        $emailsink->close();
+    }
+
+    /**
+     * notify() sends no report email when the site does not allow email reporting, even if an address is stored.
+     */
+    public function test_notify_sends_no_email_when_email_reporting_disabled(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('allowemailreporting', 0, 'questionnaire');
+
+        [$questionnaire, $student] = $this->setup_with_student();
+        $DB->set_field('questionnaire_survey', 'email', 'first@example.com', ['id' => $questionnaire->surveyid()]);
+        $rid = $this->insert_response($questionnaire->id(), $student->id);
+
+        $emailsink = $this->redirectEmails();
+        (new submission_notifier(questionnaire::from_instanceid($questionnaire->id())))->notify($rid);
+
+        $this->assertCount(0, $emailsink->get_messages());
         $emailsink->close();
     }
 

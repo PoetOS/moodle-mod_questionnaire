@@ -47,9 +47,9 @@ class survey_settings_controller {
      * @return int Survey id on success.
      */
     public function save(\stdClass $formdata): int {
+        // The survey's name and owning course are never changed here.
         $fields = [
-            'name'       => $formdata->name ?? '',
-            'realm'      => $formdata->realm ?? '',
+            'realm'      => $this->allowed_realm((string)($formdata->realm ?? '')),
             'title'      => $formdata->title ?? '',
             'subtitle'   => $formdata->subtitle ?? '',
             'info'       => $this->save_editor($formdata, 'info'),
@@ -57,15 +57,34 @@ class survey_settings_controller {
             'thankspage' => $formdata->thankspage ?? '',
             'thankhead'  => $formdata->thankhead ?? '',
             'thankbody'  => $this->save_editor($formdata, 'thankbody'),
-            'email'      => $formdata->email ?? '',
-            'courseid'   => isset($formdata->courseid) ? (int) $formdata->courseid : null,
         ];
+        // The email field is disabled in the form when email reporting is off; never accept a posted value then.
+        if (get_config('questionnaire', 'allowemailreporting')) {
+            $fields['email'] = $formdata->email ?? '';
+        }
 
         $result = $this->questionnaire->survey()->update_settings($fields);
         if ($result === false) {
             throw new \moodle_exception('couldnotcreatenewsurvey', 'mod_questionnaire');
         }
         return $result;
+    }
+
+    /**
+     * Return the posted realm if the current user may set it, otherwise the survey's current realm.
+     *
+     * The current realm and 'private' are always allowed; 'public' and 'template' need their create capabilities.
+     *
+     * @param string $realm The posted realm.
+     * @return string
+     */
+    private function allowed_realm(string $realm): string {
+        $current = $this->questionnaire->survey()->realm();
+        $capabilities = $this->questionnaire->capabilities();
+        $allowed = ($realm === $current) || ($realm === 'private') ||
+            ($realm === 'public' && $capabilities->can_create_public()) ||
+            ($realm === 'template' && $capabilities->can_create_templates());
+        return $allowed ? $realm : $current;
     }
 
     /**

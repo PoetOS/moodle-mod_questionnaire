@@ -64,7 +64,6 @@ final class survey_settings_controller_test extends \advanced_testcase {
             'thankhead'  => 'Thanks!',
             'thankbody'  => ['itemid' => 0, 'format' => FORMAT_HTML, 'text' => 'Bye'],
             'email'      => 'alerts@example.org',
-            'courseid'   => $questionnaire->course()->id,
         ];
         return (object) array_merge($defaults, $overrides);
     }
@@ -76,6 +75,7 @@ final class survey_settings_controller_test extends \advanced_testcase {
         global $DB;
 
         $questionnaire = $this->setup_questionnaire();
+        set_config('allowemailreporting', 1, 'questionnaire');
         $result = (new survey_settings_controller($questionnaire))->save($this->formdata($questionnaire, [
             'subtitle'  => 'New subtitle',
             'thankhead' => 'New thank head',
@@ -122,5 +122,97 @@ final class survey_settings_controller_test extends \advanced_testcase {
         (new survey_settings_controller($questionnaire))->save($formdata);
 
         $this->assertTrue($DB->record_exists('questionnaire_survey', ['id' => $surveyid]));
+    }
+
+    /**
+     * Log in as a new teacher of the questionnaire's course, optionally with the public/template capabilities.
+     *
+     * @param questionnaire $questionnaire
+     * @param bool $cancreate Whether the teacher may create public and template surveys.
+     */
+    private function log_in_teacher(questionnaire $questionnaire, bool $cancreate): void {
+        $teacher = $this->getDataGenerator()->create_and_enrol($questionnaire->course(), 'editingteacher');
+        if ($cancreate) {
+            $roleid = $this->getDataGenerator()->create_role();
+            assign_capability('mod/questionnaire:createpublic', CAP_ALLOW, $roleid, $questionnaire->context()->id);
+            assign_capability('mod/questionnaire:createtemplates', CAP_ALLOW, $roleid, $questionnaire->context()->id);
+            role_assign($roleid, $teacher->id, $questionnaire->context()->id);
+        }
+        $this->setUser($teacher);
+    }
+
+    /**
+     * Data provider for the realm test: current realm, posted realm, whether the user may create shared surveys,
+     * and the realm expected afterwards.
+     *
+     * @return array
+     */
+    public static function realm_provider(): array {
+        return [
+            'teacher cannot publish' => ['private', 'public', false, 'private'],
+            'teacher cannot make a template' => ['private', 'template', false, 'private'],
+            'teacher keeps an existing public realm' => ['public', 'public', false, 'public'],
+            'teacher can make a survey private' => ['public', 'private', false, 'private'],
+            'creator can publish' => ['private', 'public', true, 'public'],
+            'creator can make a template' => ['private', 'template', true, 'template'],
+            'unknown realm is ignored' => ['private', 'bogus', true, 'private'],
+        ];
+    }
+
+    /**
+     * save() only accepts a posted realm the user may set; anything else keeps the current realm.
+     *
+     * @dataProvider realm_provider
+     * @param string $current
+     * @param string $posted
+     * @param bool $cancreate
+     * @param string $expected
+     */
+    public function test_save_only_accepts_allowed_realm(string $current, string $posted, bool $cancreate, string $expected): void {
+        global $DB;
+        $questionnaire = $this->setup_questionnaire();
+        $DB->set_field('questionnaire_survey', 'realm', $current, ['id' => $questionnaire->surveyid()]);
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        $this->log_in_teacher($questionnaire, $cancreate);
+
+        (new survey_settings_controller($questionnaire))->save($this->formdata($questionnaire, ['realm' => $posted]));
+
+        $realm = $DB->get_field('questionnaire_survey', 'realm', ['id' => $questionnaire->surveyid()]);
+        $this->assertSame($expected, $realm);
+    }
+
+    /**
+     * save() never changes the survey's name or owning course, whatever is posted.
+     */
+    public function test_save_ignores_posted_name_and_courseid(): void {
+        global $DB;
+        $questionnaire = $this->setup_questionnaire();
+        $before = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]);
+
+        (new survey_settings_controller($questionnaire))->save($this->formdata($questionnaire, [
+            'name' => 'Renamed',
+            'courseid' => $this->getDataGenerator()->create_course()->id,
+        ]));
+
+        $after = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]);
+        $this->assertEquals($before->name, $after->name);
+        $this->assertEquals($before->courseid, $after->courseid);
+    }
+
+    /**
+     * save() ignores a posted email address when the site does not allow email reporting.
+     */
+    public function test_save_ignores_email_when_email_reporting_disabled(): void {
+        global $DB;
+        $questionnaire = $this->setup_questionnaire();
+        set_config('allowemailreporting', 0, 'questionnaire');
+        $DB->set_field('questionnaire_survey', 'email', 'kept@example.org', ['id' => $questionnaire->surveyid()]);
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+
+        $formdata = $this->formdata($questionnaire, ['email' => 'outside@example.com']);
+        (new survey_settings_controller($questionnaire))->save($formdata);
+
+        $email = $DB->get_field('questionnaire_survey', 'email', ['id' => $questionnaire->surveyid()]);
+        $this->assertEquals('kept@example.org', $email);
     }
 }

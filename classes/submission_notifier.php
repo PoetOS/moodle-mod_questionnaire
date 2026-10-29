@@ -55,7 +55,7 @@ class submission_notifier {
     public function notify(int $rid): bool {
         $success = true;
         $email = $this->questionnaire->survey()->email();
-        if (!empty($email)) {
+        if (!empty($email) && get_config('questionnaire', 'allowemailreporting')) {
             $success = $this->send_email($rid, $email);
         }
         if ($this->questionnaire->notifications()) {
