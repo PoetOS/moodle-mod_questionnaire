@@ -316,6 +316,18 @@ class capabilities {
                 return false;
             }
 
+            // In separate groups, other users' responses are only visible to members of a shared group.
+            if (
+                $response->userid != $USER->id &&
+                !groups_user_groups_visible(
+                    $this->questionnaire->course(),
+                    (int)$response->userid,
+                    $this->questionnaire->coursemodule()
+                )
+            ) {
+                return false;
+            }
+
             // Can always view if you have the unrestricted capability.
             if (has_capability('mod/questionnaire:readallresponseanytime', $context)) {
                 return true;
