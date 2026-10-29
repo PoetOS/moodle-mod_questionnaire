@@ -547,4 +547,100 @@ final class capabilities_test extends \advanced_testcase {
             []
         ));
     }
+
+    /**
+     * Build a questionnaire in the given group mode with submitted responses from students in group A, group B
+     * and no group.
+     *
+     * @param int $groupmode
+     * @param int $respview
+     * @return array [questionnaire, course, group A, response ids and students, each keyed 'a', 'b' and 'none']
+     */
+    private function make_group_responses(int $groupmode, int $respview = 0): array {
+        $this->setAdminUser();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        $questionnaire = $dg->get_plugin_generator('mod_questionnaire')->create_instance([
+            'course' => $course->id,
+            'groupmode' => $groupmode,
+            'respview' => $respview,
+        ]);
+        $groupa = $dg->create_group(['courseid' => $course->id]);
+        $groupb = $dg->create_group(['courseid' => $course->id]);
+        $rids = [];
+        $students = [];
+        foreach (['a' => $groupa, 'b' => $groupb, 'none' => null] as $key => $group) {
+            $students[$key] = $dg->create_and_enrol($course, 'student');
+            if ($group) {
+                $dg->create_group_member(['groupid' => $group->id, 'userid' => $students[$key]->id]);
+            }
+            $rids[$key] = \mod_questionnaire\local\response\response::create($questionnaire->id(), $students[$key]->id)->id();
+            $questionnaire->responses()->response_commit($rids[$key]);
+        }
+        return [questionnaire::from_instanceid($questionnaire->id()), $course, $groupa, $rids, $students];
+    }
+
+    /**
+     * In separate groups, staff without access to all groups only see responses from members of their groups.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_response
+     */
+    public function test_can_view_response_separate_groups_staff(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course, $groupa, $rids] = $this->make_group_responses(SEPARATEGROUPS);
+
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'teacher');
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $teacher->id]);
+        $this->setUser($teacher);
+        $this->assertTrue($questionnaire->capabilities()->can_view_response($rids['a']));
+        $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['b']));
+        $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['none']));
+
+        $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'editingteacher'));
+        foreach ($rids as $rid) {
+            $this->assertTrue($questionnaire->capabilities()->can_view_response($rid));
+        }
+    }
+
+    /**
+     * In visible groups, group membership does not limit which responses staff can view.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_response
+     */
+    public function test_can_view_response_visible_groups_staff(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course, $groupa, $rids] = $this->make_group_responses(VISIBLEGROUPS);
+
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'teacher');
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $teacher->id]);
+        $this->setUser($teacher);
+        foreach ($rids as $rid) {
+            $this->assertTrue($questionnaire->capabilities()->can_view_response($rid));
+        }
+    }
+
+    /**
+     * In separate groups, a student allowed to view all responses sees their own and their group mates' only.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_response
+     */
+    public function test_can_view_response_separate_groups_student(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course, $groupa, $rids, $students] = $this->make_group_responses(
+            SEPARATEGROUPS,
+            questionnaire::RESPVIEW_ALWAYS
+        );
+
+        $mate = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $mate->id]);
+        $this->setUser($mate);
+        $this->assertTrue($questionnaire->capabilities()->can_view_response($rids['a']));
+        $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['b']));
+        $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['none']));
+
+        // A student with no group still sees their own response.
+        $this->setUser($students['none']);
+        $this->assertTrue($questionnaire->capabilities()->can_view_response($rids['none']));
+        $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['a']));
+    }
 }
