@@ -78,3 +78,36 @@ Feature: Add a question requiring a file upload in questionnaire.
     And I navigate to "View all responses" in current page administration
     Then I should see "testfilequestion.pdf"
     And I should see "testfilequestion2.pdf"
+
+  @javascript @_file_upload
+  Scenario: An uploaded file is kept when the student goes back to its page and on again.
+    Given I log in as "teacher1"
+    When I am on the "Test questionnaire" "questionnaire activity" page
+    And I navigate to "Questions" in current page administration
+    And I add a "File" question and I fill the form with:
+      | Question Name | File question           |
+      | Yes           | Yes                     |
+      | Question Text | Add a file as an answer |
+    And I set the field "id_typeid" to "Page break"
+    And I press "Add selected question type"
+    And I add a "Yes/No" question and I fill the form with:
+      | Question Name | Q2                   |
+      | No            | n                    |
+      | Question Text | Any normal question? |
+    And I log out
+    And I log in as "student1"
+    And I am on the "Test questionnaire" "questionnaire activity" page
+    And I navigate to "Answer the questions..." in current page administration
+    And I upload "mod/questionnaire/tests/fixtures/testfilequestion.pdf" to questionnaire "Add a file as an answer" filemanager
+    And I press "Next Page >>"
+    And I should see "Any normal question?"
+    And I press "<< Previous Page"
+    And I should see "testfilequestion.pdf" in the "//*[contains(@class, 'filemanager-container')]//*[contains(@class, 'fp-filename')]" "xpath"
+    And I press "Next Page >>"
+    And I press "Submit questionnaire"
+    And I should see "Thank you for completing this Questionnaire"
+    And I log out
+    And I log in as "teacher1"
+    And I am on the "Test questionnaire" "questionnaire activity" page
+    And I navigate to "View all responses" in current page administration
+    Then I should see "testfilequestion.pdf"

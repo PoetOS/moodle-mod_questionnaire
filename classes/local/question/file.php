@@ -80,13 +80,8 @@ class file extends question {
         require_once($CFG->libdir . '/filelib.php');
 
         $elname = 'q' . $this->id();
-        // If there is a response and the response is resumed, get the original itemid.
-        $itemid = (
-            isset($response->answers[$this->id()]) &&
-            !empty($response->answers[$this->id()]) &&
-            isset($_REQUEST['resume']) &&
-            $_REQUEST['resume'] === '1'
-        ) ? (int)$response->answers[$this->id()][0]->id : 0;
+        // Load an earlier upload into the draft area, so it is kept unless the user removes it.
+        $itemid = !empty($response->answers[$this->id()]) ? (int)$response->answers[$this->id()][0]->id : 0;
         // Prepare the draft area.
         $draftitemid = file_get_submitted_draft_itemid($elname);
         file_prepare_draft_area(
