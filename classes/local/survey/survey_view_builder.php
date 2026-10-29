@@ -608,28 +608,14 @@ class survey_view_builder {
     public function goto_thankyou(questionnaire $q): void {
         global $USER;
 
+        // The survey record returns thankspage cleaned as PARAM_URL, so an invalid stored value comes back empty.
         $thankurl = $q->survey()->thankspage();
         $thankhead = $q->survey()->thankhead();
         $thankbody = $q->survey()->thankbody();
 
-        if (!empty($thankurl)) {
-            if (!headers_sent()) {
-                header("Location: $thankurl");
-                exit;
-            }
-            echo '
-                <script language="JavaScript" type="text/javascript">
-                <!--
-                window.location="' . $thankurl . '"
-                //-->
-                </script>
-                <noscript>
-                <h2 class="thankhead">Thank You for completing this survey.</h2>
-                <blockquote class="thankbody">Please click
-                <a href="' . $thankurl . '">here</a> to continue.</blockquote>
-                </noscript>
-            ';
-            exit;
+        if ($thankurl !== '') {
+            // A string keeps relative URLs relative to this script, as before.
+            redirect($thankurl);
         }
         if (empty($thankhead)) {
             $thankhead = get_string('thank_head', 'questionnaire');
