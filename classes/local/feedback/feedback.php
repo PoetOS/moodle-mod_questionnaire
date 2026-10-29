@@ -235,12 +235,13 @@ class feedback {
 
         $groupmode = groups_get_activity_groupmode($this->questionnaire->coursemodule(), $this->questionnaire->course());
         $groupname = get_string('allparticipants');
-        if ($groupmode > 0) {
-            if ($currentgroupid > 0) {
-                $groupname = groups_get_group_name($currentgroupid);
-            } else {
-                $groupname = get_string('allparticipants');
-            }
+        $chartgroupname = $groupname;
+        if ($groupmode > 0 && $currentgroupid > 0) {
+            $rawgroupname = groups_get_group_name($currentgroupid);
+            $formatoptions = ['context' => $this->questionnaire->context()];
+            $groupname = format_string($rawgroupname, true, $formatoptions);
+            // Chart titles are drawn as text, so they are formatted without HTML escaping.
+            $chartgroupname = format_string($rawgroupname, true, $formatoptions + ['escape' => false]);
         }
 
         $table = null;
@@ -370,7 +371,7 @@ class feedback {
                     $PAGE,
                     $feedbacktype = 'global',
                     $labels,
-                    $groupname,
+                    $chartgroupname,
                     $allresponses,
                     $this->chart_type(),
                     $score,
@@ -561,7 +562,7 @@ class feedback {
                 $PAGE,
                 'sections',
                 array_values($chartlabels),
-                $groupname,
+                $chartgroupname,
                 $allresponses,
                 $this->chart_type(),
                 array_values($scorepercent),

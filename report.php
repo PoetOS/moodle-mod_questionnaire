@@ -153,7 +153,8 @@ if ($groupmode > 0) {
     }
 
     if ($currentgroupid > 0) {
-        $groupname = get_string('group') . ' <strong>' . groups_get_group_name($currentgroupid) . '</strong>';
+        $groupname = get_string('group') . ' <strong>' .
+            format_string(groups_get_group_name($currentgroupid), true, ['context' => $questionnaire->context()]) . '</strong>';
     } else {
         $groupname = '<strong>' . get_string('allparticipants') . '</strong>';
     }
